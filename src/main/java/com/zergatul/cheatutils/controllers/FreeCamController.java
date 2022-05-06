@@ -137,7 +137,7 @@ public class FreeCamController {
         //
         //
 
-        //ModMain.LOGGER.info("Server: " + serverPacketArgs.packet.getClass().getName());
+        ModMain.LOGGER.info("Server: " + serverPacketArgs.packet.getClass().getName());
 
         if (serverPacketArgs.packet instanceof ClientboundPlayerPositionPacket) {
             var packet = (ClientboundPlayerPositionPacket) serverPacketArgs.packet;
@@ -158,6 +158,10 @@ public class FreeCamController {
 
     public boolean isActive() {
         return active;
+    }
+
+    public LocalPlayer getPlayer() {
+        return player;
     }
 
     @SubscribeEvent
@@ -226,42 +230,12 @@ public class FreeCamController {
         mc.cameraEntity = player;
         ((CameraMixinInterface) mc.gameRenderer.getMainCamera()).setEntity(player);
 
-        mc.gameMode.setLocalMode(oldGameType);
-
-        removeClientPlayer(fake);
-        removeClientPlayer(shadow);
-
-        /*if (mc.player != null) {
-            mc.player.setPos(fake.getX(), fake.getY(), fake.getZ());
-            mc.player.absMoveTo(fake.getX(), fake.getY(), fake.getZ(), fake.getYRot(), fake.getXRot());
-            mc.player.setDeltaMovement(0.0D, 0.0D, 0.0D);
-
-            //setPlayerAbilities(fake.getAbilities());
-        }
-
-        fake.remove(Entity.RemovalReason.DISCARDED);
-
-        if (mc.level != null) {
-            mc.level.players().remove(fake);
-        }
-
-        if (mc.player != null) {
-            networkPlayerInfoSetGameMode(oldGameType);
-        }
-
         if (mc.gameMode != null) {
             mc.gameMode.setLocalMode(oldGameType);
         }
 
-        if (mc.player != null) {
-            mc.player.setGameMode(oldGameType);
-            mc.player.getAbilities().flying = wasFlying;
-        }
-
-        fake = null;
-        synchronized (dontSkip) {
-            dontSkip.clear();
-        }*/
+        removeClientPlayer(fake);
+        removeClientPlayer(shadow);
     }
 
     private void saveAbilities() {

@@ -30,6 +30,7 @@ public class ConfigStore {
     public final List<BlockTracerConfig> blocks = new ArrayList<>();
     public final List<EntityTracerConfig> entities = new ArrayList<>();
     public LightLevelConfig lightLevelConfig = new LightLevelConfig();
+    public KillAuraConfig killAuraConfig = KillAuraConfig.createDefault();
 
     private final File file;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();

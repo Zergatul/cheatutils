@@ -1,11 +1,24 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
+import com.zergatul.cheatutils.interfaces.ScreenMixinInterface;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
+import net.minecraftforge.client.event.ContainerScreenEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -17,13 +30,14 @@ public class ShulkerTooltipController {
     private static final ResourceLocation CONTAINER_TEXTURE = new ResourceLocation("textures/gui/container/shulker_box.png");
     private static final int ImageWidth = 176;
     private static final int ImageHeight = 166;
+    private static final int TranslateZ = 250;
 
     private boolean active = true;
-    private boolean locked;
+    private boolean locked = false;
+    private boolean allowTooltip = false;
     private ItemStack lockedStack;
-    private Matrix4f lockedMatrix;
+    private Matrix4f lockedPose;
     private int lockedX, lockedY;
-    private boolean allowTooltipOnce;
 
     private ShulkerTooltipController() {
 
@@ -50,16 +64,13 @@ public class ShulkerTooltipController {
 
     @SubscribeEvent
     public void onPreRenderTooltip(RenderTooltipEvent.Pre event) {
-        if (locked && !allowTooltipOnce) {
+        if (locked && !allowTooltip) {
             event.setCanceled(true);
+            return;
         }
-    }
 
-    @SubscribeEvent
-    public void onRenderTooltipPostText(RenderTooltipEvent.GatherComponents event) {
-
-        if (locked && allowTooltipOnce) {
-            allowTooltipOnce = false;
+        if (allowTooltip) {
+            allowTooltip = false;
             return;
         }
 
@@ -73,83 +84,109 @@ public class ShulkerTooltipController {
             return;
         }
 
-        /*int x, y;
-        x = event.getX() - ImageWidth - 24;
+        event.setCanceled(true);
+
+        event.getPoseStack().pushPose();
+        event.getPoseStack().translate(0, 0, TranslateZ);
+        RenderSystem.applyModelViewMatrix();
+
+        int x, y;
+        x = event.getX() - ImageWidth - 16;
         y = event.getY() - 4;
         if (Screen.hasControlDown()) {
             locked = true;
-            lockedMatrix = event.getMatrixStack().last().pose();
-            lockedStack = event.getStack();
+            lockedPose = event.getPoseStack().last().pose();
+            lockedStack = event.getItemStack();
             lockedX = x;
             lockedY = y;
         }
 
-        renderShulkerInventory(event.getStack(), event.getMatrixStack().last().pose(), x, y);*/
+        renderShulkerInventory(event.getItemStack(), event.getPoseStack().last().pose(), x, y);
+
+        event.getPoseStack().popPose();
+        RenderSystem.applyModelViewMatrix();
     }
 
-    /*@SubscribeEvent
-    public void onContainerDrawForeground(GuiContainerEvent.DrawForeground event) {
+    @SubscribeEvent
+    public void onContainerDrawForeground(ContainerScreenEvent.DrawForeground event) {
         if (locked) {
             if (Screen.hasControlDown()) {
-                GL11.glPushMatrix();
-                GL11.glLoadIdentity();
-                GL11.glTranslatef(0, 0, -2000);
-                renderShulkerInventory(lockedStack, lockedMatrix, lockedX, lockedY);
-                renderTooltip(lockedX, lockedY, event.getMouseX(), event.getMouseY());
-                GL11.glPopMatrix();
+                event.getPoseStack().pushPose();
+                event.getPoseStack().setIdentity();
+                event.getPoseStack().mulPoseMatrix(lockedPose);
+                RenderSystem.applyModelViewMatrix();
+
+                int x = globalToScreenX(lockedX, event.getContainerScreen()); //lockedX - Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2 + event.getContainerScreen().getXSize() / 2;
+                int y = globalToScreenY(lockedY, event.getContainerScreen()); //lockedY - Minecraft.getInstance().getWindow().getGuiScaledHeight() / 2 + event.getContainerScreen().getYSize() / 2;
+
+                PoseStack.Pose pose = event.getPoseStack().last();
+                renderShulkerInventory(lockedStack, pose.pose(), x, y);
+
+                int mx = globalToScreenX(event.getMouseX(), event.getContainerScreen());
+                int my = globalToScreenY(event.getMouseY(), event.getContainerScreen());
+                renderTooltip(event.getPoseStack(), x, y, mx, my);
+
+                event.getPoseStack().popPose();
+                RenderSystem.applyModelViewMatrix();
             } else {
                 clearLocked();
             }
         }
     }
 
+    private int globalToScreenX(int x, AbstractContainerScreen<?> screen) {
+        return x - Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2 + screen.getXSize() / 2;
+    }
+
+    private int globalToScreenY(int y, AbstractContainerScreen<?> screen) {
+        return y - Minecraft.getInstance().getWindow().getGuiScaledHeight() / 2 + screen.getYSize() / 2;
+    }
+
     private void renderShulkerInventory(ItemStack itemStack, Matrix4f matrix, int x, int y) {
 
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        Minecraft.getInstance().getTextureManager().bind(CONTAINER_TEXTURE);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, CONTAINER_TEXTURE);
 
         drawTexture(matrix, x, y, ImageWidth, 6, 100, 0, 0, ImageWidth, 6, 256, 256);
         drawTexture(matrix, x, y + 6, ImageWidth, 60, 100, 0, 14, ImageWidth, 60, 256, 256);
         drawTexture(matrix, x, y + 66, ImageWidth, 6, 100, 0, 160, ImageWidth, 6, 256, 256);
 
-        CompoundNBT compoundnbt = itemStack.getTagElement("BlockEntityTag");
-        if (compoundnbt != null) {
-            if (compoundnbt.contains("Items", 9)) {
-                NonNullList<ItemStack> nonnulllist = NonNullList.withSize(27, ItemStack.EMPTY);
-                ItemStackHelper.loadAllItems(compoundnbt, nonnulllist);
-                for (int i = 0; i < nonnulllist.size(); i++) {
-                    ItemStack slot = nonnulllist.get(i);
-                    int slotx = i % 9;
-                    int sloty = i / 9;
+        CompoundTag compound = itemStack.getTagElement("BlockEntityTag");
+        if (compound != null) {
+            if (compound.contains("Items", 9)) {
+                var list = NonNullList.withSize(27, ItemStack.EMPTY);
+                ContainerHelper.loadAllItems(compound, list);
+                for (int i = 0; i < list.size(); i++) {
+                    ItemStack slot = list.get(i);
+                    int slotX = i % 9;
+                    int slotY = i / 9;
                     if (!slot.isEmpty()) {
-                        renderSlot(slot, x + 8 + 18 * slotx, y + 10 + 18 * sloty);
+                        renderSlot(slot, x + 8 + 18 * slotX, y + 10 + 18 * slotY);
                     }
                 }
             }
         }
     }
 
-    private void renderTooltip(int x, int y, int mouseX, int mouseY) {
+    private void renderTooltip(PoseStack poseStack, int x, int y, int mouseX, int mouseY) {
 
         Screen screen = Minecraft.getInstance().screen;
 
-        CompoundNBT compoundnbt = lockedStack.getTagElement("BlockEntityTag");
-        if (compoundnbt != null) {
-            if (compoundnbt.contains("Items", 9)) {
-                NonNullList<ItemStack> nonnulllist = NonNullList.withSize(27, ItemStack.EMPTY);
-                ItemStackHelper.loadAllItems(compoundnbt, nonnulllist);
-                for (int i = 0; i < nonnulllist.size(); i++) {
-                    ItemStack slot = nonnulllist.get(i);
-                    int slotx = i % 9;
-                    int sloty = i / 9;
+        CompoundTag compound = lockedStack.getTagElement("BlockEntityTag");
+        if (compound != null) {
+            if (compound.contains("Items", 9)) {
+                var list = NonNullList.withSize(27, ItemStack.EMPTY);
+                ContainerHelper.loadAllItems(compound, list);
+                for (int i = 0; i < list.size(); i++) {
+                    ItemStack slot = list.get(i);
+                    int slotX = i % 9;
+                    int slotY = i / 9;
                     if (!slot.isEmpty()) {
-                        if (x + 8 + 18 * slotx <= mouseX && mouseX < x + 8 + 18 * slotx + 16) {
-                            if (y + 10 + 18 * sloty <= mouseY && mouseY < y + 10 + 18 * sloty + 16) {
-                                allowTooltipOnce = true;
-                                FontRenderer font = slot.getItem().getFontRenderer(slot);
-                                net.minecraftforge.fml.client.gui.GuiUtils.preItemToolTip(slot);
-                                screen.renderWrappedToolTip(new MatrixStack(), screen.getTooltipFromItem(slot), mouseX, mouseY, (font == null ? Minecraft.getInstance().font : font));
-                                net.minecraftforge.fml.client.gui.GuiUtils.postItemToolTip();
+                        if (x + 8 + 18 * slotX <= mouseX && mouseX < x + 8 + 18 * slotX + 16) {
+                            if (y + 10 + 18 * slotY <= mouseY && mouseY < y + 10 + 18 * slotY + 16) {
+                                allowTooltip = true;
+                                ((ScreenMixinInterface)screen).renderTooltip2(poseStack, slot, mouseX, mouseY);
                             }
                         }
                     }
@@ -159,29 +196,31 @@ public class ShulkerTooltipController {
     }
 
     private void drawTexture(Matrix4f matrix, int x, int y, int width, int height, int z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
-        BufferBuilder bufferbuilder = Tessellator.getInstance().getBuilder();
-        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.enableDepthTest();
+        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         bufferbuilder.vertex(matrix, x, y, z).uv(1F * texX / texSizeX, 1F * texY / texSizeY).endVertex();
         bufferbuilder.vertex(matrix, x, y + height, z).uv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
         bufferbuilder.vertex(matrix, x + width, y + height, z).uv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
         bufferbuilder.vertex(matrix, x + width, y, z).uv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY).endVertex();
         bufferbuilder.end();
-        RenderSystem.enableAlphaTest();
-        WorldVertexBufferUploader.end(bufferbuilder);
+        BufferUploader.end(bufferbuilder);
     }
 
     private void renderSlot(ItemStack itemStack, int x, int y) {
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
         RenderSystem.enableDepthTest();
-        itemRenderer.blitOffset += 150; // I have no idea why 150, found after a lot of experimentation
-        itemRenderer.renderAndDecorateItem(Minecraft.getInstance().player, itemStack, x, y);
+        float oldOffset = itemRenderer.blitOffset;
+        itemRenderer.blitOffset = TranslateZ + 1;
+        itemRenderer.renderAndDecorateItem(itemStack, x, y, 1); // check last parameters
         itemRenderer.renderGuiItemDecorations(Minecraft.getInstance().font, itemStack, x, y, null);
-        itemRenderer.blitOffset -= 150;
-    }*/
+        itemRenderer.blitOffset = oldOffset;
+    }
 
     private void clearLocked() {
         locked = false;
-        lockedMatrix = null;
+        lockedPose = null;
         lockedStack = null;
     }
 

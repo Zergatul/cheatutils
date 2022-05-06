@@ -28,6 +28,9 @@ public class ApiHandler implements HttpHandler {
             apis.add(new EntityInfoApi());
             apis.add(new EntitiesConfigApi());
             apis.add(new LightLevelApi());
+            apis.add(new KillAuraApi());
+
+            apis.add(new BlockColorApi());
         }
     }
 
@@ -79,7 +82,7 @@ public class ApiHandler implements HttpHandler {
             response = api.get(parts[3]);
         }
         byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+        HttpHelper.setJsonContentType(exchange);
         exchange.sendResponseHeaders(200, data.length);
         OutputStream stream = exchange.getResponseBody();
         stream.write(data);
@@ -93,7 +96,7 @@ public class ApiHandler implements HttpHandler {
         String response = api.post(body);
 
         byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+        HttpHelper.setJsonContentType(exchange);
         exchange.sendResponseHeaders(200, data.length);
         OutputStream stream = exchange.getResponseBody();
         stream.write(data);
@@ -111,7 +114,7 @@ public class ApiHandler implements HttpHandler {
         api.put(parts[3], body);
 
         byte[] data = "{}".getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+        HttpHelper.setJsonContentType(exchange);
         exchange.sendResponseHeaders(200, data.length);
         OutputStream stream = exchange.getResponseBody();
         stream.write(data);
@@ -128,7 +131,7 @@ public class ApiHandler implements HttpHandler {
 
         String response = api.delete(parts[3]);
         byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=UTF-8");
+        HttpHelper.setJsonContentType(exchange);
         exchange.sendResponseHeaders(200, data.length);
         OutputStream stream = exchange.getResponseBody();
         stream.write(data);

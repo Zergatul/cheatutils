@@ -15,7 +15,8 @@ button:hover {
 }
 
 ul.blocks-list,
-ul.add-blocks-list {
+ul.entities-list,
+ul.add-block-list {
     list-style: none;
     width: 1000px;
     height: 400px;
@@ -28,7 +29,8 @@ ul.add-blocks-list {
 }
 
 ul.blocks-list > li,
-ul.add-blocks-list > li {
+ul.entities-list > li,
+ul.add-block-list > li {
     background: linear-gradient(0deg, #CCCCCC, #FFFFFF 50%, #CCCCCC 100%);
     display: flex;
     flex-direction: row;
@@ -36,23 +38,29 @@ ul.add-blocks-list > li {
 }
 
 ul.blocks-list > li + li,
-ul.add-blocks-list > li + li {
+ul.entities-list > li + li,
+ul.add-block-list > li + li {
     border-top: 1px solid #FFFFFF;
 }
 
-ul.blocks-list > li > div.c1 {
+ul.blocks-list > li > div.c1,
+ul.entities-list > li > div.c1 {
     flex: 2;
 }
 
-ul.blocks-list > li > div.c2 {
+ul.blocks-list > li > div.c2,
+ul.entities-list > li > div.c2 {
     flex: 10;
     display: flex;
     flex-direction: column;
 }
 
 ul.blocks-list > li > div.c3,
+ul.entities-list > li > div.c3,
 ul.blocks-list > li > div.c4,
-ul.blocks-list > li > div.c5 {
+ul.entities-list > li > div.c4,
+ul.blocks-list > li > div.c5,
+ul.entities-list > li > div.c5 {
     flex: 5;
     display: flex;
     font-size: 14px;
@@ -60,36 +68,39 @@ ul.blocks-list > li > div.c5 {
     justify-content: center;
 }
 
-ul.blocks-list > li > div.c6 {
+ul.blocks-list > li > div.c6,
+ul.entities-list > li > div.c6 {
     flex: 3;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-ul.add-blocks-list > li > div.c1 {
+ul.add-block-list > li > div.c1 {
     flex: 2;
 }
 
-ul.add-blocks-list > li > div.c2 {
+ul.add-block-list > li > div.c2 {
     flex: 25;
     display: flex;
     flex-direction: column;
 }
 
-ul.add-blocks-list > li > div.c3 {
+ul.add-block-list > li > div.c3 {
     flex: 3;
 }
 
-ul.blocks-list div.desc {
+ul.blocks-list div.desc,
+ul.entities-list div.desc {
     margin-right: 8px;
 }
 
-ul.blocks-list button.edit {
+ul.blocks-list button.edit,
+ul.entities-list button.edit {
     width: 80px;
 }
 
-ul.add-blocks-list button.edit {
+ul.add-block-list button.edit {
     width: 80px;
 }
 
@@ -275,4 +286,72 @@ legend > label {
 .group-setting > div {
     display: flex;
     align-items: center;
+}
+
+/* cube */
+div.perspective {
+    position: relative;
+    perspective: 900px;
+}
+
+ul.cube {
+    animation: rotateY linear infinite 5s;
+    list-style: none;
+    width: 24px;
+    height: 24px;
+    transform-style: preserve-3d;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    margin: 6px 12px;
+    padding: 0;
+}
+
+ul.cube > li {
+    background-size: 100%;
+    image-rendering: pixelated;
+    /*image-rendering: crisp-edges;*/
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+li.front {
+    transform: rotateY(30deg) rotateX(90deg) translateY(50%) rotateX(-90deg);
+}
+
+li.left {
+    transform: rotateY(30deg) translateX(-50%) rotateY(-90deg);
+}
+
+li.back {
+    transform: rotateY(30deg) rotateY(180deg) rotateX(90deg) translateY(50%) rotateX(-90deg);
+}
+
+li.right {
+    transform: rotateY(30deg) translateX(50%) rotateY(90deg);
+}
+
+li.top {
+    transform: rotateY(30deg) translateY(-50%) rotateX(90deg);
+}
+
+li.bottom {
+    transform: rotateY(30deg) translateY(50%) rotateX(-90deg);
+}
+
+/* copied */
+
+@keyframes rotateY {
+    from {
+        transform: rotateY(0) rotateX(45deg);
+    }
+    to {
+        transform: rotateY(359.99deg) rotateX(45deg);
+    }
 }

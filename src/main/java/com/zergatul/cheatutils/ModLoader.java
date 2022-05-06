@@ -20,6 +20,8 @@ public final class ModLoader {
         MinecraftForge.EVENT_BUS.register(LightLevelController.instance);
         MinecraftForge.EVENT_BUS.register(CustomCommandsController.instance);
         MinecraftForge.EVENT_BUS.register(ClientTickController.instance);
+        MinecraftForge.EVENT_BUS.register(KillAuraController.instance);
+        MinecraftForge.EVENT_BUS.register(DebugScreenController.instance);
         //MinecraftForge.EVENT_BUS.register(AutoDropController.instance);
         //MinecraftForge.EVENT_BUS.register(LavaCastBuilderController.instance);
 

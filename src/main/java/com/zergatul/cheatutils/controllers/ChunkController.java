@@ -1,16 +1,26 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.interfaces.ClientPacketListenerMixinInterface;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -18,114 +28,155 @@ public class ChunkController {
 
     public static final ChunkController instance = new ChunkController();
 
-    public final List<ChunkAccess> loadedChunks = new ArrayList<>();
-
     private final Minecraft mc = Minecraft.getInstance();
-    private final List<ChunkAccess> chunksToCheck = new ArrayList<>();
-    private final List<Consumer<ChunkAccess>> onChunkLoadedHandlers = new ArrayList<>();
-    private final List<Consumer<ChunkAccess>> onChunkUnLoadedHandlers = new ArrayList<>();
+    private final Logger logger = LogManager.getLogger(ChunkController.class);
+    private final Map<Long, LevelChunk> loadedChunks = new HashMap<>();
+    private final Map<Long, ChunkEntry> chunksMap = new HashMap<>();
+    private final List<Consumer<LevelChunk>> onChunkLoadedHandlers = new ArrayList<>();
+    private final List<Consumer<LevelChunk>> onChunkUnLoadedHandlers = new ArrayList<>();
     private final List<BiConsumer<BlockPos, BlockState>> onBlockChangedHandlers = new ArrayList<>();
 
     private ChunkController() {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
     }
 
-    public void addOnChunkLoadedHandler(Consumer<ChunkAccess> handler) {
-        synchronized (onChunkLoadedHandlers) {
-            onChunkLoadedHandlers.add(handler);
-        }
+    public synchronized void addOnChunkLoadedHandler(Consumer<LevelChunk> handler) {
+        onChunkLoadedHandlers.add(handler);
     }
 
-    public void addOnChunkUnLoadedHandler(Consumer<ChunkAccess> handler) {
-        synchronized (onChunkUnLoadedHandlers) {
-            onChunkUnLoadedHandlers.add(handler);
-        }
+    public synchronized void addOnChunkUnLoadedHandler(Consumer<LevelChunk> handler) {
+        onChunkUnLoadedHandlers.add(handler);
     }
 
-    public void addOnBlockChangedHandler(BiConsumer<BlockPos, BlockState> handler) {
-        synchronized (onBlockChangedHandlers) {
-            onBlockChangedHandlers.add(handler);
-        }
+    public synchronized void addOnBlockChangedHandler(BiConsumer<BlockPos, BlockState> handler) {
+        onBlockChangedHandlers.add(handler);
     }
 
-    public void clear() {
-        synchronized (chunksToCheck) {
-            chunksToCheck.clear();
-        }
-        synchronized (loadedChunks) {
-            loadedChunks.clear();
-        }
+    public synchronized List<LevelChunk> getLoadedChunks() {
+        return new ArrayList<>(loadedChunks.values());
     }
 
-    @SubscribeEvent
-    public void onChunkLoad(ChunkEvent.Load event) {
-        synchronized (chunksToCheck) {
-            chunksToCheck.add(event.getChunk());
-        }
+    public synchronized int getLoadedChunksCount() {
+        return loadedChunks.size();
     }
 
-    @SubscribeEvent
-    public void onChunkUnload(ChunkEvent.Unload event) {
-        synchronized (loadedChunks) {
-            loadedChunks.add(event.getChunk());
+    public synchronized void clear() {
+        loadedChunks.clear();
+    }
+
+    @SubscribeEvent()
+    public synchronized void onChunkLoad(ChunkEvent.Load event) {
+        if (event.getWorld() instanceof ServerLevel) {
+            return;
         }
-        synchronized (onChunkUnLoadedHandlers) {
-            for (Consumer<ChunkAccess> handler : onChunkUnLoadedHandlers) {
-                handler.accept(event.getChunk());
-            }
-        }
+        syncChunks();
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            if (mc.level == null) {
-                return;
-            }
-            while (true) {
-                ChunkAccess chunk = null;
-                synchronized (chunksToCheck) {
-                    if (chunksToCheck.size() > 0) {
-                        chunk = chunksToCheck.remove(chunksToCheck.size() - 1);
-                    }
-                }
+    public synchronized void onChunkUnload(ChunkEvent.Unload event) {
+        if (event.getWorld() instanceof ServerLevel) {
+            return;
+        }
+        syncChunks();
+    }
+
+    public synchronized void syncChunks() {
+        if (mc.level == null) {
+            clear();
+            return;
+        }
+
+        LocalPlayer player = FreeCamController.instance.isActive() ? FreeCamController.instance.getPlayer() : mc.player;
+
+        if (player == null) {
+            clear();
+            return;
+        }
+
+        chunksMap.clear();
+        for (LevelChunk chunk: loadedChunks.values()) {
+            chunksMap.put(chunk.getPos().toLong(), new ChunkEntry(chunk));
+        }
+
+        loadedChunks.clear();
+
+        var listener = (ClientPacketListenerMixinInterface) player.connection;
+        int storageRange = Math.max(2, listener.getServerChunkRadius()) + 3;
+        ChunkPos chunkPos = player.chunkPosition();
+        for (int dx = -storageRange; dx <= storageRange; dx++) {
+            for (int dz = -storageRange; dz <= storageRange; dz++) {
+                LevelChunk chunk = mc.level.getChunkSource().getChunk(chunkPos.x + dx, chunkPos.z + dz, false);
                 if (chunk != null) {
-                    synchronized (loadedChunks) {
-                        loadedChunks.add(chunk);
-                    }
-                    synchronized (onChunkLoadedHandlers) {
-                        for (Consumer<ChunkAccess> handler : onChunkLoadedHandlers) {
-                            handler.accept(chunk);
+                    long pos = chunk.getPos().toLong();
+                    ChunkEntry entry = chunksMap.get(pos);
+                    if (entry != null) {
+                        if (entry.chunk == chunk) {
+                            entry.exists = true;
+                            loadedChunks.put(pos, chunk);
+                        } else {
+                            invokeChunkUnloadHandlers(entry.chunk);
+                            loadedChunks.put(pos, chunk);
+                            invokeChunkLoadHandlers(chunk);
                         }
+                    } else {
+                        loadedChunks.put(pos, chunk);
+                        invokeChunkLoadHandlers(chunk);
                     }
-                } else {
-                    break;
                 }
+            }
+        }
+
+        for (ChunkEntry entry: chunksMap.values()) {
+            if (!entry.exists) {
+                invokeChunkUnloadHandlers(entry.chunk);
             }
         }
     }
 
     private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-
         if (args.packet instanceof ClientboundBlockUpdatePacket) {
-            ClientboundBlockUpdatePacket packet = (ClientboundBlockUpdatePacket) args.packet;
-            synchronized (onBlockChangedHandlers) {
-                for (BiConsumer<BlockPos, BlockState> handler : onBlockChangedHandlers) {
-                    handler.accept(packet.getPos(), packet.getBlockState());
-                }
-            }
+            processBlockUpdatePacket((ClientboundBlockUpdatePacket) args.packet);
         }
 
-        /*if (args.packet instanceof SMultiBlockChangePacket) {
-            SMultiBlockChangePacket packet = (SMultiBlockChangePacket)args.packet;
-            synchronized (onBlockChangedHandlers) {
-                packet.runUpdates((pos$mutable, state) -> {
-                    BlockPos pos = new BlockPos(pos$mutable.getX(), pos$mutable.getY(), pos$mutable.getZ());
-                    for (BiConsumer<BlockPos, BlockState> handler : onBlockChangedHandlers) {
-                        handler.accept(pos, state);
-                    }
-                });
+        if (args.packet instanceof ClientboundSectionBlocksUpdatePacket) {
+            processSectionBlocksUpdatePacket((ClientboundSectionBlocksUpdatePacket) args.packet);
+        }
+    }
+
+    private synchronized void processBlockUpdatePacket(ClientboundBlockUpdatePacket packet) {
+        for (var handler: onBlockChangedHandlers) {
+            handler.accept(packet.getPos(), packet.getBlockState());
+        }
+    }
+
+    private synchronized void processSectionBlocksUpdatePacket(ClientboundSectionBlocksUpdatePacket packet) {
+        packet.runUpdates((pos$mutable, state) -> {
+            BlockPos pos = new BlockPos(pos$mutable.getX(), pos$mutable.getY(), pos$mutable.getZ());
+            for (var handler: onBlockChangedHandlers) {
+                handler.accept(pos, state);
             }
-        }*/
+        });
+    }
+
+    private void invokeChunkLoadHandlers(LevelChunk chunk) {
+        for (Consumer<LevelChunk> handler: onChunkLoadedHandlers) {
+            handler.accept(chunk);
+        }
+    }
+
+    private void invokeChunkUnloadHandlers(LevelChunk chunk) {
+        for (Consumer<LevelChunk> handler: onChunkUnLoadedHandlers) {
+            handler.accept(chunk);
+        }
+    }
+
+    private static class ChunkEntry {
+        public LevelChunk chunk;
+        public boolean exists;
+
+        public ChunkEntry(LevelChunk chunk) {
+            this.chunk = chunk;
+            this.exists = false;
+        }
     }
 }

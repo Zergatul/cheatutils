@@ -160,6 +160,8 @@ public class RenderController {
         RenderSystem.enableCull();
         RenderSystem.enableTexture();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+        drawEnderPearlPath(event, view);
     }
 
     private void renderold(RenderLevelLastEvent event) {
@@ -436,7 +438,7 @@ public class RenderController {
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableTexture();
 
-            for (var chunk : ChunkController.instance.loadedChunks) {
+            for (var chunk : ChunkController.instance.getLoadedChunks()) {
                 BlockPos blockpos = new BlockPos(chunk.getPos().x * 16, 128, chunk.getPos().z * 16);
                 PoseStack posestack = RenderSystem.getModelViewStack();
                 posestack.pushPose();
@@ -716,19 +718,87 @@ public class RenderController {
     }
 
     private static double getEntityX(Entity entity, float partialTicks) {
-        return Mth.lerp(partialTicks, entity.xOld, entity.getX());
+        return Mth.lerp(partialTicks, entity.xo, entity.getX());
     }
 
     private static double getEntityY(Entity entity, float partialTicks) {
-        return Mth.lerp(partialTicks, entity.yOld, entity.getY());
+        return Mth.lerp(partialTicks, entity.yo, entity.getY());
     }
 
     private static double getEntityZ(Entity entity, float partialTicks) {
-        return Mth.lerp(partialTicks, entity.zOld, entity.getZ());
+        return Mth.lerp(partialTicks, entity.zo, entity.getZ());
     }
 
-    public static void setColor(Color color) {
-        GL11.glColor4f(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F, color.getAlpha() / 255F);
+    private  void drawEnderPearlPath(RenderLevelLastEvent event, Vec3 view) {
+        if (EnderPearlPathController.instance.shouldDrawPath()) {
+            float partialTick = event.getPartialTick();
+
+            double x = getEntityX(mc.player, partialTick);
+            double y = getEntityY(mc.player, partialTick) + mc.player.getEyeHeight() - 0.1;
+            double z = getEntityZ(mc.player, partialTick);
+            float xRot = mc.player.getViewXRot(partialTick);
+            float yRot = mc.player.getViewYRot(partialTick);
+
+            double shiftX = -Mth.sin((yRot + 90) * ((float)Math.PI / 180F));
+            double shiftZ = Mth.cos((yRot + 90) * ((float)Math.PI / 180F));
+
+            float speedX = -Mth.sin(yRot * ((float)Math.PI / 180F)) * Mth.cos(xRot * ((float)Math.PI / 180F));
+            float speedY = -Mth.sin(xRot * ((float)Math.PI / 180F));
+            float speedZ = Mth.cos(yRot * ((float)Math.PI / 180F)) * Mth.cos(xRot * ((float)Math.PI / 180F));
+
+            Vec3 movement = new Vec3(speedX, speedY, speedZ).normalize().scale(1.5d);
+            /*Vec3 vec = mc.player.getDeltaMovement();
+            movement = movement.add(vec.x, mc.player.isOnGround() ? 0.0D : vec.y, vec.z);*/
+
+            var tesselator = Tesselator.getInstance();
+            var buffer = tesselator.getBuilder();
+            buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+
+            float stepSize = 0.1f;
+            int steps = 1000;
+            for (int i = 0; i <= steps; i++) {
+                x += movement.x * stepSize;
+                y += movement.y * stepSize;
+                z += movement.z * stepSize;
+                movement = new Vec3(movement.x, movement.y - 0.03F * stepSize, movement.z);
+                double px = x + shiftX / (20 + i);
+                double py = y;
+                double pz = z + shiftZ / (20 + i);
+
+                if (i > 0) {
+                    buffer.vertex(px, py, pz).color(1f, 1f, 1f, 1f).endVertex();
+                }
+                if (i < steps) {
+                    buffer.vertex(px, py, pz).color(1f, 1f, 1f, 1f).endVertex();
+                }
+            }
+
+            buffer.end();
+
+            vertexBuffer.upload(buffer);
+
+            RenderSystem.depthMask(false);
+            RenderSystem.disableCull();
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableTexture();
+            GL11.glEnable(GL11.GL_LINE_SMOOTH);
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+            PoseStack poseStack = event.getPoseStack();
+            poseStack.pushPose();
+            poseStack.translate(-view.x, -view.y, -view.z);
+            var shader = GameRenderer.getPositionColorShader();
+            vertexBuffer.drawWithShader(poseStack.last().pose(), event.getProjectionMatrix().copy(), shader);
+            poseStack.popPose();
+
+            RenderSystem.depthMask(true);
+            RenderSystem.disableBlend();
+            RenderSystem.enableCull();
+            RenderSystem.enableTexture();
+
+            //x -= Math.sin(yRot) * Math.cos(xRot) * drawBeforeCameraDist
+        }
     }
 
 }

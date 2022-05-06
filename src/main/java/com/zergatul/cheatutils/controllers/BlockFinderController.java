@@ -2,12 +2,14 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.utils.ThreadLoadCounter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +30,7 @@ public class BlockFinderController {
     private final Object loopWaitEvent = new Object();
     private Thread eventLoop;
     private Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+    private ThreadLoadCounter counter = new ThreadLoadCounter();
 
     private BlockFinderController() {
         ChunkController.instance.addOnChunkLoadedHandler(this::scanChunk);
@@ -43,18 +46,23 @@ public class BlockFinderController {
         eventLoop = new Thread(() -> {
             try {
                 while (true) {
+                    counter.startWait();
                     synchronized (loopWaitEvent) {
                         loopWaitEvent.wait();
                     }
+                    counter.startLoad();
                     while (queue.size() > 0) {
                         Runnable process = queue.remove();
                         process.run();
-                        Thread.sleep(5);
+                        Thread.yield();
                     }
                 }
             }
             catch (InterruptedException e) {
                 // do nothing
+            }
+            finally {
+                counter.dispose();
             }
         });
 
@@ -81,23 +89,25 @@ public class BlockFinderController {
         }
     }
 
-    private void unloadChunk(ChunkAccess chunk) {
-        queue.add(() -> {
-            int cx = chunk.getPos().x;
-            int cz = chunk.getPos().z;
-            synchronized (blocks) {
-                for (HashSet<BlockPos> set : blocks.values()) {
-                    set.removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getZ() >> 4) == cz);
-                }
-            }
-        });
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
-        }
+    public double getScanningThreadLoadPercent() {
+        return 100d * counter.getLoad(1);
+    }
+
+    public int getScanningQueueCount() {
+        return queue.size();
     }
 
     private void scanChunk(ChunkAccess chunk) {
+        //logger.debug("Adding scan chunk {}", chunk.getPos());
         queue.add(() -> {
+            while (chunk.getStatus() != ChunkStatus.FULL) {
+                // TODO: check better way
+                try {
+                    Thread.sleep(30);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             int xc = chunk.getPos().x << 4;
             int zc = chunk.getPos().z << 4;
             for (int x = 0; x < 16; x++) {
@@ -110,6 +120,22 @@ public class BlockFinderController {
                         BlockState state = chunk.getBlockState(pos);
                         checkBlock(state, pos);
                     }
+                }
+            }
+        });
+        synchronized (loopWaitEvent) {
+            loopWaitEvent.notify();
+        }
+    }
+
+    private void unloadChunk(ChunkAccess chunk) {
+        //logger.debug("Adding unload chunk {}", chunk.getPos());
+        queue.add(() -> {
+            int cx = chunk.getPos().x;
+            int cz = chunk.getPos().z;
+            synchronized (blocks) {
+                for (HashSet<BlockPos> set : blocks.values()) {
+                    set.removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getZ() >> 4) == cz);
                 }
             }
         });
@@ -132,16 +158,6 @@ public class BlockFinderController {
         }
     }
 
-    public void scan() {
-        clear();
-
-        synchronized (ChunkController.instance.loadedChunks) {
-            for (ChunkAccess chunk : ChunkController.instance.loadedChunks) {
-                scanChunk(chunk);
-            }
-        }
-    }
-
     public void scan(BlockTracerConfig config) {
 
         ResourceLocation id = config.block.getRegistryName();
@@ -152,17 +168,15 @@ public class BlockFinderController {
             }
         }
 
-        synchronized (ChunkController.instance.loadedChunks) {
-            for (ChunkAccess chunk : ChunkController.instance.loadedChunks) {
-                scanChunkForBlock(chunk, id);
-                logger.debug("Queued scan for block {} in chunk {}", id, chunk.getPos());
-            }
+        for (ChunkAccess chunk : ChunkController.instance.getLoadedChunks()) {
+            scanChunkForBlock(chunk, id);
+            //logger.debug("Queued scan for block {} in chunk {}", id, chunk.getPos());
         }
     }
 
     private void scanChunkForBlock(ChunkAccess chunk, ResourceLocation id) {
         queue.add(() -> {
-            logger.debug("Scanning for block {} in chunk {}", id, chunk.getPos());
+            //logger.debug("Scanning for block {} in chunk {}", id, chunk.getPos());
             int xc = chunk.getPos().x << 4;
             int zc = chunk.getPos().z << 4;
             for (int x = 0; x < 16; x++) {

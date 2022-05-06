@@ -14,8 +14,8 @@ public class KeyBindingsController {
     public static final String category = "Zergatul Cheat Utils";
 
     public static KeyMapping toggleEsp = new KeyMapping("Toggle ESP", GLFW.GLFW_KEY_BACKSLASH, category);
-    public static KeyMapping openConfig = new KeyMapping("Copy config URL", GLFW.GLFW_KEY_Z, category);
-    public static KeyMapping quickCommand = new KeyMapping("Quick command", GLFW.GLFW_KEY_X, category);
+    //public static KeyMapping openConfig = new KeyMapping("Copy config URL", GLFW.GLFW_KEY_Z, category);
+    //public static KeyMapping quickCommand = new KeyMapping("Quick command", GLFW.GLFW_KEY_X, category);
     public static KeyMapping toggleFreeCam = new KeyMapping("Toggle free cam", GLFW.GLFW_KEY_F6, category);
 
     private Minecraft mc = Minecraft.getInstance();
@@ -26,8 +26,8 @@ public class KeyBindingsController {
 
     public void setup() {
         ClientRegistry.registerKeyBinding(toggleEsp);
-        ClientRegistry.registerKeyBinding(openConfig);
-        ClientRegistry.registerKeyBinding(quickCommand);
+        //ClientRegistry.registerKeyBinding(openConfig);
+        //ClientRegistry.registerKeyBinding(quickCommand);
         ClientRegistry.registerKeyBinding(toggleFreeCam);
     }
 
@@ -59,12 +59,12 @@ public class KeyBindingsController {
             return;
         }
 
-        if (KeyBindingsController.quickCommand.isDown()) {
+        /*if (KeyBindingsController.quickCommand.isDown()) {
             if (!HardSwitchController.instance.isTurnedOff()) {
                 mc.player.chat("/home");
             }
             return;
-        }
+        }*/
 
         if (KeyBindingsController.toggleFreeCam.isDown()) {
             if (!HardSwitchController.instance.isTurnedOff()) {

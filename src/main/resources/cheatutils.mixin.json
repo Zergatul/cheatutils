@@ -7,9 +7,12 @@
   "mixins": [
     "MixinBrandingControl",
     "MixinCamera",
+    "MixinClientChunkCache",
     "MixinClientPacketListener",
     "MixinClientboundPlayerInfoPacket",
     "MixinEntity",
-    "MixinMinecraft"
+    "MixinLocalPlayer",
+    "MixinMinecraft",
+    "MixinScreen"
   ]
 }

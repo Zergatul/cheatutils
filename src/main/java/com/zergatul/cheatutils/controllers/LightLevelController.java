@@ -53,10 +53,8 @@ public class LightLevelController {
         if (active != value) {
             active = value;
             if (active) {
-                synchronized (ChunkController.instance.loadedChunks) {
-                    for (ChunkAccess chunk : ChunkController.instance.loadedChunks) {
-                        onChunkLoaded(chunk);
-                    }
+                for (ChunkAccess chunk : ChunkController.instance.getLoadedChunks()) {
+                    onChunkLoaded(chunk);
                 }
             } else {
                 queue.clear();

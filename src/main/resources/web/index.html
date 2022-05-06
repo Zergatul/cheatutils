@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Zergatul Cheat Utils</title>
     <link rel="stylesheet" type="text/css" href="app.css">
-    <script src="https://unpkg.com/vue@next"></script>
+    <!-- https://unpkg.com/vue@next -->
+    <script src="vue.global.js"></script>
     <script src="axios.js"></script>
 </head>
 <body>
@@ -12,7 +13,7 @@
     <div id="vue-app">
 
         <div v-if="current == 'main'">
-            <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: 16px; display: none;">
                 <input type="text" v-model="newname">
                 <button v-on:click="changeName()">Change Name</button>
             </div>
@@ -30,14 +31,14 @@
                     v-on:change="updateAutoFish()">
                 <label class="toggle" for="autofish"></label>
             </div>
-            <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: 16px; display: none;">
                 <span class="text">Hold Use Key:</span>
                 <input type="checkbox" class="toggle" id="holdusekey"
                        v-model="holdUseKey"
                        v-on:change="updateHoldUseKey()">
                 <label class="toggle" for="holdusekey"></label>
             </div>
-            <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: 16px; display: none;">
                 <span class="text">Light Level</span>
                 <span class="text">Active (scan blocks in background):</span>
                 <input type="checkbox" class="toggle" id="lightLevel-active"
@@ -54,7 +55,8 @@
             </div>
             <button v-on:click="openBlocksConfig()" :disabled="blocksMap == null">Blocks Config</button>
             <button v-on:click="openEntitiesConfig()" :disabled="entitiesMap == null">Entities Config</button>
-            <div style="padding-top: 16px;">
+            <button v-on:click="openKillAuraConfig()">Kill Aura Config</button>
+            <div style="padding-top: 16px; display: none;">
                 <button v-on:click="hardSwitch()">Hard Switch</button>
             </div>
         </div>
@@ -65,10 +67,8 @@
                 <button style="width: 200px;" v-on:click="openAddBlockConfig()">Add Block</button>
             </div>
             <ul class="blocks-list">
-                <li v-for="item in blocksConfigList" :key="item.blockId">
-                    <div class="c1">
-                        img
-                    </div>
+                <li v-for="item in blocksConfigList" :key="item.blockId" v-bind="{ 'data-id': item.blockId }">
+                    <div class="c1"></div>
                     <div class="c2">
                         <div>{{ blocksMap[item.blockId].name }}</div>
                         <div class="smaller">{{ item.blockId }} #{{ blocksMap[item.blockId].integerId }}</div>
@@ -114,11 +114,9 @@
                     v-model="search"
                     v-on:input="filterBlockList()">
             </div>
-            <ul class="add-blocks-list">
-                <li v-for="item in blockListFiltered" :key="item.id">
-                    <div class="c1">
-                        img
-                    </div>
+            <ul class="add-block-list">
+                <li v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
+                    <div class="c1"></div>
                     <div class="c2">
                         <div>{{ item.name }}</div>
                         <div class="smaller">{{ item.id }} #{{ item.integerId }}</div>
@@ -235,9 +233,9 @@
                 <button style="width: 200px;" v-on:click="backToMain()">Back</button>
                 <button style="width: 200px;" v-on:click="openAddEntityConfig()">Add Entity</button>
             </div>
-            <ul class="blocks-list">
+            <ul class="entities-list">
                 <li v-for="item in entitiesConfigList" :key="item.className">
-                    <div class="c1">
+                    <div class="c1" style="display: none;">
                         img
                     </div>
                     <div class="c2">
@@ -289,9 +287,9 @@
                     v-model="search"
                     v-on:input="filterEntityList()">
             </div>
-            <ul class="add-blocks-list">
+            <ul class="add-block-list">
                 <li v-for="item in entityListFiltered" :key="item.className">
-                    <div class="c1">
+                    <div class="c1" style="display: none;">
                         img
                     </div>
                     <div class="c2">
@@ -419,6 +417,21 @@
                     </div>
                 </div>
             </fieldset>
+        </div>
+
+        <div v-if="current == 'kill-aura-config'">
+            <div>
+                <button style="width: 200px;" v-on:click="backToMain()">Back</button>
+            </div>
+            <div style="padding-top: 16px;">
+                <span class="text">Active:</span>
+                <input type="checkbox" class="toggle" id="killaura-active"
+                    v-model="killAuraConfig.active"
+                    v-on:change="updateKillAura()">
+                <label class="toggle" for="killaura-active"></label>
+                <span class="text">Max Range:</span>
+                <input type="text" v-model="killAuraConfig.maxRange" v-on:change="updateKillAura()">
+            </div>
         </div>
 
     </div>

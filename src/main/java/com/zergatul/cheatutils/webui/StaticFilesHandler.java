@@ -3,10 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 public class StaticFilesHandler implements HttpHandler {
 
@@ -21,7 +18,7 @@ public class StaticFilesHandler implements HttpHandler {
         }
 
         byte[] bytes;
-        try (InputStream stream = loadFromFile("web" + filename)) {
+        try (InputStream stream = loadFromResource("web" + filename)) {
 
             if (stream == null) {
                 exchange.sendResponseHeaders(404, 0);
@@ -39,6 +36,8 @@ public class StaticFilesHandler implements HttpHandler {
             return;
         }
 
+        HttpHelper.setContentType(exchange, filename);
+
         exchange.sendResponseHeaders(200, bytes.length);
         OutputStream os = exchange.getResponseBody();
         os.write(bytes);
@@ -48,7 +47,7 @@ public class StaticFilesHandler implements HttpHandler {
     }
 
     private static InputStream loadFromResource(String filename) {
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        ClassLoader classLoader = StaticFilesHandler.class.getClassLoader();
         return classLoader.getResourceAsStream(filename);
     }
 

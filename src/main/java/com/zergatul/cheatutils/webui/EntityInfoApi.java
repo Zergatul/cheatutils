@@ -11,6 +11,7 @@ import net.minecraft.world.entity.monster.hoglin.*;
 import net.minecraft.world.entity.monster.piglin.*;
 import net.minecraft.world.entity.npc.*;
 import net.minecraft.world.entity.player.*;
+import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.vehicle.*;
 import org.apache.http.MethodNotSupportedException;
 
@@ -36,8 +37,10 @@ public class EntityInfoApi extends ApiBase {
         AbstractChestedHorse.class,
         AbstractHorse.class,
         AbstractMinecartContainer.class,
+        AbstractIllager.class,
         AbstractPiglin.class,
         TamableAnimal.class,
+        Raider.class,
 
         // final classes
         ArmorStand.class,
