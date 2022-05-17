@@ -26,11 +26,11 @@
                     <button @click="openAddNew()">Add New</button>
                 </div>
                 <ul class="kill-aura-priority-list" v-if="state == 'list'">
-                    <li v-for="entry in config.priorities">
+                    <li v-for="(entry, index) in config.priorities">
                         <span class="text">{{ entry }}</span>
-                        <button>Move Up</button>
-                        <button>Move Down</button>
-                        <button @click="removePriorityEntry(entry)">Remove</button>
+                        <button @click="moveUp(index)">Move Up</button>
+                        <button @click="moveDown(index)">Move Down</button>
+                        <button @click="removePriorityEntry(index)">Remove</button>
                     </li>
                 </ul>
                 <div v-if="state == 'add'">

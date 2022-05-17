@@ -35,17 +35,31 @@ function createComponent(template) {
                     return entry.name.indexOf(search) >= 0;
                 });
             },
+            moveDown(index) {
+                if (index < this.config.priorities.length - 1) {
+                    this.swapPriorities(index, index - 1);
+                    this.update();
+                }
+            },
+            moveUp(index) {
+                if (index > 0) {
+                    this.swapPriorities(index, index - 1);
+                    this.update();
+                }
+            },
             openAddNew() {
                 this.state = 'add';
                 this.search = '';
                 this.filterPriorityList();
             },
-            removePriorityEntry(name) {
-                let index = this.config.priorities.indexOf(name);
-                if (index >= 0) {
-                    this.config.priorities.splice(index, 1);
-                }
+            removePriorityEntry(index) {
+                this.config.priorities.splice(index, 1);
                 this.update();
+            },
+            swapPriorities(index1, index2) {
+                let item = this.config.priorities[index1];
+                this.config.priorities[index1] = this.config.priorities[index2];
+                this.config.priorities[index2] = item;
             },
             update() {
                 let self = this;

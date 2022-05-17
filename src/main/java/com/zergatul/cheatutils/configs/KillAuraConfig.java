@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.monster.*;
@@ -50,6 +51,7 @@ public class KillAuraConfig {
         public static final PriorityEntry flyingMobs = new PriorityEntry("Flying mobs", "Ghasts and Phantoms", FlyingMob.class);
         public static final PriorityEntry shulkers = new PriorityEntry("Shulkers", null, Shulker.class);
         public static final PriorityEntry shulkerBullets = new PriorityEntry("Shulker Bullets", null, ShulkerBullet.class);
+        public static final PriorityEntry players = new PriorityEntry("Players", null, RemotePlayer.class);
 
         public final String name;
         public final String description;
