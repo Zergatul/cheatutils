@@ -129,7 +129,7 @@ public class EntityInfoApi extends ApiBase {
 
     private static class EntityInfo {
 
-        public String className;
+        public Class clazz;
         public String simpleName;
         public List<String> baseClasses;
 
@@ -139,13 +139,13 @@ public class EntityInfoApi extends ApiBase {
                 throw new Exception("Not supported");
             }
 
-            className = clazz.getName();
-            simpleName = clazz.getSimpleName();
+            this.clazz = clazz;
+            this.simpleName = clazz.getSimpleName();
 
-            baseClasses = new ArrayList<>();
+            this.baseClasses = new ArrayList<>();
             while (clazz != Entity.class) {
                 clazz = clazz.getSuperclass();
-                baseClasses.add(clazz.getSimpleName());
+                this.baseClasses.add(clazz.getSimpleName());
             }
 
         }

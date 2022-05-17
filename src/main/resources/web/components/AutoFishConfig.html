@@ -1,0 +1,19 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Auto Fish</legend>
+        <div class="description">
+            To start automatic fishing, throw fishing bobber once. To stop you can pull bobber manually or disable it.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+    </fieldset>
+</div>

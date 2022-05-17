@@ -1,0 +1,23 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Boat Hack</legend>
+        <div class="description">
+            Allows you override friction, so your boat can move faster. Regular blocks friction = 0.6. Packed ice friction = 0.98. Most servers have protection against hack. However you can slightly increase friction to get some extra speed.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.overrideFriction"
+                    @change="update()">
+                <span>Override friction</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Friction:</span>
+            <input type="text" v-model="config.friction" @change="update()">
+        </div>
+    </fieldset>
+</div>

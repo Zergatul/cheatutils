@@ -9,16 +9,8 @@ public class FullBrightController {
 
     private final Minecraft mc = Minecraft.getInstance();
 
-    public void apply(Boolean value) {
-        if (value) {
-            mc.options.gamma = 15.0F;
-        } else {
-            mc.options.gamma = 1.0F;
-        }
-    }
-
     public void apply() {
-        if (ConfigStore.instance.fullBright) {
+        if (ConfigStore.instance.getConfig().fullBrightConfig.enabled) {
             mc.options.gamma = 15.0F;
         } else {
             mc.options.gamma = 1.0F;

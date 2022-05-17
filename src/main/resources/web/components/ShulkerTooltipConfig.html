@@ -1,0 +1,19 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Shulker Tooltip</legend>
+        <div class="description">
+            Hover mouse cursor over shulker box in inventory to see shulker content. Hold Ctrl while tooltip is active to lock tooltip in place. After this you can hover mouse cursor over items in shulker box.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+    </fieldset>
+</div>

@@ -1,0 +1,19 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>End City Chunks</legend>
+        <div class="description">
+            Highlights chunks where End Cities can generate. Chunk groups 9x9 size will be highlighted with transparent green layers, and center chunks highlighted with yellow. This helps you to move in direction of yellow path moving from one group to another.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+    </fieldset>
+</div>

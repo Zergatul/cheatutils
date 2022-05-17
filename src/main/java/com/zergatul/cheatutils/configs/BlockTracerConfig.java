@@ -8,14 +8,7 @@ public class BlockTracerConfig extends TracerConfigBase {
 
     public Block block;
 
-    public JsonBlockTracerConfig convert() {
-        JsonBlockTracerConfig config = new JsonBlockTracerConfig();
-        config.blockId = block.getRegistryName().toString();
-        super.convert(config);
-        return config;
-    }
-
-    public void copyFrom(JsonBlockTracerConfig jsonConfig) {
+    public void copyFrom(BlockTracerConfig jsonConfig) {
         copyFromJsonTracerConfigBase(jsonConfig);
     }
 

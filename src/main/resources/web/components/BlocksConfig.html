@@ -1,0 +1,173 @@
+<div>
+    <div v-if="state == 'list'">
+        <div>
+            <button style="width: 200px;" @click="$emit('back')">Back</button>
+            <button style="width: 200px;" @click="openAdd()">Add Block</button>
+        </div>
+        <ul class="blocks-list">
+            <li v-for="item in blocksConfigList" :key="item.block" v-bind="{ 'data-id': item.block }">
+                <div class="c1"></div>
+                <div class="c2">
+                    <div>{{ blocksMap[item.block].name }}</div>
+                    <div class="smaller">{{ item.block }} #{{ blocksMap[item.block].integerId }}</div>
+                </div>
+                <div class="c3">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="item.enabled"
+                            @change="update(item)">
+                        <span>Enabled</span>
+                    </label>
+                </div>
+                <div class="c4">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="item.drawTracers"
+                            @change="update(item)">
+                        <color-box :color="item.tracerColor"></color-box>
+                        <span>Tracers</span>
+                    </label>
+                </div>
+                <div class="c5">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="item.drawOutline"
+                            @change="update(item)">
+                        <color-box :color="item.outlineColor"></color-box>
+                        <span>Outline</span>
+                    </label>
+                </div>
+                <div class="c6">
+                    <button class="edit" @click="openEdit(item.block)">Edit</button>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div v-if="state == 'add'">
+        <div style="padding-bottom: 16px;">
+            <button style="width: 200px;" @click="backToList()">Back</button>
+        </div>
+        <div>
+            <span class="text">Filter:</span>
+            <input type="text" class="search"
+                v-model="search"
+                @input="filterBlockList()">
+        </div>
+        <ul class="add-block-list">
+            <li v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
+                <div class="c1"></div>
+                <div class="c2">
+                    <div>{{ item.name }}</div>
+                    <div class="smaller">{{ item.id }} #{{ item.integerId }}</div>
+                </div>
+                <div class="c3">
+                    <button class="edit" v-bind:class="{ 'button-highlight': blocksConfigMap[item.id] }" @click="openEdit(item.id)">
+                        {{ blocksConfigMap[item.id] ? 'Edit' : 'Add' }}
+                    </button>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div v-if="state == 'edit'">
+        <div>
+            <button style="width: 200px;" @click="backToList()">Back</button>
+            <button style="width: 200px;" @click="remove()">Delete</button>
+        </div>
+        <div v-if="selectedConfig">
+            <div class="edit-block-header">
+                <div>{{ blocksMap[selectedConfig.block].name }}</div>
+                <div class="smaller">{{ selectedConfig.block }} #{{ blocksMap[selectedConfig.block].integerId }}</div>
+            </div>
+            <div class="edit-block-settings">
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="selectedConfig.enabled"
+                        @change="update(selectedConfig)">
+                    <span>Enabled</span>
+                </label>
+            </div>
+            <div>
+                <span class="text">Max Distance:</span>
+                <input type="text" v-model="selectedConfig.maxDistance" @change="update(selectedConfig)">
+            </div>
+            <fieldset style="margin-top: 16px;">
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="selectedConfig.drawTracers"
+                            @change="update(selectedConfig)">
+                        <span>Tracers</span>
+                    </label>
+                </legend>
+                <div style="display: flex;">
+                    <div class="color-picker-container">
+                        <color-picker
+                            v-model="selectedConfig.tracerColor"
+                            @update:model-value="update(selectedConfig)">
+                        </color-picker>
+                    </div>
+                    <div class="group-setting" style="display: none;">
+                        <div>
+                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
+                            <div style="display: inline-block; width: 400px;">
+                                <div class="slidercontainer">
+                                    <input type="range" min="1" max="10" step="1" class="slider"
+                                        v-model="selectedConfig.tracerLineWidth"
+                                        @change="update(selectedConfig)">
+                                </div>
+                            </div>
+                            <div style="display: inline-block; padding-left: 16px;">
+                                {{ selectedConfig.tracerLineWidth }}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text" style="width: 100px; text-align: right;">Line style:</span>
+                            <select
+                                v-model="selectedConfig.tracerLineStyle"
+                                @change="update(selectedConfig)">
+                                <option value="0">Solid</option>
+                                <option value="61680">Dashed (0xF0F0)</option>
+                                <option value="4112">Dotted (0x1010)</option>
+                                <option value="4336">Dot Dash (0x10F0)</option>
+                                <option value="65520">Long Dash (0xFFF0)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="selectedConfig.drawOutline"
+                            @change="update(selectedConfig)">
+                        <span>Outline</span>
+                    </label>
+                </legend>
+                <div style="display: flex;">
+                    <div class="color-picker-container">
+                        <color-picker
+                            v-model="selectedConfig.outlineColor"
+                            @update:model-value="update(selectedConfig)">
+                        </color-picker>
+                    </div>
+                    <div class="group-setting" style="display: none;">
+                        <div>
+                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
+                            <div style="display: inline-block; width: 400px;">
+                                <div class="slidercontainer">
+                                    <input type="range" min="1" max="10" step="1" class="slider"
+                                        v-model="selectedConfig.outlineLineWidth"
+                                        @change="update(selectedConfig)">
+                                </div>
+                            </div>
+                            <div style="display: inline-block; padding-left: 16px;">
+                                {{ selectedConfig.outlineLineWidth }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

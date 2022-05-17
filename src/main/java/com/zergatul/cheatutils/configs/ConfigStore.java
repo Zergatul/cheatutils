@@ -2,178 +2,130 @@ package com.zergatul.cheatutils.configs;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.zergatul.cheatutils.controllers.BlockFinderController;
+import com.zergatul.cheatutils.configs.adapters.*;
+import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
 import com.zergatul.cheatutils.controllers.FullBrightController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.awt.*;
 import java.io.*;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 public class ConfigStore {
 
     public static final ConfigStore instance = new ConfigStore();
 
     private static final String FILE = "zergatulcheatutils.json";
+    private static long WRITE_FILE_DELAY = 15 * 1000000000L;
 
-    public boolean esp;
-    public boolean fullBright;
-    public boolean autoFish;
-    public boolean holdUseKey;
-    public final List<BlockTracerConfig> blocks = new ArrayList<>();
-    public final List<EntityTracerConfig> entities = new ArrayList<>();
-    public LightLevelConfig lightLevelConfig = new LightLevelConfig();
-    public KillAuraConfig killAuraConfig = KillAuraConfig.createDefault();
+    public final Gson gson = new GsonBuilder()
+            .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
+            .registerTypeAdapter(Class.class, new ClassTypeAdapter())
+            .registerTypeAdapter(Color.class, new ColorTypeAdapter())
+            .registerTypeAdapter(KillAuraConfig.PriorityEntry.class, new KillAuraConfig$PriorityEntryTypeAdapter())
+            .setPrettyPrinting()
+            .create();
 
-    private final File file;
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private Config config;
+    private final Logger logger = LogManager.getLogger(ConfigStore.class);
+    private final Thread thread;
+    private final Object writeEvent = new Object();
+    private volatile long lastWriteRequest = 0;
 
     private ConfigStore() {
-
-        File configDir = new File(Minecraft.getInstance().gameDirectory, "config");
-
-        if (!configDir.exists()) {
-            configDir.mkdirs();
-        }
-
-        file = new File(configDir.getPath(), FILE);
-        read();
+        config = new Config();
+        thread = new Thread(this::delayedWriteThreadFunc);
+        thread.start();
     }
 
-    public void addBlock(BlockTracerConfig config) {
-        synchronized (blocks) {
-            blocks.add(config);
-        }
-        synchronized (BlockFinderController.instance.blocks) {
-            BlockFinderController.instance.blocks.put(config.block.getRegistryName(), new HashSet<>());
-        }
-    }
-
-    public void removeBlock(BlockTracerConfig config) {
-        synchronized (blocks) {
-            blocks.remove(config);
-        }
-        synchronized (BlockFinderController.instance.blocks) {
-            BlockFinderController.instance.blocks.remove(config.block.getRegistryName());
-        }
-    }
-
-    public void addEntity(EntityTracerConfig config) {
-        synchronized (entities) {
-            entities.add(config);
-        }
-    }
-
-    public void removeEntity(EntityTracerConfig config) {
-        synchronized (entities) {
-            entities.remove(config);
-        }
+    public Config getConfig() {
+        return config;
     }
 
     public void read() {
-
+        File file = getFile();
         if (file.exists()) {
-
-            int size = blocks.size();
-            for (int i = 0; i < size; i++) {
-                removeBlock(blocks.get(0));
-            }
-
+            Config readCfg = null;
             try {
-                Type type = new TypeToken<JsonConfig>() {}.getType();
                 BufferedReader reader = new BufferedReader(new FileReader(file));
-                JsonConfig jsonConfig = gson.fromJson(reader, type);
-
-                esp = jsonConfig.esp;
-                fullBright = jsonConfig.fullBright;
-                autoFish = jsonConfig.autoFish;
-                holdUseKey = jsonConfig.holdUseKey;
-                FullBrightController.instance.apply(fullBright);
-
-                if (jsonConfig.lightLevelConfig != null) {
-                    lightLevelConfig = jsonConfig.lightLevelConfig;
-                }
-                LightLevelController.instance.setActive(lightLevelConfig.active);
-
-                if (jsonConfig.blocks == null) {
-                    setDefaultBlocks();
-                } else {
-                    for (JsonBlockTracerConfig config : jsonConfig.blocks) {
-                        addBlock(config.convert());
-                    }
-                }
-
-                if (jsonConfig.entities == null) {
-                    setDefaultEntities();
-                } else {
-                    for (JsonEntityTracerConfig config : jsonConfig.entities) {
-                        addEntity(config.convert());
-                    }
-                }
-
+                readCfg = gson.fromJson(reader, Config.class);
                 reader.close();
-            }
-            catch (IOException e) {
+            } catch (Exception e) {
+                logger.warn("Cannot read config");
                 e.printStackTrace();
             }
 
-        } else {
-            esp = true;
-            fullBright = false;
-            autoFish = false;
-            holdUseKey = false;
-            setDefaultBlocks();
-        }
-
-    }
-
-    public JsonConfig toJson() {
-        JsonConfig jsonConfig = new JsonConfig();
-        jsonConfig.esp = esp;
-        jsonConfig.fullBright = fullBright;
-        jsonConfig.autoFish = autoFish;
-        jsonConfig.holdUseKey = holdUseKey;
-        jsonConfig.blocks = new ArrayList<>();
-        jsonConfig.entities = new ArrayList<>();
-        synchronized (blocks) {
-            for (BlockTracerConfig blockConfig : blocks) {
-                jsonConfig.blocks.add(blockConfig.convert());
+            if (readCfg != null) {
+                config = readCfg;
             }
         }
-        synchronized (entities) {
-            for (EntityTracerConfig entityConfig : entities) {
-                jsonConfig.entities.add(entityConfig.convert());
-            }
-        }
-        return jsonConfig;
+
+        onConfigChanged();
     }
 
-    public void write() {
-        JsonConfig jsonConfig = toJson();
+    public void requestWrite() {
+        lastWriteRequest = System.nanoTime();
+        synchronized (writeEvent) {
+            writeEvent.notify();
+        }
+    }
+
+    private void delayedWriteThreadFunc() {
+        boolean writeQeued = false;
+        try {
+            while (true) {
+                writeQeued = false;
+                synchronized (writeEvent) {
+                    writeEvent.wait();
+                }
+                writeQeued = true;
+                long lastValue = lastWriteRequest;
+                Thread.sleep(WRITE_FILE_DELAY / 1000000);
+                while (lastWriteRequest != lastValue) {
+                    lastValue = lastWriteRequest;
+                    long waitNs = lastWriteRequest + WRITE_FILE_DELAY - System.nanoTime();
+                    Thread.sleep(waitNs / 1000000);
+                }
+                write();
+            }
+        }
+        catch (InterruptedException e) {
+            if (writeQeued) {
+                write();
+            }
+        }
+    }
+
+    private void write() {
+        logger.debug("Saving config to file");
+        File file = getFile();
         try {
             synchronized (this) {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-                gson.toJson(jsonConfig, writer);
+                gson.toJson(config, writer);
                 writer.close();
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
+            logger.warn("Cannot write config");
             e.printStackTrace();
         }
     }
 
-    private void setDefaultBlocks() {
-        addBlock(BlockTracerConfig.createDefault(Blocks.CHEST));
+    private File getFile() {
+        File configDir = new File(Minecraft.getInstance().gameDirectory, "config");
+        if (!configDir.exists()) {
+            configDir.mkdirs();
+        }
+
+        return new File(configDir.getPath(), FILE);
     }
 
-    private void setDefaultEntities() {
-        addEntity(EntityTracerConfig.createDefault(Player.class));
+    private void onConfigChanged() {
+        FullBrightController.instance.apply();
+        LightLevelController.instance.apply();
+        config.blocks.apply();
     }
 }

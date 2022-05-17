@@ -46,11 +46,11 @@ public class HardSwitchController {
             branding.setBrandings(list);
             branding.setBrandingsNoMC(list.subList(1, list.size()));
 
-            ConfigStore.instance.esp = false;
-            ConfigStore.instance.fullBright = false;
+            ConfigStore.instance.getConfig().esp = false;
+            ConfigStore.instance.getConfig().fullBrightConfig.enabled = false;
+            ConfigStore.instance.getConfig().autoFishConfig.enabled = false;
+            ConfigStore.instance.getConfig().shulkerTooltipConfig.enabled = false;
             FullBrightController.instance.apply();
-            ConfigStore.instance.autoFish = false;
-            ShulkerTooltipController.instance.disable();
         }
     }
 

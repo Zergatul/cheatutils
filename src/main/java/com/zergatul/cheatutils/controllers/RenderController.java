@@ -39,7 +39,7 @@ public class RenderController {
     @SubscribeEvent
     public void onRenderWorldLastEvent(RenderLevelLastEvent event) {
 
-        if (!ConfigStore.instance.esp) {
+        if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
 
@@ -47,49 +47,8 @@ public class RenderController {
         //Camera camera = mc.getBlockEntityRenderDispatcher().camera;
         //Vec3 cam = camera.getPosition();
 
-        /*if (ConfigStore.instance.lightLevelConfig.active && ConfigStore.instance.lightLevelConfig.enabled) {
-
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glDepthMask(true);
-
-            double maxDistance2 = ConfigStore.instance.lightLevelConfig.maxDistance * ConfigStore.instance.lightLevelConfig.maxDistance;
-
-            for (BlockPos pos : LightLevelController.instance.getBlockForRendering()) {
-                double dx = mc.player.getX() - pos.getX();
-                double dz = mc.player.getZ() - pos.getZ();
-                if (dx * dx + dz * dz > maxDistance2) {
-                    continue;
-                }
-                int blockLight = mc.level.getBrightness(LightLayer.BLOCK, pos);
-                int skyLight = mc.level.getBrightness(LightLayer.SKY, pos);
-                if (blockLight < 8) {
-                    BufferBuilder bufferBuilder = tesselator.getBuilder();
-                    bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-
-                    if (skyLight < 8) {
-                        // can spawn any time
-                        setColor(new Color(Color.RED.getRGB() & 0xFFFFFF | 0x40000000, true));
-                    } else {
-                        // can spawn at night
-                        setColor(new Color(Color.BLUE.getRGB() & 0xFFFFFF | 0x40000000, true));
-                    }
-
-                    double x1 = pos.getX();
-                    double x2 = x1 + 1;
-                    double z1 = pos.getZ();
-                    double z2 = z1 + 1;
-                    double y = pos.getY() + 0.1d;
-                    bufferBuilder.vertex(x1, y, z1).endVertex();
-                    bufferBuilder.vertex(x1, y, z2).endVertex();
-                    bufferBuilder.vertex(x2, y, z2).endVertex();
-                    bufferBuilder.vertex(x2, y, z1).endVertex();
-                    tesselator.end();
-                }
-            }
-
-            GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glDepthMask(false);
-        }*/
+        LightLevelController.instance.render(event);
+        EndCityChunksController.instance.render(event);
 
         double tracerX = view.x;
         double tracerY = view.y;
@@ -165,7 +124,7 @@ public class RenderController {
     }
 
     private void renderold(RenderLevelLastEvent event) {
-        if (!ConfigStore.instance.esp) {
+        if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
 
@@ -503,9 +462,9 @@ public class RenderController {
     }*/
 
     private static void renderBlocks(BufferBuilder buffer, double tracerX, double tracerY, double tracerZ, double playerX, double playerY, double playerZ) {
-
-        synchronized (ConfigStore.instance.blocks) {
-            for (BlockTracerConfig config : ConfigStore.instance.blocks) {
+        var list = ConfigStore.instance.getConfig().blocks.configs;
+        synchronized (list) {
+            for (BlockTracerConfig config: list) {
 
                 if (!config.enabled) {
                     continue;
@@ -550,8 +509,8 @@ public class RenderController {
     }
 
     private static void renderEntities(BufferBuilder buffer, Minecraft mc, float partialTicks, double tracerX, double tracerY, double tracerZ, double playerX, double playerY, double playerZ) {
-
-        synchronized (ConfigStore.instance.entities) {
+        var list = ConfigStore.instance.getConfig().entities.configs;
+        synchronized (list) {
             for (Entity entity : mc.player.clientLevel.entitiesForRendering()) {
 
                 if (entity instanceof LocalPlayer) {
@@ -566,7 +525,7 @@ public class RenderController {
                 double dz = entity.getZ() - playerZ;
                 double distance2 = dx * dx + dy * dy + dz * dz;
 
-                EntityTracerConfig config = ConfigStore.instance.entities.stream().filter(c ->
+                EntityTracerConfig config = list.stream().filter(c ->
                         c.enabled &&
                         c.drawOutline &&
                         c.clazz.isInstance(entity) &&
@@ -576,7 +535,7 @@ public class RenderController {
                     renderEntityBounding(buffer, partialTicks, entity, config);
                 }
 
-                config = ConfigStore.instance.entities.stream().filter(c ->
+                config = list.stream().filter(c ->
                         c.enabled &&
                         c.drawTracers &&
                         c.clazz.isInstance(entity) &&

@@ -1,0 +1,17 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Auto Disconnect</legend>
+        <div class="description">
+            Automatically disconnects you if any player appears nearby. You will see nick of the player who caused disconnect.
+        </div>
+        <label class="switch-label">
+            <input type="checkbox" class="switch"
+                v-model="config.enabled"
+                @change="update()">
+            <span>Enabled</span>
+        </label>
+    </fieldset>
+</div>

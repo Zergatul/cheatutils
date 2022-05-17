@@ -1,0 +1,31 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Light Level</legend>
+        <div class="description">
+            Show transparent overlay over blocks where monsters can spawn. Helps you to spawn-proof locations.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled (scan blocks in background)</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.display"
+                    @change="update()">
+                <span>Display</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Max Range:</span>
+            <input type="text" v-model="config.maxDistance" @change="update()">
+        </div>
+    </fieldset>
+</div>

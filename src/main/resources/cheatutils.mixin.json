@@ -5,6 +5,7 @@
   "refmap": "cheatutils.mixin-refmap.json",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "MixinBoat",
     "MixinBrandingControl",
     "MixinCamera",
     "MixinClientChunkCache",
@@ -13,6 +14,8 @@
     "MixinEntity",
     "MixinLocalPlayer",
     "MixinMinecraft",
+    "MixinC2SModListReply",
+    "MixinPig",
     "MixinScreen"
   ]
 }

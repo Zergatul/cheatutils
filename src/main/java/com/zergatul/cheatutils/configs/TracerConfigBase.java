@@ -19,33 +19,17 @@ public class TracerConfigBase {
 
     public double maxDistance;
 
-    protected void convert(JsonTracerConfigBase config) {
-
-        config.enabled = enabled;
-
-        config.drawTracers = drawTracers;
-        config.tracerColor = tracerColor.getRGB();
-        config.tracerLineWidth = tracerLineWidth;
-        config.tracerLineStyle = tracerLineStyle;
-
-        config.drawOutline = drawOutline;
-        config.outlineColor = outlineColor.getRGB();
-        config.outlineLineWidth = outlineLineWidth;
-
-        config.maxDistance = maxDistance;
-    }
-
-    protected void copyFromJsonTracerConfigBase(JsonTracerConfigBase jsonConfig) {
+    protected void copyFromJsonTracerConfigBase(TracerConfigBase jsonConfig) {
 
         enabled = jsonConfig.enabled;
 
         drawTracers = jsonConfig.drawTracers;
-        tracerColor = new Color(jsonConfig.tracerColor, true);
+        tracerColor = jsonConfig.tracerColor;
         tracerLineWidth = jsonConfig.tracerLineWidth;
         tracerLineStyle = jsonConfig.tracerLineStyle;
 
         drawOutline = jsonConfig.drawOutline;
-        outlineColor = new Color(jsonConfig.outlineColor, true);
+        outlineColor = jsonConfig.outlineColor;
         outlineLineWidth = jsonConfig.outlineLineWidth;
 
         maxDistance = jsonConfig.maxDistance;

@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Zergatul Cheat Utils</title>
     <link rel="stylesheet" type="text/css" href="app.css">
-    <!-- https://unpkg.com/vue@next -->
-    <script src="vue.global.js"></script>
     <script src="axios.js"></script>
 </head>
 <body>
@@ -17,426 +15,169 @@
                 <input type="text" v-model="newname">
                 <button v-on:click="changeName()">Change Name</button>
             </div>
-            <div style="margin-bottom: 16px;">
-                <span class="text">Full Bright:</span>
-                <input type="checkbox" class="toggle" id="fullbright"
-                    v-model="fullBright"
-                    v-on:change="updateFullBright()">
-                <label class="toggle" for="fullbright"></label>
-            </div>
-            <div style="margin-bottom: 16px;">
-                <span class="text">Auto Fish:</span>
-                <input type="checkbox" class="toggle" id="autofish"
-                    v-model="autoFish"
-                    v-on:change="updateAutoFish()">
-                <label class="toggle" for="autofish"></label>
-            </div>
-            <div style="margin-bottom: 16px; display: none;">
-                <span class="text">Hold Use Key:</span>
-                <input type="checkbox" class="toggle" id="holdusekey"
-                       v-model="holdUseKey"
-                       v-on:change="updateHoldUseKey()">
-                <label class="toggle" for="holdusekey"></label>
-            </div>
-            <div style="margin-bottom: 16px; display: none;">
-                <span class="text">Light Level</span>
-                <span class="text">Active (scan blocks in background):</span>
-                <input type="checkbox" class="toggle" id="lightLevel-active"
-                    v-model="lightLevel.active"
-                    v-on:change="updateLightLevel()">
-                <label class="toggle" for="lightLevel-active"></label>
-                <span class="text">Enabled (display blocks in-game):</span>
-                <input type="checkbox" class="toggle" id="lightLevel-enabled"
-                    v-model="lightLevel.enabled"
-                    v-on:change="updateLightLevel()">
-                <label class="toggle" for="lightLevel-enabled"></label>
-                <span class="text">Max Distance:</span>
-                <input type="text" v-model="lightLevel.maxDistance">
-            </div>
-            <button v-on:click="openBlocksConfig()" :disabled="blocksMap == null">Blocks Config</button>
-            <button v-on:click="openEntitiesConfig()" :disabled="entitiesMap == null">Entities Config</button>
-            <button v-on:click="openKillAuraConfig()">Kill Aura Config</button>
             <div style="padding-top: 16px; display: none;">
                 <button v-on:click="hardSwitch()">Hard Switch</button>
             </div>
+
+            <table class="main-table">
+                <thead>
+                    <tr>
+                        <th>Automation</th>
+                        <th>ESP</th>
+                        <th>Hacks</th>
+                        <th>Visuals</th>
+                        <th>Utility</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <button @click="current = 'auto-disconnect'">Auto Disconnect</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'blocks'">Blocks</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'boat-hack'">Boat</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'full-bright'">Full Bright</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'hold-key'">Hold Key</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'kill-aura'">Kill Aura</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'entities'">Entities</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'elytra-hack'">Elytra</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'armor-overlay'">Armor Overlay</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'auto-fish'">Auto Fish</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'ender-pearl-path'">Ender Pearl Path</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'pig-hack'">Pig</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'shulker-tooltip'">Shulker Tooltip</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'light-level'">Light Level</button>
+                        </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'bee-tooltip'">Bee Container Tooltip</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'end-city-chunks'">End City Chunks</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <div v-if="current == 'blocks-config'">
-            <div>
-                <button style="width: 200px;" v-on:click="backToMain()">Back</button>
-                <button style="width: 200px;" v-on:click="openAddBlockConfig()">Add Block</button>
-            </div>
-            <ul class="blocks-list">
-                <li v-for="item in blocksConfigList" :key="item.blockId" v-bind="{ 'data-id': item.blockId }">
-                    <div class="c1"></div>
-                    <div class="c2">
-                        <div>{{ blocksMap[item.blockId].name }}</div>
-                        <div class="smaller">{{ item.blockId }} #{{ blocksMap[item.blockId].integerId }}</div>
-                    </div>
-                    <div class="c3">
-                        <div class="desc">Enabled:</div>
-                        <input type="checkbox" class="toggle"
-                            v-model="item.enabled"
-                            v-on:change="updateBlockConfig(item)"
-                            v-bind:id="item.blockId + ':enabled'">
-                        <label class="toggle" v-bind:for="item.blockId + ':enabled'"></label>
-                    </div>
-                    <div class="c4">
-                        <div class="desc">Tracers:</div>
-                        <input type="checkbox" class="toggle"
-                            v-model="item.drawTracers"
-                            v-on:change="updateBlockConfig(item)"
-                            v-bind:id="item.blockId + ':tracers'">
-                        <label class="toggle" v-bind:for="item.blockId + ':tracers'"></label>
-                    </div>
-                    <div class="c5">
-                        <div class="desc">Outline:</div>
-                        <input type="checkbox" class="toggle"
-                            v-model="item.drawOutline"
-                            v-on:change="updateBlockConfig(item)"
-                            v-bind:id="item.blockId + ':outline'">
-                        <label class="toggle" v-bind:for="item.blockId + ':outline'"></label>
-                    </div>
-                    <div class="c6">
-                        <button class="edit" v-on:click="editBlockConfig(item.blockId)">Edit</button>
-                    </div>
-                </li>
-            </ul>
-        </div>
+        <blocks-config
+            v-if="current == 'blocks'"
+            @back="backToMain()">
+        </blocks-config>
 
-        <div v-if="current == 'add-block'">
-            <div style="padding-bottom: 16px;">
-                <button style="width: 200px;" v-on:click="backToBlockConfig()">Back</button>
-            </div>
-            <div>
-                <span class="text">Filter:</span>
-                <input type="text" class="search"
-                    v-model="search"
-                    v-on:input="filterBlockList()">
-            </div>
-            <ul class="add-block-list">
-                <li v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
-                    <div class="c1"></div>
-                    <div class="c2">
-                        <div>{{ item.name }}</div>
-                        <div class="smaller">{{ item.id }} #{{ item.integerId }}</div>
-                    </div>
-                    <div class="c3">
-                        <button class="edit" v-bind:class="{ 'button-highlight': blocksConfigMap[item.id] }" v-on:click="editBlockConfig(item.id)">
-                            {{ blocksConfigMap[item.id] ? 'Edit' : 'Add' }}
-                        </button>
-                    </div>
-                </li>
-            </ul>
-        </div>
+        <entities-config
+            v-if="current == 'entities'"
+            @back="backToMain()">
+        </entities-config>
 
-        <div v-if="current == 'edit-block'">
-            <div>
-                <button style="width: 200px;" v-on:click="backToBlockConfig()">Back</button>
-                <button style="width: 200px;" v-on:click="deleteBlockConfig()">Delete</button>
-            </div>
-            <div class="edit-block-header">
-                <div>{{ blocksMap[currentBlockConfig.blockId].name }}</div>
-                <div class="smaller">{{ currentBlockConfig.blockId }} #{{ blocksMap[currentBlockConfig.blockId].integerId }}</div>
-            </div>
-            <div class="edit-block-enabled">
-                <span class="text">Enabled:</span>
-                <input type="checkbox" class="toggle"
-                    v-model="currentBlockConfig.enabled"
-                    v-on:change="updateBlockConfig(currentBlockConfig)"
-                    v-bind:id="currentBlockConfig.blockId + ':enabled'">
-                <label class="toggle" v-bind:for="currentBlockConfig.blockId + ':enabled'"></label>
-                <span style="display: inline-block; width: 16px;"></span>
-                <span class="text">Max Distance:</span>
-                <input type="text" v-model="currentBlockConfig.maxDistance" v-on:change="updateBlockConfig(currentBlockConfig)">
-            </div>
-            <fieldset>
-                <legend>
-                    Tracers
-                    <input type="checkbox" class="toggle"
-                        v-model="currentBlockConfig.drawTracers"
-                        v-on:change="updateBlockConfig(currentBlockConfig)"
-                        v-bind:id="currentBlockConfig.blockId + ':drawTracers'">
-                    <label class="toggle" v-bind:for="currentBlockConfig.blockId + ':drawTracers'"></label>
-                </legend>
-                <div style="display: flex;">
-                    <div class="color-picker-container">
-                        <color-picker
-                            v-model="currentBlockConfig.tracerColor"
-                            v-on:update:model-value="updateBlockConfig(currentBlockConfig)" />
-                    </div>
-                    <div class="group-setting">
-                        <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
-                            <div style="display: inline-block; width: 400px;">
-                                <div class="slidercontainer">
-                                    <input type="range" min="1" max="10" step="1" class="slider"
-                                        v-model="currentBlockConfig.tracerLineWidth"
-                                        v-on:change="updateBlockConfig(currentBlockConfig)">
-                                </div>
-                            </div>
-                            <div style="display: inline-block; padding-left: 16px;">
-                                {{ currentBlockConfig.tracerLineWidth }}
-                            </div>
-                        </div>
-                        <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line style:</span>
-                            <select
-                                v-model="currentBlockConfig.tracerLineStyle"
-                                v-on:change="updateBlockConfig(currentBlockConfig)">
-                                <option value="0">Solid</option>
-                                <option value="61680">Dashed (0xF0F0)</option>
-                                <option value="4112">Dotted (0x1010)</option>
-                                <option value="4336">Dot Dash (0x10F0)</option>
-                                <option value="65520">Long Dash (0xFFF0)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-            <fieldset>
-                <legend>
-                    Outline
-                    <input type="checkbox" class="toggle"
-                        v-model="currentBlockConfig.drawOutline"
-                        v-on:change="updateBlockConfig(currentBlockConfig)"
-                        v-bind:id="currentBlockConfig.blockId + ':drawOutline'">
-                    <label class="toggle" v-bind:for="currentBlockConfig.blockId + ':drawOutline'"></label>
-                </legend>
-                <div style="display: flex;">
-                    <div class="color-picker-container">
-                        <color-picker
-                            v-model="currentBlockConfig.outlineColor"
-                            v-on:update:model-value="updateBlockConfig(currentBlockConfig)" />
-                    </div>
-                    <div class="group-setting">
-                        <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
-                            <div style="display: inline-block; width: 400px;">
-                                <div class="slidercontainer">
-                                    <input type="range" min="1" max="10" step="1" class="slider"
-                                        v-model="currentBlockConfig.outlineLineWidth"
-                                        v-on:change="updateBlockConfig(currentBlockConfig)">
-                                </div>
-                            </div>
-                            <div style="display: inline-block; padding-left: 16px;">
-                                {{ currentBlockConfig.outlineLineWidth }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-        </div>
+        <auto-fish-config
+            v-if="current == 'auto-fish'"
+            @back="backToMain()">
+        </auto-fish-config>
 
-        <div v-if="current == 'entities-config'">
-            <div>
-                <button style="width: 200px;" v-on:click="backToMain()">Back</button>
-                <button style="width: 200px;" v-on:click="openAddEntityConfig()">Add Entity</button>
-            </div>
-            <ul class="entities-list">
-                <li v-for="item in entitiesConfigList" :key="item.className">
-                    <div class="c1" style="display: none;">
-                        img
-                    </div>
-                    <div class="c2">
-                        <div>{{ entitiesMap[item.className].simpleName }}</div>
-                        <div class="smaller">
-                            <span class="entity-tree" v-for="clazz in entitiesMap[item.className].baseClasses">
-                                🠞 {{ clazz }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="c3">
-                        <div class="desc">Enabled:</div>
-                        <input type="checkbox" class="toggle"
-                            v-model="item.enabled"
-                            v-on:change="updateEntityConfig(item)"
-                            v-bind:id="item.className + ':enabled'">
-                        <label class="toggle" v-bind:for="item.className + ':enabled'"></label>
-                    </div>
-                    <div class="c4">
-                        <div class="desc">Tracers:</div>
-                        <input type="checkbox" class="toggle"
-                            v-model="item.drawTracers"
-                            v-on:change="updateEntityConfig(item)"
-                            v-bind:id="item.className + ':tracers'">
-                        <label class="toggle" v-bind:for="item.className + ':tracers'"></label>
-                    </div>
-                    <div class="c5">
-                        <div class="desc">Outline:</div>
-                        <input type="checkbox" class="toggle"
-                            v-model="item.drawOutline"
-                            v-on:change="updateEntityConfig(item)"
-                            v-bind:id="item.className + ':outline'">
-                        <label class="toggle" v-bind:for="item.className + ':outline'"></label>
-                    </div>
-                    <div class="c6">
-                        <button class="edit" v-on:click="editEntityConfig(item.className)">Edit</button>
-                    </div>
-                </li>
-            </ul>
-        </div>
+        <full-bright-config
+            v-if="current == 'full-bright'"
+            @back="backToMain()">
+        </full-bright-config>
 
-        <div v-if="current == 'add-entity'">
-            <div style="padding-bottom: 16px;">
-                <button style="width: 200px;" v-on:click="backToEntityConfig()">Back</button>
-            </div>
-            <div>
-                <span class="text">Filter:</span>
-                <input type="text" class="search"
-                    v-model="search"
-                    v-on:input="filterEntityList()">
-            </div>
-            <ul class="add-block-list">
-                <li v-for="item in entityListFiltered" :key="item.className">
-                    <div class="c1" style="display: none;">
-                        img
-                    </div>
-                    <div class="c2">
-                        <div>{{ item.simpleName }}</div>
-                        <div class="smaller">
-                            <span class="entity-tree" v-for="clazz in item.baseClasses">
-                                🠞 {{ clazz }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="c3">
-                        <button class="edit" v-bind:class="{ 'button-highlight': entitiesConfigMap[item.className] }" v-on:click="editEntityConfig(item.className)">
-                            {{ entitiesConfigMap[item.className] ? 'Edit' : 'Add' }}
-                        </button>
-                    </div>
-                </li>
-            </ul>
-        </div>
+        <armor-overlay-config
+            v-if="current == 'armor-overlay'"
+            @back="backToMain()">
+        </armor-overlay-config>
 
-        <div v-if="current == 'edit-entity'">
-            <div>
-                <button style="width: 200px;" v-on:click="backToEntityConfig()">Back</button>
-                <button style="width: 200px;" v-on:click="deleteEntityConfig()">Delete</button>
-            </div>
-            <div class="edit-block-header">
-                <div>{{ entitiesMap[currentEntityConfig.className].simpleName }}</div>
-                <div class="smaller">
-                    <span class="entity-tree" v-for="clazz in entitiesMap[currentEntityConfig.className].baseClasses">
-                        🠞 {{ clazz }}
-                    </span>
-                </div>
-            </div>
-            <div class="edit-block-enabled">
-                <span class="text">Enabled:</span>
-                <input type="checkbox" class="toggle"
-                    v-model="currentEntityConfig.enabled"
-                    v-on:change="updateEntityConfig(currentEntityConfig)"
-                    v-bind:id="currentEntityConfig.className + ':enabled'">
-                <label class="toggle" v-bind:for="currentEntityConfig.className + ':enabled'"></label>
-                <span style="display: inline-block; width: 16px;"></span>
-                <span class="text">Max Distance:</span>
-                <input type="text" v-model="currentEntityConfig.maxDistance" v-on:change="updateEntityConfig(currentEntityConfig)">
-            </div>
-            <div>
-                <span class="text">Glow (doesn't work with OptiFine shaders, including "Internal"):</span>
-                <input type="checkbox" class="toggle"
-                    v-model="currentEntityConfig.glow"
-                    v-on:change="updateEntityConfig(currentEntityConfig)"
-                    v-bind:id="currentEntityConfig.className + ':glow'">
-                <label class="toggle" v-bind:for="currentEntityConfig.className + ':glow'"></label>
-            </div>
-            <fieldset>
-                <legend>
-                    Tracers
-                    <input type="checkbox" class="toggle"
-                        v-model="currentEntityConfig.drawTracers"
-                        v-on:change="updateEntityConfig(currentEntityConfig)"
-                        v-bind:id="currentEntityConfig.className + ':drawTracers'">
-                    <label class="toggle" v-bind:for="currentEntityConfig.className + ':drawTracers'"></label>
-                </legend>
-                <div style="display: flex;">
-                    <div class="color-picker-container">
-                        <color-picker
-                            v-model="currentEntityConfig.tracerColor"
-                            v-on:update:model-value="updateEntityConfig(currentEntityConfig)" />
-                    </div>
-                    <div class="group-setting">
-                        <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
-                            <div style="display: inline-block; width: 400px;">
-                                <div class="slidercontainer">
-                                    <input type="range" min="1" max="10" step="1" class="slider"
-                                        v-model="currentEntityConfig.tracerLineWidth"
-                                        v-on:change="updateEntityConfig(currentEntityConfig)">
-                                </div>
-                            </div>
-                            <div style="display: inline-block; padding-left: 16px;">
-                                {{ currentEntityConfig.tracerLineWidth }}
-                            </div>
-                        </div>
-                        <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line style:</span>
-                            <select
-                                v-model="currentEntityConfig.tracerLineStyle"
-                                v-on:change="updateEntityConfig(currentEntityConfig)">
-                                <option value="0">Solid</option>
-                                <option value="61680">Dashed (0xF0F0)</option>
-                                <option value="4112">Dotted (0x1010)</option>
-                                <option value="4336">Dot Dash (0x10F0)</option>
-                                <option value="65520">Long Dash (0xFFF0)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-            <fieldset>
-                <legend>
-                    Outline
-                    <input type="checkbox" class="toggle"
-                        v-model="currentEntityConfig.drawOutline"
-                        v-on:change="updateEntityConfig(currentEntityConfig)"
-                        v-bind:id="currentEntityConfig.className + ':drawOutline'">
-                    <label class="toggle" v-bind:for="currentEntityConfig.className + ':drawOutline'"></label>
-                </legend>
-                <div style="display: flex;">
-                    <div class="color-picker-container">
-                        <color-picker
-                            v-model="currentEntityConfig.outlineColor"
-                            v-on:update:model-value="updateEntityConfig(currentEntityConfig)" />
-                    </div>
-                    <div class="group-setting">
-                        <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
-                            <div style="display: inline-block; width: 400px;">
-                                <div class="slidercontainer">
-                                    <input type="range" min="1" max="10" step="1" class="slider"
-                                        v-model="currentEntityConfig.outlineLineWidth"
-                                        v-on:change="updateEntityConfig(currentEntityConfig)">
-                                </div>
-                            </div>
-                            <div style="display: inline-block; padding-left: 16px;">
-                                {{ currentEntityConfig.outlineLineWidth }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-        </div>
+        <kill-aura-config
+            v-if="current == 'kill-aura'"
+            @back="backToMain()">
+        </kill-aura-config>
 
-        <div v-if="current == 'kill-aura-config'">
-            <div>
-                <button style="width: 200px;" v-on:click="backToMain()">Back</button>
-            </div>
-            <div style="padding-top: 16px;">
-                <span class="text">Active:</span>
-                <input type="checkbox" class="toggle" id="killaura-active"
-                    v-model="killAuraConfig.active"
-                    v-on:change="updateKillAura()">
-                <label class="toggle" for="killaura-active"></label>
-                <span class="text">Max Range:</span>
-                <input type="text" v-model="killAuraConfig.maxRange" v-on:change="updateKillAura()">
-            </div>
-        </div>
+        <boat-hack-config
+            v-if="current == 'boat-hack'"
+            @back="backToMain()">
+        </boat-hack-config>
+
+        <elytra-hack-config
+            v-if="current == 'elytra-hack'"
+            @back="backToMain()">
+        </elytra-hack-config>
+
+        <pig-hack-config
+            v-if="current == 'pig-hack'"
+            @back="backToMain()">
+        </pig-hack-config>
+
+        <auto-disconnect-config
+            v-if="current == 'auto-disconnect'"
+            @back="backToMain()">
+        </auto-disconnect-config>
+
+        <shulker-tooltip-config
+            v-if="current == 'shulker-tooltip'"
+            @back="backToMain()">
+        </shulker-tooltip-config>
+
+        <bee-container-tooltip-config
+            v-if="current == 'bee-tooltip'"
+            @back="backToMain()">
+        </bee-container-tooltip-config>
+
+        <ender-pearl-path-config
+            v-if="current == 'ender-pearl-path'"
+            @back="backToMain()">
+        </ender-pearl-path-config>
+
+        <end-city-chunks-config
+            v-if="current == 'end-city-chunks'"
+            @back="backToMain()">
+        </end-city-chunks-config>
+
+        <light-level-config
+            v-if="current == 'light-level'"
+            @back="backToMain()">
+        </light-level-config>
+
+        <hold-key-config
+            v-if="current == 'hold-key'"
+            @back="backToMain()">
+        </hold-key-config>
 
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 
 </body>
 </html>

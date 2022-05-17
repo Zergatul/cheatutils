@@ -1,0 +1,49 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Elytra Hack</legend>
+        <div class="description">
+            Hack doesn't work on most servers.
+            <br>
+            Height Control - use Jump to give yourself acceleration in up direction, Crouch - to give acceleration in down direction.
+            <br>
+            Speed Control - use Up/Down keys to give you acceleration/deceleration in forward direction.
+            <br>
+            Horizontal Flight - you Crouch key to flight without changing Y coordinate. Don't use with Height Control, since they share the same key.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.heightControl"
+                    @change="update()">
+                <span>Height Control</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.speedControl"
+                    @change="update()">
+                <span>Speed Control</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.horizontalFlight"
+                    @change="update()">
+                <span>Horizontal Flight</span>
+            </label>
+        </div>
+    </fieldset>
+</div>

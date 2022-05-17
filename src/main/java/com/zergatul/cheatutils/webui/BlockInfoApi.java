@@ -43,10 +43,6 @@ public class BlockInfoApi extends ApiBase {
             }
 
             integerId = ((ForgeRegistry<Block>)ForgeRegistries.BLOCKS).getID(block);
-
-            /*IBakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(block.defaultBlockState());
-            List<BakedQuad> x = model.getQuads(null, null, random, EmptyModelData.INSTANCE);*/
-            //model.get(0).getSprite().atlas().getSprite(null);
         }
 
     }

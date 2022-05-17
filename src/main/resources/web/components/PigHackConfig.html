@@ -1,0 +1,39 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Pig Hack</legend>
+        <div class="description">
+            Most servers have protection against big speed increase. However small speed increase may work well.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.allowRideWithoutCarrot"
+                    @change="update()">
+                <span>Allow ride without carrot on the stick</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.overrideSteeringSpeed"
+                    @change="update()">
+                <span>Override steering speed</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Steering speed:</span>
+            <input type="text" v-model="config.steeringSpeed" @change="update()">
+        </div>
+    </fieldset>
+</div>

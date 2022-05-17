@@ -1,0 +1,54 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Kill Aura</legend>
+        <div class="description">
+            Automatically attacks entities in range with current item in hand.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.active"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Max Range:</span>
+            <input type="text" v-model="config.maxRange" @change="update()">
+        </div>
+        <div>
+            <fieldset>
+                <legend>Priorities</legend>
+                <div v-if="state == 'list'">
+                    <button @click="openAddNew()">Add New</button>
+                </div>
+                <ul class="kill-aura-priority-list" v-if="state == 'list'">
+                    <li v-for="entry in config.priorities">
+                        <span class="text">{{ entry }}</span>
+                        <button>Move Up</button>
+                        <button>Move Down</button>
+                        <button @click="removePriorityEntry(entry)">Remove</button>
+                    </li>
+                </ul>
+                <div v-if="state == 'add'">
+                    <button @click="state = 'list'">Back to list</button>
+                </div>
+                <div v-if="state == 'add'">
+                    <span class="text">Filter:</span>
+                    <input type="text" class="search"
+                        v-model="search"
+                        @input="filterPriorityList()">
+                </div>
+                <ul class="kill-aura-priority-list" v-if="state == 'add'">
+                    <li v-for="entry in priorityListFiltered">
+                        <span class="text">{{ entry.name }}</span>
+                        <button @click="addPriorityEntry(entry.name)">Add</button>
+                    </li>
+                </ul>
+            </fieldset>
+        </div>
+    </fieldset>
+</div>

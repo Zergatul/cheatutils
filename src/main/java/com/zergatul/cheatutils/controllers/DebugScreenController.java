@@ -25,6 +25,7 @@ public class DebugScreenController {
             event.getLeft().add("Loaded chunks: " + ChunkController.instance.getLoadedChunksCount());
             event.getLeft().add("Block scanning thread queue size: " + BlockFinderController.instance.getScanningQueueCount());
             event.getLeft().add("Block scanning thread load: " + format.format(BlockFinderController.instance.getScanningThreadLoadPercent()) + "%");
+            event.getLeft().add("Horizontal speed: " + format.format(SpeedCounterController.instance.getSpeed()));
         }
     }
 }

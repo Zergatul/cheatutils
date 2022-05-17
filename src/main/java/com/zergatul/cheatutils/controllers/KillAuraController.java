@@ -28,7 +28,7 @@ public class KillAuraController {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            var config = ConfigStore.instance.killAuraConfig;
+            var config = ConfigStore.instance.getConfig().killAuraConfig;
             if (!config.active || FreeCamController.instance.isActive()) {
                 target = null;
                 return;
@@ -88,7 +88,7 @@ public class KillAuraController {
             var entry = config.priorities.get(i);
             if (entry.clazz.isInstance(entity)) {
                 if (entry.predicate != null) {
-                    if (!entry.predicate.test(entity)) {
+                    if (!entry.predicate.test(entity, mc.player)) {
                         continue;
                     }
                 }

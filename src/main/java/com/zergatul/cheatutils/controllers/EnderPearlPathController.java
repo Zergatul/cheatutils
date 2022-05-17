@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.configs.ConfigStore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
@@ -10,8 +11,6 @@ public class EnderPearlPathController {
 
     public static final EnderPearlPathController instance = new EnderPearlPathController();
 
-    public boolean active = true;
-
     // TODO: highlight block?
 
     private EnderPearlPathController() {
@@ -19,7 +18,7 @@ public class EnderPearlPathController {
     }
 
     public boolean shouldDrawPath() {
-        if (!active) {
+        if (!ConfigStore.instance.getConfig().enderPearlPathConfig.enabled) {
             return false;
         }
 

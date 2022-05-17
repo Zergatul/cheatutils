@@ -15,15 +15,18 @@ public class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if (!ConfigStore.instance.esp) {
+        if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
-        for (EntityTracerConfig config: ConfigStore.instance.entities) {
-            if (config.enabled && config.clazz.isInstance(entity) && config.glow) {
-                //ModMain.LOGGER.info("onShouldEntityAppearGlowing - {}", entity.getClass().getName());
-                cir.setReturnValue(true);
-                cir.cancel();
-                return;
+        var list = ConfigStore.instance.getConfig().entities.configs;
+        synchronized (list) {
+            for (EntityTracerConfig config: list) {
+                if (config.enabled && config.clazz.isInstance(entity) && config.glow) {
+                    //ModMain.LOGGER.info("onShouldEntityAppearGlowing - {}", entity.getClass().getName());
+                    cir.setReturnValue(true);
+                    cir.cancel();
+                    return;
+                }
             }
         }
     }

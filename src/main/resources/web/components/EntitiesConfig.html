@@ -1,0 +1,206 @@
+<div>
+    <div v-if="state == 'list'">
+        <div>
+            <button style="width: 200px;" @click="$emit('back')">Back</button>
+            <button style="width: 200px;" @click="openAdd()">Add Entity</button>
+        </div>
+        <ul class="entities-list">
+            <li v-for="item in entitiesConfigList" :key="item.clazz">
+                <div class="c1" style="display: none;">
+                    img
+                </div>
+                <div class="c2">
+                    <div>{{ entitiesMap[item.clazz].simpleName }}</div>
+                    <div class="smaller">
+                        <span class="entity-tree" v-for="clazz in entitiesMap[item.clazz].baseClasses">
+                            🠞 {{ clazz }}
+                        </span>
+                    </div>
+                </div>
+                <div class="c3">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="item.enabled"
+                            @change="update(item)">
+                        <span>Enabled</span>
+                    </label>
+                </div>
+                <div class="c4">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="item.drawTracers"
+                            @change="update(item)">
+                        <color-box :color="item.tracerColor"></color-box>
+                        <span>Tracers</span>
+                    </label>
+                </div>
+                <div class="c5">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="item.drawOutline"
+                            @change="update(item)">
+                        <color-box :color="item.outlineColor"></color-box>
+                        <span>Outline</span>
+                    </label>
+                </div>
+                <div class="c6">
+                    <button class="edit" @click="openEdit(item.clazz)">Edit</button>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div v-if="state == 'add'">
+        <div style="padding-bottom: 16px;">
+            <button style="width: 200px;" @click="backToList()">Back</button>
+        </div>
+        <div>
+            <span class="text">Filter:</span>
+            <input type="text" class="search"
+                v-model="search"
+                @input="filterEntityList()">
+        </div>
+        <ul class="add-block-list">
+            <li v-for="item in entityListFiltered" :key="item.clazz">
+                <div class="c1" style="display: none;">
+                    img
+                </div>
+                <div class="c2">
+                    <div>{{ item.simpleName }}</div>
+                    <div class="smaller">
+                        <span class="entity-tree" v-for="clazz in item.baseClasses">
+                            🠞 {{ clazz }}
+                        </span>
+                    </div>
+                </div>
+                <div class="c3">
+                    <button class="edit" v-bind:class="{ 'button-highlight': entitiesConfigMap[item.clazz] }" @click="openEdit(item.clazz)">
+                        {{ entitiesConfigMap[item.clazz] ? 'Edit' : 'Add' }}
+                    </button>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div v-if="state == 'edit'">
+        <div>
+            <button style="width: 200px;" @click="backToList()">Back</button>
+            <button style="width: 200px;" @click="remove()">Delete</button>
+        </div>
+        <div v-if="selectedConfig">
+            <div class="edit-block-header">
+                <div>{{ entitiesMap[selectedConfig.clazz].simpleName }}</div>
+                <div class="smaller">
+                    <span class="entity-tree" v-for="clazz in entitiesMap[selectedConfig.clazz].baseClasses">
+                        🠞 {{ clazz }}
+                    </span>
+                </div>
+            </div>
+            <div class="edit-block-settings">
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="selectedConfig.enabled"
+                            @change="update(selectedConfig)">
+                        <span>Enabled</span>
+                    </label>
+                </div>
+                <div>
+                    <span class="text">Max Distance:</span>
+                    <input type="text" v-model="selectedConfig.maxDistance" @change="update(selectedConfig)">
+                </div>
+            </div>
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="selectedConfig.drawTracers"
+                            @change="update(selectedConfig)">
+                        <span>Tracers</span>
+                    </label>
+                </legend>
+                <div style="display: flex;">
+                    <div class="color-picker-container">
+                        <color-picker
+                            v-model="selectedConfig.tracerColor"
+                            @update:model-value="update(selectedConfig)" />
+                    </div>
+                    <div class="group-setting" style="display: none;">
+                        <div>
+                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
+                            <div style="display: inline-block; width: 400px;">
+                                <div class="slidercontainer">
+                                    <input type="range" min="1" max="10" step="1" class="slider"
+                                        v-model="selectedConfig.tracerLineWidth"
+                                        @change="update(selectedConfig)">
+                                </div>
+                            </div>
+                            <div style="display: inline-block; padding-left: 16px;">
+                                {{ selectedConfig.tracerLineWidth }}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text" style="width: 100px; text-align: right;">Line style:</span>
+                            <select
+                                v-model="selectedConfig.tracerLineStyle"
+                                @change="update(selectedConfig)">
+                                <option value="0">Solid</option>
+                                <option value="61680">Dashed (0xF0F0)</option>
+                                <option value="4112">Dotted (0x1010)</option>
+                                <option value="4336">Dot Dash (0x10F0)</option>
+                                <option value="65520">Long Dash (0xFFF0)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="selectedConfig.glow"
+                            @change="update(selectedConfig)">
+                        <span>Glow (doesn't work with OptiFine shaders)</span>
+                    </label>
+                </legend>
+                <div style="display: flex;">
+                    <div class="color-picker-container">
+                        <color-picker
+                            v-model="selectedConfig.glowColor"
+                            @update:model-value="update(selectedConfig)" />
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="selectedConfig.drawOutline"
+                            @change="update(selectedConfig)">
+                        <span>Outline</span>
+                    </label>
+                </legend>
+                <div style="display: flex;">
+                    <div class="color-picker-container">
+                        <color-picker
+                            v-model="selectedConfig.outlineColor"
+                            @update:model-value="update(selectedConfig)" />
+                    </div>
+                    <div class="group-setting" style="display: none;">
+                        <div>
+                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
+                            <div style="display: inline-block; width: 400px;">
+                                <div class="slidercontainer">
+                                    <input type="range" min="1" max="10" step="1" class="slider"
+                                        v-model="selectedConfig.outlineLineWidth"
+                                        @change="update(selectedConfig)">
+                                </div>
+                            </div>
+                            <div style="display: inline-block; padding-left: 16px;">
+                                {{ selectedConfig.outlineLineWidth }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

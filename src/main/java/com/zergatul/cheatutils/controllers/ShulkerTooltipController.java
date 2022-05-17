@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.interfaces.ScreenMixinInterface;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -32,7 +33,6 @@ public class ShulkerTooltipController {
     private static final int ImageHeight = 166;
     private static final int TranslateZ = 250;
 
-    private boolean active = true;
     private boolean locked = false;
     private boolean allowTooltip = false;
     private ItemStack lockedStack;
@@ -41,14 +41,6 @@ public class ShulkerTooltipController {
 
     private ShulkerTooltipController() {
 
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void disable() {
-        active = false;
     }
 
     public boolean isShulkerBox(ItemStack itemStack) {
@@ -74,7 +66,7 @@ public class ShulkerTooltipController {
             return;
         }
 
-        if (!isActive()) {
+        if (!ConfigStore.instance.getConfig().shulkerTooltipConfig.enabled) {
             clearLocked();
             return;
         }

@@ -66,7 +66,7 @@ public class ChunkController {
 
     @SubscribeEvent()
     public synchronized void onChunkLoad(ChunkEvent.Load event) {
-        if (event.getWorld() instanceof ServerLevel) {
+        if (!event.getWorld().isClientSide()) {
             return;
         }
         syncChunks();
@@ -74,7 +74,7 @@ public class ChunkController {
 
     @SubscribeEvent
     public synchronized void onChunkUnload(ChunkEvent.Unload event) {
-        if (event.getWorld() instanceof ServerLevel) {
+        if (!event.getWorld().isClientSide()) {
             return;
         }
         syncChunks();

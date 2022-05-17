@@ -53,8 +53,8 @@ public class KeyBindingsController {
 
         if (KeyBindingsController.toggleEsp.isDown()) {
             if (!HardSwitchController.instance.isTurnedOff()) {
-                ConfigStore.instance.esp = !ConfigStore.instance.esp;
-                ConfigStore.instance.write();
+                ConfigStore.instance.getConfig().esp = !ConfigStore.instance.getConfig().esp;
+                ConfigStore.instance.requestWrite();
             }
             return;
         }

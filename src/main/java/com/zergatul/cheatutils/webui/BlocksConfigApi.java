@@ -2,11 +2,8 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.JsonBlockTracerConfig;
 import com.zergatul.cheatutils.controllers.BlockFinderController;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.http.MethodNotSupportedException;
 
 public class BlocksConfigApi extends ApiBase {
@@ -19,8 +16,9 @@ public class BlocksConfigApi extends ApiBase {
     @Override
     public String get() {
         Object[] result;
-        synchronized (ConfigStore.instance.blocks) {
-            result = ConfigStore.instance.blocks.stream().map(BlockTracerConfig::convert).toArray();
+        var list = ConfigStore.instance.getConfig().blocks.configs;
+        synchronized (list) {
+            result = list.toArray();
         }
         return gson.toJson(result);
     }
@@ -28,45 +26,39 @@ public class BlocksConfigApi extends ApiBase {
     @Override
     public String post(String body) throws MethodNotSupportedException {
 
-        JsonBlockTracerConfig jsonConfig = gson.fromJson(body, JsonBlockTracerConfig.class);
-
-        ResourceLocation loc = new ResourceLocation(jsonConfig.blockId);
-        Block block = ForgeRegistries.BLOCKS.getValue(loc);
-        if (block == null) {
-            throw new MethodNotSupportedException("Cannot find block.");
-        }
+        BlockTracerConfig jsonConfig = gson.fromJson(body, BlockTracerConfig.class);
 
         BlockTracerConfig config;
-        synchronized (ConfigStore.instance.blocks) {
+        var list = ConfigStore.instance.getConfig().blocks.configs;
+        synchronized (list) {
 
-            config = ConfigStore.instance.blocks.stream().filter(c -> c.block.getRegistryName().equals(loc)).findFirst().orElse(null);
+            config = list.stream().filter(c -> c.block == jsonConfig.block).findFirst().orElse(null);
             if (config != null) {
                 throw new MethodNotSupportedException("Block config already exists.");
             }
 
-            config = BlockTracerConfig.createDefault(block);
-            ConfigStore.instance.addBlock(config);
+            config = BlockTracerConfig.createDefault(jsonConfig.block);
+            ConfigStore.instance.getConfig().blocks.add(config);
         }
 
         BlockFinderController.instance.scan(config);
-        ConfigStore.instance.write();
+        ConfigStore.instance.requestWrite();
 
-        return gson.toJson(config.convert());
+        return gson.toJson(config);
     }
 
     @Override
     public String put(String id, String body) throws MethodNotSupportedException {
 
-        JsonBlockTracerConfig jsonConfig = gson.fromJson(body, JsonBlockTracerConfig.class);
-        if (!id.equals(jsonConfig.blockId)) {
+        BlockTracerConfig jsonConfig = gson.fromJson(body, BlockTracerConfig.class);
+        if (!id.equals(jsonConfig.block.getRegistryName().toString())) {
             throw new MethodNotSupportedException("Block ids don't match.");
         }
 
-        ResourceLocation loc = new ResourceLocation(id);
-
         BlockTracerConfig config;
-        synchronized (ConfigStore.instance.blocks) {
-            config = ConfigStore.instance.blocks.stream().filter(c -> c.block.getRegistryName().equals(loc)).findFirst().orElse(null);
+        var list = ConfigStore.instance.getConfig().blocks.configs;
+        synchronized (list) {
+            config = list.stream().filter(c -> c.block == jsonConfig.block).findFirst().orElse(null);
         }
 
         if (config == null) {
@@ -74,9 +66,9 @@ public class BlocksConfigApi extends ApiBase {
         }
 
         config.copyFrom(jsonConfig);
-        ConfigStore.instance.write();
+        ConfigStore.instance.requestWrite();
 
-        return gson.toJson(config.convert());
+        return gson.toJson(config);
     }
 
     @Override
@@ -84,16 +76,17 @@ public class BlocksConfigApi extends ApiBase {
 
         ResourceLocation loc = new ResourceLocation(id);
 
-        synchronized (ConfigStore.instance.blocks) {
-            BlockTracerConfig config = ConfigStore.instance.blocks.stream().filter(c -> c.block.getRegistryName().equals(loc)).findFirst().orElse(null);
+        var list = ConfigStore.instance.getConfig().blocks.configs;
+        synchronized (list) {
+            BlockTracerConfig config = list.stream().filter(c -> c.block.getRegistryName().equals(loc)).findFirst().orElse(null);
             if (config == null) {
                 throw new MethodNotSupportedException("Cannot find block config.");
             }
 
-            ConfigStore.instance.removeBlock(config);
+            ConfigStore.instance.getConfig().blocks.remove(config);
         }
 
-        ConfigStore.instance.write();
+        ConfigStore.instance.requestWrite();
 
         return "{ ok: true }";
     }

@@ -24,6 +24,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.rmi.Remote;
 import java.util.*;
 
 public class FreeCamController {
@@ -162,6 +163,10 @@ public class FreeCamController {
 
     public LocalPlayer getPlayer() {
         return player;
+    }
+
+    public RemotePlayer getShadow() {
+        return shadow;
     }
 
     @SubscribeEvent

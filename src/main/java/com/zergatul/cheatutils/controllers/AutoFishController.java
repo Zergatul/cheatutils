@@ -38,13 +38,12 @@ public class AutoFishController {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (mc.player == null) {
+            return;
+        }
 
-        if (ConfigStore.instance.autoFish) {
+        if (ConfigStore.instance.getConfig().autoFishConfig.enabled) {
             if (event.phase == TickEvent.Phase.END) {
-                if (mc.player == null) {
-                    return;
-                }
-
                 AABB box = new AABB(
                     mc.player.getX() - 100,
                     mc.player.getY() - 100,
@@ -77,7 +76,7 @@ public class AutoFishController {
     }
 
     private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        if (bobber != null && ConfigStore.instance.autoFish) {
+        if (bobber != null && ConfigStore.instance.getConfig().autoFishConfig.enabled) {
             if (args.packet instanceof ClientboundMoveEntityPacket) {
                 var packet = (ClientboundMoveEntityPacket) args.packet;
                 if (packet.getEntity(mc.level) == bobber) {
@@ -95,7 +94,7 @@ public class AutoFishController {
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (ConfigStore.instance.autoFish) {
+        if (ConfigStore.instance.getConfig().autoFishConfig.enabled) {
             if (args.packet instanceof ServerboundUseItemPacket) {
                 var packet = (ServerboundUseItemPacket) args.packet;
                 var itemStack = mc.player.getItemInHand(packet.getHand());

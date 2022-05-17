@@ -209,8 +209,9 @@ public class BlockFinderController {
             return;
         }
 
-        synchronized (ConfigStore.instance.blocks) {
-            for (BlockTracerConfig config : ConfigStore.instance.blocks) {
+        var list = ConfigStore.instance.getConfig().blocks.configs;
+        synchronized (list) {
+            for (BlockTracerConfig config: list) {
                 ResourceLocation id = state.getBlock().getRegistryName();
                 if (config.block.getRegistryName().equals(id)) {
                     synchronized (blocks) {
@@ -225,8 +226,9 @@ public class BlockFinderController {
     }
 
     private void removeBlock(BlockState state, BlockPos pos) {
-        synchronized (ConfigStore.instance.blocks) {
-            for (BlockTracerConfig config : ConfigStore.instance.blocks) {
+        var list = ConfigStore.instance.getConfig().blocks.configs;
+        synchronized (list) {
+            for (BlockTracerConfig config: list) {
                 ResourceLocation id = state.getBlock().getRegistryName();
                 if (config.block.getRegistryName().equals(id)) {
                     synchronized (blocks) {

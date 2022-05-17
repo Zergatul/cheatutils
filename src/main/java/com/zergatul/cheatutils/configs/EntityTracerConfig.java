@@ -6,18 +6,12 @@ public class EntityTracerConfig extends TracerConfigBase {
 
     public Class clazz;
     public boolean glow;
+    public Color glowColor;
 
-    public JsonEntityTracerConfig convert() {
-        JsonEntityTracerConfig config = new JsonEntityTracerConfig();
-        config.className = clazz.getName();
-        config.glow = glow;
-        super.convert(config);
-        return config;
-    }
-
-    public void copyFrom(JsonEntityTracerConfig jsonConfig) {
+    public void copyFrom(EntityTracerConfig jsonConfig) {
         copyFromJsonTracerConfigBase(jsonConfig);
         glow = jsonConfig.glow;
+        glowColor = jsonConfig.glowColor;
     }
 
     public static EntityTracerConfig createDefault(Class clazz) {
@@ -33,6 +27,7 @@ public class EntityTracerConfig extends TracerConfigBase {
         config.outlineLineWidth = 2;
         config.maxDistance = DefaultMaxDistance;
         config.glow = true;
+        config.glowColor = Color.WHITE;
         return config;
     }
 

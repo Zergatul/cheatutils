@@ -1,7 +1,14 @@
 package com.zergatul.cheatutils.configs;
 
 public class LightLevelConfig {
-    public boolean active = false;
-    public boolean enabled = false;
-    public int maxDistance = 20;
+
+    public boolean enabled;
+    public boolean display;
+    public float maxDistance;
+
+    public LightLevelConfig() {
+        enabled = false;
+        display = false;
+        maxDistance = 20;
+    }
 }
