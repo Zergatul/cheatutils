@@ -41,6 +41,7 @@ public class EntityInfoApi extends ApiBase {
         AbstractPiglin.class,
         TamableAnimal.class,
         Raider.class,
+        Player.class,
 
         // final classes
         ArmorStand.class,
@@ -104,8 +105,7 @@ public class EntityInfoApi extends ApiBase {
         Zombie.class,
         ZombieHorse.class,
         ZombieVillager.class,
-        ZombifiedPiglin.class,
-        Player.class
+        ZombifiedPiglin.class
     };
 
     @Override

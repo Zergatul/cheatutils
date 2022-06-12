@@ -80,7 +80,9 @@
                         <td>
                             <button @click="current = 'light-level'">Light Level</button>
                         </td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-criticals'">Auto Criticals</button>
+                        </td>
                         <td>
                             <button @click="current = 'bee-tooltip'">Bee Container Tooltip</button>
                         </td>
@@ -90,6 +92,20 @@
                         <td>
                             <button @click="current = 'end-city-chunks'">End City Chunks</button>
                         </td>
+                        <td>
+                            <button @click="current = 'fly-hack'">Fly Hack</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'exploration-mini-map'">Exploration Mini Map</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'entity-owner'">Entity Owner</button>
+                        </td>
+                        <td></td>
+                        
                     </tr>
                 </tbody>
             </table>
@@ -174,6 +190,26 @@
             v-if="current == 'hold-key'"
             @back="backToMain()">
         </hold-key-config>
+
+        <entity-owner-config
+            v-if="current == 'entity-owner'"
+            @back="backToMain()">
+        </entity-owner-config>
+
+        <exploration-mini-map-config
+            v-if="current == 'exploration-mini-map'"
+            @back="backToMain()">
+        </exploration-mini-map-config>
+
+        <auto-criticals-config
+            v-if="current == 'auto-criticals'"
+            @back="backToMain()">
+        </auto-criticals-config>
+
+        <fly-hack-config
+            v-if="current == 'fly-hack'"
+            @back="backToMain()">
+        </fly-hack-config>
 
     </div>
 

@@ -124,8 +124,8 @@ public class ConfigStore {
     }
 
     private void onConfigChanged() {
-        FullBrightController.instance.apply();
-        LightLevelController.instance.apply();
+        FullBrightController.instance.onChanged();
+        LightLevelController.instance.onChanged();
         config.blocks.apply();
     }
 }

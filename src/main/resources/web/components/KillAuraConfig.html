@@ -16,6 +16,14 @@
             </label>
         </div>
         <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.attackEveryTick"
+                    @change="update()">
+                <span>Attack every tick</span>
+            </label>
+        </div>
+        <div>
             <span class="text">Max Range:</span>
             <input type="text" v-model="config.maxRange" @change="update()">
         </div>

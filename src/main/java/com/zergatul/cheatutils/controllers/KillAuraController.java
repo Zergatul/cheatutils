@@ -41,7 +41,7 @@ public class KillAuraController {
                 return;
             }
 
-            if (player.getAttackAnim(0) > 0) {
+            if (!config.attackEveryTick && player.getAttackAnim(0) > 0) {
                 //logger.info("Attack anim={}", player.getAttackAnim(0));
                 return;
             }

@@ -18,6 +18,10 @@ public class Config {
     public PigHackConfig pigHackConfig = new PigHackConfig();
     public EndCityChunksConfig endCityChunksConfig = new EndCityChunksConfig();
     public HoldKeyConfig holdKeyConfig = new HoldKeyConfig();
+    public EntityOwnerConfig entityOwnerConfig = new EntityOwnerConfig();
+    public ExplorationMiniMapConfig explorationMiniMapConfig = new ExplorationMiniMapConfig();
+    public AutoCriticalsConfig autoCriticalsConfig = new AutoCriticalsConfig();
+    public FlyHackConfig flyHackConfig = new FlyHackConfig();
 
     public Config() {
         esp = true;

@@ -3,11 +3,14 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
 import com.zergatul.cheatutils.controllers.FullBrightController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
+import com.zergatul.cheatutils.utils.MathUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
+import org.lwjgl.system.MathUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,7 +43,7 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(FullBrightConfig config) {
                 ConfigStore.instance.getConfig().fullBrightConfig = config;
-                FullBrightController.instance.apply();
+                FullBrightController.instance.onChanged();
             }
         });
 
@@ -157,7 +160,7 @@ public class ApiHandler implements HttpHandler {
                 }
                 config.maxDistance = Math.max(1, config.maxDistance);
                 ConfigStore.instance.getConfig().lightLevelConfig = config;
-                LightLevelController.instance.apply();
+                LightLevelController.instance.onChanged();
             }
         });
 
@@ -185,6 +188,18 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
+        apis.add(new SimpleConfigApi<>("entity-owner", EntityOwnerConfig.class) {
+            @Override
+            protected EntityOwnerConfig getConfig() {
+                return ConfigStore.instance.getConfig().entityOwnerConfig;
+            }
+
+            @Override
+            protected void setConfig(EntityOwnerConfig config) {
+                ConfigStore.instance.getConfig().entityOwnerConfig = config;
+            }
+        });
+
         apis.add(new SimpleConfigApi<>("shulker-tooltip", ShulkerTooltipConfig.class) {
             @Override
             protected ShulkerTooltipConfig getConfig() {
@@ -206,6 +221,44 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(BeeContainerTooltipConfig config) {
                 ConfigStore.instance.getConfig().beeContainerTooltipConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("exploration-mini-map", ExplorationMiniMapConfig.class) {
+            @Override
+            protected ExplorationMiniMapConfig getConfig() {
+                return ConfigStore.instance.getConfig().explorationMiniMapConfig;
+            }
+
+            @Override
+            protected void setConfig(ExplorationMiniMapConfig config) {
+                ConfigStore.instance.getConfig().explorationMiniMapConfig = config;
+                ExplorationMiniMapController.instance.onChanged();
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("auto-criticals", AutoCriticalsConfig.class) {
+            @Override
+            protected AutoCriticalsConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoCriticalsConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoCriticalsConfig config) {
+                ConfigStore.instance.getConfig().autoCriticalsConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("fly-hack", FlyHackConfig.class) {
+            @Override
+            protected FlyHackConfig getConfig() {
+                return ConfigStore.instance.getConfig().flyHackConfig;
+            }
+
+            @Override
+            protected void setConfig(FlyHackConfig config) {
+                config.flyingSpeed = MathUtils.clamp(config.flyingSpeed, 0.001f, 10f);
+                ConfigStore.instance.getConfig().flyHackConfig = config;
             }
         });
     }

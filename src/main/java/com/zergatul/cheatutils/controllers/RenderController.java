@@ -688,7 +688,7 @@ public class RenderController {
         return Mth.lerp(partialTicks, entity.zo, entity.getZ());
     }
 
-    private  void drawEnderPearlPath(RenderLevelLastEvent event, Vec3 view) {
+    private void drawEnderPearlPath(RenderLevelLastEvent event, Vec3 view) {
         if (EnderPearlPathController.instance.shouldDrawPath()) {
             float partialTick = event.getPartialTick();
 

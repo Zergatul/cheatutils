@@ -1,0 +1,31 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Fly Hack</legend>
+        <div class="description">
+            Just fly hack.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.overrideFlyingSpeed"
+                    @change="update()">
+                <span>Override flying speed</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Flying speed (default 0.05):</span>
+            <input type="text" v-model="config.flyingSpeed" @change="update()">
+        </div>
+    </fieldset>
+</div>

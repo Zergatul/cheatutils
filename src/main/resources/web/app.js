@@ -63,6 +63,10 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'LightLevelConfig');
     addComponent(args, 'EndCityChunksConfig');
     addComponent(args, 'HoldKeyConfig');
+    addComponent(args, 'EntityOwnerConfig');
+    addComponent(args, 'ExplorationMiniMapConfig');
+    addComponent(args, 'AutoCriticalsConfig');
+    addComponent(args, 'FlyHackConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

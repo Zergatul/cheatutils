@@ -1,30 +1,30 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.interfaces.CameraMixinInterface;
 import com.zergatul.cheatutils.interfaces.ClientboundPlayerInfoPacketMixinInterface;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientChunkCache;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.*;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.rmi.Remote;
 import java.util.*;
 
 public class FreeCamController {
@@ -169,10 +169,29 @@ public class FreeCamController {
         return shadow;
     }
 
+    public UUID getShadowCopyUUID() {
+        return shadowCopyPlayerProfileUUID;
+    }
+
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
         if (active) {
             toggle();
+        }
+    }
+
+    @SubscribeEvent
+    public void onClickInput(InputEvent.ClickInputEvent event) {
+        // disable crash if you try to attack itself
+        if (active) {
+            if (event.isAttack() && event.getHand() == InteractionHand.MAIN_HAND && event.getKeyMapping() == mc.options.keyAttack) {
+                if (mc.hitResult.getType() == HitResult.Type.ENTITY) {
+                    Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
+                    if (entity == player) {
+                        event.setCanceled(true);
+                    }
+                }
+            }
         }
     }
 
@@ -208,12 +227,13 @@ public class FreeCamController {
         oldGameType = mc.gameMode.getPlayerMode();
         mc.gameMode.setLocalMode(GameType.SPECTATOR);
 
-        shadow = new ShadowCopyPlayer(player);
+        shadow = new ShadowCopyPlayer(player, createShadowGameProfile());
         mc.level.addPlayer(shadowCopyPlayerEntityId, shadow);
 
         var packet = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER);
         var list = new ArrayList<ClientboundPlayerInfoPacket.PlayerUpdate>();
         list.add(new ClientboundPlayerInfoPacket.PlayerUpdate(fakeProfile, 0, GameType.SPECTATOR, null));
+        list.add(new ClientboundPlayerInfoPacket.PlayerUpdate(shadow.getGameProfile(), 1, GameType.DEFAULT_MODE, null));
         ((ClientboundPlayerInfoPacketMixinInterface) packet).setEntries(list);
         player.connection.handlePlayerInfo(packet);
 
@@ -241,6 +261,18 @@ public class FreeCamController {
 
         removeClientPlayer(fake);
         removeClientPlayer(shadow);
+
+        fake = null;
+        shadow = null;
+    }
+
+    private GameProfile createShadowGameProfile() {
+        GameProfile shadowProfile = new GameProfile(shadowCopyPlayerProfileUUID, player.getGameProfile().getName());
+        GameProfile mainProfile = player.getGameProfile();
+        for (Map.Entry<String, Property> entry: mainProfile.getProperties().entries()) {
+            shadowProfile.getProperties().put(entry.getKey(), entry.getValue());
+        }
+        return shadowProfile;
     }
 
     private void saveAbilities() {
@@ -472,8 +504,8 @@ public class FreeCamController {
 
     public static class ShadowCopyPlayer extends RemotePlayer {
 
-        public ShadowCopyPlayer(LocalPlayer player) {
-            super(player.clientLevel, new GameProfile(shadowCopyPlayerProfileUUID, player.getGameProfile().getName()));
+        public ShadowCopyPlayer(LocalPlayer player, GameProfile gameProfile) {
+            super(player.clientLevel, gameProfile);
 
             this.setPos(player.getX(), player.getY(), player.getZ());
             this.setRot(player.getYRot(), player.getXRot());
@@ -484,6 +516,8 @@ public class FreeCamController {
             copyItems(player.getInventory().offhand, this.getInventory().offhand);
 
             this.getInventory().selected = player.getInventory().selected;
+
+            this.getEntityData().assignValues(player.getEntityData().getAll());
         }
 
         private static void copyItems(NonNullList<ItemStack> source, NonNullList<ItemStack> destination) {

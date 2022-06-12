@@ -12,10 +12,12 @@
     "MixinClientPacketListener",
     "MixinClientboundPlayerInfoPacket",
     "MixinEntity",
+    "MixinEntityRenderer",
     "MixinLocalPlayer",
     "MixinMinecraft",
     "MixinC2SModListReply",
     "MixinPig",
+    "MixinPlayerRenderer",
     "MixinScreen"
   ]
 }

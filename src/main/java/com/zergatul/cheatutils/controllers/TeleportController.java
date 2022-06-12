@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,6 +15,7 @@ public class TeleportController {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final Logger logger = LogManager.getLogger(TeleportController.class);
+    private boolean first = true;
     private double x, y, z;
     private ResourceKey<Level> dimension;
     private double minDistance = 100 * 100;
@@ -33,20 +35,25 @@ public class TeleportController {
                 double xn = mc.player.getX();
                 double yn = mc.player.getY();
                 double zn = mc.player.getZ();
-                if (mc.player.level.dimension() != dimension) {
-                    teleportDetected = true;
-                } else {
-                    double dx = xn - x;
-                    double dy = yn - y;
-                    double dz = zn - z;
-                    if (dx * dx + dy * dy + dz * dz > minDistance) {
-                        teleportDetected = true;
-                    }
-                }
 
-                if (teleportDetected) {
-                    ChunkController.instance.clear();
-                    BlockFinderController.instance.clear();
+                if (first) {
+                    first = false;
+                } else {
+                    if (mc.player.level.dimension() != dimension) {
+                        teleportDetected = true;
+                    } else {
+                        double dx = xn - x;
+                        double dy = yn - y;
+                        double dz = zn - z;
+                        if (dx * dx + dy * dy + dz * dz > minDistance) {
+                            teleportDetected = true;
+                        }
+                    }
+
+                    if (teleportDetected) {
+                        ChunkController.instance.clear();
+                        BlockFinderController.instance.clear();
+                    }
                 }
 
                 x = xn;
@@ -57,4 +64,10 @@ public class TeleportController {
         }
     }
 
+    @SubscribeEvent
+    public void onWorldUnLoad(WorldEvent.Unload event) {
+        if (event.getWorld().isClientSide()) {
+            first = true;
+        }
+    }
 }

@@ -63,7 +63,7 @@ public class LightLevelController {
         eventLoop.start();
     }
 
-    public void apply() {
+    public void onChanged() {
         boolean value = ConfigStore.instance.getConfig().lightLevelConfig.enabled;
         if (active != value) {
             active = value;

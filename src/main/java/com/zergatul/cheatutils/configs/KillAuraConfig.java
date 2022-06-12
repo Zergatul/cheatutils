@@ -20,7 +20,7 @@ public class KillAuraConfig {
     public boolean active;
     public float maxRange;
     public List<PriorityEntry> priorities;
-    public boolean useCrits;
+    public boolean attackEveryTick;
 
     public KillAuraConfig() {
         active = false;
