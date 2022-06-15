@@ -3,7 +3,9 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.network.protocol.game.ClientboundDisconnectPacket;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,7 +26,9 @@ public class AutoDisconnectController {
                 if (FreeCamController.instance.isActive() && FreeCamController.instance.getShadow() == player) {
                     return;
                 }
-                var packet = new ClientboundDisconnectPacket(new TextComponent("AutoDisconnect module: " + player.getName().getString()));
+
+                Component component = MutableComponent.create(new LiteralContents("AutoDisconnect module: " + player.getName().getString()));
+                var packet = new ClientboundDisconnectPacket(component);
                 Minecraft.getInstance().player.connection.handleDisconnect(packet);
             }
         }

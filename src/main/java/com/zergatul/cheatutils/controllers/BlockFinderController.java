@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -160,7 +161,7 @@ public class BlockFinderController {
 
     public void scan(BlockTracerConfig config) {
 
-        ResourceLocation id = config.block.getRegistryName();
+        ResourceLocation id = Registry.BLOCK.getKey(config.block);
 
         synchronized (blocks) {
             if (blocks.containsKey(id)) {
@@ -187,7 +188,7 @@ public class BlockFinderController {
                         int zb = zc | z;
                         BlockPos pos = new BlockPos(xb, y, zb);
                         BlockState state = chunk.getBlockState(pos);
-                        if (state.getBlock().getRegistryName().equals(id)) {
+                        if (Registry.BLOCK.getKey(state.getBlock()).equals(id)) {
                             synchronized (blocks) {
                                 if (blocks.containsKey(id)) {
                                     blocks.get(id).add(pos);
@@ -212,8 +213,8 @@ public class BlockFinderController {
         var list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             for (BlockTracerConfig config: list) {
-                ResourceLocation id = state.getBlock().getRegistryName();
-                if (config.block.getRegistryName().equals(id)) {
+                ResourceLocation id = Registry.BLOCK.getKey(state.getBlock());
+                if (Registry.BLOCK.getKey(config.block).equals(id)) {
                     synchronized (blocks) {
                         if (blocks.containsKey(id)) {
                             blocks.get(id).add(pos);
@@ -229,8 +230,8 @@ public class BlockFinderController {
         var list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             for (BlockTracerConfig config: list) {
-                ResourceLocation id = state.getBlock().getRegistryName();
-                if (config.block.getRegistryName().equals(id)) {
+                ResourceLocation id = Registry.BLOCK.getKey(state.getBlock());
+                if (Registry.BLOCK.getKey(config.block).equals(id)) {
                     synchronized (blocks) {
                         if (blocks.containsKey(id)) {
                             blocks.get(id).remove(pos);

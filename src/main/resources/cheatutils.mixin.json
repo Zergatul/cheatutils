@@ -13,6 +13,8 @@
     "MixinClientboundPlayerInfoPacket",
     "MixinEntity",
     "MixinEntityRenderer",
+    "MixinLightTexture",
+    "MixinLivingEntity",
     "MixinLocalPlayer",
     "MixinMinecraft",
     "MixinC2SModListReply",

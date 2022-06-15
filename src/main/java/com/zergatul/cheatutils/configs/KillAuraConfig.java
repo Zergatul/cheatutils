@@ -57,7 +57,6 @@ public class KillAuraConfig {
         public final String description;
         public final Class clazz;
         public final BiPredicate<Entity, LocalPlayer> predicate;
-        //public final boolean waitForCooldown;
 
         public PriorityEntry(String name, String description, Class clazz) {
             this(name, description, clazz, null);

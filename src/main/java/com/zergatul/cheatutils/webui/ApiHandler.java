@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
-import com.zergatul.cheatutils.controllers.FullBrightController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import com.zergatul.cheatutils.utils.MathUtils;
 import org.apache.commons.io.IOUtils;
@@ -43,7 +42,6 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(FullBrightConfig config) {
                 ConfigStore.instance.getConfig().fullBrightConfig = config;
-                FullBrightController.instance.onChanged();
             }
         });
 

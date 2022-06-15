@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
-import com.zergatul.cheatutils.controllers.FullBrightController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
@@ -124,7 +123,6 @@ public class ConfigStore {
     }
 
     private void onConfigChanged() {
-        FullBrightController.instance.onChanged();
         LightLevelController.instance.onChanged();
         config.blocks.apply();
     }

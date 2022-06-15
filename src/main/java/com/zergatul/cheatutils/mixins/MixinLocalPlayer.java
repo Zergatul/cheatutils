@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LocalPlayer.class)
-public class MixinLocalPlayer {
+public abstract class MixinLocalPlayer {
 
     private boolean flyHackOverride = false;
     private boolean oldFlying;

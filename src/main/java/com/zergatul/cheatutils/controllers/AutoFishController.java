@@ -4,13 +4,17 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,11 +33,9 @@ public class AutoFishController {
     private final Logger logger = LogManager.getLogger(AutoFishController.class);
     private FishingHook bobber;
     private long lastPullIn;
-    private long lastRodUse;
 
     private AutoFishController() {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
     }
 
     @SubscribeEvent
@@ -58,10 +60,8 @@ public class AutoFishController {
                     if (System.nanoTime() - lastPullIn > REHOOK_DELAY) {
                         ItemStack stack = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
                         if (stack.getItem() == Items.FISHING_ROD) {
-                            var key = Minecraft.getInstance().options.keyUse.getKey();
-                            KeyMapping.click(key);
+                            use();
                             lastPullIn = 0;
-                            lastRodUse = System.nanoTime();
                         } else {
                             lastPullIn = 0;
                         }
@@ -70,39 +70,28 @@ public class AutoFishController {
             }
         } else {
             bobber = null;
-            lastPullIn = 0;
         }
-
     }
 
     private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        if (bobber != null && ConfigStore.instance.getConfig().autoFishConfig.enabled) {
-            if (args.packet instanceof ClientboundMoveEntityPacket) {
-                var packet = (ClientboundMoveEntityPacket) args.packet;
-                if (packet.getEntity(mc.level) == bobber) {
-                    long time = System.nanoTime();
-                    double deltaY = ClientboundMoveEntityPacket.packetToEntity(packet.getYa());
-                    //logger.info("delta y = {}", deltaY);
-                    if (Math.abs(deltaY) > 0.35 && time - lastRodUse > NO_PULL_DELAY) {
-                        var key = Minecraft.getInstance().options.keyUse.getKey();
-                        KeyMapping.click(key);
-                        lastPullIn = System.nanoTime();
-                    }
+        if (bobber == null) {
+            return;
+        }
+        if (!ConfigStore.instance.getConfig().autoFishConfig.enabled) {
+            return;
+        }
+        if (args.packet instanceof ClientboundSoundPacket soundPacket) {
+            if (soundPacket.getSound() == SoundEvents.FISHING_BOBBER_SPLASH) {
+                if (bobber.distanceToSqr(soundPacket.getX(), soundPacket.getY(), soundPacket.getZ()) < 1) {
+                    use();
+                    lastPullIn = System.nanoTime();
                 }
             }
         }
     }
 
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (ConfigStore.instance.getConfig().autoFishConfig.enabled) {
-            if (args.packet instanceof ServerboundUseItemPacket) {
-                var packet = (ServerboundUseItemPacket) args.packet;
-                var itemStack = mc.player.getItemInHand(packet.getHand());
-                if (itemStack.getItem() == Items.FISHING_ROD) {
-                    lastRodUse = System.nanoTime();
-                }
-            }
-        }
+    private void use() {
+        var key = Minecraft.getInstance().options.keyUse.getKey();
+        KeyMapping.click(key);
     }
-
 }

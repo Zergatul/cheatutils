@@ -9,6 +9,7 @@ import net.minecraft.world.entity.item.*;
 import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.hoglin.*;
 import net.minecraft.world.entity.monster.piglin.*;
+import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.npc.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.entity.raid.Raider;
@@ -105,7 +106,8 @@ public class EntityInfoApi extends ApiBase {
         Zombie.class,
         ZombieHorse.class,
         ZombieVillager.class,
-        ZombifiedPiglin.class
+        ZombifiedPiglin.class,
+        Warden.class
     };
 
     @Override

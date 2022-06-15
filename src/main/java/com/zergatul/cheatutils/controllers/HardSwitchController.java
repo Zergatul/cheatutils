@@ -50,7 +50,6 @@ public class HardSwitchController {
             ConfigStore.instance.getConfig().fullBrightConfig.enabled = false;
             ConfigStore.instance.getConfig().autoFishConfig.enabled = false;
             ConfigStore.instance.getConfig().shulkerTooltipConfig.enabled = false;
-            FullBrightController.instance.onChanged();
         }
     }
 

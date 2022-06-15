@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.PigHackConfig;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Pig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Pig.class)
 public class MixinPig {
 
-    @Inject(at = @At("HEAD"), method = "net.minecraft.world.entity.animal.Pig.canBeControlledByRider", cancellable = true)
-    public void onCanBeControlledByRider(CallbackInfoReturnable<Boolean> info) {
+    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/animal/Pig;canBeControlledBy(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
+    public void onCanBeControlledBy(Entity entity, CallbackInfoReturnable<Boolean> info) {
         PigHackConfig config = ConfigStore.instance.getConfig().pigHackConfig;
         if (config.enabled && config.allowRideWithoutCarrot) {
             var pig = (Pig) (Object) this;

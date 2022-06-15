@@ -6,7 +6,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -52,8 +53,8 @@ public class BeeContainerController {
 
             var function = (Function<FormattedText, Either<FormattedText, TooltipComponent>>) Either::left;
             var components = event.getTooltipElements();
-            components.add(function.apply(new TextComponent("Bees count: " + beesCount).withStyle(ChatFormatting.GRAY)));
-            components.add(function.apply(new TextComponent("Honey level: " + honeyLevel).withStyle(ChatFormatting.GRAY)));
+            components.add(function.apply(MutableComponent.create(new LiteralContents("Bees count: " + beesCount)).withStyle(ChatFormatting.GRAY)));
+            components.add(function.apply(MutableComponent.create(new LiteralContents("Honey level: " + honeyLevel)).withStyle(ChatFormatting.GRAY)));
         }
     }
 

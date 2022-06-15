@@ -135,12 +135,12 @@ public class ExplorationMiniMapController {
             return;
         }
 
-        event.getMatrixStack().pushPose();
-        event.getMatrixStack().setIdentity();
-        event.getMatrixStack().translate(mc.getWindow().getGuiScaledWidth() / 2, mc.getWindow().getGuiScaledHeight() / 2, TranslateZ);
-        event.getMatrixStack().mulPose(Vector3f.ZN.rotationDegrees(mc.player.getYRot()));
-        event.getMatrixStack().mulPose(Vector3f.XN.rotationDegrees(180));
-        event.getMatrixStack().mulPose(Vector3f.YN.rotationDegrees(180));
+        event.getPoseStack().pushPose();
+        event.getPoseStack().setIdentity();
+        event.getPoseStack().translate(mc.getWindow().getGuiScaledWidth() / 2, mc.getWindow().getGuiScaledHeight() / 2, TranslateZ);
+        event.getPoseStack().mulPose(Vector3f.ZN.rotationDegrees(mc.player.getYRot()));
+        event.getPoseStack().mulPose(Vector3f.XN.rotationDegrees(180));
+        event.getPoseStack().mulPose(Vector3f.YN.rotationDegrees(180));
         RenderSystem.applyModelViewMatrix();
 
         //RenderSystem.enableDepthTest();
@@ -166,7 +166,7 @@ public class ExplorationMiniMapController {
             float y = (segment.pos.z * 16 * SegmentSize - (float)mc.player.getZ()) / (16 * SegmentSize) * scale;
 
             drawTexture(
-                    event.getMatrixStack().last().pose(),
+                    event.getPoseStack().last().pose(),
                     x, y, scale, scale, 100,
                     0, 0, 16 * SegmentSize, 16 * SegmentSize,
                     16 * SegmentSize, 16 * SegmentSize);
@@ -174,11 +174,11 @@ public class ExplorationMiniMapController {
 
         RenderSystem.setShaderTexture(0, CrossTexture);
         final int ImageSize = 8;
-        drawTexture(event.getMatrixStack().last().pose(),
+        drawTexture(event.getPoseStack().last().pose(),
                 -ImageSize / 2, -ImageSize / 2,
                 ImageSize, ImageSize, 101, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
 
-        event.getMatrixStack().popPose();
+        event.getPoseStack().popPose();
         RenderSystem.applyModelViewMatrix();
     }
 
@@ -239,8 +239,7 @@ public class ExplorationMiniMapController {
         bufferBuilder.vertex(matrix, x, y + height, z).uv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
         bufferBuilder.vertex(matrix, x + width, y + height, z).uv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
         bufferBuilder.vertex(matrix, x + width, y, z).uv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY).endVertex();
-        bufferBuilder.end();
-        BufferUploader.end(bufferBuilder);
+        BufferUploader.drawWithShader(bufferBuilder.end());
     }
 
     private void drawChunk(ResourceKey<Level> dimension, Map<SegmentPos, Segment> segments, LevelChunk chunk) {

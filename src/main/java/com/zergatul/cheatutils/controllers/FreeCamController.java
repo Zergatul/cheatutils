@@ -106,12 +106,9 @@ public class FreeCamController {
                 return;
             }
         }
-        if (serverPacketArgs.packet instanceof ClientboundAddMobPacket) {
-            return;
-        }
         if (serverPacketArgs.packet instanceof ClientboundAddEntityPacket) {
             var packet = (ClientboundAddEntityPacket) serverPacketArgs.packet;
-            if (mc.level.getEntity(packet.getId()) instanceof  Player) {
+            if (mc.level.getEntity(packet.getId()) instanceof Player) {
                 ModMain.LOGGER.info("Player added");
             }
             return;
@@ -232,8 +229,8 @@ public class FreeCamController {
 
         var packet = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER);
         var list = new ArrayList<ClientboundPlayerInfoPacket.PlayerUpdate>();
-        list.add(new ClientboundPlayerInfoPacket.PlayerUpdate(fakeProfile, 0, GameType.SPECTATOR, null));
-        list.add(new ClientboundPlayerInfoPacket.PlayerUpdate(shadow.getGameProfile(), 1, GameType.DEFAULT_MODE, null));
+        list.add(new ClientboundPlayerInfoPacket.PlayerUpdate(fakeProfile, 0, GameType.SPECTATOR, null, null));
+        list.add(new ClientboundPlayerInfoPacket.PlayerUpdate(shadow.getGameProfile(), 1, GameType.DEFAULT_MODE, null, null));
         ((ClientboundPlayerInfoPacketMixinInterface) packet).setEntries(list);
         player.connection.handlePlayerInfo(packet);
 
@@ -303,7 +300,7 @@ public class FreeCamController {
 
         var packet = new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER);
         var list = new ArrayList<ClientboundPlayerInfoPacket.PlayerUpdate>();
-        list.add(new ClientboundPlayerInfoPacket.PlayerUpdate(clientPlayer.getGameProfile(), 0, GameType.DEFAULT_MODE, null));
+        list.add(new ClientboundPlayerInfoPacket.PlayerUpdate(clientPlayer.getGameProfile(), 0, GameType.DEFAULT_MODE, null, null));
         ((ClientboundPlayerInfoPacketMixinInterface) packet).setEntries(list);
         player.connection.handlePlayerInfo(packet);
     }
@@ -493,7 +490,7 @@ public class FreeCamController {
             getAbilities().invulnerable = true;
             getAbilities().mayfly = true;
 
-            uuid = Mth.createInsecureUUID(new Random());
+            uuid = Mth.createInsecureUUID();
         }
 
         @Override
@@ -505,7 +502,7 @@ public class FreeCamController {
     public static class ShadowCopyPlayer extends RemotePlayer {
 
         public ShadowCopyPlayer(LocalPlayer player, GameProfile gameProfile) {
-            super(player.clientLevel, gameProfile);
+            super(player.clientLevel, gameProfile, null);
 
             this.setPos(player.getX(), player.getY(), player.getZ());
             this.setRot(player.getYRot(), player.getXRot());
@@ -529,7 +526,7 @@ public class FreeCamController {
 
     private static class FakeInput extends Input {
         @Override
-        public void tick(boolean p_108576_) {
+        public void tick(boolean p_108576_, float p_234116_) {
             if (p_108576_) {
                 this.leftImpulse *= 0.3F;
                 this.forwardImpulse *= 0.3F;

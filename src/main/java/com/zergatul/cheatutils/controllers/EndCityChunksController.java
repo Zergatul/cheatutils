@@ -17,7 +17,11 @@ public class EndCityChunksController {
     public static final EndCityChunksController instance = new EndCityChunksController();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final VertexBuffer vertexBuffer = new VertexBuffer();
+    private VertexBuffer vertexBuffer;
+
+    private EndCityChunksController() {
+        RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
+    }
 
     public void render(RenderLevelLastEvent event) {
         Config config = ConfigStore.instance.getConfig();
@@ -66,9 +70,8 @@ public class EndCityChunksController {
             }
         }
 
-        bufferBuilder.end();
-
-        vertexBuffer.upload(bufferBuilder);
+        vertexBuffer.bind();
+        vertexBuffer.upload(bufferBuilder.end());
 
         PoseStack matrix = event.getPoseStack();
         matrix.pushPose();
@@ -76,6 +79,8 @@ public class EndCityChunksController {
         var shader = GameRenderer.getPositionColorShader();
         vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix().copy(), shader);
         matrix.popPose();
+
+        VertexBuffer.unbind();
 
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glDepthMask(false);

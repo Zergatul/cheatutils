@@ -8,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,7 +17,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -34,9 +32,11 @@ public class LightLevelController {
     private final HashMap<ChunkPos, HashSet<BlockPos>> chunks = new HashMap<>();
     private final List<BlockPos> listForRendering = new ArrayList<>();
     private boolean active = false;
-    private VertexBuffer vertexBuffer = new VertexBuffer();
+    private VertexBuffer vertexBuffer;
 
     private LightLevelController() {
+
+        RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
 
         ChunkController.instance.addOnChunkLoadedHandler(this::onChunkLoaded);
         ChunkController.instance.addOnChunkUnLoadedHandler(this::onChunkUnLoaded);
@@ -130,9 +130,8 @@ public class LightLevelController {
             }
         }
 
-        bufferBuilder.end();
-
-        vertexBuffer.upload(bufferBuilder);
+        vertexBuffer.bind();
+        vertexBuffer.upload(bufferBuilder.end());
 
         PoseStack matrix = event.getPoseStack();
         matrix.pushPose();
@@ -140,6 +139,8 @@ public class LightLevelController {
         var shader = GameRenderer.getPositionColorShader();
         vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix().copy(), shader);
         matrix.popPose();
+
+        VertexBuffer.unbind();
 
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glDepthMask(false);

@@ -103,10 +103,8 @@ public class KillAuraController {
             return;
         }
 
-        //logger.info("Attacking {}", target.getClass().getName());
         mc.gameMode.attack(mc.player, target);
         mc.player.swing(InteractionHand.MAIN_HAND);
         target = null;
     }
-
 }
