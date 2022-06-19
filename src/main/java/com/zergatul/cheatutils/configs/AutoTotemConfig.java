@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-public class AutoCriticalsConfig {
+public class AutoTotemConfig {
     public boolean enabled;
-    public boolean onlyOnGround;
 }

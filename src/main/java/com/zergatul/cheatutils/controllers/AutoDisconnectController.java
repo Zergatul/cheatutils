@@ -21,9 +21,6 @@ public class AutoDisconnectController {
         if (event.getWorld().isClientSide && ConfigStore.instance.getConfig().autoDisconnectConfig.enabled) {
             if (event.getEntity() instanceof RemotePlayer) {
                 var player = (RemotePlayer) event.getEntity();
-                if (FreeCamController.instance.isActive() && FreeCamController.instance.getShadow() == player) {
-                    return;
-                }
                 var packet = new ClientboundDisconnectPacket(new TextComponent("AutoDisconnect module: " + player.getName().getString()));
                 Minecraft.getInstance().player.connection.handleDisconnect(packet);
             }
