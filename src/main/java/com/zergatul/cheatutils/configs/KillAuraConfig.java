@@ -6,7 +6,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
+import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
+import org.lwjgl.system.CallbackI;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +54,7 @@ public class KillAuraConfig {
         public static final PriorityEntry shulkers = new PriorityEntry("Shulkers", null, Shulker.class);
         public static final PriorityEntry shulkerBullets = new PriorityEntry("Shulker Bullets", null, ShulkerBullet.class);
         public static final PriorityEntry players = new PriorityEntry("Players", null, RemotePlayer.class);
+        public static final PriorityEntry fireballs = new PriorityEntry("Fireball", "For example Ghast projectiles", Fireball.class);
 
         public final String name;
         public final String description;

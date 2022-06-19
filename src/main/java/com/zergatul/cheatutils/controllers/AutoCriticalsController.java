@@ -42,6 +42,10 @@ public class AutoCriticalsController {
 
                     @Override
                     public void onAttack() {
+                        if (ConfigStore.instance.getConfig().autoCriticalsConfig.onlyOnGround && !mc.player.isOnGround()) {
+                            return;
+                        }
+
                         args.skip = true;
                         processed.add(packet);
 

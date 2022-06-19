@@ -22,6 +22,10 @@ public class Config {
     public ExplorationMiniMapConfig explorationMiniMapConfig = new ExplorationMiniMapConfig();
     public AutoCriticalsConfig autoCriticalsConfig = new AutoCriticalsConfig();
     public FlyHackConfig flyHackConfig = new FlyHackConfig();
+    public AutoTotemConfig autoTotemConfig = new AutoTotemConfig();
+    public DeathCoordinatesConfig deathCoordinatesConfig = new DeathCoordinatesConfig();
+    public ElytraTunnelConfig elytraTunnelConfig = new ElytraTunnelConfig();
+    public FreeCamConfig freeCamConfig = new FreeCamConfig();
 
     public Config() {
         esp = true;

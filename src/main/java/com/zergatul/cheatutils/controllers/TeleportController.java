@@ -28,9 +28,6 @@ public class TeleportController {
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             boolean teleportDetected = false;
-            if (FreeCamController.instance.isActive()) {
-                return;
-            }
             if (mc.player != null) {
                 double xn = mc.player.getX();
                 double yn = mc.player.getY();

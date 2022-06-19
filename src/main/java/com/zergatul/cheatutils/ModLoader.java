@@ -33,6 +33,11 @@ public final class ModLoader {
         MinecraftForge.EVENT_BUS.register(EntityOwnerController.instance);
         MinecraftForge.EVENT_BUS.register(ExplorationMiniMapController.instance);
         MinecraftForge.EVENT_BUS.register(AutoCriticalsController.instance);
+        MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
+        MinecraftForge.EVENT_BUS.register(AutoTotemController.instance);
+
+        MinecraftForge.EVENT_BUS.register(TestController.instance);
+
         //MinecraftForge.EVENT_BUS.register(AutoDropController.instance);
         //MinecraftForge.EVENT_BUS.register(LavaCastBuilderController.instance);
 

@@ -8,18 +8,23 @@
     "MixinBoat",
     "MixinBrandingControl",
     "MixinCamera",
+    "MixinCameraType",
     "MixinClientChunkCache",
     "MixinClientPacketListener",
-    "MixinClientboundPlayerInfoPacket",
+    "MixinDeathScreen",
     "MixinEntity",
     "MixinEntityRenderer",
     "MixinLightTexture",
     "MixinLivingEntity",
+    "MixinGameRenderer",
+    "MixinGui",
+    "MixinLevelRenderer",
     "MixinLocalPlayer",
     "MixinMinecraft",
+    "MixinMouseHandler",
     "MixinC2SModListReply",
     "MixinPig",
-    "MixinPlayerRenderer",
-    "MixinScreen"
+    "MixinScreen",
+    "MixinServerboundMovePlayerPacket"
   ]
 }

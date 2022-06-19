@@ -1,9 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix4f;
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
@@ -12,23 +10,17 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.util.HashSet;
-
-import static net.minecraft.client.renderer.LevelRenderer.DIRECTIONS;
 
 public class RenderController {
 
@@ -48,9 +40,10 @@ public class RenderController {
             return;
         }
 
-        Vec3 view = mc.gameRenderer.getMainCamera().getPosition();
-        //Camera camera = mc.getBlockEntityRenderDispatcher().camera;
-        //Vec3 cam = camera.getPosition();
+        Camera camera = mc.gameRenderer.getMainCamera();
+        Vec3 view = camera.getPosition();
+        float xRot = camera.getXRot();
+        float yRot = camera.getYRot();
 
         LightLevelController.instance.render(event);
         EndCityChunksController.instance.render(event);
@@ -81,8 +74,8 @@ public class RenderController {
                 deltaXRot = Math.abs(Mth.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F;
             }
             double drawBeforeCameraDist = 1;
-            double yaw = Mth.lerp(event.getPartialTick(), mc.player.yRotO, mc.player.getYRot()) * Math.PI / 180;
-            double pitch = (Mth.lerp(event.getPartialTick(), mc.player.xRotO, mc.player.getXRot()) + deltaXRot) * Math.PI / 180;
+            double yaw = yRot * Math.PI / 180;
+            double pitch = (xRot + deltaXRot) * Math.PI / 180;
 
             tracerY -= translateY;
             tracerX += translateX * Math.cos(yaw);
@@ -182,9 +175,6 @@ public class RenderController {
             for (Entity entity : mc.player.clientLevel.entitiesForRendering()) {
 
                 if (entity instanceof LocalPlayer) {
-                    continue;
-                }
-                if (entity instanceof FreeCamController.ShadowCopyPlayer) {
                     continue;
                 }
 

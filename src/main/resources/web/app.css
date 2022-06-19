@@ -137,6 +137,14 @@ span.text {
     margin-right: 4px;
 }
 
+span.explanation {
+    display: inline-block;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 12px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 label.switch-label {
     cursor: pointer;
     display: flex;

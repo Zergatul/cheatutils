@@ -259,6 +259,58 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().flyHackConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("auto-totem", AutoTotemConfig.class) {
+            @Override
+            protected AutoTotemConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoTotemConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoTotemConfig config) {
+                ConfigStore.instance.getConfig().autoTotemConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("death-coordinates", DeathCoordinatesConfig.class) {
+            @Override
+            protected DeathCoordinatesConfig getConfig() {
+                return ConfigStore.instance.getConfig().deathCoordinatesConfig;
+            }
+
+            @Override
+            protected void setConfig(DeathCoordinatesConfig config) {
+                ConfigStore.instance.getConfig().deathCoordinatesConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("elytra-tunnel", ElytraTunnelConfig.class) {
+            @Override
+            protected ElytraTunnelConfig getConfig() {
+                return ConfigStore.instance.getConfig().elytraTunnelConfig;
+            }
+
+            @Override
+            protected void setConfig(ElytraTunnelConfig config) {
+                config.limit = MathUtils.clamp(config.limit, -1000, 1000);
+                ConfigStore.instance.getConfig().elytraTunnelConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("free-cam", FreeCamConfig.class) {
+            @Override
+            protected FreeCamConfig getConfig() {
+                return ConfigStore.instance.getConfig().freeCamConfig;
+            }
+
+            @Override
+            protected void setConfig(FreeCamConfig config) {
+                config.acceleration = MathUtils.clamp(config.acceleration, 0.1, 10);
+                config.maxSpeed = MathUtils.clamp(config.maxSpeed, 5, 500);
+                config.slowdownFactor = MathUtils.clamp(config.slowdownFactor, 1e-9, 0.5);
+                ConfigStore.instance.getConfig().freeCamConfig = config;
+            }
+        });
     }
 
     @Override

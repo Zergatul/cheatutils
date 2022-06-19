@@ -1,0 +1,26 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Free Cam</legend>
+        <div class="description">
+            You can move camera around and through blocks. Default key F6, but can be changed in options. You can open chests through walls or attack entities.<br>
+            You can adjust camera movements settings here.
+        </div>
+        <div>
+            <span class="text">Acceleration:</span>
+            <input type="text" v-model="config.acceleration" @change="update()">
+            <span class="explanation">(how quickly you reach max speed)</span>
+        </div>
+        <div>
+            <span class="text">Max Speed:</span>
+            <input type="text" v-model="config.maxSpeed" @change="update()">
+        </div>
+        <div>
+            <span class="text">Slowdown Factor:</span>
+            <input type="text" v-model="config.slowdownFactor" @change="update()">
+            <span class="explanation">(how quickly you slowdown after releasing key, closer to zero = quicker slowdown, closer to one = slower)</span>
+        </div>
+    </fieldset>
+</div>

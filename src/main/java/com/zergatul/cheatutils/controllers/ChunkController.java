@@ -86,7 +86,7 @@ public class ChunkController {
             return;
         }
 
-        LocalPlayer player = FreeCamController.instance.isActive() ? FreeCamController.instance.getPlayer() : mc.player;
+        LocalPlayer player = mc.player;
 
         if (player == null) {
             clear();

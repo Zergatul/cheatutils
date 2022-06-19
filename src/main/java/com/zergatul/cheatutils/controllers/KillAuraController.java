@@ -29,7 +29,7 @@ public class KillAuraController {
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             var config = ConfigStore.instance.getConfig().killAuraConfig;
-            if (!config.active || FreeCamController.instance.isActive()) {
+            if (!config.active) {
                 target = null;
                 return;
             }
@@ -99,11 +99,13 @@ public class KillAuraController {
     }
 
     private void onAfterSendPosition() {
-        if (target == null || FreeCamController.instance.isActive()) {
+        if (target == null) {
             return;
         }
 
-        mc.gameMode.attack(mc.player, target);
+        //logger.info("Attacking {}", target.getClass().getName());
+        LocalPlayer player = mc.player;
+        mc.gameMode.attack(player, target);
         mc.player.swing(InteractionHand.MAIN_HAND);
         target = null;
     }

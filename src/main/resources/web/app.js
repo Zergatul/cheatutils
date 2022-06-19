@@ -67,6 +67,10 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'ExplorationMiniMapConfig');
     addComponent(args, 'AutoCriticalsConfig');
     addComponent(args, 'FlyHackConfig');
+    addComponent(args, 'AutoTotemConfig');
+    addComponent(args, 'DeathCoordinatesConfig');
+    addComponent(args, 'ElytraTunnelConfig');
+    addComponent(args, 'FreeCamConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

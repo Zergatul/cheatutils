@@ -76,7 +76,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-totem'">Auto Totem</button>
+                        </td>
                         <td>
                             <button @click="current = 'light-level'">Light Level</button>
                         </td>
@@ -104,8 +106,20 @@
                         <td>
                             <button @click="current = 'entity-owner'">Entity Owner</button>
                         </td>
+                        <td>
+                            <button @click="current = 'elytra-tunnel'">Elytra Tunnel</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'death-coordinates'">Death Coordinates</button>
+                        </td>
+                    </tr>
+                    <tr>
                         <td></td>
-                        
+                        <td>
+                            <button @click="current = 'free-cam'">Free Cam</button>
+                        </td>
+                        <td></td>
+                        <td></td>
                     </tr>
                 </tbody>
             </table>
@@ -210,6 +224,26 @@
             v-if="current == 'fly-hack'"
             @back="backToMain()">
         </fly-hack-config>
+
+        <auto-totem-config
+            v-if="current == 'auto-totem'"
+            @back="backToMain()">
+        </auto-totem-config>
+
+        <death-coordinates-config
+            v-if="current == 'death-coordinates'"
+            @back="backToMain()">
+        </death-coordinates-config>
+
+        <elytra-tunnel-config
+            v-if="current == 'elytra-tunnel'"
+            @back="backToMain()">
+        </elytra-tunnel-config>
+
+        <free-cam-config
+            v-if="current == 'free-cam'"
+            @back="backToMain()">
+        </free-cam-config>
 
     </div>
 
