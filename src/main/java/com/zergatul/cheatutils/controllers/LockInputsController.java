@@ -1,37 +1,32 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.HoldKeyConfig;
+import com.zergatul.cheatutils.configs.LockInputsConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class HoldKeyController {
+public class LockInputsController {
 
-    public static final HoldKeyController instance = new HoldKeyController();
+    public static final LockInputsController instance = new LockInputsController();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private boolean lastHoldUp;
+    private boolean lastHoldForward;
     private boolean lastHoldUse;
 
-    private HoldKeyController() {
+    private LockInputsController() {
 
     }
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            HoldKeyConfig config = ConfigStore.instance.getConfig().holdKeyConfig;
-            if (!config.enabled) {
-                lastHoldUp = false;
-                lastHoldUse = false;
-                return;
-            }
+            LockInputsConfig config = ConfigStore.instance.getConfig().lockInputsConfig;
 
-            if (config.holdUp) {
+            if (config.holdForward) {
                 mc.options.keyUp.setDown(true);
             } else {
-                if (lastHoldUp) {
+                if (lastHoldForward) {
                     mc.options.keyUp.setDown(false);
                 }
             }
@@ -44,7 +39,7 @@ public class HoldKeyController {
                 }
             }
 
-            lastHoldUp = config.holdUp;
+            lastHoldForward = config.holdForward;
             lastHoldUse = config.holdUse;
         }
     }

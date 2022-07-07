@@ -3,7 +3,7 @@ function createComponent(template) {
         template: template,
         created() {
             let self = this;
-            axios.get('/api/exploration-mini-map').then(function (response) {
+            axios.get('/api/lock-inputs').then(function (response) {
                 self.config = response.data;
             });
         },
@@ -13,15 +13,9 @@ function createComponent(template) {
             };
         },
         methods: {
-            addMarker() {
-                axios.post('/api/exploration-mini-map-markers', {});
-            },
-            clearMarkers() {
-                axios.delete('/api/exploration-mini-map-markers/all', {});
-            },
             update() {
                 let self = this;
-                axios.post('/api/exploration-mini-map', this.config).then(function (response) {
+                axios.post('/api/lock-inputs', this.config).then(function (response) {
                     self.config = response.data;
                 });
             }

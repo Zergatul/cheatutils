@@ -22,5 +22,13 @@
             <input type="text" v-model="config.slowdownFactor" @change="update()">
             <span class="explanation">(how quickly you slowdown after releasing key, closer to zero = quicker slowdown, closer to one = slower)</span>
         </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.renderHands"
+                    @change="update()">
+                <span>Render hands (doesn't work with OptiFine)</span>
+            </label>
+        </div>
     </fieldset>
 </div>

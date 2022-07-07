@@ -67,6 +67,7 @@ public class EntityInfoApi extends ApiBase {
         Husk.class,
         IronGolem.class,
         ItemEntity.class,
+        ItemFrame.class,
         Llama.class,
         MagmaCube.class,
         Minecart.class,

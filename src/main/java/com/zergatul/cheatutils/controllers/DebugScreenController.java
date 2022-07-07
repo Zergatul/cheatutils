@@ -5,6 +5,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Locale;
 
 public class DebugScreenController {
@@ -18,21 +19,18 @@ public class DebugScreenController {
 
     }
 
-    @SubscribeEvent
-    public void onRenderGameOverlayTextEvent(RenderGameOverlayEvent.Text event) {
-        if (mc.options.renderDebug) {
-            event.getLeft().add("");
-            event.getLeft().add("Zergatul Cheat Utils");
-            event.getLeft().add("Loaded chunks: " + ChunkController.instance.getLoadedChunksCount());
-            event.getLeft().add("Block scanning thread queue size: " + BlockFinderController.instance.getScanningQueueCount());
-            event.getLeft().add("Block scanning thread load: " + format.format(BlockFinderController.instance.getScanningThreadLoadPercent()) + "%");
-            event.getLeft().add("Horizontal speed: " + format.format(SpeedCounterController.instance.getSpeed()));
+    public void onGetGameInformation(List<String> list) {
+        list.add("");
+        list.add("Zergatul Cheat Utils");
+        list.add("Loaded chunks: " + ChunkController.instance.getLoadedChunksCount());
+        list.add("Block scanning thread queue size: " + BlockFinderController.instance.getScanningQueueCount());
+        list.add("Block scanning thread load: " + format.format(BlockFinderController.instance.getScanningThreadLoadPercent()) + "%");
+        list.add("Horizontal speed: " + format.format(SpeedCounterController.instance.getSpeed()));
 
-            FreeCamController freeCam = FreeCamController.instance;
-            if (freeCam.isActive()) {
-                String coordinates = String.format(Locale.ROOT, "Free Cam XYZ: %.3f / %.5f / %.3f", freeCam.getX(), freeCam.getY(), freeCam.getZ());
-                event.getLeft().add(coordinates);
-            }
-        }
+        FreeCamController.instance.onDebugScreenGetGameInformation(list);
+    }
+
+    public void onGetSystemInformation(List<String> list) {
+        FreeCamController.instance.onDebugScreenGetSystemInformation(list);
     }
 }

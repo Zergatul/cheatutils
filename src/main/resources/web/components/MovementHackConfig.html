@@ -1,0 +1,48 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Movement Hack</legend>
+        <div class="description">
+            Different hacks related to movement.
+        </div>
+        <div class="description">
+            Don't reduce your speed when you change direction. Works with elytra.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.preserveSpeed"
+                    @change="update()">
+                <span>Preserve speed</span>
+            </label>
+        </div>
+        <div class="description">
+            Don't reduce your speed when you use consumable items, such as food or potions.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.disableSlowdownOnUseItem"
+                    @change="update()">
+                <span>No slow on item use</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.scaleInputVector"
+                    @change="update()">
+                <span>Override max speed</span>
+            </label>
+        </div>
+        <div class="description">
+            Value 1 means default speed. Value 2 increase max speed by 2 and so on.
+        </div>
+        <div>
+            <span class="text">Max speed factor:</span>
+            <input type="text" v-model="config.inputVectorFactor" @change="update()">
+        </div>
+    </fieldset>
+</div>

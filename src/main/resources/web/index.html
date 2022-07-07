@@ -44,7 +44,7 @@
                             <button @click="current = 'full-bright'">Full Bright</button>
                         </td>
                         <td>
-                            <button @click="current = 'hold-key'">Hold Key</button>
+                            <button @click="current = 'lock-inputs'">Lock Inputs</button>
                         </td>
                     </tr>
                     <tr>
@@ -118,8 +118,17 @@
                         <td>
                             <button @click="current = 'free-cam'">Free Cam</button>
                         </td>
+                        <td>
+                            <button @click="current = 'movement-hack'">Movement</button>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
                         <td></td>
                         <td></td>
+                        <td>
+                            <button @click="current = 'scaffold'">Scaffold</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -200,10 +209,10 @@
             @back="backToMain()">
         </light-level-config>
 
-        <hold-key-config
-            v-if="current == 'hold-key'"
+        <lock-inputs-config
+            v-if="current == 'lock-inputs'"
             @back="backToMain()">
-        </hold-key-config>
+        </lock-inputs-config>
 
         <entity-owner-config
             v-if="current == 'entity-owner'"
@@ -244,6 +253,16 @@
             v-if="current == 'free-cam'"
             @back="backToMain()">
         </free-cam-config>
+
+        <movement-hack-config
+            v-if="current == 'movement-hack'"
+            @back="backToMain()">
+        </movement-hack-config>
+
+        <scaffold-config
+            v-if="current == 'scaffold'"
+            @back="backToMain()">
+        </scaffold-config>
 
     </div>
 

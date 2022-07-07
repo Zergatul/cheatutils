@@ -3,11 +3,14 @@ package com.zergatul.cheatutils.mixins;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FlyHackConfig;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
+import com.zergatul.cheatutils.helpers.MixinEntityHelper;
+import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LocalPlayer.class)
 public class MixinLocalPlayer {
@@ -28,6 +31,8 @@ public class MixinLocalPlayer {
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/player/LocalPlayer;aiStep()V")
     private void onBeforeAiStep(CallbackInfo info) {
+        MixinLocalPlayerHelper.insideAiStep = true;
+
         FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
         if (config.enabled) {
             LocalPlayer player = (LocalPlayer) (Object) this;
@@ -46,11 +51,22 @@ public class MixinLocalPlayer {
 
     @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/player/LocalPlayer;aiStep()V")
     private void onAfterAiStep(CallbackInfo info) {
+        MixinLocalPlayerHelper.insideAiStep = false;
+
         if (flyHackOverride) {
             LocalPlayer player = (LocalPlayer) (Object) this;
             player.getAbilities().flying = oldFlying;
             player.getAbilities().setFlyingSpeed(oldFlyingSpeed);
             flyHackOverride = false;
+        }
+    }
+
+    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z", cancellable = true)
+    private void onIsUsingItem(CallbackInfoReturnable<Boolean> info) {
+        if (MixinLocalPlayerHelper.insideAiStep) {
+            if (ConfigStore.instance.getConfig().movementHackConfig.disableSlowdownOnUseItem) {
+                info.setReturnValue(false);
+            }
         }
     }
 }

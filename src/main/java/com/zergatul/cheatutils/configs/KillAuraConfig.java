@@ -8,14 +8,12 @@ import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
-import org.lwjgl.system.CallbackI;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 public class KillAuraConfig {
 
@@ -55,6 +53,7 @@ public class KillAuraConfig {
         public static final PriorityEntry shulkerBullets = new PriorityEntry("Shulker Bullets", null, ShulkerBullet.class);
         public static final PriorityEntry players = new PriorityEntry("Players", null, RemotePlayer.class);
         public static final PriorityEntry fireballs = new PriorityEntry("Fireball", "For example Ghast projectiles", Fireball.class);
+        public static final PriorityEntry magmaCubes = new PriorityEntry("Magma Cubes", null, MagmaCube.class);
 
         public final String name;
         public final String description;
