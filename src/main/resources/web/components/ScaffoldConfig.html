@@ -1,0 +1,39 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Scaffold</legend>
+        <div class="description">
+            Automatically places blocks below the player. Module Automatically selects full blocks from your hotbar. It will not select stairs or slabs.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+        <div class="description">
+            If specific hotbar used for scaffold becomes empty, and you have the SAME blocks in inventory, they will be moved onto your hotbar.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.replaceBlocksFromInventory"
+                    @change="update()">
+                <span>Replace blocks from inventory on hotbar</span>
+            </label>
+        </div>
+        <div class="description">
+            Thresold distance used to determine how far blocks can be placed. Range 0 - 0.5.<br>
+            0 - means place block only if center of player lie above empty block.
+            0.5 - means place any blocks tangent to circle with radius 0.5 and centered with player center.
+        </div>
+        <div>
+            <span class="text">Distance:</span>
+            <input type="text" v-model="config.distance" @change="update()">
+        </div>
+    </fieldset>
+</div>

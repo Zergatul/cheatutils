@@ -55,6 +55,7 @@ public class KillAuraConfig {
         public static final PriorityEntry shulkerBullets = new PriorityEntry("Shulker Bullets", null, ShulkerBullet.class);
         public static final PriorityEntry players = new PriorityEntry("Players", null, RemotePlayer.class);
         public static final PriorityEntry fireballs = new PriorityEntry("Fireball", "For example Ghast projectiles", Fireball.class);
+        public static final PriorityEntry magmaCubes = new PriorityEntry("Magma Cubes", null, MagmaCube.class);
 
         public final String name;
         public final String description;

@@ -18,7 +18,6 @@ public final class ModLoader {
         MinecraftForge.EVENT_BUS.register(TeleportController.instance);
         MinecraftForge.EVENT_BUS.register(ShulkerTooltipController.instance);
         MinecraftForge.EVENT_BUS.register(AutoFishController.instance);
-        MinecraftForge.EVENT_BUS.register(HoldKeyController.instance);
         MinecraftForge.EVENT_BUS.register(LightLevelController.instance);
         MinecraftForge.EVENT_BUS.register(CustomCommandsController.instance);
         MinecraftForge.EVENT_BUS.register(ClientTickController.instance);
@@ -35,8 +34,10 @@ public final class ModLoader {
         MinecraftForge.EVENT_BUS.register(AutoCriticalsController.instance);
         MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
         MinecraftForge.EVENT_BUS.register(AutoTotemController.instance);
+        MinecraftForge.EVENT_BUS.register(LockInputsController.instance);
+        MinecraftForge.EVENT_BUS.register(ScaffoldController.instance);
 
-        MinecraftForge.EVENT_BUS.register(TestController.instance);
+        //MinecraftForge.EVENT_BUS.register(TestController.instance);
 
         //MinecraftForge.EVENT_BUS.register(AutoDropController.instance);
         //MinecraftForge.EVENT_BUS.register(LavaCastBuilderController.instance);

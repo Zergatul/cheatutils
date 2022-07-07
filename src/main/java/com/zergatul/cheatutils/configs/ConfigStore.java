@@ -71,6 +71,10 @@ public class ConfigStore {
         }
     }
 
+    public void onClose() {
+        thread.interrupt();
+    }
+
     private void delayedWriteThreadFunc() {
         boolean writeQeued = false;
         try {

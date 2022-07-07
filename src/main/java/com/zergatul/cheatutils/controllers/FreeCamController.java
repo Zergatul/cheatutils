@@ -4,15 +4,28 @@ import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
+import com.zergatul.cheatutils.helpers.MixinGameRendererHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class FreeCamController {
 
@@ -32,6 +45,7 @@ public class FreeCamController {
     private double leftVelocity;
     private double upVelocity;
     private long lastTime;
+    private boolean insideRenderDebug;
 
     private FreeCamController() {
 
@@ -149,12 +163,18 @@ public class FreeCamController {
                 double dx = (double) this.forwards.x() * forwardVelocity + (double) this.left.x() * leftVelocity;
                 double dy = (double) this.forwards.y() * forwardVelocity + upVelocity + (double) this.left.y() * leftVelocity;
                 double dz = (double) this.forwards.z() * forwardVelocity + (double) this.left.z() * leftVelocity;
+                dx *= frameTime;
+                dy *= frameTime;
+                dz *= frameTime;
                 double speed = new Vec3(dx, dy, dz).length() / frameTime;
                 if (speed > config.maxSpeed) {
                     double factor = config.maxSpeed / speed;
                     forwardVelocity *= factor;
                     leftVelocity *= factor;
                     upVelocity *= factor;
+                    dx *= factor;
+                    dy *= factor;
+                    dz *= factor;
                 }
                 x += dx;
                 y += dy;
@@ -178,6 +198,42 @@ public class FreeCamController {
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
         disable();
+    }
+
+    public boolean shouldOverridePlayerPosition() {
+        return MixinGameRendererHelper.insidePick || insideRenderDebug;
+    }
+
+    public void onDebugScreenGetGameInformation(List<String> list) {
+        if (active) {
+            String coordinates = String.format(Locale.ROOT, "Free Cam XYZ: %.3f / %.5f / %.3f", x, y, z);
+            list.add(coordinates);
+        }
+    }
+
+    public void onDebugScreenGetSystemInformation(List<String> list) {
+        if (active) {
+            insideRenderDebug = true;
+            try {
+                HitResult hit = mc.player.pick(20.0D, 0.0F, false);
+                if (hit.getType() == HitResult.Type.BLOCK) {
+                    BlockPos pos = ((BlockHitResult)hit).getBlockPos();
+                    BlockState state = mc.level.getBlockState(pos);
+                    list.add("");
+                    list.add(ChatFormatting.UNDERLINE + "Free Cam Targeted Block: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+                    list.add(String.valueOf(ForgeRegistries.BLOCKS.getKey(state.getBlock())));
+
+                    for (var entry: state.getValues().entrySet()) {
+                        list.add(getPropertyValueString(entry));
+                    }
+
+                    state.getTags().map(tag -> "#" + tag.location()).forEach(list::add);
+                }
+            }
+            finally {
+                insideRenderDebug = false;
+            }
+        }
     }
 
     private void calculateVectors() {
@@ -205,5 +261,18 @@ public class FreeCamController {
             velocity *= slowdown;
         }
         return velocity;
+    }
+
+    private String getPropertyValueString(Map.Entry<Property<?>, Comparable<?>> p_94072_) {
+        Property<?> property = p_94072_.getKey();
+        Comparable<?> comparable = p_94072_.getValue();
+        String s = Util.getPropertyName(property, comparable);
+        if (Boolean.TRUE.equals(comparable)) {
+            s = ChatFormatting.GREEN + s;
+        } else if (Boolean.FALSE.equals(comparable)) {
+            s = ChatFormatting.RED + s;
+        }
+
+        return property.getName() + ": " + s;
     }
 }

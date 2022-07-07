@@ -12,6 +12,7 @@
     "MixinClientChunkCache",
     "MixinClientPacketListener",
     "MixinDeathScreen",
+    "MixinDebugScreenOverlay",
     "MixinEntity",
     "MixinEntityRenderer",
     "MixinLightTexture",

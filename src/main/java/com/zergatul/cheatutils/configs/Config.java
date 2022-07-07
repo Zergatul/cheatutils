@@ -17,7 +17,6 @@ public class Config {
     public ElytraHackConfig elytraHackConfig = new ElytraHackConfig();
     public PigHackConfig pigHackConfig = new PigHackConfig();
     public EndCityChunksConfig endCityChunksConfig = new EndCityChunksConfig();
-    public HoldKeyConfig holdKeyConfig = new HoldKeyConfig();
     public EntityOwnerConfig entityOwnerConfig = new EntityOwnerConfig();
     public ExplorationMiniMapConfig explorationMiniMapConfig = new ExplorationMiniMapConfig();
     public AutoCriticalsConfig autoCriticalsConfig = new AutoCriticalsConfig();
@@ -26,6 +25,9 @@ public class Config {
     public DeathCoordinatesConfig deathCoordinatesConfig = new DeathCoordinatesConfig();
     public ElytraTunnelConfig elytraTunnelConfig = new ElytraTunnelConfig();
     public FreeCamConfig freeCamConfig = new FreeCamConfig();
+    public MovementHackConfig movementHackConfig = new MovementHackConfig();
+    public LockInputsConfig lockInputsConfig = new LockInputsConfig();
+    public ScaffoldConfig scaffoldConfig = new ScaffoldConfig();
 
     public Config() {
         esp = true;

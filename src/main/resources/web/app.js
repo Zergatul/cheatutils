@@ -62,7 +62,6 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'BeeContainerTooltipConfig');
     addComponent(args, 'LightLevelConfig');
     addComponent(args, 'EndCityChunksConfig');
-    addComponent(args, 'HoldKeyConfig');
     addComponent(args, 'EntityOwnerConfig');
     addComponent(args, 'ExplorationMiniMapConfig');
     addComponent(args, 'AutoCriticalsConfig');
@@ -71,6 +70,9 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'DeathCoordinatesConfig');
     addComponent(args, 'ElytraTunnelConfig');
     addComponent(args, 'FreeCamConfig');
+    addComponent(args, 'LockInputsConfig');
+    addComponent(args, 'MovementHackConfig');
+    addComponent(args, 'ScaffoldConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

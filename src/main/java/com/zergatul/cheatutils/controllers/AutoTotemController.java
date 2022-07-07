@@ -1,15 +1,11 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import com.zergatul.cheatutils.utils.InventorySlot;
+import com.zergatul.cheatutils.utils.InventoryUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
-import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.TickEvent;
@@ -49,36 +45,7 @@ public class AutoTotemController {
                     }
 
                     if (totemSlot >= 0) {
-                        int serverSlot = totemSlot < 9 ? totemSlot + 36 : totemSlot;
-                        Int2ObjectMap<ItemStack> int2objectmap = new Int2ObjectOpenHashMap<>();
-                        int2objectmap.put(serverSlot, new ItemStack(Items.AIR, 1));
-                        NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                                0, // containerId
-                                mc.player.inventoryMenu.getStateId(),
-                                serverSlot,
-                                0, // buttonNum
-                                ClickType.PICKUP,
-                                inventory.getItem(serverSlot),
-                                int2objectmap
-                        ));
-                        inventory.setItem(totemSlot, int2objectmap.get(serverSlot));
-
-                        int2objectmap = new Int2ObjectOpenHashMap<>();
-                        int2objectmap.put(45, new ItemStack(Items.TOTEM_OF_UNDYING, 1));
-                        NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                                0, // containerId
-                                mc.player.inventoryMenu.getStateId(),
-                                45,
-                                0, // buttonNum
-                                ClickType.PICKUP,
-                                new ItemStack(Items.AIR, 1),
-                                int2objectmap
-                        ));
-                        mc.player.setItemSlot(EquipmentSlot.OFFHAND, int2objectmap.get(45));
-
-                        if (!(mc.screen instanceof InventoryScreen)) {
-                            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(0));
-                        }
+                        InventoryUtils.moveItemStack(new InventorySlot(totemSlot), new InventorySlot(EquipmentSlot.OFFHAND));
                     }
                 }
             }

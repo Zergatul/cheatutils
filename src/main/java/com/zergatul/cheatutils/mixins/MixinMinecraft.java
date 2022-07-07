@@ -8,13 +8,14 @@ import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
-    public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+    public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
@@ -22,12 +23,16 @@ public class MixinMinecraft {
         synchronized (list) {
             for (EntityTracerConfig config: list) {
                 if (config.enabled && config.clazz.isInstance(entity) && config.glow) {
-                    //ModMain.LOGGER.info("onShouldEntityAppearGlowing - {}", entity.getClass().getName());
-                    cir.setReturnValue(true);
-                    cir.cancel();
+                    info.setReturnValue(true);
+                    info.cancel();
                     return;
                 }
             }
         }
+    }
+
+    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;close()V")
+    private void onClose(CallbackInfo info) {
+        ConfigStore.instance.onClose();
     }
 }

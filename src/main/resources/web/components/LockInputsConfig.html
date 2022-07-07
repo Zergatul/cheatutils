@@ -1,0 +1,41 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Lock Inputs</legend>
+        <div class="description">
+            Emulate holding keys or lock mouse input.
+        </div>
+        <div class="description">
+            Disables mouse input to rotate your character. Can be useful for farming/building in background when you need to periodically check minecraft window.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.mouseInputDisabled"
+                    @change="update()">
+                <span>Disable Mouse Rotation Input</span>
+            </label>
+        </div>
+        <div class="description">
+            Hold specific key.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.holdForward"
+                    @change="update()">
+                <span>Hold Forward</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.holdUse"
+                    @change="update()">
+                <span>Hold Use</span>
+            </label>
+        </div>
+    </fieldset>
+</div>

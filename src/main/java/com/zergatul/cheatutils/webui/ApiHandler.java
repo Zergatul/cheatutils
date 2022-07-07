@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import com.zergatul.cheatutils.utils.MathUtils;
+import net.minecraft.util.Mth;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
@@ -32,6 +33,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new EntitiesConfigApi());
         apis.add(new BlockColorApi());
         apis.add(new KillAuraInfoApi());
+        apis.add(new ExplorationMiniMapMarkersApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -42,18 +44,6 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(FullBrightConfig config) {
                 ConfigStore.instance.getConfig().fullBrightConfig = config;
-            }
-        });
-
-        apis.add(new SimpleConfigApi<>("hold-key", HoldKeyConfig.class) {
-            @Override
-            protected HoldKeyConfig getConfig() {
-                return ConfigStore.instance.getConfig().holdKeyConfig;
-            }
-
-            @Override
-            protected void setConfig(HoldKeyConfig config) {
-                ConfigStore.instance.getConfig().holdKeyConfig = config;
             }
         });
 
@@ -230,6 +220,7 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(ExplorationMiniMapConfig config) {
+                config.dynamicUpdateDelay = Mth.clamp(config.dynamicUpdateDelay, 0, 5000);
                 ConfigStore.instance.getConfig().explorationMiniMapConfig = config;
                 ExplorationMiniMapController.instance.onChanged();
             }
@@ -305,10 +296,48 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(FreeCamConfig config) {
-                config.acceleration = MathUtils.clamp(config.acceleration, 0.1, 10);
+                config.acceleration = MathUtils.clamp(config.acceleration, 5, 500);
                 config.maxSpeed = MathUtils.clamp(config.maxSpeed, 5, 500);
                 config.slowdownFactor = MathUtils.clamp(config.slowdownFactor, 1e-9, 0.5);
                 ConfigStore.instance.getConfig().freeCamConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("lock-inputs", LockInputsConfig.class) {
+            @Override
+            protected LockInputsConfig getConfig() {
+                return ConfigStore.instance.getConfig().lockInputsConfig;
+            }
+
+            @Override
+            protected void setConfig(LockInputsConfig config) {
+                ConfigStore.instance.getConfig().lockInputsConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("movement-hack", MovementHackConfig.class) {
+            @Override
+            protected MovementHackConfig getConfig() {
+                return ConfigStore.instance.getConfig().movementHackConfig;
+            }
+
+            @Override
+            protected void setConfig(MovementHackConfig config) {
+                config.inputVectorFactor = MathUtils.clamp(config.inputVectorFactor, 0.01, 1000);
+                ConfigStore.instance.getConfig().movementHackConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("scaffold", ScaffoldConfig.class) {
+            @Override
+            protected ScaffoldConfig getConfig() {
+                return ConfigStore.instance.getConfig().scaffoldConfig;
+            }
+
+            @Override
+            protected void setConfig(ScaffoldConfig config) {
+                config.distance = MathUtils.clamp(config.distance, 0, 0.5);
+                ConfigStore.instance.getConfig().scaffoldConfig = config;
             }
         });
     }
