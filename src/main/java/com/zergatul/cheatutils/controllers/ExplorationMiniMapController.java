@@ -22,10 +22,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
@@ -118,11 +122,7 @@ public class ExplorationMiniMapController {
     }
 
     @SubscribeEvent
-    public void render(RenderGameOverlayEvent.Post event) {
-        if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) {
-            return;
-        }
-
+    public void render(RenderGuiEvent.Post event) {
         ExplorationMiniMapConfig config = ConfigStore.instance.getConfig().explorationMiniMapConfig;
         if (!config.enabled) {
             return;
@@ -243,8 +243,8 @@ public class ExplorationMiniMapController {
     }
 
     @SubscribeEvent
-    public void onPreRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
-        if (event.getType() == RenderGameOverlayEvent.ElementType.PLAYER_LIST) {
+    public void onPreRenderGameOverlay(RenderGuiOverlayEvent.Pre event) {
+        if (event.getOverlay() == GuiOverlayManager.findOverlay(VanillaGuiOverlay.PLAYER_LIST.id())) {
             if (!ConfigStore.instance.getConfig().explorationMiniMapConfig.enabled) {
                 return;
             }
@@ -256,7 +256,7 @@ public class ExplorationMiniMapController {
     }
 
     @SubscribeEvent
-    public void onMouseScroll(InputEvent.MouseScrollEvent event) {
+    public void onMouseScroll(InputEvent.MouseScrollingEvent event) {
         if (!ConfigStore.instance.getConfig().explorationMiniMapConfig.enabled) {
             return;
         }
@@ -408,22 +408,26 @@ public class ExplorationMiniMapController {
             }
         }
 
-        renderQueue.add(new RenderThreadQueueItem(() -> segment.onChange()));
+        renderQueue.add(new RenderThreadQueueItem(segment::onChange));
     }
 
     private void drawPixel(ResourceKey<Level> dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk) {
         boolean pixelSet = false;
-        if (dimension == Level.NETHER) {
-            for (int y1 = 127; y1 >= 0; y1--) {
+        DimensionType dimensionType = mc.level.dimensionType();
+        if (dimensionType.hasCeiling()) {
+            for (int y1 = dimensionType.minY() + dimensionType.logicalHeight() - 1; y1 >= dimensionType.minY(); y1--) {
                 BlockPos pos = new BlockPos(dx, y1, dz);
                 BlockState state = chunk.getBlockState(pos);
                 if (state.isAir()) {
                     // first non-air block below
-                    for (int y2 = y1 - 1; y2 >= 0; y2--) {
+                    for (int y2 = y1 - 1; y2 >= dimensionType.minY(); y2--) {
                         pos = new BlockPos(dx, y2, dz);
                         state = chunk.getBlockState(pos);
                         if (!state.isAir()) {
                             MaterialColor materialColor = state.getMapColor(mc.level, pos);
+                            if (materialColor == MaterialColor.NONE) {
+                                continue;
+                            }
                             segment.image.setPixelRGBA(xf + dx, yf + dz, convert(materialColor.col));
                             pixelSet = true;
                             break;
@@ -436,10 +440,15 @@ public class ExplorationMiniMapController {
 
         if (!pixelSet) {
             int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, dx, dz);
-            BlockPos pos = new BlockPos(dx, height, dz);
-            BlockState state = chunk.getBlockState(pos);
-            MaterialColor materialColor = state.getMapColor(mc.level, pos);
-            segment.image.setPixelRGBA(xf + dx, yf + dz, convert(materialColor.col));
+            for (int y = height; y >= dimensionType.minY(); y--) {
+                BlockPos pos = new BlockPos(dx, y, dz);
+                BlockState state = chunk.getBlockState(pos);
+                MaterialColor materialColor = state.getMapColor(mc.level, pos);
+                if (materialColor != MaterialColor.NONE) {
+                    segment.image.setPixelRGBA(xf + dx, yf + dz, convert(materialColor.col));
+                    break;
+                }
+            }
         }
     }
 

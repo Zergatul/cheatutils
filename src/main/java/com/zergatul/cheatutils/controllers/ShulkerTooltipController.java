@@ -100,7 +100,7 @@ public class ShulkerTooltipController {
     }
 
     @SubscribeEvent
-    public void onContainerDrawForeground(ContainerScreenEvent.DrawForeground event) {
+    public void onContainerDrawForeground(ContainerScreenEvent.Render event) {
         if (locked) {
             if (Screen.hasControlDown()) {
                 event.getPoseStack().pushPose();

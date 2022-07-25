@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.controllers.AdvancedTooltipsController;
 import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import com.zergatul.cheatutils.utils.MathUtils;
@@ -34,6 +35,9 @@ public class ApiHandler implements HttpHandler {
         apis.add(new BlockColorApi());
         apis.add(new KillAuraInfoApi());
         apis.add(new ExplorationMiniMapMarkersApi());
+        apis.add(new ScriptsApi());
+        apis.add(new ScriptsAssignApi());
+        apis.add(new ScriptsDocsApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -200,18 +204,6 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("bee-tooltip", BeeContainerTooltipConfig.class) {
-            @Override
-            protected BeeContainerTooltipConfig getConfig() {
-                return ConfigStore.instance.getConfig().beeContainerTooltipConfig;
-            }
-
-            @Override
-            protected void setConfig(BeeContainerTooltipConfig config) {
-                ConfigStore.instance.getConfig().beeContainerTooltipConfig = config;
-            }
-        });
-
         apis.add(new SimpleConfigApi<>("exploration-mini-map", ExplorationMiniMapConfig.class) {
             @Override
             protected ExplorationMiniMapConfig getConfig() {
@@ -338,6 +330,42 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(ScaffoldConfig config) {
                 config.distance = MathUtils.clamp(config.distance, 0, 0.5);
                 ConfigStore.instance.getConfig().scaffoldConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("advanced-tooltips", AdvancedTooltipsConfig.class) {
+            @Override
+            protected AdvancedTooltipsConfig getConfig() {
+                return ConfigStore.instance.getConfig().advancedTooltipsConfig;
+            }
+
+            @Override
+            protected void setConfig(AdvancedTooltipsConfig config) {
+                ConfigStore.instance.getConfig().advancedTooltipsConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("fog", FogConfig.class) {
+            @Override
+            protected FogConfig getConfig() {
+                return ConfigStore.instance.getConfig().fogConfig;
+            }
+
+            @Override
+            protected void setConfig(FogConfig config) {
+                ConfigStore.instance.getConfig().fogConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("instant-disconnect", InstantDisconnectConfig.class) {
+            @Override
+            protected InstantDisconnectConfig getConfig() {
+                return ConfigStore.instance.getConfig().instantDisconnectConfig;
+            }
+
+            @Override
+            protected void setConfig(InstantDisconnectConfig config) {
+                ConfigStore.instance.getConfig().instantDisconnectConfig = config;
             }
         });
     }

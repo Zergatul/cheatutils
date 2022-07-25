@@ -1,5 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-public class BeeContainerTooltipConfig {
+public class InstantDisconnectConfig {
     public boolean enabled;
 }

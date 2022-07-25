@@ -46,7 +46,7 @@ public class NetworkPacketsController {
     }*/
 
     @SubscribeEvent
-    public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggedInEvent event) {
+    public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
 
         connection = event.getConnection();
         ChannelPipeline pipeline = connection.channel().pipeline();

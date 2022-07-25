@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.controllers;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.text.DecimalFormat;

@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.BlockFinderController;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.http.MethodNotSupportedException;
 
 public class BlocksConfigApi extends ApiBase {
@@ -52,7 +53,7 @@ public class BlocksConfigApi extends ApiBase {
     public String put(String id, String body) throws MethodNotSupportedException {
 
         BlockTracerConfig jsonConfig = gson.fromJson(body, BlockTracerConfig.class);
-        if (!id.equals(Registry.BLOCK.getKey(jsonConfig.block).toString())) {
+        if (!id.equals(ForgeRegistries.BLOCKS.getKey(jsonConfig.block).toString())) {
             throw new MethodNotSupportedException("Block ids don't match.");
         }
 
@@ -79,7 +80,7 @@ public class BlocksConfigApi extends ApiBase {
 
         var list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
-            BlockTracerConfig config = list.stream().filter(c -> Registry.BLOCK.getKey(c.block).equals(loc)).findFirst().orElse(null);
+            BlockTracerConfig config = list.stream().filter(c -> ForgeRegistries.BLOCKS.getKey(c.block).equals(loc)).findFirst().orElse(null);
             if (config == null) {
                 throw new MethodNotSupportedException("Cannot find block config.");
             }

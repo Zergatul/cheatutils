@@ -59,7 +59,6 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'EntitiesConfig');
     addComponent(args, 'EnderPearlPathConfig');
     addComponent(args, 'ShulkerTooltipConfig');
-    addComponent(args, 'BeeContainerTooltipConfig');
     addComponent(args, 'LightLevelConfig');
     addComponent(args, 'EndCityChunksConfig');
     addComponent(args, 'EntityOwnerConfig');
@@ -73,6 +72,10 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'LockInputsConfig');
     addComponent(args, 'MovementHackConfig');
     addComponent(args, 'ScaffoldConfig');
+    addComponent(args, 'AdvancedTooltipsConfig');
+    addComponent(args, 'FogConfig');
+    addComponent(args, 'InstantDisconnectConfig');
+    addComponent(args, 'ScriptsConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

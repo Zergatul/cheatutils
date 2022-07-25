@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.network.protocol.game.ClientboundDisconnectPacket;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class AutoDisconnectController {
@@ -19,8 +19,8 @@ public class AutoDisconnectController {
     }
 
     @SubscribeEvent
-    public void onEntityJoinWorld(EntityJoinWorldEvent event) {
-        if (event.getWorld().isClientSide && ConfigStore.instance.getConfig().autoDisconnectConfig.enabled) {
+    public void onEntityJoinWorld(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide && ConfigStore.instance.getConfig().autoDisconnectConfig.enabled) {
             if (event.getEntity() instanceof RemotePlayer) {
                 var player = (RemotePlayer) event.getEntity();
                 Component component = MutableComponent.create(new LiteralContents("AutoDisconnect module: " + player.getName().getString()));

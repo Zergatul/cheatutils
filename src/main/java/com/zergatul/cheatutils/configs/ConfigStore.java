@@ -2,15 +2,23 @@ package com.zergatul.cheatutils.configs;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
+import com.zergatul.cheatutils.controllers.KeyBindingsController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
+import com.zergatul.cheatutils.controllers.ScriptController;
+import com.zergatul.cheatutils.helpers.MixinOptionsHelper;
+import com.zergatul.cheatutils.scripting.ParseException;
+import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 
 public class ConfigStore {
 
@@ -61,7 +69,7 @@ public class ConfigStore {
             }
         }
 
-        onConfigChanged();
+        onConfigLoaded();
     }
 
     public void requestWrite() {
@@ -126,8 +134,45 @@ public class ConfigStore {
         return new File(configDir.getPath(), FILE);
     }
 
-    private void onConfigChanged() {
+    private void onConfigLoaded() {
         LightLevelController.instance.onChanged();
         config.blocks.apply();
+
+        if (config.scriptsConfig.scripts.size() == 0) {
+            final String toggleEspName = "Toggle ESP";
+            try {
+                ScriptController.instance.add(toggleEspName, "main.toggleEsp();");
+                KeyBindingsController.instance.keys[0].setKeyModifierAndCode(net.minecraftforge.client.settings.KeyModifier.NONE, InputConstants.getKey("key.keyboard.backslash"));
+                KeyBindingsController.instance.assign(0, toggleEspName);
+            } catch (ParseException | ScriptCompileException e) {
+                e.printStackTrace();
+            }
+
+            final String toggleFreeCamName = "Toggle FreeCam";
+            try {
+                ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();");
+                KeyBindingsController.instance.keys[1].setKeyModifierAndCode(net.minecraftforge.client.settings.KeyModifier.NONE, InputConstants.getKey("key.keyboard.f6"));
+                KeyBindingsController.instance.assign(1, toggleFreeCamName);
+            } catch (ParseException | ScriptCompileException e) {
+                e.printStackTrace();
+            }
+        } else {
+            ArrayList<ScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.scriptsConfig.scripts);
+            config.scriptsConfig.scripts.clear();
+            copy.forEach(s -> {
+                try {
+                    ScriptController.instance.add(s.name, s.code);
+                } catch (ParseException | ScriptCompileException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            String[] bindings = config.keyBindingsConfig.bindings;
+            for (int i = 0; i < KeyBindingsConfig.KeysCount; i++) {
+                if (bindings[i] != null) {
+                    KeyBindingsController.instance.assign(i, bindings[i]);
+                }
+            }
+        }
     }
 }

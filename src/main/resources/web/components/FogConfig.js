@@ -3,7 +3,7 @@ function createComponent(template) {
         template: template,
         created() {
             let self = this;
-            axios.get('/api/bee-tooltip').then(function (response) {
+            axios.get('/api/fog').then(function (response) {
                 self.config = response.data;
             });
         },
@@ -15,7 +15,7 @@ function createComponent(template) {
         methods: {
             update() {
                 let self = this;
-                axios.post('/api/bee-tooltip', this.config).then(function (response) {
+                axios.post('/api/fog', this.config).then(function (response) {
                     self.config = response.data;
                 });
             }

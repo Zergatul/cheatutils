@@ -131,6 +131,16 @@ function createComponent(template) {
                     });
                 }
             },
+            removeById(id) {
+                let self = this;
+                axios.delete('/api/blocks/' + id).then(function (response) {
+                    let index = self.blocksConfigList.findIndex(b => b.block == id);
+                    if (index >= 0) {
+                        self.blocksConfigList.splice(index, 1);
+                    }
+                    delete self.blocksConfigMap[id];
+                });
+            },
             update(config) {
                 axios.put('/api/blocks/' + config.block, config);
             }

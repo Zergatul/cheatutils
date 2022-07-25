@@ -1,0 +1,213 @@
+/*
+javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
+jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
+javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\scripting\ScriptingLanguage.jj.jj
+*/
+
+PARSER_BEGIN(ScriptingLanguage)
+
+package com.zergatul.cheatutils.scripting;
+
+public class ScriptingLanguage {
+}
+
+PARSER_END(ScriptingLanguage)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  < FALSE: "false" >
+| < NULL: "null" >
+| < TRUE: "true" >
+}
+
+
+TOKEN : /* LITERALS */
+{
+  < INTEGER_LITERAL:
+        <DECIMAL_LITERAL> (["l","L"])?
+      | <HEX_LITERAL> (["l","L"])?
+  >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < FLOATING_POINT_LITERAL:
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])?
+      | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])?
+      | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])?
+      | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]
+  >
+|
+  < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+|
+  < STRING_LITERAL:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )*
+      "\""
+  >
+}
+
+TOKEN :
+{
+  < IF: "if" >
+| < ELSE: "else">
+}
+
+TOKEN :
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < #LETTER: ["a"-"z","A"-"Z","_"] >
+|
+  < #DIGIT: ["0"-"9"] >
+}
+
+TOKEN :
+{
+  < LPAREN: "(" >
+| < RPAREN: ")" >
+| < SEMICOLON: ";" >
+| < COMMA: "," >
+| < DOT: "." >
+}
+
+ASTInput Input() :
+{}
+{
+  ( Statement() )* <EOF>
+  { return jjtThis; }
+}
+
+void Statement() :
+{}
+{
+  EmptyStatement()
+|
+  BlockStatement()
+|
+  IfStatement()
+|
+  MethodCall() ";"
+}
+
+void EmptyStatement() :
+{}
+{
+  ";"
+}
+
+void BlockStatement() :
+{}
+{
+  "{" ( Statement() )* "}"
+}
+
+void IfStatement() :
+{}
+{
+  <IF> "(" Expression() ")" Statement() [ LOOKAHEAD(1) <ELSE> Statement() ]
+}
+
+void MethodCall() :
+{}
+{
+  Name() Arguments()
+}
+
+void Expression() :
+{}
+{
+  "(" Expression() ")"
+|
+  LOOKAHEAD(3) MethodCall()
+|
+  Name()
+|
+  Literal()
+}
+
+void Arguments() :
+{}
+{
+  "(" [ Expression() ( "," Expression() )* ] ")"
+}
+
+void Name() :
+{}
+{
+  Identifier() ( LOOKAHEAD(2) "." Identifier() )*
+}
+
+void Identifier() :
+{
+  Token token;
+}
+{
+  token = <IDENTIFIER>
+  {
+    jjtThis.jjtSetValue(token.image);
+  }
+}
+
+void Literal() :
+{}
+{
+  <INTEGER_LITERAL>
+|
+  <FLOATING_POINT_LITERAL>
+|
+  StringLiteral()
+|
+  BooleanLiteral()
+|
+  NullLiteral()
+}
+
+void StringLiteral() :
+{
+  Token token;
+}
+{
+  token = <STRING_LITERAL>
+  {
+    jjtThis.jjtSetValue(token.image);
+  }
+}
+
+void BooleanLiteral() :
+{
+  Token token;
+}
+{
+  token = "true"
+  {
+    jjtThis.jjtSetValue(true);
+  }
+|
+  token = "false"
+  {
+    jjtThis.jjtSetValue(false);
+  }
+}
+
+void NullLiteral() :
+{}
+{
+  "null"
+}

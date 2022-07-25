@@ -4,7 +4,7 @@
             <button style="width: 200px;" @click="$emit('back')">Back</button>
             <button style="width: 200px;" @click="openAdd()">Add Block</button>
         </div>
-        <ul class="blocks-list">
+        <ul class="list-base blocks-list">
             <li v-for="item in blocksConfigList" :key="item.block" v-bind="{ 'data-id': item.block }">
                 <div class="c1"></div>
                 <div class="c2">
@@ -40,6 +40,9 @@
                 <div class="c6">
                     <button class="edit" @click="openEdit(item.block)">Edit</button>
                 </div>
+                <div class="c6">
+                    <button class="remove" @click="removeById(item.block)">Remove</button>
+                </div>
             </li>
         </ul>
     </div>
@@ -53,7 +56,7 @@
                 v-model="search"
                 @input="filterBlockList()">
         </div>
-        <ul class="add-block-list">
+        <ul class="list-base add-block-list">
             <li v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
                 <div class="c1"></div>
                 <div class="c2">

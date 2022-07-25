@@ -24,6 +24,10 @@ public class EndCityChunksController {
     }
 
     public void render(RenderLevelLastEvent event) {
+        if (vertexBuffer == null) {
+            return;
+        }
+
         Config config = ConfigStore.instance.getConfig();
         if (!config.esp || !config.endCityChunksConfig.enabled) {
             return;

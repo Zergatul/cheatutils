@@ -6,13 +6,10 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,7 +63,7 @@ public class ChunkController {
 
     @SubscribeEvent()
     public synchronized void onChunkLoad(ChunkEvent.Load event) {
-        if (!event.getWorld().isClientSide()) {
+        if (!event.getLevel().isClientSide()) {
             return;
         }
         syncChunks();
@@ -74,7 +71,7 @@ public class ChunkController {
 
     @SubscribeEvent
     public synchronized void onChunkUnload(ChunkEvent.Unload event) {
-        if (!event.getWorld().isClientSide()) {
+        if (!event.getLevel().isClientSide()) {
             return;
         }
         syncChunks();

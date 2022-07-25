@@ -1,0 +1,55 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="list">
+        <legend>Scripts</legend>
+        <div v-if="mode == 'list'">
+            <div style="padding-left: 16px;">
+                <button style="width: 80px;" @click="add()">Add...</button>
+            </div>
+            <ul class="scripts-list">
+                <li v-for="script in list">
+                    <button @click="edit(script.name)">Edit</button>
+                    <button @click="remove(script.name)">Remove</button>
+                    <select v-model="script.key" @change="assign(script)">
+                        <option value="-1">&lt;Assign to key bind...&gt;</option>
+                        <option value="0">Key 0</option>
+                        <option value="1">Key 1</option>
+                        <option value="2">Key 2</option>
+                        <option value="3">Key 3</option>
+                        <option value="4">Key 4</option>
+                        <option value="5">Key 5</option>
+                        <option value="6">Key 6</option>
+                        <option value="7">Key 7</option>
+                        <option value="8">Key 8</option>
+                        <option value="9">Key 9</option>
+                    </select>
+                    <span>{{ script.name }}</span>
+                </li>
+            </ul>
+        </div>
+        <div v-if="mode == 'add' || mode == 'edit'">
+            <div style="padding-bottom: 16px;">
+                <button style="width: 200px;" @click="mode = 'list'">Back</button>
+                <button style="width: 200px;" @click="save()">Save</button>
+                <button style="width: 200px;" @click="showApiRef()">Show/Hide API Reference</button>
+            </div>
+            <div>
+                <span class="text">Name:</span>
+                <input type="text" v-model="script.name">
+            </div>
+            <div>
+                <span class="text">Code:</span>
+            </div>
+            <div>
+                <textarea class="script-code" v-model="script.code"></textarea>
+            </div>
+            <div v-if="refs">
+                <ul class="refs">
+                    <li v-for="item in refs" v-html="item"></li>
+                </ul>
+            </div>
+        </div>
+    </fieldset>
+</div>

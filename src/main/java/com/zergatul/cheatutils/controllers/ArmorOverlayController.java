@@ -4,13 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.IIngameOverlay;
-import net.minecraftforge.client.gui.OverlayRegistry;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
 import java.util.List;
 
-public class ArmorOverlayController implements IIngameOverlay {
+public class ArmorOverlayController implements IGuiOverlay {
 
     public static final ArmorOverlayController instance = new ArmorOverlayController();
 
@@ -20,20 +20,20 @@ public class ArmorOverlayController implements IIngameOverlay {
 
     }
 
-    public void register() {
-        OverlayRegistry.registerOverlayTop("ArmorOverlay", this);
+    public void onRegister(RegisterGuiOverlaysEvent event) {
+        event.registerAboveAll("armor", this);
     }
 
     @Override
-    public void render(ForgeIngameGui gui, PoseStack poseStack, float partialTick, int width, int height) {
+    public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int width, int height) {
         if (mc.player == null) {
             return;
         }
         if (!mc.options.hideGui && gui.shouldDrawSurvivalElements() && ConfigStore.instance.getConfig().armorOverlayConfig.enabled) {
             gui.setupOverlayRenderState(true, false);
             int left = width / 2 + 28;
-            int top = height - gui.right_height - 6;
-            gui.right_height += 24;
+            int top = height - gui.rightHeight - 6;
+            gui.rightHeight += 24;
 
             List<ItemStack> armor = mc.player.getInventory().armor;
             renderItem(armor.get(3), left, top);

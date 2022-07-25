@@ -17,7 +17,7 @@ public class BlockTypeAdapter extends TypeAdapter<Block> {
         if (block == null) {
             out.nullValue();
         } else {
-            out.value(Registry.BLOCK.getKey(block).toString());
+            out.value(ForgeRegistries.BLOCKS.getKey(block).toString());
         }
     }
 

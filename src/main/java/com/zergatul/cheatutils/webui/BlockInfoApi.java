@@ -34,7 +34,7 @@ public class BlockInfoApi extends ApiBase {
 
         public BlockInfo(Block block) {
 
-            id = Registry.BLOCK.getKey(block).toString();
+            id = ForgeRegistries.BLOCKS.getKey(block).toString();
 
             MutableComponent text = block.getName();
             if (text.getContents() instanceof TranslatableContents) {

@@ -31,11 +31,8 @@ button:hover {
     background-color: #bbbfff;
 }
 
-ul.blocks-list,
-ul.entities-list,
-ul.add-block-list {
+ul.list-base {
     list-style: none;
-    width: 1000px;
     height: 400px;
     overflow-y: auto;
     border: 4px solid rgb(0, 0, 0);
@@ -45,18 +42,24 @@ ul.add-block-list {
     font-size: 16px;
 }
 
-ul.blocks-list > li,
-ul.entities-list > li,
-ul.add-block-list > li {
+ul.blocks-list,
+ul.add-block-list,
+ul.add-entity-list {
+    width: 1000px;
+}
+
+ul.entities-list {
+    width: 1200px;
+}
+
+ul.list-base > li {
     background: linear-gradient(0deg, #CCCCCC, #FFFFFF 50%, #CCCCCC 100%);
     display: flex;
     flex-direction: row;
     padding: 4px 8px;
 }
 
-ul.blocks-list > li + li,
-ul.entities-list > li + li,
-ul.add-block-list > li + li {
+ul.list-base > li + li {
     border-top: 1px solid #FFFFFF;
 }
 
@@ -93,17 +96,20 @@ ul.entities-list > li > div.c6 {
     justify-content: center;
 }
 
-ul.add-block-list > li > div.c1 {
+ul.add-block-list > li > div.c1,
+ul.add-entity-list > li > div.c1 {
     flex: 2;
 }
 
-ul.add-block-list > li > div.c2 {
+ul.add-block-list > li > div.c2,
+ul.add-entity-list > li > div.c2 {
     flex: 25;
     display: flex;
     flex-direction: column;
 }
 
-ul.add-block-list > li > div.c3 {
+ul.add-block-list > li > div.c3,
+ul.add-entity-list > li > div.c2 {
     flex: 3;
 }
 
@@ -117,7 +123,13 @@ ul.entities-list button.edit {
     width: 80px;
 }
 
-ul.add-block-list button.edit {
+ul.blocks-list button.remove,
+ul.entities-list button.remove {
+    width: 80px;
+}
+
+ul.add-block-list button.edit,
+ul.add-entity-list button.edit {
     width: 80px;
 }
 
@@ -502,4 +514,79 @@ ul.kill-aura-priority-list > li {
 
 ul.kill-aura-priority-list > li + li {
     border-top: 1px solid #FFFFFF;
+}
+
+/* Scripts */
+
+ul.scripts-list {
+    list-style: none;
+    width: 1000px;
+    height: 400px;
+    overflow-y: auto;
+    border: 4px solid rgb(0, 0, 0);
+    border-radius: 2px;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
+}
+
+ul.scripts-list > li {
+    background: linear-gradient(0deg, #CCCCCC, #FFFFFF 50%, #CCCCCC 100%);
+    display: flex;
+    flex-direction: row;
+    padding: 4px 8px;
+}
+
+ul.scripts-list > li + li {
+    border-top: 1px solid #FFFFFF;
+}
+
+ul.scripts-list button {
+    width: 80px;
+}
+
+ul.scripts-list select {
+    margin-left: 16px;
+    display: inline-block;
+    box-sizing: border-box;
+    border: 4px solid #333aa3;
+    border-radius: 10px;
+}
+
+ul.scripts-list span {
+    display: flex;
+    padding-left: 16px;
+    font-weight: bold;
+    align-items: center;
+}
+
+textarea.script-code {
+    box-sizing: border-box;
+    font-family: monospace;
+    font-size: 16px;
+    width: 100%;
+}
+
+ul.refs {
+    list-style: none;
+    width: 1000px;
+    border: 4px solid rgb(0, 0, 0);
+    border-radius: 2px;
+    padding: 0;
+    font-family: monospace;
+    font-size: 16px;
+}
+
+ul.refs > li {
+    display: flex;
+    flex-direction: row;
+    padding: 4px 8px;
+}
+
+ul.refs .method {
+    color: #00627A;
+}
+
+ul.refs .class {
+    color: #0033B3;
 }

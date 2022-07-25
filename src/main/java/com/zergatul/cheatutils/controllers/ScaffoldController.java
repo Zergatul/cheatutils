@@ -15,6 +15,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -76,9 +77,9 @@ public class ScaffoldController {
                     }
                 }
 
+                boolean placed = false;
                 for (BlockPos bp: list) {
-                    if (mc.level.getBlockState(bp).isAir()) {
-                        boolean placed = false;
+                    if (canPlaceBlock(mc.level.getBlockState(bp))) {
                         for (Direction direction: Direction.values()) {
                             BlockPos other = bp.relative(direction);
                             BlockState state = mc.level.getBlockState(other);
@@ -93,8 +94,22 @@ public class ScaffoldController {
                         }
                     }
                 }
+
+                if (!placed && config.attachToAir) {
+                    for (BlockPos bp: list) {
+                        if (canPlaceBlock(mc.level.getBlockState(bp))) {
+                            BlockPos other = bp.relative(Direction.DOWN);
+                            placeBlock(bp, Direction.UP, other, config);
+                            break;
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private boolean canPlaceBlock(BlockState state) {
+        return state.getMaterial().isReplaceable();
     }
 
     private void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, ScaffoldConfig config) {

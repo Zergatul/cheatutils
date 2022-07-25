@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,8 +62,8 @@ public class TeleportController {
     }
 
     @SubscribeEvent
-    public void onWorldUnLoad(WorldEvent.Unload event) {
-        if (event.getWorld().isClientSide()) {
+    public void onWorldUnLoad(LevelEvent.Unload event) {
+        if (event.getLevel().isClientSide()) {
             first = true;
         }
     }

@@ -44,7 +44,7 @@
                             <button @click="current = 'full-bright'">Full Bright</button>
                         </td>
                         <td>
-                            <button @click="current = 'lock-inputs'">Lock Inputs</button>
+                            <button @click="current = 'scripts'">Scripts</button>
                         </td>
                     </tr>
                     <tr>
@@ -59,6 +59,9 @@
                         </td>
                         <td>
                             <button @click="current = 'armor-overlay'">Armor Overlay</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'lock-inputs'">Lock Inputs</button>
                         </td>
                     </tr>
                     <tr>
@@ -86,16 +89,18 @@
                             <button @click="current = 'auto-criticals'">Auto Criticals</button>
                         </td>
                         <td>
-                            <button @click="current = 'bee-tooltip'">Bee Container Tooltip</button>
+                            <button @click="current = 'advanced-tooltips'">Advanced Tooltips</button>
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'instant-disconnect'">Instant Disconnect</button>
+                        </td>
                         <td>
                             <button @click="current = 'end-city-chunks'">End City Chunks</button>
                         </td>
                         <td>
-                            <button @click="current = 'fly-hack'">Fly Hack</button>
+                            <button @click="current = 'fly-hack'">Fly</button>
                         </td>
                         <td>
                             <button @click="current = 'exploration-mini-map'">Exploration Mini Map</button>
@@ -121,7 +126,9 @@
                         <td>
                             <button @click="current = 'movement-hack'">Movement</button>
                         </td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'fog'">Fog</button>
+                        </td>
                     </tr>
                     <tr>
                         <td></td>
@@ -188,11 +195,6 @@
             v-if="current == 'shulker-tooltip'"
             @back="backToMain()">
         </shulker-tooltip-config>
-
-        <bee-container-tooltip-config
-            v-if="current == 'bee-tooltip'"
-            @back="backToMain()">
-        </bee-container-tooltip-config>
 
         <ender-pearl-path-config
             v-if="current == 'ender-pearl-path'"
@@ -263,6 +265,26 @@
             v-if="current == 'scaffold'"
             @back="backToMain()">
         </scaffold-config>
+
+        <advanced-tooltips-config
+            v-if="current == 'advanced-tooltips'"
+            @back="backToMain()">
+        </advanced-tooltips-config>
+
+        <fog-config
+            v-if="current == 'fog'"
+            @back="backToMain()">
+        </fog-config>
+
+        <instant-disconnect-config
+            v-if="current == 'instant-disconnect'"
+            @back="backToMain()">
+        </instant-disconnect-config>
+
+        <scripts-config
+            v-if="current == 'scripts'"
+            @back="backToMain()">
+        </scripts-config>
 
     </div>
 

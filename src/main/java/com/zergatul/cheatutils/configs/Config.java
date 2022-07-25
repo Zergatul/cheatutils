@@ -13,7 +13,6 @@ public class Config {
     public AutoDisconnectConfig autoDisconnectConfig = new AutoDisconnectConfig();
     public ShulkerTooltipConfig shulkerTooltipConfig = new ShulkerTooltipConfig();
     public EnderPearlPathConfig enderPearlPathConfig = new EnderPearlPathConfig();
-    public BeeContainerTooltipConfig beeContainerTooltipConfig = new BeeContainerTooltipConfig();
     public ElytraHackConfig elytraHackConfig = new ElytraHackConfig();
     public PigHackConfig pigHackConfig = new PigHackConfig();
     public EndCityChunksConfig endCityChunksConfig = new EndCityChunksConfig();
@@ -28,6 +27,11 @@ public class Config {
     public MovementHackConfig movementHackConfig = new MovementHackConfig();
     public LockInputsConfig lockInputsConfig = new LockInputsConfig();
     public ScaffoldConfig scaffoldConfig = new ScaffoldConfig();
+    public AdvancedTooltipsConfig advancedTooltipsConfig = new AdvancedTooltipsConfig();
+    public FogConfig fogConfig = new FogConfig();
+    public InstantDisconnectConfig instantDisconnectConfig = new InstantDisconnectConfig();
+    public ScriptsConfig scriptsConfig = new ScriptsConfig();
+    public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
 
     public Config() {
         esp = true;

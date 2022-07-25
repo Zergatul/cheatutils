@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -161,7 +162,7 @@ public class BlockFinderController {
 
     public void scan(BlockTracerConfig config) {
 
-        ResourceLocation id = Registry.BLOCK.getKey(config.block);
+        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(config.block);
 
         synchronized (blocks) {
             if (blocks.containsKey(id)) {
@@ -188,7 +189,7 @@ public class BlockFinderController {
                         int zb = zc | z;
                         BlockPos pos = new BlockPos(xb, y, zb);
                         BlockState state = chunk.getBlockState(pos);
-                        if (Registry.BLOCK.getKey(state.getBlock()).equals(id)) {
+                        if (ForgeRegistries.BLOCKS.getKey(state.getBlock()).equals(id)) {
                             synchronized (blocks) {
                                 if (blocks.containsKey(id)) {
                                     blocks.get(id).add(pos);
@@ -213,8 +214,8 @@ public class BlockFinderController {
         var list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             for (BlockTracerConfig config: list) {
-                ResourceLocation id = Registry.BLOCK.getKey(state.getBlock());
-                if (Registry.BLOCK.getKey(config.block).equals(id)) {
+                ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+                if (ForgeRegistries.BLOCKS.getKey(config.block).equals(id)) {
                     synchronized (blocks) {
                         if (blocks.containsKey(id)) {
                             blocks.get(id).add(pos);
@@ -230,8 +231,8 @@ public class BlockFinderController {
         var list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             for (BlockTracerConfig config: list) {
-                ResourceLocation id = Registry.BLOCK.getKey(state.getBlock());
-                if (Registry.BLOCK.getKey(config.block).equals(id)) {
+                ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+                if (ForgeRegistries.BLOCKS.getKey(config.block).equals(id)) {
                     synchronized (blocks) {
                         if (blocks.containsKey(id)) {
                             blocks.get(id).remove(pos);
