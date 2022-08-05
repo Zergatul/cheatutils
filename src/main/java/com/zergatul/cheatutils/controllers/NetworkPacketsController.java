@@ -41,9 +41,9 @@ public class NetworkPacketsController {
         connection.send(packet);
     }
 
-    /*public void sendClientPacket(IPacket<?> packet) {
-        manager.channel().pipeline().fireChannelRead(packet);
-    }*/
+    public void receivePacket(Packet<?> packet) {
+        connection.channel().pipeline().fireChannelRead(packet);
+    }
 
     @SubscribeEvent
     public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {

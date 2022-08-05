@@ -13,14 +13,6 @@ import { addComponent } from '/components/Loader.js'
         },
 
         methods: {
-            changeName() {
-                let self = this;
-                axios.post('/api/username', self.newname).then(function (response) {
-                    self.name = response.data;
-                    document.title = self.name;
-                    self.newname = self.name;
-                });
-            },
             hardSwitch() {
                 var self = this;
                 axios.post('/api/hard-switch', true).then(function (response) {
@@ -30,16 +22,20 @@ import { addComponent } from '/components/Loader.js'
             backToMain() {
                 var self = this;
                 self.current = 'main';
+                this.refresh();
+            },
+            refresh() {
+                var self = this;
+                axios.get('/api/user').then(function (response) {
+                    self.name = response.data;
+                    document.title = self.name;
+                    self.newname = self.name;
+                });
             }
         },
 
         created() {
-            var self = this;
-            axios.get('/api/username').then(function (response) {
-                self.name = response.data;
-                document.title = self.name;
-                self.newname = self.name;
-            });
+            this.refresh();
         },
 
         watch: {
@@ -76,6 +72,9 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'FogConfig');
     addComponent(args, 'InstantDisconnectConfig');
     addComponent(args, 'ScriptsConfig');
+    addComponent(args, 'BeaconsConfig');
+    addComponent(args, 'UserNameConfig');
+    addComponent(args, 'NewChunksConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

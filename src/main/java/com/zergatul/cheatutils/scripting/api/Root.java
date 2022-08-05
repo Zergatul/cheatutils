@@ -13,6 +13,7 @@ public class Root {
 
     public static FlyHackApi flyHack = new FlyHackApi();
     public static ScaffoldApi scaffold = new ScaffoldApi();
+    public static FakeLagApi fakeLag = new FakeLagApi();
 
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();
     public static ShulkerTooltipApi shulkerTooltip = new ShulkerTooltipApi();

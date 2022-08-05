@@ -1,26 +1,43 @@
 package com.zergatul.cheatutils.mixins;
 
-import com.zergatul.cheatutils.configs.BoatHackConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.vehicle.Boat;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(Boat.class)
-public class MixinBoat {
+public abstract class MixinBoat {
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/vehicle/Boat;getGroundFriction()F", cancellable = true)
-    public void onGetGroundFriction(CallbackInfoReturnable<Float> info) {
-        if (ConfigStore.instance.getConfig().boatHackConfig.overrideFriction) {
-            Boat boat = (Boat) (Object) this;
-            if (boat.level instanceof ClientLevel) {
-                info.setReturnValue(ConfigStore.instance.getConfig().boatHackConfig.friction);
-                info.cancel();
-                return;
-            }
+    @Shadow
+    private float invFriction;
+
+    @ModifyArg(
+            method = "Lnet/minecraft/world/entity/vehicle/Boat;floatBoat()V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;setDeltaMovement(DDD)V", ordinal = 0),
+            index = 0
+    )
+    private double onFloatBoatSetDeltaMovementX(double dx) {
+        var config = ConfigStore.instance.getConfig().boatHackConfig;
+        if (config.overrideFriction) {
+            return dx / invFriction * config.friction;
+        } else {
+            return dx;
+        }
+    }
+
+    @ModifyArg(
+            method = "Lnet/minecraft/world/entity/vehicle/Boat;floatBoat()V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;setDeltaMovement(DDD)V", ordinal = 0),
+            index = 2
+    )
+    private double onFloatBoatSetDeltaMovementZ(double dz) {
+        var config = ConfigStore.instance.getConfig().boatHackConfig;
+        if (config.overrideFriction) {
+            return dz / invFriction * config.friction;
+        } else {
+            return dz;
         }
     }
 }

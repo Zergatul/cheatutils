@@ -2,12 +2,14 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import org.lwjgl.opengl.GL11;
@@ -53,7 +55,8 @@ public class EndCityChunksController {
 
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        for (ChunkAccess chunk: ChunkController.instance.getLoadedChunks()) {
+        for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
+            LevelChunk chunk = pair.getSecond();
             int sx = Math.floorMod(chunk.getPos().x, 20);
             int sz = Math.floorMod(chunk.getPos().z, 20);
             boolean isEndCityChunk = 0 <= sx && sx <= 8 && 0 <= sz && sz <= 8;

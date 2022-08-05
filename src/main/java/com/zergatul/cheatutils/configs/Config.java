@@ -32,6 +32,9 @@ public class Config {
     public InstantDisconnectConfig instantDisconnectConfig = new InstantDisconnectConfig();
     public ScriptsConfig scriptsConfig = new ScriptsConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
+    public BeaconConfig beaconConfig = new BeaconConfig();
+    public UserNameConfig userNameConfig = new UserNameConfig();
+    public NewChunksConfig newChunksConfig = new NewChunksConfig();
 
     public Config() {
         esp = true;

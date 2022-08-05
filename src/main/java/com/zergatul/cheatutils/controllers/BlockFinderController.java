@@ -1,7 +1,9 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -11,6 +13,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
@@ -99,7 +102,7 @@ public class BlockFinderController {
         return queue.size();
     }
 
-    private void scanChunk(ChunkAccess chunk) {
+    private void scanChunk(Dimension dimension, ChunkAccess chunk) {
         //logger.debug("Adding scan chunk {}", chunk.getPos());
         queue.add(() -> {
             while (chunk.getStatus() != ChunkStatus.FULL) {
@@ -110,12 +113,13 @@ public class BlockFinderController {
                     e.printStackTrace();
                 }
             }
+            int minY = dimension.getMinY();
             int xc = chunk.getPos().x << 4;
             int zc = chunk.getPos().z << 4;
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
                     int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
-                    for (int y = -64; y <= height; y++) {
+                    for (int y = minY; y <= height; y++) {
                         int xb = xc | x;
                         int zb = zc | z;
                         BlockPos pos = new BlockPos(xb, y, zb);
@@ -130,7 +134,7 @@ public class BlockFinderController {
         }
     }
 
-    private void unloadChunk(ChunkAccess chunk) {
+    private void unloadChunk(Dimension dimension, ChunkAccess chunk) {
         //logger.debug("Adding unload chunk {}", chunk.getPos());
         queue.add(() -> {
             int cx = chunk.getPos().x;
@@ -146,7 +150,7 @@ public class BlockFinderController {
         }
     }
 
-    private void handleBlockUpdate(BlockPos pos, BlockState state) {
+    private void handleBlockUpdate(Dimension dimension, BlockPos pos, BlockState state) {
         queue.add(() -> {
             synchronized (blocks) {
                 for (HashSet<BlockPos> set : blocks.values()) {
@@ -170,8 +174,8 @@ public class BlockFinderController {
             }
         }
 
-        for (ChunkAccess chunk : ChunkController.instance.getLoadedChunks()) {
-            scanChunkForBlock(chunk, id);
+        for (Pair<Dimension, LevelChunk> pair : ChunkController.instance.getLoadedChunks()) {
+            scanChunkForBlock(pair.getSecond(), id);
             //logger.debug("Queued scan for block {} in chunk {}", id, chunk.getPos());
         }
     }

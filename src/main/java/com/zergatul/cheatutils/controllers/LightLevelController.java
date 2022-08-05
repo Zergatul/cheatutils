@@ -2,8 +2,10 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
+import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
@@ -12,6 +14,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
@@ -68,8 +71,8 @@ public class LightLevelController {
         if (active != value) {
             active = value;
             if (active) {
-                for (ChunkAccess chunk : ChunkController.instance.getLoadedChunks()) {
-                    onChunkLoaded(chunk);
+                for (Pair<Dimension, LevelChunk> pair : ChunkController.instance.getLoadedChunks()) {
+                    onChunkLoaded(pair.getFirst(), pair.getSecond());
                 }
             } else {
                 queue.clear();
@@ -159,7 +162,7 @@ public class LightLevelController {
         return listForRendering;
     }
 
-    private void onChunkLoaded(ChunkAccess chunk) {
+    private void onChunkLoaded(Dimension dimension, ChunkAccess chunk) {
         if (!active) {
             return;
         }
@@ -195,7 +198,7 @@ public class LightLevelController {
         }
     }
 
-    private void onChunkUnLoaded(ChunkAccess chunk) {
+    private void onChunkUnLoaded(Dimension dimension, ChunkAccess chunk) {
         if (!active) {
             return;
         }
@@ -209,7 +212,7 @@ public class LightLevelController {
         }
     }
 
-    private void onBlockChanged(BlockPos pos, BlockState state) {
+    private void onBlockChanged(Dimension dimension, BlockPos pos, BlockState state) {
         if (!active) {
             return;
         }

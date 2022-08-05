@@ -77,6 +77,9 @@
                         <td>
                             <button @click="current = 'shulker-tooltip'">Shulker Tooltip</button>
                         </td>
+                        <td>
+                            <button @click="current = 'user-name'">User Name</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -132,9 +135,14 @@
                     </tr>
                     <tr>
                         <td></td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'new-chunks'">New Chunks (BETA)</button>
+                        </td>
                         <td>
                             <button @click="current = 'scaffold'">Scaffold</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'beacons'">Beacons (BETA)</button>
                         </td>
                     </tr>
                 </tbody>
@@ -285,6 +293,21 @@
             v-if="current == 'scripts'"
             @back="backToMain()">
         </scripts-config>
+
+        <beacons-config
+            v-if="current == 'beacons'"
+            @back="backToMain()">
+        </beacons-config>
+
+        <user-name-config
+            v-if="current == 'user-name'"
+            @back="backToMain()">
+        </user-name-config>
+
+        <new-chunks-config
+            v-if="current == 'new-chunks'"
+            @back="backToMain()">
+        </new-chunks-config>
 
     </div>
 

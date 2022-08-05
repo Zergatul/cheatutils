@@ -29,6 +29,7 @@
     "MixinC2SModListReply",
     "MixinPig",
     "MixinScreen",
-    "MixinServerboundMovePlayerPacket"
+    "MixinServerboundMovePlayerPacket",
+    "MixinUser"
   ]
 }

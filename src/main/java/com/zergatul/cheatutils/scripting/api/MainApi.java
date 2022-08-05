@@ -9,8 +9,15 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.vehicle.ChestBoat;
+import net.minecraft.world.phys.EntityHitResult;
 
 import java.util.Locale;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class MainApi {
 
@@ -58,6 +65,36 @@ public class MainApi {
             component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
         }
         Minecraft.getInstance().gui.handleSystemChat(chatType, component1.append(" ").append(component2));
+    }
+
+    public void openClosestChestBoat() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.player != null) {
+            Stream<ChestBoat> boats = StreamSupport
+                    .stream(mc.level.entitiesForRendering().spliterator(), false)
+                    .filter(e -> e instanceof ChestBoat)
+                    .map(e -> (ChestBoat) e);
+            double minDistance = Double.MAX_VALUE;
+            ChestBoat target = null;
+            for (ChestBoat boat: boats.toList()) {
+                double d2 = mc.player.distanceToSqr(boat);
+                if (d2 < minDistance) {
+                    minDistance = d2;
+                    target = boat;
+                }
+            }
+
+            if (target == null) {
+                return;
+            }
+
+            boolean oldShiftKeyDown = mc.player.input.shiftKeyDown;
+            mc.player.input.shiftKeyDown = true;
+            mc.gameMode.interactAt(mc.player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
+            mc.gameMode.interact(mc.player, target, InteractionHand.MAIN_HAND);
+            mc.player.swing(InteractionHand.MAIN_HAND);
+            mc.player.input.shiftKeyDown = oldShiftKeyDown;
+        }
     }
 
     private static Integer parseColor(String str) {

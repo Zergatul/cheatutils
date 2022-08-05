@@ -58,6 +58,8 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(ScaffoldController.instance);
         MinecraftForge.EVENT_BUS.register(AdvancedTooltipsController.instance);
         MinecraftForge.EVENT_BUS.register(InstantDisconnectController.instance);
+        MinecraftForge.EVENT_BUS.register(BeaconController.instance);
+        MinecraftForge.EVENT_BUS.register(NewChunksController.instance);
 
         //MinecraftForge.EVENT_BUS.register(TestController.instance);
 

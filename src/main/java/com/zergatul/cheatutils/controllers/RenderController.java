@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -21,6 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.*;
 import java.util.HashSet;
 
 public class RenderController {
@@ -74,7 +74,7 @@ public class RenderController {
                 deltaZRot = Mth.sin(f1 * (float)Math.PI) * f2 * 3.0F;
                 deltaXRot = Math.abs(Mth.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F;
             }
-            double drawBeforeCameraDist = 1;
+            double drawBeforeCameraDist = 64;
             double yaw = yRot * Math.PI / 180;
             double pitch = (xRot + deltaXRot) * Math.PI / 180;
 
@@ -91,8 +91,21 @@ public class RenderController {
         var buffer = tesselator.getBuilder();
         buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
 
-        renderBlocks(buffer, tracerX, tracerY, tracerZ, playerX, playerY, playerZ);
-        renderEntities(buffer, mc, event.getPartialTick(), tracerX, tracerY, tracerZ, playerX, playerY, playerZ);
+        renderBlocks(buffer, view, tracerX, tracerY, tracerZ, playerX, playerY, playerZ);
+
+        /**/
+        /*var tempconfig = new BlockTracerConfig();
+        tempconfig.outlineColor = Color.GREEN;
+        NewChunksController.instance.getNewBlocks().forEach(p -> {
+            renderBlockBounding(buffer, view, p, tempconfig);
+        });
+        tempconfig.outlineColor = Color.RED;
+        NewChunksController.instance.getOldBlocks().forEach(p -> {
+            renderBlockBounding(buffer, view, p, tempconfig);
+        });*/
+        /**/
+
+        renderEntities(buffer, view, mc, event.getPartialTick(), tracerX, tracerY, tracerZ, playerX, playerY, playerZ);
 
         vertexBuffer.bind();
         vertexBuffer.upload(buffer.end());
@@ -107,7 +120,7 @@ public class RenderController {
 
         PoseStack matrix = event.getPoseStack();
         matrix.pushPose();
-        matrix.translate(-view.x, -view.y, -view.z);
+        //matrix.translate(-view.x, -view.y, -view.z);
         var shader = GameRenderer.getPositionColorShader();
         vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix().copy(), shader);
         matrix.popPose();
@@ -123,7 +136,7 @@ public class RenderController {
         drawEnderPearlPath(event, view);
     }
 
-    private static void renderBlocks(BufferBuilder buffer, double tracerX, double tracerY, double tracerZ, double playerX, double playerY, double playerZ) {
+    private static void renderBlocks(BufferBuilder buffer, Vec3 view, double tracerX, double tracerY, double tracerZ, double playerX, double playerY, double playerZ) {
         var list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             for (BlockTracerConfig config: list) {
@@ -153,12 +166,13 @@ public class RenderController {
                         }
 
                         if (config.drawOutline) {
-                            renderBlockBounding(buffer, pos, config);
+                            renderBlockBounding(buffer, view, pos, config);
                         }
 
                         if (config.drawTracers) {
                             drawTracer(
                                 buffer,
+                                view,
                                 tracerX, tracerY, tracerZ,
                                 pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                                 config);
@@ -170,7 +184,7 @@ public class RenderController {
         }
     }
 
-    private static void renderEntities(BufferBuilder buffer, Minecraft mc, float partialTicks, double tracerX, double tracerY, double tracerZ, double playerX, double playerY, double playerZ) {
+    private static void renderEntities(BufferBuilder buffer, Vec3 view, Minecraft mc, float partialTicks, double tracerX, double tracerY, double tracerZ, double playerX, double playerY, double playerZ) {
         var list = ConfigStore.instance.getConfig().entities.configs;
         synchronized (list) {
             for (Entity entity : mc.player.clientLevel.entitiesForRendering()) {
@@ -191,7 +205,7 @@ public class RenderController {
                         distance2 < c.maxDistance * c.maxDistance).findFirst().orElse(null);
 
                 if (config != null) {
-                    renderEntityBounding(buffer, partialTicks, entity, config);
+                    renderEntityBounding(buffer, view, partialTicks, entity, config);
                 }
 
                 config = list.stream().filter(c ->
@@ -203,6 +217,7 @@ public class RenderController {
                 if (config != null) {
                     drawTracer(
                         buffer,
+                        view,
                         tracerX, tracerY, tracerZ,
                         getEntityX(entity, partialTicks), getEntityY(entity, partialTicks), getEntityZ(entity, partialTicks),
                         config);
@@ -211,7 +226,7 @@ public class RenderController {
         }
     }
 
-    private static void renderBlockBounding(BufferBuilder buffer, BlockPos pos, BlockTracerConfig config) {
+    private static void renderBlockBounding(BufferBuilder buffer, Vec3 view, BlockPos pos, BlockTracerConfig config) {
 
         int x1 = pos.getX();
         int y1 = pos.getY();
@@ -225,37 +240,37 @@ public class RenderController {
         float b = config.outlineColor.getBlue() / 255f;
 
         // bottom
-        buffer.vertex(x1, y1, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y1, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y1, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y1, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y1, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y1, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y1, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y1, z1).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y1 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y1 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y1 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y1 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y1 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y1 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y1 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y1 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
 
         // top
-        buffer.vertex(x1, y2, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y2, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y2, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y2, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y2, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y2, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y2, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y2, z1).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y2 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y2 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y2 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y2 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y2 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y2 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y2 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y2 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
 
         // side
-        buffer.vertex(x1, y1, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y2, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y1, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x1, y2, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y1, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y2, z2).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y1, z1).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x2, y2, z1).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y1 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y2 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y1 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x1 - view.x, y2 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y1 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y2 - view.y, z2 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y1 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x2 - view.x, y2 - view.y, z1 - view.z).color(r, g, b, 1f).endVertex();
     }
 
-    private static void renderEntityBounding(BufferBuilder buffer, float partialTicks, Entity entity, EntityTracerConfig config) {
+    private static void renderEntityBounding(BufferBuilder buffer, Vec3 view, float partialTicks, Entity entity, EntityTracerConfig config) {
 
         double rotationYaw = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot());
         double sin = Math.sin(rotationYaw / 180 * Math.PI);
@@ -283,35 +298,35 @@ public class RenderController {
         float g = config.outlineColor.getGreen() / 255f;
         float b = config.outlineColor.getBlue() / 255f;
 
-        buffer.vertex(p1x, posY1, p1z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p2x, posY1, p2z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p2x, posY1, p2z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p3x, posY1, p3z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p3x, posY1, p3z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p4x, posY1, p4z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p4x, posY1, p4z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p1x, posY1, p1z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p1x - view.x, posY1 - view.y, p1z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p2x - view.x, posY1 - view.y, p2z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p2x - view.x, posY1 - view.y, p2z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p3x - view.x, posY1 - view.y, p3z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p3x - view.x, posY1 - view.y, p3z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p4x - view.x, posY1 - view.y, p4z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p4x - view.x, posY1 - view.y, p4z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p1x - view.x, posY1 - view.y, p1z - view.z).color(r, g, b, 1f).endVertex();
 
-        buffer.vertex(p1x, posY1, p1z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p1x, posY2, p1z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p2x, posY1, p2z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p2x, posY2, p2z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p3x, posY1, p3z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p3x, posY2, p3z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p4x, posY1, p4z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p4x, posY2, p4z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p1x - view.x, posY1 - view.y, p1z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p1x - view.x, posY2 - view.y, p1z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p2x - view.x, posY1 - view.y, p2z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p2x - view.x, posY2 - view.y, p2z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p3x - view.x, posY1 - view.y, p3z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p3x - view.x, posY2 - view.y, p3z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p4x - view.x, posY1 - view.y, p4z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p4x - view.x, posY2 - view.y, p4z - view.z).color(r, g, b, 1f).endVertex();
 
-        buffer.vertex(p1x, posY2, p1z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p2x, posY2, p2z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p2x, posY2, p2z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p3x, posY2, p3z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p3x, posY2, p3z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p4x, posY2, p4z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p4x, posY2, p4z).color(r, g, b, 1f).endVertex();
-        buffer.vertex(p1x, posY2, p1z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p1x - view.x, posY2 - view.y, p1z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p2x - view.x, posY2 - view.y, p2z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p2x - view.x, posY2 - view.y, p2z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p3x - view.x, posY2 - view.y, p3z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p3x - view.x, posY2 - view.y, p3z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p4x - view.x, posY2 - view.y, p4z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p4x - view.x, posY2 - view.y, p4z - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(p1x - view.x, posY2 - view.y, p1z - view.z).color(r, g, b, 1f).endVertex();
     }
 
-    private static void drawTracer(BufferBuilder buffer, double tx, double ty, double tz, double x, double y, double z, TracerConfigBase config) {
+    private static void drawTracer(BufferBuilder buffer, Vec3 view, double tx, double ty, double tz, double x, double y, double z, TracerConfigBase config) {
 
         /*short lineStyle = (short)config.tracerLineStyle;
         if (lineStyle != 0) {
@@ -327,8 +342,8 @@ public class RenderController {
         float g = config.tracerColor.getGreen() / 255f;
         float b = config.tracerColor.getBlue() / 255f;
 
-        buffer.vertex(tx, ty, tz).color(r, g, b, 1f).endVertex();
-        buffer.vertex(x, y, z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(tx - view.x, ty - view.y, tz - view.z).color(r, g, b, 1f).endVertex();
+        buffer.vertex(x - view.x, y - view.y, z - view.z).color(r, g, b, 1f).endVertex();
 
         /*if (lineStyle != 0) {
             GL11.glDisable(GL11.GL_LINE_STIPPLE);
@@ -384,10 +399,10 @@ public class RenderController {
                 double pz = z + shiftZ / (20 + i);
 
                 if (i > 0) {
-                    buffer.vertex(px, py, pz).color(1f, 1f, 1f, 1f).endVertex();
+                    buffer.vertex(px - view.x, py - view.y, pz - view.z).color(1f, 1f, 1f, 1f).endVertex();
                 }
                 if (i < steps) {
-                    buffer.vertex(px, py, pz).color(1f, 1f, 1f, 1f).endVertex();
+                    buffer.vertex(px - view.x, py - view.y, pz - view.z).color(1f, 1f, 1f, 1f).endVertex();
                 }
             }
 
@@ -404,7 +419,6 @@ public class RenderController {
 
             PoseStack poseStack = event.getPoseStack();
             poseStack.pushPose();
-            poseStack.translate(-view.x, -view.y, -view.z);
             var shader = GameRenderer.getPositionColorShader();
             vertexBuffer.drawWithShader(poseStack.last().pose(), event.getProjectionMatrix().copy(), shader);
             poseStack.popPose();

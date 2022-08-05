@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.configs.*;
-import com.zergatul.cheatutils.controllers.AdvancedTooltipsController;
 import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import com.zergatul.cheatutils.utils.MathUtils;
@@ -11,7 +10,6 @@ import net.minecraft.util.Mth;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
-import org.lwjgl.system.MathUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,9 +24,9 @@ public class ApiHandler implements HttpHandler {
     private final List<ApiBase> apis = new ArrayList<>();
 
     public ApiHandler() {
+        apis.add(new UserApi());
         apis.add(new BlocksConfigApi());
         apis.add(new BlockInfoApi());
-        apis.add(new UserNameApi());
         apis.add(new HardSwitchApi());
         apis.add(new EntityInfoApi());
         apis.add(new EntitiesConfigApi());
@@ -38,6 +36,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsApi());
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
+        apis.add(new BeaconsListApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -366,6 +365,44 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(InstantDisconnectConfig config) {
                 ConfigStore.instance.getConfig().instantDisconnectConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("beacons", BeaconConfig.class) {
+            @Override
+            protected BeaconConfig getConfig() {
+                BeaconConfig config = new BeaconConfig();
+                config.enabled = ConfigStore.instance.getConfig().beaconConfig.enabled;
+                return config;
+            }
+
+            @Override
+            protected void setConfig(BeaconConfig config) {
+                ConfigStore.instance.getConfig().beaconConfig.enabled = config.enabled;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("user-name", UserNameConfig.class) {
+            @Override
+            protected UserNameConfig getConfig() {
+                return ConfigStore.instance.getConfig().userNameConfig;
+            }
+
+            @Override
+            protected void setConfig(UserNameConfig config) {
+                ConfigStore.instance.getConfig().userNameConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("new-chunks", NewChunksConfig.class) {
+            @Override
+            protected NewChunksConfig getConfig() {
+                return ConfigStore.instance.getConfig().newChunksConfig;
+            }
+
+            @Override
+            protected void setConfig(NewChunksConfig config) {
+                ConfigStore.instance.getConfig().newChunksConfig = config;
             }
         });
     }

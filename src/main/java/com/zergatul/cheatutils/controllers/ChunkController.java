@@ -1,6 +1,9 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.interfaces.ClientPacketListenerMixinInterface;
+import com.zergatul.cheatutils.utils.Dimension;
+import com.zergatul.cheatutils.utils.TriConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -14,6 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.file.DirectoryNotEmptyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,29 +31,29 @@ public class ChunkController {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final Logger logger = LogManager.getLogger(ChunkController.class);
-    private final Map<Long, LevelChunk> loadedChunks = new HashMap<>();
+    private final Map<Long, Pair<Dimension, LevelChunk>> loadedChunks = new HashMap<>();
     private final Map<Long, ChunkEntry> chunksMap = new HashMap<>();
-    private final List<Consumer<LevelChunk>> onChunkLoadedHandlers = new ArrayList<>();
-    private final List<Consumer<LevelChunk>> onChunkUnLoadedHandlers = new ArrayList<>();
-    private final List<BiConsumer<BlockPos, BlockState>> onBlockChangedHandlers = new ArrayList<>();
+    private final List<BiConsumer<Dimension, LevelChunk>> onChunkLoadedHandlers = new ArrayList<>();
+    private final List<BiConsumer<Dimension, LevelChunk>> onChunkUnLoadedHandlers = new ArrayList<>();
+    private final List<TriConsumer<Dimension, BlockPos, BlockState>> onBlockChangedHandlers = new ArrayList<>();
 
     private ChunkController() {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
     }
 
-    public synchronized void addOnChunkLoadedHandler(Consumer<LevelChunk> handler) {
+    public synchronized void addOnChunkLoadedHandler(BiConsumer<Dimension, LevelChunk> handler) {
         onChunkLoadedHandlers.add(handler);
     }
 
-    public synchronized void addOnChunkUnLoadedHandler(Consumer<LevelChunk> handler) {
+    public synchronized void addOnChunkUnLoadedHandler(BiConsumer<Dimension, LevelChunk> handler) {
         onChunkUnLoadedHandlers.add(handler);
     }
 
-    public synchronized void addOnBlockChangedHandler(BiConsumer<BlockPos, BlockState> handler) {
+    public synchronized void addOnBlockChangedHandler(TriConsumer<Dimension, BlockPos, BlockState> handler) {
         onBlockChangedHandlers.add(handler);
     }
 
-    public synchronized List<LevelChunk> getLoadedChunks() {
+    public synchronized List<Pair<Dimension, LevelChunk>> getLoadedChunks() {
         return new ArrayList<>(loadedChunks.values());
     }
 
@@ -90,8 +94,11 @@ public class ChunkController {
             return;
         }
 
+        Dimension dimension = Dimension.get(mc.level);
+
         chunksMap.clear();
-        for (LevelChunk chunk: loadedChunks.values()) {
+        for (Pair<Dimension, LevelChunk> pair: loadedChunks.values()) {
+            LevelChunk chunk = pair.getSecond();
             chunksMap.put(chunk.getPos().toLong(), new ChunkEntry(chunk));
         }
 
@@ -109,15 +116,15 @@ public class ChunkController {
                     if (entry != null) {
                         if (entry.chunk == chunk) {
                             entry.exists = true;
-                            loadedChunks.put(pos, chunk);
+                            loadedChunks.put(pos, new Pair<>(dimension, chunk));
                         } else {
-                            invokeChunkUnloadHandlers(entry.chunk);
-                            loadedChunks.put(pos, chunk);
-                            invokeChunkLoadHandlers(chunk);
+                            invokeChunkUnloadHandlers(dimension, entry.chunk);
+                            loadedChunks.put(pos, new Pair<>(dimension, chunk));
+                            invokeChunkLoadHandlers(dimension, chunk);
                         }
                     } else {
-                        loadedChunks.put(pos, chunk);
-                        invokeChunkLoadHandlers(chunk);
+                        loadedChunks.put(pos, new Pair<>(dimension, chunk));
+                        invokeChunkLoadHandlers(dimension, chunk);
                     }
                 }
             }
@@ -125,7 +132,7 @@ public class ChunkController {
 
         for (ChunkEntry entry: chunksMap.values()) {
             if (!entry.exists) {
-                invokeChunkUnloadHandlers(entry.chunk);
+                invokeChunkUnloadHandlers(dimension, entry.chunk);
             }
         }
     }
@@ -141,29 +148,31 @@ public class ChunkController {
     }
 
     private synchronized void processBlockUpdatePacket(ClientboundBlockUpdatePacket packet) {
+        Dimension dimension = Dimension.get(mc.level);
         for (var handler: onBlockChangedHandlers) {
-            handler.accept(packet.getPos(), packet.getBlockState());
+            handler.accept(dimension, packet.getPos(), packet.getBlockState());
         }
     }
 
     private synchronized void processSectionBlocksUpdatePacket(ClientboundSectionBlocksUpdatePacket packet) {
+        Dimension dimension = Dimension.get(mc.level);
         packet.runUpdates((pos$mutable, state) -> {
             BlockPos pos = new BlockPos(pos$mutable.getX(), pos$mutable.getY(), pos$mutable.getZ());
             for (var handler: onBlockChangedHandlers) {
-                handler.accept(pos, state);
+                handler.accept(dimension, pos, state);
             }
         });
     }
 
-    private void invokeChunkLoadHandlers(LevelChunk chunk) {
-        for (Consumer<LevelChunk> handler: onChunkLoadedHandlers) {
-            handler.accept(chunk);
+    private void invokeChunkLoadHandlers(Dimension dimension, LevelChunk chunk) {
+        for (BiConsumer<Dimension, LevelChunk> handler: onChunkLoadedHandlers) {
+            handler.accept(dimension, chunk);
         }
     }
 
-    private void invokeChunkUnloadHandlers(LevelChunk chunk) {
-        for (Consumer<LevelChunk> handler: onChunkUnLoadedHandlers) {
-            handler.accept(chunk);
+    private void invokeChunkUnloadHandlers(Dimension dimension,LevelChunk chunk) {
+        for (BiConsumer<Dimension, LevelChunk> handler: onChunkUnLoadedHandlers) {
+            handler.accept(dimension, chunk);
         }
     }
 
