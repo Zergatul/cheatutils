@@ -29,6 +29,7 @@
         <div>
             <ul class="list-base" style="width: 1000px;">
                 <li v-for="beacon in list">
+                    <button style="width: 100px;" @click="remove(beacon)">Remove</button>
                     Name: {{ beacon.name }}
                     Dimension: {{ beacon.dimension }}
                     Color: {{ beacon.color }}

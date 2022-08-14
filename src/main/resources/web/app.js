@@ -75,6 +75,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'BeaconsConfig');
     addComponent(args, 'UserNameConfig');
     addComponent(args, 'NewChunksConfig');
+    addComponent(args, 'AutoDropConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

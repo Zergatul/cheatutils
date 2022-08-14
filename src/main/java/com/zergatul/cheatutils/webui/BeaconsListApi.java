@@ -17,17 +17,6 @@ public class BeaconsListApi extends ApiBase {
         return gson.toJson(ConfigStore.instance.getConfig().beaconConfig.entries);
     }
 
-    /*@Override
-    public String put(String id, String body) throws HttpException {
-        BeaconConfig.BeaconEntry entry = ConfigStore.instance.getConfig().beaconConfig.entries.stream().filter(e -> id.equals(e.name)).findFirst().orElse(null);
-        if (entry == null) {
-            return "null";
-        }
-        entry.copyFrom(gson.fromJson(body, BeaconConfig.BeaconEntry.class));
-        ConfigStore.instance.requestWrite();
-        return gson.toJson(entry);
-    }*/
-
     @Override
     public String post(String body) throws HttpException {
         BeaconConfig.BeaconEntry entry = gson.fromJson(body, BeaconConfig.BeaconEntry.class);

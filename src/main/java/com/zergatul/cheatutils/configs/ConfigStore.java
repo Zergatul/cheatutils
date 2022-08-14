@@ -29,6 +29,7 @@ public class ConfigStore {
 
     public final Gson gson = new GsonBuilder()
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
+            .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .registerTypeAdapter(KillAuraConfig.PriorityEntry.class, new KillAuraConfig$PriorityEntryTypeAdapter())

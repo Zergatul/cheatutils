@@ -37,6 +37,8 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
         apis.add(new BeaconsListApi());
+        apis.add(new AutoDropApi());
+        apis.add(new ItemInfoApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -107,6 +109,7 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(ElytraHackConfig config) {
+                config.horizontalSpeedLimit = MathUtils.clamp(config.horizontalSpeedLimit, 10, 1000);
                 ConfigStore.instance.getConfig().elytraHackConfig = config;
             }
         });

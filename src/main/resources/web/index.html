@@ -110,7 +110,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-drop'">Auto Drop</button>
+                        </td>
                         <td>
                             <button @click="current = 'entity-owner'">Entity Owner</button>
                         </td>
@@ -308,6 +310,11 @@
             v-if="current == 'new-chunks'"
             @back="backToMain()">
         </new-chunks-config>
+
+        <auto-drop-config
+            v-if="current == 'auto-drop'"
+            @back="backToMain()">
+        </auto-drop-config>
 
     </div>
 

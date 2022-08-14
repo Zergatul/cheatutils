@@ -9,5 +9,7 @@
   "key.zergatul.cheatutils.reserved7": "Reserved 7",
   "key.zergatul.cheatutils.reserved8": "Reserved 8",
   "key.zergatul.cheatutils.reserved9": "Reserved 9",
-  "category.zergatul.cheatutils": "Cheat Utils"
+  "category.zergatul.cheatutils": "Cheat Utils",
+  "button.take.all": "Take All",
+  "button.smart.put": "Smart Put"
 }

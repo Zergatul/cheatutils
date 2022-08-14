@@ -45,5 +45,17 @@
                 <span>Horizontal Flight</span>
             </label>
         </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.horizontalSpeedLimitEnabled"
+                    @change="update()">
+                <span>Enable Horizontal Speed Limit</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Horizontal Speed Limit:</span>
+            <input type="text" v-model="config.horizontalSpeedLimit" @change="update()">
+        </div>
     </fieldset>
 </div>

@@ -4,14 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.Item;
 
-public class BlockTypeAdapterFactory implements TypeAdapterFactory {
+public class ItemTypeAdapterFactory implements TypeAdapterFactory {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-        if (Block.class.isAssignableFrom(type.getRawType())) {
-            return (TypeAdapter<T>) new BlockTypeAdapter();
+        if (Item.class.isAssignableFrom(type.getRawType())) {
+            return (TypeAdapter<T>) new ItemTypeAdapter();
         }
         return null;
     }

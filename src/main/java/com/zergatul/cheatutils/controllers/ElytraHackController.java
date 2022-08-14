@@ -67,6 +67,14 @@ public class ElytraHackController {
                     mc.player.setDeltaMovement(delta.x, 0, delta.z);
                 }
             }
+            if (config.horizontalSpeedLimitEnabled) {
+                Vec3 delta = mc.player.getDeltaMovement();
+                double horSpeed = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
+                if (horSpeed > config.horizontalSpeedLimit / 20) {
+                    double factor = config.horizontalSpeedLimit / 20 / horSpeed;
+                    mc.player.setDeltaMovement(delta.x * factor, delta.y, delta.z * factor);
+                }
+            }
         }
     }
 }

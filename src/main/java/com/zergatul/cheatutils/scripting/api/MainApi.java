@@ -12,9 +12,13 @@ import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.ChestBoat;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -95,6 +99,27 @@ public class MainApi {
             mc.player.swing(InteractionHand.MAIN_HAND);
             mc.player.input.shiftKeyDown = oldShiftKeyDown;
         }
+    }
+
+    public void openTradingWithClosestVillager() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.player != null) {
+            Villager villager = StreamSupport.stream(mc.level.entitiesForRendering().spliterator(), false)
+                    .filter(e -> Villager.class.isInstance(e))
+                    .map(e -> (Villager) e)
+                    .min(Comparator.comparingDouble(v -> mc.player.distanceToSqr(v)))
+                    .orElse(null);
+            if (villager == null) {
+                return;
+            }
+            interactWithEntity(mc, villager);
+        }
+    }
+
+    private void interactWithEntity(Minecraft mc, Entity entity) {
+        mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
+        mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
+        mc.player.swing(InteractionHand.MAIN_HAND);
     }
 
     private static Integer parseColor(String str) {

@@ -35,6 +35,8 @@ public class Config {
     public BeaconConfig beaconConfig = new BeaconConfig();
     public UserNameConfig userNameConfig = new UserNameConfig();
     public NewChunksConfig newChunksConfig = new NewChunksConfig();
+    public AutoDropConfig autoDropConfig = new AutoDropConfig();
+    public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
 
     public Config() {
         esp = true;

@@ -10,18 +10,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class AutoTotemController {
 
     public static final AutoTotemController instance = new AutoTotemController();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Logger logger = LogManager.getLogger(AutoTotemController.class);
 
     private AutoTotemController() {
-        //NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+
     }
 
     @SubscribeEvent
@@ -51,28 +48,4 @@ public class AutoTotemController {
             }
         }
     }
-
-    /*private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (args.packet instanceof ServerboundMovePlayerPacket) {
-            return;
-        }
-        if (args.packet instanceof ServerboundPongPacket) {
-            return;
-        }
-        if (args.packet instanceof ServerboundContainerClosePacket packet) {
-            logger.info("Close id={}", packet.getContainerId());
-            return;
-        }
-        if (args.packet instanceof ServerboundContainerClickPacket packet) {
-            String changedSlots = "";
-            for (var key: packet.getChangedSlots().keySet()) {
-                changedSlots += "[" + key + "]=[" + packet.getChangedSlots().get(key)+ "]";
-            }
-            logger.info("Click id={} btn={} clicktype={} state={} stack=[{}] slot={} changedSlots.count={}",
-                    packet.getContainerId(), packet.getButtonNum(), packet.getClickType(), packet.getStateId(),
-                    packet.getCarriedItem(), packet.getSlotNum(), changedSlots);
-            return;
-        }
-        logger.info(args.packet.getClass().getName());
-    }*/
 }
