@@ -1,7 +1,7 @@
 /*
-javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
-jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
-javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19\src\main\java\com\zergatul\cheatutils\scripting\ScriptingLanguage.jj.jj
+javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
+jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
+javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\ScriptingLanguage.jj.jj
 */
 
 PARSER_BEGIN(ScriptingLanguage)
@@ -168,15 +168,37 @@ void Identifier() :
 void Literal() :
 {}
 {
-  <INTEGER_LITERAL>
+  IntegerLiteral()
 |
-  <FLOATING_POINT_LITERAL>
+  FloatingPointLiteral()
 |
   StringLiteral()
 |
   BooleanLiteral()
 |
   NullLiteral()
+}
+
+void IntegerLiteral() :
+{
+  Token token;
+}
+{
+  token = <INTEGER_LITERAL>
+  {
+    jjtThis.jjtSetValue(token.image);
+  }
+}
+
+void FloatingPointLiteral() :
+{
+  Token token;
+}
+{
+  token = <FLOATING_POINT_LITERAL>
+  {
+    jjtThis.jjtSetValue(token.image);
+  }
 }
 
 void StringLiteral() :

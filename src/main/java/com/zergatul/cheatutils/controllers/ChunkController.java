@@ -1,29 +1,33 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.datafixers.util.Pair;
+import com.zergatul.cheatutils.configs.ChunksConfig;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.interfaces.ClientPacketListenerMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.TriConsumer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientChunkCache;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.file.DirectoryNotEmptyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class ChunkController {
 
@@ -36,6 +40,7 @@ public class ChunkController {
     private final List<BiConsumer<Dimension, LevelChunk>> onChunkLoadedHandlers = new ArrayList<>();
     private final List<BiConsumer<Dimension, LevelChunk>> onChunkUnLoadedHandlers = new ArrayList<>();
     private final List<TriConsumer<Dimension, BlockPos, BlockState>> onBlockChangedHandlers = new ArrayList<>();
+    private final List<ChunkPos> serverUnloadedChunks = new ArrayList<>();
 
     private ChunkController() {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
@@ -79,6 +84,36 @@ public class ChunkController {
             return;
         }
         syncChunks();
+    }
+
+    @SubscribeEvent
+    public synchronized void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            if (mc.level == null) {
+                return;
+            }
+            ClientChunkCache cache = mc.level.getChunkSource();
+            if (mc.player == null) {
+                serverUnloadedChunks.forEach(p -> cache.drop(p.x, p.z));
+                serverUnloadedChunks.clear();
+                return;
+            }
+            ChunkPos playerPos = mc.player.chunkPosition();
+            long renderDistance2 = mc.options.getEffectiveRenderDistance();
+            renderDistance2 = renderDistance2 * renderDistance2;
+            for (int i = 0; i < serverUnloadedChunks.size(); i++) {
+                ChunkPos chunkPos = serverUnloadedChunks.get(i);
+                long dx = chunkPos.x - playerPos.x;
+                long dz = chunkPos.z - playerPos.z;
+                long d2 = dx * dx + dz * dz;
+                if (d2 > renderDistance2) {
+                    serverUnloadedChunks.remove(i);
+                    i--;
+                    cache.drop(chunkPos.x, chunkPos.z);
+                    ((ClientPacketListenerMixinInterface) mc.player.connection.getConnection().getPacketListener()).queueLightUpdate2(new ClientboundForgetLevelChunkPacket(chunkPos.x, chunkPos.z));
+                }
+            }
+        }
     }
 
     public synchronized void syncChunks() {
@@ -138,12 +173,17 @@ public class ChunkController {
     }
 
     private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        if (args.packet instanceof ClientboundBlockUpdatePacket) {
-            processBlockUpdatePacket((ClientboundBlockUpdatePacket) args.packet);
+        if (args.packet instanceof ClientboundBlockUpdatePacket packet) {
+            processBlockUpdatePacket(packet);
         }
 
-        if (args.packet instanceof ClientboundSectionBlocksUpdatePacket) {
-            processSectionBlocksUpdatePacket((ClientboundSectionBlocksUpdatePacket) args.packet);
+        if (args.packet instanceof ClientboundSectionBlocksUpdatePacket packet) {
+            processSectionBlocksUpdatePacket(packet);
+        }
+
+        if (args.packet instanceof ClientboundForgetLevelChunkPacket packet) {
+            processForgetLevelChunkPacket(packet);
+            args.skip = true;
         }
     }
 
@@ -162,6 +202,13 @@ public class ChunkController {
                 handler.accept(dimension, pos, state);
             }
         });
+    }
+
+    private synchronized void processForgetLevelChunkPacket(ClientboundForgetLevelChunkPacket packet) {
+        ChunksConfig config = ConfigStore.instance.getConfig().chunksConfig;
+        if (config.dontUnloadChunks) {
+            serverUnloadedChunks.add(new ChunkPos(packet.getX(), packet.getZ()));
+        }
     }
 
     private void invokeChunkLoadHandlers(Dimension dimension, LevelChunk chunk) {

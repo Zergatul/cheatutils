@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,18 +70,13 @@ public class ScriptingLanguageCompiler {
         }
 
         int argsLength = arguments.jjtGetNumChildren();
-        ExpressionReturn[] pairs = new ExpressionReturn[argsLength];
-        Class[] parameterTypes = new Class[argsLength];
+        ExpressionReturn[] methodArguments = new ExpressionReturn[argsLength];
         for (int i = 0; i < argsLength; i++) {
-            pairs[i] = compile((ASTExpression) arguments.jjtGetChild(i));
-            parameterTypes[i] = pairs[i].type.getJavaClass();
+            methodArguments[i] = compile((ASTExpression) arguments.jjtGetChild(i));
         }
 
-        Method method;
-        try {
-            method = field.getType().getDeclaredMethod(methodName, parameterTypes);
-        }
-        catch (NoSuchMethodException e) {
+        Method method = findMethod(field, methodName, methodArguments);
+        if (method == null) {
             throw new ScriptCompileException();
         }
 
@@ -94,7 +90,7 @@ public class ScriptingLanguageCompiler {
                 return null;
             }
             try {
-                return method.invoke(fieldValue, Arrays.stream(pairs).map(er -> er.supplier.get()).toArray());
+                return method.invoke(fieldValue, Arrays.stream(methodArguments).map(er -> er.supplier.get()).toArray());
             } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
                 return null;
@@ -182,10 +178,77 @@ public class ScriptingLanguageCompiler {
             boolean value = (boolean) booleanLiteral.jjtGetValue();
             return new ExpressionReturn(() -> value, ScriptingLanguageType.BOOLEAN);
         }
+        if (node instanceof ASTIntegerLiteral integerLiteral) {
+            int value = Integer.parseInt((String) integerLiteral.jjtGetValue());
+            return new ExpressionReturn(() -> value, ScriptingLanguageType.INT);
+        }
+        if (node instanceof ASTFloatingPointLiteral floatingPointLiteral) {
+            double value = Double.parseDouble((String) floatingPointLiteral.jjtGetValue());
+            return new ExpressionReturn(() -> value, ScriptingLanguageType.DOUBLE);
+        }
         if (node instanceof ASTNullLiteral) {
             return new ExpressionReturn(() -> null, ScriptingLanguageType.NULL);
         }
 
+        throw new ScriptCompileException();
+    }
+
+    private Method findMethod(Field field, String name, ExpressionReturn[] arguments) throws ScriptCompileException {
+        Method method = Arrays.stream(field.getType().getDeclaredMethods()).filter(m -> {
+            if (!m.getName().equals(name)) {
+                return false;
+            }
+            Parameter[] parameters = m.getParameters();
+            if (parameters.length != arguments.length) {
+                return false;
+            }
+            for (int i = 0; i < parameters.length; i++) {
+                Class methodParameterClass = parameters[i].getType();
+                Class scriptParameterClass = arguments[i].type.getJavaClass();
+                if (methodParameterClass == scriptParameterClass) {
+                    continue;
+                }
+                if (canBeCast(methodParameterClass, scriptParameterClass)) {
+                    continue;
+                }
+                return false;
+            }
+            return true;
+        }).findFirst().orElse(null);
+
+        if (method == null) {
+            return null;
+        }
+
+        // check if we need to cast any parameters
+        Parameter[] parameters = method.getParameters();
+        for (int i = 0; i < parameters.length; i++) {
+            Class methodParameterClass = parameters[i].getType();
+            Class scriptParameterClass = arguments[i].type.getJavaClass();
+            if (methodParameterClass == scriptParameterClass) {
+                continue;
+            }
+            if (canBeCast(methodParameterClass, scriptParameterClass)) {
+                arguments[i] = cast(arguments[i], methodParameterClass);
+            } else {
+                throw new ScriptCompileException();
+            }
+        }
+
+        return method;
+    }
+
+    private boolean canBeCast(Class methodParameterClass, Class scriptParameterClass) {
+        if (methodParameterClass == double.class && scriptParameterClass == int.class) {
+            return true;
+        }
+        return false;
+    }
+
+    private ExpressionReturn cast(ExpressionReturn expressionReturn, Class methodParameterClass) throws ScriptCompileException {
+        if (methodParameterClass == double.class && expressionReturn.type.getJavaClass() == int.class) {
+            return new ExpressionReturn(() -> (double) (Integer) expressionReturn.supplier.get(), ScriptingLanguageType.DOUBLE);
+        }
         throw new ScriptCompileException();
     }
 

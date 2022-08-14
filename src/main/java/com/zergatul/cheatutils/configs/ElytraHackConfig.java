@@ -8,6 +8,8 @@ public class ElytraHackConfig {
     public boolean horizontalFlight;
     public boolean horizontalSpeedLimitEnabled;
     public double horizontalSpeedLimit;
+    public boolean speedLimitEnabled;
+    public double speedLimit;
 
     public ElytraHackConfig() {
         enabled = false;
@@ -16,5 +18,7 @@ public class ElytraHackConfig {
         horizontalFlight = false;
         horizontalSpeedLimitEnabled = false;
         horizontalSpeedLimit = 100;
+        speedLimitEnabled = false;
+        speedLimit = 100;
     }
 }

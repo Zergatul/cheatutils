@@ -124,7 +124,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'container-buttons'">Container Buttons</button>
+                        </td>
                         <td>
                             <button @click="current = 'free-cam'">Free Cam</button>
                         </td>
@@ -145,6 +147,14 @@
                         </td>
                         <td>
                             <button @click="current = 'beacons'">Beacons (BETA)</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'chunks'">Chunks</button>
                         </td>
                     </tr>
                 </tbody>
@@ -315,6 +325,16 @@
             v-if="current == 'auto-drop'"
             @back="backToMain()">
         </auto-drop-config>
+
+        <chunks-config
+            v-if="current == 'chunks'"
+            @back="backToMain()">
+        </chunks-config>
+
+        <container-buttons-config
+            v-if="current == 'container-buttons'"
+            @back="backToMain()">
+        </container-buttons-config>
 
     </div>
 

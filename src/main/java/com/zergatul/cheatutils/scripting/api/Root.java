@@ -13,10 +13,13 @@ public class Root {
     public static FreeCamApi freeCam = new FreeCamApi();
 
     public static FlyHackApi flyHack = new FlyHackApi();
+    public static MovementApi movement = new MovementApi();
     public static ScaffoldApi scaffold = new ScaffoldApi();
     public static FakeLagApi fakeLag = new FakeLagApi();
 
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();
     public static ShulkerTooltipApi shulkerTooltip = new ShulkerTooltipApi();
     public static ExplorationMiniMapApi explorationMiniMap = new ExplorationMiniMapApi();
+
+    public static LockInputsApi lockInputs = new LockInputsApi();
 }

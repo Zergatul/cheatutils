@@ -3,19 +3,13 @@ package com.zergatul.cheatutils.scripting.api;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.ChestBoat;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 
 import java.util.Comparator;
@@ -25,13 +19,6 @@ import java.util.stream.StreamSupport;
 
 public class MainApi {
 
-    private final ChatType chatType;
-
-    public MainApi() {
-        Registry<ChatType> registry = RegistryAccess.BUILTIN.get().registryOrThrow(Registry.CHAT_TYPE_REGISTRY);
-        chatType = registry.get(ChatType.SYSTEM);
-    }
-
     public void toggleEsp() {
         ConfigStore.instance.getConfig().esp = !ConfigStore.instance.getConfig().esp;
         ConfigStore.instance.requestWrite();
@@ -40,12 +27,12 @@ public class MainApi {
     public void chat(String text) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            Minecraft.getInstance().player.chat(text);
+            Minecraft.getInstance().player.chatSigned(text, null);
         }
     }
 
     public void systemMessage(String text) {
-        Minecraft.getInstance().gui.handleSystemChat(chatType, MutableComponent.create(new LiteralContents(text)));
+        Minecraft.getInstance().getChatListener().handleSystemMessage(MutableComponent.create(new LiteralContents(text)), false);
     }
 
     public void systemMessage(String color, String text) {
@@ -54,7 +41,7 @@ public class MainApi {
         if (colorInt != null) {
             component = component.withStyle(Style.EMPTY.withColor(colorInt));
         }
-        Minecraft.getInstance().gui.handleSystemChat(chatType, component);
+        Minecraft.getInstance().getChatListener().handleSystemMessage(component, false);
     }
 
     public void systemMessage(String color1, String text1, String color2, String text2) {
@@ -68,7 +55,7 @@ public class MainApi {
         if (color2Int != null) {
             component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
         }
-        Minecraft.getInstance().gui.handleSystemChat(chatType, component1.append(" ").append(component2));
+        Minecraft.getInstance().getChatListener().handleSystemMessage(component1.append(" ").append(component2), false);
     }
 
     public void openClosestChestBoat() {

@@ -48,6 +48,18 @@
         <div>
             <label class="switch-label">
                 <input type="checkbox" class="switch"
+                    v-model="config.speedLimitEnabled"
+                    @change="update()">
+                <span>Enable Speed Limit</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Speed Limit:</span>
+            <input type="text" v-model="config.speedLimit" @change="update()">
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
                     v-model="config.horizontalSpeedLimitEnabled"
                     @change="update()">
                 <span>Enable Horizontal Speed Limit</span>

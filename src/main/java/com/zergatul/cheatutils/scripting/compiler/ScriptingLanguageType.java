@@ -4,6 +4,7 @@ public enum ScriptingLanguageType {
     VOID(null),
     NULL(Object.class),
     INT(int.class),
+    DOUBLE(double.class),
     BOOLEAN(boolean.class),
     STRING(String.class);
 
@@ -23,6 +24,9 @@ public enum ScriptingLanguageType {
         }
         if (type == int.class) {
             return INT;
+        }
+        if (type == double.class) {
+            return DOUBLE;
         }
         if (type == boolean.class) {
             return BOOLEAN;

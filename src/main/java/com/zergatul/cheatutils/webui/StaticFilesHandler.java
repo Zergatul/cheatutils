@@ -53,7 +53,7 @@ public class StaticFilesHandler implements HttpHandler {
 
     private static InputStream loadFromFile(String filename) {
         try {
-            return new FileInputStream("C:\\Users\\Zergatul\\source\\repos\\cheatutils-1.19\\src\\main\\resources\\" + filename);
+            return new FileInputStream("C:\\Users\\Zergatul\\source\\repos\\cheatutils-1.19.2\\src\\main\\resources\\" + filename);
         }
         catch (IOException e) {
             return null;

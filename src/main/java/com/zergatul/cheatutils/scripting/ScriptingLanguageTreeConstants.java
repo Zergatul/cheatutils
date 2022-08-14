@@ -14,9 +14,11 @@ public interface ScriptingLanguageTreeConstants
   public int JJTNAME = 8;
   public int JJTIDENTIFIER = 9;
   public int JJTLITERAL = 10;
-  public int JJTSTRINGLITERAL = 11;
-  public int JJTBOOLEANLITERAL = 12;
-  public int JJTNULLLITERAL = 13;
+  public int JJTINTEGERLITERAL = 11;
+  public int JJTFLOATINGPOINTLITERAL = 12;
+  public int JJTSTRINGLITERAL = 13;
+  public int JJTBOOLEANLITERAL = 14;
+  public int JJTNULLLITERAL = 15;
 
 
   public String[] jjtNodeName = {
@@ -31,9 +33,11 @@ public interface ScriptingLanguageTreeConstants
     "Name",
     "Identifier",
     "Literal",
+    "IntegerLiteral",
+    "FloatingPointLiteral",
     "StringLiteral",
     "BooleanLiteral",
     "NullLiteral",
   };
 }
-/* JavaCC - OriginalChecksum=d14cb8ae6bbdd1ce9ccee390ca635f13 (do not edit this line) */
+/* JavaCC - OriginalChecksum=0ef4f59707497af797d6d9cc51ca488a (do not edit this line) */

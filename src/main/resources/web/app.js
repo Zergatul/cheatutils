@@ -76,6 +76,8 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'UserNameConfig');
     addComponent(args, 'NewChunksConfig');
     addComponent(args, 'AutoDropConfig');
+    addComponent(args, 'ChunksConfig');
+    addComponent(args, 'ContainerButtonsConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

@@ -402,10 +402,10 @@ public class ScriptingLanguage/*@bgen(jjtree)*/implements ScriptingLanguageTreeC
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case INTEGER_LITERAL:
-        jj_consume_token(INTEGER_LITERAL);
+        IntegerLiteral();
         break;
       case FLOATING_POINT_LITERAL:
-        jj_consume_token(FLOATING_POINT_LITERAL);
+        FloatingPointLiteral();
         break;
       case STRING_LITERAL:
         StringLiteral();
@@ -436,6 +436,40 @@ public class ScriptingLanguage/*@bgen(jjtree)*/implements ScriptingLanguageTreeC
       {if (true) throw (ParseException)jjte000;}
     }
     {if (true) throw (Error)jjte000;}
+    } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+    }
+  }
+
+  final public void IntegerLiteral() throws ParseException {
+ /*@bgen(jjtree) IntegerLiteral */
+  ASTIntegerLiteral jjtn000 = new ASTIntegerLiteral(JJTINTEGERLITERAL);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);Token token;
+    try {
+      token = jj_consume_token(INTEGER_LITERAL);
+    jjtree.closeNodeScope(jjtn000, true);
+    jjtc000 = false;
+    jjtn000.jjtSetValue(token.image);
+    } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+    }
+  }
+
+  final public void FloatingPointLiteral() throws ParseException {
+ /*@bgen(jjtree) FloatingPointLiteral */
+  ASTFloatingPointLiteral jjtn000 = new ASTFloatingPointLiteral(JJTFLOATINGPOINTLITERAL);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);Token token;
+    try {
+      token = jj_consume_token(FLOATING_POINT_LITERAL);
+    jjtree.closeNodeScope(jjtn000, true);
+    jjtc000 = false;
+    jjtn000.jjtSetValue(token.image);
     } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
@@ -540,8 +574,13 @@ public class ScriptingLanguage/*@bgen(jjtree)*/implements ScriptingLanguageTreeC
     return false;
   }
 
-  private boolean jj_3R_17() {
-    if (jj_3R_20()) return true;
+  private boolean jj_3R_19() {
+    if (jj_3R_24()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_26() {
+    if (jj_scan_token(FALSE)) return true;
     return false;
   }
 
@@ -551,32 +590,57 @@ public class ScriptingLanguage/*@bgen(jjtree)*/implements ScriptingLanguageTreeC
     return false;
   }
 
-  private boolean jj_3R_16() {
-    if (jj_3R_19()) return true;
+  private boolean jj_3R_18() {
+    if (jj_3R_23()) return true;
     return false;
   }
 
-  private boolean jj_3R_15() {
-    if (jj_3R_18()) return true;
+  private boolean jj_3R_17() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_25() {
+    if (jj_scan_token(TRUE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_25()) {
+    jj_scanpos = xsp;
+    if (jj_3R_26()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_16() {
+    if (jj_3R_21()) return true;
     return false;
   }
 
   private boolean jj_3R_14() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(8)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(11)) {
-    jj_scanpos = xsp;
     if (jj_3R_15()) {
     jj_scanpos = xsp;
     if (jj_3R_16()) {
     jj_scanpos = xsp;
-    if (jj_3R_17()) return true;
+    if (jj_3R_17()) {
+    jj_scanpos = xsp;
+    if (jj_3R_18()) {
+    jj_scanpos = xsp;
+    if (jj_3R_19()) return true;
     }
     }
     }
     }
+    return false;
+  }
+
+  private boolean jj_3R_15() {
+    if (jj_3R_20()) return true;
     return false;
   }
 
@@ -586,18 +650,13 @@ public class ScriptingLanguage/*@bgen(jjtree)*/implements ScriptingLanguageTreeC
     return false;
   }
 
-  private boolean jj_3R_20() {
-    if (jj_scan_token(NULL)) return true;
+  private boolean jj_3R_22() {
+    if (jj_scan_token(STRING_LITERAL)) return true;
     return false;
   }
 
   private boolean jj_3R_6() {
     if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    if (jj_scan_token(FALSE)) return true;
     return false;
   }
 
@@ -617,17 +676,7 @@ public class ScriptingLanguage/*@bgen(jjtree)*/implements ScriptingLanguageTreeC
   }
 
   private boolean jj_3R_21() {
-    if (jj_scan_token(TRUE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_19() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_21()) {
-    jj_scanpos = xsp;
-    if (jj_3R_22()) return true;
-    }
+    if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
     return false;
   }
 
@@ -645,13 +694,18 @@ public class ScriptingLanguage/*@bgen(jjtree)*/implements ScriptingLanguageTreeC
     return false;
   }
 
-  private boolean jj_3R_12() {
-    if (jj_3R_7()) return true;
+  private boolean jj_3R_24() {
+    if (jj_scan_token(NULL)) return true;
     return false;
   }
 
-  private boolean jj_3R_18() {
-    if (jj_scan_token(STRING_LITERAL)) return true;
+  private boolean jj_3R_20() {
+    if (jj_scan_token(INTEGER_LITERAL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_12() {
+    if (jj_3R_7()) return true;
     return false;
   }
 

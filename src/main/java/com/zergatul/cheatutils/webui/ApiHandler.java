@@ -110,6 +110,7 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ElytraHackConfig config) {
                 config.horizontalSpeedLimit = MathUtils.clamp(config.horizontalSpeedLimit, 10, 1000);
+                config.speedLimit = MathUtils.clamp(config.speedLimit, 10, 1000);
                 ConfigStore.instance.getConfig().elytraHackConfig = config;
             }
         });
@@ -317,7 +318,7 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(MovementHackConfig config) {
-                config.inputVectorFactor = MathUtils.clamp(config.inputVectorFactor, 0.01, 1000);
+                config.validate();
                 ConfigStore.instance.getConfig().movementHackConfig = config;
             }
         });
@@ -406,6 +407,30 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(NewChunksConfig config) {
                 ConfigStore.instance.getConfig().newChunksConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("chunks", ChunksConfig.class) {
+            @Override
+            protected ChunksConfig getConfig() {
+                return ConfigStore.instance.getConfig().chunksConfig;
+            }
+
+            @Override
+            protected void setConfig(ChunksConfig config) {
+                ConfigStore.instance.getConfig().chunksConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("container-buttons", ContainerButtonsConfig.class) {
+            @Override
+            protected ContainerButtonsConfig getConfig() {
+                return ConfigStore.instance.getConfig().containerButtonsConfig;
+            }
+
+            @Override
+            protected void setConfig(ContainerButtonsConfig config) {
+                ConfigStore.instance.getConfig().containerButtonsConfig = config;
             }
         });
     }
