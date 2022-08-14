@@ -19,6 +19,7 @@ public class MovementApi {
     public void setSpeedMultiplierFactor(double value) {
         var config = getConfig();
         config.inputVectorFactor = value;
+        config.validate();
         ConfigStore.instance.requestWrite();
     }
 
