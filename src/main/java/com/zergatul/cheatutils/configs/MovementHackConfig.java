@@ -7,6 +7,7 @@ public class MovementHackConfig {
     public boolean disableSlowdownOnUseItem;
     public boolean scaleInputVector;
     public double inputVectorFactor;
+    public boolean disableCrouchingSlowdown;
 
     public MovementHackConfig() {
         inputVectorFactor = 1;

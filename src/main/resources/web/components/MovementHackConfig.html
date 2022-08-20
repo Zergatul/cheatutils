@@ -44,5 +44,16 @@
             <span class="text">Max speed factor:</span>
             <input type="text" v-model="config.inputVectorFactor" @change="update()">
         </div>
+        <div class="description">
+            Don't reduce your speed when you are crouching or crawling.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.disableCrouchingSlowdown"
+                    @change="update()">
+                <span>No slow on crouch</span>
+            </label>
+        </div>
     </fieldset>
 </div>

@@ -8,6 +8,7 @@ import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -67,5 +68,18 @@ public abstract class MixinLocalPlayer {
                 info.setReturnValue(false);
             }
         }
+    }
+
+    @ModifyArg(
+            method = "Lnet/minecraft/client/player/LocalPlayer;aiStep()V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"),
+            index = 0
+    )
+    private boolean onAiStepInputTick(boolean isMovingSlowly) {
+        var config = ConfigStore.instance.getConfig().movementHackConfig;
+        if (config.disableCrouchingSlowdown) {
+            return false;
+        }
+        return isMovingSlowly;
     }
 }

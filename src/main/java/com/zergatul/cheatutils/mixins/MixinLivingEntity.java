@@ -12,10 +12,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class MixinLivingEntity {
+public abstract class MixinLivingEntity {
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/LivingEntity;hasEffect(Lnet/minecraft/world/effect/MobEffect;)Z", cancellable = true)
-    public void onHasEffect(MobEffect effect, CallbackInfoReturnable<Boolean> info) {
+    private void onHasEffect(MobEffect effect, CallbackInfoReturnable<Boolean> info) {
         if (ConfigStore.instance.getConfig().fullBrightConfig.enabled && FullBrightController.instance.insideUpdateLightTexture) {
             if (effect == MobEffects.NIGHT_VISION) {
                 info.setReturnValue(true);
@@ -25,7 +25,7 @@ public class MixinLivingEntity {
     }
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/LivingEntity;getEffect(Lnet/minecraft/world/effect/MobEffect;)Lnet/minecraft/world/effect/MobEffectInstance;", cancellable = true)
-    public void onGetEffect(MobEffect effect, CallbackInfoReturnable<MobEffectInstance> info) {
+    private void onGetEffect(MobEffect effect, CallbackInfoReturnable<MobEffectInstance> info) {
         if (ConfigStore.instance.getConfig().fullBrightConfig.enabled && FullBrightController.instance.insideUpdateLightTexture) {
             if (effect == MobEffects.NIGHT_VISION) {
                 info.setReturnValue(new MobEffectInstance(MobEffects.NIGHT_VISION, 1000));
