@@ -3,10 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.configs.*;
-import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
-import com.zergatul.cheatutils.controllers.LightLevelController;
 import com.zergatul.cheatutils.utils.MathUtils;
-import net.minecraft.util.Mth;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
@@ -39,8 +36,9 @@ public class ApiHandler implements HttpHandler {
         apis.add(new BeaconsListApi());
         apis.add(new AutoDropApi());
         apis.add(new ItemInfoApi());
+        apis.add(new GenerateEntityMappingApi());
 
-        apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
             protected FullBrightConfig getConfig() {
                 return ConfigStore.instance.getConfig().fullBrightConfig;
@@ -50,9 +48,9 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(FullBrightConfig config) {
                 ConfigStore.instance.getConfig().fullBrightConfig = config;
             }
-        });
+        });*/
 
-        apis.add(new SimpleConfigApi<>("auto-fish", AutoFishConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("auto-fish", AutoFishConfig.class) {
             @Override
             protected AutoFishConfig getConfig() {
                 return ConfigStore.instance.getConfig().autoFishConfig;
@@ -142,7 +140,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("light-level", LightLevelConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("light-level", LightLevelConfig.class) {
             @Override
             protected LightLevelConfig getConfig() {
                 return ConfigStore.instance.getConfig().lightLevelConfig;
@@ -157,9 +155,9 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().lightLevelConfig = config;
                 LightLevelController.instance.onChanged();
             }
-        });
+        });*/
 
-        apis.add(new SimpleConfigApi<>("ender-pearl-path", EnderPearlPathConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("ender-pearl-path", EnderPearlPathConfig.class) {
             @Override
             protected EnderPearlPathConfig getConfig() {
                 return ConfigStore.instance.getConfig().enderPearlPathConfig;
@@ -207,7 +205,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("exploration-mini-map", ExplorationMiniMapConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("exploration-mini-map", ExplorationMiniMapConfig.class) {
             @Override
             protected ExplorationMiniMapConfig getConfig() {
                 return ConfigStore.instance.getConfig().explorationMiniMapConfig;
@@ -219,9 +217,9 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().explorationMiniMapConfig = config;
                 ExplorationMiniMapController.instance.onChanged();
             }
-        });
+        });*/
 
-        apis.add(new SimpleConfigApi<>("auto-criticals", AutoCriticalsConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("auto-criticals", AutoCriticalsConfig.class) {
             @Override
             protected AutoCriticalsConfig getConfig() {
                 return ConfigStore.instance.getConfig().autoCriticalsConfig;
@@ -432,7 +430,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(ContainerButtonsConfig config) {
                 ConfigStore.instance.getConfig().containerButtonsConfig = config;
             }
-        });
+        });*/
     }
 
     @Override

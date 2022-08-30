@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.webui;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.registries.ForgeRegistries;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.block.Block;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Identifier;
 import org.apache.http.MethodNotSupportedException;
 
 public class BlockColorApi extends ApiBase {
@@ -15,8 +15,8 @@ public class BlockColorApi extends ApiBase {
 
     @Override
     public String get(String id) throws MethodNotSupportedException {
-        Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(id));
-        int color = Minecraft.getInstance().getBlockColors().getColor(block.defaultBlockState(), null, null, 0);
+        Block block = ModApiWrapper.BLOCKS.getValue(new Identifier(id));
+        int color = MinecraftClient.getInstance().getBlockColors().getColor(block.getDefaultState(), null, null, 0);
         return Integer.toString(color);
     }
 }

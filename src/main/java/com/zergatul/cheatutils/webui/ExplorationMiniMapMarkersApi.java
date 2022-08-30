@@ -1,8 +1,5 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
-import org.apache.http.HttpException;
-
 public class ExplorationMiniMapMarkersApi extends ApiBase {
 
     @Override
@@ -10,7 +7,7 @@ public class ExplorationMiniMapMarkersApi extends ApiBase {
         return "exploration-mini-map-markers";
     }
 
-    @Override
+    /*@Override
     public String post(String body) throws HttpException {
         ExplorationMiniMapController.instance.addMarker();
         return "true";
@@ -20,5 +17,5 @@ public class ExplorationMiniMapMarkersApi extends ApiBase {
     public String delete(String id) throws HttpException {
         ExplorationMiniMapController.instance.clearMarkers();
         return "true";
-    }
+    }*/
 }

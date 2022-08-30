@@ -4,8 +4,8 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
+import net.minecraft.item.Item;
+import net.minecraft.util.Identifier;
 
 import java.io.IOException;
 
@@ -26,7 +26,7 @@ public class ItemTypeAdapter extends TypeAdapter<Item> {
         if (value == null) {
             return null;
         } else {
-            return ModApiWrapper.ITEMS.getValue(new ResourceLocation(value));
+            return ModApiWrapper.ITEMS.getValue(new Identifier(value));
         }
     }
 }

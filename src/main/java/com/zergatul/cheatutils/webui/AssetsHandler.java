@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 
 import java.io.*;
 
@@ -10,10 +10,9 @@ public class AssetsHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
         String filename = exchange.getRequestURI().getPath();
 
-        try (InputStream stream = Minecraft.class.getResourceAsStream(filename)) {
+        try (InputStream stream = MinecraftClient.class.getResourceAsStream(filename)) {
 
             if (stream == null) {
                 exchange.sendResponseHeaders(404, 0);

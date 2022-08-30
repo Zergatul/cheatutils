@@ -1,21 +1,13 @@
 package com.zergatul.cheatutils.scripting.api;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.contents.LiteralContents;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.vehicle.ChestBoat;
-import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 
-import java.util.Comparator;
 import java.util.Locale;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class MainApi {
 
@@ -25,40 +17,40 @@ public class MainApi {
     }
 
     public void chat(String text) {
-        LocalPlayer player = Minecraft.getInstance().player;
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player != null) {
-            Minecraft.getInstance().player.chatSigned(text, null);
+            MinecraftClient.getInstance().player.sendChatMessage(text, null);
         }
     }
 
     public void systemMessage(String text) {
-        Minecraft.getInstance().getChatListener().handleSystemMessage(MutableComponent.create(new LiteralContents(text)), false);
+        MinecraftClient.getInstance().getMessageHandler().onGameMessage(MutableText.of(new LiteralTextContent(text)), false);
     }
 
     public void systemMessage(String color, String text) {
         Integer colorInt = parseColor(color);
-        MutableComponent component = MutableComponent.create(new LiteralContents(text));
+        MutableText component = MutableText.of(new LiteralTextContent(text));
         if (colorInt != null) {
-            component = component.withStyle(Style.EMPTY.withColor(colorInt));
+            component = component.setStyle(Style.EMPTY.withColor(colorInt));
         }
-        Minecraft.getInstance().getChatListener().handleSystemMessage(component, false);
+        MinecraftClient.getInstance().getMessageHandler().onGameMessage(component, false);
     }
 
     public void systemMessage(String color1, String text1, String color2, String text2) {
         Integer color1Int = parseColor(color1);
         Integer color2Int = parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
+        MutableText component1 = MutableText.of(new LiteralTextContent(text1));
         if (color1Int != null) {
-            component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
+            component1 = component1.setStyle(Style.EMPTY.withColor(color1Int));
         }
-        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
+        MutableText component2 = MutableText.of(new LiteralTextContent(text2));
         if (color2Int != null) {
-            component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
+            component2 = component2.setStyle(Style.EMPTY.withColor(color2Int));
         }
-        Minecraft.getInstance().getChatListener().handleSystemMessage(component1.append(" ").append(component2), false);
+        MinecraftClient.getInstance().getMessageHandler().onGameMessage(component1.append(" ").append(component2), false);
     }
 
-    public void openClosestChestBoat() {
+    /*public void openClosestChestBoat() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != null && mc.player != null) {
             Stream<ChestBoat> boats = StreamSupport
@@ -107,7 +99,7 @@ public class MainApi {
         mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
         mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
         mc.player.swing(InteractionHand.MAIN_HAND);
-    }
+    }*/
 
     private static Integer parseColor(String str) {
         if (str == null) {

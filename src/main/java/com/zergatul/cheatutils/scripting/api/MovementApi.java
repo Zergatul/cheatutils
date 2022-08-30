@@ -1,11 +1,8 @@
 package com.zergatul.cheatutils.scripting.api;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.MovementHackConfig;
-
 public class MovementApi {
 
-    public boolean isSpeedMultiplierEnabled() {
+    /*public boolean isSpeedMultiplierEnabled() {
         var config = getConfig();
         return config.scaleInputVector;
     }
@@ -25,5 +22,5 @@ public class MovementApi {
 
     private MovementHackConfig getConfig() {
         return ConfigStore.instance.getConfig().movementHackConfig;
-    }
+    }*/
 }

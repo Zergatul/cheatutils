@@ -1,7 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpServer;
-import com.zergatul.cheatutils.ModMain;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -11,6 +12,7 @@ public class ConfigHttpServer {
 
     public static ConfigHttpServer instance = new ConfigHttpServer();
 
+    private final Logger logger = LogManager.getLogger(ConfigHttpServer.class);
     private HttpServer server;
     private String uri;
 
@@ -28,7 +30,7 @@ public class ConfigHttpServer {
         }
 
         if (port == 0) {
-            ModMain.LOGGER.debug("Cannot start http server");
+            logger.debug("Cannot start http server");
             return;
         }
 
@@ -49,7 +51,7 @@ public class ConfigHttpServer {
 
         uri = "http://localhost:" + port + "/";
 
-        ModMain.LOGGER.debug("Http server started");
+        logger.debug("Http server started");
     }
 
     public String getUrl() {

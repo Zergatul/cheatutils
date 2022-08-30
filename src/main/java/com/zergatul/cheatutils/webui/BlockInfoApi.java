@@ -1,13 +1,11 @@
 package com.zergatul.cheatutils.webui;
 
-import net.minecraft.client.resources.language.I18n;
-import net.minecraft.core.Registry;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistry;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.TranslatableTextContent;
 import org.apache.http.MethodNotSupportedException;
 
 import java.util.Collection;
@@ -21,30 +19,24 @@ public class BlockInfoApi extends ApiBase {
 
     @Override
     public String get() throws MethodNotSupportedException {
-        Collection<Block> blocks = ForgeRegistries.BLOCKS.getValues();
+        Collection<Block> blocks = ModApiWrapper.BLOCKS.getValues();
         Object[] result = blocks.stream().filter(b -> !b.equals(Blocks.AIR)).map(BlockInfo::new).toArray();
         return gson.toJson(result);
     }
 
     private static class BlockInfo {
-
         public String id;
         public String name;
-        public int integerId;
 
         public BlockInfo(Block block) {
+            id = ModApiWrapper.BLOCKS.getKey(block).toString();
 
-            id = ForgeRegistries.BLOCKS.getKey(block).toString();
-
-            MutableComponent text = block.getName();
-            if (text.getContents() instanceof TranslatableContents) {
-                name = I18n.get(((TranslatableContents) text.getContents()).getKey());
+            MutableText text = block.getName();
+            if (text.getContent() instanceof TranslatableTextContent) {
+                name = I18n.translate(((TranslatableTextContent) text.getContent()).getKey());
             } else {
                 name = id;
             }
-
-            integerId = ((ForgeRegistry<Block>)ForgeRegistries.BLOCKS).getID(block);
         }
-
     }
 }

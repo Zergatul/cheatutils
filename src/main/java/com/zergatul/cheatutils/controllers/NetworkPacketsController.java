@@ -1,9 +1,11 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.interfaces.ClientConnectionMixinInterface;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import io.netty.channel.*;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.network.Packet;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -14,7 +16,7 @@ public class NetworkPacketsController {
 
     private List<Consumer<ServerPacketArgs>> serverPacketHandlers = new ArrayList<>();
     private List<Consumer<ClientPacketArgs>> clientPacketHandlers = new ArrayList<>();
-    private Connection connection;
+    private ClientConnection connection;
 
     private NetworkPacketsController() {
         ModApiWrapper.addOnClientPlayerLoggingIn(this::onClientPlayerLoggingIn);
@@ -37,12 +39,16 @@ public class NetworkPacketsController {
     }
 
     public void receivePacket(Packet<?> packet) {
-        connection.channel().pipeline().fireChannelRead(packet);
+        getChannel().pipeline().fireChannelRead(packet);
     }
 
-    private void onClientPlayerLoggingIn(Connection connection) {
+    private Channel getChannel() {
+        return ((ClientConnectionMixinInterface) connection).getChannel();
+    }
+
+    private void onClientPlayerLoggingIn(ClientConnection connection) {
         this.connection = connection;
-        ChannelPipeline pipeline = connection.channel().pipeline();
+        ChannelPipeline pipeline = getChannel().pipeline();
 
         synchronized (pipeline) {
             if (pipeline.get("PacketReader") == null) {
@@ -99,5 +105,4 @@ public class NetworkPacketsController {
         public Packet<?> packet;
         public boolean skip;
     }
-
 }

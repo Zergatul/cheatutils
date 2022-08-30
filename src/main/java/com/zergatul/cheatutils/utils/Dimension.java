@@ -1,40 +1,41 @@
 package com.zergatul.cheatutils.utils;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public final class Dimension {
 
-    private static Map<ResourceLocation, Dimension> dimensions = new HashMap<>();
+    private static Map<Identifier, Dimension> dimensions = new HashMap<>();
 
-    private final ResourceKey<Level> key;
+    private final RegistryKey<World> key;
     private final DimensionType type;
 
-    private Dimension(ResourceKey<Level> key, DimensionType type) {
+    private Dimension(RegistryKey<World> key, DimensionType type) {
         this.key = key;
         this.type = type;
     }
 
-    public static Dimension get(ClientLevel level) {
-        Dimension existing = dimensions.get(level.dimension().location());
+    public static Dimension get(ClientWorld level) {
+        Dimension existing = dimensions.get(level.getDimensionKey().getValue());
         if (existing != null) {
             return existing;
         }
 
-        Dimension dimension = new Dimension(level.dimension(), level.dimensionType());
-        dimensions.put(level.dimension().location(), dimension);
+        Dimension dimension = new Dimension(level.getRegistryKey(), level.getDimension());
+        dimensions.put(level.getDimensionKey().getValue(), dimension);
         return dimension;
     }
 
     @Override
     public int hashCode() {
-        return key.location().hashCode();
+        return key.getValue().hashCode();
     }
 
     @Override
@@ -52,8 +53,8 @@ public final class Dimension {
         }
     }
 
-    public ResourceLocation getId() {
-        return key.location();
+    public Identifier getId() {
+        return key.getValue();
     }
 
     public int getMinY() {
@@ -69,6 +70,6 @@ public final class Dimension {
     }
 
     public boolean isNether() {
-        return key == Level.NETHER;
+        return key == World.NETHER;
     }
 }

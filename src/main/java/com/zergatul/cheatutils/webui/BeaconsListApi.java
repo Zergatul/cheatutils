@@ -1,10 +1,5 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.configs.BeaconConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import net.minecraft.client.Minecraft;
-import org.apache.http.HttpException;
-
 public class BeaconsListApi extends ApiBase {
 
     @Override
@@ -12,7 +7,7 @@ public class BeaconsListApi extends ApiBase {
         return "beacons-list";
     }
 
-    @Override
+    /*@Override
     public String get() throws HttpException {
         return gson.toJson(ConfigStore.instance.getConfig().beaconConfig.entries);
     }
@@ -46,5 +41,5 @@ public class BeaconsListApi extends ApiBase {
             ConfigStore.instance.requestWrite();
         }
         return "true";
-    }
+    }*/
 }

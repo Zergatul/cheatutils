@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.zergatul.cheatutils.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+  ],
+  "client": [
+    "MixinClientChunkManager",
+    "MixinClientConnection",
+    "MixinClientPlayNetworkHandler",
+    "MixinClientWorld",
+    "MixinControlsListWidgetKeyBindingEntry",
+    "MixinEntity",
+    "MixinKeyboard",
+    "MixinMinecraftClient",
+    "MixinWorldRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

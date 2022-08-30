@@ -1,21 +1,34 @@
 package com.zergatul.cheatutils.wrappers;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.*;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 public class WrapperRegistry<T> {
 
-    private final IForgeRegistry<T> registry;
+    private final Registry<T> registry;
 
-    public WrapperRegistry(IForgeRegistry<T> registry) {
+    public WrapperRegistry(Registry<T> registry) {
         this.registry = registry;
     }
 
-    public ResourceLocation getKey(T value) {
-        return registry.getKey(value);
+    public Identifier getKey(T value) {
+        Optional<RegistryKey<T>> optional = registry.getKey(value);
+        if (optional.isEmpty()) {
+            return null;
+        }
+
+        return optional.get().getValue();
     }
 
-    public T getValue(ResourceLocation id) {
-        return registry.getValue(id);
+    public T getValue(Identifier id) {
+        return registry.get(id);
+    }
+
+    public Collection<T> getValues() {
+        return registry.getEntrySet().stream().map(Map.Entry::getValue).toList();
     }
 }

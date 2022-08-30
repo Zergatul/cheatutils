@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.utils;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.item.ItemStack;
 
 public class InventorySlot {
 
@@ -19,21 +19,21 @@ public class InventorySlot {
 
     public ItemStack get() {
         if (slot >= 0) {
-            return Minecraft.getInstance().player.getInventory().items.get(slot);
+            return MinecraftClient.getInstance().player.getInventory().main.get(slot);
         }
         if (equipmentSlot == EquipmentSlot.OFFHAND) {
-            return Minecraft.getInstance().player.getInventory().offhand.get(0);
+            return MinecraftClient.getInstance().player.getInventory().offHand.get(0);
         }
         return null;
     }
 
     public void set(ItemStack itemStack) {
         if (slot >= 0) {
-            Minecraft.getInstance().player.getInventory().items.set(slot, itemStack.copy());
+            MinecraftClient.getInstance().player.getInventory().main.set(slot, itemStack.copy());
             return;
         }
         if (equipmentSlot == EquipmentSlot.OFFHAND) {
-            Minecraft.getInstance().player.getInventory().offhand.set(0, itemStack.copy());
+            MinecraftClient.getInstance().player.getInventory().offHand.set(0, itemStack.copy());
             return;
         }
     }

@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
-import net.minecraft.world.item.Item;
+import net.minecraft.item.Item;
 
 public class ItemTypeAdapterFactory implements TypeAdapterFactory {
     @SuppressWarnings("unchecked")

@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.api;
 
+import com.zergatul.cheatutils.configs.ClassRemapper;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 
@@ -25,7 +26,7 @@ public class EntitiesApi {
     private EntityTracerConfig getConfig(String className) {
         var list = ConfigStore.instance.getConfig().entities.configs;
         synchronized (list) {
-            return list.stream().filter(c -> c.clazz.getName().equals(className)).findFirst().orElse(null);
+            return list.stream().filter(c -> c.clazz.getName().equals(ClassRemapper.toObf(className))).findFirst().orElse(null);
         }
     }
 }

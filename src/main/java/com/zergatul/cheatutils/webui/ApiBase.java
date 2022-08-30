@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;

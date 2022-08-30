@@ -9,7 +9,7 @@
                 <div class="c1"></div>
                 <div class="c2">
                     <div>{{ blocksMap[item.block].name }}</div>
-                    <div class="smaller">{{ item.block }} #{{ blocksMap[item.block].integerId }}</div>
+                    <div class="smaller">{{ item.block }}</div>
                 </div>
                 <div class="c3">
                     <label class="switch-label">
@@ -61,7 +61,7 @@
                 <div class="c1"></div>
                 <div class="c2">
                     <div>{{ item.name }}</div>
-                    <div class="smaller">{{ item.id }} #{{ item.integerId }}</div>
+                    <div class="smaller">{{ item.id }}</div>
                 </div>
                 <div class="c3">
                     <button class="edit" v-bind:class="{ 'button-highlight': blocksConfigMap[item.id] }" @click="openEdit(item.id)">
@@ -79,7 +79,7 @@
         <div v-if="selectedConfig">
             <div class="edit-block-header">
                 <div>{{ blocksMap[selectedConfig.block].name }}</div>
-                <div class="smaller">{{ selectedConfig.block }} #{{ blocksMap[selectedConfig.block].integerId }}</div>
+                <div class="smaller">{{ selectedConfig.block }}</div>
             </div>
             <div class="edit-block-settings">
                 <label class="switch-label">

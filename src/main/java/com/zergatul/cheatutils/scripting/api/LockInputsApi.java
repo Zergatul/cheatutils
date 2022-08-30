@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.configs.LockInputsConfig;
 
 public class LockInputsApi {
 
-    public void toggleHoldForward() {
+    /*public void toggleHoldForward() {
         var config = getConfig();
         config.holdForward = !config.holdForward;
         ConfigStore.instance.requestWrite();
@@ -25,5 +25,5 @@ public class LockInputsApi {
 
     private LockInputsConfig getConfig() {
         return ConfigStore.instance.getConfig().lockInputsConfig;
-    }
+    }*/
 }

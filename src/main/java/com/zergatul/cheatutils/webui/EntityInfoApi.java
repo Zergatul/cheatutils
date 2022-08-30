@@ -1,51 +1,50 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.datafixers.util.Either;
-import net.minecraft.core.*;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.TagKey;
-import net.minecraft.util.profiling.ProfilerFiller;
+import com.mojang.datafixers.util.Pair;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.item.map.MapState;
+import net.minecraft.recipe.RecipeManager;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.tag.TagKey;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.player.*;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkSource;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.entity.LevelEntityGetter;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import net.minecraft.world.level.storage.WritableLevelData;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.ticks.LevelTickAccess;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.MutableWorldProperties;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.ChunkManager;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.entity.EntityLookup;
+import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.tick.QueryableTickScheduler;
 import org.apache.http.HttpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.List;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class EntityInfoApi extends ApiBase {
 
     private static Logger logger = LogManager.getLogger(EntityInfoApi.class);
-
-    private static final Class[] hardcodedClasses = new Class[] {
-        Player.class
-    };
 
     private static List<EntityInfo> classes;
 
@@ -65,19 +64,29 @@ public class EntityInfoApi extends ApiBase {
             return;
         }
 
-        EntityType playerEntityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("minecraft:player"));
+        EntityType<?> playerEntityType = ModApiWrapper.ENTITY_TYPES.getValue(new Identifier("minecraft:player"));
 
-        Level level = new FakeLevel();
-        List<Class> entityClasses = ForgeRegistries.ENTITY_TYPES.getValues().stream().map(et -> {
+        HashSet<EntityInfo> set = new HashSet<>();
+        try {
+            set.add(new EntityInfo(PlayerEntity.class, "minecraft:player"));
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        World level = new FakeLevel();
+        List<EntityInfo> finalClasses = ModApiWrapper.ENTITY_TYPES.getValues().stream().map(et -> {
             if (et == playerEntityType) {
-                return (Class)null;
+                return null;
             }
             try {
                 Entity entity = et.create(level);
                 if (entity == null) {
                     return null;
                 } else {
-                    return entity.getClass();
+                    EntityInfo info = new EntityInfo(entity.getClass(), ModApiWrapper.ENTITY_TYPES.getKey(et).toString());
+                    set.add(info);
+                    return info;
                 }
             }
             catch (Throwable throwable) {
@@ -88,228 +97,225 @@ public class EntityInfoApi extends ApiBase {
             }
         }).filter(Objects::nonNull).toList();
 
-        HashSet<Class> set = new HashSet<>();
-        Arrays.stream(hardcodedClasses).forEach(set::add);
-        for (Class clazz: entityClasses) {
+        finalClasses.forEach(ei -> {
+            Class clazz = ei.clazz.getSuperclass();
             while (Entity.class.isAssignableFrom(clazz)) {
-                set.add(clazz);
+                try {
+                    EntityInfo baseInfo = new EntityInfo(clazz);
+                    if (!set.contains(baseInfo)) {
+                        set.add(baseInfo);
+                    }
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                    continue;
+                }
                 clazz = clazz.getSuperclass();
             }
-        }
+        });
 
-        classes = set.stream().map(c -> {
-            try {
-                return new EntityInfo(c);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }).filter(Objects::nonNull).sorted((i1, i2) -> i1.simpleName.compareToIgnoreCase(i2.simpleName)).toList();
+        classes = set.stream().sorted((i1, i2) -> i1.getSimpleName().compareToIgnoreCase(i2.getSimpleName())).toList();
     }
 
-    private static class FakeLevel extends Level {
+    private static class FakeLevel extends World {
+
+        private static MutableWorldProperties createWorldProperties() {
+            return new MutableWorldProperties() {
+                @Override
+                public void setSpawnX(int spawnX) {
+
+                }
+
+                @Override
+                public void setSpawnY(int spawnY) {
+
+                }
+
+                @Override
+                public void setSpawnZ(int spawnZ) {
+
+                }
+
+                @Override
+                public void setSpawnAngle(float spawnAngle) {
+
+                }
+
+                @Override
+                public int getSpawnX() {
+                    return 0;
+                }
+
+                @Override
+                public int getSpawnY() {
+                    return 0;
+                }
+
+                @Override
+                public int getSpawnZ() {
+                    return 0;
+                }
+
+                @Override
+                public float getSpawnAngle() {
+                    return 0;
+                }
+
+                @Override
+                public long getTime() {
+                    return 0;
+                }
+
+                @Override
+                public long getTimeOfDay() {
+                    return 0;
+                }
+
+                @Override
+                public boolean isThundering() {
+                    return false;
+                }
+
+                @Override
+                public boolean isRaining() {
+                    return false;
+                }
+
+                @Override
+                public void setRaining(boolean raining) {
+
+                }
+
+                @Override
+                public boolean isHardcore() {
+                    return false;
+                }
+
+                @Override
+                public GameRules getGameRules() {
+                    return null;
+                }
+
+                @Override
+                public Difficulty getDifficulty() {
+                    return null;
+                }
+
+                @Override
+                public boolean isDifficultyLocked() {
+                    return false;
+                }
+            };
+        }
+
+        private static RegistryEntry<DimensionType> createDimension() {
+            return new RegistryEntry<>() {
+                @Override
+                public DimensionType value() {
+                    return DynamicRegistryManager.BUILTIN.get().get(Registry.DIMENSION_TYPE_KEY).get(World.OVERWORLD.getValue());
+                }
+
+                @Override
+                public boolean hasKeyAndValue() {
+                    return false;
+                }
+
+                @Override
+                public boolean matchesId(Identifier id) {
+                    return false;
+                }
+
+                @Override
+                public boolean matchesKey(RegistryKey<DimensionType> key) {
+                    return false;
+                }
+
+                @Override
+                public boolean matches(Predicate<RegistryKey<DimensionType>> predicate) {
+                    return false;
+                }
+
+                @Override
+                public boolean isIn(TagKey<DimensionType> tag) {
+                    return false;
+                }
+
+                @Override
+                public Stream<TagKey<DimensionType>> streamTags() {
+                    return null;
+                }
+
+                @Override
+                public Either<RegistryKey<DimensionType>, DimensionType> getKeyOrValue() {
+                    return null;
+                }
+
+                @Override
+                public Optional<RegistryKey<DimensionType>> getKey() {
+                    RegistryKey<DimensionType> key = RegistryKey.of(Registry.DIMENSION_TYPE_KEY, World.OVERWORLD.getValue());
+                    return Optional.of(key);
+                }
+
+                @Override
+                public Type getType() {
+                    return null;
+                }
+
+                @Override
+                public boolean matchesRegistry(Registry<DimensionType> registry) {
+                    return false;
+                }
+            };
+        }
 
         protected FakeLevel() {
-            super(new WritableLevelData() {
-                      @Override
-                      public void setXSpawn(int p_78651_) {
-
-                      }
-
-                      @Override
-                      public void setYSpawn(int p_78652_) {
-
-                      }
-
-                      @Override
-                      public void setZSpawn(int p_78653_) {
-
-                      }
-
-                      @Override
-                      public void setSpawnAngle(float p_78648_) {
-
-                      }
-
-                      @Override
-                      public int getXSpawn() {
-                          return 0;
-                      }
-
-                      @Override
-                      public int getYSpawn() {
-                          return 0;
-                      }
-
-                      @Override
-                      public int getZSpawn() {
-                          return 0;
-                      }
-
-                      @Override
-                      public float getSpawnAngle() {
-                          return 0;
-                      }
-
-                      @Override
-                      public long getGameTime() {
-                          return 0;
-                      }
-
-                      @Override
-                      public long getDayTime() {
-                          return 0;
-                      }
-
-                      @Override
-                      public boolean isThundering() {
-                          return false;
-                      }
-
-                      @Override
-                      public boolean isRaining() {
-                          return false;
-                      }
-
-                      @Override
-                      public void setRaining(boolean p_78171_) {
-
-                      }
-
-                      @Override
-                      public boolean isHardcore() {
-                          return false;
-                      }
-
-                      @Override
-                      public GameRules getGameRules() {
-                          return null;
-                      }
-
-                      @Override
-                      public Difficulty getDifficulty() {
-                          return null;
-                      }
-
-                      @Override
-                      public boolean isDifficultyLocked() {
-                          return false;
-                      }
-                  },
-                    Level.OVERWORLD,
-                    new Holder<DimensionType>() {
-                        @Override
-                        public DimensionType value() {
-                            return RegistryAccess.BUILTIN.get().registryOrThrow(Registry.DIMENSION_TYPE_REGISTRY).get(Level.OVERWORLD.location());
-                        }
-
-                        @Override
-                        public boolean isBound() {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean is(ResourceLocation p_205713_) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean is(ResourceKey<DimensionType> p_205712_) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean is(Predicate<ResourceKey<DimensionType>> p_205711_) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean is(TagKey<DimensionType> p_205705_) {
-                            return false;
-                        }
-
-                        @Override
-                        public Stream<TagKey<DimensionType>> tags() {
-                            return null;
-                        }
-
-                        @Override
-                        public Either<ResourceKey<DimensionType>, DimensionType> unwrap() {
-                            return null;
-                        }
-
-                        @Override
-                        public Optional<ResourceKey<DimensionType>> unwrapKey() {
-                            ResourceKey<DimensionType> x = ResourceKey.create(Registry.DIMENSION_TYPE_REGISTRY, Level.OVERWORLD.location());
-                            return Optional.of(x);
-                        }
-
-                        @Override
-                        public Kind kind() {
-                            return null;
-                        }
-
-                        @Override
-                        public boolean isValidInRegistry(Registry<DimensionType> p_205708_) {
-                            return false;
-                        }
-                    },
-                    new Supplier<ProfilerFiller>() {
-                        @Override
-                        public ProfilerFiller get() {
-                            return null;
-                        }
-                    },
-                    true,
-                    true,
-                    0,
-                    0);
+            super(createWorldProperties(), World.OVERWORLD, createDimension(), () -> null, true, false, 0,0);
         }
 
         @Override
-        public void sendBlockUpdated(BlockPos p_46612_, BlockState p_46613_, BlockState p_46614_, int p_46615_) {
+        public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) {
 
         }
 
         @Override
-        public void playSeededSound(@Nullable Player p_220363_, double p_220364_, double p_220365_, double p_220366_, SoundEvent p_220367_, SoundSource p_220368_, float p_220369_, float p_220370_, long p_220371_) {
+        public void playSound(@Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
 
         }
 
         @Override
-        public void playSeededSound(@Nullable Player p_220372_, Entity p_220373_, SoundEvent p_220374_, SoundSource p_220375_, float p_220376_, float p_220377_, long p_220378_) {
+        public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
 
         }
 
         @Override
-        public String gatherChunkSourceStats() {
+        public String asString() {
             return null;
         }
 
         @Nullable
         @Override
-        public Entity getEntity(int p_46492_) {
+        public Entity getEntityById(int id) {
             return null;
         }
 
         @Nullable
         @Override
-        public MapItemSavedData getMapData(String p_46650_) {
+        public MapState getMapState(String id) {
             return null;
         }
 
         @Override
-        public void setMapData(String p_151533_, MapItemSavedData p_151534_) {
+        public void putMapState(String id, MapState state) {
 
         }
 
         @Override
-        public int getFreeMapId() {
+        public int getNextMapId() {
             return 0;
         }
 
         @Override
-        public void destroyBlockProgress(int p_46506_, BlockPos p_46507_, int p_46508_) {
+        public void setBlockBreakingInfo(int entityId, BlockPos pos, int progress) {
 
         }
 
@@ -324,52 +330,52 @@ public class EntityInfoApi extends ApiBase {
         }
 
         @Override
-        protected LevelEntityGetter<Entity> getEntities() {
+        protected EntityLookup<Entity> getEntityLookup() {
             return null;
         }
 
         @Override
-        public LevelTickAccess<Block> getBlockTicks() {
+        public QueryableTickScheduler<Block> getBlockTickScheduler() {
             return null;
         }
 
         @Override
-        public LevelTickAccess<Fluid> getFluidTicks() {
+        public QueryableTickScheduler<Fluid> getFluidTickScheduler() {
             return null;
         }
 
         @Override
-        public ChunkSource getChunkSource() {
+        public ChunkManager getChunkManager() {
             return null;
         }
 
         @Override
-        public void levelEvent(@Nullable Player p_46771_, int p_46772_, BlockPos p_46773_, int p_46774_) {
+        public void syncWorldEvent(@Nullable PlayerEntity player, int eventId, BlockPos pos, int data) {
 
         }
 
         @Override
-        public void gameEvent(GameEvent p_220404_, Vec3 p_220405_, GameEvent.Context p_220406_) {
+        public void emitGameEvent(GameEvent event, Vec3d emitterPos, GameEvent.Emitter emitter) {
 
         }
 
         @Override
-        public RegistryAccess registryAccess() {
+        public DynamicRegistryManager getRegistryManager() {
             return null;
         }
 
         @Override
-        public float getShade(Direction p_45522_, boolean p_45523_) {
+        public float getBrightness(Direction direction, boolean shaded) {
             return 0;
         }
 
         @Override
-        public List<? extends Player> players() {
+        public List<? extends PlayerEntity> getPlayers() {
             return null;
         }
 
         @Override
-        public Holder<Biome> getUncachedNoiseBiome(int p_204159_, int p_204160_, int p_204161_) {
+        public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
             return null;
         }
     }
@@ -377,22 +383,45 @@ public class EntityInfoApi extends ApiBase {
     private static class EntityInfo {
 
         public Class clazz;
-        public String simpleName;
-        public List<String> baseClasses;
+        public List<Class> baseClasses;
+        public String id;
 
         public EntityInfo(Class clazz) throws Exception {
+            this(clazz, null);
+        }
+
+        public EntityInfo(Class clazz, String id) throws Exception {
 
             if (!Entity.class.isAssignableFrom(clazz)) {
                 throw new Exception("Not supported");
             }
 
             this.clazz = clazz;
-            this.simpleName = clazz.getSimpleName();
 
             this.baseClasses = new ArrayList<>();
             while (clazz != Entity.class) {
                 clazz = clazz.getSuperclass();
-                this.baseClasses.add(clazz.getSimpleName());
+                this.baseClasses.add(clazz);
+            }
+
+            this.id = id;
+        }
+
+        public String getSimpleName() {
+            return clazz.getSimpleName();
+        }
+
+        @Override
+        public int hashCode() {
+            return clazz.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof EntityInfo ei) {
+                return ei.clazz == clazz;
+            } else {
+                return false;
             }
         }
     }

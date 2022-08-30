@@ -1,18 +1,13 @@
 package com.zergatul.cheatutils.wrappers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import net.minecraft.network.Connection;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.block.Block;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.Item;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +15,24 @@ import java.util.function.Consumer;
 
 public class ModApiWrapper {
 
-    public static ForgeApi forgeEvents = new ForgeApi();
+    public static final WrapperRegistry<Block> BLOCKS = new WrapperRegistry<>(Registry.BLOCK);
+    public static final WrapperRegistry<Item> ITEMS = new WrapperRegistry<>(Registry.ITEM);
+    public static final WrapperRegistry<EntityType<?>> ENTITY_TYPES = new WrapperRegistry<>(Registry.ENTITY_TYPE);
 
-    public static final WrapperRegistry<Block> BLOCKS = new WrapperRegistry<>(ForgeRegistries.BLOCKS);
-    public static final WrapperRegistry<Item> ITEMS = new WrapperRegistry<>(ForgeRegistries.ITEMS);
-    public static final WrapperRegistry<EntityType<?>> ENTITY_TYPES = new WrapperRegistry<>(ForgeRegistries.ENTITY_TYPES);
+    public static void setup() {
+        ClientTickEvents.START_CLIENT_TICK.register(client -> {
+            triggerOnClientTickStart();
+        });
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            triggerOnClientTickEnd();
+        });
+    }
 
-    private static final List<Consumer<Connection>> onClientPlayerLoggingIn = new ArrayList<>();
-    public static void addOnClientPlayerLoggingIn(Consumer<Connection> consumer) {
+    private static final List<Consumer<ClientConnection>> onClientPlayerLoggingIn = new ArrayList<>();
+    public static void addOnClientPlayerLoggingIn(Consumer<ClientConnection> consumer) {
         onClientPlayerLoggingIn.add(consumer);
     }
-    private static void triggerOnClientPlayerLoggingIn(Connection connection) {
+    public static void triggerOnClientPlayerLoggingIn(ClientConnection connection) {
         onClientPlayerLoggingIn.forEach(c -> c.accept(connection));
     }
 
@@ -90,9 +92,18 @@ public class ModApiWrapper {
         onRenderWorldLast.forEach(c -> c.accept(event));
     }
 
-    public record RenderWorldLastEvent(PoseStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
+    public static class RenderWorldLastEvent {
+        private final MatrixStack matrixStack;
+        private final float tickDelta;
+        private final Matrix4f projectionMatrix;
 
-        public PoseStack getMatrixStack() {
+        public RenderWorldLastEvent(MatrixStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
+            this.matrixStack = matrixStack;
+            this.tickDelta = tickDelta;
+            this.projectionMatrix = projectionMatrix;
+        }
+
+        public MatrixStack getMatrixStack() {
             return matrixStack;
         }
 
@@ -102,50 +113,6 @@ public class ModApiWrapper {
 
         public Matrix4f getProjectionMatrix() {
             return projectionMatrix;
-        }
-    }
-
-    public static class ForgeApi {
-
-        @SubscribeEvent
-        public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
-            triggerOnClientPlayerLoggingIn(event.getConnection());
-        }
-
-        @SubscribeEvent
-        public void onChunkLoaded(ChunkEvent.Load event) {
-            if (!event.getLevel().isClientSide()) {
-                return;
-            }
-            triggerOnChunkLoaded();
-        }
-
-        @SubscribeEvent
-        public void onChunkUnloaded(ChunkEvent.Unload event) {
-            if (!event.getLevel().isClientSide()) {
-                return;
-            }
-            triggerOnChunkUnloaded();
-        }
-
-        @SubscribeEvent
-        public void onClientTick(TickEvent.ClientTickEvent event) {
-            if (event.phase == TickEvent.Phase.START) {
-                triggerOnClientTickStart();
-            }
-            if (event.phase == TickEvent.Phase.END) {
-                triggerOnClientTickEnd();
-            }
-        }
-
-        @SubscribeEvent
-        public void onKeyInput(InputEvent.Key event) {
-            triggerOnKeyInput();
-        }
-
-        @SubscribeEvent
-        public void onRender(RenderLevelLastEvent event) {
-            triggerOnRenderWorldLast(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
         }
     }
 }

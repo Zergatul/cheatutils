@@ -9,7 +9,6 @@ public class StaticFilesHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
         String filename;
         if (exchange.getRequestURI().getPath().equals("/")) {
             filename = "/index.html";
@@ -59,5 +58,4 @@ public class StaticFilesHandler implements HttpHandler {
             return null;
         }
     }
-
 }

@@ -1,30 +1,30 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.wrappers.IKeyBindingRegistry;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 
 public class KeyBindingsController {
 
     public static final KeyBindingsController instance = new KeyBindingsController();
 
-    public final KeyMapping[] keys;
+    public final KeyBinding[] keys;
 
-    private Minecraft mc = Minecraft.getInstance();
-    private Runnable[] actions = new Runnable[KeyBindingsConfig.KeysCount];
+    private final MinecraftClient mc = MinecraftClient.getInstance();
+    private final Runnable[] actions = new Runnable[KeyBindingsConfig.KeysCount];
 
     private KeyBindingsController() {
-        keys = new KeyMapping[KeyBindingsConfig.KeysCount];
+        keys = new KeyBinding[KeyBindingsConfig.KeysCount];
         for (int i = 0; i < keys.length; i++) {
-            keys[i] = new KeyMapping("key.zergatul.cheatutils.reserved" + i, InputConstants.UNKNOWN.getValue(), "category.zergatul.cheatutils");
+            keys[i] = new KeyBinding("key.zergatul.cheatutils.reserved" + i, InputUtil.UNKNOWN_KEY.getCode(), "category.zergatul.cheatutils");
         }
 
         ModApiWrapper.addOnRegisterKeyBindings(this::onRegisterKeyBindings);
-        ModApiWrapper.addOnKeyInput(this::onKeyInputEvent);
+        ModApiWrapper.addOnKeyInput(this::onKeyInput);
     }
 
     public void assign(int index, String name) {
@@ -48,13 +48,13 @@ public class KeyBindingsController {
         }
     }
 
-    private void onKeyInputEvent() {
+    private void onKeyInput() {
         if (mc.player == null) {
             return;
         }
 
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i].isDown() && actions[i] != null) {
+            if (keys[i].isPressed() && actions[i] != null) {
                 actions[i].run();
             }
         }

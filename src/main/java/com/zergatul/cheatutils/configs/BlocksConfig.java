@@ -1,8 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.controllers.BlockFinderController;
-import net.minecraft.core.Registry;
-import net.minecraftforge.registries.ForgeRegistries;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,7 +15,7 @@ public class BlocksConfig {
         synchronized (BlockFinderController.instance.blocks) {
             BlockFinderController.instance.blocks.clear();
             for (BlockTracerConfig config: configs) {
-                BlockFinderController.instance.blocks.put(ForgeRegistries.BLOCKS.getKey(config.block), new HashSet<>());
+                BlockFinderController.instance.blocks.put(ModApiWrapper.BLOCKS.getKey(config.block), new HashSet<>());
             }
         }
     }
@@ -26,7 +25,7 @@ public class BlocksConfig {
             configs.add(config);
         }
         synchronized (BlockFinderController.instance.blocks) {
-            BlockFinderController.instance.blocks.put(ForgeRegistries.BLOCKS.getKey(config.block), new HashSet<>());
+            BlockFinderController.instance.blocks.put(ModApiWrapper.BLOCKS.getKey(config.block), new HashSet<>());
         }
     }
 
@@ -35,7 +34,7 @@ public class BlocksConfig {
             configs.remove(config);
         }
         synchronized (BlockFinderController.instance.blocks) {
-            BlockFinderController.instance.blocks.remove(ForgeRegistries.BLOCKS.getKey(config.block));
+            BlockFinderController.instance.blocks.remove(ModApiWrapper.BLOCKS.getKey(config.block));
         }
     }
 }

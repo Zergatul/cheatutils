@@ -1,13 +1,5 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.http.HttpException;
-
-import java.util.List;
-
 public class AutoDropApi extends ApiBase {
 
     @Override
@@ -15,7 +7,7 @@ public class AutoDropApi extends ApiBase {
         return "auto-drop";
     }
 
-    @Override
+    /*@Override
     public String get() throws HttpException {
         return gson.toJson(ConfigStore.instance.getConfig().autoDropConfig.items);
     }
@@ -47,5 +39,5 @@ public class AutoDropApi extends ApiBase {
 
         List<Item> items = ConfigStore.instance.getConfig().autoDropConfig.items;
         return gson.toJson(items.remove(item));
-    }
+    }*/
 }

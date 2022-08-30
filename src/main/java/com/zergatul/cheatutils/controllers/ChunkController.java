@@ -3,25 +3,20 @@ package com.zergatul.cheatutils.controllers;
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.ChunksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.interfaces.ClientPacketListenerMixinInterface;
+import com.zergatul.cheatutils.interfaces.ClientPlayNetworkHandlerMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.TriConsumer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientChunkCache;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
-import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
-import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.world.ClientChunkManager;
+import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,24 +28,26 @@ public class ChunkController {
 
     public static final ChunkController instance = new ChunkController();
 
-    private final Minecraft mc = Minecraft.getInstance();
-    private final Logger logger = LogManager.getLogger(ChunkController.class);
-    private final Map<Long, Pair<Dimension, LevelChunk>> loadedChunks = new HashMap<>();
+    private final MinecraftClient mc = MinecraftClient.getInstance();
+    private final Map<Long, Pair<Dimension, WorldChunk>> loadedChunks = new HashMap<>();
     private final Map<Long, ChunkEntry> chunksMap = new HashMap<>();
-    private final List<BiConsumer<Dimension, LevelChunk>> onChunkLoadedHandlers = new ArrayList<>();
-    private final List<BiConsumer<Dimension, LevelChunk>> onChunkUnLoadedHandlers = new ArrayList<>();
+    private final List<BiConsumer<Dimension, WorldChunk>> onChunkLoadedHandlers = new ArrayList<>();
+    private final List<BiConsumer<Dimension, WorldChunk>> onChunkUnLoadedHandlers = new ArrayList<>();
     private final List<TriConsumer<Dimension, BlockPos, BlockState>> onBlockChangedHandlers = new ArrayList<>();
     private final List<ChunkPos> serverUnloadedChunks = new ArrayList<>();
 
     private ChunkController() {
+        ModApiWrapper.addOnChunkLoaded(this::onChunkLoaded);
+        ModApiWrapper.addOnChunkUnloaded(this::onChunkUnloaded);
+        ModApiWrapper.addOnClientTickStart(this::onClientTickStart);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
     }
 
-    public synchronized void addOnChunkLoadedHandler(BiConsumer<Dimension, LevelChunk> handler) {
+    public synchronized void addOnChunkLoadedHandler(BiConsumer<Dimension, WorldChunk> handler) {
         onChunkLoadedHandlers.add(handler);
     }
 
-    public synchronized void addOnChunkUnLoadedHandler(BiConsumer<Dimension, LevelChunk> handler) {
+    public synchronized void addOnChunkUnLoadedHandler(BiConsumer<Dimension, WorldChunk> handler) {
         onChunkUnLoadedHandlers.add(handler);
     }
 
@@ -58,7 +55,7 @@ public class ChunkController {
         onBlockChangedHandlers.add(handler);
     }
 
-    public synchronized List<Pair<Dimension, LevelChunk>> getLoadedChunks() {
+    public synchronized List<Pair<Dimension, WorldChunk>> getLoadedChunks() {
         return new ArrayList<>(loadedChunks.values());
     }
 
@@ -70,81 +67,70 @@ public class ChunkController {
         loadedChunks.clear();
     }
 
-    @SubscribeEvent()
-    public synchronized void onChunkLoad(ChunkEvent.Load event) {
-        if (!event.getLevel().isClientSide()) {
-            return;
-        }
+    private synchronized void onChunkLoaded() {
         syncChunks();
     }
 
-    @SubscribeEvent
-    public synchronized void onChunkUnload(ChunkEvent.Unload event) {
-        if (!event.getLevel().isClientSide()) {
-            return;
-        }
+    private synchronized void onChunkUnloaded() {
         syncChunks();
     }
 
-    @SubscribeEvent
-    public synchronized void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
-            if (mc.level == null) {
-                return;
-            }
-            ClientChunkCache cache = mc.level.getChunkSource();
-            if (mc.player == null) {
-                serverUnloadedChunks.forEach(p -> cache.drop(p.x, p.z));
-                serverUnloadedChunks.clear();
-                return;
-            }
-            ChunkPos playerPos = mc.player.chunkPosition();
-            long renderDistance2 = mc.options.getEffectiveRenderDistance();
-            renderDistance2 = renderDistance2 * renderDistance2;
-            for (int i = 0; i < serverUnloadedChunks.size(); i++) {
-                ChunkPos chunkPos = serverUnloadedChunks.get(i);
-                long dx = chunkPos.x - playerPos.x;
-                long dz = chunkPos.z - playerPos.z;
-                long d2 = dx * dx + dz * dz;
-                if (d2 > renderDistance2) {
-                    serverUnloadedChunks.remove(i);
-                    i--;
-                    cache.drop(chunkPos.x, chunkPos.z);
-                    ((ClientPacketListenerMixinInterface) mc.player.connection.getConnection().getPacketListener()).queueLightUpdate2(new ClientboundForgetLevelChunkPacket(chunkPos.x, chunkPos.z));
-                }
+    private synchronized void onClientTickStart() {
+        if (mc.world == null) {
+            return;
+        }
+        ClientChunkManager cache = mc.world.getChunkManager();
+        if (mc.player == null) {
+            serverUnloadedChunks.forEach(p -> cache.unload(p.x, p.z));
+            serverUnloadedChunks.clear();
+            return;
+        }
+        ChunkPos playerPos = mc.player.getChunkPos();
+        long renderDistance2 = mc.options.getClampedViewDistance();
+        renderDistance2 = renderDistance2 * renderDistance2;
+        for (int i = 0; i < serverUnloadedChunks.size(); i++) {
+            ChunkPos chunkPos = serverUnloadedChunks.get(i);
+            long dx = chunkPos.x - playerPos.x;
+            long dz = chunkPos.z - playerPos.z;
+            long d2 = dx * dx + dz * dz;
+            if (d2 > renderDistance2) {
+                serverUnloadedChunks.remove(i);
+                i--;
+                cache.unload(chunkPos.x, chunkPos.z);
+                ((ClientPlayNetworkHandlerMixinInterface) mc.player.networkHandler.getConnection().getPacketListener()).unloadChunk2(new UnloadChunkS2CPacket(chunkPos.x, chunkPos.z));
             }
         }
     }
 
     public synchronized void syncChunks() {
-        if (mc.level == null) {
+        if (mc.world == null) {
             clear();
             return;
         }
 
-        LocalPlayer player = mc.player;
+        ClientPlayerEntity player = mc.player;
 
         if (player == null) {
             clear();
             return;
         }
 
-        Dimension dimension = Dimension.get(mc.level);
+        Dimension dimension = Dimension.get(mc.world);
 
         chunksMap.clear();
-        for (Pair<Dimension, LevelChunk> pair: loadedChunks.values()) {
-            LevelChunk chunk = pair.getSecond();
+        for (Pair<Dimension, WorldChunk> pair: loadedChunks.values()) {
+            WorldChunk chunk = pair.getSecond();
             chunksMap.put(chunk.getPos().toLong(), new ChunkEntry(chunk));
         }
 
         loadedChunks.clear();
 
-        var listener = (ClientPacketListenerMixinInterface) player.connection;
+        var listener = (ClientPlayNetworkHandlerMixinInterface) player.networkHandler;
         int storageRange = Math.max(2, listener.getServerChunkRadius()) + 3;
-        ChunkPos chunkPos = player.chunkPosition();
+        ChunkPos chunkPos = player.getChunkPos();
         for (int dx = -storageRange; dx <= storageRange; dx++) {
             for (int dz = -storageRange; dz <= storageRange; dz++) {
-                LevelChunk chunk = mc.level.getChunkSource().getChunk(chunkPos.x + dx, chunkPos.z + dz, false);
+                WorldChunk chunk = mc.world.getChunkManager().getWorldChunk(chunkPos.x + dx, chunkPos.z + dz, false);
                 if (chunk != null) {
                     long pos = chunk.getPos().toLong();
                     ChunkEntry entry = chunksMap.get(pos);
@@ -173,30 +159,30 @@ public class ChunkController {
     }
 
     private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        if (args.packet instanceof ClientboundBlockUpdatePacket packet) {
+        if (args.packet instanceof BlockUpdateS2CPacket packet) {
             processBlockUpdatePacket(packet);
         }
 
-        if (args.packet instanceof ClientboundSectionBlocksUpdatePacket packet) {
+        if (args.packet instanceof ChunkDeltaUpdateS2CPacket packet) {
             processSectionBlocksUpdatePacket(packet);
         }
 
-        if (args.packet instanceof ClientboundForgetLevelChunkPacket packet) {
-            processForgetLevelChunkPacket(packet);
+        if (args.packet instanceof UnloadChunkS2CPacket packet) {
+            processForgetWorldChunkPacket(packet);
             args.skip = true;
         }
     }
 
-    private synchronized void processBlockUpdatePacket(ClientboundBlockUpdatePacket packet) {
-        Dimension dimension = Dimension.get(mc.level);
+    private synchronized void processBlockUpdatePacket(BlockUpdateS2CPacket packet) {
+        Dimension dimension = Dimension.get(mc.world);
         for (var handler: onBlockChangedHandlers) {
-            handler.accept(dimension, packet.getPos(), packet.getBlockState());
+            handler.accept(dimension, packet.getPos(), packet.getState());
         }
     }
 
-    private synchronized void processSectionBlocksUpdatePacket(ClientboundSectionBlocksUpdatePacket packet) {
-        Dimension dimension = Dimension.get(mc.level);
-        packet.runUpdates((pos$mutable, state) -> {
+    private synchronized void processSectionBlocksUpdatePacket(ChunkDeltaUpdateS2CPacket packet) {
+        Dimension dimension = Dimension.get(mc.world);
+        packet.visitUpdates((pos$mutable, state) -> {
             BlockPos pos = new BlockPos(pos$mutable.getX(), pos$mutable.getY(), pos$mutable.getZ());
             for (var handler: onBlockChangedHandlers) {
                 handler.accept(dimension, pos, state);
@@ -204,30 +190,30 @@ public class ChunkController {
         });
     }
 
-    private synchronized void processForgetLevelChunkPacket(ClientboundForgetLevelChunkPacket packet) {
+    private synchronized void processForgetWorldChunkPacket(UnloadChunkS2CPacket packet) {
         ChunksConfig config = ConfigStore.instance.getConfig().chunksConfig;
         if (config.dontUnloadChunks) {
             serverUnloadedChunks.add(new ChunkPos(packet.getX(), packet.getZ()));
         }
     }
 
-    private void invokeChunkLoadHandlers(Dimension dimension, LevelChunk chunk) {
-        for (BiConsumer<Dimension, LevelChunk> handler: onChunkLoadedHandlers) {
+    private void invokeChunkLoadHandlers(Dimension dimension, WorldChunk chunk) {
+        for (BiConsumer<Dimension, WorldChunk> handler: onChunkLoadedHandlers) {
             handler.accept(dimension, chunk);
         }
     }
 
-    private void invokeChunkUnloadHandlers(Dimension dimension,LevelChunk chunk) {
-        for (BiConsumer<Dimension, LevelChunk> handler: onChunkUnLoadedHandlers) {
+    private void invokeChunkUnloadHandlers(Dimension dimension,WorldChunk chunk) {
+        for (BiConsumer<Dimension, WorldChunk> handler: onChunkUnLoadedHandlers) {
             handler.accept(dimension, chunk);
         }
     }
 
     private static class ChunkEntry {
-        public LevelChunk chunk;
+        public WorldChunk chunk;
         public boolean exists;
 
-        public ChunkEntry(LevelChunk chunk) {
+        public ChunkEntry(WorldChunk chunk) {
             this.chunk = chunk;
             this.exists = false;
         }

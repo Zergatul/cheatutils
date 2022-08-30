@@ -1,12 +1,8 @@
 package com.zergatul.cheatutils.scripting.api;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.FreeCamConfig;
-import com.zergatul.cheatutils.controllers.FreeCamController;
-
 public class FreeCamApi {
 
-    public boolean isEnabled() {
+    /*public boolean isEnabled() {
         return FreeCamController.instance.isActive();
     }
 
@@ -28,5 +24,5 @@ public class FreeCamApi {
 
     private FreeCamConfig getConfig() {
         return ConfigStore.instance.getConfig().freeCamConfig;
-    }
+    }*/
 }

@@ -34,7 +34,8 @@ function createComponent(template) {
                 entitiesMap: null,
                 entitiesConfigList: null,
                 entitiesConfigMap: null,
-                selectedConfig: null
+                selectedConfig: null,
+                entityListFiltered: null
             };
         },
         methods: {
@@ -44,14 +45,23 @@ function createComponent(template) {
             filterEntityList() {
                 let search = this.search.toLocaleLowerCase();
                 this.entityListFiltered = this.entitiesList.filter(function (entity) {
-                    if (entity.simpleName) {
-                        let name = entity.simpleName.toLocaleLowerCase();
+                    if (entity.clazz) {
+                        let name = entity.clazz.toLocaleLowerCase();
                         if (name.indexOf(search) >= 0) {
+                            return true;
+                        }
+                    }
+                    if (entity.id) {
+                        if (entity.id.indexOf(search) >= 0) {
                             return true;
                         }
                     }
                     return false;
                 });
+            },
+            formatClassName(className) {
+                let index = className.lastIndexOf('.');
+                return className.substring(index + 1);
             },
             openAdd() {
                 this.state = 'add';

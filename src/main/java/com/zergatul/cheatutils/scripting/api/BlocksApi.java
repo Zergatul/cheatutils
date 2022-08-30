@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.scripting.api;
 
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.registries.ForgeRegistries;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.block.Block;
+import net.minecraft.util.Identifier;
 
 public class BlocksApi {
 
@@ -27,8 +27,8 @@ public class BlocksApi {
     }
 
     private BlockTracerConfig getConfig(String blockId) {
-        ResourceLocation location = new ResourceLocation(blockId);
-        Block block = ForgeRegistries.BLOCKS.getValue(location);
+        Identifier location = new Identifier(blockId);
+        Block block = ModApiWrapper.BLOCKS.getValue(location);
         if (block == null) {
             return null;
         }

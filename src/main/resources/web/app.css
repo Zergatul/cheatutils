@@ -590,3 +590,7 @@ ul.refs .method {
 ul.refs .class {
     color: #0033B3;
 }
+
+.hidden {
+    display: none;
+}

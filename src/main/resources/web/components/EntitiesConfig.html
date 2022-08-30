@@ -2,7 +2,7 @@
     <div v-if="state == 'list'">
         <div>
             <button style="width: 200px;" @click="$emit('back')">Back</button>
-            <button style="width: 200px;" @click="openAdd()">Add Entity</button>
+            <button style="width: 200px;" @click="openAdd()" v-show="entitiesConfigList">Add Entity</button>
         </div>
         <ul class="list-base entities-list">
             <li v-for="item in entitiesConfigList" :key="item.clazz">
@@ -10,10 +10,12 @@
                     img
                 </div>
                 <div class="c2">
-                    <div>{{ entitiesMap[item.clazz].simpleName }}</div>
+                    <div>
+                        {{ formatClassName(entitiesMap[item.clazz].clazz) }} <span v-if="entitiesMap[item.clazz].id">({{ entitiesMap[item.clazz].id }})</span>
+                    </div>
                     <div class="smaller">
                         <span class="entity-tree" v-for="clazz in entitiesMap[item.clazz].baseClasses">
-                            🠞 {{ clazz }}
+                            🠞 {{ formatClassName(clazz) }}
                         </span>
                     </div>
                     <div class="smaller">{{ item.clazz }}</div>
@@ -78,10 +80,12 @@
                     img
                 </div>
                 <div class="c2">
-                    <div>{{ item.simpleName }}</div>
+                    <div>
+                        {{ formatClassName(item.clazz) }} <span v-if="item.id">({{ item.id }})</span>
+                    </div>
                     <div class="smaller">
                         <span class="entity-tree" v-for="clazz in item.baseClasses">
-                            🠞 {{ clazz }}
+                            🠞 {{ formatClassName(clazz) }}
                         </span>
                     </div>
                 </div>
