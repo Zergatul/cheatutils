@@ -34,7 +34,8 @@ function createComponent(template) {
                 entitiesMap: null,
                 entitiesConfigList: null,
                 entitiesConfigMap: null,
-                selectedConfig: null
+                selectedConfig: null,
+                entityListFiltered: null
             };
         },
         methods: {
