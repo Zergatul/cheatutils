@@ -28,7 +28,12 @@ public class ClassTypeAdapter extends TypeAdapter<Class> {
         if (value == null) {
             return null;
         } else {
-            return Class.forName(ClassRemapper.toObf(value));
+            try {
+                return Class.forName(ClassRemapper.toObf(value));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
 }
