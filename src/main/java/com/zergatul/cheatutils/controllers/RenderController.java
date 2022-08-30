@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.configs.TracerConfigBase;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -32,11 +33,11 @@ public class RenderController {
 
     private RenderController() {
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
+
+        ModApiWrapper.addOnRenderWorldLast(this::onRenderWorldLastEvent);
     }
 
-    @SubscribeEvent
-    public void onRenderWorldLastEvent(RenderLevelLastEvent event) {
-
+    private void onRenderWorldLastEvent(ModApiWrapper.RenderWorldLastEvent event) {
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
@@ -52,9 +53,9 @@ public class RenderController {
         double tracerX = view.x;
         double tracerY = view.y;
         double tracerZ = view.z;
-        double playerX = Mth.lerp(event.getPartialTick(), mc.player.xOld, mc.player.getX());
-        double playerY = Mth.lerp(event.getPartialTick(), mc.player.yOld, mc.player.getY());
-        double playerZ = Mth.lerp(event.getPartialTick(), mc.player.zOld, mc.player.getZ());
+        double playerX = Mth.lerp(event.getTickDelta(), mc.player.xOld, mc.player.getX());
+        double playerY = Mth.lerp(event.getTickDelta(), mc.player.yOld, mc.player.getY());
+        double playerZ = Mth.lerp(event.getTickDelta(), mc.player.zOld, mc.player.getZ());
 
         if (true) {
             double deltaXRot = 0;
@@ -64,8 +65,8 @@ public class RenderController {
             if (mc.options.bobView().get() && mc.getCameraEntity() instanceof LocalPlayer) {
                 LocalPlayer player = (LocalPlayer) mc.getCameraEntity();
                 float f = player.walkDist - player.walkDistO;
-                float f1 = -(player.walkDist + f * event.getPartialTick());
-                float f2 = Mth.lerp(event.getPartialTick(), player.oBob, player.bob);
+                float f1 = -(player.walkDist + f * event.getTickDelta());
+                float f2 = Mth.lerp(event.getTickDelta(), player.oBob, player.bob);
                 //p_228383_1_.translate((double)(MathHelper.sin(f1 * (float)Math.PI) * f2 * 0.5F), (double)(-Math.abs(MathHelper.cos(f1 * (float)Math.PI) * f2)), 0.0D);
                 //p_228383_1_.mulPose(Vector3f.ZP.rotationDegrees(MathHelper.sin(f1 * (float)Math.PI) * f2 * 3.0F));
                 //p_228383_1_.mulPose(Vector3f.XP.rotationDegrees(Math.abs(MathHelper.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F));
@@ -105,7 +106,7 @@ public class RenderController {
         });*/
         /**/
 
-        renderEntities(buffer, view, mc, event.getPartialTick(), tracerX, tracerY, tracerZ, playerX, playerY, playerZ);
+        renderEntities(buffer, view, mc, event.getTickDelta(), tracerX, tracerY, tracerZ, playerX, playerY, playerZ);
 
         vertexBuffer.bind();
         vertexBuffer.upload(buffer.end());
@@ -118,7 +119,7 @@ public class RenderController {
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
 
-        PoseStack matrix = event.getPoseStack();
+        PoseStack matrix = event.getMatrixStack();
         matrix.pushPose();
         //matrix.translate(-view.x, -view.y, -view.z);
         var shader = GameRenderer.getPositionColorShader();
@@ -362,9 +363,9 @@ public class RenderController {
         return Mth.lerp(partialTicks, entity.zo, entity.getZ());
     }
 
-    private void drawEnderPearlPath(RenderLevelLastEvent event, Vec3 view) {
+    private void drawEnderPearlPath(ModApiWrapper.RenderWorldLastEvent event, Vec3 view) {
         if (EnderPearlPathController.instance.shouldDrawPath()) {
-            float partialTick = event.getPartialTick();
+            float partialTick = event.getTickDelta();
 
             double x = getEntityX(mc.player, partialTick);
             double y = getEntityY(mc.player, partialTick) + mc.player.getEyeHeight() - 0.1;
@@ -417,7 +418,7 @@ public class RenderController {
             GL11.glEnable(GL11.GL_LINE_SMOOTH);
             GL11.glEnable(GL11.GL_DEPTH_TEST);
 
-            PoseStack poseStack = event.getPoseStack();
+            PoseStack poseStack = event.getMatrixStack();
             poseStack.pushPose();
             var shader = GameRenderer.getPositionColorShader();
             vertexBuffer.drawWithShader(poseStack.last().pose(), event.getProjectionMatrix().copy(), shader);

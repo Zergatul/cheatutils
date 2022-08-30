@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
 import com.zergatul.cheatutils.utils.Dimension;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
@@ -17,7 +18,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
@@ -80,7 +80,7 @@ public class LightLevelController {
         }
     }
 
-    public void render(RenderLevelLastEvent event) {
+    public void render(ModApiWrapper.RenderWorldLastEvent event) {
         LightLevelConfig config = ConfigStore.instance.getConfig().lightLevelConfig;
         if (!config.enabled || !config.display) {
             return;
@@ -136,7 +136,7 @@ public class LightLevelController {
         vertexBuffer.bind();
         vertexBuffer.upload(bufferBuilder.end());
 
-        PoseStack matrix = event.getPoseStack();
+        PoseStack matrix = event.getMatrixStack();
         matrix.pushPose();
         matrix.translate(-view.x, -view.y, -view.z);
         var shader = GameRenderer.getPositionColorShader();

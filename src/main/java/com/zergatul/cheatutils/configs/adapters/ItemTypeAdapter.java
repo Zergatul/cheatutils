@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.configs.adapters;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ public class ItemTypeAdapter extends TypeAdapter<Item> {
         if (item == null) {
             out.nullValue();
         } else {
-            out.value(ForgeRegistries.ITEMS.getKey(item).toString());
+            out.value(ModApiWrapper.ITEMS.getKey(item).toString());
         }
     }
 
@@ -26,7 +26,7 @@ public class ItemTypeAdapter extends TypeAdapter<Item> {
         if (value == null) {
             return null;
         } else {
-            return ForgeRegistries.ITEMS.getValue(new ResourceLocation(value));
+            return ModApiWrapper.ITEMS.getValue(new ResourceLocation(value));
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.mixins;
 
-import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import net.minecraft.client.Minecraft;

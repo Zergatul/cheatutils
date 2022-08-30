@@ -6,12 +6,12 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
 import org.lwjgl.opengl.GL11;
 
 public class EndCityChunksController {
@@ -25,7 +25,7 @@ public class EndCityChunksController {
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
     }
 
-    public void render(RenderLevelLastEvent event) {
+    public void render(ModApiWrapper.RenderWorldLastEvent event) {
         if (vertexBuffer == null) {
             return;
         }
@@ -80,7 +80,7 @@ public class EndCityChunksController {
         vertexBuffer.bind();
         vertexBuffer.upload(bufferBuilder.end());
 
-        PoseStack matrix = event.getPoseStack();
+        PoseStack matrix = event.getMatrixStack();
         matrix.pushPose();
         matrix.translate(-view.x, -view.y, -view.z);
         var shader = GameRenderer.getPositionColorShader();
@@ -94,5 +94,4 @@ public class EndCityChunksController {
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
     }
-
 }

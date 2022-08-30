@@ -3,11 +3,10 @@ package com.zergatul.cheatutils.controllers;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
+import com.zergatul.cheatutils.wrappers.IKeyBindingRegistry;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class KeyBindingsController {
 
@@ -23,12 +22,9 @@ public class KeyBindingsController {
         for (int i = 0; i < keys.length; i++) {
             keys[i] = new KeyMapping("key.zergatul.cheatutils.reserved" + i, InputConstants.UNKNOWN.getValue(), "category.zergatul.cheatutils");
         }
-    }
 
-    public void onRegister(RegisterKeyMappingsEvent event) {
-        for (int i = 0; i < keys.length; i++) {
-            event.register(keys[i]);
-        }
+        ModApiWrapper.addOnRegisterKeyBindings(this::onRegisterKeyBindings);
+        ModApiWrapper.addOnKeyInput(this::onKeyInputEvent);
     }
 
     public void assign(int index, String name) {
@@ -52,9 +48,7 @@ public class KeyBindingsController {
         }
     }
 
-    @SubscribeEvent
-    public void onKeyInputEvent(InputEvent.Key event) {
-
+    private void onKeyInputEvent() {
         if (mc.player == null) {
             return;
         }
@@ -64,37 +58,11 @@ public class KeyBindingsController {
                 actions[i].run();
             }
         }
+    }
 
-        /*if (KeyBindingsController.openConfig.isDown()) {
-            if (!HardSwitchController.instance.isTurnedOff()) {
-                String uri = ConfigHttpServer.instance.getUrl();
-                if (uri != null) {
-                    new ClipboardHelper().setClipboard(mc.getWindow().getWindow(), uri);
-                }
-            }
-            return;
-        }*/
-
-        /*if (KeyBindingsController.toggleEsp.isDown()) {
-            if (!HardSwitchController.instance.isTurnedOff()) {
-                ConfigStore.instance.getConfig().esp = !ConfigStore.instance.getConfig().esp;
-                ConfigStore.instance.requestWrite();
-            }
-            return;
-        }*/
-
-        /*if (KeyBindingsController.quickCommand.isDown()) {
-            if (!HardSwitchController.instance.isTurnedOff()) {
-                mc.player.chat("/home");
-            }
-            return;
-        }*/
-
-        /*if (KeyBindingsController.toggleFreeCam.isDown()) {
-            if (!HardSwitchController.instance.isTurnedOff()) {
-                FreeCamController.instance.toggle();
-            }
-            return;
-        }*/
+    private void onRegisterKeyBindings(IKeyBindingRegistry registry) {
+        for (int i = 0; i < keys.length; i++) {
+            registry.register(keys[i]);
+        }
     }
 }

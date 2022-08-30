@@ -4,6 +4,9 @@ import com.mojang.logging.LogUtils;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
+import com.zergatul.cheatutils.wrappers.IKeyBindingRegistry;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -41,7 +44,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(AutoFishController.instance);
         MinecraftForge.EVENT_BUS.register(LightLevelController.instance);
         MinecraftForge.EVENT_BUS.register(CustomCommandsController.instance);
-        MinecraftForge.EVENT_BUS.register(ClientTickController.instance);
         MinecraftForge.EVENT_BUS.register(KillAuraController.instance);
         MinecraftForge.EVENT_BUS.register(DebugScreenController.instance);
         MinecraftForge.EVENT_BUS.register(EntitySpeedController.instance);
@@ -81,7 +83,7 @@ public class ModMain {
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {
-        KeyBindingsController.instance.onRegister(event);
+        ModApiWrapper.triggerOnRegisterKeyBindings(event::register);
     }
 
     private void onRegisterGuiOverlay(final RegisterGuiOverlaysEvent event) {

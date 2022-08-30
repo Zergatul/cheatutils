@@ -1,13 +1,9 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import io.netty.channel.*;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,13 +12,12 @@ public class NetworkPacketsController {
 
     public static final NetworkPacketsController instance = new NetworkPacketsController();
 
-    private final Logger logger = LogManager.getLogger(NetworkPacketsController.class);
     private List<Consumer<ServerPacketArgs>> serverPacketHandlers = new ArrayList<>();
     private List<Consumer<ClientPacketArgs>> clientPacketHandlers = new ArrayList<>();
     private Connection connection;
 
     private NetworkPacketsController() {
-
+        ModApiWrapper.addOnClientPlayerLoggingIn(this::onClientPlayerLoggingIn);
     }
 
     public void addServerPacketHandler(Consumer<ServerPacketArgs> handler) {
@@ -45,14 +40,11 @@ public class NetworkPacketsController {
         connection.channel().pipeline().fireChannelRead(packet);
     }
 
-    @SubscribeEvent
-    public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
-
-        connection = event.getConnection();
+    private void onClientPlayerLoggingIn(Connection connection) {
+        this.connection = connection;
         ChannelPipeline pipeline = connection.channel().pipeline();
 
         synchronized (pipeline) {
-
             if (pipeline.get("PacketReader") == null) {
                 pipeline.addBefore("packet_handler", "PacketReader", new SimpleChannelInboundHandler<Packet<?>>() {
                     @Override
@@ -72,10 +64,6 @@ public class NetworkPacketsController {
                         ctx.fireChannelRead(msg);
                     }
                 });
-
-                logger.debug("Packet reader pipeline attached");
-            } else {
-                logger.debug("Packet reader pipeline already exists");
             }
 
             if (pipeline.get("PacketWriter") == null) {
@@ -99,7 +87,6 @@ public class NetworkPacketsController {
                     }
                 });
             }
-
         }
     }
 
