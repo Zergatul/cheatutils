@@ -16,12 +16,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.util.HashSet;
 
 public class RenderController {
@@ -146,7 +142,7 @@ public class RenderController {
                     continue;
                 }
 
-                ResourceLocation id = ForgeRegistries.BLOCKS.getKey(config.block);
+                ResourceLocation id = ModApiWrapper.BLOCKS.getKey(config.block);
 
                 synchronized (BlockFinderController.instance.blocks) {
 

@@ -5,9 +5,9 @@ import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,9 +15,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +27,6 @@ public class BlockFinderController {
 
     public final HashMap<ResourceLocation, HashSet<BlockPos>> blocks = new HashMap<>();
 
-    private final Logger logger = LogManager.getLogger(BlockFinderController.class);
     private Minecraft mc = Minecraft.getInstance();
     private final Object loopWaitEvent = new Object();
     private Thread eventLoop;
@@ -166,7 +162,7 @@ public class BlockFinderController {
 
     public void scan(BlockTracerConfig config) {
 
-        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(config.block);
+        ResourceLocation id = ModApiWrapper.BLOCKS.getKey(config.block);
 
         synchronized (blocks) {
             if (blocks.containsKey(id)) {
@@ -193,7 +189,7 @@ public class BlockFinderController {
                         int zb = zc | z;
                         BlockPos pos = new BlockPos(xb, y, zb);
                         BlockState state = chunk.getBlockState(pos);
-                        if (ForgeRegistries.BLOCKS.getKey(state.getBlock()).equals(id)) {
+                        if (ModApiWrapper.BLOCKS.getKey(state.getBlock()).equals(id)) {
                             synchronized (blocks) {
                                 if (blocks.containsKey(id)) {
                                     blocks.get(id).add(pos);
@@ -218,8 +214,8 @@ public class BlockFinderController {
         var list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             for (BlockTracerConfig config: list) {
-                ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
-                if (ForgeRegistries.BLOCKS.getKey(config.block).equals(id)) {
+                ResourceLocation id = ModApiWrapper.BLOCKS.getKey(state.getBlock());
+                if (ModApiWrapper.BLOCKS.getKey(config.block).equals(id)) {
                     synchronized (blocks) {
                         if (blocks.containsKey(id)) {
                             blocks.get(id).add(pos);
@@ -235,8 +231,8 @@ public class BlockFinderController {
         var list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             for (BlockTracerConfig config: list) {
-                ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
-                if (ForgeRegistries.BLOCKS.getKey(config.block).equals(id)) {
+                ResourceLocation id = ModApiWrapper.BLOCKS.getKey(state.getBlock());
+                if (ModApiWrapper.BLOCKS.getKey(config.block).equals(id)) {
                     synchronized (blocks) {
                         if (blocks.containsKey(id)) {
                             blocks.get(id).remove(pos);
@@ -246,5 +242,4 @@ public class BlockFinderController {
             }
         }
     }
-
 }

@@ -2,7 +2,7 @@
     <div v-if="state == 'list'">
         <div>
             <button style="width: 200px;" @click="$emit('back')">Back</button>
-            <button style="width: 200px;" @click="openAdd()">Add Entity</button>
+            <button style="width: 200px;" @click="openAdd()" v-show="entitiesConfigList">Add Entity</button>
         </div>
         <ul class="list-base entities-list">
             <li v-for="item in entitiesConfigList" :key="item.clazz">

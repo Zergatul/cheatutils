@@ -1,12 +1,9 @@
 package com.zergatul.cheatutils;
 
-import com.mojang.logging.LogUtils;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
-import com.zergatul.cheatutils.wrappers.IKeyBindingRegistry;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -15,12 +12,14 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod(ModMain.MODID)
 public class ModMain {
+
     public static final String MODID = "cheatutils";
-    public static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger logger = LogManager.getLogger(ModMain.class);
 
     public ModMain() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
@@ -28,22 +27,29 @@ public class ModMain {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onLoadComplete);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterKeyMappings);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterGuiOverlay);
+
+        register(KeyBindingsController.instance);
+        register(ChunkController.instance);
+        register(RenderController.instance);
+        register(NetworkPacketsController.instance);
+        register(TeleportController.instance);
+        register(AutoTotemController.instance);
+    }
+
+    private void register(Object instance) {
+        logger.info("Registered: {}", instance.getClass().getName());
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         ConfigHttpServer.instance.start();
 
         ConfigStore.instance.read();
-        MinecraftForge.EVENT_BUS.register(KeyBindingsController.instance);
-        MinecraftForge.EVENT_BUS.register(ChunkController.instance);
+        MinecraftForge.EVENT_BUS.register(ModApiWrapper.forgeEvents);
+
         MinecraftForge.EVENT_BUS.register(FreeCamController.instance);
-        MinecraftForge.EVENT_BUS.register(RenderController.instance);
-        MinecraftForge.EVENT_BUS.register(NetworkPacketsController.instance);
-        MinecraftForge.EVENT_BUS.register(TeleportController.instance);
         MinecraftForge.EVENT_BUS.register(ShulkerTooltipController.instance);
         MinecraftForge.EVENT_BUS.register(AutoFishController.instance);
         MinecraftForge.EVENT_BUS.register(LightLevelController.instance);
-        MinecraftForge.EVENT_BUS.register(CustomCommandsController.instance);
         MinecraftForge.EVENT_BUS.register(KillAuraController.instance);
         MinecraftForge.EVENT_BUS.register(DebugScreenController.instance);
         MinecraftForge.EVENT_BUS.register(EntitySpeedController.instance);
@@ -55,7 +61,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(ExplorationMiniMapController.instance);
         MinecraftForge.EVENT_BUS.register(AutoCriticalsController.instance);
         MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
-        MinecraftForge.EVENT_BUS.register(AutoTotemController.instance);
         MinecraftForge.EVENT_BUS.register(LockInputsController.instance);
         MinecraftForge.EVENT_BUS.register(ScaffoldController.instance);
         MinecraftForge.EVENT_BUS.register(AdvancedTooltipsController.instance);

@@ -24,7 +24,7 @@ public class KeyBindingsController {
         }
 
         ModApiWrapper.addOnRegisterKeyBindings(this::onRegisterKeyBindings);
-        ModApiWrapper.addOnKeyInput(this::onKeyInputEvent);
+        ModApiWrapper.addOnKeyInput(this::onKeyInput);
     }
 
     public void assign(int index, String name) {
@@ -48,7 +48,7 @@ public class KeyBindingsController {
         }
     }
 
-    private void onKeyInputEvent() {
+    private void onKeyInput() {
         if (mc.player == null) {
             return;
         }
