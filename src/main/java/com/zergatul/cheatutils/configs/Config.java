@@ -38,6 +38,7 @@ public class Config {
     public AutoDropConfig autoDropConfig = new AutoDropConfig();
     public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
     public ChunksConfig chunksConfig = new ChunksConfig();
+    public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
 
     public Config() {
         esp = true;

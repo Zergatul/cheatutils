@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting.api;
+package com.zergatul.cheatutils.scripting.api.overlay;
 
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -14,16 +14,6 @@ public class BlocksApi {
             return false;
         }
         return config.enabled;
-    }
-
-    public void toggle(String blockId) {
-        var config = getConfig(blockId);
-        if (config == null) {
-            return;
-        }
-
-        config.enabled = !config.enabled;
-        ConfigStore.instance.requestWrite();
     }
 
     private BlockTracerConfig getConfig(String blockId) {

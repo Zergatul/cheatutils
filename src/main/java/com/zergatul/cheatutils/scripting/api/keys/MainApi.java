@@ -1,6 +1,7 @@
-package com.zergatul.cheatutils.scripting.api;
+package com.zergatul.cheatutils.scripting.api.keys;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.MutableComponent;
@@ -36,7 +37,7 @@ public class MainApi {
     }
 
     public void systemMessage(String color, String text) {
-        Integer colorInt = parseColor(color);
+        Integer colorInt = ColorUtils.parseColor(color);
         MutableComponent component = MutableComponent.create(new LiteralContents(text));
         if (colorInt != null) {
             component = component.withStyle(Style.EMPTY.withColor(colorInt));
@@ -45,8 +46,8 @@ public class MainApi {
     }
 
     public void systemMessage(String color1, String text1, String color2, String text2) {
-        Integer color1Int = parseColor(color1);
-        Integer color2Int = parseColor(color2);
+        Integer color1Int = ColorUtils.parseColor(color1);
+        Integer color2Int = ColorUtils.parseColor(color2);
         MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
         if (color1Int != null) {
             component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
@@ -107,29 +108,5 @@ public class MainApi {
         mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
         mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
         mc.player.swing(InteractionHand.MAIN_HAND);
-    }
-
-    private static Integer parseColor(String str) {
-        if (str == null) {
-            return null;
-        }
-        str = str.toLowerCase(Locale.ROOT);
-        if (str.length() == 7) {
-            if (str.charAt(0) != '#') {
-                return null;
-            }
-            for (int i = 1; i < 7; i++) {
-                char ch = str.charAt(i);
-                if ('0' <= ch && ch <= '9') {
-                    continue;
-                }
-                if ('a' <= ch && ch <= 'f') {
-                    continue;
-                }
-                return null;
-            }
-            return Integer.parseInt(str.substring(1, 3), 16) << 16 | Integer.parseInt(str.substring(3, 5), 16) << 8 | Integer.parseInt(str.substring(5, 7), 16);
-        }
-        return null;
     }
 }

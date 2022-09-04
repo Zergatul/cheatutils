@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting.api;
+package com.zergatul.cheatutils.scripting.api.keys;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 

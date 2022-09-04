@@ -7,14 +7,13 @@ import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
 import com.zergatul.cheatutils.controllers.KeyBindingsController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
+import com.zergatul.cheatutils.controllers.StatusOverlayController;
 import com.zergatul.cheatutils.controllers.ScriptController;
-import com.zergatul.cheatutils.helpers.MixinOptionsHelper;
 import com.zergatul.cheatutils.scripting.ParseException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
 import java.io.*;
@@ -139,6 +138,9 @@ public class ConfigStore {
         LightLevelController.instance.onChanged();
         config.blocks.apply();
 
+        config.killAuraConfig.validate();
+        config.movementHackConfig.validate();
+
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";
             try {
@@ -173,6 +175,15 @@ public class ConfigStore {
                 if (bindings[i] != null) {
                     KeyBindingsController.instance.assign(i, bindings[i]);
                 }
+            }
+        }
+
+        if (config.statusOverlayConfig.code != null) {
+            try {
+                Runnable script = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
+                StatusOverlayController.instance.setScript(script);
+            } catch (ParseException | ScriptCompileException e) {
+                e.printStackTrace();
             }
         }
     }

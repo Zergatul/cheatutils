@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.Entity;
@@ -8,30 +9,32 @@ import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
-import org.lwjgl.system.CallbackI;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 public class KillAuraConfig {
 
     public boolean active;
     public float maxRange;
     public List<PriorityEntry> priorities;
-    public boolean attackEveryTick;
+    public int attackTickInterval;
 
     public KillAuraConfig() {
         active = false;
         maxRange = 6;
+        attackTickInterval = 1;
         priorities = new ArrayList<>();
         priorities.add(PriorityEntry.shulkerBullets);
         priorities.add(PriorityEntry.monsters);
         priorities.add(PriorityEntry.phantoms);
         priorities.add(PriorityEntry.shulkers);
+    }
+
+    public void validate() {
+        maxRange = MathUtils.clamp(maxRange, 1, 100);
+        attackTickInterval = MathUtils.clamp(attackTickInterval, 1, 100);
+        priorities.removeIf(Objects::isNull);
     }
 
     public static class PriorityEntry {

@@ -94,6 +94,9 @@
                         <td>
                             <button @click="current = 'advanced-tooltips'">Advanced Tooltips</button>
                         </td>
+                        <td>
+                            <button @click="current = 'status-overlay'">Status Overlay</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -335,6 +338,11 @@
             v-if="current == 'container-buttons'"
             @back="backToMain()">
         </container-buttons-config>
+
+        <status-overlay-config
+            v-if="current == 'status-overlay'"
+            @back="backToMain()">
+        </status-overlay-config>
 
     </div>
 

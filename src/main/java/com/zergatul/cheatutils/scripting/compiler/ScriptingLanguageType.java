@@ -34,6 +34,6 @@ public enum ScriptingLanguageType {
         if (type == String.class) {
             return STRING;
         }
-        throw new ScriptCompileException();
+        throw new ScriptCompileException("Invalid java type.");
     }
 }

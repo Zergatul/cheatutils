@@ -34,6 +34,7 @@ public class ModMain {
         register(NetworkPacketsController.instance);
         register(TeleportController.instance);
         register(AutoTotemController.instance);
+        register(KillAuraController.instance);
     }
 
     private void register(Object instance) {
@@ -50,7 +51,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(ShulkerTooltipController.instance);
         MinecraftForge.EVENT_BUS.register(AutoFishController.instance);
         MinecraftForge.EVENT_BUS.register(LightLevelController.instance);
-        MinecraftForge.EVENT_BUS.register(KillAuraController.instance);
         MinecraftForge.EVENT_BUS.register(DebugScreenController.instance);
         MinecraftForge.EVENT_BUS.register(EntitySpeedController.instance);
         MinecraftForge.EVENT_BUS.register(SpeedCounterController.instance);
@@ -67,6 +67,7 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(InstantDisconnectController.instance);
         MinecraftForge.EVENT_BUS.register(BeaconController.instance);
         MinecraftForge.EVENT_BUS.register(NewChunksController.instance);
+        MinecraftForge.EVENT_BUS.register(StatusOverlayController.instance);
 
         //MinecraftForge.EVENT_BUS.register(TestController.instance);
 

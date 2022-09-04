@@ -16,7 +16,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class ApiHandler implements HttpHandler {
@@ -39,6 +38,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new BeaconsListApi());
         apis.add(new AutoDropApi());
         apis.add(new ItemInfoApi());
+        apis.add(new StatusOverlayApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -136,8 +136,7 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(KillAuraConfig config) {
-                config.maxRange = Math.max(1, config.maxRange);
-                config.priorities.removeIf(Objects::isNull);
+                config.validate();
                 ConfigStore.instance.getConfig().killAuraConfig = config;
             }
         });
@@ -431,6 +430,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ContainerButtonsConfig config) {
                 ConfigStore.instance.getConfig().containerButtonsConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("status-overlay", StatusOverlayConfig.class) {
+            @Override
+            protected StatusOverlayConfig getConfig() {
+                return ConfigStore.instance.getConfig().statusOverlayConfig;
+            }
+
+            @Override
+            protected void setConfig(StatusOverlayConfig config) {
+                ConfigStore.instance.getConfig().statusOverlayConfig.enabled = config.enabled;
             }
         });
     }
