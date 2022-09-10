@@ -160,6 +160,14 @@
                             <button @click="current = 'chunks'">Chunks</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'status-effects'">Status Effects</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -343,6 +351,11 @@
             v-if="current == 'status-overlay'"
             @back="backToMain()">
         </status-overlay-config>
+
+        <status-effects-config
+            v-if="current == 'status-effects'"
+            @back="backToMain()">
+        </status-effects-config>
 
     </div>
 

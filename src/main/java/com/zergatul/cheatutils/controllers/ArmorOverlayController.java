@@ -25,15 +25,15 @@ public class ArmorOverlayController implements IGuiOverlay {
     }
 
     @Override
-    public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int width, int height) {
+    public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
         if (mc.player == null) {
             return;
         }
         if (!mc.options.hideGui && gui.shouldDrawSurvivalElements() && ConfigStore.instance.getConfig().armorOverlayConfig.enabled) {
             gui.setupOverlayRenderState(true, false);
-            int left = width / 2 + 28;
-            int top = height - gui.rightHeight - 6;
-            gui.rightHeight += 24;
+            int left = screenWidth / 2 + 28;
+            int top = screenHeight - gui.rightHeight - 6;
+            gui.rightHeight += 12;
 
             List<ItemStack> armor = mc.player.getInventory().armor;
             renderItem(armor.get(3), left, top);

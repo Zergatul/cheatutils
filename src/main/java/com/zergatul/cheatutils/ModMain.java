@@ -94,5 +94,6 @@ public class ModMain {
 
     private void onRegisterGuiOverlay(final RegisterGuiOverlaysEvent event) {
         ArmorOverlayController.instance.onRegister(event);
+        BetterStatusEffectsController.instance.onRegister(event);
     }
 }

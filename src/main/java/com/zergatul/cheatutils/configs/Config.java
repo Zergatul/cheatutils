@@ -39,6 +39,7 @@ public class Config {
     public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
     public ChunksConfig chunksConfig = new ChunksConfig();
     public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
+    public StatusEffectsConfig statusEffectsConfig = new StatusEffectsConfig();
 
     public Config() {
         esp = true;

@@ -444,6 +444,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().statusOverlayConfig.enabled = config.enabled;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("status-effects", StatusEffectsConfig.class) {
+            @Override
+            protected StatusEffectsConfig getConfig() {
+                return ConfigStore.instance.getConfig().statusEffectsConfig;
+            }
+
+            @Override
+            protected void setConfig(StatusEffectsConfig config) {
+                ConfigStore.instance.getConfig().statusEffectsConfig = config;
+            }
+        });
     }
 
     @Override
