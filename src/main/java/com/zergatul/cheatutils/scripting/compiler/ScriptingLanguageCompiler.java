@@ -299,6 +299,9 @@ public class ScriptingLanguageCompiler {
         if (methodParameterClass == double.class && scriptParameterClass == int.class) {
             return true;
         }
+        if (methodParameterClass == String.class && scriptParameterClass == int.class) {
+            return true;
+        }
         return false;
     }
 
@@ -307,6 +310,26 @@ public class ScriptingLanguageCompiler {
             visitor.visitInsn(I2D);
             return ScriptingLanguageType.DOUBLE;
         }
+
+        if (methodParameterClass == String.class && type.getJavaClass() == int.class) {
+            Method method;
+            try {
+                method = Integer.class.getDeclaredMethod("toString", int.class);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+                throw new ScriptCompileException("Cannot find Integer.toString() method.");
+            }
+
+            visitor.visitMethodInsn(
+                    INVOKESTATIC,
+                    Type.getInternalName(method.getDeclaringClass()),
+                    method.getName(),
+                    Type.getMethodDescriptor(method),
+                    false);
+
+            return ScriptingLanguageType.STRING;
+        }
+
         throw new ScriptCompileException("Cannot cast.");
     }
 
