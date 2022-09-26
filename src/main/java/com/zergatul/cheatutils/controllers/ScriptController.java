@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.configs.ScriptsConfig;
-import com.zergatul.cheatutils.scripting.ParseException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptingLanguageCompiler;
+import com.zergatul.cheatutils.scripting.generated.ParseException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +23,7 @@ public class ScriptController {
 
     }
 
-    public void add(String name, String code) throws IllegalArgumentException, ParseException, ScriptCompileException {
+    public void add(String name, String code) throws IllegalArgumentException, ScriptCompileException, ParseException {
         if (name == null) {
             throw new IllegalArgumentException("Name is required.");
         }

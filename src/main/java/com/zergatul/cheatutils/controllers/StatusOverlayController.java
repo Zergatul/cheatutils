@@ -56,7 +56,7 @@ public class StatusOverlayController {
         }
 
         StatusOverlayConfig config = ConfigStore.instance.getConfig().statusOverlayConfig;
-        if (!config.enabled) {
+        if (!config.enabled || script == null) {
             return;
         }
 
@@ -64,11 +64,9 @@ public class StatusOverlayController {
             texts.get(align).clear();
         }
 
-        if (script != null) {
-            hAlign = HorizontalAlign.RIGHT;
-            vAlign = VerticalAlign.BOTTOM;
-            script.run();
-        }
+        hAlign = HorizontalAlign.RIGHT;
+        vAlign = VerticalAlign.BOTTOM;
+        script.run();
 
         event.getPoseStack().pushPose();
         event.getPoseStack().setIdentity();

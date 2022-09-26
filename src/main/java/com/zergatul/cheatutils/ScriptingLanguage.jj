@@ -4,9 +4,14 @@ jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\
 javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\ScriptingLanguage.jj.jj
 */
 
+/*
+jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
+javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
+*/
+
 PARSER_BEGIN(ScriptingLanguage)
 
-package com.zergatul.cheatutils.scripting;
+package com.zergatul.cheatutils.scripting.generated;
 
 public class ScriptingLanguage {
 }
@@ -21,6 +26,13 @@ SKIP :
 | "\r"
 }
 
+SPECIAL_TOKEN :
+{
+  <SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <FORMAL_COMMENT: "/**" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+| <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+
 TOKEN :
 {
   < FALSE: "false" >
@@ -29,7 +41,7 @@ TOKEN :
 }
 
 
-TOKEN : /* LITERALS */
+TOKEN :
 {
   < INTEGER_LITERAL:
         <DECIMAL_LITERAL> (["l","L"])?
@@ -97,13 +109,25 @@ ASTInput Input() :
 void Statement() :
 {}
 {
+  Block()
+|
   EmptyStatement()
 |
-  BlockStatement()
+  StatementExpression() ";"
 |
   IfStatement()
-|
-  MethodCall() ";"
+}
+
+void Block() :
+{}
+{
+  "{" ( BlockStatement() )* "}"
+}
+
+void BlockStatement() :
+{}
+{
+  Statement()
 }
 
 void EmptyStatement() :
@@ -112,40 +136,108 @@ void EmptyStatement() :
   ";"
 }
 
-void BlockStatement() :
+void StatementExpression() :
 {}
 {
-  "{" ( Statement() )* "}"
+  PrimaryExpression()
 }
 
 void IfStatement() :
 {}
 {
-  <IF> "(" Expression() ")" Statement() [ LOOKAHEAD(1) <ELSE> Statement() ]
-}
-
-void MethodCall() :
-{}
-{
-  Name() Arguments()
+  "if" "(" Expression() ")" Statement() [ LOOKAHEAD(1) "else" Statement() ]
 }
 
 void Expression() :
 {}
 {
-  "(" Expression() ")"
+  ConditionalExpression()
+}
+
+void ConditionalExpression() :
+{}
+{
+  ConditionalOrExpression() [ "?" Expression() ":" ConditionalExpression() ]
+}
+
+void ConditionalOrExpression() :
+{}
+{
+  ConditionalAndExpression() ( "||" ConditionalAndExpression() )*
+}
+
+void ConditionalAndExpression() :
+{}
+{
+  EqualityExpression() ( "&&" EqualityExpression() )*
+}
+
+void EqualityExpression() :
+{}
+{
+  AdditiveExpression() ( ( Equality() | Inequality() ) AdditiveExpression() )*
+}
+
+void AdditiveExpression() :
+{}
+{
+  MultiplicativeExpression() ( ( Plus() | Minus() ) MultiplicativeExpression() )*
+}
+
+void MultiplicativeExpression() :
+{}
+{
+  UnaryExpression() ( ( Mult() | Div() | Mod() ) UnaryExpression() )*
+}
+
+void UnaryExpression() :
+{}
+{
+  ( Plus() | Minus() ) UnaryExpression()
 |
-  LOOKAHEAD(3) MethodCall()
+  UnaryExpressionNotPlusMinus()
+}
+
+void UnaryExpressionNotPlusMinus() :
+{}
+{
+  ( Tilde() | Not() ) UnaryExpression()
+|
+  PrimaryExpression()
+}
+
+void PrimaryExpression() :
+{}
+{
+  PrimaryPrefix() [ PrimarySuffix() ]
+}
+
+void PrimaryPrefix() :
+{}
+{
+  Literal()
 |
   Name()
 |
-  Literal()
+  "(" Expression() ")"
+}
+
+void PrimarySuffix() :
+{}
+{
+  Arguments()
 }
 
 void Arguments() :
 {}
 {
-  "(" [ Expression() ( "," Expression() )* ] ")"
+  "(" [ ArgumentList() ] ")"
+}
+
+void ArgumentList() :
+{}
+{
+  Expression() ( "," Expression() )*
 }
 
 void Name() :
@@ -163,6 +255,60 @@ void Identifier() :
   {
     jjtThis.jjtSetValue(token.image);
   }
+}
+
+void Plus() :
+{}
+{
+  "+"
+}
+
+void Minus() :
+{}
+{
+  "-"
+}
+
+void Mult() :
+{}
+{
+  "*"
+}
+
+void Div() :
+{}
+{
+  "/"
+}
+
+void Mod() :
+{}
+{
+  "%"
+}
+
+void Equality() :
+{}
+{
+  "=="
+}
+
+void Inequality() :
+{}
+{
+  "!="
+}
+
+void Not() :
+{}
+{
+  "!"
+}
+
+void Tilde() :
+{}
+{
+  "~"
 }
 
 void Literal() :
