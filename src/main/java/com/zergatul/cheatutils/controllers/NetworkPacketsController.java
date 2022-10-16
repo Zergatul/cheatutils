@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import io.netty.channel.*;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.IPacket;
+import net.minecraft.network.NetworkManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -14,7 +14,7 @@ public class NetworkPacketsController {
 
     private List<Consumer<ServerPacketArgs>> serverPacketHandlers = new ArrayList<>();
     private List<Consumer<ClientPacketArgs>> clientPacketHandlers = new ArrayList<>();
-    private Connection connection;
+    private NetworkManager connection;
 
     private NetworkPacketsController() {
         ModApiWrapper.addOnClientPlayerLoggingIn(this::onClientPlayerLoggingIn);
@@ -32,23 +32,23 @@ public class NetworkPacketsController {
         }
     }
 
-    public void sendPacket(Packet<?> packet) {
+    public void sendPacket(IPacket<?> packet) {
         connection.send(packet);
     }
 
-    public void receivePacket(Packet<?> packet) {
+    public void receivePacket(IPacket<?> packet) {
         connection.channel().pipeline().fireChannelRead(packet);
     }
 
-    private void onClientPlayerLoggingIn(Connection connection) {
+    private void onClientPlayerLoggingIn(NetworkManager connection) {
         this.connection = connection;
         ChannelPipeline pipeline = connection.channel().pipeline();
 
         synchronized (pipeline) {
             if (pipeline.get("PacketReader") == null) {
-                pipeline.addBefore("packet_handler", "PacketReader", new SimpleChannelInboundHandler<Packet<?>>() {
+                pipeline.addBefore("packet_handler", "PacketReader", new SimpleChannelInboundHandler<IPacket<?>>() {
                     @Override
-                    protected void channelRead0(ChannelHandlerContext ctx, Packet<?> msg) throws Exception {
+                    protected void channelRead0(ChannelHandlerContext ctx, IPacket<?> msg) throws Exception {
 
                         ServerPacketArgs args = new ServerPacketArgs();
                         args.packet = msg;
@@ -72,7 +72,7 @@ public class NetworkPacketsController {
                     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
 
                         ClientPacketArgs args = new ClientPacketArgs();
-                        args.packet = (Packet<?>)msg;
+                        args.packet = (IPacket<?>) msg;
 
                         // do we need synchronized here???
                         for (Consumer<ClientPacketArgs> handler : clientPacketHandlers) {
@@ -91,13 +91,12 @@ public class NetworkPacketsController {
     }
 
     public static class ServerPacketArgs {
-        public Packet<?> packet;
+        public IPacket<?> packet;
         public boolean skip;
     }
 
     public static class ClientPacketArgs {
-        public Packet<?> packet;
+        public IPacket<?> packet;
         public boolean skip;
     }
-
 }

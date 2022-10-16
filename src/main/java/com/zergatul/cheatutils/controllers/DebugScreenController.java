@@ -1,11 +1,9 @@
 package com.zergatul.cheatutils.controllers;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Locale;
 
 public class DebugScreenController {
 

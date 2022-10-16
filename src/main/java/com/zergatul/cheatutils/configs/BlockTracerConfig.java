@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-import net.minecraft.world.level.block.Block;
+import net.minecraft.block.Block;
 
 import java.awt.*;
 

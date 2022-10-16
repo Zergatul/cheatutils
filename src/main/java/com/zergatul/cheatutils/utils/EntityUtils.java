@@ -1,50 +1,48 @@
 package com.zergatul.cheatutils.utils;
 
-import com.mojang.datafixers.util.Either;
 import com.zergatul.cheatutils.webui.EntityInfoApi;
-import net.minecraft.core.*;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.TagKey;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkSource;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.entity.LevelEntityGetter;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import net.minecraft.world.level.storage.WritableLevelData;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.ticks.LevelTickAccess;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.item.crafting.RecipeManager;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ITagCollectionSupplier;
+import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.SimpleRegistry;
+import net.minecraft.world.*;
+import net.minecraft.world.Dimension;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.ColumnFuzzedBiomeMagnifier;
+import net.minecraft.world.chunk.AbstractChunkProvider;
+import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.gen.settings.DimensionGeneratorSettings;
+import net.minecraft.world.storage.DerivedWorldInfo;
+import net.minecraft.world.storage.ISpawnWorldInfo;
+import net.minecraft.world.storage.MapData;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class EntityUtils {
 
     private static Logger logger = LogManager.getLogger(EntityInfoApi.class);
 
     private static final Class[] hardcodedClasses = new Class[] {
-            Player.class
+            PlayerEntity.class
     };
 
     private static List<EntityInfo> classes;
@@ -69,10 +67,10 @@ public class EntityUtils {
             return;
         }
 
-        EntityType playerEntityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("minecraft:player"));
+        EntityType playerEntityType = ForgeRegistries.ENTITIES.getValue(new ResourceLocation("minecraft:player"));
 
-        Level level = new FakeLevel();
-        List<Class> entityClasses = ForgeRegistries.ENTITY_TYPES.getValues().stream().map(et -> {
+        World level = new FakeLevel();
+        List<Class> entityClasses = ForgeRegistries.ENTITIES.getValues().stream().map(et -> {
             if (et == playerEntityType) {
                 return (Class)null;
             }
@@ -90,7 +88,7 @@ public class EntityUtils {
                 throwable.printStackTrace();
                 return null;
             }
-        }).filter(Objects::nonNull).toList();
+        }).filter(Objects::nonNull).collect(Collectors.toList());
 
         HashSet<Class> set = new HashSet<>();
         Arrays.stream(hardcodedClasses).forEach(set::add);
@@ -108,7 +106,7 @@ public class EntityUtils {
                 e.printStackTrace();
                 return null;
             }
-        }).filter(Objects::nonNull).sorted((i1, i2) -> i1.simpleName.compareToIgnoreCase(i2.simpleName)).toList();
+        }).filter(Objects::nonNull).sorted((i1, i2) -> i1.simpleName.compareToIgnoreCase(i2.simpleName)).collect(Collectors.toList());
 
         classMap = new HashMap<>(classes.size());
         for (EntityInfo info: classes) {
@@ -139,199 +137,145 @@ public class EntityUtils {
         }
     }
 
-    private static class FakeLevel extends Level {
+    private static class FakeLevel extends World {
 
         protected FakeLevel() {
-            super(new WritableLevelData() {
-                      @Override
-                      public void setXSpawn(int p_78651_) {
+            /*SimpleRegistry<net.minecraft.world.Dimension> simpleregistry = dimensiongeneratorsettings.dimensions();
+            net.minecraft.world.Dimension dimension = simpleregistry.get(Dimension.OVERWORLD);
+            ChunkGenerator chunkgenerator;
+            DimensionType dimensiontype;
+            if (dimension == null) {
+                dimensiontype = this.registryHolder.dimensionTypes().getOrThrow(DimensionType.OVERWORLD_LOCATION);
+                chunkgenerator = DimensionGeneratorSettings.makeDefaultOverworld(this.registryHolder.registryOrThrow(Registry.BIOME_REGISTRY), this.registryHolder.registryOrThrow(Registry.NOISE_GENERATOR_SETTINGS_REGISTRY), (new Random()).nextLong());
+            } else {
+                dimensiontype = dimension.type();
+                chunkgenerator = dimension.generator();
+            }*/
 
-                      }
-
-                      @Override
-                      public void setYSpawn(int p_78652_) {
-
-                      }
-
-                      @Override
-                      public void setZSpawn(int p_78653_) {
-
-                      }
-
-                      @Override
-                      public void setSpawnAngle(float p_78648_) {
-
-                      }
-
-                      @Override
-                      public int getXSpawn() {
-                          return 0;
-                      }
-
-                      @Override
-                      public int getYSpawn() {
-                          return 0;
-                      }
-
-                      @Override
-                      public int getZSpawn() {
-                          return 0;
-                      }
-
-                      @Override
-                      public float getSpawnAngle() {
-                          return 0;
-                      }
-
-                      @Override
-                      public long getGameTime() {
-                          return 0;
-                      }
-
-                      @Override
-                      public long getDayTime() {
-                          return 0;
-                      }
-
-                      @Override
-                      public boolean isThundering() {
-                          return false;
-                      }
-
-                      @Override
-                      public boolean isRaining() {
-                          return false;
-                      }
-
-                      @Override
-                      public void setRaining(boolean p_78171_) {
-
-                      }
-
-                      @Override
-                      public boolean isHardcore() {
-                          return false;
-                      }
-
-                      @Override
-                      public GameRules getGameRules() {
-                          return null;
-                      }
-
-                      @Override
-                      public Difficulty getDifficulty() {
-                          return null;
-                      }
-
-                      @Override
-                      public boolean isDifficultyLocked() {
-                          return false;
-                      }
-                  },
-                    Level.OVERWORLD,
-                    new Holder<DimensionType>() {
+            super(
+                    new ISpawnWorldInfo() {
                         @Override
-                        public DimensionType value() {
-                            return RegistryAccess.BUILTIN.get().registryOrThrow(Registry.DIMENSION_TYPE_REGISTRY).get(Level.OVERWORLD.location());
+                        public void setXSpawn(int p_76058_1_) {
+                            
                         }
 
                         @Override
-                        public boolean isBound() {
+                        public void setYSpawn(int p_76056_1_) {
+
+                        }
+
+                        @Override
+                        public void setZSpawn(int p_76087_1_) {
+
+                        }
+
+                        @Override
+                        public void setSpawnAngle(float p_241859_1_) {
+
+                        }
+
+                        @Override
+                        public int getXSpawn() {
+                            return 0;
+                        }
+
+                        @Override
+                        public int getYSpawn() {
+                            return 0;
+                        }
+
+                        @Override
+                        public int getZSpawn() {
+                            return 0;
+                        }
+
+                        @Override
+                        public float getSpawnAngle() {
+                            return 0;
+                        }
+
+                        @Override
+                        public long getGameTime() {
+                            return 0;
+                        }
+
+                        @Override
+                        public long getDayTime() {
+                            return 0;
+                        }
+
+                        @Override
+                        public boolean isThundering() {
                             return false;
                         }
 
                         @Override
-                        public boolean is(ResourceLocation p_205713_) {
+                        public boolean isRaining() {
                             return false;
                         }
 
                         @Override
-                        public boolean is(ResourceKey<DimensionType> p_205712_) {
+                        public void setRaining(boolean p_76084_1_) {
+
+                        }
+
+                        @Override
+                        public boolean isHardcore() {
                             return false;
                         }
 
                         @Override
-                        public boolean is(Predicate<ResourceKey<DimensionType>> p_205711_) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean is(TagKey<DimensionType> p_205705_) {
-                            return false;
-                        }
-
-                        @Override
-                        public Stream<TagKey<DimensionType>> tags() {
+                        public GameRules getGameRules() {
                             return null;
                         }
 
                         @Override
-                        public Either<ResourceKey<DimensionType>, DimensionType> unwrap() {
+                        public Difficulty getDifficulty() {
                             return null;
                         }
 
                         @Override
-                        public Optional<ResourceKey<DimensionType>> unwrapKey() {
-                            ResourceKey<DimensionType> x = ResourceKey.create(Registry.DIMENSION_TYPE_REGISTRY, Level.OVERWORLD.location());
-                            return Optional.of(x);
-                        }
-
-                        @Override
-                        public Kind kind() {
-                            return null;
-                        }
-
-                        @Override
-                        public boolean isValidInRegistry(Registry<DimensionType> p_205708_) {
+                        public boolean isDifficultyLocked() {
                             return false;
                         }
                     },
-                    new Supplier<ProfilerFiller>() {
-                        @Override
-                        public ProfilerFiller get() {
-                            return null;
-                        }
-                    },
+                    World.OVERWORLD,
+                    new FakeDimensionType(),
+                    () -> null,
                     true,
                     true,
-                    0,
                     0);
         }
 
         @Override
-        public void sendBlockUpdated(BlockPos p_46612_, BlockState p_46613_, BlockState p_46614_, int p_46615_) {
+        public void sendBlockUpdated(BlockPos p_184138_1_, BlockState p_184138_2_, BlockState p_184138_3_, int p_184138_4_) {
 
         }
 
         @Override
-        public void playSeededSound(@Nullable Player p_220363_, double p_220364_, double p_220365_, double p_220366_, SoundEvent p_220367_, SoundSource p_220368_, float p_220369_, float p_220370_, long p_220371_) {
+        public void playSound(@Nullable PlayerEntity p_184148_1_, double p_184148_2_, double p_184148_4_, double p_184148_6_, SoundEvent p_184148_8_, SoundCategory p_184148_9_, float p_184148_10_, float p_184148_11_) {
 
         }
 
         @Override
-        public void playSeededSound(@Nullable Player p_220372_, Entity p_220373_, SoundEvent p_220374_, SoundSource p_220375_, float p_220376_, float p_220377_, long p_220378_) {
+        public void playSound(@Nullable PlayerEntity p_217384_1_, Entity p_217384_2_, SoundEvent p_217384_3_, SoundCategory p_217384_4_, float p_217384_5_, float p_217384_6_) {
 
         }
 
+        @Nullable
         @Override
-        public String gatherChunkSourceStats() {
+        public Entity getEntity(int p_73045_1_) {
             return null;
         }
 
         @Nullable
         @Override
-        public Entity getEntity(int p_46492_) {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public MapItemSavedData getMapData(String p_46650_) {
+        public MapData getMapData(String p_217406_1_) {
             return null;
         }
 
         @Override
-        public void setMapData(String p_151533_, MapItemSavedData p_151534_) {
+        public void setMapData(MapData p_217399_1_) {
 
         }
 
@@ -341,13 +285,13 @@ public class EntityUtils {
         }
 
         @Override
-        public void destroyBlockProgress(int p_46506_, BlockPos p_46507_, int p_46508_) {
+        public void destroyBlockProgress(int p_175715_1_, BlockPos p_175715_2_, int p_175715_3_) {
 
         }
 
         @Override
         public Scoreboard getScoreboard() {
-            return new Scoreboard();
+            return null;
         }
 
         @Override
@@ -356,53 +300,54 @@ public class EntityUtils {
         }
 
         @Override
-        protected LevelEntityGetter<Entity> getEntities() {
+        public ITagCollectionSupplier getTagManager() {
             return null;
         }
 
         @Override
-        public LevelTickAccess<Block> getBlockTicks() {
+        public ITickList<Block> getBlockTicks() {
             return null;
         }
 
         @Override
-        public LevelTickAccess<Fluid> getFluidTicks() {
+        public ITickList<Fluid> getLiquidTicks() {
             return null;
         }
 
         @Override
-        public ChunkSource getChunkSource() {
+        public AbstractChunkProvider getChunkSource() {
             return null;
         }
 
         @Override
-        public void levelEvent(@Nullable Player p_46771_, int p_46772_, BlockPos p_46773_, int p_46774_) {
+        public void levelEvent(@Nullable PlayerEntity p_217378_1_, int p_217378_2_, BlockPos p_217378_3_, int p_217378_4_) {
 
         }
 
         @Override
-        public void gameEvent(GameEvent p_220404_, Vec3 p_220405_, GameEvent.Context p_220406_) {
-
-        }
-
-        @Override
-        public RegistryAccess registryAccess() {
+        public DynamicRegistries registryAccess() {
             return null;
         }
 
         @Override
-        public float getShade(Direction p_45522_, boolean p_45523_) {
+        public float getShade(Direction p_230487_1_, boolean p_230487_2_) {
             return 0;
         }
 
         @Override
-        public List<? extends Player> players() {
+        public List<? extends PlayerEntity> players() {
             return null;
         }
 
         @Override
-        public Holder<Biome> getUncachedNoiseBiome(int p_204159_, int p_204160_, int p_204161_) {
+        public Biome getUncachedNoiseBiome(int p_225604_1_, int p_225604_2_, int p_225604_3_) {
             return null;
+        }
+    }
+
+    private static class FakeDimensionType extends DimensionType {
+        protected FakeDimensionType() {
+            super(OptionalLong.empty(), true, false, false, true, 1.0D, false, false, true, false, true, 256, ColumnFuzzedBiomeMagnifier.INSTANCE, BlockTags.INFINIBURN_OVERWORLD.getName(), OVERWORLD_EFFECTS, 0.0F);
         }
     }
 }

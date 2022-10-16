@@ -15,13 +15,13 @@ public class FreeCamApi {
     }
 
     public void toggleRenderHands() {
-        var config = getConfig();
+        FreeCamConfig config = getConfig();
         config.renderHands = !config.renderHands;
         ConfigStore.instance.requestWrite();
     }
 
     public void setRenderHands(boolean value) {
-        var config = getConfig();
+        FreeCamConfig config = getConfig();
         config.renderHands = value;
         ConfigStore.instance.requestWrite();
     }

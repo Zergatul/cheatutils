@@ -1,10 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.LinkedList;
 
@@ -18,7 +15,7 @@ public class SpeedCounterController {
     private final LinkedList<Entry> list = new LinkedList<>();
 
     private SpeedCounterController() {
-
+        ModApiWrapper.addOnClientTickEnd(this::onClientTickEnd);
     }
 
     public double getSpeed() {
@@ -33,24 +30,21 @@ public class SpeedCounterController {
         }
     }
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
+    private void onClientTickEnd() {
         if (mc.player == null) {
             list.clear();
             return;
         }
 
-        if (event.phase == TickEvent.Phase.END) {
-            long now = System.nanoTime();
-            var entry = new Entry();
-            entry.time = now;
-            entry.x = mc.player.getX();
-            entry.z = mc.player.getZ();
-            list.addLast(entry);
+        long now = System.nanoTime();
+        Entry entry = new Entry();
+        entry.time = now;
+        entry.x = mc.player.getX();
+        entry.z = mc.player.getZ();
+        list.addLast(entry);
 
-            while (now - list.getFirst().time > INTERVAL) {
-                list.removeFirst();
-            }
+        while (now - list.getFirst().time > INTERVAL) {
+            list.removeFirst();
         }
     }
 
@@ -59,5 +53,4 @@ public class SpeedCounterController {
         public double x;
         public double z;
     }
-
 }

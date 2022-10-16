@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.block.Block;
 
 public class BlockTypeAdapterFactory implements TypeAdapterFactory {
     @SuppressWarnings("unchecked")

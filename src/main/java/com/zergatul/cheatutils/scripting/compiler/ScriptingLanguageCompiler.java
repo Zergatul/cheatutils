@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.scripting.compiler;
 
 import com.zergatul.cheatutils.scripting.generated.*;
 import org.objectweb.asm.*;
-import org.openjdk.nashorn.internal.ir.BlockStatement;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -89,16 +88,16 @@ public class ScriptingLanguageCompiler {
         if (node instanceof ASTEmptyStatement) {
             return;
         }
-        if (node instanceof ASTStatementExpression statementExpression) {
-            compile(statementExpression, visitor);
+        if (node instanceof ASTStatementExpression) {
+            compile((ASTStatementExpression) node, visitor);
             return;
         }
-        if (node instanceof ASTBlock block) {
-            compile(block, visitor);
+        if (node instanceof ASTBlock) {
+            compile((ASTBlock) node, visitor);
             return;
         }
-        if (node instanceof ASTIfStatement ifStatement) {
-            compile(ifStatement, visitor);
+        if (node instanceof ASTIfStatement) {
+            compile((ASTIfStatement) node, visitor);
             return;
         }
         throw new ScriptCompileException("ASTStatement case not implemented: " + node.getClass().getName() + ".");
@@ -106,8 +105,8 @@ public class ScriptingLanguageCompiler {
 
     private void compile(ASTStatementExpression statementExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
         Node node = statementExpression.jjtGetChild(0);
-        if (node instanceof ASTPrimaryExpression primaryExpression) {
-            ScriptingLanguageType type = compile(primaryExpression, visitor);
+        if (node instanceof ASTPrimaryExpression) {
+            ScriptingLanguageType type = compile((ASTPrimaryExpression) node, visitor);
             if (type != ScriptingLanguageType.VOID) {
                 visitor.visitInsn(POP);
             }
@@ -127,14 +126,14 @@ public class ScriptingLanguageCompiler {
         ASTPrimaryPrefix prefix = (ASTPrimaryPrefix) primaryExpression.jjtGetChild(0);
         Node prefixNode = prefix.jjtGetChild(0);
         if (primaryExpression.jjtGetNumChildren() == 1) {
-            if (prefixNode instanceof ASTLiteral literal) {
-                return compile(literal, visitor);
+            if (prefixNode instanceof ASTLiteral) {
+                return compile((ASTLiteral) prefixNode, visitor);
             }
             if (prefixNode instanceof ASTName) {
                 throw new ScriptCompileException("ASTPrimaryExpression cannot reference fields.");
             }
-            if (prefixNode instanceof ASTExpression expression) {
-                return compile(expression, visitor);
+            if (prefixNode instanceof ASTExpression) {
+                return compile((ASTExpression) prefixNode, visitor);
             }
             throw new ScriptCompileException("ASTPrimaryExpression(1) case not implemented: " + prefixNode.getClass().getName() + ".");
         } else {
@@ -142,8 +141,8 @@ public class ScriptingLanguageCompiler {
             if (prefixNode instanceof ASTLiteral) {
                 throw new ScriptCompileException("ASTLiteral cannot have PrimarySuffix");
             }
-            if (prefixNode instanceof ASTName name) {
-                return compile(name, (ASTArguments) suffix.jjtGetChild(0), visitor);
+            if (prefixNode instanceof ASTName) {
+                return compile((ASTName) prefixNode, (ASTArguments) suffix.jjtGetChild(0), visitor);
             }
             if (prefixNode instanceof ASTExpression) {
                 throw new ScriptCompileException("ASTExpression cannot have PrimarySuffix");
@@ -183,7 +182,7 @@ public class ScriptingLanguageCompiler {
             methodArgumentTypes = new ScriptingLanguageType[0];
             methodArgumentVisitors = new BufferVisitor[0];
         } else {
-            var argumentList = (ASTArgumentList) arguments.jjtGetChild(0);
+            ASTArgumentList argumentList = (ASTArgumentList) arguments.jjtGetChild(0);
             argsLength = argumentList.jjtGetNumChildren();
             methodArgumentTypes = new ScriptingLanguageType[argsLength];
             methodArgumentVisitors = new BufferVisitor[argsLength];
@@ -255,8 +254,8 @@ public class ScriptingLanguageCompiler {
         }
 
         Node node = expression.jjtGetChild(0);
-        if (node instanceof ASTConditionalExpression conditionalExpression) {
-            return compile(conditionalExpression, visitor);
+        if (node instanceof ASTConditionalExpression) {
+            return compile((ASTConditionalExpression) node, visitor);
         }
 
         throw new ScriptCompileException("ASTExpression case not implemented: " + node.getClass().getName() + ".");
@@ -265,16 +264,16 @@ public class ScriptingLanguageCompiler {
     private ScriptingLanguageType compile(ASTConditionalExpression conditionalExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
         if (conditionalExpression.jjtGetNumChildren() == 1) {
             Node node = conditionalExpression.jjtGetChild(0);
-            if (node instanceof ASTConditionalOrExpression conditionalOrExpression) {
-                return compile(conditionalOrExpression, visitor);
+            if (node instanceof ASTConditionalOrExpression) {
+                return compile((ASTConditionalOrExpression) node, visitor);
             }
             throw new ScriptCompileException("ASTConditionalExpression case not implemented: " + node.getClass().getName() + ".");
         }
 
         if (conditionalExpression.jjtGetNumChildren() == 3) {
-            var condition = (ASTConditionalOrExpression) conditionalExpression.jjtGetChild(0);
-            var expression1 = (ASTExpression) conditionalExpression.jjtGetChild(1);
-            var expression2 = (ASTConditionalExpression) conditionalExpression.jjtGetChild(2);
+            ASTConditionalOrExpression condition = (ASTConditionalOrExpression) conditionalExpression.jjtGetChild(0);
+            ASTExpression expression1 = (ASTExpression) conditionalExpression.jjtGetChild(1);
+            ASTConditionalExpression expression2 = (ASTConditionalExpression) conditionalExpression.jjtGetChild(2);
 
             ScriptingLanguageType conditionReturnType = compile(condition, visitor);
             if (conditionReturnType != ScriptingLanguageType.BOOLEAN) {
@@ -301,7 +300,7 @@ public class ScriptingLanguageCompiler {
     }
 
     private ScriptingLanguageType compile(ASTConditionalOrExpression conditionalOrExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
-        var conditionalAndExpression = (ASTConditionalAndExpression) conditionalOrExpression.jjtGetChild(0);
+        ASTConditionalAndExpression conditionalAndExpression = (ASTConditionalAndExpression) conditionalOrExpression.jjtGetChild(0);
         ScriptingLanguageType type = compile(conditionalAndExpression, visitor);
 
         int numChildren = conditionalOrExpression.jjtGetNumChildren();
@@ -325,7 +324,7 @@ public class ScriptingLanguageCompiler {
     }
 
     private ScriptingLanguageType compile(ASTConditionalAndExpression conditionalAndExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
-        var equalityExpression = (ASTEqualityExpression) conditionalAndExpression.jjtGetChild(0);
+        ASTEqualityExpression equalityExpression = (ASTEqualityExpression) conditionalAndExpression.jjtGetChild(0);
         ScriptingLanguageType type = compile(equalityExpression, visitor);
 
         int numChildren = conditionalAndExpression.jjtGetNumChildren();
@@ -349,7 +348,7 @@ public class ScriptingLanguageCompiler {
     }
 
     private ScriptingLanguageType compile(ASTEqualityExpression equalityExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
-        var additiveExpression = (ASTAdditiveExpression) equalityExpression.jjtGetChild(0);
+        ASTAdditiveExpression additiveExpression = (ASTAdditiveExpression) equalityExpression.jjtGetChild(0);
         ScriptingLanguageType type = compile(additiveExpression, visitor);
 
         int numChildren = equalityExpression.jjtGetNumChildren();
@@ -367,19 +366,30 @@ public class ScriptingLanguageCompiler {
             if (typeLeft == typeRight) {
                 bufferVisitor.releaseBuffer(visitor);
                 switch (typeLeft) {
-                    case BOOLEAN, INT -> {
+                    case BOOLEAN:
+                    case INT:
                         visitor.visitJumpInsn(IF_ICMPEQ, elseLabel);
                         visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 0 : 1);
                         visitor.visitJumpInsn(GOTO, endLabel);
                         visitor.visitLabel(elseLabel);
                         visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 1 : 0);
                         visitor.visitLabel(endLabel);
-                    }
-                    case DOUBLE -> throw new ScriptCompileException("ASTEqualityExpression comparing Double not implemented.");
-                    case STRING -> throw new ScriptCompileException("ASTEqualityExpression comparing String not implemented.");
-                    case NULL -> throw new ScriptCompileException("ASTEqualityExpression Null not implemented.");
-                    case VOID -> throw new ScriptCompileException("ASTEqualityExpression cannot compare Void.");
-                    default -> throw new ScriptCompileException("ASTEqualityExpression type not implemented.");
+                        break;
+
+                    case DOUBLE:
+                        throw new ScriptCompileException("ASTEqualityExpression comparing Double not implemented.");
+
+                    case STRING:
+                        throw new ScriptCompileException("ASTEqualityExpression comparing String not implemented.");
+
+                    case NULL:
+                        throw new ScriptCompileException("ASTEqualityExpression Null not implemented.");
+
+                    case VOID:
+                        throw new ScriptCompileException("ASTEqualityExpression cannot compare Void.");
+
+                    default:
+                        throw new ScriptCompileException("ASTEqualityExpression type not implemented.");
                 }
             } else {
                 throw new ScriptCompileException("ASTEqualityExpression comparing different types not implemented.");
@@ -390,7 +400,7 @@ public class ScriptingLanguageCompiler {
     }
 
     private ScriptingLanguageType compile(ASTAdditiveExpression additiveExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
-        var multiplicativeExpression = (ASTMultiplicativeExpression) additiveExpression.jjtGetChild(0);
+        ASTMultiplicativeExpression multiplicativeExpression = (ASTMultiplicativeExpression) additiveExpression.jjtGetChild(0);
         ScriptingLanguageType type = compile(multiplicativeExpression, visitor);
 
         int numChildren = additiveExpression.jjtGetNumChildren();
@@ -406,19 +416,31 @@ public class ScriptingLanguageCompiler {
             if (operator instanceof ASTPlus) {
                 if (typeLeft == typeRight) {
                     switch (typeLeft) {
-                        case INT -> {
+                        case INT:
                             bufferVisitor.releaseBuffer(visitor);
                             visitor.visitInsn(IADD);
-                        }
-                        case BOOLEAN -> throw new ScriptCompileException("ASTAdditiveExpression cannot add 2 Booleans.");
-                        case DOUBLE -> {
+                            break;
+
+                        case BOOLEAN:
+                            throw new ScriptCompileException("ASTAdditiveExpression cannot add 2 Booleans.");
+
+                        case DOUBLE:
                             bufferVisitor.releaseBuffer(visitor);
                             visitor.visitInsn(DADD);
-                        }
-                        case STRING -> compileStringConcat(bufferVisitor, visitor);
-                        case NULL -> throw new ScriptCompileException("ASTAdditiveExpression Null not implemented.");
-                        case VOID -> throw new ScriptCompileException("ASTAdditiveExpression cannot add Void.");
-                        default -> throw new ScriptCompileException("ASTAdditiveExpression type not implemented.");
+                            break;
+
+                        case STRING:
+                            compileStringConcat(bufferVisitor, visitor);
+                            break;
+
+                        case NULL:
+                            throw new ScriptCompileException("ASTAdditiveExpression Null not implemented.");
+
+                        case VOID:
+                            throw new ScriptCompileException("ASTAdditiveExpression cannot add Void.");
+
+                        default:
+                            throw new ScriptCompileException("ASTAdditiveExpression type not implemented.");
                     }
                 } else {
                     throw new ScriptCompileException("ASTAdditiveExpression adding different types not implemented.");
@@ -428,19 +450,30 @@ public class ScriptingLanguageCompiler {
             if (operator instanceof ASTMinus) {
                 if (typeLeft == typeRight) {
                     switch (typeLeft) {
-                        case INT -> {
+                        case INT:
                             bufferVisitor.releaseBuffer(visitor);
                             visitor.visitInsn(ISUB);
-                        }
-                        case BOOLEAN -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract 2 Booleans.");
-                        case DOUBLE -> {
+                            break;
+
+                        case BOOLEAN:
+                            throw new ScriptCompileException("ASTAdditiveExpression cannot subtract 2 Booleans.");
+
+                        case DOUBLE:
                             bufferVisitor.releaseBuffer(visitor);
                             visitor.visitInsn(DSUB);
-                        }
-                        case STRING -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract 2 Strings.");
-                        case NULL -> throw new ScriptCompileException("ASTAdditiveExpression Null not implemented.");
-                        case VOID -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract Void.");
-                        default -> throw new ScriptCompileException("ASTAdditiveExpression type not implemented.");
+                            break;
+
+                        case STRING:
+                            throw new ScriptCompileException("ASTAdditiveExpression cannot subtract 2 Strings.");
+
+                        case NULL:
+                            throw new ScriptCompileException("ASTAdditiveExpression Null not implemented.");
+
+                        case VOID:
+                            throw new ScriptCompileException("ASTAdditiveExpression cannot subtract Void.");
+
+                        default:
+                            throw new ScriptCompileException("ASTAdditiveExpression type not implemented.");
                     }
                 } else {
                     throw new ScriptCompileException("ASTAdditiveExpression subtracting different types not implemented.");
@@ -517,7 +550,7 @@ public class ScriptingLanguageCompiler {
     }
 
     private ScriptingLanguageType compile(ASTMultiplicativeExpression multiplicativeExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
-        var unaryExpression = (ASTUnaryExpression) multiplicativeExpression.jjtGetChild(0);
+        ASTUnaryExpression unaryExpression = (ASTUnaryExpression) multiplicativeExpression.jjtGetChild(0);
         ScriptingLanguageType type = compile(unaryExpression, visitor);
 
         int numChildren = multiplicativeExpression.jjtGetNumChildren();
@@ -532,12 +565,12 @@ public class ScriptingLanguageCompiler {
             if (operator instanceof ASTMult) {
                 if (typeLeft == typeRight) {
                     switch (typeLeft) {
-                        case INT -> visitor.visitInsn(IMUL);
-                        case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Booleans.");
-                        case DOUBLE -> visitor.visitInsn(DMUL);
-                        case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Strings.");
-                        case NULL -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Nulls.");
-                        case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Voids.");
+                        case INT: visitor.visitInsn(IMUL); break;
+                        case BOOLEAN: throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Booleans.");
+                        case DOUBLE: visitor.visitInsn(DMUL); break;
+                        case STRING: throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Strings.");
+                        case NULL: throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Nulls.");
+                        case VOID: throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Voids.");
                     }
                 } else {
                     throw new ScriptCompileException("ASTMultiplicativeExpression multiplying different types not implemented.");
@@ -547,12 +580,12 @@ public class ScriptingLanguageCompiler {
             if (operator instanceof ASTDiv) {
                 if (typeLeft == typeRight) {
                     switch (typeLeft) {
-                        case INT -> visitor.visitInsn(IDIV);
-                        case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Booleans.");
-                        case DOUBLE -> visitor.visitInsn(DDIV);
-                        case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Strings.");
-                        case NULL -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Nulls.");
-                        case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Voids.");
+                        case INT: visitor.visitInsn(IDIV); break;
+                        case BOOLEAN: throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Booleans.");
+                        case DOUBLE: visitor.visitInsn(DDIV); break;
+                        case STRING: throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Strings.");
+                        case NULL: throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Nulls.");
+                        case VOID: throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Voids.");
                     }
                 } else {
                     throw new ScriptCompileException("ASTMultiplicativeExpression dividing different types not implemented.");
@@ -562,12 +595,12 @@ public class ScriptingLanguageCompiler {
             if (operator instanceof ASTMod) {
                 if (typeLeft == typeRight) {
                     switch (typeLeft) {
-                        case INT -> visitor.visitInsn(IREM);
-                        case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Booleans.");
-                        case DOUBLE -> visitor.visitInsn(DREM);
-                        case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Strings.");
-                        case NULL -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Nulls.");
-                        case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Voids.");
+                        case INT: visitor.visitInsn(IREM); break;
+                        case BOOLEAN: throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Booleans.");
+                        case DOUBLE: visitor.visitInsn(DREM); break;
+                        case STRING: throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Strings.");
+                        case NULL: throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Nulls.");
+                        case VOID: throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Voids.");
                     }
                 } else {
                     throw new ScriptCompileException("ASTMultiplicativeExpression dividing different types not implemented.");
@@ -589,22 +622,23 @@ public class ScriptingLanguageCompiler {
             ScriptingLanguageType type = compile((ASTUnaryExpression) unaryExpression.jjtGetChild(1), visitor);
             if (operator instanceof ASTPlus) {
                 switch (type) {
-                    case BOOLEAN -> throw new ScriptCompileException("ASTUnaryExpression cannot use Boolean.");
-                    case INT, DOUBLE -> {}
-                    case STRING -> throw new ScriptCompileException("ASTUnaryExpression cannot use String.");
-                    case NULL -> throw new ScriptCompileException("ASTUnaryExpression cannot use Null.");
-                    case VOID -> throw new ScriptCompileException("ASTUnaryExpression cannot use Void.");
+                    case BOOLEAN: throw new ScriptCompileException("ASTUnaryExpression cannot use Boolean.");
+                    case INT:
+                    case DOUBLE: break;
+                    case STRING: throw new ScriptCompileException("ASTUnaryExpression cannot use String.");
+                    case NULL: throw new ScriptCompileException("ASTUnaryExpression cannot use Null.");
+                    case VOID: throw new ScriptCompileException("ASTUnaryExpression cannot use Void.");
                 }
                 return type;
             }
             if (operator instanceof ASTMinus) {
                 switch (type) {
-                    case BOOLEAN -> throw new ScriptCompileException("ASTUnaryExpression cannot use Boolean.");
-                    case INT -> visitor.visitInsn(INEG);
-                    case DOUBLE -> visitor.visitInsn(DNEG);
-                    case STRING -> throw new ScriptCompileException("ASTUnaryExpression cannot use String.");
-                    case NULL -> throw new ScriptCompileException("ASTUnaryExpression cannot use Null.");
-                    case VOID -> throw new ScriptCompileException("ASTUnaryExpression cannot use Void.");
+                    case BOOLEAN: throw new ScriptCompileException("ASTUnaryExpression cannot use Boolean.");
+                    case INT: visitor.visitInsn(INEG); break;
+                    case DOUBLE: visitor.visitInsn(DNEG); break;
+                    case STRING: throw new ScriptCompileException("ASTUnaryExpression cannot use String.");
+                    case NULL: throw new ScriptCompileException("ASTUnaryExpression cannot use Null.");
+                    case VOID: throw new ScriptCompileException("ASTUnaryExpression cannot use Void.");
                 }
                 return type;
             }
@@ -651,22 +685,26 @@ public class ScriptingLanguageCompiler {
         }
 
         Node node = literal.jjtGetChild(0);
-        if (node instanceof ASTStringLiteral stringLiteral) {
+        if (node instanceof ASTStringLiteral) {
+            ASTStringLiteral stringLiteral = (ASTStringLiteral) node;
             String value = parseString((String) stringLiteral.jjtGetValue());
             visitor.visitLdcInsn(value);
             return ScriptingLanguageType.STRING;
         }
-        if (node instanceof ASTBooleanLiteral booleanLiteral) {
+        if (node instanceof ASTBooleanLiteral) {
+            ASTBooleanLiteral booleanLiteral = (ASTBooleanLiteral) node;
             boolean value = (boolean) booleanLiteral.jjtGetValue();
             visitor.visitIntInsn(BIPUSH, value ? 1 : 0);
             return ScriptingLanguageType.BOOLEAN;
         }
-        if (node instanceof ASTIntegerLiteral integerLiteral) {
+        if (node instanceof ASTIntegerLiteral) {
+            ASTIntegerLiteral integerLiteral = (ASTIntegerLiteral) node;
             int value = Integer.parseInt((String) integerLiteral.jjtGetValue());
             visitor.visitIntInsn(BIPUSH, value);
             return ScriptingLanguageType.INT;
         }
-        if (node instanceof ASTFloatingPointLiteral floatingPointLiteral) {
+        if (node instanceof ASTFloatingPointLiteral) {
+            ASTFloatingPointLiteral floatingPointLiteral = (ASTFloatingPointLiteral) node;
             double value = Double.parseDouble((String) floatingPointLiteral.jjtGetValue());
             visitor.visitLdcInsn(value);
             return ScriptingLanguageType.DOUBLE;

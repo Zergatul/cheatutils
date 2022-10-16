@@ -3,10 +3,11 @@ package com.zergatul.cheatutils;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
+import com.zergatul.cheatutils.wrappers.IKeyBindingRegistry;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -25,16 +26,15 @@ public class ModMain {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onLoadComplete);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterKeyMappings);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterGuiOverlay);
+        //FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterKeyMappings);
+        //FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterGuiOverlay);
 
         register(KeyBindingsController.instance);
         register(ChunkController.instance);
         register(RenderController.instance);
         register(NetworkPacketsController.instance);
         register(TeleportController.instance);
-        register(AutoTotemController.instance);
-        register(KillAuraController.instance);
+        register(SpeedCounterController.instance);
     }
 
     private void register(Object instance) {
@@ -48,52 +48,13 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(ModApiWrapper.forgeEvents);
 
         MinecraftForge.EVENT_BUS.register(FreeCamController.instance);
-        MinecraftForge.EVENT_BUS.register(ShulkerTooltipController.instance);
-        MinecraftForge.EVENT_BUS.register(AutoFishController.instance);
-        MinecraftForge.EVENT_BUS.register(LightLevelController.instance);
         MinecraftForge.EVENT_BUS.register(DebugScreenController.instance);
-        MinecraftForge.EVENT_BUS.register(EntitySpeedController.instance);
-        MinecraftForge.EVENT_BUS.register(SpeedCounterController.instance);
-        MinecraftForge.EVENT_BUS.register(AutoDisconnectController.instance);
-        MinecraftForge.EVENT_BUS.register(ArmorOverlayController.instance);
-        MinecraftForge.EVENT_BUS.register(ElytraHackController.instance);
-        MinecraftForge.EVENT_BUS.register(EntityOwnerController.instance);
-        MinecraftForge.EVENT_BUS.register(ExplorationMiniMapController.instance);
-        MinecraftForge.EVENT_BUS.register(AutoCriticalsController.instance);
-        MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
-        MinecraftForge.EVENT_BUS.register(LockInputsController.instance);
-        MinecraftForge.EVENT_BUS.register(ScaffoldController.instance);
-        MinecraftForge.EVENT_BUS.register(AdvancedTooltipsController.instance);
-        MinecraftForge.EVENT_BUS.register(InstantDisconnectController.instance);
-        MinecraftForge.EVENT_BUS.register(BeaconController.instance);
-        MinecraftForge.EVENT_BUS.register(NewChunksController.instance);
-        MinecraftForge.EVENT_BUS.register(StatusOverlayController.instance);
-
-        //MinecraftForge.EVENT_BUS.register(TestController.instance);
-
-        //MinecraftForge.EVENT_BUS.register(AutoDropController.instance);
-        //MinecraftForge.EVENT_BUS.register(LavaCastBuilderController.instance);
-
-        // commands
-        /*MinecraftForge.EVENT_BUS.register(GetSpeedCommand.instance);
-        MinecraftForge.EVENT_BUS.register(WaitNextTickCommand.instance);
-        MinecraftForge.EVENT_BUS.register(GetPositionCommand.instance);
-        MinecraftForge.EVENT_BUS.register(WaitWorldLoadCommand.instance);
-        MinecraftForge.EVENT_BUS.register(MoveToCommand.instance);*/
     }
 
     private void onClientSetup(final FMLClientSetupEvent event) {
+        ModApiWrapper.triggerOnRegisterKeyBindings(ClientRegistry::registerKeyBinding);
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
-    }
-
-    private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {
-        ModApiWrapper.triggerOnRegisterKeyBindings(event::register);
-    }
-
-    private void onRegisterGuiOverlay(final RegisterGuiOverlaysEvent event) {
-        ArmorOverlayController.instance.onRegister(event);
-        BetterStatusEffectsController.instance.onRegister(event);
     }
 }

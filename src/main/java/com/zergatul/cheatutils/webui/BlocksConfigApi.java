@@ -4,8 +4,10 @@ import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.BlockFinderController;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ResourceLocation;
 import org.apache.http.MethodNotSupportedException;
+
+import java.util.List;
 
 public class BlocksConfigApi extends ApiBase {
 
@@ -17,7 +19,7 @@ public class BlocksConfigApi extends ApiBase {
     @Override
     public String get() {
         Object[] result;
-        var list = ConfigStore.instance.getConfig().blocks.configs;
+        List<BlockTracerConfig> list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             result = list.toArray();
         }
@@ -29,9 +31,8 @@ public class BlocksConfigApi extends ApiBase {
         BlockTracerConfig jsonConfig = gson.fromJson(body, BlockTracerConfig.class);
 
         BlockTracerConfig config;
-        var list = ConfigStore.instance.getConfig().blocks.configs;
+        List<BlockTracerConfig> list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
-
             config = list.stream().filter(c -> c.block == jsonConfig.block).findFirst().orElse(null);
             if (config != null) {
                 throw new MethodNotSupportedException("Block config already exists.");
@@ -55,7 +56,7 @@ public class BlocksConfigApi extends ApiBase {
         }
 
         BlockTracerConfig config;
-        var list = ConfigStore.instance.getConfig().blocks.configs;
+        List<BlockTracerConfig> list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             config = list.stream().filter(c -> c.block == jsonConfig.block).findFirst().orElse(null);
         }
@@ -74,7 +75,7 @@ public class BlocksConfigApi extends ApiBase {
     public String delete(String id) throws MethodNotSupportedException {
         ResourceLocation loc = new ResourceLocation(id);
 
-        var list = ConfigStore.instance.getConfig().blocks.configs;
+        List<BlockTracerConfig> list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             BlockTracerConfig config = list.stream().filter(c -> ModApiWrapper.BLOCKS.getKey(c.block).equals(loc)).findFirst().orElse(null);
             if (config == null) {

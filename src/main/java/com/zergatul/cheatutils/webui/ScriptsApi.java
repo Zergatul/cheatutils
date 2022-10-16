@@ -26,7 +26,7 @@ public class ScriptsApi extends ApiBase {
     @Override
     public String get(String id) throws HttpException {
         Optional<ScriptController.Script> optional = ScriptController.instance.list().stream().filter(s -> s.name.equals(id)).findFirst();
-        if (optional.isEmpty()) {
+        if (!optional.isPresent()) {
             return gson.toJson((Object) null);
         } else {
             return gson.toJson(new Script(optional.get()));

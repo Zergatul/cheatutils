@@ -16,7 +16,6 @@ public class ScriptController {
     public static final ScriptController instance = new ScriptController();
 
     private ScriptingLanguageCompiler keysCompiler = new ScriptingLanguageCompiler(com.zergatul.cheatutils.scripting.api.keys.Root.class);
-    private ScriptingLanguageCompiler overlayCompiler = new ScriptingLanguageCompiler(com.zergatul.cheatutils.scripting.api.overlay.Root.class);
     private List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
     private ScriptController() {
@@ -33,7 +32,7 @@ public class ScriptController {
         if (exists(name)) {
             throw new IllegalArgumentException("Script with the same name already exists.");
         }
-        var script = new Script();
+        Script script = new Script();
         script.name = name;
         script.code = code;
         script.compiled = keysCompiler.compile(code);
@@ -87,11 +86,7 @@ public class ScriptController {
     }
 
     public Runnable get(String name) {
-        var optional = scripts.stream().filter(s -> s.name.equals(name)).findFirst();
-        if (optional.isEmpty()) {
-            return null;
-        }
-        return optional.get().compiled;
+        return scripts.stream().filter(s -> s.name.equals(name)).map(script -> script.compiled).findFirst().orElse(null);
     }
 
     public List<Script> list() {
@@ -106,10 +101,6 @@ public class ScriptController {
         KeyBindingsController.instance.assign(-1, name);
         scripts.removeIf(s -> s.name.equals(name));
         ConfigStore.instance.getConfig().scriptsConfig.scripts.removeIf(s -> s.name.equals(name));
-    }
-
-    public Runnable compileOverlay(String code) throws ParseException, ScriptCompileException {
-        return overlayCompiler.compile(code);
     }
 
     public static class Script {

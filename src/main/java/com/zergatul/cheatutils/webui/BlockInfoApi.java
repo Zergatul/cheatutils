@@ -1,11 +1,11 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import org.apache.http.MethodNotSupportedException;
 
 import java.util.Collection;
@@ -32,9 +32,9 @@ public class BlockInfoApi extends ApiBase {
         public BlockInfo(Block block) {
             id = ModApiWrapper.BLOCKS.getKey(block).toString();
 
-            MutableComponent text = block.getName();
-            if (text.getContents() instanceof TranslatableContents) {
-                name = I18n.get(((TranslatableContents) text.getContents()).getKey());
+            IFormattableTextComponent text = block.getName();
+            if (text instanceof TranslationTextComponent) {
+                name = I18n.get(((TranslationTextComponent) text).getKey());
             } else {
                 name = id;
             }

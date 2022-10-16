@@ -2,16 +2,13 @@ package com.zergatul.cheatutils.configs;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.adapters.*;
-import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
 import com.zergatul.cheatutils.controllers.KeyBindingsController;
-import com.zergatul.cheatutils.controllers.LightLevelController;
-import com.zergatul.cheatutils.controllers.StatusOverlayController;
 import com.zergatul.cheatutils.controllers.ScriptController;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.InputMappings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,7 +28,6 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
-            .registerTypeAdapter(KillAuraConfig.PriorityEntry.class, new KillAuraConfig$PriorityEntryTypeAdapter())
             .setPrettyPrinting()
             .create();
 
@@ -135,17 +131,13 @@ public class ConfigStore {
     }
 
     private void onConfigLoaded() {
-        LightLevelController.instance.onChanged();
         config.blocks.apply();
-
-        config.killAuraConfig.validate();
-        config.movementHackConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";
             try {
                 ScriptController.instance.add(toggleEspName, "main.toggleEsp();");
-                KeyBindingsController.instance.keys[0].setKeyModifierAndCode(net.minecraftforge.client.settings.KeyModifier.NONE, InputConstants.getKey("key.keyboard.backslash"));
+                KeyBindingsController.instance.keys[0].setKeyModifierAndCode(net.minecraftforge.client.settings.KeyModifier.NONE, InputMappings.getKey("key.keyboard.backslash"));
                 KeyBindingsController.instance.assign(0, toggleEspName);
             } catch (ParseException | ScriptCompileException e) {
                 e.printStackTrace();
@@ -154,7 +146,7 @@ public class ConfigStore {
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
                 ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();");
-                KeyBindingsController.instance.keys[1].setKeyModifierAndCode(net.minecraftforge.client.settings.KeyModifier.NONE, InputConstants.getKey("key.keyboard.f6"));
+                KeyBindingsController.instance.keys[1].setKeyModifierAndCode(net.minecraftforge.client.settings.KeyModifier.NONE, InputMappings.getKey("key.keyboard.f6"));
                 KeyBindingsController.instance.assign(1, toggleFreeCamName);
             } catch (ParseException | ScriptCompileException e) {
                 e.printStackTrace();
@@ -175,15 +167,6 @@ public class ConfigStore {
                 if (bindings[i] != null) {
                     KeyBindingsController.instance.assign(i, bindings[i]);
                 }
-            }
-        }
-
-        if (config.statusOverlayConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
-                StatusOverlayController.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
             }
         }
     }

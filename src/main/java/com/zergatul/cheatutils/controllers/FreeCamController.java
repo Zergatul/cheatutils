@@ -1,25 +1,26 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.helpers.MixinGameRendererHelper;
-import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
-import net.minecraft.client.CameraType;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.Input;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.settings.PointOfView;
+import net.minecraft.entity.Entity;
+import net.minecraft.state.Property;
+import net.minecraft.util.MovementInput;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -37,8 +38,8 @@ public class FreeCamController {
     private final Vector3f up = new Vector3f(0.0F, 1.0F, 0.0F);
     private final Vector3f left = new Vector3f(1.0F, 0.0F, 0.0F);
     private boolean active;
-    private CameraType oldCameraType;
-    private Input oldInput;
+    private PointOfView oldCameraType;
+    private MovementInput oldInput;
     private double x, y, z;
     private float yRot, xRot;
     private double forwardVelocity;
@@ -88,17 +89,17 @@ public class FreeCamController {
             active = true;
             oldCameraType = mc.options.getCameraType();
             oldInput = mc.player.input;
-            mc.player.input = new Input();
-            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            mc.player.input = new MovementInput();
+            mc.options.setCameraType(PointOfView.THIRD_PERSON_BACK);
             if (oldCameraType.isFirstPerson() != mc.options.getCameraType().isFirstPerson()) {
                 mc.gameRenderer.checkEntityPostEffect(mc.options.getCameraType().isFirstPerson() ? mc.getCameraEntity() : null);
             }
 
             float frameTime = mc.getFrameTime();
             Entity entity = mc.getCameraEntity();
-            x = Mth.lerp(frameTime, entity.xo, entity.getX());
-            y = Mth.lerp(frameTime, entity.yo, entity.getY()) + entity.getEyeHeight();
-            z = Mth.lerp(frameTime, entity.zo, entity.getZ());
+            x = MathHelper.lerp(frameTime, entity.xo, entity.getX());
+            y = MathHelper.lerp(frameTime, entity.yo, entity.getY()) + entity.getEyeHeight();
+            z = MathHelper.lerp(frameTime, entity.zo, entity.getZ());
             yRot = entity.getViewYRot(frameTime);
             xRot = entity.getViewXRot(frameTime);
 
@@ -119,7 +120,7 @@ public class FreeCamController {
     public void disable() {
         if (active) {
             active = false;
-            CameraType cameraType = mc.options.getCameraType();
+            PointOfView cameraType = mc.options.getCameraType();
             mc.options.setCameraType(oldCameraType);
             mc.player.input = oldInput;
             if (cameraType.isFirstPerson() != mc.options.getCameraType().isFirstPerson()) {
@@ -132,7 +133,7 @@ public class FreeCamController {
     public void onMouseTurn(double yRot, double xRot) {
         this.xRot += (float)xRot * 0.15F;
         this.yRot += (float)yRot * 0.15F;
-        this.xRot = Mth.clamp(this.xRot, -90, 90);
+        this.xRot = MathHelper.clamp(this.xRot, -90, 90);
         calculateVectors();
     }
 
@@ -151,7 +152,7 @@ public class FreeCamController {
 
                 FreeCamConfig config = ConfigStore.instance.getConfig().freeCamConfig;
 
-                Input input = oldInput;
+                MovementInput input = oldInput;
                 float forwardImpulse = (input.up ? 1 : 0) + (input.down ? -1 : 0);
                 float leftImpulse = (input.left ? 1 : 0) + (input.right ? -1 : 0);
                 float upImpulse = ((input.jumping ? 1 : 0) + (input.shiftKeyDown ? -1 : 0));
@@ -166,7 +167,7 @@ public class FreeCamController {
                 dx *= frameTime;
                 dy *= frameTime;
                 dz *= frameTime;
-                double speed = new Vec3(dx, dy, dz).length() / frameTime;
+                double speed = new Vector3d(dx, dy, dz).length() / frameTime;
                 if (speed > config.maxSpeed) {
                     double factor = config.maxSpeed / speed;
                     forwardVelocity *= factor;
@@ -190,13 +191,13 @@ public class FreeCamController {
                 while (mc.options.keyTogglePerspective.consumeClick()) {
                     // consume clicks
                 }
-                oldInput.tick(false, 0);
+                oldInput.tick(false);
             }
         }
     }
 
     @SubscribeEvent
-    public void onWorldUnload(LevelEvent.Unload event) {
+    public void onWorldUnload(WorldEvent.Unload event) {
         disable();
     }
 
@@ -215,19 +216,21 @@ public class FreeCamController {
         if (active) {
             insideRenderDebug = true;
             try {
-                HitResult hit = mc.player.pick(20.0D, 0.0F, false);
-                if (hit.getType() == HitResult.Type.BLOCK) {
-                    BlockPos pos = ((BlockHitResult)hit).getBlockPos();
+                RayTraceResult hit = mc.player.pick(20.0D, 0.0F, false);
+                if (hit.getType() == RayTraceResult.Type.BLOCK) {
+                    BlockPos pos = ((BlockRayTraceResult) hit).getBlockPos();
                     BlockState state = mc.level.getBlockState(pos);
                     list.add("");
-                    list.add(ChatFormatting.UNDERLINE + "Free Cam Targeted Block: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+                    list.add(TextFormatting.UNDERLINE + "Free Cam Targeted Block: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
                     list.add(String.valueOf(ForgeRegistries.BLOCKS.getKey(state.getBlock())));
 
-                    for (var entry: state.getValues().entrySet()) {
+                    for (Map.Entry<Property<?>, Comparable<?>> entry: state.getValues().entrySet()) {
                         list.add(getPropertyValueString(entry));
                     }
 
-                    state.getTags().map(tag -> "#" + tag.location()).forEach(list::add);
+                    for(ResourceLocation resourcelocation : state.getBlock().getTags()) {
+                        list.add("#" + resourcelocation);
+                    }
                 }
             }
             finally {
@@ -268,9 +271,9 @@ public class FreeCamController {
         Comparable<?> comparable = p_94072_.getValue();
         String s = Util.getPropertyName(property, comparable);
         if (Boolean.TRUE.equals(comparable)) {
-            s = ChatFormatting.GREEN + s;
+            s = TextFormatting.GREEN + s;
         } else if (Boolean.FALSE.equals(comparable)) {
-            s = ChatFormatting.RED + s;
+            s = TextFormatting.RED + s;
         }
 
         return property.getName() + ": " + s;

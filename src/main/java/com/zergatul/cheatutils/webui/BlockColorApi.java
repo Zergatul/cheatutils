@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.util.ResourceLocation;
 import org.apache.http.MethodNotSupportedException;
 
 public class BlockColorApi extends ApiBase {

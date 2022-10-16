@@ -28,9 +28,6 @@ public class ScriptsDocsApi extends ApiBase {
             case "keys":
                 clazz = com.zergatul.cheatutils.scripting.api.keys.Root.class;
                 break;
-            case "overlay":
-                clazz = com.zergatul.cheatutils.scripting.api.overlay.Root.class;
-                break;
             default:
                 return null;
         }
@@ -43,7 +40,7 @@ public class ScriptsDocsApi extends ApiBase {
                 String paramsStr = Arrays.stream(parameters).map(p -> formatClass(p.getType()) + space + p.getName()).reduce((s1, s2) -> s1 + "," + space + s2).orElse("");
                 String returnStr = "";
                 if (m.getReturnType() != void.class) {
-                    returnStr = space + "→" + space + formatClass(m.getReturnType());
+                    returnStr = space + "->" + space + formatClass(m.getReturnType());
                 }
                 String comment = "";
                 if (m.isAnnotationPresent(HelpText.class)) {

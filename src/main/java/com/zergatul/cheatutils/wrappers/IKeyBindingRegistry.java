@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.wrappers;
 
-import net.minecraft.client.KeyMapping;
+import net.minecraft.client.settings.KeyBinding;
 
 public interface IKeyBindingRegistry {
-    void register(KeyMapping key);
+    void register(KeyBinding key);
 }

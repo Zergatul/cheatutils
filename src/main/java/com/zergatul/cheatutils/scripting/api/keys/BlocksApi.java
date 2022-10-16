@@ -3,13 +3,15 @@ package com.zergatul.cheatutils.scripting.api.keys;
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
+
+import java.util.List;
 
 public class BlocksApi {
 
     public boolean isEnabled(String blockId) {
-        var config = getConfig(blockId);
+        BlockTracerConfig config = getConfig(blockId);
         if (config == null) {
             return false;
         }
@@ -17,7 +19,7 @@ public class BlocksApi {
     }
 
     public void toggle(String blockId) {
-        var config = getConfig(blockId);
+        BlockTracerConfig config = getConfig(blockId);
         if (config == null) {
             return;
         }
@@ -34,7 +36,7 @@ public class BlocksApi {
         }
 
         BlockTracerConfig config;
-        var list = ConfigStore.instance.getConfig().blocks.configs;
+        List<BlockTracerConfig> list = ConfigStore.instance.getConfig().blocks.configs;
         synchronized (list) {
             return list.stream().filter(c -> c.block == block).findFirst().orElse(null);
         }

@@ -1,27 +1,28 @@
 package com.zergatul.cheatutils.utils;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.DimensionType;
+import net.minecraft.world.World;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public final class Dimension {
 
-    private static Map<ResourceLocation, Dimension> dimensions = new HashMap<>();
+    private static final Map<ResourceLocation, Dimension> dimensions = new HashMap<>();
 
-    private final ResourceKey<Level> key;
+    private final RegistryKey<World> key;
     private final DimensionType type;
 
-    private Dimension(ResourceKey<Level> key, DimensionType type) {
+    private Dimension(RegistryKey<World> key, DimensionType type) {
         this.key = key;
         this.type = type;
     }
 
-    public static Dimension get(ClientLevel level) {
+    public static Dimension get(ClientWorld level) {
         Dimension existing = dimensions.get(level.dimension().location());
         if (existing != null) {
             return existing;
@@ -45,7 +46,8 @@ public final class Dimension {
         if (obj == null) {
             return false;
         }
-        if (obj instanceof Dimension dimension) {
+        if (obj instanceof Dimension) {
+            Dimension dimension = (Dimension) obj;
             return this.key == dimension.key;
         } else {
             return false;
@@ -57,7 +59,7 @@ public final class Dimension {
     }
 
     public int getMinY() {
-        return type.minY();
+        return 0;
     }
 
     public boolean hasCeiling() {
@@ -69,6 +71,6 @@ public final class Dimension {
     }
 
     public boolean isNether() {
-        return key == Level.NETHER;
+        return key == World.NETHER;
     }
 }

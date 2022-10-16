@@ -1,16 +1,15 @@
 package com.zergatul.cheatutils.wrappers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import net.minecraft.network.Connection;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.Item;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -24,13 +23,13 @@ public class ModApiWrapper {
 
     public static final WrapperRegistry<Block> BLOCKS = new WrapperRegistry<>(ForgeRegistries.BLOCKS);
     public static final WrapperRegistry<Item> ITEMS = new WrapperRegistry<>(ForgeRegistries.ITEMS);
-    public static final WrapperRegistry<EntityType<?>> ENTITY_TYPES = new WrapperRegistry<>(ForgeRegistries.ENTITY_TYPES);
+    public static final WrapperRegistry<EntityType<?>> ENTITY_TYPES = new WrapperRegistry<>(ForgeRegistries.ENTITIES);
 
-    private static final List<Consumer<Connection>> onClientPlayerLoggingIn = new ArrayList<>();
-    public static void addOnClientPlayerLoggingIn(Consumer<Connection> consumer) {
+    private static final List<Consumer<NetworkManager>> onClientPlayerLoggingIn = new ArrayList<>();
+    public static void addOnClientPlayerLoggingIn(Consumer<NetworkManager> consumer) {
         onClientPlayerLoggingIn.add(consumer);
     }
-    private static void triggerOnClientPlayerLoggingIn(Connection connection) {
+    private static void triggerOnClientPlayerLoggingIn(NetworkManager connection) {
         onClientPlayerLoggingIn.forEach(c -> c.accept(connection));
     }
 
@@ -90,9 +89,19 @@ public class ModApiWrapper {
         onRenderWorldLast.forEach(c -> c.accept(event));
     }
 
-    public record RenderWorldLastEvent(PoseStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
+    public static class RenderWorldLastEvent {
 
-        public PoseStack getMatrixStack() {
+        public RenderWorldLastEvent(MatrixStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
+            this.matrixStack = matrixStack;
+            this.tickDelta = tickDelta;
+            this.projectionMatrix = projectionMatrix;
+        }
+
+        private MatrixStack matrixStack;
+        private float tickDelta;
+        private Matrix4f projectionMatrix;
+
+        public MatrixStack getMatrixStack() {
             return matrixStack;
         }
 
@@ -108,13 +117,13 @@ public class ModApiWrapper {
     public static class ForgeApi {
 
         @SubscribeEvent
-        public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
-            triggerOnClientPlayerLoggingIn(event.getConnection());
+        public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggedInEvent event) {
+            triggerOnClientPlayerLoggingIn(event.getNetworkManager());
         }
 
         @SubscribeEvent
         public void onChunkLoaded(ChunkEvent.Load event) {
-            if (!event.getLevel().isClientSide()) {
+            if (!event.getWorld().isClientSide()) {
                 return;
             }
             triggerOnChunkLoaded();
@@ -122,7 +131,7 @@ public class ModApiWrapper {
 
         @SubscribeEvent
         public void onChunkUnloaded(ChunkEvent.Unload event) {
-            if (!event.getLevel().isClientSide()) {
+            if (!event.getWorld().isClientSide()) {
                 return;
             }
             triggerOnChunkUnloaded();
@@ -139,13 +148,13 @@ public class ModApiWrapper {
         }
 
         @SubscribeEvent
-        public void onKeyInput(InputEvent.Key event) {
+        public void onKeyInput(InputEvent.KeyInputEvent event) {
             triggerOnKeyInput();
         }
 
         @SubscribeEvent
-        public void onRender(RenderLevelLastEvent event) {
-            triggerOnRenderWorldLast(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
+        public void onRender(net.minecraftforge.client.event.RenderWorldLastEvent event) {
+            triggerOnRenderWorldLast(new RenderWorldLastEvent(event.getMatrixStack(), event.getPartialTicks(), event.getProjectionMatrix()));
         }
     }
 }
