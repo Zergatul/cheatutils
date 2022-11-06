@@ -211,27 +211,35 @@ public class FreeCamController {
         }
     }
 
-    public void onDebugScreenGetSystemInformation(List<String> list) {
+    public HitResult getHitResult() {
         if (active) {
             insideRenderDebug = true;
             try {
-                HitResult hit = mc.player.pick(20.0D, 0.0F, false);
-                if (hit.getType() == HitResult.Type.BLOCK) {
-                    BlockPos pos = ((BlockHitResult)hit).getBlockPos();
-                    BlockState state = mc.level.getBlockState(pos);
-                    list.add("");
-                    list.add(ChatFormatting.UNDERLINE + "Free Cam Targeted Block: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
-                    list.add(String.valueOf(ForgeRegistries.BLOCKS.getKey(state.getBlock())));
-
-                    for (var entry: state.getValues().entrySet()) {
-                        list.add(getPropertyValueString(entry));
-                    }
-
-                    state.getTags().map(tag -> "#" + tag.location()).forEach(list::add);
-                }
+                return mc.player.pick(20.0D, 0.0F, false);
             }
             finally {
                 insideRenderDebug = false;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public void onDebugScreenGetSystemInformation(List<String> list) {
+        if (active) {
+            HitResult hit = getHitResult();
+            if (hit.getType() == HitResult.Type.BLOCK) {
+                BlockPos pos = ((BlockHitResult)hit).getBlockPos();
+                BlockState state = mc.level.getBlockState(pos);
+                list.add("");
+                list.add(ChatFormatting.UNDERLINE + "Free Cam Targeted Block: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+                list.add(String.valueOf(ForgeRegistries.BLOCKS.getKey(state.getBlock())));
+
+                for (var entry: state.getValues().entrySet()) {
+                    list.add(getPropertyValueString(entry));
+                }
+
+                state.getTags().map(tag -> "#" + tag.location()).forEach(list::add);
             }
         }
     }

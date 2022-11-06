@@ -14,15 +14,24 @@ public class TeleportController {
 
     private TeleportController() {
         ModApiWrapper.addOnClientTickEnd(this::onClientTickEnd);
+        ModApiWrapper.addOnClientPlayerLoggingOut(this::onPlayerLoggingOut);
     }
 
     private void onClientTickEnd() {
         if (mc.player != null && mc.level != null) {
-            if (mc.level.dimension() != dimension) {
-                ChunkController.instance.clear();
-                BlockFinderController.instance.clear();
+            if (dimension == null) {
                 dimension = mc.level.dimension();
+            } else {
+                if (mc.level.dimension() != dimension) {
+                    ChunkController.instance.clear();
+                    BlockFinderController.instance.clear();
+                    dimension = mc.level.dimension();
+                }
             }
         }
+    }
+
+    private void onPlayerLoggingOut() {
+        dimension = null;
     }
 }

@@ -1,10 +1,21 @@
 package com.zergatul.cheatutils.mixins;
 
+import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FlyHackConfig;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
+import net.minecraft.client.ClientRecipeBook;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Direction;
+import net.minecraft.stats.StatsCounter;
+import net.minecraft.world.entity.player.ProfilePublicKey;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,11 +24,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LocalPlayer.class)
-public abstract class MixinLocalPlayer {
+public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     private boolean flyHackOverride = false;
     private boolean oldFlying;
     private float oldFlyingSpeed;
+
+    public MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_, @Nullable ProfilePublicKey p_234114_) {
+        super(p_234112_, p_234113_, p_234114_);
+    }
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V")
     private void onBeforeSendPosition(CallbackInfo info) {
@@ -81,5 +96,23 @@ public abstract class MixinLocalPlayer {
             return false;
         }
         return isMovingSlowly;
+    }
+
+    @Override
+    public void lerpMotion(double dx, double dy, double dz) {
+        var config = ConfigStore.instance.getConfig().movementHackConfig;
+        if (config.antiKnockback) {
+            return;
+        }
+        super.lerpMotion(dx, dy, dz);
+    }
+
+    @Override
+    public void push(double dx, double dy, double dz) {
+        var config = ConfigStore.instance.getConfig().movementHackConfig;
+        if (config.antiPush) {
+            return;
+        }
+        super.push(dx, dy, dz);
     }
 }

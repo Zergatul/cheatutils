@@ -3,12 +3,22 @@ package com.zergatul.cheatutils.scripting.api.overlay;
 import com.zergatul.cheatutils.controllers.StatusOverlayController;
 import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.utils.ColorUtils;
+import com.zergatul.cheatutils.utils.ReflectionUtils;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MainApi {
 
@@ -70,6 +80,75 @@ public class MainApi {
             case "top" -> StatusOverlayController.instance.setVerticalAlign(StatusOverlayController.VerticalAlign.TOP);
             case "middle" -> StatusOverlayController.instance.setVerticalAlign(StatusOverlayController.VerticalAlign.MIDDLE);
             default -> StatusOverlayController.instance.setVerticalAlign(StatusOverlayController.VerticalAlign.BOTTOM);
+        }
+    }
+
+    /*public String getPlayerEntitySeed() {
+        var players =  Minecraft.getInstance().getSingleplayerServer().overworld().players();
+        if (players.size() > 0) {
+            var rnd = (LegacyRandomSource) players.get(0).getRandom();
+            var seed = (AtomicLong) ReflectionUtils.getDeclaredField(rnd, "seed");
+            return Long.toHexString(seed.get());
+        } else {
+            return "";
+        }
+    }
+
+    public String getEnchantmentSeed() {
+        var players =  Minecraft.getInstance().getSingleplayerServer().overworld().players();
+        if (players.size() > 0) {
+            var seed = players.get(0).getEnchantmentSeed();
+            return Integer.toHexString(seed);
+        } else {
+            return "";
+        }
+    }
+
+    public int getEnchantmentSeedInt() {
+        var players =  Minecraft.getInstance().getSingleplayerServer().overworld().players();
+        if (players.size() > 0) {
+            return players.get(0).getEnchantmentSeed();
+        } else {
+            return Integer.MIN_VALUE;
+        }
+    }*/
+
+    public String getTargetBlockCoordinates() {
+        if (mc.level == null) {
+            return "";
+        }
+
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return "";
+        }
+
+        HitResult result = entity.pick(20.0D, 0.0F, false);
+        if (result.getType() == HitResult.Type.BLOCK) {
+            BlockPos blockPos = ((BlockHitResult) result).getBlockPos();
+            return blockPos.getX() + ", " + blockPos.getY() + ", " + blockPos.getZ();
+        } else {
+            return "";
+        }
+    }
+
+    public String getTargetBlockName() {
+        if (mc.level == null) {
+            return "";
+        }
+
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return "";
+        }
+
+        HitResult result = entity.pick(20.0D, 0.0F, false);
+        if (result.getType() == HitResult.Type.BLOCK) {
+            BlockPos blockPos = ((BlockHitResult) result).getBlockPos();
+            BlockState blockState = mc.level.getBlockState(blockPos);
+            return ModApiWrapper.BLOCKS.getKey(blockState.getBlock()).toString();
+        } else {
+            return "";
         }
     }
 }

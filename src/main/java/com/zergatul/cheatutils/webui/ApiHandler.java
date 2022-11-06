@@ -2,8 +2,10 @@ package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
+import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
-import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
+import com.zergatul.cheatutils.controllers.ChunkOverlayController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.util.Mth;
@@ -214,9 +216,12 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(ExplorationMiniMapConfig config) {
-                config.dynamicUpdateDelay = Mth.clamp(config.dynamicUpdateDelay, 0, 5000);
+                ExplorationMiniMapConfig oldConfig = ConfigStore.instance.getConfig().explorationMiniMapConfig;
                 ConfigStore.instance.getConfig().explorationMiniMapConfig = config;
-                ExplorationMiniMapController.instance.onChanged();
+
+                if (oldConfig.enabled != config.enabled) {
+                    ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).onEnabledChanged();
+                }
             }
         });
 
@@ -405,7 +410,12 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(NewChunksConfig config) {
+                NewChunksConfig oldConfig = ConfigStore.instance.getConfig().newChunksConfig;
                 ConfigStore.instance.getConfig().newChunksConfig = config;
+
+                if (oldConfig.enabled != config.enabled) {
+                    ChunkOverlayController.instance.ofType(NewChunksOverlay.class).onEnabledChanged();
+                }
             }
         });
 
@@ -454,6 +464,42 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(StatusEffectsConfig config) {
                 ConfigStore.instance.getConfig().statusEffectsConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("auto-eat", AutoEatConfig.class) {
+            @Override
+            protected AutoEatConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoEatConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoEatConfig config) {
+                ConfigStore.instance.getConfig().autoEatConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("no-fall", NoFallConfig.class) {
+            @Override
+            protected NoFallConfig getConfig() {
+                return ConfigStore.instance.getConfig().noFallConfig;
+            }
+
+            @Override
+            protected void setConfig(NoFallConfig config) {
+                ConfigStore.instance.getConfig().noFallConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("particles", ParticlesConfig.class) {
+            @Override
+            protected ParticlesConfig getConfig() {
+                return ConfigStore.instance.getConfig().particlesConfig;
+            }
+
+            @Override
+            protected void setConfig(ParticlesConfig config) {
+                ConfigStore.instance.getConfig().particlesConfig = config;
             }
         });
     }

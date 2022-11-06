@@ -35,6 +35,9 @@ public class ModMain {
         register(TeleportController.instance);
         register(AutoTotemController.instance);
         register(KillAuraController.instance);
+        register(AutoEatController.instance);
+        //register(AutoPlacerController.instance);
+        register(NoFallController.instance);
     }
 
     private void register(Object instance) {
@@ -58,7 +61,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(ArmorOverlayController.instance);
         MinecraftForge.EVENT_BUS.register(ElytraHackController.instance);
         MinecraftForge.EVENT_BUS.register(EntityOwnerController.instance);
-        MinecraftForge.EVENT_BUS.register(ExplorationMiniMapController.instance);
         MinecraftForge.EVENT_BUS.register(AutoCriticalsController.instance);
         MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
         MinecraftForge.EVENT_BUS.register(LockInputsController.instance);
@@ -66,8 +68,8 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(AdvancedTooltipsController.instance);
         MinecraftForge.EVENT_BUS.register(InstantDisconnectController.instance);
         MinecraftForge.EVENT_BUS.register(BeaconController.instance);
-        MinecraftForge.EVENT_BUS.register(NewChunksController.instance);
         MinecraftForge.EVENT_BUS.register(StatusOverlayController.instance);
+        MinecraftForge.EVENT_BUS.register(ChunkOverlayController.instance);
 
         //MinecraftForge.EVENT_BUS.register(TestController.instance);
 

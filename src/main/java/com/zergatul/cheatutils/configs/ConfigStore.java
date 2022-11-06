@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.configs;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
 import com.zergatul.cheatutils.controllers.KeyBindingsController;
@@ -31,6 +32,7 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
+            .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
             .registerTypeAdapter(KillAuraConfig.PriorityEntry.class, new KillAuraConfig$PriorityEntryTypeAdapter())
             .setPrettyPrinting()
             .create();

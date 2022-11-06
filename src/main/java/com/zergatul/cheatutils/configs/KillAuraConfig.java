@@ -59,6 +59,7 @@ public class KillAuraConfig {
         public static final PriorityEntry players = new PriorityEntry("Players", null, RemotePlayer.class);
         public static final PriorityEntry fireballs = new PriorityEntry("Fireball", "For example Ghast projectiles", Fireball.class);
         public static final PriorityEntry magmaCubes = new PriorityEntry("Magma Cubes", null, MagmaCube.class);
+        public static final PriorityEntry slimes = new PriorityEntry("Slimes", null, Slime.class, (entity, player) -> entity.getClass() == Slime.class);
 
         public final String name;
         public final String description;

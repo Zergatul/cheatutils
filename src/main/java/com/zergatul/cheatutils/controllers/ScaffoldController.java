@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -113,13 +114,7 @@ public class ScaffoldController {
     }
 
     private void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, ScaffoldConfig config) {
-        Vec3 location = new Vec3(
-                destination.getX() + 0.5f + direction.getOpposite().getStepX() * 0.5,
-                destination.getY() + 0.5f + direction.getOpposite().getStepY() * 0.5,
-                destination.getZ() + 0.5f + direction.getOpposite().getStepZ() * 0.5);
-        BlockHitResult hit = new BlockHitResult(location, direction, neighbour, false);
-
-        Optional<InteractionHand> optional = selectItem();
+        Optional<InteractionHand> optional = selectItem(config);
         if (optional.isEmpty()) {
             return;
         }
@@ -127,6 +122,14 @@ public class ScaffoldController {
         InteractionHand hand = optional.get();
         ItemStack itemStack = mc.player.getItemInHand(hand);
         Item item = itemStack.getItem();
+        //Block block = ((BlockItem) item).getBlock();
+        //boolean isSlab = block instanceof SlabBlock;
+
+        Vec3 location = new Vec3(
+                destination.getX() + 0.5f + direction.getOpposite().getStepX() * 0.5,
+                destination.getY() + 0.5f /*+ (block instanceof SlabBlock ? 0.25f : 0)*/ + direction.getOpposite().getStepY() * 0.5,
+                destination.getZ() + 0.5f + direction.getOpposite().getStepZ() * 0.5);
+        BlockHitResult hit = new BlockHitResult(location, direction, neighbour, false);
 
         InteractionResult result = mc.gameMode.useItemOn(mc.player, hand, hit);
         if (result.consumesAction()) {
@@ -146,14 +149,14 @@ public class ScaffoldController {
         }
     }
 
-    private Optional<InteractionHand> selectItem() {
+    private Optional<InteractionHand> selectItem(ScaffoldConfig config) {
         Item mainHandItem = mc.player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-        if (mainHandItem instanceof BlockItem blockItem && isValidBlock(blockItem.getBlock())) {
+        if (mainHandItem instanceof BlockItem blockItem && isValidBlock(blockItem.getBlock(), config)) {
             return Optional.of(InteractionHand.MAIN_HAND);
         }
 
         Item offHandItem = mc.player.getItemInHand(InteractionHand.OFF_HAND).getItem();
-        if (offHandItem instanceof BlockItem blockItem && isValidBlock(blockItem.getBlock())) {
+        if (offHandItem instanceof BlockItem blockItem && isValidBlock(blockItem.getBlock(), config)) {
             return Optional.of(InteractionHand.OFF_HAND);
         }
 
@@ -161,7 +164,7 @@ public class ScaffoldController {
         for (int i = 0; i < 9; i++) {
             ItemStack stack = mc.player.getInventory().getItem(i);
             if (stack.getItem() instanceof BlockItem blockItem) {
-                if (isValidBlock(blockItem.getBlock())) {
+                if (isValidBlock(blockItem.getBlock(), config)) {
                     mc.player.getInventory().selected = i;
                     return Optional.of(InteractionHand.MAIN_HAND);
                 }
@@ -171,7 +174,10 @@ public class ScaffoldController {
         return Optional.empty();
     }
 
-    private boolean isValidBlock(Block block) {
+    private boolean isValidBlock(Block block, ScaffoldConfig config) {
+        /*if (block instanceof SlabBlock) {
+            return config.useSlabs;
+        }*/
         if (!block.defaultBlockState().isCollisionShapeFullBlock(mc.level, new BlockPos(0, 0, 0))) {
             return false;
         }

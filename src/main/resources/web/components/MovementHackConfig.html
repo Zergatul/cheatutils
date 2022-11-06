@@ -55,5 +55,21 @@
                 <span>No slow on crouch</span>
             </label>
         </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.antiKnockback"
+                    @change="update()">
+                <span>Anti-Knockback</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                       v-model="config.antiPush"
+                       @change="update()">
+                <span>Anti-Push</span>
+            </label>
+        </div>
     </fieldset>
 </div>

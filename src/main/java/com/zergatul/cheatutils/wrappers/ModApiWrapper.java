@@ -8,7 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,8 +30,16 @@ public class ModApiWrapper {
     public static void addOnClientPlayerLoggingIn(Consumer<Connection> consumer) {
         onClientPlayerLoggingIn.add(consumer);
     }
-    private static void triggerOnClientPlayerLoggingIn(Connection connection) {
+    private static void triggerOnClientPlayerLoggingOut(Connection connection) {
         onClientPlayerLoggingIn.forEach(c -> c.accept(connection));
+    }
+
+    private static final List<Runnable> onClientPlayerLoggingOut = new ArrayList<>();
+    public static void addOnClientPlayerLoggingOut(Runnable runnable) {
+        onClientPlayerLoggingOut.add(runnable);
+    }
+    private static void triggerOnClientPlayerLoggingOut() {
+        onClientPlayerLoggingOut.forEach(Runnable::run);
     }
 
     private static final List<Runnable> onChunkLoaded = new ArrayList<>();
@@ -109,7 +117,12 @@ public class ModApiWrapper {
 
         @SubscribeEvent
         public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
-            triggerOnClientPlayerLoggingIn(event.getConnection());
+            triggerOnClientPlayerLoggingOut(event.getConnection());
+        }
+
+        @SubscribeEvent
+        public void onClientPlayerLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
+            triggerOnClientPlayerLoggingOut();
         }
 
         @SubscribeEvent
@@ -144,8 +157,10 @@ public class ModApiWrapper {
         }
 
         @SubscribeEvent
-        public void onRender(RenderLevelLastEvent event) {
-            triggerOnRenderWorldLast(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
+        public void onRender(RenderLevelStageEvent event) {
+            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER) {
+                triggerOnRenderWorldLast(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
+            }
         }
     }
 }

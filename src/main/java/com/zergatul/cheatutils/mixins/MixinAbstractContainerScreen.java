@@ -6,11 +6,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Final;
@@ -35,7 +37,9 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     @Shadow
     protected int imageWidth;
 
-    @Shadow @Final protected T menu;
+    @Shadow
+    @Final
+    protected T menu;
 
     protected MixinAbstractContainerScreen(Component component) {
         super(component);
@@ -43,6 +47,11 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
 
     @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;init()V")
     private void onInit(CallbackInfo info) {
+        Object self = this;
+        if (self instanceof EnchantmentScreen) {
+            return;
+        }
+
         ContainerButtonsConfig config = ConfigStore.instance.getConfig().containerButtonsConfig;
         int cursor = this.leftPos + this.imageWidth;
         int space = 4;

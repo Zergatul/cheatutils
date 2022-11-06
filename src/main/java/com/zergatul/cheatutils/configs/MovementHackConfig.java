@@ -8,6 +8,8 @@ public class MovementHackConfig {
     public boolean scaleInputVector;
     public double inputVectorFactor;
     public boolean disableCrouchingSlowdown;
+    public boolean antiKnockback;
+    public boolean antiPush;
 
     public MovementHackConfig() {
         inputVectorFactor = 1;

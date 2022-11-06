@@ -1,21 +1,16 @@
 package com.zergatul.cheatutils.configs;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.zergatul.cheatutils.collections.ImmutableList;
 
 public class EntitiesConfig {
 
-    public List<EntityTracerConfig> configs = new ArrayList<>();
+    public ImmutableList<EntityTracerConfig> configs = new ImmutableList<>();
 
     public void add(EntityTracerConfig config) {
-        synchronized (configs) {
-            configs.add(config);
-        }
+        configs = configs.add(config);
     }
 
     public void remove(EntityTracerConfig config) {
-        synchronized (configs) {
-            configs.remove(config);
-        }
+        configs = configs.remove(config);
     }
 }

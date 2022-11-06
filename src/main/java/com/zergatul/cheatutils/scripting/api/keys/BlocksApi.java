@@ -33,10 +33,9 @@ public class BlocksApi {
             return null;
         }
 
-        BlockTracerConfig config;
-        var list = ConfigStore.instance.getConfig().blocks.configs;
-        synchronized (list) {
-            return list.stream().filter(c -> c.block == block).findFirst().orElse(null);
-        }
+        return ConfigStore.instance.getConfig().blocks.configs.stream()
+                .filter(c -> c.block == block)
+                .findFirst()
+                .orElse(null);
     }
 }

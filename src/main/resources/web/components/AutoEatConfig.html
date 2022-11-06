@@ -1,0 +1,19 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Auto Eat</legend>
+        <div class="description">
+            Automatically consumes item held in offhand. Can be useful for afk farms.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+    </fieldset>
+</div>

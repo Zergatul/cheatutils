@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.scripting.compiler;
 
 import com.zergatul.cheatutils.scripting.generated.*;
 import org.objectweb.asm.*;
-import org.openjdk.nashorn.internal.ir.BlockStatement;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

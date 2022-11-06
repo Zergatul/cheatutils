@@ -2,30 +2,27 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
-import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Queue;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BlockFinderController {
 
     public static final BlockFinderController instance = new BlockFinderController();
 
-    public final HashMap<ResourceLocation, HashSet<BlockPos>> blocks = new HashMap<>();
+    // all modification to blocks are done in eventLoop thread
+    public final Map<Block, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
 
     private Minecraft mc = Minecraft.getInstance();
     private final Object loopWaitEvent = new Object();
@@ -41,9 +38,7 @@ public class BlockFinderController {
     }
 
     public void start() {
-
         stop();
-
         eventLoop = new Thread(() -> {
             try {
                 while (true) {
@@ -83,11 +78,26 @@ public class BlockFinderController {
     }
 
     public void clear() {
-        synchronized (blocks) {
-            for (HashSet<BlockPos> set : blocks.values()) {
-                set.clear();
+        addToQueue(() -> {
+            for (Block block: blocks.keySet()) {
+                blocks.put(block, ConcurrentHashMap.newKeySet());
             }
-        }
+        });
+    }
+
+    public void addConfig(BlockTracerConfig config) {
+        addToQueue(() -> {
+            blocks.put(config.block, ConcurrentHashMap.newKeySet());
+            scan(config.block);
+        });
+    }
+
+    public void removeConfig(BlockTracerConfig config) {
+        addToQueue(() -> blocks.remove(config.block));
+    }
+
+    public void removeAllConfigs() {
+        addToQueue(blocks::clear);
     }
 
     public double getScanningThreadLoadPercent() {
@@ -99,147 +109,97 @@ public class BlockFinderController {
     }
 
     private void scanChunk(Dimension dimension, ChunkAccess chunk) {
-        //logger.debug("Adding scan chunk {}", chunk.getPos());
-        queue.add(() -> {
-            while (chunk.getStatus() != ChunkStatus.FULL) {
-                // TODO: check better way
-                try {
-                    Thread.sleep(30);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        addToQueue(() -> {
+            if (chunk.getStatus() != ChunkStatus.FULL) {
+                // re-add chunk to the queue
+                // but check if this chunk is still valid
+                if (ChunkController.instance.getLoadedChunks().stream().anyMatch(p -> p.getFirst() == dimension && p.getSecond() == chunk)) {
+                    scanChunk(dimension, chunk);
                 }
+                return;
             }
+
             int minY = dimension.getMinY();
             int xc = chunk.getPos().x << 4;
             int zc = chunk.getPos().z << 4;
+            var pos = new BlockPos.MutableBlockPos();
             for (int x = 0; x < 16; x++) {
+                pos.setX(xc | x);
                 for (int z = 0; z < 16; z++) {
+                    pos.setZ(zc | z);
                     int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
                     for (int y = minY; y <= height; y++) {
-                        int xb = xc | x;
-                        int zb = zc | z;
-                        BlockPos pos = new BlockPos(xb, y, zb);
+                        pos.setY(y);
                         BlockState state = chunk.getBlockState(pos);
                         checkBlock(state, pos);
                     }
                 }
             }
         });
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
-        }
     }
 
     private void unloadChunk(Dimension dimension, ChunkAccess chunk) {
-        //logger.debug("Adding unload chunk {}", chunk.getPos());
-        queue.add(() -> {
+        addToQueue(() -> {
             int cx = chunk.getPos().x;
             int cz = chunk.getPos().z;
-            synchronized (blocks) {
-                for (HashSet<BlockPos> set : blocks.values()) {
-                    set.removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getZ() >> 4) == cz);
-                }
+            for (Set<BlockPos> set: blocks.values()) {
+                set.removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getZ() >> 4) == cz);
             }
         });
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
-        }
     }
 
     private void handleBlockUpdate(Dimension dimension, BlockPos pos, BlockState state) {
-        queue.add(() -> {
-            synchronized (blocks) {
-                for (HashSet<BlockPos> set : blocks.values()) {
-                    set.remove(pos);
-                }
+        addToQueue(() -> {
+            for (Set<BlockPos> set: blocks.values()) {
+                set.remove(pos);
             }
             checkBlock(state, pos);
         });
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
+    }
+
+    private void scan(Block block) {
+        for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
+            scanChunkForBlock(pair.getFirst(), pair.getSecond(), block);
         }
     }
 
-    public void scan(BlockTracerConfig config) {
-
-        ResourceLocation id = ModApiWrapper.BLOCKS.getKey(config.block);
-
-        synchronized (blocks) {
-            if (blocks.containsKey(id)) {
-                blocks.get(id).clear();
-            }
-        }
-
-        for (Pair<Dimension, LevelChunk> pair : ChunkController.instance.getLoadedChunks()) {
-            scanChunkForBlock(pair.getSecond(), id);
-            //logger.debug("Queued scan for block {} in chunk {}", id, chunk.getPos());
-        }
-    }
-
-    private void scanChunkForBlock(ChunkAccess chunk, ResourceLocation id) {
-        queue.add(() -> {
-            //logger.debug("Scanning for block {} in chunk {}", id, chunk.getPos());
-            int xc = chunk.getPos().x << 4;
-            int zc = chunk.getPos().z << 4;
-            for (int x = 0; x < 16; x++) {
-                for (int z = 0; z < 16; z++) {
-                    int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
-                    for (int y = -64; y <= height; y++) {
-                        int xb = xc | x;
-                        int zb = zc | z;
-                        BlockPos pos = new BlockPos(xb, y, zb);
-                        BlockState state = chunk.getBlockState(pos);
-                        if (ModApiWrapper.BLOCKS.getKey(state.getBlock()).equals(id)) {
-                            synchronized (blocks) {
-                                if (blocks.containsKey(id)) {
-                                    blocks.get(id).add(pos);
-                                }
-                            }
-                        }
+    private void scanChunkForBlock(Dimension dimension, ChunkAccess chunk, Block block) {
+        Set<BlockPos> set = blocks.get(block);
+        int minY = dimension.getMinY();
+        int xc = chunk.getPos().x << 4;
+        int zc = chunk.getPos().z << 4;
+        var pos = new BlockPos.MutableBlockPos();
+        for (int x = 0; x < 16; x++) {
+            pos.setX(xc | x);
+            for (int z = 0; z < 16; z++) {
+                pos.setZ(zc | z);
+                int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
+                for (int y = minY; y <= height; y++) {
+                    pos.setY(y);
+                    BlockState state = chunk.getBlockState(pos);
+                    if (state.getBlock() == block) {
+                        set.add(pos.immutable());
                     }
                 }
             }
-        });
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
         }
     }
 
     private void checkBlock(BlockState state, BlockPos pos) {
-
-        if (state.getBlock() == Blocks.AIR) {
+        if (state.isAir()) {
             return;
         }
 
-        var list = ConfigStore.instance.getConfig().blocks.configs;
-        synchronized (list) {
-            for (BlockTracerConfig config: list) {
-                ResourceLocation id = ModApiWrapper.BLOCKS.getKey(state.getBlock());
-                if (ModApiWrapper.BLOCKS.getKey(config.block).equals(id)) {
-                    synchronized (blocks) {
-                        if (blocks.containsKey(id)) {
-                            blocks.get(id).add(pos);
-                        }
-                    }
-                }
-            }
+        Set<BlockPos> set = blocks.get(state.getBlock());
+        if (set != null) {
+            set.add(pos.immutable());
         }
-
     }
 
-    private void removeBlock(BlockState state, BlockPos pos) {
-        var list = ConfigStore.instance.getConfig().blocks.configs;
-        synchronized (list) {
-            for (BlockTracerConfig config: list) {
-                ResourceLocation id = ModApiWrapper.BLOCKS.getKey(state.getBlock());
-                if (ModApiWrapper.BLOCKS.getKey(config.block).equals(id)) {
-                    synchronized (blocks) {
-                        if (blocks.containsKey(id)) {
-                            blocks.get(id).remove(pos);
-                        }
-                    }
-                }
-            }
+    private void addToQueue(Runnable runnable) {
+        queue.add(runnable);
+        synchronized (loopWaitEvent) {
+            loopWaitEvent.notify();
         }
     }
 }

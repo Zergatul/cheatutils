@@ -31,14 +31,11 @@ public abstract class MixinEntity {
             return;
         }
         var entity = (Entity) (Object) this;
-        var list = ConfigStore.instance.getConfig().entities.configs;
-        synchronized (list) {
-            for (EntityTracerConfig config: list) {
-                if (config.enabled && config.clazz.isInstance(entity) && config.glow) {
-                    info.setReturnValue(config.glowColor.getRGB());
-                    info.cancel();
-                    return;
-                }
+        for (EntityTracerConfig config: ConfigStore.instance.getConfig().entities.configs) {
+            if (config.enabled && config.clazz.isInstance(entity) && config.glow) {
+                info.setReturnValue(config.glowColor.getRGB());
+                info.cancel();
+                return;
             }
         }
     }

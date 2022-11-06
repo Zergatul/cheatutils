@@ -43,6 +43,7 @@ public class ChunkController {
         ModApiWrapper.addOnChunkLoaded(this::onChunkLoaded);
         ModApiWrapper.addOnChunkUnloaded(this::onChunkUnloaded);
         ModApiWrapper.addOnClientTickStart(this::onClientTickStart);
+        ModApiWrapper.addOnClientPlayerLoggingOut(this::onPlayerLoggingOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
     }
 
@@ -103,6 +104,11 @@ public class ChunkController {
                 ((ClientPacketListenerMixinInterface) mc.player.connection.getConnection().getPacketListener()).queueLightUpdate2(new ClientboundForgetLevelChunkPacket(chunkPos.x, chunkPos.z));
             }
         }
+    }
+
+    private synchronized void onPlayerLoggingOut() {
+        clear();
+        // trigger unload handlers???
     }
 
     public synchronized void syncChunks() {

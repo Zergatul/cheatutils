@@ -18,14 +18,11 @@ public class MixinMinecraft {
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
-        var list = ConfigStore.instance.getConfig().entities.configs;
-        synchronized (list) {
-            for (EntityTracerConfig config: list) {
-                if (config.enabled && config.clazz.isInstance(entity) && config.glow) {
-                    info.setReturnValue(true);
-                    info.cancel();
-                    return;
-                }
+        for (EntityTracerConfig config: ConfigStore.instance.getConfig().entities.configs) {
+            if (config.enabled && config.clazz.isInstance(entity) && config.glow) {
+                info.setReturnValue(true);
+                info.cancel();
+                return;
             }
         }
     }

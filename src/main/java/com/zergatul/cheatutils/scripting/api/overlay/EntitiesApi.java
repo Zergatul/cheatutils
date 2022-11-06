@@ -40,8 +40,6 @@ public class EntitiesApi {
 
     private EntityTracerConfig getConfig(String className) {
         var list = ConfigStore.instance.getConfig().entities.configs;
-        synchronized (list) {
-            return list.stream().filter(c -> c.clazz.getName().equals(className)).findFirst().orElse(null);
-        }
+        return list.stream().filter(c -> c.clazz.getName().equals(className)).findFirst().orElse(null);
     }
 }

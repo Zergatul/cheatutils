@@ -40,6 +40,9 @@ public class Config {
     public ChunksConfig chunksConfig = new ChunksConfig();
     public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
     public StatusEffectsConfig statusEffectsConfig = new StatusEffectsConfig();
+    public AutoEatConfig autoEatConfig = new AutoEatConfig();
+    public NoFallConfig noFallConfig = new NoFallConfig();
+    public ParticlesConfig particlesConfig = new ParticlesConfig();
 
     public Config() {
         esp = true;

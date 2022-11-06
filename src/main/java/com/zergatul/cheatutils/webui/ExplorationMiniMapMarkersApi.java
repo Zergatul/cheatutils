@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.controllers.ExplorationMiniMapController;
+import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
+import com.zergatul.cheatutils.controllers.ChunkOverlayController;
 import org.apache.http.HttpException;
 
 public class ExplorationMiniMapMarkersApi extends ApiBase {
@@ -12,13 +13,13 @@ public class ExplorationMiniMapMarkersApi extends ApiBase {
 
     @Override
     public String post(String body) throws HttpException {
-        ExplorationMiniMapController.instance.addMarker();
+        ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).addMarker();
         return "true";
     }
 
     @Override
     public String delete(String id) throws HttpException {
-        ExplorationMiniMapController.instance.clearMarkers();
+        ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).clearMarkers();
         return "true";
     }
 }

@@ -141,9 +141,11 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
                         <td>
-                            <button @click="current = 'new-chunks'">New Chunks (BETA)</button>
+                            <button @click="current = 'auto-eat'">Auto Eat</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'new-chunks'">New Chunks</button>
                         </td>
                         <td>
                             <button @click="current = 'scaffold'">Scaffold</button>
@@ -155,7 +157,9 @@
                     <tr>
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'no-fall'">No Fall (BETA)</button>
+                        </td>
                         <td>
                             <button @click="current = 'chunks'">Chunks</button>
                         </td>
@@ -166,6 +170,14 @@
                         <td></td>
                         <td>
                             <button @click="current = 'status-effects'">Status Effects</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'particles'">Particles</button>
                         </td>
                     </tr>
                 </tbody>
@@ -356,6 +368,21 @@
             v-if="current == 'status-effects'"
             @back="backToMain()">
         </status-effects-config>
+
+        <auto-eat-config
+            v-if="current == 'auto-eat'"
+            @back="backToMain()">
+        </auto-eat-config>
+
+        <no-fall-config
+            v-if="current == 'no-fall'"
+            @back="backToMain()">
+        </no-fall-config>
+
+        <particles-config
+            v-if="current == 'particles'"
+            @back="backToMain()">
+        </particles-config>
 
     </div>
 
