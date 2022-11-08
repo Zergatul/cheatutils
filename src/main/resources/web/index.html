@@ -155,7 +155,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'anti-respawn-reset'">Anti Respawn Reset</button>
+                        </td>
                         <td></td>
                         <td>
                             <button @click="current = 'no-fall'">No Fall (BETA)</button>
@@ -383,6 +385,11 @@
             v-if="current == 'particles'"
             @back="backToMain()">
         </particles-config>
+
+        <anti-respawn-reset-config
+            v-if="current == 'anti-respawn-reset'"
+            @back="backToMain()">
+        </anti-respawn-reset-config>
 
     </div>
 

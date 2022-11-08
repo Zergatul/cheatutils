@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3d;
 import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
@@ -54,7 +55,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return ConfigStore.instance.getConfig().explorationMiniMapConfig.enabled;
     }
 
     @Override

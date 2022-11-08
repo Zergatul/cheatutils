@@ -43,6 +43,7 @@ public class Config {
     public AutoEatConfig autoEatConfig = new AutoEatConfig();
     public NoFallConfig noFallConfig = new NoFallConfig();
     public ParticlesConfig particlesConfig = new ParticlesConfig();
+    public AntiRespawnResetConfig antiRespawnResetConfig = new AntiRespawnResetConfig();
 
     public Config() {
         esp = true;

@@ -502,6 +502,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().particlesConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("anti-respawn-reset", AntiRespawnResetConfig.class) {
+            @Override
+            protected AntiRespawnResetConfig getConfig() {
+                return ConfigStore.instance.getConfig().antiRespawnResetConfig;
+            }
+
+            @Override
+            protected void setConfig(AntiRespawnResetConfig config) {
+                ConfigStore.instance.getConfig().antiRespawnResetConfig = config;
+            }
+        });
     }
 
     @Override

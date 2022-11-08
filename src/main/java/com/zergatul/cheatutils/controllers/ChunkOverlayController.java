@@ -60,6 +60,10 @@ public class ChunkOverlayController {
 
     @SubscribeEvent
     public void render(RenderGuiEvent.Post event) {
+        if (!isSomeOverlayEnabled()) {
+            return;
+        }
+
         for (AbstractChunkOverlay overlay: overlays) {
             overlay.onPreRender();
         }

@@ -83,6 +83,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'AutoEatConfig');
     addComponent(args, 'NoFallConfig');
     addComponent(args, 'ParticlesConfig');
+    addComponent(args, 'AntiRespawnResetConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');
