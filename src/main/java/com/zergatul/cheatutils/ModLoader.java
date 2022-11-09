@@ -8,7 +8,7 @@ public final class ModLoader {
 
     public static void setup() {
         ConfigStore.instance.read();
-        KeyBindingsController.instance.setup();
+        KeyBindingsController.instance.onRegister();
         MinecraftForge.EVENT_BUS.register(KeyBindingsController.instance);
         MinecraftForge.EVENT_BUS.register(ChunkController.instance);
         MinecraftForge.EVENT_BUS.register(FreeCamController.instance);

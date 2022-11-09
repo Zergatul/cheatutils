@@ -1,34 +1,55 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.lwjgl.glfw.GLFW;
 
 public class KeyBindingsController {
 
     public static final KeyBindingsController instance = new KeyBindingsController();
-    public static final String category = "Zergatul Cheat Utils";
 
-    public static KeyMapping toggleEsp = new KeyMapping("Toggle ESP", GLFW.GLFW_KEY_BACKSLASH, category);
-    //public static KeyMapping openConfig = new KeyMapping("Copy config URL", GLFW.GLFW_KEY_Z, category);
-    //public static KeyMapping quickCommand = new KeyMapping("Quick command", GLFW.GLFW_KEY_X, category);
-    public static KeyMapping toggleFreeCam = new KeyMapping("Toggle free cam", GLFW.GLFW_KEY_F6, category);
+    public final KeyMapping[] keys;
 
     private Minecraft mc = Minecraft.getInstance();
+    private Runnable[] actions = new Runnable[KeyBindingsConfig.KeysCount];
 
     private KeyBindingsController() {
-
+        keys = new KeyMapping[KeyBindingsConfig.KeysCount];
+        for (int i = 0; i < keys.length; i++) {
+            keys[i] = new KeyMapping("key.zergatul.cheatutils.reserved" + i, InputConstants.UNKNOWN.getValue(), "category.zergatul.cheatutils");
+        }
     }
 
-    public void setup() {
-        ClientRegistry.registerKeyBinding(toggleEsp);
-        //ClientRegistry.registerKeyBinding(openConfig);
-        //ClientRegistry.registerKeyBinding(quickCommand);
-        ClientRegistry.registerKeyBinding(toggleFreeCam);
+    public void onRegister() {
+        for (KeyMapping key : keys) {
+            ClientRegistry.registerKeyBinding(key);
+        }
+    }
+
+    public void assign(int index, String name) {
+        String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
+        for (int i = 0; i < bindings.length; i++) {
+            if (bindings[i] != null && bindings[i].equals(name)) {
+                actions[i] = null;
+                bindings[i] = null;
+            }
+        }
+
+        if (0 <= index && index < KeyBindingsConfig.KeysCount) {
+            Runnable compiled = ScriptController.instance.get(name);
+            if (compiled == null) {
+                actions[index] = null;
+                bindings[index] = null;
+            } else {
+                actions[index] = compiled;
+                bindings[index] = name;
+            }
+        }
     }
 
     @SubscribeEvent
@@ -37,40 +58,11 @@ public class KeyBindingsController {
         if (mc.player == null) {
             return;
         }
-        if (mc.screen != null) {
-            return;
-        }
 
-        /*if (KeyBindingsController.openConfig.isDown()) {
-            if (!HardSwitchController.instance.isTurnedOff()) {
-                String uri = ConfigHttpServer.instance.getUrl();
-                if (uri != null) {
-                    new ClipboardHelper().setClipboard(mc.getWindow().getWindow(), uri);
-                }
+        for (int i = 0; i < keys.length; i++) {
+            if (keys[i].isDown() && actions[i] != null) {
+                actions[i].run();
             }
-            return;
-        }*/
-
-        if (KeyBindingsController.toggleEsp.isDown()) {
-            if (!HardSwitchController.instance.isTurnedOff()) {
-                ConfigStore.instance.getConfig().esp = !ConfigStore.instance.getConfig().esp;
-                ConfigStore.instance.requestWrite();
-            }
-            return;
-        }
-
-        /*if (KeyBindingsController.quickCommand.isDown()) {
-            if (!HardSwitchController.instance.isTurnedOff()) {
-                mc.player.chat("/home");
-            }
-            return;
-        }*/
-
-        if (KeyBindingsController.toggleFreeCam.isDown()) {
-            if (!HardSwitchController.instance.isTurnedOff()) {
-                FreeCamController.instance.toggle();
-            }
-            return;
         }
     }
 }

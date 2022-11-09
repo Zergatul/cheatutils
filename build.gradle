@@ -21,7 +21,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.5.1'
+version = '0.8.0'
 group = 'com.zergatul.cheatutils' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'zergatul.cheatutils'
 
@@ -214,4 +214,8 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.compilerArgs.add("-parameters")
 }

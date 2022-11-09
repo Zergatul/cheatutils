@@ -73,6 +73,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'LockInputsConfig');
     addComponent(args, 'MovementHackConfig');
     addComponent(args, 'ScaffoldConfig');
+    addComponent(args, 'ScriptsConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

@@ -29,6 +29,8 @@ public class Config {
     public LockInputsConfig lockInputsConfig = new LockInputsConfig();
     public AutoWaterBucketConfig autoWaterBucketConfig = new AutoWaterBucketConfig();
     public ScaffoldConfig scaffoldConfig = new ScaffoldConfig();
+    public ScriptsConfig scriptsConfig = new ScriptsConfig();
+    public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
 
     public Config() {
         esp = true;
