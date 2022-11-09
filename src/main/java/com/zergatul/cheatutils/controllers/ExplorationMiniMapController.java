@@ -9,6 +9,7 @@ import com.mojang.math.Vector3f;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
+import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -54,20 +55,12 @@ public class ExplorationMiniMapController {
     private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
     private final Queue<RenderThreadQueueItem> renderQueue = new ConcurrentLinkedQueue<>();
     private final Queue<Runnable> endTickQueue = new ConcurrentLinkedQueue<>();
-    private final Map<ResourceLocation, Map<SegmentPos, Segment>> dimensions = new ConcurrentHashMap<>();
+    private final Map<Dimension, Map<SegmentPos, Segment>> dimensions = new ConcurrentHashMap<>();
     private final Set<Segment> updatedSegments = new HashSet<>();
     private final List<Segment> textureUploaded = new ArrayList<>();
-    private final Map<ResourceLocation, List<Vector3d>> markers = new HashMap<>();
+    private final Map<Dimension, List<Vector3d>> markers = new HashMap<>();
 
     private ExplorationMiniMapController() {
-        dimensions.put(Level.OVERWORLD.location(), new ConcurrentHashMap<>());
-        dimensions.put(Level.NETHER.location(), new ConcurrentHashMap<>());
-        dimensions.put(Level.END.location(), new ConcurrentHashMap<>());
-
-        markers.put(Level.OVERWORLD.location(), Collections.synchronizedList(new ArrayList<>()));
-        markers.put(Level.NETHER.location(), Collections.synchronizedList(new ArrayList<>()));
-        markers.put(Level.END.location(), Collections.synchronizedList(new ArrayList<>()));
-
         eventLoop = new Thread(this::eventLoopThreadFunc);
         eventLoop.start();
 
@@ -77,7 +70,7 @@ public class ExplorationMiniMapController {
 
     public void onChanged() {
         if (ConfigStore.instance.getConfig().explorationMiniMapConfig.enabled) {
-            ChunkController.instance.getLoadedChunks().forEach(this::onChunkLoaded);
+            ChunkController.instance.getLoadedChunks().forEach(p -> onChunkLoaded(p.getFirst(), p.getSecond()));
         } else {
             queue.add(() -> {
                 renderQueue.clear();
@@ -167,7 +160,7 @@ public class ExplorationMiniMapController {
             return;
         }
 
-        if (mc.player == null) {
+        if (mc.player == null || mc.level == null) {
             return;
         }
 
@@ -197,8 +190,8 @@ public class ExplorationMiniMapController {
         //RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 0.5f);
 
         float multiplier = 1f / (16 * SegmentSize) * scale;
-        ResourceLocation dimension = mc.level.dimension().location();
-        Map<SegmentPos, Segment> segments = dimensions.get(dimension);
+        Dimension dimension = Dimension.get(mc.level);
+        Map<SegmentPos, Segment> segments = dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
         for (Segment segment: segments.values()) {
             if (segment.texture == null) {
                 continue;
@@ -218,7 +211,7 @@ public class ExplorationMiniMapController {
 
         final int ImageSize = 8;
 
-        for (Vector3d vec: markers.get(dimension)) {
+        for (Vector3d vec: markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
             RenderSystem.setShaderTexture(0, MarkerTexture);
             drawTexture(event.getMatrixStack().last().pose(),
                     -ImageSize / 2 + ((float)vec.x - xc) * multiplier, -ImageSize / 2 + ((float)vec.z - zc) * multiplier,
@@ -291,26 +284,24 @@ public class ExplorationMiniMapController {
 
     public void addMarker() {
         if (mc.player != null && mc.level != null) {
-            ResourceLocation dimension = mc.level.dimension().location();
-            markers.get(dimension).add(new Vector3d(mc.player.getX(), mc.player.getY(), mc.player.getZ()));
+            Dimension dimension = Dimension.get(mc.level);
+            markers.computeIfAbsent(dimension, d -> new ArrayList<>()).add(new Vector3d(mc.player.getX(), mc.player.getY(), mc.player.getZ()));
         }
     }
 
     public void clearMarkers() {
         if (mc.level != null) {
-            ResourceLocation dimension = mc.level.dimension().location();
-            markers.get(dimension).clear();
+            Dimension dimension = Dimension.get(mc.level);
+            markers.computeIfAbsent(dimension, d -> new ArrayList<>()).clear();
         }
     }
 
-    private void onChunkLoaded(LevelChunk chunk) {
+    private void onChunkLoaded(Dimension dimension, LevelChunk chunk) {
         if (!ConfigStore.instance.getConfig().explorationMiniMapConfig.enabled) {
             return;
         }
 
-        ResourceKey<Level> dimension = mc.level.dimension();
-        ResourceLocation dimensionId = dimension.location();
-        Map<SegmentPos, Segment> segments = dimensions.get(dimensionId);
+        Map<SegmentPos, Segment> segments = dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
 
         queue.add(() -> drawChunk(dimension, segments, chunk));
 
@@ -319,7 +310,7 @@ public class ExplorationMiniMapController {
         }
     }
 
-    private void onBlockChanged(BlockPos pos, BlockState state) {
+    private void onBlockChanged(Dimension dimension, BlockPos pos, BlockState state) {
         ExplorationMiniMapConfig config = ConfigStore.instance.getConfig().explorationMiniMapConfig;
         if (!config.enabled || !config.dynamicUpdate) {
             return;
@@ -331,12 +322,10 @@ public class ExplorationMiniMapController {
             }
             var chunkPos = new ChunkPos(pos);
             var segmentPos = new SegmentPos(chunkPos);
-            ResourceKey<Level> dimension = mc.level.dimension();
-            ResourceLocation dimensionId = dimension.location();
-            Map<SegmentPos, Segment> segments = dimensions.get(dimensionId);
+            Map<SegmentPos, Segment> segments = dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
             Segment segment = segments.get(segmentPos);
             if (segment != null) {
-                if (dimension == Level.NETHER) {
+                if (dimension.isNether()) {
                     int xf = Math.floorMod(chunkPos.x, SegmentSize) * 16;
                     int yf = Math.floorMod(chunkPos.z, SegmentSize) * 16;
                     drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, mc.level.getChunk(chunkPos.x, chunkPos.z));
@@ -376,7 +365,7 @@ public class ExplorationMiniMapController {
         BufferUploader.end(bufferBuilder);
     }
 
-    private void drawChunk(ResourceKey<Level> dimension, Map<SegmentPos, Segment> segments, LevelChunk chunk) {
+    private void drawChunk(Dimension dimension, Map<SegmentPos, Segment> segments, LevelChunk chunk) {
         while (chunk.getStatus() != ChunkStatus.FULL) {
             try {
                 Thread.sleep(30);
@@ -399,7 +388,7 @@ public class ExplorationMiniMapController {
         }));
     }
 
-    private void drawChunk(ResourceKey<Level> dimension, Segment segment, ChunkPos chunkPos, LevelChunk chunk) {
+    private void drawChunk(Dimension dimension, Segment segment, ChunkPos chunkPos, LevelChunk chunk) {
         int xf = Math.floorMod(chunkPos.x, SegmentSize) * 16;
         int yf = Math.floorMod(chunkPos.z, SegmentSize) * 16;
 
@@ -412,15 +401,15 @@ public class ExplorationMiniMapController {
         renderQueue.add(new RenderThreadQueueItem(() -> segment.onChange()));
     }
 
-    private void drawPixel(ResourceKey<Level> dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk) {
+    private void drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk) {
         boolean pixelSet = false;
-        if (dimension == Level.NETHER) {
-            for (int y1 = 127; y1 >= 0; y1--) {
+        if (dimension.hasCeiling()) {
+            for (int y1 = dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {
                 BlockPos pos = new BlockPos(dx, y1, dz);
                 BlockState state = chunk.getBlockState(pos);
                 if (state.isAir()) {
                     // first non-air block below
-                    for (int y2 = y1 - 1; y2 >= 0; y2--) {
+                    for (int y2 = y1 - 1; y2 >= dimension.getMinY(); y2--) {
                         pos = new BlockPos(dx, y2, dz);
                         state = chunk.getBlockState(pos);
                         if (!state.isAir()) {
@@ -437,10 +426,15 @@ public class ExplorationMiniMapController {
 
         if (!pixelSet) {
             int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, dx, dz);
-            BlockPos pos = new BlockPos(dx, height, dz);
-            BlockState state = chunk.getBlockState(pos);
-            MaterialColor materialColor = state.getMapColor(mc.level, pos);
-            segment.image.setPixelRGBA(xf + dx, yf + dz, convert(materialColor.col));
+            for (int y = height; y >= dimension.getMinY(); y--) {
+                BlockPos pos = new BlockPos(dx, y, dz);
+                BlockState state = chunk.getBlockState(pos);
+                MaterialColor materialColor = state.getMapColor(mc.level, pos);
+                if (materialColor != MaterialColor.NONE) {
+                    segment.image.setPixelRGBA(xf + dx, yf + dz, convert(materialColor.col));
+                    break;
+                }
+            }
         }
     }
 
@@ -495,11 +489,6 @@ public class ExplorationMiniMapController {
     private static class SegmentPos {
         public int x;
         public int z;
-
-        public SegmentPos(int x, int z) {
-            this.x = x;
-            this.z = z;
-        }
 
         public SegmentPos(ChunkPos pos) {
             this.x = Math.floorDiv(pos.x, SegmentSize);
