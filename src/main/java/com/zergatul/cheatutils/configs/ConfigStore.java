@@ -138,6 +138,8 @@ public class ConfigStore {
         FullBrightController.instance.onChanged();
         config.blocks.apply();
 
+        config.killAuraConfig.validate();
+
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";
             try {

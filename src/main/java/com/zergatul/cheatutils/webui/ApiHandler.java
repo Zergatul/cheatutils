@@ -133,8 +133,7 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(KillAuraConfig config) {
-                config.maxRange = Math.max(1, config.maxRange);
-                config.priorities.removeIf(Objects::isNull);
+                config.validate();
                 ConfigStore.instance.getConfig().killAuraConfig = config;
             }
         });
