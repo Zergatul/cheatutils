@@ -13,7 +13,7 @@ import net.minecraft.world.entity.projectile.ShulkerBullet;
 import java.util.*;
 import java.util.function.BiPredicate;
 
-public class KillAuraConfig {
+public class KillAuraConfig implements ValidatableConfig {
 
     public boolean active;
     public float maxRange;

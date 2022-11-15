@@ -33,6 +33,7 @@
     "MixinPig",
     "MixinScreen",
     "MixinServerboundMovePlayerPacket",
-    "MixinUser"
+    "MixinUser",
+    "MixinBlockBehaviourBlockStateBase"
   ]
 }

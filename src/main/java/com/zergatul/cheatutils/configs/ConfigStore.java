@@ -140,8 +140,10 @@ public class ConfigStore {
         LightLevelController.instance.onChanged();
         config.blocks.apply();
 
+        // TODO: use reflection to automatically find ValidatableConfig's?
         config.killAuraConfig.validate();
         config.movementHackConfig.validate();
+        config.fastBreakConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

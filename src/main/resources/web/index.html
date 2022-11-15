@@ -169,7 +169,9 @@
                     <tr>
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'fast-break'">Fast Break</button>
+                        </td>
                         <td>
                             <button @click="current = 'status-effects'">Status Effects</button>
                         </td>
@@ -390,6 +392,11 @@
             v-if="current == 'anti-respawn-reset'"
             @back="backToMain()">
         </anti-respawn-reset-config>
+
+        <fast-break-config
+            v-if="current == 'fast-break'"
+            @back="backToMain()">
+        </fast-break-config>
 
     </div>
 

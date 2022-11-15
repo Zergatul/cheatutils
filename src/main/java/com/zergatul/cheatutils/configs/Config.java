@@ -44,6 +44,7 @@ public class Config {
     public NoFallConfig noFallConfig = new NoFallConfig();
     public ParticlesConfig particlesConfig = new ParticlesConfig();
     public AntiRespawnResetConfig antiRespawnResetConfig = new AntiRespawnResetConfig();
+    public FastBreakConfig fastBreakConfig = new FastBreakConfig();
 
     public Config() {
         esp = true;

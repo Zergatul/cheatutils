@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class MovementHackConfig {
+public class MovementHackConfig implements ValidatableConfig {
     public boolean preserveSpeed;
     public boolean disableSlowdownOnUseItem;
     public boolean scaleInputVector;

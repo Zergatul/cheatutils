@@ -138,7 +138,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(KillAuraConfig config) {
-                config.validate();
                 ConfigStore.instance.getConfig().killAuraConfig = config;
             }
         });
@@ -322,7 +321,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(MovementHackConfig config) {
-                config.validate();
                 ConfigStore.instance.getConfig().movementHackConfig = config;
             }
         });
@@ -512,6 +510,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(AntiRespawnResetConfig config) {
                 ConfigStore.instance.getConfig().antiRespawnResetConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("fast-break", FastBreakConfig.class) {
+            @Override
+            protected FastBreakConfig getConfig() {
+                return ConfigStore.instance.getConfig().fastBreakConfig;
+            }
+
+            @Override
+            protected void setConfig(FastBreakConfig config) {
+                ConfigStore.instance.getConfig().fastBreakConfig = config;
             }
         });
     }

@@ -84,6 +84,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'NoFallConfig');
     addComponent(args, 'ParticlesConfig');
     addComponent(args, 'AntiRespawnResetConfig');
+    addComponent(args, 'FastBreakConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

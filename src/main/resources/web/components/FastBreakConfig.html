@@ -1,0 +1,26 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Fast Break</legend>
+        <div class="description">
+            When you mine block your client sends 2 packets: when you started digging and when you finished. Due to ping problems time difference between 2 packets can differ between client and server. To make block dig rollback more rare server weakens rule, and doesn't check exact time. We can abuse this and always send 2 packets quicker.
+            <br>
+            This hack cannot make "non-instamineable" block instamineable. Instamining has strict check on the server.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Factor (1=no change, 1.2=1.2x faster and so on):</span>
+            <input type="text" v-model="config.factor" @change="update()">
+            <span class="text">Maximum theoretical value for vanilla server: 1/0.7=1.428571. It is better to use lower value.</span>
+        </div>
+    </fieldset>
+</div>
