@@ -144,6 +144,7 @@ public class ConfigStore {
         config.killAuraConfig.validate();
         config.movementHackConfig.validate();
         config.fastBreakConfig.validate();
+        config.elytraHackConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

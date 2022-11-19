@@ -40,4 +40,15 @@ public class GuiUtils {
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
+
+    public static void drawTexture(Matrix4f matrix, float x, float y, float width, float height, float z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferBuilder.vertex(matrix, x, y, z).uv(1F * texX / texSizeX, 1F * texY / texSizeY).endVertex();
+        bufferBuilder.vertex(matrix, x, y + height, z).uv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
+        bufferBuilder.vertex(matrix, x + width, y + height, z).uv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
+        bufferBuilder.vertex(matrix, x + width, y, z).uv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY).endVertex();
+        BufferUploader.drawWithShader(bufferBuilder.end());
+    }
 }

@@ -6,9 +6,9 @@ import net.minecraft.network.Connection;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.*;
+import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,7 +30,7 @@ public class ModApiWrapper {
     public static void addOnClientPlayerLoggingIn(Consumer<Connection> consumer) {
         onClientPlayerLoggingIn.add(consumer);
     }
-    private static void triggerOnClientPlayerLoggingOut(Connection connection) {
+    private static void triggerOnClientPlayerLoggingIn(Connection connection) {
         onClientPlayerLoggingIn.forEach(c -> c.accept(connection));
     }
 
@@ -82,20 +82,38 @@ public class ModApiWrapper {
         onRegisterKeyBindings.forEach(c -> c.accept(registry));
     }
 
-    private static final List<Runnable> onKeyInput = new ArrayList<>();
-    public static void addOnKeyInput(Runnable runnable) {
-        onKeyInput.add(runnable);
-    }
-    public static void triggerOnKeyInput() {
-        onKeyInput.forEach(Runnable::run);
-    }
-
     private static final List<Consumer<RenderWorldLastEvent>> onRenderWorldLast = new ArrayList<>();
     public static void addOnRenderWorldLast(Consumer<RenderWorldLastEvent> consumer) {
         onRenderWorldLast.add(consumer);
     }
     public static void triggerOnRenderWorldLast(RenderWorldLastEvent event) {
         onRenderWorldLast.forEach(c -> c.accept(event));
+    }
+
+    private static final List<Consumer<PostRenderGuiEvent>> onPostRenderGui = new ArrayList<>();
+    public static void addOnPostRenderGui(Consumer<PostRenderGuiEvent> consumer) {
+        onPostRenderGui.add(consumer);
+    }
+    public static void triggerOnPostRenderGui(PostRenderGuiEvent event) {
+        onPostRenderGui.forEach(c -> c.accept(event));
+    }
+
+    private static final List<Consumer<PreRenderGuiOverlayEvent>> onPreRenderGuiOverlay = new ArrayList<>();
+    public static void addOnPreRenderGuiOverlay(Consumer<PreRenderGuiOverlayEvent> consumer) {
+        onPreRenderGuiOverlay.add(consumer);
+    }
+    public static boolean triggerOnPreRenderGuiOverlay(PreRenderGuiOverlayEvent event) {
+        onPreRenderGuiOverlay.forEach(c -> c.accept(event));
+        return event.isCanceled();
+    }
+
+    private static final List<Consumer<MouseScrollEvent>> onMouseScroll = new ArrayList<>();
+    public static void addOnMouseScroll(Consumer<MouseScrollEvent> consumer) {
+        onMouseScroll.add(consumer);
+    }
+    public static boolean triggerOnMouseScroll(MouseScrollEvent event) {
+        onMouseScroll.forEach(c -> c.accept(event));
+        return event.isCanceled();
     }
 
     public record RenderWorldLastEvent(PoseStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
@@ -113,11 +131,70 @@ public class ModApiWrapper {
         }
     }
 
+    public record PostRenderGuiEvent(PoseStack matrixStack, float tickDelta) {
+
+        public PoseStack getMatrixStack() {
+            return matrixStack;
+        }
+
+        public float getTickDelta() {
+            return tickDelta;
+        }
+    }
+
+    public static class PreRenderGuiOverlayEvent {
+
+        private GuiOverlayType type;
+        private boolean canceled;
+
+        public PreRenderGuiOverlayEvent(GuiOverlayType type) {
+            this.type = type;
+        }
+
+        public GuiOverlayType getGuiOverlayType() {
+            return type;
+        }
+
+        public boolean isCanceled() {
+            return canceled;
+        }
+
+        public void cancel() {
+            canceled = true;
+        }
+    }
+
+    public enum GuiOverlayType {
+        PLAYER_LIST
+    }
+
+    public static class MouseScrollEvent {
+
+        private double scrollDelta;
+        private boolean canceled;
+
+        public MouseScrollEvent(double scrollDelta) {
+            this.scrollDelta = scrollDelta;
+        }
+
+        public double getScrollDelta() {
+            return scrollDelta;
+        }
+
+        public boolean isCanceled() {
+            return canceled;
+        }
+
+        public void cancel() {
+            canceled = true;
+        }
+    }
+
     public static class ForgeApi {
 
         @SubscribeEvent
         public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
-            triggerOnClientPlayerLoggingOut(event.getConnection());
+            triggerOnClientPlayerLoggingIn(event.getConnection());
         }
 
         @SubscribeEvent
@@ -152,14 +229,30 @@ public class ModApiWrapper {
         }
 
         @SubscribeEvent
-        public void onKeyInput(InputEvent.Key event) {
-            triggerOnKeyInput();
-        }
-
-        @SubscribeEvent
         public void onRender(RenderLevelStageEvent event) {
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER) {
                 triggerOnRenderWorldLast(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
+            }
+        }
+
+        @SubscribeEvent
+        public void render(RenderGuiEvent.Post event) {
+            triggerOnPostRenderGui(new PostRenderGuiEvent(event.getPoseStack(), event.getPartialTick()));
+        }
+
+        @SubscribeEvent
+        public void onPreRenderGameOverlay(RenderGuiOverlayEvent.Pre event) {
+            if (event.getOverlay() == GuiOverlayManager.findOverlay(VanillaGuiOverlay.PLAYER_LIST.id())) {
+                if (triggerOnPreRenderGuiOverlay(new PreRenderGuiOverlayEvent(GuiOverlayType.PLAYER_LIST))) {
+                    event.setCanceled(true);
+                }
+            }
+        }
+
+        @SubscribeEvent
+        public void onMouseScroll(InputEvent.MouseScrollingEvent event) {
+            if (triggerOnMouseScroll(new MouseScrollEvent(event.getScrollDelta()))) {
+                event.setCanceled(true);
             }
         }
     }

@@ -36,10 +36,9 @@ public class PlayerMotionController {
 
     public void triggerOnAfterSendPosition() {
         synchronized (onAfterHandlers) {
-            for (Runnable handler: onAfterHandlers) {
+            for (Runnable handler : onAfterHandlers) {
                 handler.run();
             }
         }
     }
-
 }

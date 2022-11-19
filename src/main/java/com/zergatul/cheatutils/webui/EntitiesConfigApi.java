@@ -23,8 +23,7 @@ public class EntitiesConfigApi extends ApiBase {
     public synchronized String post(String body) throws MethodNotSupportedException {
         EntityTracerConfig jsonConfig = gson.fromJson(body, EntityTracerConfig.class);
 
-        EntityTracerConfig config;
-        config = ConfigStore.instance.getConfig().entities.configs.stream()
+        EntityTracerConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
                 .filter(c -> c.clazz == jsonConfig.clazz)
                 .findFirst()
                 .orElse(null);
@@ -46,8 +45,7 @@ public class EntitiesConfigApi extends ApiBase {
             throw new MethodNotSupportedException("Entity class name don't match.");
         }
 
-        EntityTracerConfig config;
-        config = ConfigStore.instance.getConfig().entities.configs.stream()
+        EntityTracerConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
                 .filter(c -> c.clazz == jsonConfig.clazz)
                 .findFirst()
                 .orElse(null);

@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.controllers.KeyBindingsController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,5 +31,10 @@ public class MixinMinecraft {
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;close()V")
     private void onClose(CallbackInfo info) {
         ConfigStore.instance.onClose();
+    }
+
+    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/Minecraft;handleKeybinds()V")
+    private void onHandleKeyBindings(CallbackInfo info) {
+        KeyBindingsController.instance.onHandleKeyBindings();
     }
 }

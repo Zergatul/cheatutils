@@ -7,6 +7,7 @@ import com.mojang.math.Vector3d;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
+import com.zergatul.cheatutils.utils.GuiUtils;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -64,7 +65,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
         for (Vector3d vec: markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
             RenderSystem.setShaderTexture(0, MarkerTexture);
-            drawTexture(poseStack.last().pose(),
+            GuiUtils.drawTexture(poseStack.last().pose(),
                     -ImageSize / 2f + ((float) vec.x - xc) * multiplier, -ImageSize / 2f + ((float) vec.z - zc) * multiplier,
                     ImageSize, ImageSize, getTranslateZ() + 2, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
         }
@@ -72,13 +73,13 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         double distanceToPlayer = Math.sqrt((xp - xc) * (xp - xc) + (zp - zc) * (zp - zc));
         if (distanceToPlayer * multiplier > 2 * ImageSize) {
             RenderSystem.setShaderTexture(0, CenterPosTexture);
-            drawTexture(poseStack.last().pose(),
+            GuiUtils.drawTexture(poseStack.last().pose(),
                     -ImageSize / 2f, -ImageSize / 2f,
                     ImageSize, ImageSize, getTranslateZ() + 3, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
         }
 
         RenderSystem.setShaderTexture(0, PlayerPosTexture);
-        drawTexture(poseStack.last().pose(),
+        GuiUtils.drawTexture(poseStack.last().pose(),
                 -ImageSize / 2f + (xp - xc) * multiplier, -ImageSize / 2f + (zp - zc) * multiplier,
                 ImageSize, ImageSize, getTranslateZ() + 4, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
     }
@@ -199,16 +200,5 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         int green = (color >> 8) & 0xFF;
         int blue = (color) & 0xFF;
         return 0xFF000000 | (blue << 16) | (green << 8) | red;
-    }
-
-    private void drawTexture(Matrix4f matrix, float x, float y, float width, float height, float z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferBuilder.vertex(matrix, x, y, z).uv(1F * texX / texSizeX, 1F * texY / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x, y + height, z).uv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x + width, y + height, z).uv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x + width, y, z).uv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY).endVertex();
-        BufferUploader.drawWithShader(bufferBuilder.end());
     }
 }

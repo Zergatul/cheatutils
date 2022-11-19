@@ -41,7 +41,7 @@ public class KillAuraController {
         }
 
         target = null;
-        int targetPriotity = Integer.MAX_VALUE;
+        int targetPriority = Integer.MAX_VALUE;
         double targetDistance2 = Double.MAX_VALUE;
 
         float maxRange2 = config.maxRange * config.maxRange;
@@ -51,8 +51,7 @@ public class KillAuraController {
                 continue;
             }
 
-            if (entity instanceof LivingEntity) {
-                var living = (LivingEntity) entity;
+            if (entity instanceof LivingEntity living) {
                 if (!living.isAlive()) {
                     continue;
                 }
@@ -63,9 +62,9 @@ public class KillAuraController {
                 continue;
             }
 
-            if (priority < targetPriotity || (priority == targetPriotity && distance2 < targetDistance2)) {
+            if (priority < targetPriority || (priority == targetPriority && distance2 < targetDistance2)) {
                 target = entity;
-                targetPriotity = priority;
+                targetPriority = priority;
                 targetDistance2 = distance2;
             }
         }

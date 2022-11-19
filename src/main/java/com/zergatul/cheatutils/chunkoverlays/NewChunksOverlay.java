@@ -29,9 +29,9 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
     public NewChunksOverlay(int segmentSize, long updateDelay) {
         super(segmentSize, updateDelay);
 
-        oldChunkImage = loadImage("assets/cheatutils/textures/newchunks/old.png");
-        newChunkImage = loadImage("assets/cheatutils/textures/newchunks/new.png");
-        semiNewChunkImage = loadImage("assets/cheatutils/textures/newchunks/seminew.png");
+        oldChunkImage = loadImage("textures/newchunks/old.png");
+        newChunkImage = loadImage("textures/newchunks/new.png");
+        semiNewChunkImage = loadImage("textures/newchunks/seminew.png");
     }
 
     @Override

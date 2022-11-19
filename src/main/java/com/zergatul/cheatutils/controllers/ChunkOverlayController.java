@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.chunkoverlays.AbstractChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.utils.Dimension;
+import com.zergatul.cheatutils.utils.GuiUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -51,6 +52,9 @@ public class ChunkOverlayController {
         ChunkController.instance.addOnChunkLoadedHandler(this::onChunkLoaded);
         ChunkController.instance.addOnBlockChangedHandler(this::onBlockChanged);
         ModApiWrapper.addOnClientTickEnd(this::onClientTickEnd);
+        ModApiWrapper.addOnPostRenderGui(this::render);
+        ModApiWrapper.addOnPreRenderGuiOverlay(this::onPreRenderGameOverlay);
+        ModApiWrapper.addOnMouseScroll(this::onMouseScroll);
     }
 
     @SuppressWarnings("unchecked")
@@ -58,8 +62,7 @@ public class ChunkOverlayController {
         return (T) overlays.stream().filter(o -> o.getClass() == clazz).findFirst().orElse(null);
     }
 
-    @SubscribeEvent
-    public void render(RenderGuiEvent.Post event) {
+    private void render(ModApiWrapper.PostRenderGuiEvent event) {
         if (!isSomeOverlayEnabled()) {
             return;
         }
@@ -80,19 +83,19 @@ public class ChunkOverlayController {
             return;
         }
 
-        float frameTime = event.getPartialTick();
+        float frameTime = event.getTickDelta();
         float xp = (float) Mth.lerp(frameTime, mc.player.xo, mc.player.getX());
         float zp = (float) Mth.lerp(frameTime, mc.player.zo, mc.player.getZ());
         float xc = (float) mc.gameRenderer.getMainCamera().getPosition().x;
         float zc = (float) mc.gameRenderer.getMainCamera().getPosition().z;
         float yRot = mc.gameRenderer.getMainCamera().getYRot();
 
-        event.getPoseStack().pushPose();
-        event.getPoseStack().setIdentity();
-        event.getPoseStack().translate(1d * mc.getWindow().getGuiScaledWidth() / 2, 1d * mc.getWindow().getGuiScaledHeight() / 2, TranslateZ);
-        event.getPoseStack().mulPose(Vector3f.ZN.rotationDegrees(yRot));
-        event.getPoseStack().mulPose(Vector3f.XN.rotationDegrees(180));
-        event.getPoseStack().mulPose(Vector3f.YN.rotationDegrees(180));
+        event.getMatrixStack().pushPose();
+        event.getMatrixStack().setIdentity();
+        event.getMatrixStack().translate(1d * mc.getWindow().getGuiScaledWidth() / 2, 1d * mc.getWindow().getGuiScaledHeight() / 2, TranslateZ);
+        event.getMatrixStack().mulPose(Vector3f.ZN.rotationDegrees(yRot));
+        event.getMatrixStack().mulPose(Vector3f.XN.rotationDegrees(180));
+        event.getMatrixStack().mulPose(Vector3f.YN.rotationDegrees(180));
         RenderSystem.applyModelViewMatrix();
 
         //RenderSystem.enableDepthTest();
@@ -128,8 +131,8 @@ public class ChunkOverlayController {
                 float x = (segment.pos.x * 16 * SegmentSize - xc) * multiplier;
                 float y = (segment.pos.z * 16 * SegmentSize - zc) * multiplier;
 
-                drawTexture(
-                        event.getPoseStack().last().pose(),
+                GuiUtils.drawTexture(
+                        event.getMatrixStack().last().pose(),
                         x, y, scale, scale, z,
                         0, 0, 16 * SegmentSize, 16 * SegmentSize,
                         16 * SegmentSize, 16 * SegmentSize);
@@ -137,28 +140,26 @@ public class ChunkOverlayController {
         }
 
         for (AbstractChunkOverlay overlay: overlays) {
-            overlay.onPostDrawSegments(dimension, event.getPoseStack(), xp, zp, xc, zc, multiplier);
+            overlay.onPostDrawSegments(dimension, event.getMatrixStack(), xp, zp, xc, zc, multiplier);
         }
 
-        event.getPoseStack().popPose();
+        event.getMatrixStack().popPose();
         RenderSystem.applyModelViewMatrix();
     }
 
-    @SubscribeEvent
-    public void onPreRenderGameOverlay(RenderGuiOverlayEvent.Pre event) {
-        if (event.getOverlay() == GuiOverlayManager.findOverlay(VanillaGuiOverlay.PLAYER_LIST.id())) {
+    private void onPreRenderGameOverlay(ModApiWrapper.PreRenderGuiOverlayEvent event) {
+        if (event.getGuiOverlayType() == ModApiWrapper.GuiOverlayType.PLAYER_LIST) {
             if (!isSomeOverlayEnabled()) {
                 return;
             }
             if (Screen.hasAltDown()) {
                 return;
             }
-            event.setCanceled(true);
+            event.cancel();
         }
     }
 
-    @SubscribeEvent
-    public void onMouseScroll(InputEvent.MouseScrollingEvent event) {
+    private void onMouseScroll(ModApiWrapper.MouseScrollEvent event) {
         if (!isSomeOverlayEnabled()) {
             return;
         }
@@ -167,7 +168,7 @@ public class ChunkOverlayController {
             return;
         }
 
-        event.setCanceled(true);
+        event.cancel();
 
         if (event.getScrollDelta() >= 1.0d) {
             if (scale < MaxScale) {
@@ -206,16 +207,5 @@ public class ChunkOverlayController {
 
     private boolean isSomeOverlayEnabled() {
         return overlays.stream().anyMatch(AbstractChunkOverlay::isEnabled);
-    }
-
-    private void drawTexture(Matrix4f matrix, float x, float y, float width, float height, float z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferBuilder.vertex(matrix, x, y, z).uv(1F * texX / texSizeX, 1F * texY / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x, y + height, z).uv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x + width, y + height, z).uv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x + width, y, z).uv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY).endVertex();
-        BufferUploader.drawWithShader(bufferBuilder.end());
     }
 }
