@@ -36,6 +36,14 @@ public class ModApiWrapper {
         onClientPlayerLoggingIn.forEach(c -> c.accept(connection));
     }
 
+    private static final List<Runnable> onClientPlayerLoggingOut = new ArrayList<>();
+    public static void addOnClientPlayerLoggingOut(Runnable runnable) {
+        onClientPlayerLoggingOut.add(runnable);
+    }
+    public static void triggerOnClientPlayerLoggingOut() {
+        onClientPlayerLoggingOut.forEach(Runnable::run);
+    }
+
     private static final List<Runnable> onChunkLoaded = new ArrayList<>();
     public static void addOnChunkLoaded(Runnable runnable) {
         onChunkLoaded.add(runnable);
@@ -76,14 +84,6 @@ public class ModApiWrapper {
         onRegisterKeyBindings.forEach(c -> c.accept(registry));
     }
 
-    private static final List<Runnable> onKeyInput = new ArrayList<>();
-    public static void addOnKeyInput(Runnable runnable) {
-        onKeyInput.add(runnable);
-    }
-    public static void triggerOnKeyInput() {
-        onKeyInput.forEach(Runnable::run);
-    }
-
     private static final List<Consumer<RenderWorldLastEvent>> onRenderWorldLast = new ArrayList<>();
     public static void addOnRenderWorldLast(Consumer<RenderWorldLastEvent> consumer) {
         onRenderWorldLast.add(consumer);
@@ -92,16 +92,49 @@ public class ModApiWrapper {
         onRenderWorldLast.forEach(c -> c.accept(event));
     }
 
-    public static class RenderWorldLastEvent {
-        private final MatrixStack matrixStack;
-        private final float tickDelta;
-        private final Matrix4f projectionMatrix;
+    private static final List<Consumer<PostRenderGuiEvent>> onPostRenderGui = new ArrayList<>();
+    public static void addOnPostRenderGui(Consumer<PostRenderGuiEvent> consumer) {
+        onPostRenderGui.add(consumer);
+    }
+    public static void triggerOnPostRenderGui(PostRenderGuiEvent event) {
+        onPostRenderGui.forEach(c -> c.accept(event));
+    }
 
-        public RenderWorldLastEvent(MatrixStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
-            this.matrixStack = matrixStack;
-            this.tickDelta = tickDelta;
-            this.projectionMatrix = projectionMatrix;
-        }
+    private static final List<Consumer<PreRenderGuiOverlayEvent>> onPreRenderGuiOverlay = new ArrayList<>();
+    public static void addOnPreRenderGuiOverlay(Consumer<PreRenderGuiOverlayEvent> consumer) {
+        onPreRenderGuiOverlay.add(consumer);
+    }
+    public static boolean triggerOnPreRenderGuiOverlay(PreRenderGuiOverlayEvent event) {
+        onPreRenderGuiOverlay.forEach(c -> c.accept(event));
+        return event.isCanceled();
+    }
+
+    private static final List<Consumer<MouseScrollEvent>> onMouseScroll = new ArrayList<>();
+    public static void addOnMouseScroll(Consumer<MouseScrollEvent> consumer) {
+        onMouseScroll.add(consumer);
+    }
+    public static boolean triggerOnMouseScroll(MouseScrollEvent event) {
+        onMouseScroll.forEach(c -> c.accept(event));
+        return event.isCanceled();
+    }
+
+    private static final List<Runnable> onRenderTickStart = new ArrayList<>();
+    public static void addOnRenderTickStart(Runnable runnable) {
+        onRenderTickStart.add(runnable);
+    }
+    public static void triggerOnRenderTickStart() {
+        onRenderTickStart.forEach(Runnable::run);
+    }
+
+    private static final List<Runnable> onWorldUnload = new ArrayList<>();
+    public static void addOnWorldUnload(Runnable runnable) {
+        onWorldUnload.add(runnable);
+    }
+    public static void triggerOnWorldUnload() {
+        onWorldUnload.forEach(Runnable::run);
+    }
+
+    public record RenderWorldLastEvent(MatrixStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
 
         public MatrixStack getMatrixStack() {
             return matrixStack;
@@ -113,6 +146,65 @@ public class ModApiWrapper {
 
         public Matrix4f getProjectionMatrix() {
             return projectionMatrix;
+        }
+    }
+
+    public record PostRenderGuiEvent(MatrixStack matrixStack, float tickDelta) {
+
+        public MatrixStack getMatrixStack() {
+            return matrixStack;
+        }
+
+        public float getTickDelta() {
+            return tickDelta;
+        }
+    }
+
+    public static class PreRenderGuiOverlayEvent {
+
+        private GuiOverlayType type;
+        private boolean canceled;
+
+        public PreRenderGuiOverlayEvent(GuiOverlayType type) {
+            this.type = type;
+        }
+
+        public GuiOverlayType getGuiOverlayType() {
+            return type;
+        }
+
+        public boolean isCanceled() {
+            return canceled;
+        }
+
+        public void cancel() {
+            canceled = true;
+        }
+    }
+
+    public enum GuiOverlayType {
+        PLAYER_LIST
+    }
+
+    public static class MouseScrollEvent {
+
+        private double scrollDelta;
+        private boolean canceled;
+
+        public MouseScrollEvent(double scrollDelta) {
+            this.scrollDelta = scrollDelta;
+        }
+
+        public double getScrollDelta() {
+            return scrollDelta;
+        }
+
+        public boolean isCanceled() {
+            return canceled;
+        }
+
+        public void cancel() {
+            canceled = true;
         }
     }
 }

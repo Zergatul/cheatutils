@@ -2,7 +2,10 @@ package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
+import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.controllers.ChunkOverlayController;
 import com.zergatul.cheatutils.utils.MathUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
@@ -37,6 +40,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new AutoDropApi());
         apis.add(new ItemInfoApi());
         apis.add(new GenerateEntityMappingApi());
+        apis.add(new StatusOverlayApi());
 
         /*apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -50,7 +54,7 @@ public class ApiHandler implements HttpHandler {
             }
         });*/
 
-        /*apis.add(new SimpleConfigApi<>("auto-fish", AutoFishConfig.class) {
+        apis.add(new SimpleConfigApi<>("auto-fish", AutoFishConfig.class) {
             @Override
             protected AutoFishConfig getConfig() {
                 return ConfigStore.instance.getConfig().autoFishConfig;
@@ -62,7 +66,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("armor-overlay", ArmorOverlayConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("armor-overlay", ArmorOverlayConfig.class) {
             @Override
             protected ArmorOverlayConfig getConfig() {
                 return ConfigStore.instance.getConfig().armorOverlayConfig;
@@ -97,7 +101,7 @@ public class ApiHandler implements HttpHandler {
                 config.friction = Math.min(Math.max(0.01f, config.friction), 0.99f);
                 ConfigStore.instance.getConfig().boatHackConfig = config;
             }
-        });
+        });*/
 
         apis.add(new SimpleConfigApi<>("elytra-hack", ElytraHackConfig.class) {
             @Override
@@ -107,13 +111,11 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(ElytraHackConfig config) {
-                config.horizontalSpeedLimit = MathUtils.clamp(config.horizontalSpeedLimit, 10, 1000);
-                config.speedLimit = MathUtils.clamp(config.speedLimit, 10, 1000);
                 ConfigStore.instance.getConfig().elytraHackConfig = config;
             }
         });
 
-        apis.add(new SimpleConfigApi<>("pig-hack", PigHackConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("pig-hack", PigHackConfig.class) {
             @Override
             protected PigHackConfig getConfig() {
                 return ConfigStore.instance.getConfig().pigHackConfig;
@@ -124,7 +126,7 @@ public class ApiHandler implements HttpHandler {
                 config.steeringSpeed = Math.min(Math.max(0.01f, config.steeringSpeed), 5f);
                 ConfigStore.instance.getConfig().pigHackConfig = config;
             }
-        });
+        });*/
 
         apis.add(new SimpleConfigApi<>("kill-aura", KillAuraConfig.class) {
             @Override
@@ -134,8 +136,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(KillAuraConfig config) {
-                config.maxRange = Math.max(1, config.maxRange);
-                config.priorities.removeIf(Objects::isNull);
                 ConfigStore.instance.getConfig().killAuraConfig = config;
             }
         });
@@ -203,9 +203,9 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(ShulkerTooltipConfig config) {
                 ConfigStore.instance.getConfig().shulkerTooltipConfig = config;
             }
-        });
+        });*/
 
-        /*apis.add(new SimpleConfigApi<>("exploration-mini-map", ExplorationMiniMapConfig.class) {
+        apis.add(new SimpleConfigApi<>("exploration-mini-map", ExplorationMiniMapConfig.class) {
             @Override
             protected ExplorationMiniMapConfig getConfig() {
                 return ConfigStore.instance.getConfig().explorationMiniMapConfig;
@@ -213,11 +213,14 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(ExplorationMiniMapConfig config) {
-                config.dynamicUpdateDelay = Mth.clamp(config.dynamicUpdateDelay, 0, 5000);
+                ExplorationMiniMapConfig oldConfig = ConfigStore.instance.getConfig().explorationMiniMapConfig;
                 ConfigStore.instance.getConfig().explorationMiniMapConfig = config;
-                ExplorationMiniMapController.instance.onChanged();
+
+                if (oldConfig.enabled != config.enabled) {
+                    ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).onEnabledChanged();
+                }
             }
-        });*/
+        });
 
         /*apis.add(new SimpleConfigApi<>("auto-criticals", AutoCriticalsConfig.class) {
             @Override
@@ -229,7 +232,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(AutoCriticalsConfig config) {
                 ConfigStore.instance.getConfig().autoCriticalsConfig = config;
             }
-        });
+        });*/
 
         apis.add(new SimpleConfigApi<>("fly-hack", FlyHackConfig.class) {
             @Override
@@ -239,7 +242,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(FlyHackConfig config) {
-                config.flyingSpeed = MathUtils.clamp(config.flyingSpeed, 0.001f, 10f);
                 ConfigStore.instance.getConfig().flyHackConfig = config;
             }
         });
@@ -256,7 +258,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("death-coordinates", DeathCoordinatesConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("death-coordinates", DeathCoordinatesConfig.class) {
             @Override
             protected DeathCoordinatesConfig getConfig() {
                 return ConfigStore.instance.getConfig().deathCoordinatesConfig;
@@ -279,7 +281,7 @@ public class ApiHandler implements HttpHandler {
                 config.limit = MathUtils.clamp(config.limit, -1000, 1000);
                 ConfigStore.instance.getConfig().elytraTunnelConfig = config;
             }
-        });
+        });*/
 
         apis.add(new SimpleConfigApi<>("free-cam", FreeCamConfig.class) {
             @Override
@@ -289,14 +291,11 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(FreeCamConfig config) {
-                config.acceleration = MathUtils.clamp(config.acceleration, 5, 500);
-                config.maxSpeed = MathUtils.clamp(config.maxSpeed, 5, 500);
-                config.slowdownFactor = MathUtils.clamp(config.slowdownFactor, 1e-9, 0.5);
                 ConfigStore.instance.getConfig().freeCamConfig = config;
             }
         });
 
-        apis.add(new SimpleConfigApi<>("lock-inputs", LockInputsConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("lock-inputs", LockInputsConfig.class) {
             @Override
             protected LockInputsConfig getConfig() {
                 return ConfigStore.instance.getConfig().lockInputsConfig;
@@ -306,7 +305,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(LockInputsConfig config) {
                 ConfigStore.instance.getConfig().lockInputsConfig = config;
             }
-        });
+        });*/
 
         apis.add(new SimpleConfigApi<>("movement-hack", MovementHackConfig.class) {
             @Override
@@ -316,12 +315,11 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(MovementHackConfig config) {
-                config.validate();
                 ConfigStore.instance.getConfig().movementHackConfig = config;
             }
         });
 
-        apis.add(new SimpleConfigApi<>("scaffold", ScaffoldConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("scaffold", ScaffoldConfig.class) {
             @Override
             protected ScaffoldConfig getConfig() {
                 return ConfigStore.instance.getConfig().scaffoldConfig;
@@ -394,7 +392,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(UserNameConfig config) {
                 ConfigStore.instance.getConfig().userNameConfig = config;
             }
-        });
+        });*/
 
         apis.add(new SimpleConfigApi<>("new-chunks", NewChunksConfig.class) {
             @Override
@@ -404,11 +402,16 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(NewChunksConfig config) {
+                NewChunksConfig oldConfig = ConfigStore.instance.getConfig().newChunksConfig;
                 ConfigStore.instance.getConfig().newChunksConfig = config;
+
+                if (oldConfig.enabled != config.enabled) {
+                    ChunkOverlayController.instance.ofType(NewChunksOverlay.class).onEnabledChanged();
+                }
             }
         });
 
-        apis.add(new SimpleConfigApi<>("chunks", ChunksConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("chunks", ChunksConfig.class) {
             @Override
             protected ChunksConfig getConfig() {
                 return ConfigStore.instance.getConfig().chunksConfig;
@@ -431,6 +434,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().containerButtonsConfig = config;
             }
         });*/
+
+        apis.add(new SimpleConfigApi<>("status-overlay", StatusOverlayConfig.class) {
+            @Override
+            protected StatusOverlayConfig getConfig() {
+                return ConfigStore.instance.getConfig().statusOverlayConfig;
+            }
+
+            @Override
+            protected void setConfig(StatusOverlayConfig config) {
+                ConfigStore.instance.getConfig().statusOverlayConfig.enabled = config.enabled;
+            }
+        });
     }
 
     @Override

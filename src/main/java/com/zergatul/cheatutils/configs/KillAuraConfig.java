@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 
+import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -8,27 +9,31 @@ import net.minecraft.entity.mob.*;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.ShulkerBulletEntity;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
 
-public class KillAuraConfig {
+public class KillAuraConfig implements ValidatableConfig {
 
     public boolean active;
     public float maxRange;
     public List<PriorityEntry> priorities;
-    public boolean attackEveryTick;
+    public int attackTickInterval;
 
     public KillAuraConfig() {
         active = false;
         maxRange = 6;
+        attackTickInterval = 1;
         priorities = new ArrayList<>();
         priorities.add(PriorityEntry.shulkerBullets);
         priorities.add(PriorityEntry.monsters);
         priorities.add(PriorityEntry.phantoms);
         priorities.add(PriorityEntry.shulkers);
+    }
+
+    public void validate() {
+        maxRange = MathUtils.clamp(maxRange, 1, 100);
+        attackTickInterval = MathUtils.clamp(attackTickInterval, 1, 100);
+        priorities.removeIf(Objects::isNull);
     }
 
     public static class PriorityEntry {
@@ -53,6 +58,7 @@ public class KillAuraConfig {
         public static final PriorityEntry players = new PriorityEntry("Players", null, OtherClientPlayerEntity.class);
         public static final PriorityEntry fireballs = new PriorityEntry("Fireball", "For example Ghast projectiles", FireballEntity.class);
         public static final PriorityEntry magmaCubes = new PriorityEntry("Magma Cubes", null, MagmaCubeEntity.class);
+        public static final PriorityEntry slimes = new PriorityEntry("Slimes", null, SlimeEntity.class, (entity, player) -> entity.getClass() == SlimeEntity.class);
 
         public final String name;
         public final String description;

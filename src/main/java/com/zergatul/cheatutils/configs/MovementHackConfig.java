@@ -2,12 +2,13 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class MovementHackConfig {
-    public boolean preserveSpeed;
+public class MovementHackConfig implements ValidatableConfig {
     public boolean disableSlowdownOnUseItem;
     public boolean scaleInputVector;
     public double inputVectorFactor;
     public boolean disableCrouchingSlowdown;
+    public boolean antiKnockback;
+    public boolean antiPush;
 
     public MovementHackConfig() {
         inputVectorFactor = 1;

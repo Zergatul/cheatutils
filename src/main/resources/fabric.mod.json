@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "CheatUtils",
-  "description": "Description",
+  "description": "Open http://localhost:5005/ in your browser to access mod settings.\nYou can find tutorial videos on curseforge page: https://www.curseforge.com/minecraft/mc-mods/cheatutils-by-zergatul\nSource code: https://github.com/Zergatul/cheatutils",
   "authors": [
     "Zergatul"
   ],

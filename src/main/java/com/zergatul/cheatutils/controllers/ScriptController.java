@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.configs.ScriptsConfig;
-import com.zergatul.cheatutils.scripting.ParseException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptingLanguageCompiler;
+import com.zergatul.cheatutils.scripting.generated.ParseException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,13 +15,15 @@ public class ScriptController {
 
     public static final ScriptController instance = new ScriptController();
 
+    private ScriptingLanguageCompiler keysCompiler = new ScriptingLanguageCompiler(com.zergatul.cheatutils.scripting.api.keys.Root.class);
+    private ScriptingLanguageCompiler overlayCompiler = new ScriptingLanguageCompiler(com.zergatul.cheatutils.scripting.api.overlay.Root.class);
     private List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
     private ScriptController() {
 
     }
 
-    public void add(String name, String code) throws IllegalArgumentException, ParseException, ScriptCompileException {
+    public void add(String name, String code) throws IllegalArgumentException, ScriptCompileException, ParseException {
         if (name == null) {
             throw new IllegalArgumentException("Name is required.");
         }
@@ -34,7 +36,7 @@ public class ScriptController {
         var script = new Script();
         script.name = name;
         script.code = code;
-        script.compiled = new ScriptingLanguageCompiler().compile(code);
+        script.compiled = keysCompiler.compile(code);
         scripts.add(script);
         ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
     }
@@ -77,7 +79,7 @@ public class ScriptController {
             if (bindingIndex >= 0) {
                 bindings[bindingIndex] = newName;
             }
-            script.compiled = new ScriptingLanguageCompiler().compile(code);
+            script.compiled = keysCompiler.compile(code);
             if (bindingIndex >= 0) {
                 KeyBindingsController.instance.assign(bindingIndex, newName);
             }
@@ -104,6 +106,10 @@ public class ScriptController {
         KeyBindingsController.instance.assign(-1, name);
         scripts.removeIf(s -> s.name.equals(name));
         ConfigStore.instance.getConfig().scriptsConfig.scripts.removeIf(s -> s.name.equals(name));
+    }
+
+    public Runnable compileOverlay(String code) throws ParseException, ScriptCompileException {
+        return overlayCompiler.compile(code);
     }
 
     public static class Script {

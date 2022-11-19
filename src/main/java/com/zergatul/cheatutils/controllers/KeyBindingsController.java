@@ -24,7 +24,6 @@ public class KeyBindingsController {
         }
 
         ModApiWrapper.addOnRegisterKeyBindings(this::onRegisterKeyBindings);
-        ModApiWrapper.addOnKeyInput(this::onKeyInput);
     }
 
     public void assign(int index, String name) {
@@ -48,14 +47,18 @@ public class KeyBindingsController {
         }
     }
 
-    private void onKeyInput() {
+    public void onHandleKeyBindings() {
         if (mc.player == null) {
             return;
         }
 
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i].isPressed() && actions[i] != null) {
-                actions[i].run();
+            KeyBinding key = keys[i];
+            Runnable action = actions[i];
+            while (key.wasPressed()) {
+                if (action != null) {
+                    action.run();
+                }
             }
         }
     }

@@ -3,17 +3,24 @@
   "minVersion": "0.8",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [
-  ],
   "client": [
+    "MixinCamera",
     "MixinClientChunkManager",
     "MixinClientConnection",
+    "MixinClientPlayerEntity",
     "MixinClientPlayNetworkHandler",
     "MixinClientWorld",
     "MixinControlsListWidgetKeyBindingEntry",
+    "MixinDebugHud",
+    "MixinGameRenderer",
     "MixinEntity",
-    "MixinKeyboard",
+    "MixinInGameHud",
+    "MixinKeyBinding",
     "MixinMinecraftClient",
+    "MixinMouse",
+    "MixinPerspective",
+    "MixinPlayerListHud",
+    "MixinPlayerMoveC2SPacket",
     "MixinWorldRenderer"
   ],
   "injectors": {

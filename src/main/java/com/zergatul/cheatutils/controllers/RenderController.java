@@ -20,6 +20,7 @@ import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
 import java.util.HashSet;
+import java.util.Set;
 
 public class RenderController {
 
@@ -138,44 +139,37 @@ public class RenderController {
     }
 
     private static void renderBlocks(BufferBuilder buffer, Vec3d view, double tracerX, double tracerY, double tracerZ, double playerX, double playerY, double playerZ) {
-        var list = ConfigStore.instance.getConfig().blocks.configs;
-        synchronized (list) {
-            for (BlockTracerConfig config: list) {
-                if (!config.enabled) {
-                    continue;
-                }
+        for (BlockTracerConfig config: ConfigStore.instance.getConfig().blocks.configs) {
+            if (!config.enabled) {
+                continue;
+            }
 
-                Identifier id = ModApiWrapper.BLOCKS.getKey(config.block);
+            Set<BlockPos> set = BlockFinderController.instance.blocks.get(config.block);
+            if (set == null) {
+                continue;
+            }
 
-                synchronized (BlockFinderController.instance.blocks) {
-                    HashSet<BlockPos> set = BlockFinderController.instance.blocks.get(id);
-                    if (set == null) {
+            for (BlockPos pos: set) {
+                if (config.maxDistance != Double.MAX_VALUE) {
+                    double dx = pos.getX() - playerX;
+                    double dy = pos.getY() - playerY;
+                    double dz = pos.getZ() - playerZ;
+                    if (dx * dx + dy * dy + dz * dz > config.maxDistance * config.maxDistance) {
                         continue;
                     }
+                }
 
-                    for (BlockPos pos : set) {
-                        if (config.maxDistance != Double.MAX_VALUE) {
-                            double dx = pos.getX() - playerX;
-                            double dy = pos.getY() - playerY;
-                            double dz = pos.getZ() - playerZ;
-                            if (dx * dx + dy * dy + dz * dz > config.maxDistance * config.maxDistance) {
-                                continue;
-                            }
-                        }
+                if (config.drawOutline) {
+                    renderBlockBounding(buffer, view, pos, config);
+                }
 
-                        if (config.drawOutline) {
-                            renderBlockBounding(buffer, view, pos, config);
-                        }
-
-                        if (config.drawTracers) {
-                            drawTracer(
-                                buffer,
-                                view,
-                                tracerX, tracerY, tracerZ,
-                                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                                config);
-                        }
-                    }
+                if (config.drawTracers) {
+                    drawTracer(
+                            buffer,
+                            view,
+                            tracerX, tracerY, tracerZ,
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            config);
                 }
             }
         }
@@ -183,41 +177,43 @@ public class RenderController {
 
     private static void renderEntities(BufferBuilder buffer, Vec3d view, MinecraftClient mc, float partialTicks, double tracerX, double tracerY, double tracerZ, double playerX, double playerY, double playerZ) {
         var list = ConfigStore.instance.getConfig().entities.configs;
-        synchronized (list) {
-            for (Entity entity : ((ClientWorldMixinInterface)mc.world).getEntityManager().getLookup().iterate()) {
-                if (entity instanceof ClientPlayerEntity) {
-                    continue;
-                }
+        for (Entity entity : ((ClientWorldMixinInterface)mc.world).getEntityManager().getLookup().iterate()) {
+            if (entity instanceof ClientPlayerEntity) {
+                continue;
+            }
 
-                double dx = entity.getX() - playerX;
-                double dy = entity.getY() - playerY;
-                double dz = entity.getZ() - playerZ;
-                double distance2 = dx * dx + dy * dy + dz * dz;
+            if (entity.isRemoved()) {
+                return;
+            }
 
-                EntityTracerConfig config = list.stream().filter(c ->
-                        c.enabled &&
-                        c.drawOutline &&
-                        c.clazz.isInstance(entity) &&
-                        distance2 < c.maxDistance * c.maxDistance).findFirst().orElse(null);
+            double dx = entity.getX() - playerX;
+            double dy = entity.getY() - playerY;
+            double dz = entity.getZ() - playerZ;
+            double distance2 = dx * dx + dy * dy + dz * dz;
 
-                if (config != null) {
-                    renderEntityBounding(buffer, view, partialTicks, entity, config);
-                }
+            EntityTracerConfig config = list.stream().filter(c ->
+                    c.enabled &&
+                    c.drawOutline &&
+                    c.clazz.isInstance(entity) &&
+                    distance2 < c.maxDistance * c.maxDistance).findFirst().orElse(null);
 
-                config = list.stream().filter(c ->
-                        c.enabled &&
-                        c.drawTracers &&
-                        c.clazz.isInstance(entity) &&
-                        distance2 < c.maxDistance * c.maxDistance).findFirst().orElse(null);
+            if (config != null) {
+                renderEntityBounding(buffer, view, partialTicks, entity, config);
+            }
 
-                if (config != null) {
-                    drawTracer(
-                        buffer,
-                        view,
-                        tracerX, tracerY, tracerZ,
-                        getEntityX(entity, partialTicks), getEntityY(entity, partialTicks), getEntityZ(entity, partialTicks),
-                        config);
-                }
+            config = list.stream().filter(c ->
+                    c.enabled &&
+                    c.drawTracers &&
+                    c.clazz.isInstance(entity) &&
+                    distance2 < c.maxDistance * c.maxDistance).findFirst().orElse(null);
+
+            if (config != null) {
+                drawTracer(
+                    buffer,
+                    view,
+                    tracerX, tracerY, tracerZ,
+                    getEntityX(entity, partialTicks), getEntityY(entity, partialTicks), getEntityZ(entity, partialTicks),
+                    config);
             }
         }
     }
@@ -323,27 +319,12 @@ public class RenderController {
     }
 
     private static void drawTracer(BufferBuilder buffer, Vec3d view, double tx, double ty, double tz, double x, double y, double z, TracerConfigBase config) {
-
-        /*short lineStyle = (short)config.tracerLineStyle;
-        if (lineStyle != 0) {
-            GL11.glEnable(GL11.GL_LINE_STIPPLE);
-            GL11.glLineStipple(Math.max(config.tracerLineWidth, 1), lineStyle);
-        }*/
-
-        //GL11.glLineWidth(config.tracerLineWidth);
-
-        //setColor(config.tracerColor);
-
         float r = config.tracerColor.getRed() / 255f;
         float g = config.tracerColor.getGreen() / 255f;
         float b = config.tracerColor.getBlue() / 255f;
 
         buffer.vertex(tx - view.x, ty - view.y, tz - view.z).color(r, g, b, 1f).next();
         buffer.vertex(x - view.x, y - view.y, z - view.z).color(r, g, b, 1f).next();
-
-        /*if (lineStyle != 0) {
-            GL11.glDisable(GL11.GL_LINE_STIPPLE);
-        }*/
     }
 
     private static double getEntityX(Entity entity, float partialTicks) {

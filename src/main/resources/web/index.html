@@ -32,7 +32,7 @@
                 <tbody>
                     <tr>
                         <td>
-                            <button @click="current = 'auto-disconnect'" class="hidden">Auto Disconnect</button>
+                            <button @click="current = 'auto-fish'">Auto Fish</button>
                         </td>
                         <td>
                             <button @click="current = 'blocks'">Blocks</button>
@@ -49,13 +49,13 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'kill-aura'" class="hidden">Kill Aura</button>
+                            <button @click="current = 'auto-totem'">Auto Totem</button>
                         </td>
                         <td>
                             <button @click="current = 'entities'">Entities</button>
                         </td>
                         <td>
-                            <button @click="current = 'elytra-hack'" class="hidden">Elytra</button>
+                            <button @click="current = 'elytra-hack'">Elytra</button>
                         </td>
                         <td>
                             <button @click="current = 'armor-overlay'" class="hidden">Armor Overlay</button>
@@ -66,12 +66,13 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'auto-fish'" class="hidden">Auto Fish</button>
+                            <button @click="current = 'auto-disconnect'" class="hidden">Auto Disconnect</button>
                         </td>
                         <td>
                             <button @click="current = 'ender-pearl-path'" class="hidden">Ender Pearl Path</button>
                         </td>
                         <td>
+                            <button @click="current = 'kill-aura'">Kill Aura</button>
                             <button @click="current = 'pig-hack'" class="hidden">Pig</button>
                         </td>
                         <td>
@@ -83,7 +84,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'auto-totem'" class="hidden">Auto Totem</button>
+                            
                         </td>
                         <td>
                             <button @click="current = 'light-level'" class="hidden">Light Level</button>
@@ -94,6 +95,9 @@
                         <td>
                             <button @click="current = 'advanced-tooltips'" class="hidden">Advanced Tooltips</button>
                         </td>
+                        <td>
+                            <button @click="current = 'status-overlay'">Status Overlay</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -103,10 +107,10 @@
                             <button @click="current = 'end-city-chunks'" class="hidden">End City Chunks</button>
                         </td>
                         <td>
-                            <button @click="current = 'fly-hack'" class="hidden">Fly</button>
+                            <button @click="current = 'fly-hack'">Fly</button>
                         </td>
                         <td>
-                            <button @click="current = 'exploration-mini-map'" class="hidden">Exploration Mini Map</button>
+                            <button @click="current = 'exploration-mini-map'">Exploration Mini Map</button>
                         </td>
                     </tr>
                     <tr>
@@ -128,10 +132,10 @@
                             <button @click="current = 'container-buttons'" class="hidden">Container Buttons</button>
                         </td>
                         <td>
-                            <button @click="current = 'free-cam'" class="hidden">Free Cam</button>
+                            <button @click="current = 'free-cam'">Free Cam</button>
                         </td>
                         <td>
-                            <button @click="current = 'movement-hack'" class="hidden">Movement</button>
+                            <button @click="current = 'movement-hack'">Movement</button>
                         </td>
                         <td>
                             <button @click="current = 'fog'" class="hidden">Fog</button>
@@ -140,7 +144,7 @@
                     <tr>
                         <td></td>
                         <td>
-                            <button @click="current = 'new-chunks'" class="hidden">New Chunks (BETA)</button>
+                            <button @click="current = 'new-chunks'">New Chunks</button>
                         </td>
                         <td>
                             <button @click="current = 'scaffold'" class="hidden">Scaffold</button>
@@ -335,6 +339,11 @@
             v-if="current == 'container-buttons'"
             @back="backToMain()">
         </container-buttons-config>
+
+        <status-overlay-config
+            v-if="current == 'status-overlay'"
+            @back="backToMain()">
+        </status-overlay-config>
 
     </div>
 

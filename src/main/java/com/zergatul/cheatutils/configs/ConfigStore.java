@@ -2,12 +2,13 @@ package com.zergatul.cheatutils.configs;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
 import com.zergatul.cheatutils.controllers.KeyBindingsController;
 import com.zergatul.cheatutils.controllers.ScriptController;
-import com.zergatul.cheatutils.scripting.ParseException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
+import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.InputUtil;
 import org.apache.logging.log4j.LogManager;
@@ -29,6 +30,7 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
+            .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
             .registerTypeAdapter(KillAuraConfig.PriorityEntry.class, new KillAuraConfig$PriorityEntryTypeAdapter())
             .setPrettyPrinting()
             .create();
@@ -135,6 +137,13 @@ public class ConfigStore {
     private void onConfigLoaded() {
         //LightLevelController.instance.onChanged();
         config.blocks.apply();
+
+        // TODO: use reflection to automatically find ValidatableConfig's?
+        config.killAuraConfig.validate();
+        config.movementHackConfig.validate();
+        config.elytraHackConfig.validate();
+        config.freeCamConfig.validate();
+        config.flyHackConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

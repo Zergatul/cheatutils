@@ -13,49 +13,44 @@ public class EntitiesConfigApi extends ApiBase {
     }
 
     @Override
-    public String get() throws MethodNotSupportedException {
+    public synchronized String get() throws MethodNotSupportedException {
         Object[] result;
         var list = ConfigStore.instance.getConfig().entities.configs;
-        synchronized (list) {
-            result = list.stream().toArray();
-        }
+        result = list.stream().toArray();
         return gson.toJson(result);
     }
 
     @Override
-    public String post(String body) throws MethodNotSupportedException {
+    public synchronized String post(String body) throws MethodNotSupportedException {
         EntityTracerConfig jsonConfig = gson.fromJson(body, EntityTracerConfig.class);
 
-        EntityTracerConfig config;
-        var list = ConfigStore.instance.getConfig().entities.configs;
-        synchronized (list) {
-            config = list.stream().filter(c -> c.clazz == jsonConfig.clazz).findFirst().orElse(null);
-            if (config != null) {
-                throw new MethodNotSupportedException("Entity config already exists.");
-            }
-
-            config = EntityTracerConfig.createDefault(jsonConfig.clazz);
-            list.add(config);
+        EntityTracerConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
+                .filter(c -> c.clazz == jsonConfig.clazz)
+                .findFirst()
+                .orElse(null);
+        if (config != null) {
+            throw new MethodNotSupportedException("Entity config already exists.");
         }
 
+        config = EntityTracerConfig.createDefault(jsonConfig.clazz);
+        ConfigStore.instance.getConfig().entities.add(config);
         ConfigStore.instance.requestWrite();
 
         return gson.toJson(config);
     }
 
     @Override
-    public String put(String className, String body) throws MethodNotSupportedException {
+    public synchronized String put(String className, String body) throws MethodNotSupportedException {
         EntityTracerConfig jsonConfig = gson.fromJson(body, EntityTracerConfig.class);
         String obfClassName = ClassRemapper.toObf(className);
         if (!obfClassName.equals(jsonConfig.clazz.getName())) {
             throw new MethodNotSupportedException("Entity class name don't match.");
         }
 
-        EntityTracerConfig config;
-        var list = ConfigStore.instance.getConfig().entities.configs;
-        synchronized (list) {
-            config = list.stream().filter(c -> c.clazz == jsonConfig.clazz).findFirst().orElse(null);
-        }
+        EntityTracerConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
+                .filter(c -> c.clazz == jsonConfig.clazz)
+                .findFirst()
+                .orElse(null);
 
         if (config == null) {
             throw new MethodNotSupportedException("Cannot find entity config.");
@@ -68,18 +63,14 @@ public class EntitiesConfigApi extends ApiBase {
     }
 
     @Override
-    public String delete(String className) throws MethodNotSupportedException {
-        var list = ConfigStore.instance.getConfig().entities.configs;
+    public synchronized String delete(String className) throws MethodNotSupportedException {
         String obfClassName = ClassRemapper.toObf(className);
-        synchronized (list) {
-            EntityTracerConfig config = list.stream().filter(c -> c.clazz.getName().equals(obfClassName)).findFirst().orElse(null);
-            if (config == null) {
-                throw new MethodNotSupportedException("Cannot find entity config.");
-            }
+        EntityTracerConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
+                .filter(c -> c.clazz.getName().equals(obfClassName))
+                .findFirst()
+                .orElse(null);
 
-            list.remove(config);
-        }
-
+        ConfigStore.instance.getConfig().entities.remove(config);
         ConfigStore.instance.requestWrite();
 
         return "{ ok: true }";

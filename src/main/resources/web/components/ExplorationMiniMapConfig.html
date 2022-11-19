@@ -18,18 +18,6 @@
             </label>
         </div>
         <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.dynamicUpdate"
-                    @change="update()">
-                <span>Dynamic update (update mini map on blocks change, can cause fps drop on low end systems)</span>
-            </label>
-        </div>
-        <div>
-            <span class="text">Dynamic update delay (ms):</span>
-            <input type="text" v-model="config.dynamicUpdateDelay" @change="update()">
-        </div>
-        <div>
             <button @click="addMarker()">Add Marker</button>
             <button @click="clearMarkers()">Clear Markers</button>
         </div>

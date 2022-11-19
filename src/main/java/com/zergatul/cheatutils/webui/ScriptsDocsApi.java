@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.scripting.api.Root;
+import com.zergatul.cheatutils.scripting.api.HelpText;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpException;
 
 import java.lang.reflect.Field;
@@ -20,9 +21,20 @@ public class ScriptsDocsApi extends ApiBase {
     }
 
     @Override
-    public String get() throws HttpException {
+    public String get(String id) throws HttpException {
         List<String> refs = new ArrayList<>();
-        Field[] fields = Root.class.getDeclaredFields();
+        Class<?> clazz = null;
+        switch (id) {
+            case "keys":
+                clazz = com.zergatul.cheatutils.scripting.api.keys.Root.class;
+                break;
+            case "overlay":
+                clazz = com.zergatul.cheatutils.scripting.api.overlay.Root.class;
+                break;
+            default:
+                return null;
+        }
+        Field[] fields = clazz.getDeclaredFields();
         String space = "&nbsp;";
         Arrays.stream(fields).sorted(Comparator.comparing(Field::getName)).forEach(f -> {
             Method[] methods = f.getType().getDeclaredMethods();
@@ -33,7 +45,14 @@ public class ScriptsDocsApi extends ApiBase {
                 if (m.getReturnType() != void.class) {
                     returnStr = space + "→" + space + formatClass(m.getReturnType());
                 }
-                refs.add(f.getName() + ".<span class=\"method\">" + m.getName() + "</span>(" + paramsStr + ")" + returnStr);
+                String comment = "";
+                if (m.isAnnotationPresent(HelpText.class)) {
+                    HelpText helpText = m.getAnnotation(HelpText.class);
+                    if (helpText.value() != null && helpText.value().length() > 0) {
+                        comment = formatComment("/* " + helpText.value() + " */");
+                    }
+                }
+                refs.add(f.getName() + ".<span class=\"method\">" + m.getName() + "</span>(" + paramsStr + ")" + returnStr + comment);
             });
         });
 
@@ -43,5 +62,9 @@ public class ScriptsDocsApi extends ApiBase {
     private String formatClass(Class clazz) {
         String name = clazz == String.class ? "String" : (clazz == double.class ? "float" : clazz.getName());
         return "<span class=\"class\">" + name + "</span>";
+    }
+
+    private String formatComment(String text) {
+        return "<span class=\"comment\">&nbsp;" + StringEscapeUtils.escapeHtml4(text) + "</span>";
     }
 }
