@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.configs.ScaffoldConfig;
 
 public class ScaffoldApi {
 
-    /*public boolean isEnabled() {
+    public boolean isEnabled() {
         var config = getConfig();
         return config.enabled;
     }
@@ -17,5 +17,5 @@ public class ScaffoldApi {
 
     private ScaffoldConfig getConfig() {
         return ConfigStore.instance.getConfig().scaffoldConfig;
-    }*/
+    }
 }

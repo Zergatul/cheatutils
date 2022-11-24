@@ -33,6 +33,6 @@ public abstract class MixinClientPlayNetworkHandler implements ClientPlayNetwork
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/s2c/play/GameJoinS2CPacket;playerEntityId()I"), method = "Lnet/minecraft/client/network/ClientPlayNetworkHandler;onGameJoin(Lnet/minecraft/network/packet/s2c/play/GameJoinS2CPacket;)V")
     private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo info) {
-        ModApiWrapper.triggerOnClientPlayerLoggingIn(MinecraftClient.getInstance().getNetworkHandler().getConnection());
+        ModApiWrapper.ClientPlayerLoggingIn.trigger(MinecraftClient.getInstance().getNetworkHandler().getConnection());
     }
 }

@@ -20,7 +20,7 @@ public class KillAuraController {
 
     private KillAuraController() {
         PlayerMotionController.instance.addOnAfterSendPosition(this::onAfterSendPosition);
-        ModApiWrapper.addOnClientTickEnd(this::onClientTickEnd);
+        ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
     }
 
     private void onClientTickEnd() {

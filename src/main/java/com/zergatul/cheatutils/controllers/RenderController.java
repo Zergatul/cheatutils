@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.configs.TracerConfigBase;
 import com.zergatul.cheatutils.interfaces.ClientWorldMixinInterface;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -30,11 +31,11 @@ public class RenderController {
     private VertexBuffer vertexBuffer;
 
     private RenderController() {
+        ModApiWrapper.RenderWorldLast.add(this::onRenderWorldLastEvent);
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
-        ModApiWrapper.addOnRenderWorldLast(this::onRenderWorldLastEvent);
     }
 
-    private void onRenderWorldLastEvent(ModApiWrapper.RenderWorldLastEvent event) {
+    private void onRenderWorldLastEvent(RenderWorldLastEvent event) {
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }

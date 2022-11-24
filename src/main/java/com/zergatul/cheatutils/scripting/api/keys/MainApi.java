@@ -2,11 +2,13 @@ package com.zergatul.cheatutils.scripting.api.keys;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.ColorUtils;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 
 import java.util.Locale;
 
@@ -25,30 +27,27 @@ public class MainApi {
     }
 
     public void systemMessage(String text) {
-        MinecraftClient.getInstance().getMessageHandler().onGameMessage(MutableText.of(new LiteralTextContent(text)), false);
+        showMessage(constructMessage(text), false);
+    }
+
+    public void overlayMessage(String text) {
+        showMessage(constructMessage(text), true);
     }
 
     public void systemMessage(String color, String text) {
-        Integer colorInt = ColorUtils.parseColor(color);
-        MutableText component = MutableText.of(new LiteralTextContent(text));
-        if (colorInt != null) {
-            component = component.setStyle(Style.EMPTY.withColor(colorInt));
-        }
-        MinecraftClient.getInstance().getMessageHandler().onGameMessage(component, false);
+        showMessage(constructMessage(color, text), false);
+    }
+
+    public void overlayMessage(String color, String text) {
+        showMessage(constructMessage(color, text), true);
     }
 
     public void systemMessage(String color1, String text1, String color2, String text2) {
-        Integer color1Int = ColorUtils.parseColor(color1);
-        Integer color2Int = ColorUtils.parseColor(color2);
-        MutableText component1 = MutableText.of(new LiteralTextContent(text1));
-        if (color1Int != null) {
-            component1 = component1.setStyle(Style.EMPTY.withColor(color1Int));
-        }
-        MutableText component2 = MutableText.of(new LiteralTextContent(text2));
-        if (color2Int != null) {
-            component2 = component2.setStyle(Style.EMPTY.withColor(color2Int));
-        }
-        MinecraftClient.getInstance().getMessageHandler().onGameMessage(component1.append(" ").append(component2), false);
+        showMessage(constructMessage(color1, text1, color2, text2), false);
+    }
+
+    public void overlayMessage(String color1, String text1, String color2, String text2) {
+        showMessage(constructMessage(color1, text1, color2, text2), true);
     }
 
     /*public void openClosestChestBoat() {
@@ -101,4 +100,35 @@ public class MainApi {
         mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
         mc.player.swing(InteractionHand.MAIN_HAND);
     }*/
+
+    private Text constructMessage(String text) {
+        return MutableText.of(new LiteralTextContent(text));
+    }
+
+    private Text constructMessage(String color, String text) {
+        Integer colorInt = ColorUtils.parseColor(color);
+        MutableText component = MutableText.of(new LiteralTextContent(text));
+        if (colorInt != null) {
+            component = component.setStyle(Style.EMPTY.withColor(colorInt));
+        }
+        return component;
+    }
+
+    private Text constructMessage(String color1, String text1, String color2, String text2) {
+        Integer color1Int = ColorUtils.parseColor(color1);
+        Integer color2Int = ColorUtils.parseColor(color2);
+        MutableText component1 = MutableText.of(new LiteralTextContent(text1));
+        if (color1Int != null) {
+            component1 = component1.setStyle(Style.EMPTY.withColor(color1Int));
+        }
+        MutableText component2 = MutableText.of(new LiteralTextContent(text2));
+        if (color2Int != null) {
+            component2 = component2.setStyle(Style.EMPTY.withColor(color2Int));
+        }
+        return component1.append(" ").append(component2);
+    }
+
+    private void showMessage(Text message, boolean overlay) {
+        MinecraftClient.getInstance().getMessageHandler().onGameMessage(message, overlay);
+    }
 }

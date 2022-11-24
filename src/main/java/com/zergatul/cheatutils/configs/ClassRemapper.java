@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class ClassRemapper {
 
+    //FabricLoader.getInstance().getMappingResolver().getCurrentRuntimeNamespace();
     private static final boolean enabled = true;
     private static final Map<String, String> obfToNorm = new HashMap<>();
     private static final Map<String, String> normToObf = new HashMap<>();

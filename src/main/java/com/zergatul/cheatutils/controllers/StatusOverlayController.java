@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
 import com.zergatul.cheatutils.utils.GuiUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.PostRenderGuiEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.text.MutableText;
@@ -32,7 +33,7 @@ public class StatusOverlayController {
             texts.put(align, new ArrayList<>());
         }
 
-        ModApiWrapper.addOnPostRenderGui(this::render);
+        ModApiWrapper.PostRenderGui.add(this::render);
     }
 
     public void setScript(Runnable script) {
@@ -51,7 +52,7 @@ public class StatusOverlayController {
         vAlign = align;
     }
 
-    private void render(ModApiWrapper.PostRenderGuiEvent event) {
+    private void render(PostRenderGuiEvent event) {
         if (mc.player == null) {
             return;
         }

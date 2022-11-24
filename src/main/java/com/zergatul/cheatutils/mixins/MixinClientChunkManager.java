@@ -21,12 +21,12 @@ public abstract class MixinClientChunkManager {
     private void onLoadChunkFromPacket(int x, int z, PacketByteBuf buf, NbtCompound nbt, Consumer<ChunkData.BlockEntityVisitor> consumer, CallbackInfoReturnable<WorldChunk> info) {
         WorldChunk chunk = info.getReturnValue();
         if (chunk != null) {
-            ModApiWrapper.triggerOnChunkLoaded();
+            ModApiWrapper.ChunkLoaded.trigger();
         }
     }
 
     @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/world/ClientChunkManager;unload(II)V")
     private void onUnload(int chunkX, int chunkZ, CallbackInfo info) {
-        ModApiWrapper.triggerOnChunkUnloaded();
+        ModApiWrapper.ChunkUnloaded.trigger();
     }
 }

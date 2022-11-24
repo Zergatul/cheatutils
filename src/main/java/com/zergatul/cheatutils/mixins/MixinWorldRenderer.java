@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins;
 
 import com.zergatul.cheatutils.controllers.FreeCamController;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
@@ -21,7 +22,7 @@ public abstract class MixinWorldRenderer {
             method = "Lnet/minecraft/client/render/WorldRenderer;render(Lnet/minecraft/client/util/math/MatrixStack;FJZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lnet/minecraft/util/math/Matrix4f;)V",
             at = @At("TAIL"))
     private void onRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo info) {
-        ModApiWrapper.triggerOnRenderWorldLast(new ModApiWrapper.RenderWorldLastEvent(matrices, tickDelta, positionMatrix));
+        ModApiWrapper.RenderWorldLast.trigger(new RenderWorldLastEvent(matrices, tickDelta, positionMatrix));
     }
 
     @ModifyArg(

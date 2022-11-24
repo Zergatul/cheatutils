@@ -18,7 +18,7 @@ public class AutoTotemController {
     private final MinecraftClient mc = MinecraftClient.getInstance();
 
     private AutoTotemController() {
-        ModApiWrapper.addOnClientTickEnd(this::onClientTickEnd);
+        ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
     }
 
     private void onClientTickEnd() {

@@ -319,7 +319,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        /*apis.add(new SimpleConfigApi<>("scaffold", ScaffoldConfig.class) {
+        apis.add(new SimpleConfigApi<>("scaffold", ScaffoldConfig.class) {
             @Override
             protected ScaffoldConfig getConfig() {
                 return ConfigStore.instance.getConfig().scaffoldConfig;
@@ -327,12 +327,11 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(ScaffoldConfig config) {
-                config.distance = MathUtils.clamp(config.distance, 0, 0.5);
                 ConfigStore.instance.getConfig().scaffoldConfig = config;
             }
         });
 
-        apis.add(new SimpleConfigApi<>("advanced-tooltips", AdvancedTooltipsConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("advanced-tooltips", AdvancedTooltipsConfig.class) {
             @Override
             protected AdvancedTooltipsConfig getConfig() {
                 return ConfigStore.instance.getConfig().advancedTooltipsConfig;

@@ -40,7 +40,7 @@ public abstract class MixinMinecraftClient {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;reset()V", shift = At.Shift.AFTER), method = "Lnet/minecraft/client/MinecraftClient;disconnect(Lnet/minecraft/client/gui/screen/Screen;)V")
     private void onDisconnect(Screen screen, CallbackInfo info) {
-        ModApiWrapper.triggerOnClientPlayerLoggingOut();
+        ModApiWrapper.ClientPlayerLoggingOut.trigger();
     }
 
     @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/MinecraftClient;handleInputEvents()V")
@@ -50,13 +50,13 @@ public abstract class MixinMinecraftClient {
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/MinecraftClient;render(Z)V")
     private void onBeforeRender(boolean tick, CallbackInfo info) {
-        ModApiWrapper.triggerOnRenderTickStart();
+        ModApiWrapper.RenderTickStart.trigger();
     }
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/MinecraftClient;joinWorld(Lnet/minecraft/client/world/ClientWorld;)V")
     private void onBeforeJoinWorld(ClientWorld world, CallbackInfo info) {
         if (world != null) {
-            ModApiWrapper.triggerOnWorldUnload();
+            ModApiWrapper.WorldUnload.trigger();
         }
     }
 
@@ -64,7 +64,7 @@ public abstract class MixinMinecraftClient {
     private void onBeforeDisconnect(Screen screen, CallbackInfo info) {
         MinecraftClient mc = (MinecraftClient) (Object) this;
         if (mc.world != null) {
-            ModApiWrapper.triggerOnWorldUnload();
+            ModApiWrapper.WorldUnload.trigger();
         }
     }
 }

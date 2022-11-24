@@ -42,9 +42,9 @@ public class FreeCamController {
     private boolean insideRenderDebug;
 
     private FreeCamController() {
-        ModApiWrapper.addOnClientTickStart(this::onClientTickStart);
-        ModApiWrapper.addOnRenderTickStart(this::onRenderTickStart);
-        ModApiWrapper.addOnWorldUnload(this::onWorldUnload);
+        ModApiWrapper.ClientTickStart.add(this::onClientTickStart);
+        ModApiWrapper.RenderTickStart.add(this::onRenderTickStart);
+        ModApiWrapper.WorldUnload.add(this::onWorldUnload);
     }
 
     public boolean isActive() {

@@ -7,6 +7,9 @@ import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.GuiUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.MouseScrollEvent;
+import com.zergatul.cheatutils.wrappers.events.PostRenderGuiEvent;
+import com.zergatul.cheatutils.wrappers.events.PreRenderGuiOverlayEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -43,10 +46,10 @@ public class ChunkOverlayController {
 
         ChunkController.instance.addOnChunkLoadedHandler(this::onChunkLoaded);
         ChunkController.instance.addOnBlockChangedHandler(this::onBlockChanged);
-        ModApiWrapper.addOnClientTickEnd(this::onClientTickEnd);
-        ModApiWrapper.addOnPostRenderGui(this::render);
-        ModApiWrapper.addOnPreRenderGuiOverlay(this::onPreRenderGameOverlay);
-        ModApiWrapper.addOnMouseScroll(this::onMouseScroll);
+        ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
+        ModApiWrapper.PostRenderGui.add(this::render);
+        ModApiWrapper.PreRenderGuiOverlay.add(this::onPreRenderGameOverlay);
+        ModApiWrapper.MouseScroll.add(this::onMouseScroll);
     }
 
     @SuppressWarnings("unchecked")
@@ -54,7 +57,7 @@ public class ChunkOverlayController {
         return (T) overlays.stream().filter(o -> o.getClass() == clazz).findFirst().orElse(null);
     }
 
-    private void render(ModApiWrapper.PostRenderGuiEvent event) {
+    private void render(PostRenderGuiEvent event) {
         if (!isSomeOverlayEnabled()) {
             return;
         }
@@ -139,8 +142,8 @@ public class ChunkOverlayController {
         RenderSystem.applyModelViewMatrix();
     }
 
-    private void onPreRenderGameOverlay(ModApiWrapper.PreRenderGuiOverlayEvent event) {
-        if (event.getGuiOverlayType() == ModApiWrapper.GuiOverlayType.PLAYER_LIST) {
+    private void onPreRenderGameOverlay(PreRenderGuiOverlayEvent event) {
+        if (event.getGuiOverlayType() == PreRenderGuiOverlayEvent.GuiOverlayType.PLAYER_LIST) {
             if (!isSomeOverlayEnabled()) {
                 return;
             }
@@ -151,7 +154,7 @@ public class ChunkOverlayController {
         }
     }
 
-    private void onMouseScroll(ModApiWrapper.MouseScrollEvent event) {
+    private void onMouseScroll(MouseScrollEvent event) {
         if (!isSomeOverlayEnabled()) {
             return;
         }

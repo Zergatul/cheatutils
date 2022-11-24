@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
 import com.zergatul.cheatutils.controllers.KeyBindingsController;
 import com.zergatul.cheatutils.controllers.ScriptController;
+import com.zergatul.cheatutils.controllers.StatusOverlayController;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.client.MinecraftClient;
@@ -179,6 +180,15 @@ public class ConfigStore {
                 if (bindings[i] != null) {
                     KeyBindingsController.instance.assign(i, bindings[i]);
                 }
+            }
+        }
+
+        if (config.statusOverlayConfig.code != null) {
+            try {
+                Runnable script = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
+                StatusOverlayController.instance.setScript(script);
+            } catch (ParseException | ScriptCompileException e) {
+                e.printStackTrace();
             }
         }
     }
