@@ -37,6 +37,8 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsApi());
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
+        apis.add(new AutoDropApi());
+        apis.add(new ItemInfoApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -354,6 +356,66 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(ScaffoldConfig config) {
                 config.distance = MathUtils.clamp(config.distance, 0, 0.5);
                 ConfigStore.instance.getConfig().scaffoldConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("container-buttons", ContainerButtonsConfig.class) {
+            @Override
+            protected ContainerButtonsConfig getConfig() {
+                return ConfigStore.instance.getConfig().containerButtonsConfig;
+            }
+
+            @Override
+            protected void setConfig(ContainerButtonsConfig config) {
+                ConfigStore.instance.getConfig().containerButtonsConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("auto-eat", AutoEatConfig.class) {
+            @Override
+            protected AutoEatConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoEatConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoEatConfig config) {
+                ConfigStore.instance.getConfig().autoEatConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("no-fall", NoFallConfig.class) {
+            @Override
+            protected NoFallConfig getConfig() {
+                return ConfigStore.instance.getConfig().noFallConfig;
+            }
+
+            @Override
+            protected void setConfig(NoFallConfig config) {
+                ConfigStore.instance.getConfig().noFallConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("fog", FogConfig.class) {
+            @Override
+            protected FogConfig getConfig() {
+                return ConfigStore.instance.getConfig().fogConfig;
+            }
+
+            @Override
+            protected void setConfig(FogConfig config) {
+                ConfigStore.instance.getConfig().fogConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("particles", ParticlesConfig.class) {
+            @Override
+            protected ParticlesConfig getConfig() {
+                return ConfigStore.instance.getConfig().particlesConfig;
+            }
+
+            @Override
+            protected void setConfig(ParticlesConfig config) {
+                ConfigStore.instance.getConfig().particlesConfig = config;
             }
         });
     }

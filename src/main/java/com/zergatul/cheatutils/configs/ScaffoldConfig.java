@@ -4,4 +4,5 @@ public class ScaffoldConfig {
     public boolean enabled;
     public double distance;
     public boolean replaceBlocksFromInventory;
+    public boolean attachToAir;
 }

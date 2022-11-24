@@ -1,23 +1,30 @@
 package com.zergatul.cheatutils.mixins;
 
+import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FlyHackConfig;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
-import com.zergatul.cheatutils.helpers.MixinEntityHelper;
 import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LocalPlayer.class)
-public class MixinLocalPlayer {
+public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     private boolean flyHackOverride = false;
     private boolean oldFlying;
     private float oldFlyingSpeed;
+
+    public MixinLocalPlayer(ClientLevel p_108548_, GameProfile p_108549_) {
+        super(p_108548_, p_108549_);
+    }
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V")
     private void onBeforeSendPosition(CallbackInfo info) {
@@ -68,5 +75,36 @@ public class MixinLocalPlayer {
                 info.setReturnValue(false);
             }
         }
+    }
+
+    @ModifyArg(
+            method = "Lnet/minecraft/client/player/LocalPlayer;aiStep()V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(Z)V"),
+            index = 0
+    )
+    private boolean onAiStepInputTick(boolean isMovingSlowly) {
+        var config = ConfigStore.instance.getConfig().movementHackConfig;
+        if (config.disableCrouchingSlowdown) {
+            return false;
+        }
+        return isMovingSlowly;
+    }
+
+    @Override
+    public void lerpMotion(double dx, double dy, double dz) {
+        var config = ConfigStore.instance.getConfig().movementHackConfig;
+        if (config.antiKnockback) {
+            return;
+        }
+        super.lerpMotion(dx, dy, dz);
+    }
+
+    @Override
+    public void push(double dx, double dy, double dz) {
+        var config = ConfigStore.instance.getConfig().movementHackConfig;
+        if (config.antiPush) {
+            return;
+        }
+        super.push(dx, dy, dz);
     }
 }

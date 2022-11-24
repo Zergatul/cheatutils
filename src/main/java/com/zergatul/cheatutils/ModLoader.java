@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.NoFallConfig;
 import com.zergatul.cheatutils.controllers.*;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -38,6 +39,8 @@ public final class ModLoader {
         MinecraftForge.EVENT_BUS.register(LockInputsController.instance);
         //MinecraftForge.EVENT_BUS.register(AutoWaterBucketController.instance);
         MinecraftForge.EVENT_BUS.register(ScaffoldController.instance);
+        MinecraftForge.EVENT_BUS.register(AutoEatController.instance);
+        MinecraftForge.EVENT_BUS.register(NoFallController.instance);
 
         //MinecraftForge.EVENT_BUS.register(TestController.instance);
 

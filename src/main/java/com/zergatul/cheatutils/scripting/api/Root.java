@@ -6,7 +6,7 @@ public class Root {
 
     //public static AutoDisconnectApi autoDisconnect = new AutoDisconnectApi();
     public static KillAuraApi killAura = new KillAuraApi();
-    //public static AutoDropApi autoDrop = new AutoDropApi();
+    public static AutoDropApi autoDrop = new AutoDropApi();
 
     public static BlocksApi blocks = new BlocksApi();
     public static EntitiesApi entities = new EntitiesApi();

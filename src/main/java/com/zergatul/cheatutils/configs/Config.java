@@ -31,6 +31,12 @@ public class Config {
     public ScaffoldConfig scaffoldConfig = new ScaffoldConfig();
     public ScriptsConfig scriptsConfig = new ScriptsConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
+    public AutoDropConfig autoDropConfig = new AutoDropConfig();
+    public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
+    public AutoEatConfig autoEatConfig = new AutoEatConfig();
+    public NoFallConfig noFallConfig = new NoFallConfig();
+    public FogConfig fogConfig = new FogConfig();
+    public ParticlesConfig particlesConfig = new ParticlesConfig();
 
     public Config() {
         esp = true;

@@ -93,7 +93,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-drop'">Auto Drop</button>
+                        </td>
                         <td>
                             <button @click="current = 'end-city-chunks'">End City Chunks</button>
                         </td>
@@ -105,7 +107,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'container-buttons'">Container Buttons</button>
+                        </td>
                         <td>
                             <button @click="current = 'entity-owner'">Entity Owner</button>
                         </td>
@@ -117,20 +121,34 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-eat'">Auto Eat</button>
+                        </td>
                         <td>
                             <button @click="current = 'free-cam'">Free Cam</button>
                         </td>
                         <td>
                             <button @click="current = 'movement-hack'">Movement</button>
                         </td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'fog'">Fog</button>
+                        </td>
                     </tr>
                     <tr>
                         <td></td>
                         <td></td>
                         <td>
                             <button @click="current = 'scaffold'">Scaffold</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'particles'">Particles</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'no-fall'">No Fall</button>
                         </td>
                     </tr>
                 </tbody>
@@ -271,6 +289,36 @@
             v-if="current == 'scripts'"
             @back="backToMain()">
         </scripts-config>
+
+        <auto-drop-config
+            v-if="current == 'auto-drop'"
+            @back="backToMain()">
+        </auto-drop-config>
+
+        <container-buttons-config
+            v-if="current == 'container-buttons'"
+            @back="backToMain()">
+        </container-buttons-config>
+
+        <auto-eat-config
+            v-if="current == 'auto-eat'"
+            @back="backToMain()">
+        </auto-eat-config>
+
+        <no-fall-config
+            v-if="current == 'no-fall'"
+            @back="backToMain()">
+        </no-fall-config>
+
+        <fog-config
+            v-if="current == 'fog'"
+            @back="backToMain()">
+        </fog-config>
+
+        <particles-config
+            v-if="current == 'particles'"
+            @back="backToMain()">
+        </particles-config>
 
     </div>
 

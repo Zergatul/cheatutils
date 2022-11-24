@@ -74,6 +74,12 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'MovementHackConfig');
     addComponent(args, 'ScaffoldConfig');
     addComponent(args, 'ScriptsConfig');
+    addComponent(args, 'AutoDropConfig');
+    addComponent(args, 'ContainerButtonsConfig');
+    addComponent(args, 'AutoEatConfig');
+    addComponent(args, 'NoFallConfig');
+    addComponent(args, 'FogConfig');
+    addComponent(args, 'ParticlesConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

@@ -78,9 +78,9 @@ public class ScaffoldController {
                     }
                 }
 
+                boolean placed = false;
                 for (BlockPos bp: list) {
-                    if (mc.level.getBlockState(bp).isAir()) {
-                        boolean placed = false;
+                    if (canPlaceBlock(mc.level.getBlockState(bp))) {
                         for (Direction direction: Direction.values()) {
                             BlockPos other = bp.relative(direction);
                             BlockState state = mc.level.getBlockState(other);
@@ -91,6 +91,16 @@ public class ScaffoldController {
                             }
                         }
                         if (placed) {
+                            break;
+                        }
+                    }
+                }
+
+                if (!placed && config.attachToAir) {
+                    for (BlockPos bp: list) {
+                        if (canPlaceBlock(mc.level.getBlockState(bp))) {
+                            BlockPos other = bp.relative(Direction.DOWN);
+                            placeBlock(bp, Direction.UP, other, config);
                             break;
                         }
                     }
@@ -166,5 +176,9 @@ public class ScaffoldController {
             return false;
         }
         return true;
+    }
+
+    private boolean canPlaceBlock(BlockState state) {
+        return state.getMaterial().isReplaceable();
     }
 }
