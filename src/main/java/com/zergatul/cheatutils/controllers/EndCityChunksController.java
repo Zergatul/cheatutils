@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.level.Level;
@@ -25,7 +26,7 @@ public class EndCityChunksController {
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
     }
 
-    public void render(ModApiWrapper.RenderWorldLastEvent event) {
+    public void render(RenderWorldLastEvent event) {
         if (vertexBuffer == null) {
             return;
         }

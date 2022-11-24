@@ -40,10 +40,10 @@ public class ChunkController {
     private final List<ChunkPos> serverUnloadedChunks = new ArrayList<>();
 
     private ChunkController() {
-        ModApiWrapper.addOnChunkLoaded(this::onChunkLoaded);
-        ModApiWrapper.addOnChunkUnloaded(this::onChunkUnloaded);
-        ModApiWrapper.addOnClientTickStart(this::onClientTickStart);
-        ModApiWrapper.addOnClientPlayerLoggingOut(this::onPlayerLoggingOut);
+        ModApiWrapper.ChunkLoaded.add(this::onChunkLoaded);
+        ModApiWrapper.ChunkUnloaded.add(this::onChunkUnloaded);
+        ModApiWrapper.ClientTickStart.add(this::onClientTickStart);
+        ModApiWrapper.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
     }
 

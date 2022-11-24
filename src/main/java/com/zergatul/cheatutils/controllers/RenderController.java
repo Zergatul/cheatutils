@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.configs.TracerConfigBase;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -27,12 +28,11 @@ public class RenderController {
     private VertexBuffer vertexBuffer;
 
     private RenderController() {
+        ModApiWrapper.RenderWorldLast.add(this::onRenderWorldLastEvent);
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
-
-        ModApiWrapper.addOnRenderWorldLast(this::onRenderWorldLastEvent);
     }
 
-    private void onRenderWorldLastEvent(ModApiWrapper.RenderWorldLastEvent event) {
+    private void onRenderWorldLastEvent(RenderWorldLastEvent event) {
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
@@ -333,7 +333,7 @@ public class RenderController {
         return Mth.lerp(partialTicks, entity.zo, entity.getZ());
     }
 
-    private void drawEnderPearlPath(ModApiWrapper.RenderWorldLastEvent event, Vec3 view) {
+    private void drawEnderPearlPath(RenderWorldLastEvent event, Vec3 view) {
         if (EnderPearlPathController.instance.shouldDrawPath()) {
             float partialTick = event.getTickDelta();
 

@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -83,7 +84,7 @@ public class LightLevelController {
         }
     }
 
-    public void render(ModApiWrapper.RenderWorldLastEvent event) {
+    public void render(RenderWorldLastEvent event) {
         LightLevelConfig config = ConfigStore.instance.getConfig().lightLevelConfig;
         if (!config.enabled || !config.display) {
             return;

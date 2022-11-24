@@ -145,6 +145,8 @@ public class ConfigStore {
         config.movementHackConfig.validate();
         config.fastBreakConfig.validate();
         config.elytraHackConfig.validate();
+        config.freeCamConfig.validate();
+        config.flyHackConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

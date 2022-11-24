@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ScaffoldConfig;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,14 +16,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
-import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,73 +33,70 @@ public class ScaffoldController {
     private final List<BlockPos> list = new ArrayList<>();
 
     private ScaffoldController() {
-
+        ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
     }
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            if (mc.player == null || mc.level == null) {
-                return;
-            }
-            ScaffoldConfig config = ConfigStore.instance.getConfig().scaffoldConfig;
-            if (config.enabled) {
-                double x = mc.player.getX();
-                double y = mc.player.getY();
-                double z = mc.player.getZ();
+    private void onClientTickEnd() {
+        if (mc.player == null || mc.level == null) {
+            return;
+        }
+        ScaffoldConfig config = ConfigStore.instance.getConfig().scaffoldConfig;
+        if (config.enabled) {
+            double x = mc.player.getX();
+            double y = mc.player.getY();
+            double z = mc.player.getZ();
 
-                int yb = Mth.floor(y) - 1;
+            int yb = Mth.floor(y) - 1;
 
-                list.clear();
-                list.add(new BlockPos(Mth.floor(x), yb, Mth.floor(z)));
+            list.clear();
+            list.add(new BlockPos(Mth.floor(x), yb, Mth.floor(z)));
 
-                if (config.distance > 0) {
-                    BlockPos bp1 = new BlockPos(new BlockPos(Mth.floor(x + config.distance), yb, Mth.floor(z)));
-                    if (!list.contains(bp1)) {
-                        list.add(bp1);
-                    }
-
-                    BlockPos bp2 = new BlockPos(new BlockPos(Mth.floor(x - config.distance), yb, Mth.floor(z)));
-                    if (!list.contains(bp2)) {
-                        list.add(bp2);
-                    }
-
-                    BlockPos bp3 = new BlockPos(new BlockPos(Mth.floor(x), yb, Mth.floor(z - config.distance)));
-                    if (!list.contains(bp3)) {
-                        list.add(bp3);
-                    }
-
-                    BlockPos bp4 = new BlockPos(new BlockPos(Mth.floor(x), yb, Mth.floor(z + config.distance)));
-                    if (!list.contains(bp4)) {
-                        list.add(bp4);
-                    }
+            if (config.distance > 0) {
+                BlockPos bp1 = new BlockPos(new BlockPos(Mth.floor(x + config.distance), yb, Mth.floor(z)));
+                if (!list.contains(bp1)) {
+                    list.add(bp1);
                 }
 
-                boolean placed = false;
+                BlockPos bp2 = new BlockPos(new BlockPos(Mth.floor(x - config.distance), yb, Mth.floor(z)));
+                if (!list.contains(bp2)) {
+                    list.add(bp2);
+                }
+
+                BlockPos bp3 = new BlockPos(new BlockPos(Mth.floor(x), yb, Mth.floor(z - config.distance)));
+                if (!list.contains(bp3)) {
+                    list.add(bp3);
+                }
+
+                BlockPos bp4 = new BlockPos(new BlockPos(Mth.floor(x), yb, Mth.floor(z + config.distance)));
+                if (!list.contains(bp4)) {
+                    list.add(bp4);
+                }
+            }
+
+            boolean placed = false;
+            for (BlockPos bp: list) {
+                if (canPlaceBlock(mc.level.getBlockState(bp))) {
+                    for (Direction direction: Direction.values()) {
+                        BlockPos other = bp.relative(direction);
+                        BlockState state = mc.level.getBlockState(other);
+                        if (!state.getShape(mc.level, other).isEmpty()) {
+                            placeBlock(bp, direction.getOpposite(), other, config);
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (placed) {
+                        break;
+                    }
+                }
+            }
+
+            if (!placed && config.attachToAir) {
                 for (BlockPos bp: list) {
                     if (canPlaceBlock(mc.level.getBlockState(bp))) {
-                        for (Direction direction: Direction.values()) {
-                            BlockPos other = bp.relative(direction);
-                            BlockState state = mc.level.getBlockState(other);
-                            if (!state.getShape(mc.level, other).isEmpty()) {
-                                placeBlock(bp, direction.getOpposite(), other, config);
-                                placed = true;
-                                break;
-                            }
-                        }
-                        if (placed) {
-                            break;
-                        }
-                    }
-                }
-
-                if (!placed && config.attachToAir) {
-                    for (BlockPos bp: list) {
-                        if (canPlaceBlock(mc.level.getBlockState(bp))) {
-                            BlockPos other = bp.relative(Direction.DOWN);
-                            placeBlock(bp, Direction.UP, other, config);
-                            break;
-                        }
+                        BlockPos other = bp.relative(Direction.DOWN);
+                        placeBlock(bp, Direction.UP, other, config);
+                        break;
                     }
                 }
             }

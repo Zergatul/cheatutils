@@ -31,7 +31,7 @@ public class AutoFishController {
 
     private AutoFishController() {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
-        ModApiWrapper.addOnClientTickEnd(this::onClientTickEnd);
+        ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
     }
 
     private void onClientTickEnd() {

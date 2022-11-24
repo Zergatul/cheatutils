@@ -17,7 +17,7 @@ public class ElytraHackController {
     private final Minecraft mc = Minecraft.getInstance();
 
     private ElytraHackController() {
-        ModApiWrapper.addOnClientTickStart(this::onClientTickStart);
+        ModApiWrapper.ClientTickStart.add(this::onClientTickStart);
     }
 
     private void onClientTickStart() {

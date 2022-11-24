@@ -242,7 +242,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(FlyHackConfig config) {
-                config.flyingSpeed = MathUtils.clamp(config.flyingSpeed, 0.001f, 10f);
                 ConfigStore.instance.getConfig().flyHackConfig = config;
             }
         });
@@ -292,9 +291,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(FreeCamConfig config) {
-                config.acceleration = MathUtils.clamp(config.acceleration, 5, 500);
-                config.maxSpeed = MathUtils.clamp(config.maxSpeed, 5, 500);
-                config.slowdownFactor = MathUtils.clamp(config.slowdownFactor, 1e-9, 0.5);
                 ConfigStore.instance.getConfig().freeCamConfig = config;
             }
         });
@@ -331,7 +327,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(ScaffoldConfig config) {
-                config.distance = MathUtils.clamp(config.distance, 0, 0.5);
                 ConfigStore.instance.getConfig().scaffoldConfig = config;
             }
         });

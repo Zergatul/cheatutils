@@ -109,22 +109,6 @@ public abstract class MixinEntity {
         var entity = (Entity) (Object) this;
         if (entity instanceof LocalPlayer) {
             MixinEntityHelper.insideMoveRelativeLocalPlayer = true;
-            if (ConfigStore.instance.getConfig().movementHackConfig.preserveSpeed) {
-                Vec3 original = entity.getDeltaMovement();
-                double dx = original.x;
-                double dz = original.z;
-                double distanceSqr = dx * dx + dz * dz;
-                if (distanceSqr > 1e-7) {
-                    // rotate existing movement vector
-                    double distance = Math.sqrt(distanceSqr);
-                    float yRot = entity.getYRot();
-                    float f = Mth.sin(yRot * ((float)Math.PI / 180F));
-                    float f1 = Mth.cos(yRot * ((float)Math.PI / 180F));
-                    Vec3 horizontal = new Vec3(input.x * (double)f1 - input.z * (double)f, 0, input.z * (double)f1 + input.x * (double)f);
-                    horizontal = horizontal.normalize().scale(distance);
-                    entity.setDeltaMovement(horizontal.x, original.y, horizontal.z);
-                }
-            }
         }
     }
 

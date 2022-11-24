@@ -56,7 +56,7 @@ public class MainApi {
     }
 
     public boolean isDebugScreenEnabled() {
-        return Minecraft.getInstance().options.renderDebug;
+        return mc.options.renderDebug;
     }
 
     @HelpText("Allowed values: \"left\", \"center\", \"right\".")

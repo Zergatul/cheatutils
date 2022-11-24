@@ -13,8 +13,8 @@ public class TeleportController {
     private ResourceKey<Level> dimension;
 
     private TeleportController() {
-        ModApiWrapper.addOnClientTickEnd(this::onClientTickEnd);
-        ModApiWrapper.addOnClientPlayerLoggingOut(this::onPlayerLoggingOut);
+        ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
+        ModApiWrapper.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
     }
 
     private void onClientTickEnd() {

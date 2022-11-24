@@ -5,6 +5,7 @@ import com.mojang.math.Vector3f;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.helpers.MixinGameRendererHelper;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.CameraType;
@@ -18,9 +19,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
@@ -48,7 +46,9 @@ public class FreeCamController {
     private boolean insideRenderDebug;
 
     private FreeCamController() {
-
+        ModApiWrapper.ClientTickStart.add(this::onClientTickStart);
+        ModApiWrapper.RenderTickStart.add(this::onRenderTickStart);
+        ModApiWrapper.WorldUnload.add(this::onWorldUnload);
     }
 
     public boolean isActive() {
@@ -136,67 +136,60 @@ public class FreeCamController {
         calculateVectors();
     }
 
-    @SubscribeEvent
-    public void onRenderTick(TickEvent.RenderTickEvent event) {
+    private void onRenderTickStart() {
         if (active) {
-            if (event.phase == TickEvent.Phase.START) {
-                if (lastTime == 0) {
-                    lastTime = System.nanoTime();
-                    return;
-                }
-
-                long currTime = System.nanoTime();
-                float frameTime = (currTime - lastTime) / 1e9f;
-                lastTime = currTime;
-
-                FreeCamConfig config = ConfigStore.instance.getConfig().freeCamConfig;
-
-                Input input = oldInput;
-                float forwardImpulse = (input.up ? 1 : 0) + (input.down ? -1 : 0);
-                float leftImpulse = (input.left ? 1 : 0) + (input.right ? -1 : 0);
-                float upImpulse = ((input.jumping ? 1 : 0) + (input.shiftKeyDown ? -1 : 0));
-                double slowdown = Math.pow(config.slowdownFactor, frameTime);
-                forwardVelocity = combineMovement(forwardVelocity, forwardImpulse, frameTime, config.acceleration, slowdown);
-                leftVelocity = combineMovement(leftVelocity, leftImpulse, frameTime, config.acceleration, slowdown);
-                upVelocity = combineMovement(upVelocity, upImpulse, frameTime, config.acceleration, slowdown);
-
-                double dx = (double) this.forwards.x() * forwardVelocity + (double) this.left.x() * leftVelocity;
-                double dy = (double) this.forwards.y() * forwardVelocity + upVelocity + (double) this.left.y() * leftVelocity;
-                double dz = (double) this.forwards.z() * forwardVelocity + (double) this.left.z() * leftVelocity;
-                dx *= frameTime;
-                dy *= frameTime;
-                dz *= frameTime;
-                double speed = new Vec3(dx, dy, dz).length() / frameTime;
-                if (speed > config.maxSpeed) {
-                    double factor = config.maxSpeed / speed;
-                    forwardVelocity *= factor;
-                    leftVelocity *= factor;
-                    upVelocity *= factor;
-                    dx *= factor;
-                    dy *= factor;
-                    dz *= factor;
-                }
-                x += dx;
-                y += dy;
-                z += dz;
+            if (lastTime == 0) {
+                lastTime = System.nanoTime();
+                return;
             }
+
+            long currTime = System.nanoTime();
+            float frameTime = (currTime - lastTime) / 1e9f;
+            lastTime = currTime;
+
+            FreeCamConfig config = ConfigStore.instance.getConfig().freeCamConfig;
+
+            Input input = oldInput;
+            float forwardImpulse = (input.up ? 1 : 0) + (input.down ? -1 : 0);
+            float leftImpulse = (input.left ? 1 : 0) + (input.right ? -1 : 0);
+            float upImpulse = ((input.jumping ? 1 : 0) + (input.shiftKeyDown ? -1 : 0));
+            double slowdown = Math.pow(config.slowdownFactor, frameTime);
+            forwardVelocity = combineMovement(forwardVelocity, forwardImpulse, frameTime, config.acceleration, slowdown);
+            leftVelocity = combineMovement(leftVelocity, leftImpulse, frameTime, config.acceleration, slowdown);
+            upVelocity = combineMovement(upVelocity, upImpulse, frameTime, config.acceleration, slowdown);
+
+            double dx = (double) this.forwards.x() * forwardVelocity + (double) this.left.x() * leftVelocity;
+            double dy = (double) this.forwards.y() * forwardVelocity + upVelocity + (double) this.left.y() * leftVelocity;
+            double dz = (double) this.forwards.z() * forwardVelocity + (double) this.left.z() * leftVelocity;
+            dx *= frameTime;
+            dy *= frameTime;
+            dz *= frameTime;
+            double speed = new Vec3(dx, dy, dz).length() / frameTime;
+            if (speed > config.maxSpeed) {
+                double factor = config.maxSpeed / speed;
+                forwardVelocity *= factor;
+                leftVelocity *= factor;
+                upVelocity *= factor;
+                dx *= factor;
+                dy *= factor;
+                dz *= factor;
+            }
+            x += dx;
+            y += dy;
+            z += dz;
         }
     }
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
+    private void onClientTickStart() {
         if (active) {
-            if (event.phase == TickEvent.Phase.START) {
-                while (mc.options.keyTogglePerspective.consumeClick()) {
-                    // consume clicks
-                }
-                oldInput.tick(false, 0);
+            while (mc.options.keyTogglePerspective.consumeClick()) {
+                // consume clicks
             }
+            oldInput.tick(false, 0);
         }
     }
 
-    @SubscribeEvent
-    public void onWorldUnload(LevelEvent.Unload event) {
+    private void onWorldUnload() {
         disable();
     }
 

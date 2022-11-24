@@ -23,7 +23,7 @@ public class KeyBindingsController {
             keys[i] = new KeyMapping("key.zergatul.cheatutils.reserved" + i, InputConstants.UNKNOWN.getValue(), "category.zergatul.cheatutils");
         }
 
-        ModApiWrapper.addOnRegisterKeyBindings(this::onRegisterKeyBindings);
+        ModApiWrapper.RegisterKeyBindings.add(this::onRegisterKeyBindings);
     }
 
     public void assign(int index, String name) {

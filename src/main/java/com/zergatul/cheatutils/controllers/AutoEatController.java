@@ -16,8 +16,8 @@ public class AutoEatController {
     private State state;
 
     private AutoEatController() {
+        ModApiWrapper.ClientTickStart.add(this::onClickTickStart);
         state = State.NONE;
-        ModApiWrapper.addOnClientTickStart(this::onClickTickStart);
     }
 
     private void onClickTickStart() {

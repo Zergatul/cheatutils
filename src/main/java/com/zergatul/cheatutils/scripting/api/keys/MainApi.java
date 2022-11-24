@@ -14,7 +14,6 @@ import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.phys.EntityHitResult;
 
 import java.util.Comparator;
-import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -33,30 +32,27 @@ public class MainApi {
     }
 
     public void systemMessage(String text) {
-        Minecraft.getInstance().getChatListener().handleSystemMessage(MutableComponent.create(new LiteralContents(text)), false);
+        showMessage(constructMessage(text), false);
+    }
+
+    public void overlayMessage(String text) {
+        showMessage(constructMessage(text), true);
     }
 
     public void systemMessage(String color, String text) {
-        Integer colorInt = ColorUtils.parseColor(color);
-        MutableComponent component = MutableComponent.create(new LiteralContents(text));
-        if (colorInt != null) {
-            component = component.withStyle(Style.EMPTY.withColor(colorInt));
-        }
-        Minecraft.getInstance().getChatListener().handleSystemMessage(component, false);
+        showMessage(constructMessage(color, text), false);
+    }
+
+    public void overlayMessage(String color, String text) {
+        showMessage(constructMessage(color, text), true);
     }
 
     public void systemMessage(String color1, String text1, String color2, String text2) {
-        Integer color1Int = ColorUtils.parseColor(color1);
-        Integer color2Int = ColorUtils.parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
-        if (color1Int != null) {
-            component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
-        }
-        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
-        if (color2Int != null) {
-            component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
-        }
-        Minecraft.getInstance().getChatListener().handleSystemMessage(component1.append(" ").append(component2), false);
+        showMessage(constructMessage(color1, text1, color2, text2), false);
+    }
+
+    public void overlayMessage(String color1, String text1, String color2, String text2) {
+        showMessage(constructMessage(color1, text1, color2, text2), true);
     }
 
     public void openClosestChestBoat() {
@@ -108,5 +104,36 @@ public class MainApi {
         mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
         mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
         mc.player.swing(InteractionHand.MAIN_HAND);
+    }
+
+    private MutableComponent constructMessage(String text) {
+        return MutableComponent.create(new LiteralContents(text));
+    }
+
+    private MutableComponent constructMessage(String color, String text) {
+        Integer colorInt = ColorUtils.parseColor(color);
+        MutableComponent component = MutableComponent.create(new LiteralContents(text));
+        if (colorInt != null) {
+            component = component.withStyle(Style.EMPTY.withColor(colorInt));
+        }
+        return component;
+    }
+
+    private MutableComponent constructMessage(String color1, String text1, String color2, String text2) {
+        Integer color1Int = ColorUtils.parseColor(color1);
+        Integer color2Int = ColorUtils.parseColor(color2);
+        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
+        if (color1Int != null) {
+            component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
+        }
+        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
+        if (color2Int != null) {
+            component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
+        }
+        return component1.append(" ").append(component2);
+    }
+
+    private void showMessage(MutableComponent message, boolean overlay) {
+        Minecraft.getInstance().getChatListener().handleSystemMessage(message, overlay);
     }
 }

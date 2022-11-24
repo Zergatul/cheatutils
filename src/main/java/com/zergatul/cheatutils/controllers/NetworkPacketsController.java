@@ -17,7 +17,7 @@ public class NetworkPacketsController {
     private Connection connection;
 
     private NetworkPacketsController() {
-        ModApiWrapper.addOnClientPlayerLoggingIn(this::onClientPlayerLoggingIn);
+        ModApiWrapper.ClientPlayerLoggingIn.add(this::onClientPlayerLoggingIn);
     }
 
     public void addServerPacketHandler(Consumer<ServerPacketArgs> handler) {

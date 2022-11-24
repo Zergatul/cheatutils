@@ -1,16 +1,14 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix4f;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
 import com.zergatul.cheatutils.utils.GuiUtils;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.PostRenderGuiEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraftforge.client.event.RenderGuiEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
@@ -31,6 +29,8 @@ public class StatusOverlayController {
         for (Align align: Align.values()) {
             texts.put(align, new ArrayList<>());
         }
+
+        ModApiWrapper.PostRenderGui.add(this::render);
     }
 
     public void setScript(Runnable script) {
@@ -49,8 +49,7 @@ public class StatusOverlayController {
         vAlign = align;
     }
 
-    @SubscribeEvent
-    public void render(RenderGuiEvent.Post event) {
+    private void render(PostRenderGuiEvent event) {
         if (mc.player == null) {
             return;
         }
@@ -68,9 +67,9 @@ public class StatusOverlayController {
         vAlign = VerticalAlign.BOTTOM;
         script.run();
 
-        event.getPoseStack().pushPose();
-        event.getPoseStack().setIdentity();
-        event.getPoseStack().translate(0, 0, TranslateZ);
+        event.getMatrixStack().pushPose();
+        event.getMatrixStack().setIdentity();
+        event.getMatrixStack().translate(0, 0, TranslateZ);
         RenderSystem.applyModelViewMatrix();
 
         RenderSystem.disableDepthTest();
@@ -91,12 +90,12 @@ public class StatusOverlayController {
                 int width = mc.font.width(text);
                 int x = getLeft(align.hAlign, mc.getWindow().getGuiScaledWidth(), width);
                 int y = getTop(align.vAlign, mc.getWindow().getGuiScaledHeight(), mc.font.lineHeight, i, list.size());
-                GuiUtils.fill(event.getPoseStack(), x, y, x + width, y + mc.font.lineHeight, -1873784752);
-                mc.font.draw(event.getPoseStack(), text, x, y, 16777215);
+                GuiUtils.fill(event.getMatrixStack(), x, y, x + width, y + mc.font.lineHeight, -1873784752);
+                mc.font.draw(event.getMatrixStack(), text, x, y, 16777215);
             }
         }
 
-        event.getPoseStack().popPose();
+        event.getMatrixStack().popPose();
         RenderSystem.applyModelViewMatrix();
     }
 

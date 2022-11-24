@@ -38,6 +38,7 @@ public class ModMain {
         register(AutoEatController.instance);
         //register(AutoPlacerController.instance);
         register(NoFallController.instance);
+        register(ScaffoldController.instance);
     }
 
     private void register(Object instance) {
@@ -64,7 +65,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(AutoCriticalsController.instance);
         MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
         MinecraftForge.EVENT_BUS.register(LockInputsController.instance);
-        MinecraftForge.EVENT_BUS.register(ScaffoldController.instance);
         MinecraftForge.EVENT_BUS.register(AdvancedTooltipsController.instance);
         MinecraftForge.EVENT_BUS.register(InstantDisconnectController.instance);
         MinecraftForge.EVENT_BUS.register(BeaconController.instance);
@@ -91,7 +91,7 @@ public class ModMain {
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {
-        ModApiWrapper.triggerOnRegisterKeyBindings(event::register);
+        ModApiWrapper.RegisterKeyBindings.trigger(event::register);
     }
 
     private void onRegisterGuiOverlay(final RegisterGuiOverlaysEvent event) {
