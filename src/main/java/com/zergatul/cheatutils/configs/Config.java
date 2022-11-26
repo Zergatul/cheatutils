@@ -39,6 +39,8 @@ public class Config {
     public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
     public ChunksConfig chunksConfig = new ChunksConfig();
     public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
+    public NoFallConfig noFallConfig = new NoFallConfig();
+    public FastBreakConfig fastBreakConfig = new FastBreakConfig();
 
     public Config() {
         esp = true;

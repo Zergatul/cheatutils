@@ -4,10 +4,13 @@
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "MixinAbstractBlockAbstractBlockState",
+    "MixinBoatEntity",
     "MixinCamera",
     "MixinClientChunkManager",
     "MixinClientConnection",
     "MixinClientPlayerEntity",
+    "MixinClientPlayerInteractionManager",
     "MixinClientPlayNetworkHandler",
     "MixinClientWorld",
     "MixinControlsListWidgetKeyBindingEntry",

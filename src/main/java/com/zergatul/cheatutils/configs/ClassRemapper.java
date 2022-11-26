@@ -1,12 +1,13 @@
 package com.zergatul.cheatutils.configs;
 
+import net.fabricmc.loader.api.FabricLoader;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class ClassRemapper {
 
-    //FabricLoader.getInstance().getMappingResolver().getCurrentRuntimeNamespace();
-    private static final boolean enabled = true;
+    private static final boolean enabled = !FabricLoader.getInstance().getMappingResolver().getCurrentRuntimeNamespace().equals("named");
     private static final Map<String, String> obfToNorm = new HashMap<>();
     private static final Map<String, String> normToObf = new HashMap<>();
 

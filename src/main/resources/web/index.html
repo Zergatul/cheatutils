@@ -38,7 +38,7 @@
                             <button @click="current = 'blocks'">Blocks</button>
                         </td>
                         <td>
-                            <button @click="current = 'boat-hack'" class="hidden">Boat</button>
+                            <button @click="current = 'boat-hack'">Boat</button>
                         </td>
                         <td>
                             <button @click="current = 'full-bright'" class="hidden">Full Bright</button>
@@ -90,7 +90,7 @@
                             <button @click="current = 'light-level'" class="hidden">Light Level</button>
                         </td>
                         <td>
-                            <button @click="current = 'auto-criticals'" class="hidden">Auto Criticals</button>
+                            <button @click="current = 'no-fall'">No Fall</button>
                         </td>
                         <td>
                             <button @click="current = 'advanced-tooltips'" class="hidden">Advanced Tooltips</button>
@@ -156,9 +156,18 @@
                     <tr>
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'fast-break'">Fast Break</button>
+                        </td>
                         <td>
                             <button @click="current = 'chunks'" class="hidden">Chunks</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-criticals'">Auto Criticals</button>
                         </td>
                     </tr>
                 </tbody>
@@ -344,6 +353,16 @@
             v-if="current == 'status-overlay'"
             @back="backToMain()">
         </status-overlay-config>
+
+        <no-fall-config
+            v-if="current == 'no-fall'"
+            @back="backToMain()">
+        </no-fall-config>
+
+        <fast-break-config
+            v-if="current == 'fast-break'"
+            @back="backToMain()">
+        </fast-break-config>
 
     </div>
 

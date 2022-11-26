@@ -79,6 +79,8 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'ChunksConfig');
     addComponent(args, 'ContainerButtonsConfig');
     addComponent(args, 'StatusOverlayConfig');
+    addComponent(args, 'NoFallConfig');
+    addComponent(args, 'FastBreakConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

@@ -88,7 +88,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(AutoDisconnectConfig config) {
                 ConfigStore.instance.getConfig().autoDisconnectConfig = config;
             }
-        });
+        });*/
 
         apis.add(new SimpleConfigApi<>("boat-hack", BoatHackConfig.class) {
             @Override
@@ -98,10 +98,9 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(BoatHackConfig config) {
-                config.friction = Math.min(Math.max(0.01f, config.friction), 0.99f);
                 ConfigStore.instance.getConfig().boatHackConfig = config;
             }
-        });*/
+        });
 
         apis.add(new SimpleConfigApi<>("elytra-hack", ElytraHackConfig.class) {
             @Override
@@ -222,7 +221,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        /*apis.add(new SimpleConfigApi<>("auto-criticals", AutoCriticalsConfig.class) {
+        apis.add(new SimpleConfigApi<>("auto-criticals", AutoCriticalsConfig.class) {
             @Override
             protected AutoCriticalsConfig getConfig() {
                 return ConfigStore.instance.getConfig().autoCriticalsConfig;
@@ -232,7 +231,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(AutoCriticalsConfig config) {
                 ConfigStore.instance.getConfig().autoCriticalsConfig = config;
             }
-        });*/
+        });
 
         apis.add(new SimpleConfigApi<>("fly-hack", FlyHackConfig.class) {
             @Override
@@ -443,6 +442,30 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(StatusOverlayConfig config) {
                 ConfigStore.instance.getConfig().statusOverlayConfig.enabled = config.enabled;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("no-fall", NoFallConfig.class) {
+            @Override
+            protected NoFallConfig getConfig() {
+                return ConfigStore.instance.getConfig().noFallConfig;
+            }
+
+            @Override
+            protected void setConfig(NoFallConfig config) {
+                ConfigStore.instance.getConfig().noFallConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("fast-break", FastBreakConfig.class) {
+            @Override
+            protected FastBreakConfig getConfig() {
+                return ConfigStore.instance.getConfig().fastBreakConfig;
+            }
+
+            @Override
+            protected void setConfig(FastBreakConfig config) {
+                ConfigStore.instance.getConfig().fastBreakConfig = config;
             }
         });
     }

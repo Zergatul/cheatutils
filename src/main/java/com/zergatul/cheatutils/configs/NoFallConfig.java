@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-public class AutoCriticalsConfig {
+public class NoFallConfig {
     public boolean enabled;
-    public boolean onlyOnGround;
 }
