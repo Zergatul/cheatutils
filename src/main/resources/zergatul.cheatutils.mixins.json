@@ -17,6 +17,7 @@
     "MixinDebugHud",
     "MixinGameRenderer",
     "MixinEntity",
+    "MixinHandledScreen",
     "MixinInGameHud",
     "MixinKeyBinding",
     "MixinMinecraftClient",

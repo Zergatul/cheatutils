@@ -419,7 +419,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(ChunksConfig config) {
                 ConfigStore.instance.getConfig().chunksConfig = config;
             }
-        });
+        });*/
 
         apis.add(new SimpleConfigApi<>("container-buttons", ContainerButtonsConfig.class) {
             @Override
@@ -431,7 +431,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(ContainerButtonsConfig config) {
                 ConfigStore.instance.getConfig().containerButtonsConfig = config;
             }
-        });*/
+        });
 
         apis.add(new SimpleConfigApi<>("status-overlay", StatusOverlayConfig.class) {
             @Override
