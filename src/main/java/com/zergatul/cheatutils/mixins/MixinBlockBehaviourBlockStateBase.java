@@ -23,7 +23,7 @@ public abstract class MixinBlockBehaviourBlockStateBase {
                 float newValue = (float) (oldValue * config.factor);
                 if (oldValue < 1 && newValue >= 1) {
                     // we cannot make block instamineable
-                    info.setReturnValue(oldValue);
+                    info.setReturnValue(0.999999f);
                 } else {
                     info.setReturnValue(newValue);
                 }

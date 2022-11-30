@@ -98,7 +98,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(BoatHackConfig config) {
-                config.friction = Math.min(Math.max(0.01f, config.friction), 0.99f);
                 ConfigStore.instance.getConfig().boatHackConfig = config;
             }
         });

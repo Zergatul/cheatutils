@@ -7,6 +7,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
@@ -49,6 +50,9 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     private void onInit(CallbackInfo info) {
         Object self = this;
         if (self instanceof EnchantmentScreen) {
+            return;
+        }
+        if (self instanceof InventoryScreen) {
             return;
         }
 

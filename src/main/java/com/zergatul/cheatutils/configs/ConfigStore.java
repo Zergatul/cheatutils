@@ -147,6 +147,7 @@ public class ConfigStore {
         config.elytraHackConfig.validate();
         config.freeCamConfig.validate();
         config.flyHackConfig.validate();
+        config.boatHackConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";
