@@ -80,6 +80,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'NoFallConfig');
     addComponent(args, 'FogConfig');
     addComponent(args, 'ParticlesConfig');
+    addComponent(args, 'StatusOverlayConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

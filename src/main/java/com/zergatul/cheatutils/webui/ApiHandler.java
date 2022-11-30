@@ -39,6 +39,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsDocsApi());
         apis.add(new AutoDropApi());
         apis.add(new ItemInfoApi());
+        apis.add(new StatusOverlayApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -416,6 +417,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ParticlesConfig config) {
                 ConfigStore.instance.getConfig().particlesConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("status-overlay", StatusOverlayConfig.class) {
+            @Override
+            protected StatusOverlayConfig getConfig() {
+                return ConfigStore.instance.getConfig().statusOverlayConfig;
+            }
+
+            @Override
+            protected void setConfig(StatusOverlayConfig config) {
+                ConfigStore.instance.getConfig().statusOverlayConfig.enabled = config.enabled;
             }
         });
     }

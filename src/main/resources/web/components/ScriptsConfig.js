@@ -70,7 +70,7 @@ function createComponent(template) {
                     this.refs = null;
                 } else {
                     let self = this;
-                    axios.get('/api/scripts-doc').then(function (response) {
+                    axios.get('/api/scripts-doc/keys').then(function (response) {
                         self.refs = response.data;
                     });
                 }

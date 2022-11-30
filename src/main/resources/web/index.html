@@ -77,6 +77,9 @@
                         <td>
                             <button @click="current = 'shulker-tooltip'">Shulker Tooltip</button>
                         </td>
+                        <td>
+                            <button @click="current = 'status-overlay'">Status Overlay</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -319,6 +322,11 @@
             v-if="current == 'particles'"
             @back="backToMain()">
         </particles-config>
+
+        <status-overlay-config
+            v-if="current == 'status-overlay'"
+            @back="backToMain()">
+        </status-overlay-config>
 
     </div>
 

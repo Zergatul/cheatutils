@@ -41,6 +41,7 @@ public final class ModLoader {
         MinecraftForge.EVENT_BUS.register(ScaffoldController.instance);
         MinecraftForge.EVENT_BUS.register(AutoEatController.instance);
         MinecraftForge.EVENT_BUS.register(NoFallController.instance);
+        MinecraftForge.EVENT_BUS.register(StatusOverlayController.instance);
 
         //MinecraftForge.EVENT_BUS.register(TestController.instance);
 

@@ -5,12 +5,9 @@ import com.google.gson.GsonBuilder;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
-import com.zergatul.cheatutils.controllers.FullBrightController;
-import com.zergatul.cheatutils.controllers.KeyBindingsController;
-import com.zergatul.cheatutils.controllers.LightLevelController;
-import com.zergatul.cheatutils.controllers.ScriptController;
-import com.zergatul.cheatutils.scripting.ParseException;
+import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
+import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -175,6 +172,15 @@ public class ConfigStore {
                 if (bindings[i] != null) {
                     KeyBindingsController.instance.assign(i, bindings[i]);
                 }
+            }
+        }
+
+        if (config.statusOverlayConfig.code != null) {
+            try {
+                Runnable script = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
+                StatusOverlayController.instance.setScript(script);
+            } catch (ParseException | ScriptCompileException e) {
+                e.printStackTrace();
             }
         }
     }

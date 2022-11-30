@@ -2,9 +2,9 @@
     <div v-if="state == 'list'">
         <div>
             <button style="width: 200px;" @click="$emit('back')">Back</button>
-            <button style="width: 200px;" @click="openAdd()">Add Entity</button>
+            <button style="width: 200px;" @click="openAdd()" v-show="entitiesConfigList">Add Entity</button>
         </div>
-        <ul class="entities-list">
+        <ul class="list-base entities-list">
             <li v-for="item in entitiesConfigList" :key="item.clazz">
                 <div class="c1" style="display: none;">
                     img
@@ -16,6 +16,7 @@
                             🠞 {{ clazz }}
                         </span>
                     </div>
+                    <div class="smaller">{{ item.clazz }}</div>
                 </div>
                 <div class="c3">
                     <label class="switch-label">
@@ -34,6 +35,15 @@
                         <span>Tracers</span>
                     </label>
                 </div>
+                <div class="c4">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="item.glow"
+                            @change="update(item)">
+                        <color-box :color="item.glowColor"></color-box>
+                        <span>Glow</span>
+                    </label>
+                </div>
                 <div class="c5">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
@@ -45,6 +55,9 @@
                 </div>
                 <div class="c6">
                     <button class="edit" @click="openEdit(item.clazz)">Edit</button>
+                </div>
+                <div class="c6">
+                    <button class="remove" @click="removeByClass(item.clazz)">Remove</button>
                 </div>
             </li>
         </ul>
@@ -59,7 +72,7 @@
                 v-model="search"
                 @input="filterEntityList()">
         </div>
-        <ul class="add-block-list">
+        <ul class="list-base add-entity-list">
             <li v-for="item in entityListFiltered" :key="item.clazz">
                 <div class="c1" style="display: none;">
                     img
@@ -71,6 +84,7 @@
                             🠞 {{ clazz }}
                         </span>
                     </div>
+                    <div class="smaller">{{ item.clazz }}</div>
                 </div>
                 <div class="c3">
                     <button class="edit" v-bind:class="{ 'button-highlight': entitiesConfigMap[item.clazz] }" @click="openEdit(item.clazz)">

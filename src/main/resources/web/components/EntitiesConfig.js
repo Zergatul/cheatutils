@@ -34,7 +34,8 @@ function createComponent(template) {
                 entitiesMap: null,
                 entitiesConfigList: null,
                 entitiesConfigMap: null,
-                selectedConfig: null
+                selectedConfig: null,
+                entityListFiltered: null
             };
         },
         methods: {
@@ -74,7 +75,7 @@ function createComponent(template) {
             },
             remove() {
                 if (this.selectedConfig) {
-                    var self = this;
+                    let self = this;
                     axios.delete('/api/entities/' + this.selectedConfig.clazz).then(function (response) {
                         let clazz = self.selectedConfig.clazz;
                         let index = self.entitiesConfigList.indexOf(self.selectedConfig);
@@ -86,6 +87,16 @@ function createComponent(template) {
                         self.backToList();
                     });
                 }
+            },
+            removeByClass(clazz) {
+                let self = this;
+                axios.delete('/api/entities/' + clazz).then(function (response) {
+                    let index = self.entitiesConfigList.findIndex(e => e.clazz == clazz);
+                    if (index >= 0) {
+                        self.entitiesConfigList.splice(index, 1);
+                    }
+                    delete self.entitiesConfigMap[clazz];
+                });
             },
             update(config) {
                 axios.put('/api/entities/' + config.clazz, config);

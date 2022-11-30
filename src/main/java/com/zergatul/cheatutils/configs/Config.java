@@ -37,6 +37,7 @@ public class Config {
     public NoFallConfig noFallConfig = new NoFallConfig();
     public FogConfig fogConfig = new FogConfig();
     public ParticlesConfig particlesConfig = new ParticlesConfig();
+    public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
 
     public Config() {
         esp = true;

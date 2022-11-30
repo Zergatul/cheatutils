@@ -1,0 +1,29 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+        <button style="width: 200px;" @click="save()" v-if="config">Save</button>
+        <button style="width: 200px;" @click="showApiRef()">Show/Hide API Reference</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Status Overlay</legend>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+        <div>
+            <span class="text">Code:</span>
+        </div>
+        <div>
+            <textarea class="script-code" spellcheck="false" v-model="config.code"></textarea>
+        </div>
+        <div v-if="refs">
+            <ul class="refs">
+                <li v-for="item in refs" v-html="item"></li>
+            </ul>
+        </div>
+    </fieldset>
+</div>

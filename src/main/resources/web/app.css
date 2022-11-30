@@ -45,6 +45,32 @@ ul.add-block-list {
     font-size: 16px;
 }
 
+ul.entities-list {
+    width: 1200px;
+}
+
+ul.add-entity-list {
+    width: 1000px;
+}
+
+ul.add-entity-list > li > div.c1 {
+    flex: 2;
+}
+
+ul.add-entity-list > li > div.c2 {
+    flex: 25;
+    display: flex;
+    flex-direction: column;
+}
+
+ul.add-entity-list > li > div.c2 {
+    flex: 3;
+}
+
+ul.add-entity-list button.edit {
+    width: 80px;
+}
+
 ul.blocks-list > li,
 ul.entities-list > li,
 ul.add-block-list > li {
@@ -577,6 +603,10 @@ ul.refs .method {
 
 ul.refs .class {
     color: #0033B3;
+}
+
+ul.refs .comment {
+    color: #277813;
 }
 
 ul.list-base {
