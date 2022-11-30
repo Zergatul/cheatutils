@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.EnchantmentScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
@@ -48,6 +49,9 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
     private void onInit(CallbackInfo info) {
         Object self = this;
         if (self instanceof EnchantmentScreen) {
+            return;
+        }
+        if (self instanceof InventoryScreen) {
             return;
         }
 
