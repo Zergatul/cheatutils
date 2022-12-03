@@ -45,6 +45,7 @@ public class Config {
     public ParticlesConfig particlesConfig = new ParticlesConfig();
     public AntiRespawnResetConfig antiRespawnResetConfig = new AntiRespawnResetConfig();
     public FastBreakConfig fastBreakConfig = new FastBreakConfig();
+    public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();
 
     public Config() {
         esp = true;

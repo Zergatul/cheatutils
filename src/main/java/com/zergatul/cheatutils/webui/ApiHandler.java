@@ -516,6 +516,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().fastBreakConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("container-summary", ContainerSummaryConfig.class) {
+            @Override
+            protected ContainerSummaryConfig getConfig() {
+                return ConfigStore.instance.getConfig().containerSummaryConfig;
+            }
+
+            @Override
+            protected void setConfig(ContainerSummaryConfig config) {
+                ConfigStore.instance.getConfig().containerSummaryConfig = config;
+            }
+        });
     }
 
     @Override

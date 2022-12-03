@@ -6,6 +6,7 @@ import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.interfaces.ScreenMixinInterface;
+import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -43,17 +44,6 @@ public class ShulkerTooltipController {
 
     }
 
-    public boolean isShulkerBox(ItemStack itemStack) {
-        if (itemStack.getItem() instanceof BlockItem) {
-            Block block = (((BlockItem)itemStack.getItem())).getBlock();
-            if (block instanceof ShulkerBoxBlock) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     @SubscribeEvent
     public void onPreRenderTooltip(RenderTooltipEvent.Pre event) {
         if (locked && !allowTooltip) {
@@ -71,7 +61,7 @@ public class ShulkerTooltipController {
             return;
         }
 
-        if (!isShulkerBox(event.getItemStack())) {
+        if (!ItemUtils.isShulkerBox(event.getItemStack())) {
             clearLocked();
             return;
         }
@@ -144,19 +134,13 @@ public class ShulkerTooltipController {
         drawTexture(matrix, x, y + 6, ImageWidth, 60, 100, 0, 14, ImageWidth, 60, 256, 256);
         drawTexture(matrix, x, y + 66, ImageWidth, 6, 100, 0, 160, ImageWidth, 6, 256, 256);
 
-        CompoundTag compound = itemStack.getTagElement("BlockEntityTag");
-        if (compound != null) {
-            if (compound.contains("Items", 9)) {
-                var list = NonNullList.withSize(27, ItemStack.EMPTY);
-                ContainerHelper.loadAllItems(compound, list);
-                for (int i = 0; i < list.size(); i++) {
-                    ItemStack slot = list.get(i);
-                    int slotX = i % 9;
-                    int slotY = i / 9;
-                    if (!slot.isEmpty()) {
-                        renderSlot(slot, x + 8 + 18 * slotX, y + 10 + 18 * slotY);
-                    }
-                }
+        NonNullList<ItemStack> content = ItemUtils.getShulkerContent(itemStack);
+        for (int i = 0; i < content.size(); i++) {
+            ItemStack slot = content.get(i);
+            int slotX = i % 9;
+            int slotY = i / 9;
+            if (!slot.isEmpty()) {
+                renderSlot(slot, x + 8 + 18 * slotX, y + 10 + 18 * slotY);
             }
         }
     }

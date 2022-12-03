@@ -111,6 +111,9 @@
                         <td>
                             <button @click="current = 'exploration-mini-map'">Exploration Mini Map</button>
                         </td>
+                        <td>
+                            <button @click="current = 'container-summary'">Container Summary</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -397,6 +400,11 @@
             v-if="current == 'fast-break'"
             @back="backToMain()">
         </fast-break-config>
+
+        <container-summary-config
+            v-if="current == 'container-summary'"
+            @back="backToMain()">
+        </container-summary-config>
 
     </div>
 
