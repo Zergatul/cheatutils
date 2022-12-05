@@ -143,21 +143,20 @@ public class RenderController {
                 continue;
             }
 
-            for (BlockPos pos: set) {
-                if (config.maxDistance != Double.MAX_VALUE) {
-                    double dx = pos.getX() - playerX;
-                    double dy = pos.getY() - playerY;
-                    double dz = pos.getZ() - playerZ;
-                    if (dx * dx + dy * dy + dz * dz > config.maxDistance * config.maxDistance) {
-                        continue;
-                    }
-                }
+            double tracerMaxDistanceSqr = config.getTracerMaxDistanceSqr();
+            double outlineMaxDistanceSqr = config.getOutlineMaxDistanceSqr();
 
-                if (config.drawOutline) {
+            for (BlockPos pos: set) {
+                double dx = pos.getX() - playerX;
+                double dy = pos.getY() - playerY;
+                double dz = pos.getZ() - playerZ;
+                double distanceSqr = dx * dx + dy * dy + dz * dz;
+
+                if (config.drawOutline && distanceSqr < outlineMaxDistanceSqr) {
                     renderBlockBounding(buffer, view, pos, config);
                 }
 
-                if (config.drawTracers) {
+                if (config.drawTracers && distanceSqr < tracerMaxDistanceSqr) {
                     drawTracer(
                         buffer,
                         view,
@@ -183,13 +182,13 @@ public class RenderController {
             double dx = entity.getX() - playerX;
             double dy = entity.getY() - playerY;
             double dz = entity.getZ() - playerZ;
-            double distance2 = dx * dx + dy * dy + dz * dz;
+            double distanceSqr = dx * dx + dy * dy + dz * dz;
 
             EntityTracerConfig config = list.stream().filter(c ->
                     c.enabled &&
                     c.drawOutline &&
                     c.clazz.isInstance(entity) &&
-                    distance2 < c.maxDistance * c.maxDistance).findFirst().orElse(null);
+                    distanceSqr < c.getOutlineMaxDistanceSqr()).findFirst().orElse(null);
 
             if (config != null) {
                 renderEntityBounding(buffer, view, partialTicks, entity, config);
@@ -199,7 +198,7 @@ public class RenderController {
                     c.enabled &&
                     c.drawTracers &&
                     c.clazz.isInstance(entity) &&
-                    distance2 < c.maxDistance * c.maxDistance).findFirst().orElse(null);
+                    distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
             if (config != null) {
                 drawTracer(

@@ -108,7 +108,9 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             this.itemRenderer.blitOffset = 100.0F;
             RenderSystem.enableDepthTest();
 
-            list.forEach(d -> d.initDraw(this.font));
+            boolean group = !Screen.hasAltDown();
+
+            list.forEach(d -> d.initDraw(this.font, group));
             List<ContainerSummaryController.ItemsColumn> columns = ContainerSummaryController.instance.split(list);
             columns.forEach(ContainerSummaryController.ItemsColumn::calculateWidth);
 

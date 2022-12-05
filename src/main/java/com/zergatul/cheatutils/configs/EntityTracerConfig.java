@@ -7,11 +7,21 @@ public class EntityTracerConfig extends TracerConfigBase {
     public Class clazz;
     public boolean glow;
     public Color glowColor;
+    public Double glowMaxDistance;
+
+    public double getGlowMaxDistanceSqr() {
+        if (glowMaxDistance != null) {
+            return glowMaxDistance * glowMaxDistance;
+        } else {
+            return maxDistance * maxDistance;
+        }
+    }
 
     public void copyFrom(EntityTracerConfig jsonConfig) {
         copyFromJsonTracerConfigBase(jsonConfig);
         glow = jsonConfig.glow;
         glowColor = jsonConfig.glowColor;
+        glowMaxDistance = jsonConfig.glowMaxDistance;
     }
 
     public static EntityTracerConfig createDefault(Class clazz) {

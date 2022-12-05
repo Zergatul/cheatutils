@@ -96,8 +96,8 @@ public class ContainerSummaryController {
             return this;
         }
 
-        public void initDraw(Font font) {
-            stackSize = ItemUtils.getStackSize(item);
+        public void initDraw(Font font, boolean group) {
+            stackSize = group ? ItemUtils.getStackSize(item) : 1;
             stacksCount = count / stackSize;
             remCount = count % stackSize;
 
@@ -186,8 +186,8 @@ public class ContainerSummaryController {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShaderTexture(0, CONTAINER_TEXTURE);
-            GuiUtils.drawTexture(poseStack.last().pose(), x, yo, 1, ItemDrawable.HEIGHT * list.size(), 124, 3, 3, 1, 1, 256, 256);
-            GuiUtils.drawTexture(poseStack.last().pose(), x + fullWidth, yo, 1, ItemDrawable.HEIGHT * list.size(), 124, 3, 3, 1, 1, 256, 256);
+            GuiUtils.drawTexture(poseStack.last().pose(), x, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
+            GuiUtils.drawTexture(poseStack.last().pose(), x + fullWidth, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
             for (int i = 0; i <= list.size(); i++) {
                 GuiUtils.drawTexture(poseStack.last().pose(), x, yo + ItemDrawable.HEIGHT * i, fullWidth, 1, 124, 3, 3, 1, 1, 256, 256);
             }

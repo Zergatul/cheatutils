@@ -9,12 +9,16 @@ public class MovementHackConfig implements ValidatableConfig {
     public boolean disableCrouchingSlowdown;
     public boolean antiKnockback;
     public boolean antiPush;
+    public boolean scaleJumpHeight;
+    public double jumpHeightFactor;
 
     public MovementHackConfig() {
         inputVectorFactor = 1;
+        jumpHeightFactor = 1;
     }
 
     public void validate() {
         inputVectorFactor = MathUtils.clamp(inputVectorFactor, 0.01, 1000);
+        jumpHeightFactor = MathUtils.clamp(jumpHeightFactor, 0.01, 1000);
     }
 }

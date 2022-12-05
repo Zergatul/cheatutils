@@ -3,18 +3,13 @@ package com.zergatul.cheatutils.mixins;
 import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FlyHackConfig;
+import com.zergatul.cheatutils.configs.MovementHackConfig;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
-import net.minecraft.client.ClientRecipeBook;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.Direction;
-import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.entity.player.ProfilePublicKey;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -114,5 +109,15 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
             return;
         }
         super.push(dx, dy, dz);
+    }
+
+    @Override
+    protected float getJumpPower() {
+        MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
+        if (config.scaleJumpHeight) {
+            return (float) (Math.sqrt(config.jumpHeightFactor) * super.getJumpPower());
+        } else {
+            return super.getJumpPower();
+        }
     }
 }

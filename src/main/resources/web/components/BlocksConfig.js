@@ -142,6 +142,12 @@ function createComponent(template) {
                 });
             },
             update(config) {
+                if (config.tracerMaxDistance == '') {
+                    config.tracerMaxDistance = null;
+                }
+                if (config.outlineMaxDistance == '') {
+                    config.outlineMaxDistance = null;
+                }
                 axios.put('/api/blocks/' + config.block, config);
             }
         }

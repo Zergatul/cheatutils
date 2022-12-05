@@ -18,6 +18,24 @@ public class TracerConfigBase {
     public float outlineLineWidth;
 
     public double maxDistance;
+    public Double tracerMaxDistance;
+    public Double outlineMaxDistance;
+
+    public double getTracerMaxDistanceSqr() {
+        if (tracerMaxDistance != null) {
+            return tracerMaxDistance * tracerMaxDistance;
+        } else {
+            return maxDistance * maxDistance;
+        }
+    }
+
+    public double getOutlineMaxDistanceSqr() {
+        if (outlineMaxDistance != null) {
+            return outlineMaxDistance * outlineMaxDistance;
+        } else {
+            return maxDistance * maxDistance;
+        }
+    }
 
     protected void copyFromJsonTracerConfigBase(TracerConfigBase jsonConfig) {
 
@@ -39,5 +57,8 @@ public class TracerConfigBase {
         if (maxDistance <= 0) {
             maxDistance = DefaultMaxDistance;
         }
+
+        tracerMaxDistance = jsonConfig.tracerMaxDistance;
+        outlineMaxDistance = jsonConfig.outlineMaxDistance;
     }
 }

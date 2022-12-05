@@ -176,6 +176,23 @@ div.description {
     margin-bottom: 12px;
 }
 
+div.section-description {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    color: #92711f;
+}
+
+span.field-description {
+    display: inline-block;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+div.input-section + div {
+    padding-top: 8px;
+}
+
 input[type=text] {
     border: 2px solid black;
     border-radius: 4px;
@@ -185,6 +202,15 @@ input[type=text] {
 
 input.search {
     width: 300px;
+}
+
+div.module-main {
+    padding-top: 16px;
+}
+
+h2.module-header {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
 }
 
 /* checkbox start */
@@ -327,7 +353,9 @@ fieldset {
     width: 1000px;
 }
 
-fieldset + fieldset {
+fieldset + fieldset,
+fieldset + div.simple-section,
+div.simple-section + div.simple-section {
     margin-top: 16px;
 }
 
@@ -423,6 +451,10 @@ div.color-box {
 .group-setting > div {
     display: flex;
     align-items: center;
+}
+
+div.esp-additional {
+    margin-left: 12px;
 }
 
 /* cube */

@@ -137,31 +137,13 @@
                             v-model="selectedConfig.tracerColor"
                             @update:model-value="update(selectedConfig)" />
                     </div>
-                    <div class="group-setting" style="display: none;">
+                    <div class="group-setting esp-additional">
                         <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
-                            <div style="display: inline-block; width: 400px;">
-                                <div class="slidercontainer">
-                                    <input type="range" min="1" max="10" step="1" class="slider"
-                                        v-model="selectedConfig.tracerLineWidth"
-                                        @change="update(selectedConfig)">
-                                </div>
-                            </div>
-                            <div style="display: inline-block; padding-left: 16px;">
-                                {{ selectedConfig.tracerLineWidth }}
-                            </div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
                         </div>
-                        <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line style:</span>
-                            <select
-                                v-model="selectedConfig.tracerLineStyle"
-                                @change="update(selectedConfig)">
-                                <option value="0">Solid</option>
-                                <option value="61680">Dashed (0xF0F0)</option>
-                                <option value="4112">Dotted (0x1010)</option>
-                                <option value="4336">Dot Dash (0x10F0)</option>
-                                <option value="65520">Long Dash (0xFFF0)</option>
-                            </select>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
                         </div>
                     </div>
                 </div>
@@ -181,6 +163,15 @@
                             v-model="selectedConfig.glowColor"
                             @update:model-value="update(selectedConfig)" />
                     </div>
+                    <div class="group-setting esp-additional">
+                        <div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.glowMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
+                        </div>
+                    </div>
                 </div>
             </fieldset>
             <fieldset>
@@ -198,19 +189,13 @@
                             v-model="selectedConfig.outlineColor"
                             @update:model-value="update(selectedConfig)" />
                     </div>
-                    <div class="group-setting" style="display: none;">
+                    <div class="group-setting esp-additional">
                         <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
-                            <div style="display: inline-block; width: 400px;">
-                                <div class="slidercontainer">
-                                    <input type="range" min="1" max="10" step="1" class="slider"
-                                        v-model="selectedConfig.outlineLineWidth"
-                                        @change="update(selectedConfig)">
-                                </div>
-                            </div>
-                            <div style="display: inline-block; padding-left: 16px;">
-                                {{ selectedConfig.outlineLineWidth }}
-                            </div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
                         </div>
                     </div>
                 </div>

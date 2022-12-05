@@ -2,63 +2,102 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Movement Hack</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Movement Hack</h2>
         <div class="description">
             Different hacks related to movement.
         </div>
-        <div class="description">
-            Don't reduce your speed when you use consumable items, such as food or potions.
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.disableSlowdownOnUseItem"
-                    @change="update()">
-                <span>No slow on item use</span>
-            </label>
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.scaleInputVector"
-                    @change="update()">
-                <span>Override max speed</span>
-            </label>
-        </div>
-        <div class="description">
-            Value 1 means default speed. Value 2 increase max speed by 2 and so on.
-        </div>
-        <div>
-            <span class="text">Max speed factor:</span>
-            <input type="text" v-model="config.inputVectorFactor" @change="update()">
-        </div>
-        <div class="description">
-            Don't reduce your speed when you are crouching or crawling.
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.disableCrouchingSlowdown"
-                    @change="update()">
-                <span>No slow on crouch</span>
-            </label>
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.antiKnockback"
-                    @change="update()">
-                <span>Anti-Knockback</span>
-            </label>
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                       v-model="config.antiPush"
-                       @change="update()">
-                <span>Anti-Push</span>
-            </label>
-        </div>
-    </fieldset>
+
+        <fieldset>
+            <legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.disableSlowdownOnUseItem"
+                        @change="update()">
+                    <span>No slow on item use</span>
+                </label>
+            </legend>
+            <div class="section-description">
+                Don't reduce your speed when you use consumable items, such as food or potions.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.scaleInputVector"
+                        @change="update()">
+                    <span>Override max speed</span>
+                </label>
+            </legend>
+            <div class="input-section">
+                <span class="field-description">Max speed factor:</span>
+                <input type="text" v-model="config.inputVectorFactor" @change="update()">
+            </div>
+            <div class="section-description">
+                Value 1 means default speed. Value 2 increase max speed by 2 and so on.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.disableCrouchingSlowdown"
+                        @change="update()">
+                    <span>No slow on crouch</span>
+                </label>
+            </legend>
+            <div class="section-description">
+                Don't reduce your speed when you are crouching or crawling.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.antiKnockback"
+                        @change="update()">
+                    <span>Anti-Knockback</span>
+                </label>
+            </legend>
+            <div class="section-description">
+                Ignores server packet responsible for setting your speed. Knockback from mobs or players will be ignored.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                           v-model="config.antiPush"
+                           @change="update()">
+                    <span>Anti-Push</span>
+                </label>
+            </legend>
+            <div class="section-description">
+                Skips client-side code responsible for moving your character based on nearby entities.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.scaleJumpHeight"
+                        @change="update()">
+                    <span>Override jump height</span>
+                </label>
+            </legend>
+            <div class="input-section">
+                <span class="field-description">Jump height factor:</span>
+                <input type="text" v-model="config.jumpHeightFactor" @change="update()">
+            </div>
+            <div class="section-description">
+                Value 1 means default jump height. Value 2 increase jump height by 2 and so on.
+            </div>
+        </fieldset>
+    </div>
 </div>
