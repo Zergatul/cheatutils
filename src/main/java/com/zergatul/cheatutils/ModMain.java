@@ -70,6 +70,7 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(BeaconController.instance);
         MinecraftForge.EVENT_BUS.register(StatusOverlayController.instance);
         MinecraftForge.EVENT_BUS.register(ChunkOverlayController.instance);
+        //MinecraftForge.EVENT_BUS.register(ZoomController.instance);
 
         //MinecraftForge.EVENT_BUS.register(TestController.instance);
 

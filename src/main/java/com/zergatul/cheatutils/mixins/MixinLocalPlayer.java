@@ -4,11 +4,15 @@ import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FlyHackConfig;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
+import com.zergatul.cheatutils.controllers.FreeCamController;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
+import com.zergatul.cheatutils.controllers.ZoomController;
 import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
+import com.zergatul.cheatutils.helpers.MixinMouseHandlerHelper;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -119,5 +123,27 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         } else {
             return super.getJumpPower();
         }
+    }
+
+    @Override
+    public void turn(double yRot, double xRot) {
+        if (!MixinMouseHandlerHelper.insideTurnPlayer) {
+            return;
+        }
+        if (FreeCamController.instance.isActive()) {
+            FreeCamController.instance.onMouseTurn(yRot, xRot);
+            return;
+        } else {
+            if (ConfigStore.instance.getConfig().lockInputsConfig.mouseInputDisabled) {
+                return;
+            }
+        }
+
+        if (ZoomController.instance.isActive()) {
+            xRot *= ZoomController.instance.getFovFactor();
+            yRot *= ZoomController.instance.getFovFactor();
+        }
+
+        super.turn(yRot, xRot);
     }
 }

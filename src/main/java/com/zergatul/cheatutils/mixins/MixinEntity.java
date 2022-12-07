@@ -40,25 +40,6 @@ public abstract class MixinEntity {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/Entity;turn(DD)V", cancellable = true)
-    private void onTurn(double yRot, double xRot, CallbackInfo info) {
-        if (!MixinMouseHandlerHelper.insideTurnPlayer) {
-            return;
-        }
-        var entity = (Entity) (Object) this;
-        if (!(entity instanceof LocalPlayer)) {
-            return;
-        }
-        if (FreeCamController.instance.isActive()) {
-            FreeCamController.instance.onMouseTurn(yRot, xRot);
-            info.cancel();
-        } else {
-            if (ConfigStore.instance.getConfig().lockInputsConfig.mouseInputDisabled) {
-                info.cancel();
-            }
-        }
-    }
-
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/Entity;getEyePosition(F)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private void onGetEyePosition(float p_20300_, CallbackInfoReturnable<Vec3> info) {
         FreeCamController freeCam = FreeCamController.instance;
