@@ -1,12 +1,8 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.interfaces.ServerboundMovePlayerPacketMixinInterface;
-import com.zergatul.cheatutils.mixins.MixinServerboundMovePlayerPacket;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-import net.minecraft.world.phys.Vec3;
 
 public class FlyHackController {
 
