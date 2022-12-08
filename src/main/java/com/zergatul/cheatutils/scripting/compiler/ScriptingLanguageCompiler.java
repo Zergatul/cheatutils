@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -374,8 +375,38 @@ public class ScriptingLanguageCompiler {
                         visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 1 : 0);
                         visitor.visitLabel(endLabel);
                     }
-                    case DOUBLE -> throw new ScriptCompileException("ASTEqualityExpression comparing Double not implemented.");
-                    case STRING -> throw new ScriptCompileException("ASTEqualityExpression comparing String not implemented.");
+                    case DOUBLE -> {
+                        visitor.visitInsn(DCMPL);
+                        visitor.visitInsn(ICONST_0);
+                        visitor.visitJumpInsn(IF_ICMPEQ, elseLabel);
+                        visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 0 : 1);
+                        visitor.visitJumpInsn(GOTO, endLabel);
+                        visitor.visitLabel(elseLabel);
+                        visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 1 : 0);
+                        visitor.visitLabel(endLabel);
+                    }
+                    case STRING -> {
+                        Method equalsMethod;
+                        try {
+                            equalsMethod = Objects.class.getDeclaredMethod("equals", Object.class, Object.class);
+                        } catch (NoSuchMethodException e) {
+                            e.printStackTrace();
+                            throw new ScriptCompileException("ASTEqualityExpression cannot find Objects.equals method.");
+                        }
+
+                        visitor.visitMethodInsn(
+                                INVOKESTATIC,
+                                Type.getInternalName(Objects.class),
+                                equalsMethod.getName(),
+                                Type.getMethodDescriptor(equalsMethod),
+                                false);
+
+                        if (operator instanceof ASTInequality) {
+                            visitor.visitInsn(ICONST_1);
+                            visitor.visitInsn(SWAP);
+                            visitor.visitInsn(ISUB);
+                        }
+                    }
                     case NULL -> throw new ScriptCompileException("ASTEqualityExpression Null not implemented.");
                     case VOID -> throw new ScriptCompileException("ASTEqualityExpression cannot compare Void.");
                     default -> throw new ScriptCompileException("ASTEqualityExpression type not implemented.");
