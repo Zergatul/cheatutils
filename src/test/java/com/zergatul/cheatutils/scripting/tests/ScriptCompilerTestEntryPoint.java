@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.scripting.tests;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptingLanguageCompiler;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
-import com.zergatul.cheatutils.webui.StaticFilesHandler;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;

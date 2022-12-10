@@ -8,15 +8,20 @@ import com.zergatul.cheatutils.utils.ReflectionUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
@@ -155,5 +160,29 @@ public class MainApi {
         } else {
             return "";
         }
+    }
+
+    public String getBlockCoordinates() {
+        BlockPos blockPos = mc.getCameraEntity().blockPosition();
+        return String.format(Locale.ROOT, "%d %d %d [%d %d]",
+                blockPos.getX(), blockPos.getY(), blockPos.getZ(),
+                blockPos.getX() & 15, blockPos.getZ() & 15);
+    }
+
+    public String getChunkCoordinates() {
+        BlockPos blockPos = mc.getCameraEntity().blockPosition();
+        ChunkPos chunkPos = new ChunkPos(blockPos);
+        return String.format(Locale.ROOT, "%d %d", chunkPos.x, chunkPos.z);
+    }
+
+    public String getDirection() {
+        Direction direction = mc.getCameraEntity().getDirection();
+        return direction.getName();
+    }
+
+    public String getBiome() {
+        BlockPos blockPos = mc.getCameraEntity().blockPosition();
+        Holder<Biome> holder = mc.level.getBiome(blockPos);
+        return holder.unwrap().map(id -> id.location().toString(), biome -> "[unregistered " + biome + "]");
     }
 }

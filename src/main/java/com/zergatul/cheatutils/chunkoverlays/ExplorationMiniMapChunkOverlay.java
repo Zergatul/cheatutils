@@ -6,6 +6,7 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3d;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.GuiUtils;
 import net.minecraft.client.renderer.GameRenderer;
@@ -56,7 +57,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
     @Override
     public boolean isEnabled() {
-        return ConfigStore.instance.getConfig().explorationMiniMapConfig.enabled;
+        return getConfig().enabled;
     }
 
     @Override
@@ -102,9 +103,10 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
             int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
 
+            Integer scanFromY = getConfig().scanFromY;
             for (int dx = 0; dx < 16; dx++) {
                 for (int dz = 0; dz < 16; dz++) {
-                    drawPixel(dimension, xf, yf, dx, dz, segment, chunk);
+                    drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
                 }
             }
 
@@ -123,7 +125,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         if (dimension.isNether()) {
             int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
             int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
-            boolean updated = drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, mc.level.getChunk(chunkPos.x, chunkPos.z));
+            boolean updated = drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, mc.level.getChunk(chunkPos.x, chunkPos.z), getConfig().scanFromY);
             if (updated && !segment.updated) {
                 segment.updated = true;
                 segment.updateTime = System.nanoTime();
@@ -137,7 +139,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             if (pos.getY() >= height) {
                 int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
                 int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
-                boolean updated = drawPixel(dimension, xf, yf, dx, dz, segment, chunk);
+                boolean updated = drawPixel(dimension, xf, yf, dx, dz, segment, chunk, getConfig().scanFromY);
                 if (updated && !segment.updated) {
                     segment.updated = true;
                     segment.updateTime = System.nanoTime();
@@ -147,9 +149,9 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         }
     }
 
-    private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk) {
-        if (dimension.hasCeiling()) {
-            for (int y1 = dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {
+    private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk, Integer scanFromY) {
+        if (dimension.hasCeiling() || scanFromY != null) {
+            for (int y1 = scanFromY != null ? scanFromY : dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {
                 BlockPos pos = new BlockPos(dx, y1, dz);
                 BlockState state = chunk.getBlockState(pos);
                 if (state.isAir()) {
@@ -193,6 +195,10 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         }
 
         return false;
+    }
+
+    private ExplorationMiniMapConfig getConfig() {
+        return ConfigStore.instance.getConfig().explorationMiniMapConfig;
     }
 
     private static int convert(int color) {

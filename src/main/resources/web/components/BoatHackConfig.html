@@ -2,22 +2,49 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Boat Hack</legend>
-        <div class="description">
-            Allows you override friction, so your boat can move faster. Regular blocks friction = 0.6. Packed ice friction = 0.98. Most servers have protection against hack. However you can slightly increase friction to get some extra speed.
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Boat Hack</h2>
+
+        <div class="module-sections">
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.overrideFriction"
+                            @change="update()">
+                        <span>Override friction</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Friction:</span>
+                    <input type="text" v-model="config.friction" @change="update()">
+                </div>
+                <div class="section-description">
+                    Allows you override friction, so your boat can move faster. Regular blocks friction = 0.6. Packed ice friction = 0.98.
+                </div>
+            </fieldset>
+    
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.fly"
+                            @change="update()">
+                        <span>Boat Fly</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Horizontal Speed:</span>
+                    <input type="text" v-model="config.horizontalFlySpeed" @change="update()">
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Vertical Speed:</span>
+                    <input type="text" v-model="config.verticalFlySpeed" @change="update()">
+                </div>
+                <div class="section-description">
+                    Use "Jump" key to move up, "Sprint" key to move down. "Sneak" key behavior remains the same.
+                </div>
+            </fieldset>
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.overrideFriction"
-                    @change="update()">
-                <span>Override friction</span>
-            </label>
-        </div>
-        <div>
-            <span class="text">Friction:</span>
-            <input type="text" v-model="config.friction" @change="update()">
-        </div>
-    </fieldset>
+    </div>
 </div>

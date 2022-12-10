@@ -81,6 +81,10 @@ public abstract class MixinBoat extends Entity {
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/vehicle/Boat;controlBoat()V")
     private void onControlBoat(CallbackInfo info) {
+        if (!level.isClientSide()) {
+            return;
+        }
+
         BoatHackConfig config = ConfigStore.instance.getConfig().boatHackConfig;
         if (config.fly) {
             this.inputUp = false;
@@ -92,6 +96,11 @@ public abstract class MixinBoat extends Entity {
 
     @Override
     public void move(MoverType type, Vec3 speed) {
+        if (!level.isClientSide()) {
+            super.move(type, speed);
+            return;
+        }
+
         BoatHackConfig config = ConfigStore.instance.getConfig().boatHackConfig;
         if (!config.fly) {
             super.move(type, speed);

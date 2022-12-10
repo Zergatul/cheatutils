@@ -353,10 +353,10 @@ fieldset {
     width: 1000px;
 }
 
-fieldset + fieldset,
-fieldset + div.simple-section,
-div.simple-section + div.simple-section {
-    margin-top: 16px;
+div.module-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 legend {

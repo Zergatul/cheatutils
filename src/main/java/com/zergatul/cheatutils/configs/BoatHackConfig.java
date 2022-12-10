@@ -14,7 +14,7 @@ public class BoatHackConfig implements ValidatableConfig {
         overrideFriction = false;
         friction = 0.9f;
         horizontalFlySpeed = 10;
-        verticalFlySpeed = 1;
+        verticalFlySpeed = 5;
     }
 
     @Override
