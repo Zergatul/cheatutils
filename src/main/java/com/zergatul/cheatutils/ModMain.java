@@ -39,6 +39,7 @@ public class ModMain {
         //register(AutoPlacerController.instance);
         register(NoFallController.instance);
         register(ScaffoldController.instance);
+        register(SpeedCounterController.instance);
     }
 
     private void register(Object instance) {
@@ -57,7 +58,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(LightLevelController.instance);
         MinecraftForge.EVENT_BUS.register(DebugScreenController.instance);
         MinecraftForge.EVENT_BUS.register(EntitySpeedController.instance);
-        MinecraftForge.EVENT_BUS.register(SpeedCounterController.instance);
         MinecraftForge.EVENT_BUS.register(AutoDisconnectController.instance);
         MinecraftForge.EVENT_BUS.register(ArmorOverlayController.instance);
         MinecraftForge.EVENT_BUS.register(ElytraHackController.instance);

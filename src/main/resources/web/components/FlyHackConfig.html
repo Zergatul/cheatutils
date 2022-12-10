@@ -2,30 +2,39 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Fly Hack</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Fly Hack</h2>
         <div class="description">
-            Just fly hack.
+            Sometimes if you turn off fly hack close to surface (1-2 blocks) you can take a lot of fall damage and die (even with No Fall enabled).
+            Workaround: before turning off fly hack, fly upwards (even 0.5 seconds can be enough).
+            If you move upwards server resets internal fall distance value and sets it to zero.
+            If you move downwards for a long time server accumulates fall distance, and that's why you take fall damage.
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.enabled"
-                    @change="update()">
-                <span>Enabled</span>
-            </label>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.overrideFlyingSpeed"
+                            @change="update()">
+                        <span>Override max speed</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Flying speed (default 0.05):</span>
+                    <input type="text" v-model="config.flyingSpeed" @change="update()">
+                </div>
+            </fieldset>
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.overrideFlyingSpeed"
-                    @change="update()">
-                <span>Override flying speed</span>
-            </label>
-        </div>
-        <div>
-            <span class="text">Flying speed (default 0.05):</span>
-            <input type="text" v-model="config.flyingSpeed" @change="update()">
-        </div>
-    </fieldset>
+    </div>
 </div>

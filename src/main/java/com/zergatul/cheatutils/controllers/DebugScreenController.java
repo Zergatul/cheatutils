@@ -1,11 +1,9 @@
 package com.zergatul.cheatutils.controllers;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Locale;
 
 public class DebugScreenController {
 
@@ -24,7 +22,7 @@ public class DebugScreenController {
         list.add("Loaded chunks: " + ChunkController.instance.getLoadedChunksCount());
         list.add("Block scanning thread queue size: " + BlockFinderController.instance.getScanningQueueCount());
         list.add("Block scanning thread load: " + format.format(BlockFinderController.instance.getScanningThreadLoadPercent()) + "%");
-        list.add("Horizontal speed: " + format.format(SpeedCounterController.instance.getSpeed()));
+        list.add("Horizontal speed: " + format.format(SpeedCounterController.instance.getHorizontalSpeed()));
 
         FreeCamController.instance.onDebugScreenGetGameInformation(list);
     }

@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.api.overlay;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.controllers.SpeedCounterController;
 import com.zergatul.cheatutils.controllers.StatusOverlayController;
 import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.utils.ColorUtils;
@@ -184,5 +185,15 @@ public class MainApi {
         BlockPos blockPos = mc.getCameraEntity().blockPosition();
         Holder<Biome> holder = mc.level.getBiome(blockPos);
         return holder.unwrap().map(id -> id.location().toString(), biome -> "[unregistered " + biome + "]");
+    }
+
+    @HelpText("Measured in 0.5 sec window.")
+    public String getHorizontalSpeed() {
+        return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getHorizontalSpeed());
+    }
+
+    @HelpText("Measured in 0.5 sec window.")
+    public String getSpeed() {
+        return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getSpeed());
     }
 }

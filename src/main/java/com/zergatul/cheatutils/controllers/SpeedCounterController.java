@@ -1,10 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.LinkedList;
 
@@ -18,46 +15,82 @@ public class SpeedCounterController {
     private final LinkedList<Entry> list = new LinkedList<>();
 
     private SpeedCounterController() {
+        ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
+    }
 
+    public double getHorizontalSpeed() {
+        if (list.size() >= 2) {
+            Entry first = list.getFirst();
+            Entry last = list.getLast();
+            double distance = -first.horizontalDistance; // to exclude first entry
+            for (Entry entry: list) {
+                distance += entry.horizontalDistance;
+            }
+            return 1e9 * distance / (last.time - first.time);
+        } else {
+            return 0;
+        }
     }
 
     public double getSpeed() {
         if (list.size() >= 2) {
             Entry first = list.getFirst();
             Entry last = list.getLast();
-            double dx = last.x - first.x;
-            double dz = last.z - first.z;
-            return 1e9 * Math.sqrt(dx * dx + dz * dz) / (last.time - first.time);
+            double distance = -first.distance; // to exclude first entry
+            for (Entry entry: list) {
+                distance += entry.distance;
+            }
+            return 1e9 * distance / (last.time - first.time);
         } else {
             return 0;
         }
     }
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
+    public void onClientTickEnd() {
         if (mc.player == null) {
             list.clear();
             return;
         }
 
-        if (event.phase == TickEvent.Phase.END) {
-            long now = System.nanoTime();
-            var entry = new Entry();
-            entry.time = now;
-            entry.x = mc.player.getX();
-            entry.z = mc.player.getZ();
-            list.addLast(entry);
+        long now = System.nanoTime();
+        var entry = new Entry();
+        entry.time = now;
+        entry.x = mc.player.getX();
+        entry.y = mc.player.getY();
+        entry.z = mc.player.getZ();
 
-            while (now - list.getFirst().time > INTERVAL) {
-                list.removeFirst();
-            }
+        if (list.size() > 0) {
+            Entry last = list.getLast();
+            entry.distance = entry.getDistanceTo(last);
+            entry.horizontalDistance = entry.getHorizontalDistanceTo(last);
+        }
+
+        list.addLast(entry);
+
+        while (now - list.getFirst().time > INTERVAL) {
+            list.removeFirst();
         }
     }
 
     private static class Entry {
         public long time;
         public double x;
+        public double y;
         public double z;
-    }
+        public double horizontalDistance;
+        public double distance;
 
+        public double getDistanceTo(Entry other) {
+            double dx = other.x - x;
+            double dy = other.y - y;
+            double dz = other.z - z;
+            return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        }
+
+        public double getHorizontalDistanceTo(Entry other) {
+            double dx = other.x - x;
+            double dz = other.z - z;
+            return Math.sqrt(dx * dx + dz * dz);
+        }
+    }
 }
