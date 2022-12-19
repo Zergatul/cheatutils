@@ -67,6 +67,13 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             int btnHeight = 20;
             cursor -= btnWidth;
             addRenderableWidget(new Button(cursor, this.topPos - btnHeight, btnWidth, btnHeight, new TranslatableComponent("button.smart.put"), this::onSmartPutPress));
+            cursor -= space;
+        }
+        if (config.showDropAll) {
+            int btnWidth = 72;
+            int btnHeight = 20;
+            cursor -= btnWidth;
+            addRenderableWidget(new Button(cursor, this.topPos - btnHeight, btnWidth, btnHeight, new TranslatableComponent("button.drop.all"), this::onDropAllPress));
         }
     }
 
@@ -116,6 +123,27 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
                         mc.gameMode.handleInventoryMouseClick(this.menu.containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
                     }
                 }
+            }
+        }
+    }
+
+    private void onDropAllPress(Button button) {
+        NonNullList<Slot> slots = this.menu.slots;
+        if (slots.size() > 0) {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.gameMode == null || mc.player == null) {
+                return;
+            }
+            Container container = slots.get(0).container;
+            for (int i = 0; i < slots.size(); i++) {
+                Slot slot = slots.get(i);
+                if (slot.container != container) {
+                    break;
+                }
+                if (slot.getItem().isEmpty()) {
+                    continue;
+                }
+                mc.gameMode.handleInventoryMouseClick(this.menu.containerId, i, 1, ClickType.THROW, mc.player);
             }
         }
     }

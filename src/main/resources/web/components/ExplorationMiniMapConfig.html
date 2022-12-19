@@ -30,6 +30,11 @@
             <input type="text" v-model="config.dynamicUpdateDelay" @change="update()">
         </div>
         <div>
+            <span class="text">Scan from Y:</span>
+            <input type="text" v-model="config.scanFromY" @change="update()">
+            <span class="text">For custom modded dimensions</span>
+        </div>
+        <div>
             <button @click="addMarker()">Add Marker</button>
             <button @click="clearMarkers()">Clear Markers</button>
         </div>

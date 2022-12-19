@@ -21,6 +21,9 @@ function createComponent(template) {
             },
             update() {
                 let self = this;
+                if (this.config.scanFromY == '') {
+                    this.config.scanFromY = null;
+                }
                 axios.post('/api/exploration-mini-map', this.config).then(function (response) {
                     self.config = response.data;
                 });

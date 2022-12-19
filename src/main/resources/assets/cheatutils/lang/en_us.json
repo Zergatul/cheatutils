@@ -11,5 +11,6 @@
   "key.zergatul.cheatutils.reserved9": "Reserved 9",
   "category.zergatul.cheatutils": "Cheat Utils",
   "button.take.all": "Take All",
-  "button.smart.put": "Smart Put"
+  "button.smart.put": "Smart Put",
+  "button.drop.all": "Drop All"
 }

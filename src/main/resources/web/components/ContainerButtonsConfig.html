@@ -26,5 +26,13 @@
                 <span>Show "Smart Put" button</span>
             </label>
         </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.showDropAll"
+                    @change="update()">
+                <span>Show "Drop All" button</span>
+            </label>
+        </div>
     </fieldset>
 </div>

@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.api.overlay;
 
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.StatusOverlayController;
 import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.utils.ColorUtils;
@@ -53,6 +54,10 @@ public class MainApi {
 
     public boolean isDebugScreenEnabled() {
         return mc.options.renderDebug;
+    }
+
+    public boolean isEspEnabled() {
+        return ConfigStore.instance.getConfig().esp;
     }
 
     @HelpText("Allowed values: \"left\", \"center\", \"right\".")

@@ -328,7 +328,7 @@ public class ExplorationMiniMapController {
                 if (dimension.isNether()) {
                     int xf = Math.floorMod(chunkPos.x, SegmentSize) * 16;
                     int yf = Math.floorMod(chunkPos.z, SegmentSize) * 16;
-                    drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, mc.level.getChunk(chunkPos.x, chunkPos.z));
+                    drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, mc.level.getChunk(chunkPos.x, chunkPos.z), ConfigStore.instance.getConfig().explorationMiniMapConfig.scanFromY);
                     if (!segment.updated) {
                         segment.updated = true;
                         segment.updateTime = System.nanoTime();
@@ -342,7 +342,7 @@ public class ExplorationMiniMapController {
                     if (pos.getY() >= height) {
                         int xf = Math.floorMod(chunkPos.x, SegmentSize) * 16;
                         int yf = Math.floorMod(chunkPos.z, SegmentSize) * 16;
-                        drawPixel(dimension, xf, yf, dx, dz, segment, chunk);
+                        drawPixel(dimension, xf, yf, dx, dz, segment, chunk, ConfigStore.instance.getConfig().explorationMiniMapConfig.scanFromY);
                         if (!segment.updated) {
                             segment.updated = true;
                             segment.updateTime = System.nanoTime();
@@ -392,19 +392,20 @@ public class ExplorationMiniMapController {
         int xf = Math.floorMod(chunkPos.x, SegmentSize) * 16;
         int yf = Math.floorMod(chunkPos.z, SegmentSize) * 16;
 
+        Integer scanFromY = ConfigStore.instance.getConfig().explorationMiniMapConfig.scanFromY;
         for (int dx = 0; dx < 16; dx++) {
             for (int dz = 0; dz < 16; dz++) {
-                drawPixel(dimension, xf, yf, dx, dz, segment, chunk);
+                drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
             }
         }
 
         renderQueue.add(new RenderThreadQueueItem(() -> segment.onChange()));
     }
 
-    private void drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk) {
+    private void drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk, Integer scanFromY) {
         boolean pixelSet = false;
-        if (dimension.hasCeiling()) {
-            for (int y1 = dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {
+        if (dimension.hasCeiling() || scanFromY != null) {
+            for (int y1 = scanFromY != null ? scanFromY : dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {
                 BlockPos pos = new BlockPos(dx, y1, dz);
                 BlockState state = chunk.getBlockState(pos);
                 if (state.isAir()) {
