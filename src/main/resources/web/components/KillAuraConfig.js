@@ -63,6 +63,12 @@ function createComponent(template) {
             },
             update() {
                 let self = this;
+                if (this.config.maxHorizontalAngle == '') {
+                    this.config.maxHorizontalAngle = null;
+                }
+                if (this.config.maxVerticalAngle == '') {
+                    this.config.maxVerticalAngle = null;
+                }
                 axios.post('/api/kill-aura', this.config).then(function (response) {
                     self.config = response.data;
                 });

@@ -2,28 +2,64 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Kill Aura</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Kill Aura</h2>
         <div class="description">
             Automatically attacks entities in range with current item in hand.
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.active"
-                    @change="update()">
-                <span>Enabled</span>
-            </label>
-        </div>
-        <div>
-            <div class="description">How often kill aura attacks. 1 = fastest (attack every tick), 20 = attack once a second and so on. In other words: attack every X ticks.</div>
-            <input type="text" v-model="config.attackTickInterval" @change="update()">
-        </div>
-        <div>
-            <span class="text">Max Range:</span>
-            <input type="text" v-model="config.maxRange" @change="update()">
-        </div>
-        <div>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.active"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>
+                    Tick Interval
+                </legend>
+                <div class="input-section">
+                    <input type="text" v-model="config.attackTickInterval" @change="update()">
+                    <div class="section-description">
+                        How often kill aura attacks. 1 = fastest (attack every tick), 20 = attack once a second and so on. In other words: attack every X ticks.
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    Max Range
+                </legend>
+                <div class="input-section">
+                    <input type="text" v-model="config.maxRange" @change="update()">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    Limit target coverage by angle
+                </legend>
+                <div class="input-section">
+                    <div>
+                        <span class="field-description">Delta horizontal angle:</span>
+                        <input type="text" v-model="config.maxHorizontalAngle" @change="update()">
+                    </div>
+                    <div>
+                        <span class="field-description">Delta vertical angle:</span>
+                        <input type="text" v-model="config.maxVerticalAngle" @change="update()">
+                    </div>
+                    <div class="section-description">
+                        In degrees. Value 180 means no limit. But it is better to leave field(s) empty for this purpose.<br>
+                        For every possible target module calculates how far you need to rotate to attack target. If this angle exceeds specified limit, module will not attack this target.<br>
+                        Note: module is not smart enough to attack on edges of hitbox. It always attacks center of entities bounding box. Angle is measured relatively to this point.
+                    </div>
+                </div>
+            </fieldset>
+
             <fieldset>
                 <legend>Priorities</legend>
                 <div v-if="state == 'list'">
@@ -54,5 +90,5 @@
                 </ul>
             </fieldset>
         </div>
-    </fieldset>
+    </div>
 </div>

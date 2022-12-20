@@ -19,6 +19,8 @@ public class KillAuraConfig implements ValidatableConfig {
     public float maxRange;
     public List<PriorityEntry> priorities;
     public int attackTickInterval;
+    public Double maxHorizontalAngle;
+    public Double maxVerticalAngle;
 
     public KillAuraConfig() {
         active = false;
@@ -34,6 +36,12 @@ public class KillAuraConfig implements ValidatableConfig {
     public void validate() {
         maxRange = MathUtils.clamp(maxRange, 1, 100);
         attackTickInterval = MathUtils.clamp(attackTickInterval, 1, 100);
+        if (maxHorizontalAngle != null) {
+            maxHorizontalAngle = MathUtils.clamp(maxHorizontalAngle, 1, 180);
+        }
+        if (maxVerticalAngle != null) {
+            maxVerticalAngle = MathUtils.clamp(maxVerticalAngle, 1, 180);
+        }
         priorities.removeIf(Objects::isNull);
     }
 
