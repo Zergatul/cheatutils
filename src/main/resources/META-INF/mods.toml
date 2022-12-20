@@ -35,6 +35,7 @@ authors="Zergatul" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
 Open http://localhost:5005/ in your browser to access mod settings.
+If you run multiple minecraft instances, use http://localhost:5006/, http://localhost:5007/ and so on.
 You can find tutorial videos on curseforge page: https://www.curseforge.com/minecraft/mc-mods/cheatutils-by-zergatul
 Source code: https://github.com/Zergatul/cheatutils
 '''

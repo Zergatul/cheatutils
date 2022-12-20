@@ -630,3 +630,21 @@ ul.list-base > li {
 ul.list-base > li + li {
     border-top: 1px solid #FFFFFF;
 }
+
+h2.module-header {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+div.section-description {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    color: #92711f;
+}
+
+span.field-description {
+    display: inline-block;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
+    margin-right: 4px;
+}
