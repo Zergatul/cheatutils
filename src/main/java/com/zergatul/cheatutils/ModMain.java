@@ -40,6 +40,7 @@ public class ModMain {
         register(NoFallController.instance);
         register(ScaffoldController.instance);
         register(SpeedCounterController.instance);
+        register(LockInputsController.instance);
     }
 
     private void register(Object instance) {
@@ -47,9 +48,6 @@ public class ModMain {
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
-        ConfigHttpServer.instance.start();
-
-        ConfigStore.instance.read();
         MinecraftForge.EVENT_BUS.register(ModApiWrapper.forgeEvents);
 
         MinecraftForge.EVENT_BUS.register(FreeCamController.instance);
@@ -64,7 +62,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(EntityOwnerController.instance);
         MinecraftForge.EVENT_BUS.register(AutoCriticalsController.instance);
         MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
-        MinecraftForge.EVENT_BUS.register(LockInputsController.instance);
         MinecraftForge.EVENT_BUS.register(AdvancedTooltipsController.instance);
         MinecraftForge.EVENT_BUS.register(InstantDisconnectController.instance);
         MinecraftForge.EVENT_BUS.register(BeaconController.instance);
@@ -89,6 +86,8 @@ public class ModMain {
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
+        ConfigHttpServer.instance.start();
+        ConfigStore.instance.read();
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {

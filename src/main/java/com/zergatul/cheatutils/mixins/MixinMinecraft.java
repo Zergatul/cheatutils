@@ -45,4 +45,11 @@ public class MixinMinecraft {
     private void onHandleKeyBindings(CallbackInfo info) {
         KeyBindingsController.instance.onHandleKeyBindings();
     }
+
+    @Inject(at = @At("RETURN"), method = "Lnet/minecraft/client/Minecraft;createTitle()Ljava/lang/String;", cancellable = true)
+    private void onCreateTitle(CallbackInfoReturnable<String> info) {
+        if (ConfigStore.instance.getConfig().userNameConfig.showNameInTitle) {
+            info.setReturnValue(Minecraft.getInstance().getUser().getName() + " - " + info.getReturnValue());
+        }
+    }
 }

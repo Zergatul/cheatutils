@@ -19,5 +19,13 @@
             <span class="text">Name:</span>
             <input type="text" v-model="config.name" @change="update()">
         </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.showNameInTitle"
+                    @change="update()">
+                <span>Show User Name in Title</span>
+            </label>
+        </div>
     </fieldset>
 </div>

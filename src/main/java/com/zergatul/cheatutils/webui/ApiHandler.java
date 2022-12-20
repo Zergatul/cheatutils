@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.ChunkOverlayController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
+import com.zergatul.cheatutils.controllers.UserNameController;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.util.Mth;
 import org.apache.commons.io.IOUtils;
@@ -389,6 +390,7 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(UserNameConfig config) {
                 ConfigStore.instance.getConfig().userNameConfig = config;
+                UserNameController.instance.onConfigUpdated();
             }
         });
 

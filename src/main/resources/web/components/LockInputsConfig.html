@@ -32,6 +32,14 @@
         <div>
             <label class="switch-label">
                 <input type="checkbox" class="switch"
+                   v-model="config.holdAttack"
+                   @change="update()">
+                <span>Hold Use</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
                     v-model="config.holdUse"
                     @change="update()">
                 <span>Hold Use</span>
