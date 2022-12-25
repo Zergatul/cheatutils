@@ -137,6 +137,7 @@ public class ConfigStore {
         config.blocks.apply();
 
         config.killAuraConfig.validate();
+        config.fastBreakConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

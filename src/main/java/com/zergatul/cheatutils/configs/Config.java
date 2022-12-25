@@ -38,6 +38,7 @@ public class Config {
     public FogConfig fogConfig = new FogConfig();
     public ParticlesConfig particlesConfig = new ParticlesConfig();
     public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
+    public FastBreakConfig fastBreakConfig = new FastBreakConfig();
 
     public Config() {
         esp = true;

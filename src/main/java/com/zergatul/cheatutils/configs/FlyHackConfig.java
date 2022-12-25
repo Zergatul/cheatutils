@@ -4,6 +4,7 @@ public class FlyHackConfig {
     public boolean enabled;
     public boolean overrideFlyingSpeed;
     public float flyingSpeed;
+    public boolean onGroundFlag;
 
     public FlyHackConfig() {
         enabled = false;

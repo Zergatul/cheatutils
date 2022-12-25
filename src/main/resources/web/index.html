@@ -154,6 +154,13 @@
                             <button @click="current = 'no-fall'">No Fall</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'fast-break'">Fast Break</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -327,6 +334,11 @@
             v-if="current == 'status-overlay'"
             @back="backToMain()">
         </status-overlay-config>
+
+        <fast-break-config
+            v-if="current == 'fast-break'"
+            @back="backToMain()">
+        </fast-break-config>
 
     </div>
 

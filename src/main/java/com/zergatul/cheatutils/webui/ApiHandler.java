@@ -431,6 +431,19 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().statusOverlayConfig.enabled = config.enabled;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("fast-break", FastBreakConfig.class) {
+            @Override
+            protected FastBreakConfig getConfig() {
+                return ConfigStore.instance.getConfig().fastBreakConfig;
+            }
+
+            @Override
+            protected void setConfig(FastBreakConfig config) {
+                config.validate();
+                ConfigStore.instance.getConfig().fastBreakConfig = config;
+            }
+        });
     }
 
     @Override
