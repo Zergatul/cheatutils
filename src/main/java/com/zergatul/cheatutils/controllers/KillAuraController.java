@@ -18,6 +18,7 @@ public class KillAuraController {
     public static final KillAuraController instance = new KillAuraController();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private long ticks;
     private long lastAttackTick;
     private Entity target;
 
@@ -25,14 +26,26 @@ public class KillAuraController {
         PlayerMotionController.instance.addOnAfterSendPosition(this::onAfterSendPosition);
         ModApiWrapper.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
+        ModApiWrapper.DimensionChange.add(this::onDimensionChange);
+    }
+
+    public void onEnabled() {
+        lastAttackTick = 0;
     }
 
     private void onPlayerLoggingIn(Connection connection) {
+        ticks = 0;
+        lastAttackTick = 0;
+    }
+
+    private void onDimensionChange() {
         lastAttackTick = 0;
     }
 
     private void onClientTickEnd() {
-        var config = ConfigStore.instance.getConfig().killAuraConfig;
+        ticks++;
+
+        KillAuraConfig config = ConfigStore.instance.getConfig().killAuraConfig;
         if (!config.active) {
             target = null;
             return;
@@ -45,7 +58,7 @@ public class KillAuraController {
             return;
         }
 
-        if (world.getGameTime() - lastAttackTick < config.attackTickInterval) {
+        if (ticks - lastAttackTick < config.attackTickInterval) {
             return;
         }
 
@@ -111,16 +124,12 @@ public class KillAuraController {
     }
 
     private int getPriority(KillAuraConfig config, Entity entity) {
-        for (int i = 0; i < config.priorities.size(); i++) {
-            var entry = config.priorities.get(i);
-            if (entry.clazz.isInstance(entity)) {
-                if (entry.predicate != null) {
-                    if (!entry.predicate.test(entity, mc.player)) {
-                        continue;
-                    }
-                }
+        int i = 0;
+        for (KillAuraConfig.PriorityEntry entry: config.priorities) {
+            if (entry.enabled && entry.predicate.test(entity)) {
                 return i;
             }
+            i++;
         }
         return -1;
     }
@@ -130,13 +139,11 @@ public class KillAuraController {
             return;
         }
 
-        //logger.info("Attacking {}", target.getClass().getName());
         LocalPlayer player = mc.player;
-        ClientLevel world = mc.level;
         mc.gameMode.attack(player, target);
         mc.player.swing(InteractionHand.MAIN_HAND);
         target = null;
 
-        lastAttackTick = world.getGameTime();
+        lastAttackTick = ticks;
     }
 }

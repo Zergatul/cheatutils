@@ -1,36 +1,37 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.utils.MathUtils;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.FlyingMob;
+import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.monster.*;
-import net.minecraft.world.entity.monster.hoglin.Hoglin;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 
 import java.util.*;
-import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 public class KillAuraConfig implements ValidatableConfig {
 
     public boolean active;
     public float maxRange;
-    public List<PriorityEntry> priorities;
     public int attackTickInterval;
     public Double maxHorizontalAngle;
     public Double maxVerticalAngle;
+    public ImmutableList<PriorityEntry> priorities;
+    public ImmutableList<CustomPriorityEntry> customEntries;
 
     public KillAuraConfig() {
         active = false;
         maxRange = 6;
         attackTickInterval = 1;
-        priorities = new ArrayList<>();
-        priorities.add(PriorityEntry.shulkerBullets);
-        priorities.add(PriorityEntry.monsters);
-        priorities.add(PriorityEntry.phantoms);
-        priorities.add(PriorityEntry.shulkers);
+        priorities = new ImmutableList<>();
+        priorities.add(PredefinedPriorityEntry.fromName("Enemies"));
+        priorities.add(PredefinedPriorityEntry.fromName("Shulker Bullets"));
+        priorities.add(PredefinedPriorityEntry.fromName("Fireballs"));
+        customEntries = new ImmutableList<>();
     }
 
     public void validate() {
@@ -42,49 +43,87 @@ public class KillAuraConfig implements ValidatableConfig {
         if (maxVerticalAngle != null) {
             maxVerticalAngle = MathUtils.clamp(maxVerticalAngle, 1, 180);
         }
-        priorities.removeIf(Objects::isNull);
+
+        priorities = priorities.removeIf(Objects::isNull);
+        customEntries = customEntries.removeIf(Objects::isNull);
     }
 
     public static class PriorityEntry {
-
-        public static final Map<String, PriorityEntry> entries = new HashMap<>();
-
-        public static final PriorityEntry monsters = new PriorityEntry("Monsters", "All monsters except Zombified Piglin. Endermen can be targeted only in creepy state.", Monster.class, (entity, player) -> {
-            if (entity instanceof ZombifiedPiglin) {
-                return false;
-            }
-            if (entity instanceof EnderMan) {
-                return ((EnderMan) entity).isCreepy();
-            }
-            return true;
-        });
-
-        public static final PriorityEntry phantoms = new PriorityEntry("Phantoms", null, Phantom.class);
-        public static final PriorityEntry hoglins = new PriorityEntry("Hoglins", null, Hoglin.class);
-        public static final PriorityEntry flyingMobs = new PriorityEntry("Flying mobs", "Ghasts and Phantoms", FlyingMob.class);
-        public static final PriorityEntry shulkers = new PriorityEntry("Shulkers", null, Shulker.class);
-        public static final PriorityEntry shulkerBullets = new PriorityEntry("Shulker Bullets", null, ShulkerBullet.class);
-        public static final PriorityEntry players = new PriorityEntry("Players", null, RemotePlayer.class);
-        public static final PriorityEntry fireballs = new PriorityEntry("Fireball", "For example Ghast projectiles", Fireball.class);
-        public static final PriorityEntry magmaCubes = new PriorityEntry("Magma Cubes", null, MagmaCube.class);
-        public static final PriorityEntry slimes = new PriorityEntry("Slimes", null, Slime.class, (entity, player) -> entity.getClass() == Slime.class);
-
         public final String name;
         public final String description;
-        public final Class clazz;
-        public final BiPredicate<Entity, LocalPlayer> predicate;
+        public final Predicate<Entity> predicate;
+        public boolean enabled;
 
-        public PriorityEntry(String name, String description, Class clazz) {
-            this(name, description, clazz, null);
-        }
-
-        public PriorityEntry(String name, String description, Class clazz, BiPredicate<Entity, LocalPlayer> predicate) {
+        public PriorityEntry(String name, String description, Predicate<Entity> predicate) {
             this.name = name;
             this.description = description;
-            this.clazz = clazz;
             this.predicate = predicate;
+            this.enabled = true;
+        }
+    }
 
-            entries.put(name, this);
+    public static class PredefinedPriorityEntry extends PriorityEntry {
+
+        public static final String ENEMIES = "Enemies";
+        public static final String ENEMIES_WO_PIGLINS = "Enemies w/o Piglins";
+        public static final String PLAYERS = "Players";
+        public static final String SHULKER_BULLETS = "Shulker Bullets";
+        public static final String FIREBALLS = "Fireballs";
+
+        public static final Map<String, PredefinedPriorityEntry> entries = Map.ofEntries(
+                Map.entry(ENEMIES, new PredefinedPriorityEntry(
+                        ENEMIES,
+                        "Includes Monsters, Slimes, Magma Cubes, Hoglin. Excludes Neutral Mobs (Enderman, ZombifiedPiglin). Endermen can be targeted only in creepy state.",
+                        entity -> {
+                            if (entity instanceof EnderMan) {
+                                return ((EnderMan) entity).isCreepy();
+                            }
+                            return entity instanceof Enemy && !(entity instanceof NeutralMob);
+                        })),
+                Map.entry(ENEMIES_WO_PIGLINS, new PredefinedPriorityEntry(
+                        ENEMIES_WO_PIGLINS,
+                        "Same as Enemies, but without Piglins.",
+                        entity -> {
+                            if (entity instanceof EnderMan) {
+                                return ((EnderMan) entity).isCreepy();
+                            }
+                            if (entity instanceof AbstractPiglin) {
+                                return false;
+                            }
+                            return entity instanceof Enemy && !(entity instanceof NeutralMob);
+                        }
+                )),
+                Map.entry(PLAYERS, new PredefinedPriorityEntry(PLAYERS, null, entity -> entity instanceof RemotePlayer)),
+                Map.entry(SHULKER_BULLETS, new PredefinedPriorityEntry(SHULKER_BULLETS, null, entity -> entity instanceof ShulkerBullet)),
+                Map.entry(FIREBALLS, new PredefinedPriorityEntry(FIREBALLS, "Ghast projectiles.", entity -> entity instanceof Fireball))
+        );
+
+        private PredefinedPriorityEntry(String name, String description, Predicate<Entity> predicate) {
+            super(name, description, predicate);
+        }
+
+        public static PredefinedPriorityEntry fromName(String name) {
+            return entries.get(name);
+        }
+    }
+
+    public static class CustomPriorityEntry extends PriorityEntry {
+
+        public final String className;
+
+        private CustomPriorityEntry(String name, String description, Predicate<Entity> predicate, String className) {
+            super(name, description, predicate);
+            this.className = className;
+        }
+
+        public static CustomPriorityEntry create(String name, String description, String className) {
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+            return new CustomPriorityEntry(name, description, entity -> clazz.isInstance(entity), className);
         }
     }
 }

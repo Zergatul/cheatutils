@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.FlyHackConfig;
 import com.zergatul.cheatutils.interfaces.ServerboundMovePlayerPacketMixinInterface;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
@@ -13,11 +14,10 @@ public class FlyHackController {
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (ConfigStore.instance.getConfig().flyHackConfig.enabled) {
-            if (args.packet instanceof ServerboundMovePlayerPacket packet) {
-                if (packet.isOnGround()) {
-                    ((ServerboundMovePlayerPacketMixinInterface) packet).setOnGround(false);
-                }
+        if (args.packet instanceof ServerboundMovePlayerPacket packet) {
+            FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
+            if (config.enabled) {
+                ((ServerboundMovePlayerPacketMixinInterface) packet).setOnGround(config.onGroundFlag);
             }
         }
     }

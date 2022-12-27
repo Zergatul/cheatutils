@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins;
 
 import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.FastBreakConfig;
 import com.zergatul.cheatutils.configs.FlyHackConfig;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
 import com.zergatul.cheatutils.controllers.FreeCamController;
@@ -12,8 +13,12 @@ import com.zergatul.cheatutils.helpers.MixinMouseHandlerHelper;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.ProfilePublicKey;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -145,5 +150,20 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         }
 
         super.turn(yRot, xRot);
+    }
+
+    @Override
+    public float getDigSpeed(BlockState p_36282_, @Nullable BlockPos pos) {
+        float speed = super.getDigSpeed(p_36282_, pos);
+
+        if (!this.onGround) {
+            FlyHackConfig flyHackConfig = ConfigStore.instance.getConfig().flyHackConfig;
+            FastBreakConfig fastBreakConfig = ConfigStore.instance.getConfig().fastBreakConfig;
+            if (flyHackConfig.enabled && fastBreakConfig.enabled && fastBreakConfig.disableFlyPenalty) {
+                speed *= 5.0F;
+            }
+        }
+
+        return speed;
     }
 }

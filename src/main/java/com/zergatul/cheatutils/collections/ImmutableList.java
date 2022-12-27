@@ -2,8 +2,11 @@ package com.zergatul.cheatutils.collections;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class ImmutableList<E> implements Iterable<E> {
@@ -54,6 +57,16 @@ public class ImmutableList<E> implements Iterable<E> {
             System.arraycopy(array, i + 1, newArray, i, size - i - 1);
         }
         return new ImmutableList<>(newArray);
+    }
+
+    public ImmutableList<E> removeIf(Predicate<E> predicate) {
+        List<E> list = new ArrayList<>();
+        for (E e: this) {
+            if (!predicate.test(e)) {
+                list.add(e);
+            }
+        }
+        return new ImmutableList<>(list.toArray());
     }
 
     @SuppressWarnings("unchecked")

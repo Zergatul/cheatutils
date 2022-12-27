@@ -35,6 +35,29 @@
                     <input type="text" v-model="config.flyingSpeed" @change="update()">
                 </div>
             </fieldset>
+
+            <fieldset>
+                <legend>
+                    OnGround flag
+                </legend>
+                <div class="input-section">
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="on-ground" v-model="config.onGroundFlag" v-bind:value="false" @change="update()">
+                            <span class="text">OnGround = false</span>
+                        </label>
+                    </div>
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="on-ground" v-model="config.onGroundFlag" v-bind:value="true" @change="update()">
+                            <span class="text">OnGround = true</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="section-description">
+                    While flying this module overrides onGround flag in MovePlayerPacket. Both options works fine in vanilla. For Fast Break hack, Disable Fly Penalty option you need to set OnGround = true.
+                </div>
+            </fieldset>
         </div>
     </div>
 </div>

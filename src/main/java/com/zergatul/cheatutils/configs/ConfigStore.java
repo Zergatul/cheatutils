@@ -30,10 +30,10 @@ public class ConfigStore {
     public final Gson gson = new GsonBuilder()
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
+            .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
-            .registerTypeAdapter(KillAuraConfig.PriorityEntry.class, new KillAuraConfig$PriorityEntryTypeAdapter())
             .setPrettyPrinting()
             .create();
 

@@ -35,6 +35,7 @@ public class ModApiWrapper {
     public static final CancelableEventHandler<MouseScrollEvent> MouseScroll = new CancelableEventHandler<>();
     public static final SimpleEventHandler RenderTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler WorldUnload = new SimpleEventHandler();
+    public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
 
     public static class ForgeApi {
 

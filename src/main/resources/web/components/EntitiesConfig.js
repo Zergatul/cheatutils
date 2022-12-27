@@ -44,10 +44,15 @@ function createComponent(template) {
             },
             filterEntityList() {
                 let search = this.search.toLocaleLowerCase();
-                this.entityListFiltered = this.entitiesList.filter(function (entity) {
+                this.entityListFiltered = this.entitiesList.filter(entity => {
                     if (entity.simpleName) {
                         let name = entity.simpleName.toLocaleLowerCase();
                         if (name.indexOf(search) >= 0) {
+                            return true;
+                        }
+                    }
+                    if (entity.id) {
+                        if (entity.id.indexOf(search) >= 0) {
                             return true;
                         }
                     }

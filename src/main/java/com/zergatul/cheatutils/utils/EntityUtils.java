@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.utils;
 
 import com.mojang.datafixers.util.Either;
 import com.zergatul.cheatutils.webui.EntityInfoApi;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.core.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +30,6 @@ import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -42,10 +42,6 @@ import java.util.stream.Stream;
 public class EntityUtils {
 
     private static Logger logger = LogManager.getLogger(EntityInfoApi.class);
-
-    private static final Class[] hardcodedClasses = new Class[] {
-            Player.class
-    };
 
     private static List<EntityInfo> classes;
     private static Map<String, EntityInfo> classMap;
@@ -69,19 +65,29 @@ public class EntityUtils {
             return;
         }
 
-        EntityType playerEntityType = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("minecraft:player"));
+        EntityType playerEntityType = ModApiWrapper.ENTITY_TYPES.getValue(new ResourceLocation("minecraft:player"));
+
+        HashSet<EntityInfo> set = new HashSet<>();
+        try {
+            set.add(new EntityInfo(Player.class, "minecraft:player"));
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         Level level = new FakeLevel();
-        List<Class> entityClasses = ForgeRegistries.ENTITY_TYPES.getValues().stream().map(et -> {
+        List<EntityInfo> finalClasses = ModApiWrapper.ENTITY_TYPES.getValues().stream().map(et -> {
             if (et == playerEntityType) {
-                return (Class)null;
+                return null;
             }
             try {
                 Entity entity = et.create(level);
                 if (entity == null) {
                     return null;
                 } else {
-                    return entity.getClass();
+                    EntityInfo info = new EntityInfo(entity.getClass(), ModApiWrapper.ENTITY_TYPES.getKey(et).toString());
+                    set.add(info);
+                    return info;
                 }
             }
             catch (Throwable throwable) {
@@ -92,23 +98,24 @@ public class EntityUtils {
             }
         }).filter(Objects::nonNull).toList();
 
-        HashSet<Class> set = new HashSet<>();
-        Arrays.stream(hardcodedClasses).forEach(set::add);
-        for (Class clazz: entityClasses) {
+        finalClasses.forEach(ei -> {
+            Class clazz = ei.clazz.getSuperclass();
             while (Entity.class.isAssignableFrom(clazz)) {
-                set.add(clazz);
+                try {
+                    EntityInfo baseInfo = new EntityInfo(clazz);
+                    if (!set.contains(baseInfo)) {
+                        set.add(baseInfo);
+                    }
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                    continue;
+                }
                 clazz = clazz.getSuperclass();
             }
-        }
+        });
 
-        classes = set.stream().map(c -> {
-            try {
-                return new EntityInfo(c);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }).filter(Objects::nonNull).sorted((i1, i2) -> i1.simpleName.compareToIgnoreCase(i2.simpleName)).toList();
+        classes = set.stream().sorted((i1, i2) -> i1.simpleName.compareToIgnoreCase(i2.simpleName)).toList();
 
         classMap = new HashMap<>(classes.size());
         for (EntityInfo info: classes) {
@@ -121,20 +128,52 @@ public class EntityUtils {
         public Class clazz;
         public String simpleName;
         public List<String> baseClasses;
+        public List<String> interfaces;
+        public String id;
 
         public EntityInfo(Class clazz) throws Exception {
+            this(clazz, null);
+        }
+
+        public EntityInfo(Class clazz, String id) throws Exception {
 
             if (!Entity.class.isAssignableFrom(clazz)) {
                 throw new Exception("Not supported");
             }
 
             this.clazz = clazz;
-            this.simpleName = clazz.getSimpleName();
+            simpleName = clazz.getSimpleName();
 
-            this.baseClasses = new ArrayList<>();
+            this.id = id;
+
+            baseClasses = new ArrayList<>();
             while (clazz != Entity.class) {
                 clazz = clazz.getSuperclass();
-                this.baseClasses.add(clazz.getSimpleName());
+                baseClasses.add(clazz.getSimpleName());
+            }
+
+            clazz = this.clazz;
+            interfaces = new ArrayList<>();
+            while (clazz != Entity.class) {
+                for (Class<?> _interface: clazz.getInterfaces()) {
+                    String interfaceName = _interface.getSimpleName();
+                    interfaces.add(interfaceName);
+                }
+                clazz = clazz.getSuperclass();
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return clazz.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof EntityInfo ei) {
+                return ei.clazz == clazz;
+            } else {
+                return false;
             }
         }
     }

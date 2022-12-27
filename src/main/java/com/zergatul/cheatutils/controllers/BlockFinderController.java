@@ -12,6 +12,8 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +26,8 @@ public class BlockFinderController {
     // all modification to blocks are done in eventLoop thread
     public final Map<Block, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
 
-    private Minecraft mc = Minecraft.getInstance();
+    private final Minecraft mc = Minecraft.getInstance();
+    private final Logger logger = LogManager.getLogger(BlockFinderController.class);
     private final Object loopWaitEvent = new Object();
     private Thread eventLoop;
     private Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
@@ -56,6 +59,9 @@ public class BlockFinderController {
             }
             catch (InterruptedException e) {
                 // do nothing
+            }
+            catch (Throwable e) {
+                logger.error("BlockFinder scan thread crash.", e);
             }
             finally {
                 counter.dispose();

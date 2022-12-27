@@ -6,14 +6,17 @@
         </div>
         <ul class="list-base entities-list">
             <li v-for="item in entitiesConfigList" :key="item.clazz">
-                <div class="c1" style="display: none;">
-                    img
-                </div>
                 <div class="c2">
-                    <div>{{ entitiesMap[item.clazz].simpleName }}</div>
+                    <div>
+                        {{ entitiesMap[item.clazz].simpleName }}
+                        <div class="smaller entity-id" v-if="entitiesMap[item.clazz].id">{{ entitiesMap[item.clazz].id }}</div>
+                    </div>
                     <div class="smaller">
                         <span class="entity-tree" v-for="clazz in entitiesMap[item.clazz].baseClasses">
                             🠞 {{ clazz }}
+                        </span>
+                        <span class="entity-tree" v-for="interface in entitiesMap[item.clazz].interfaces">
+                            ⊕ {{ interface }}
                         </span>
                     </div>
                     <div class="smaller">{{ item.clazz }}</div>
@@ -74,14 +77,17 @@
         </div>
         <ul class="list-base add-entity-list">
             <li v-for="item in entityListFiltered" :key="item.clazz">
-                <div class="c1" style="display: none;">
-                    img
-                </div>
                 <div class="c2">
-                    <div>{{ item.simpleName }}</div>
+                    <div>
+                        {{ item.simpleName }}
+                        <div class="smaller entity-id" style="display: inline-block;" v-if="item.id">{{ item.id }}</div>
+                    </div>
                     <div class="smaller">
                         <span class="entity-tree" v-for="clazz in item.baseClasses">
                             🠞 {{ clazz }}
+                        </span>
+                        <span class="entity-tree" v-for="interface in item.interfaces">
+                            ⊕ {{ interface }}
                         </span>
                     </div>
                     <div class="smaller">{{ item.clazz }}</div>
@@ -105,6 +111,9 @@
                 <div class="smaller">
                     <span class="entity-tree" v-for="clazz in entitiesMap[selectedConfig.clazz].baseClasses">
                         🠞 {{ clazz }}
+                    </span>
+                    <span class="entity-tree" v-for="interface in entitiesMap[selectedConfig.clazz].interfaces">
+                        ⊕ {{ interface }}
                     </span>
                 </div>
             </div>

@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.ChunkOverlayController;
+import com.zergatul.cheatutils.controllers.KillAuraController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import com.zergatul.cheatutils.controllers.UserNameController;
 import com.zergatul.cheatutils.utils.MathUtils;
@@ -42,6 +43,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new AutoDropApi());
         apis.add(new ItemInfoApi());
         apis.add(new StatusOverlayApi());
+        apis.add(new ClassNameApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -136,7 +138,12 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(KillAuraConfig config) {
+                KillAuraConfig oldConfig = ConfigStore.instance.getConfig().killAuraConfig;
                 ConfigStore.instance.getConfig().killAuraConfig = config;
+
+                if (!oldConfig.active && config.active) {
+                    KillAuraController.instance.onEnabled();
+                }
             }
         });
 
@@ -566,6 +573,14 @@ public class ApiHandler implements HttpHandler {
         }
         catch (MethodNotSupportedException e) {
             exchange.sendResponseHeaders(404, 0);
+            exchange.close();
+        }
+        catch (NotFoundHttpException e) {
+            byte[] data = e.getMessage().getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(404, 0);
+            OutputStream stream = exchange.getResponseBody();
+            stream.write(data);
+            stream.close();
             exchange.close();
         }
         catch (HttpException e) {
