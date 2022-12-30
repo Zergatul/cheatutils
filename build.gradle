@@ -52,6 +52,7 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
+            arg "-mixin.config=cheatutils.mixin.json" // check if this works with genIntellijTasks
 
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.

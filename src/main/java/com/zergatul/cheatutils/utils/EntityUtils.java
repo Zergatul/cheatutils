@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -98,14 +99,16 @@ public class EntityUtils {
             }
         }).filter(Objects::nonNull).toList();
 
+        Set<Class<?>> interfaces = new HashSet<>();
+
         finalClasses.forEach(ei -> {
-            Class clazz = ei.clazz.getSuperclass();
+            forEachInterface(ei.clazz, interfaces::add);
+
+            Class<?> clazz = ei.clazz.getSuperclass();
             while (Entity.class.isAssignableFrom(clazz)) {
                 try {
                     EntityInfo baseInfo = new EntityInfo(clazz);
-                    if (!set.contains(baseInfo)) {
-                        set.add(baseInfo);
-                    }
+                    set.add(baseInfo);
                 }
                 catch (Exception ex) {
                     ex.printStackTrace();
@@ -115,7 +118,18 @@ public class EntityUtils {
             }
         });
 
-        classes = set.stream().sorted((i1, i2) -> i1.simpleName.compareToIgnoreCase(i2.simpleName)).toList();
+        classes = new ArrayList<>();
+        classes.addAll(set);
+        for (Class<?> iface: interfaces) {
+            try {
+                classes.add(new EntityInfo(iface));
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        classes = classes.stream().sorted((i1, i2) -> i1.simpleName.compareToIgnoreCase(i2.simpleName)).toList();
 
         classMap = new HashMap<>(classes.size());
         for (EntityInfo info: classes) {
@@ -123,9 +137,17 @@ public class EntityUtils {
         }
     }
 
+    private static void forEachInterface(Class<?> clazz, Consumer<Class<?>> consumer) {
+        while (clazz != Entity.class) {
+            Arrays.stream(clazz.getInterfaces()).forEach(consumer);
+            clazz = clazz.getSuperclass();
+        }
+    }
+
     public static class EntityInfo {
 
         public Class clazz;
+        public boolean isInterface;
         public String simpleName;
         public List<String> baseClasses;
         public List<String> interfaces;
@@ -136,30 +158,31 @@ public class EntityUtils {
         }
 
         public EntityInfo(Class clazz, String id) throws Exception {
-
-            if (!Entity.class.isAssignableFrom(clazz)) {
-                throw new Exception("Not supported");
-            }
-
-            this.clazz = clazz;
-            simpleName = clazz.getSimpleName();
-
-            this.id = id;
-
-            baseClasses = new ArrayList<>();
-            while (clazz != Entity.class) {
-                clazz = clazz.getSuperclass();
-                baseClasses.add(clazz.getSimpleName());
-            }
-
-            clazz = this.clazz;
-            interfaces = new ArrayList<>();
-            while (clazz != Entity.class) {
-                for (Class<?> _interface: clazz.getInterfaces()) {
-                    String interfaceName = _interface.getSimpleName();
-                    interfaces.add(interfaceName);
+            if (clazz.isInterface()) {
+                this.clazz = clazz;
+                simpleName = clazz.getSimpleName();
+                isInterface = true;
+            } else {
+                if (!Entity.class.isAssignableFrom(clazz)) {
+                    throw new Exception("Not supported");
                 }
-                clazz = clazz.getSuperclass();
+
+                this.clazz = clazz;
+                simpleName = clazz.getSimpleName();
+
+                this.id = id;
+
+                baseClasses = new ArrayList<>();
+                while (clazz != Entity.class) {
+                    clazz = clazz.getSuperclass();
+                    baseClasses.add(clazz.getSimpleName());
+                }
+
+                interfaces = new ArrayList<>();
+                forEachInterface(this.clazz, iface -> {
+                    String interfaceName = iface.getSimpleName();
+                    interfaces.add(interfaceName);
+                });
             }
         }
 

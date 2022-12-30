@@ -7,11 +7,11 @@
         <ul class="list-base entities-list">
             <li v-for="item in entitiesConfigList" :key="item.clazz">
                 <div class="c2">
-                    <div>
-                        {{ entitiesMap[item.clazz].simpleName }}
-                        <div class="smaller entity-id" v-if="entitiesMap[item.clazz].id">{{ entitiesMap[item.clazz].id }}</div>
+                    <div class="entity-info-r1" :class="{ 'entity-info-interface': entitiesMap[item.clazz].isInterface }">
+                        <div class="entity-info-classname">{{ entitiesMap[item.clazz].simpleName }}</div>
+                        <div class="smaller entity-info-id" v-if="entitiesMap[item.clazz].id">{{ entitiesMap[item.clazz].id }}</div>
                     </div>
-                    <div class="smaller">
+                    <div class="smaller" v-if="!entitiesMap[item.clazz].isInterface">
                         <span class="entity-tree" v-for="clazz in entitiesMap[item.clazz].baseClasses">
                             🠞 {{ clazz }}
                         </span>
@@ -78,11 +78,11 @@
         <ul class="list-base add-entity-list">
             <li v-for="item in entityListFiltered" :key="item.clazz">
                 <div class="c2">
-                    <div>
-                        {{ item.simpleName }}
-                        <div class="smaller entity-id" style="display: inline-block;" v-if="item.id">{{ item.id }}</div>
+                    <div class="entity-info-r1" :class="{ 'entity-info-interface': item.isInterface }">
+                        <div class="entity-info-classname">{{ item.simpleName }}</div>
+                        <div class="smaller entity-info-id" v-if="item.id">{{ item.id }}</div>
                     </div>
-                    <div class="smaller">
+                    <div class="smaller" v-if="!item.isInterface">
                         <span class="entity-tree" v-for="clazz in item.baseClasses">
                             🠞 {{ clazz }}
                         </span>

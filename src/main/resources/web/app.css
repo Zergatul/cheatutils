@@ -128,14 +128,36 @@ ul.entities-list button.remove {
     width: 80px;
 }
 
-div.entity-id {
-    color: green;
-    display: inline-block;
-}
-
 ul.add-block-list button.edit,
 ul.add-entity-list button.edit {
     width: 80px;
+}
+
+.class-interface:after {
+    content: "[interface]";
+    font-size: 0.75em;
+    color: #8a5f10;
+}
+
+.entity-info-r1 {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+}
+
+.entity-info-classname {
+    display: inline-block;
+}
+
+div.entity-info-interface:after {
+    content: "[interface]";
+    font-size: 0.75em;
+    color: #8a5f10;
+}
+
+div.entity-info-id {
+    color: green;
+    display: inline-block;
 }
 
 .button-highlight {

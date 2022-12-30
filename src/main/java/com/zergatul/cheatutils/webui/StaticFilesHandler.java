@@ -4,6 +4,8 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class StaticFilesHandler implements HttpHandler {
 
@@ -53,7 +55,8 @@ public class StaticFilesHandler implements HttpHandler {
 
     private static InputStream loadFromFile(String filename) {
         try {
-            return new FileInputStream("C:\\Users\\Zergatul\\source\\repos\\cheatutils-1.19.2\\src\\main\\resources\\" + filename);
+            Path path = Paths.get(System.getProperty("user.dir"), "../src/main/resources", filename);
+            return new FileInputStream(path.toString());
         }
         catch (IOException e) {
             return null;

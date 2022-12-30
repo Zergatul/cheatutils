@@ -56,6 +56,20 @@ function createComponent(template) {
                             return true;
                         }
                     }
+                    if (entity.baseClasses) {
+                        for (let i = 0; i < entity.baseClasses.length; i++) {
+                            if (entity.baseClasses[i].toLocaleLowerCase().indexOf(search) >= 0) {
+                                return true;
+                            }
+                        }
+                    }
+                    if (entity.interfaces) {
+                        for (let i = 0; i < entity.interfaces.length; i++) {
+                            if (entity.interfaces[i].toLocaleLowerCase().indexOf(search) >= 0) {
+                                return true;
+                            }
+                        }
+                    }
                     return false;
                 });
             },
