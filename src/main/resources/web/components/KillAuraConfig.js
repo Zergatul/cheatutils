@@ -6,9 +6,7 @@ function createComponent(template) {
             axios.get('/api/kill-aura').then(function (response) {
                 self.config = response.data;
             });
-            axios.get('/api/kill-aura-info').then(function (response) {
-                self.priorityList = response.data;
-            });
+            this.loadPriorityList();
         },
         data() {
             return {
@@ -37,16 +35,27 @@ function createComponent(template) {
                     return;
                 }
                 let self = this;
-                axios.get('/api/class-name/' + this.newCustomEntry.className).then(response => {
+                axios.get('/api/class-name/' + this.newCustomEntry.className).then(() => {
                     this.newCustomEntry.enabled = false;
                     this.config.priorities.push(this.newCustomEntry);
                     this.config.customEntries.push(this.newCustomEntry);
                     this.state = 'list';
-                    this.update();
+
+                    let self = this;
+                    this.update().then(() => self.loadPriorityList());
                 }).catch(error => {
                     if (error.response && error.response.status == 404) {
                         alert(`Class with name "${self.newCustomEntry.className}" doesn't exist.`)
                     }
+                });
+            },
+            deleteCustomEntry(entry) {
+                let self = this;
+                this.config.customEntries = this.config.customEntries.filter(e => e.name != entry.name);
+                this.update().then(() => {
+                    self.loadPriorityList().then(() => {
+                        self.filterPriorityList();
+                    });
                 });
             },
             entryInPrioritiesList(entry) {
@@ -56,6 +65,12 @@ function createComponent(template) {
                 let search = this.search.toLocaleLowerCase();
                 this.priorityListFiltered = this.priorityList.filter(entry => {
                     return entry.name.toLocaleLowerCase().indexOf(search) >= 0;
+                });
+            },
+            loadPriorityList() {
+                let self = this;
+                return axios.get('/api/kill-aura-info').then(response => {
+                    self.priorityList = response.data;
                 });
             },
             moveDown(index) {
@@ -96,7 +111,7 @@ function createComponent(template) {
                 if (this.config.maxVerticalAngle == '') {
                     this.config.maxVerticalAngle = null;
                 }
-                axios.post('/api/kill-aura', this.config).then(function (response) {
+                return axios.post('/api/kill-aura', this.config).then(response => {
                     self.config = response.data;
                 });
             }

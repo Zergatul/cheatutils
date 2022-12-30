@@ -102,6 +102,7 @@
                             <div class="smaller">{{ entry.description }}</div>
                         </div>
                         <div class="c2">
+                            <button class="add-button" @click="deleteCustomEntry(entry)" v-if="entry.className && !entryInPrioritiesList(entry)">Delete</button>
                             <button class="add-button" @click="addPriorityEntry(entry)" v-if="!entryInPrioritiesList(entry)">Add</button>
                         </div>
                     </li>
