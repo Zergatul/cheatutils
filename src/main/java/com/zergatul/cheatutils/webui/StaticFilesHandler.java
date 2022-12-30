@@ -2,8 +2,11 @@ package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class StaticFilesHandler implements HttpHandler {
 
@@ -18,8 +21,10 @@ public class StaticFilesHandler implements HttpHandler {
         }
 
         byte[] bytes;
-        try (InputStream stream = loadFromResource("web" + filename)) {
-
+        InputStream stream = FMLEnvironment.production ?
+                loadFromResource("web" + filename) :
+                loadFromFile("web" + filename);
+        try (stream) {
             if (stream == null) {
                 exchange.sendResponseHeaders(404, 0);
                 exchange.close();
@@ -27,7 +32,6 @@ public class StaticFilesHandler implements HttpHandler {
             }
 
             bytes = org.apache.commons.io.IOUtils.toByteArray(stream);
-
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -43,7 +47,6 @@ public class StaticFilesHandler implements HttpHandler {
         os.write(bytes);
         os.close();
         exchange.close();
-
     }
 
     private static InputStream loadFromResource(String filename) {
@@ -53,11 +56,11 @@ public class StaticFilesHandler implements HttpHandler {
 
     private static InputStream loadFromFile(String filename) {
         try {
-            return new FileInputStream("C:\\Users\\Zergatul\\source\\repos\\cheatutils-1.18.2\\src\\main\\resources\\" + filename);
+            Path path = Paths.get(System.getProperty("user.dir"), "../src/main/resources", filename);
+            return new FileInputStream(path.toString());
         }
         catch (IOException e) {
             return null;
         }
     }
-
 }

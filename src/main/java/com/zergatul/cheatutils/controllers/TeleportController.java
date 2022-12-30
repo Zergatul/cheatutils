@@ -50,6 +50,7 @@ public class TeleportController {
                     if (teleportDetected) {
                         ChunkController.instance.clear();
                         BlockFinderController.instance.clear();
+                        KillAuraController.instance.onDimensionChange();
                     }
                 }
 

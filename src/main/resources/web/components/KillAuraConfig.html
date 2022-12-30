@@ -60,23 +60,36 @@
                 </div>
             </fieldset>
 
-            <fieldset>
+            <fieldset v-if="priorityList">
                 <legend>Priorities</legend>
+
                 <div v-if="state == 'list'">
-                    <button @click="openAddNew()">Add New</button>
+                    <button @click="openAddNew()">Add Priority Entry</button>
+                    <button @click="openCreateNewCustomEntry()">Create Custom Priority Entry...</button>
                 </div>
                 <ul class="kill-aura-priority-list" v-if="state == 'list'">
                     <li v-for="(entry, index) in config.priorities">
-                        <span class="text">{{ entry }}</span>
-                        <button @click="moveUp(index)">Move Up</button>
-                        <button @click="moveDown(index)">Move Down</button>
-                        <button @click="removePriorityEntry(index)">Remove</button>
+                        <div class="c0">
+                            <input type="checkbox" class="switch"
+                                   v-model="entry.enabled"
+                                   @change="update()">
+                        </div>
+                        <div class="c1">
+                            <div class="text">{{ entry.name }}</div>
+                            <div class="smaller">{{ entry.description }}</div>
+                        </div>
+                        <div class="c2">
+                            <button @click="moveUp(index)">🡅</button>
+                            <button @click="moveDown(index)">🡇</button>
+                            <button @click="removePriorityEntry(index)">Remove</button>
+                        </div>
                     </li>
                 </ul>
+
                 <div v-if="state == 'add'">
                     <button @click="state = 'list'">Back to list</button>
                 </div>
-                <div v-if="state == 'add'">
+                <div style="padding-top: 16px;" v-if="state == 'add'">
                     <span class="text">Filter:</span>
                     <input type="text" class="search"
                            v-model="search"
@@ -84,10 +97,39 @@
                 </div>
                 <ul class="kill-aura-priority-list" v-if="state == 'add'">
                     <li v-for="entry in priorityListFiltered">
-                        <span class="text">{{ entry.name }}</span>
-                        <button @click="addPriorityEntry(entry.name)">Add</button>
+                        <div class="c1">
+                            <div class="text">{{ entry.name }}</div>
+                            <div class="smaller">{{ entry.description }}</div>
+                        </div>
+                        <div class="c2">
+                            <button class="add-button" @click="deleteCustomEntry(entry)" v-if="entry.className && !entryInPrioritiesList(entry)">Delete</button>
+                            <button class="add-button" @click="addPriorityEntry(entry)" v-if="!entryInPrioritiesList(entry)">Add</button>
+                        </div>
                     </li>
                 </ul>
+
+                <div v-if="state == 'create-custom'">
+                    <div>
+                        <button @click="state = 'list'">Back to list</button>
+                        <button @click="createNewCustomEntry()">Create</button>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <span class="text">Entry Name:</span>
+                        <input type="text" class="search" v-model="newCustomEntry.name">
+                    </div>
+                    <div>
+                        <span class="text">Description:</span>
+                        <input type="text" class="search" v-model="newCustomEntry.description">
+                    </div>
+                    <div>
+                        <span class="text">Class Name:</span>
+                        <input type="text" class="search" v-model="newCustomEntry.className">
+                    </div>
+                    <div class="section-description">
+                        You can copy class name from Entity ESP all entities list. Example: net.minecraft.world.entity.animal.Cow
+                    </div>
+                </div>
+
             </fieldset>
         </div>
     </div>

@@ -21,7 +21,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.11.0'
+version = '0.12.0'
 group = 'com.zergatul.cheatutils' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'zergatul.cheatutils'
 
@@ -52,6 +52,7 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
+            arg "-mixin.config=cheatutils.mixin.json" // check if this works with genIntellijTasks
 
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.

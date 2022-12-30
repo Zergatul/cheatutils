@@ -6,9 +6,7 @@ function createComponent(template) {
             axios.get('/api/kill-aura').then(function (response) {
                 self.config = response.data;
             });
-            axios.get('/api/kill-aura-info').then(function (response) {
-                self.priorityList = response.data;
-            });
+            this.loadPriorityList();
         },
         data() {
             return {
@@ -16,28 +14,68 @@ function createComponent(template) {
                 search: null,
                 state: 'list',
                 priorityList: null,
-                priorityListFiltered: null
+                priorityListFiltered: null,
+                newCustomEntry: null
             };
         },
         methods: {
-            addPriorityEntry(name) {
-                this.config.priorities.push(name);
+            addPriorityEntry(entry) {
+                entry.enabled = false;
+                this.config.priorities.push(entry);
                 this.state = 'list';
                 this.update();
             },
+            createNewCustomEntry() {
+                if (!this.newCustomEntry.name) {
+                    alert('Entry Name is required.');
+                    return;
+                }
+                if (!this.newCustomEntry.className) {
+                    alert('Class Name is required.');
+                    return;
+                }
+                let self = this;
+                axios.get('/api/class-name/' + this.newCustomEntry.className).then(() => {
+                    this.newCustomEntry.enabled = false;
+                    this.config.priorities.push(this.newCustomEntry);
+                    this.config.customEntries.push(this.newCustomEntry);
+                    this.state = 'list';
+
+                    let self = this;
+                    this.update().then(() => self.loadPriorityList());
+                }).catch(error => {
+                    if (error.response && error.response.status == 404) {
+                        alert(`Class with name "${self.newCustomEntry.className}" doesn't exist.`)
+                    }
+                });
+            },
+            deleteCustomEntry(entry) {
+                let self = this;
+                this.config.customEntries = this.config.customEntries.filter(e => e.name != entry.name);
+                this.update().then(() => {
+                    self.loadPriorityList().then(() => {
+                        self.filterPriorityList();
+                    });
+                });
+            },
+            entryInPrioritiesList(entry) {
+                return this.config.priorities.some(e => e.name == entry.name);
+            },
             filterPriorityList() {
                 let search = this.search.toLocaleLowerCase();
+                this.priorityListFiltered = this.priorityList.filter(entry => {
+                    return entry.name.toLocaleLowerCase().indexOf(search) >= 0;
+                });
+            },
+            loadPriorityList() {
                 let self = this;
-                this.priorityListFiltered = this.priorityList.filter(function (entry) {
-                    if (self.config.priorities.filter(e => e == entry.name).length) {
-                        return false;
-                    }
-                    return entry.name.indexOf(search) >= 0;
+                return axios.get('/api/kill-aura-info').then(response => {
+                    self.priorityList = response.data;
                 });
             },
             moveDown(index) {
                 if (index < this.config.priorities.length - 1) {
-                    this.swapPriorities(index, index - 1);
+                    this.swapPriorities(index, index + 1);
                     this.update();
                 }
             },
@@ -51,6 +89,10 @@ function createComponent(template) {
                 this.state = 'add';
                 this.search = '';
                 this.filterPriorityList();
+            },
+            openCreateNewCustomEntry() {
+                this.newCustomEntry = {};
+                this.state = 'create-custom';
             },
             removePriorityEntry(index) {
                 this.config.priorities.splice(index, 1);
@@ -69,11 +111,10 @@ function createComponent(template) {
                 if (this.config.maxVerticalAngle == '') {
                     this.config.maxVerticalAngle = null;
                 }
-                axios.post('/api/kill-aura', this.config).then(function (response) {
+                return axios.post('/api/kill-aura', this.config).then(response => {
                     self.config = response.data;
                 });
-            },
-
+            }
         }
     }
 }

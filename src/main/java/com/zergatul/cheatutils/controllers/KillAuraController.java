@@ -19,6 +19,7 @@ public class KillAuraController {
     public static final KillAuraController instance = new KillAuraController();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private long ticks;
     private long lastAttackTick;
     private Entity target;
 
@@ -26,14 +27,25 @@ public class KillAuraController {
         PlayerMotionController.instance.addOnAfterSendPosition(this::onAfterSendPosition);
     }
 
+    public void onEnabled() {
+        lastAttackTick = 0;
+    }
+
+    public void onDimensionChange() {
+        lastAttackTick = 0;
+    }
+
     @SubscribeEvent
     public void onPlayerLoggingIn(ClientPlayerNetworkEvent.LoggedInEvent event) {
+        ticks = 0;
         lastAttackTick = 0;
     }
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
+            ticks++;
+
             var config = ConfigStore.instance.getConfig().killAuraConfig;
             if (!config.active) {
                 target = null;
@@ -47,7 +59,7 @@ public class KillAuraController {
                 return;
             }
 
-            if (world.getGameTime() - lastAttackTick < config.attackTickInterval) {
+            if (ticks - lastAttackTick < config.attackTickInterval) {
                 return;
             }
 
@@ -115,16 +127,12 @@ public class KillAuraController {
     }
 
     private int getPriority(KillAuraConfig config, Entity entity) {
-        for (int i = 0; i < config.priorities.size(); i++) {
-            var entry = config.priorities.get(i);
-            if (entry.clazz.isInstance(entity)) {
-                if (entry.predicate != null) {
-                    if (!entry.predicate.test(entity, mc.player)) {
-                        continue;
-                    }
-                }
+        int i = 0;
+        for (KillAuraConfig.PriorityEntry entry: config.priorities) {
+            if (entry.enabled && entry.predicate.test(entity)) {
                 return i;
             }
+            i++;
         }
         return -1;
     }
@@ -135,11 +143,10 @@ public class KillAuraController {
         }
 
         LocalPlayer player = mc.player;
-        ClientLevel world = mc.level;
         mc.gameMode.attack(player, target);
         mc.player.swing(InteractionHand.MAIN_HAND);
         target = null;
 
-        lastAttackTick = world.getGameTime();
+        lastAttackTick = ticks;
     }
 }
