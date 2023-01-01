@@ -41,6 +41,9 @@ public class AdvancedTooltipsController {
                 int beesCount = 0;
                 String honeyLevel = "";
                 CompoundTag root = itemStack.getTag();
+                if (root == null) {
+                    return;
+                }
                 if (root.contains("BlockEntityTag")) {
                     CompoundTag blockEntityTag = root.getCompound("BlockEntityTag");
                     if (blockEntityTag.contains("Bees")) {
