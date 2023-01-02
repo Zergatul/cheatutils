@@ -41,6 +41,7 @@ public class ModMain {
         register(ScaffoldController.instance);
         register(SpeedCounterController.instance);
         register(LockInputsController.instance);
+        register(AutoCraftController.instance);
     }
 
     private void register(Object instance) {

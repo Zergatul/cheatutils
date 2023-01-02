@@ -100,6 +100,20 @@
                     Value 1 means default jump height. Value 2 increase jump height by 2 and so on.
                 </div>
             </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.disableSlimePhysics"
+                            @change="update()">
+                        <span>Disable Slime Block Physics</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    No slow, no bounces.
+                </div>
+            </fieldset>
         </div>
     </div>
 </div>

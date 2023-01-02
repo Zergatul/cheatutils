@@ -2,10 +2,7 @@ package com.zergatul.cheatutils.collections;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -15,6 +12,10 @@ public class ImmutableList<E> implements Iterable<E> {
 
     public ImmutableList() {
         array = new Object[0];
+    }
+
+    public ImmutableList(Collection<E> collection) {
+        this(collection.toArray());
     }
 
     private ImmutableList(Object[] array) {
@@ -27,6 +28,11 @@ public class ImmutableList<E> implements Iterable<E> {
         System.arraycopy(array, 0, newArray, 0, size);
         newArray[size] = element;
         return new ImmutableList<>(newArray);
+    }
+
+    @SuppressWarnings("unchecked")
+    public E get(int index) {
+        return (E) array[index];
     }
 
     public ImmutableList<E> remove(E element) {
@@ -67,6 +73,18 @@ public class ImmutableList<E> implements Iterable<E> {
             }
         }
         return new ImmutableList<>(list.toArray());
+    }
+
+    public ImmutableList<E> set(int index, E element) {
+        int size = array.length;
+        Object[] newArray = new Object[size];
+        System.arraycopy(array, 0, newArray, 0, size);
+        newArray[index] = element;
+        return new ImmutableList<>(newArray);
+    }
+
+    public int size() {
+        return array.length;
     }
 
     @SuppressWarnings("unchecked")

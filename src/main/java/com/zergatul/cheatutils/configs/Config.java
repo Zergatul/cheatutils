@@ -46,6 +46,7 @@ public class Config {
     public AntiRespawnResetConfig antiRespawnResetConfig = new AntiRespawnResetConfig();
     public FastBreakConfig fastBreakConfig = new FastBreakConfig();
     public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();
+    public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
 
     public Config() {
         esp = true;

@@ -13,6 +13,7 @@
     "MixinCameraType",
     "MixinClientChunkCache",
     "MixinClientPacketListener",
+    "MixinCraftingScreen",
     "MixinDeathScreen",
     "MixinDebugScreenOverlay",
     "MixinEntity",
@@ -33,6 +34,7 @@
     "MixinPig",
     "MixinScreen",
     "MixinServerboundMovePlayerPacket",
+    "MixinSlimeBlock",
     "MixinUser",
     "MixinBlockBehaviourBlockStateBase"
   ]

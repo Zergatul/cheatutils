@@ -703,3 +703,8 @@ ul.refs .class {
 ul.refs .comment {
     color: #277813;
 }
+
+ul.item-list > li {
+    align-items: center;
+    gap: 12px;
+}

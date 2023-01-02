@@ -1,0 +1,79 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Auto Craft</h2>
+        <div class="description">
+            Add items you want to auto craft. To start autocrafting enable module and open Crafting Table GUI.<br>
+            Algorithm:
+            <ol>
+                <li>
+                    If you have enough ingredients to craft at least 1 item, module performs shift+click on recipe (if resulting item is stackable),
+                    or simple click (if resulting item is non-stackable).
+                </li>
+                <li>
+                    If you don't have enough items, module tries to craft missing ingridients.
+                    It can go recursively. For example, your recipe needs sticks, but you have logs. Module will craft planks from logs, and then sticks from planks.
+                </li>
+                <li>
+                    Module performs shift+click on resulting item(s). If your inventory is full, module will stuck here. You can safely close Crafting Table GUI.
+                </li>
+                <li>
+                    Module is not smart enough to deal with full inventory. You should better have some free slots before crafting.
+                </li>
+                <li>
+                    Module is not smart enough to calculate if you have enough sub-ingredients to craft at least 1 item. Example: you selected Dispenser as item for Auto Craft.
+                    You don't have bows/sticks/string in your inventory. You have planks in inventory. Module will craft sticks from planks once (for bow recipe), and stop here.
+                </li>
+            </ol>
+        </div>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>
+                    Items to Craft
+                </legend>
+                <div v-if="state == 'list'">
+                    <div>
+                        <button style="width: 200px;" @click="openAdd()">Add Item</button>
+                    </div>
+                    <div>
+                        <ul class="list-base item-list" style="width: 800px;">
+                            <li v-for="item in config.items">
+                                <button style="width: 200px;" @click="remove(item)">Remove</button>
+                                <div>{{ item }}</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div v-if="state == 'add'">
+                    <div style="padding-bottom: 16px;">
+                        <button style="width: 200px;" @click="backToList()">Back</button>
+                    </div>
+                    <div>
+                        <span class="text">Filter:</span>
+                        <input type="text" class="search"
+                            v-model="search"
+                            @input="filterItemList()">
+                    </div>
+                    <ul class="list-base item-list" style="width: 800px;">
+                        <li v-for="item in itemListFiltered">
+                            <button style="width: 200px;" @click="add(item)">Add</button>
+                            <div>{{ item }}</div>
+                        </li>
+                    </ul>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

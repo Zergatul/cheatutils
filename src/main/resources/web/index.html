@@ -170,7 +170,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-craft'">Auto Craft</button>
+                        </td>
                         <td></td>
                         <td>
                             <button @click="current = 'fast-break'">Fast Break</button>
@@ -405,6 +407,11 @@
             v-if="current == 'container-summary'"
             @back="backToMain()">
         </container-summary-config>
+
+        <auto-craft-config
+            v-if="current == 'auto-craft'"
+            @back="backToMain()">
+        </auto-craft-config>
 
     </div>
 

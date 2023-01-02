@@ -537,6 +537,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().containerSummaryConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("auto-craft", AutoCraftConfig.class) {
+            @Override
+            protected AutoCraftConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoCraftConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoCraftConfig config) {
+                ConfigStore.instance.getConfig().autoCraftConfig = config;
+            }
+        });
     }
 
     @Override
