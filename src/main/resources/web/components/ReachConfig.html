@@ -1,0 +1,48 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Reach</h2>
+        <div class="description">
+            Modify block interaction range and attack range. Kill Aura range setting is not affected by this.
+        </div>
+        <div class="module-sections">
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.overrideReachDistance"
+                            @change="update()">
+                        <span>Override reach distance</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Reach distance:</span>
+                    <input type="text" v-model="config.reachDistance" @change="update()">
+                </div>
+                <div class="section-description">
+                    Default: 4.5
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.overrideAttackRange"
+                            @change="update()">
+                        <span>Override attack range</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Attack range:</span>
+                    <input type="text" v-model="config.attackRange" @change="update()">
+                </div>
+                <div class="section-description">
+                    Default: 3.0
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

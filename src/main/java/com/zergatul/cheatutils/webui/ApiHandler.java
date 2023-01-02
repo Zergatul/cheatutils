@@ -549,6 +549,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().autoCraftConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("reach", ReachConfig.class) {
+            @Override
+            protected ReachConfig getConfig() {
+                return ConfigStore.instance.getConfig().reachConfig;
+            }
+
+            @Override
+            protected void setConfig(ReachConfig config) {
+                ConfigStore.instance.getConfig().reachConfig = config;
+            }
+        });
     }
 
     @Override

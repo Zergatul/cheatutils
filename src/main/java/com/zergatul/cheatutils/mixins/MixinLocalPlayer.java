@@ -1,10 +1,7 @@
 package com.zergatul.cheatutils.mixins;
 
 import com.mojang.authlib.GameProfile;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.FastBreakConfig;
-import com.zergatul.cheatutils.configs.FlyHackConfig;
-import com.zergatul.cheatutils.configs.MovementHackConfig;
+import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.FreeCamController;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.controllers.ZoomController;
@@ -165,5 +162,25 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         }
 
         return speed;
+    }
+
+    @Override
+    public double getReachDistance() {
+        ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
+        if (config.overrideReachDistance) {
+            return config.reachDistance;
+        } else {
+            return super.getReachDistance();
+        }
+    }
+
+    @Override
+    public double getAttackRange() {
+        ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
+        if (config.overrideAttackRange) {
+            return config.attackRange;
+        } else {
+            return super.getAttackRange();
+        }
     }
 }

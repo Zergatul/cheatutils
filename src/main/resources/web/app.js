@@ -87,6 +87,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'FastBreakConfig');
     addComponent(args, 'ContainerSummaryConfig');
     addComponent(args, 'AutoCraftConfig');
+    addComponent(args, 'ReachConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

@@ -47,6 +47,7 @@ public class Config {
     public FastBreakConfig fastBreakConfig = new FastBreakConfig();
     public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();
     public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
+    public ReachConfig reachConfig = new ReachConfig();
 
     public Config() {
         esp = true;

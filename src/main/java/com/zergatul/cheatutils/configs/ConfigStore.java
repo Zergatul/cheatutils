@@ -149,6 +149,7 @@ public class ConfigStore {
         config.flyHackConfig.validate();
         config.boatHackConfig.validate();
         config.explorationMiniMapConfig.validate();
+        config.reachConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";
