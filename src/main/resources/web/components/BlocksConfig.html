@@ -3,7 +3,9 @@
         <div>
             <button style="width: 200px;" @click="$emit('back')">Back</button>
             <button style="width: 200px;" @click="openAdd()">Add Block</button>
+            <button style="width: 200px;" @click="restart()">Restart</button>
         </div>
+        <div class="section-description" style="margin-top: 16px;">Use Restart if BlockFinder stopped working.</div>
         <ul class="blocks-list">
             <li v-for="item in blocksConfigList" :key="item.block" v-bind="{ 'data-id': item.block }">
                 <div class="c1"></div>

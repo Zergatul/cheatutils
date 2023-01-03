@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.BlockTracerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
+import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -43,21 +44,20 @@ public class BlockFinderController {
     }
 
     public void start() {
-
         stop();
 
         eventLoop = new Thread(() -> {
             try {
                 while (true) {
-                    counter.startWait();
-                    synchronized (loopWaitEvent) {
-                        loopWaitEvent.wait();
-                    }
                     counter.startLoad();
                     while (queue.size() > 0) {
                         Runnable process = queue.remove();
                         process.run();
                         Thread.yield();
+                    }
+                    counter.startWait();
+                    synchronized (loopWaitEvent) {
+                        loopWaitEvent.wait();
                     }
                 }
             }
@@ -71,6 +71,12 @@ public class BlockFinderController {
                 counter.dispose();
             }
         });
+
+        clear();
+
+        for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
+            scanChunk(pair.getFirst(), pair.getSecond());
+        }
 
         eventLoop.start();
     }
@@ -112,6 +118,7 @@ public class BlockFinderController {
                     Thread.sleep(30);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    return;
                 }
             }
             int minY = dimension.getMinY();
@@ -124,7 +131,22 @@ public class BlockFinderController {
                         int xb = xc | x;
                         int zb = zc | z;
                         BlockPos pos = new BlockPos(xb, y, zb);
-                        BlockState state = chunk.getBlockState(pos);
+                        BlockState state;
+                        try {
+                            state = chunk.getBlockState(pos);
+                        }
+                        catch (ReportedException e) {
+                            logger.warn("getBlockState failed", e);
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                                return;
+                            }
+                            // retry chunk scan
+                            scanChunk(dimension, chunk);
+                            return;
+                        }
                         checkBlock(state, pos);
                     }
                 }
