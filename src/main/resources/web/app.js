@@ -82,6 +82,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'ParticlesConfig');
     addComponent(args, 'StatusOverlayConfig');
     addComponent(args, 'FastBreakConfig');
+    addComponent(args, 'ReachConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

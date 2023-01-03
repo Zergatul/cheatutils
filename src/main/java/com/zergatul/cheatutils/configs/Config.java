@@ -39,6 +39,7 @@ public class Config {
     public ParticlesConfig particlesConfig = new ParticlesConfig();
     public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
     public FastBreakConfig fastBreakConfig = new FastBreakConfig();
+    public ReachConfig reachConfig = new ReachConfig();
 
     public Config() {
         esp = true;

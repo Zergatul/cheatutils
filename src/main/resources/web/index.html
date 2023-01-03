@@ -161,6 +161,13 @@
                             <button @click="current = 'fast-break'">Fast Break</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'reach'">Reach</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -339,6 +346,11 @@
             v-if="current == 'fast-break'"
             @back="backToMain()">
         </fast-break-config>
+
+        <reach-config
+            v-if="current == 'reach'"
+            @back="backToMain()">
+        </reach-config>
 
     </div>
 

@@ -64,6 +64,9 @@ public class BlockFinderController {
             catch (InterruptedException e) {
                 // do nothing
             }
+            catch (Throwable e) {
+                logger.error("BlockFinder scan thread crash.", e);
+            }
             finally {
                 counter.dispose();
             }
