@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.utils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Matrix4f;
+import org.joml.Matrix4f;
 
 public class GuiUtils {
 
@@ -30,25 +30,25 @@ public class GuiUtils {
         RenderSystem.enableBlend();
         RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         bufferbuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         bufferbuilder.vertex(matrix, (float)x1, (float)y2, 0.0F).color(f, f1, f2, f3).next();
         bufferbuilder.vertex(matrix, (float)x2, (float)y2, 0.0F).color(f, f1, f2, f3).next();
         bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(f, f1, f2, f3).next();
         bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(f, f1, f2, f3).next();
-        BufferRenderer.drawWithShader(bufferbuilder.end());
+        BufferRenderer.drawWithGlobalProgram(bufferbuilder.end());
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
     public static void drawTexture(Matrix4f matrix, float x, float y, float width, float height, float z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         BufferBuilder bufferBuilder = RenderSystem.renderThreadTesselator().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
         bufferBuilder.vertex(matrix, x, y, z).texture(1F * texX / texSizeX, 1F * texY / texSizeY).next();
         bufferBuilder.vertex(matrix, x, y + height, z).texture(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY).next();
         bufferBuilder.vertex(matrix, x + width, y + height, z).texture(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY).next();
         bufferBuilder.vertex(matrix, x + width, y, z).texture(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY).next();
-        BufferRenderer.drawWithShader(bufferBuilder.end());
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
     }
 }

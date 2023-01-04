@@ -1,7 +1,8 @@
 package com.zergatul.cheatutils.wrappers;
 
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.*;
 
 import java.util.Collection;
 import java.util.Map;

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
 
 public class TeleportController {

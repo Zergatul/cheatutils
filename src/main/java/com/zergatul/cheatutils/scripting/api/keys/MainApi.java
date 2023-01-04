@@ -22,7 +22,7 @@ public class MainApi {
     public void chat(String text) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player != null) {
-            MinecraftClient.getInstance().player.sendChatMessage(text, null);
+            MinecraftClient.getInstance().player.networkHandler.sendChatMessage(text);
         }
     }
 

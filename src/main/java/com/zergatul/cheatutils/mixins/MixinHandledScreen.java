@@ -62,14 +62,20 @@ public abstract class MixinHandledScreen<T extends ScreenHandler> extends Screen
             int btnWidth = 72;
             int btnHeight = 20;
             cursor -= btnWidth;
-            addDrawableChild(new ButtonWidget(cursor, this.y - btnHeight, btnWidth, btnHeight, Text.translatable("button.take.all"), this::onTakeAllPress));
+            addDrawableChild(
+                    new ButtonWidget.Builder(Text.translatable("button.take.all"), this::onTakeAllPress)
+                            .dimensions(cursor, this.y - btnHeight, btnWidth, btnHeight)
+                            .build());
             cursor -= space;
         }
         if (config.showSmartPut) {
             int btnWidth = 72;
             int btnHeight = 20;
             cursor -= btnWidth;
-            addDrawableChild(new ButtonWidget(cursor, this.y - btnHeight, btnWidth, btnHeight, Text.translatable("button.smart.put"), this::onSmartPutPress));
+            addDrawableChild(
+                    new ButtonWidget.Builder(Text.translatable("button.smart.put"), this::onSmartPutPress)
+                            .dimensions(cursor, this.y - btnHeight, btnWidth, btnHeight)
+                            .build());
         }
     }
 

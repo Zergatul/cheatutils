@@ -124,8 +124,8 @@ public class RenderController {
         MatrixStack matrix = event.getMatrixStack();
         matrix.push();
         //matrix.translate(-view.x, -view.y, -view.z);
-        var shader = GameRenderer.getPositionColorShader();
-        vertexBuffer.draw(matrix.peek().getPositionMatrix(), event.getProjectionMatrix().copy(), shader);
+        var shader = GameRenderer.getPositionColorProgram();
+        vertexBuffer.draw(matrix.peek().getPositionMatrix(), event.getProjectionMatrix(), shader);
         matrix.pop();
 
         VertexBuffer.unbind();

@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
-import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Lifecycle;
+import com.zergatul.cheatutils.interfaces.RegistryEntryReferenceMixinInterface;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -11,18 +11,21 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.map.MapState;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.*;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryOwner;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntry;
-import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.util.math.intprovider.IntProvider;
+import net.minecraft.util.math.intprovider.IntProviderType;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.MutableWorldProperties;
@@ -30,6 +33,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.dimension.DimensionTypes;
 import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.QueryableTickScheduler;
@@ -39,8 +43,6 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public class EntityInfoApi extends ApiBase {
 
@@ -119,157 +121,63 @@ public class EntityInfoApi extends ApiBase {
 
     private static class FakeLevel extends World {
 
-        private static MutableWorldProperties createWorldProperties() {
-            return new MutableWorldProperties() {
-                @Override
-                public void setSpawnX(int spawnX) {
-
-                }
-
-                @Override
-                public void setSpawnY(int spawnY) {
-
-                }
-
-                @Override
-                public void setSpawnZ(int spawnZ) {
-
-                }
-
-                @Override
-                public void setSpawnAngle(float spawnAngle) {
-
-                }
-
-                @Override
-                public int getSpawnX() {
-                    return 0;
-                }
-
-                @Override
-                public int getSpawnY() {
-                    return 0;
-                }
-
-                @Override
-                public int getSpawnZ() {
-                    return 0;
-                }
-
-                @Override
-                public float getSpawnAngle() {
-                    return 0;
-                }
-
-                @Override
-                public long getTime() {
-                    return 0;
-                }
-
-                @Override
-                public long getTimeOfDay() {
-                    return 0;
-                }
-
-                @Override
-                public boolean isThundering() {
-                    return false;
-                }
-
-                @Override
-                public boolean isRaining() {
-                    return false;
-                }
-
-                @Override
-                public void setRaining(boolean raining) {
-
-                }
-
-                @Override
-                public boolean isHardcore() {
-                    return false;
-                }
-
-                @Override
-                public GameRules getGameRules() {
-                    return null;
-                }
-
-                @Override
-                public Difficulty getDifficulty() {
-                    return null;
-                }
-
-                @Override
-                public boolean isDifficultyLocked() {
-                    return false;
-                }
-            };
+        public FakeLevel() {
+            super(
+                    new FakeWritableLevelData(),
+                    World.OVERWORLD,
+                    createHolder(),
+                    () -> null,
+                    true,
+                    true,
+                    0,
+                    0);
         }
 
-        private static RegistryEntry<DimensionType> createDimension() {
-            return new RegistryEntry<>() {
-                @Override
-                public DimensionType value() {
-                    return DynamicRegistryManager.BUILTIN.get().get(Registry.DIMENSION_TYPE_KEY).get(World.OVERWORLD.getValue());
-                }
+        private static RegistryEntry<DimensionType> createHolder() {
+            RegistryEntry.Reference<DimensionType> holder = RegistryEntry.Reference.standAlone(
+                    new RegistryEntryOwner<>() {
+                    },
+                    RegistryKey.of(RegistryKeys.DIMENSION_TYPE, World.OVERWORLD.getValue()));
 
-                @Override
-                public boolean hasKeyAndValue() {
-                    return false;
-                }
+            DimensionType overworld = new DimensionType(
+                    OptionalLong.empty(),
+                    true,
+                    false,
+                    false,
+                    true,
+                    1.0,
+                    true,
+                    false,
+                    -64,
+                    384,
+                    384,
+                    null,
+                    World.OVERWORLD.getValue(),
+                    0.0f,
+                    new DimensionType.MonsterSettings(false, true, new IntProvider() {
+                        @Override
+                        public int get(Random random) {
+                            return 0;
+                        }
 
-                @Override
-                public boolean matchesId(Identifier id) {
-                    return false;
-                }
+                        @Override
+                        public int getMin() {
+                            return 0;
+                        }
 
-                @Override
-                public boolean matchesKey(RegistryKey<DimensionType> key) {
-                    return false;
-                }
+                        @Override
+                        public int getMax() {
+                            return 7;
+                        }
 
-                @Override
-                public boolean matches(Predicate<RegistryKey<DimensionType>> predicate) {
-                    return false;
-                }
+                        @Override
+                        public IntProviderType<?> getType() {
+                            return null;
+                        }
+                    }, 0));
 
-                @Override
-                public boolean isIn(TagKey<DimensionType> tag) {
-                    return false;
-                }
-
-                @Override
-                public Stream<TagKey<DimensionType>> streamTags() {
-                    return null;
-                }
-
-                @Override
-                public Either<RegistryKey<DimensionType>, DimensionType> getKeyOrValue() {
-                    return null;
-                }
-
-                @Override
-                public Optional<RegistryKey<DimensionType>> getKey() {
-                    RegistryKey<DimensionType> key = RegistryKey.of(Registry.DIMENSION_TYPE_KEY, World.OVERWORLD.getValue());
-                    return Optional.of(key);
-                }
-
-                @Override
-                public Type getType() {
-                    return null;
-                }
-
-                @Override
-                public boolean matchesRegistry(Registry<DimensionType> registry) {
-                    return false;
-                }
-            };
-        }
-
-        protected FakeLevel() {
-            super(createWorldProperties(), World.OVERWORLD, createDimension(), () -> null, true, false, 0,0);
+            ((RegistryEntryReferenceMixinInterface<DimensionType>) holder).setValue(overworld);
+            return holder;
         }
 
         @Override
@@ -278,12 +186,12 @@ public class EntityInfoApi extends ApiBase {
         }
 
         @Override
-        public void playSound(@Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
+        public void playSound(@Nullable PlayerEntity except, double x, double y, double z, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) {
 
         }
 
         @Override
-        public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
+        public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) {
 
         }
 
@@ -360,11 +268,6 @@ public class EntityInfoApi extends ApiBase {
         }
 
         @Override
-        public DynamicRegistryManager getRegistryManager() {
-            return null;
-        }
-
-        @Override
         public float getBrightness(Direction direction, boolean shaded) {
             return 0;
         }
@@ -377,6 +280,16 @@ public class EntityInfoApi extends ApiBase {
         @Override
         public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
             return null;
+        }
+
+        @Override
+        public DynamicRegistryManager getRegistryManager() {
+            return null;
+        }
+
+        @Override
+        public FeatureSet getEnabledFeatures() {
+            return FeatureSet.of(FeatureFlags.VANILLA);
         }
     }
 
@@ -423,6 +336,112 @@ public class EntityInfoApi extends ApiBase {
             } else {
                 return false;
             }
+        }
+    }
+
+    private static class FakeWritableLevelData implements MutableWorldProperties {
+
+        @Override
+        public void setSpawnX(int p_78651_) {
+
+        }
+
+        @Override
+        public void setSpawnY(int p_78652_) {
+
+        }
+
+        @Override
+        public void setSpawnZ(int p_78653_) {
+
+        }
+
+        @Override
+        public void setSpawnAngle(float p_78648_) {
+
+        }
+
+        @Override
+        public int getSpawnX() {
+            return 0;
+        }
+
+        @Override
+        public int getSpawnY() {
+            return 0;
+        }
+
+        @Override
+        public int getSpawnZ() {
+            return 0;
+        }
+
+        @Override
+        public float getSpawnAngle() {
+            return 0;
+        }
+
+        @Override
+        public long getTime() {
+            return 0;
+        }
+
+        @Override
+        public long getTimeOfDay() {
+            return 0;
+        }
+
+        @Override
+        public boolean isThundering() {
+            return false;
+        }
+
+        @Override
+        public boolean isRaining() {
+            return false;
+        }
+
+        @Override
+        public void setRaining(boolean p_78171_) {
+
+        }
+
+        @Override
+        public boolean isHardcore() {
+            return false;
+        }
+
+        @Override
+        public GameRules getGameRules() {
+            return null;
+        }
+
+        @Override
+        public Difficulty getDifficulty() {
+            return null;
+        }
+
+        @Override
+        public boolean isDifficultyLocked() {
+            return false;
+        }
+    }
+
+    private static class FakeBootstrapContext implements Registerable<DimensionType> {
+
+        public DimensionType overworld;
+
+        @Override
+        public RegistryEntry.Reference<DimensionType> register(RegistryKey<DimensionType> key, DimensionType value, Lifecycle lifecycle) {
+            if (key == DimensionTypes.OVERWORLD) {
+                overworld = value;
+            }
+            return null;
+        }
+
+        @Override
+        public <S> RegistryEntryLookup<S> getRegistryLookup(RegistryKey<? extends Registry<? extends S>> registryRef) {
+            return null;
         }
     }
 }

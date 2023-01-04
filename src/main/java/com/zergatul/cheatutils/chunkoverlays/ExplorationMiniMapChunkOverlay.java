@@ -7,16 +7,14 @@ import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.GuiUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.MapColor;
-import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3d;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Matrix4f;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
+import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.HashMap;

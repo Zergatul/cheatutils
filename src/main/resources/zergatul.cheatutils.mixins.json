@@ -25,6 +25,7 @@
     "MixinPerspective",
     "MixinPlayerListHud",
     "MixinPlayerMoveC2SPacket",
+    "MixinRegistryEntryReference",
     "MixinWorldRenderer"
   ],
   "injectors": {

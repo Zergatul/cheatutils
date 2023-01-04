@@ -5,14 +5,14 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 
 
 public class ModApiWrapper {
 
-    public static final WrapperRegistry<Block> BLOCKS = new WrapperRegistry<>(Registry.BLOCK);
-    public static final WrapperRegistry<Item> ITEMS = new WrapperRegistry<>(Registry.ITEM);
-    public static final WrapperRegistry<EntityType<?>> ENTITY_TYPES = new WrapperRegistry<>(Registry.ENTITY_TYPE);
+    public static final WrapperRegistry<Block> BLOCKS = new WrapperRegistry<>(Registries.BLOCK);
+    public static final WrapperRegistry<Item> ITEMS = new WrapperRegistry<>(Registries.ITEM);
+    public static final WrapperRegistry<EntityType<?>> ENTITY_TYPES = new WrapperRegistry<>(Registries.ENTITY_TYPE);
 
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<ClientConnection> ClientPlayerLoggingIn = new ParameterizedEventHandler<>();

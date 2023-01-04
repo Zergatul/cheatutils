@@ -16,8 +16,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.chunk.WorldChunk;
+import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -88,9 +88,10 @@ public class ChunkOverlayController {
         event.getMatrixStack().push();
         event.getMatrixStack().loadIdentity();
         event.getMatrixStack().translate(1d * mc.getWindow().getScaledWidth() / 2, 1d * mc.getWindow().getScaledHeight() / 2, TranslateZ);
-        event.getMatrixStack().multiply(Vec3f.NEGATIVE_Z.getDegreesQuaternion(yRot));
-        event.getMatrixStack().multiply(Vec3f.NEGATIVE_X.getDegreesQuaternion(180));
-        event.getMatrixStack().multiply(Vec3f.NEGATIVE_Y.getDegreesQuaternion(180));
+
+        Quaternionf quaternion = new Quaternionf(0, 0, 0, 1);
+        quaternion.rotationYXZ(-(float)Math.PI, -(float)Math.PI, -yRot * ((float)Math.PI / 180F));
+        event.getMatrixStack().multiply(quaternion);
         RenderSystem.applyModelViewMatrix();
 
         //RenderSystem.enableDepthTest();
@@ -99,7 +100,7 @@ public class ChunkOverlayController {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         //RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 0.5f);
 
