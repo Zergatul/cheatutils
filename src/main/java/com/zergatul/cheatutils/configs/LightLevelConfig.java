@@ -1,14 +1,25 @@
 package com.zergatul.cheatutils.configs;
 
-public class LightLevelConfig {
+import com.zergatul.cheatutils.utils.MathUtils;
+
+public class LightLevelConfig implements ValidatableConfig {
 
     public boolean enabled;
-    public boolean display;
+    public boolean showLocations;
+    public boolean showTracers;
+    public boolean showLightLevelValue;
+    public boolean useFreeCamPosition;
     public float maxDistance;
 
     public LightLevelConfig() {
         enabled = false;
-        display = false;
+        showLocations = false;
+        showTracers = true;
         maxDistance = 20;
+    }
+
+    @Override
+    public void validate() {
+        maxDistance = MathUtils.clamp(maxDistance, 1, 1000);
     }
 }

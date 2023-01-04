@@ -1,10 +1,12 @@
 package com.zergatul.cheatutils.wrappers;
 
 import com.zergatul.cheatutils.wrappers.events.*;
+import net.minecraft.client.Camera;
 import net.minecraft.network.Connection;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -76,7 +78,7 @@ public class ModApiWrapper {
         }
 
         @SubscribeEvent
-        public void onRender(RenderLevelStageEvent event) {
+        public void onRenderLevel(RenderLevelStageEvent event) {
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER) {
                 RenderWorldLast.trigger(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
             }

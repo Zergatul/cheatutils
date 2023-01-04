@@ -10,7 +10,6 @@ import com.zergatul.cheatutils.controllers.KillAuraController;
 import com.zergatul.cheatutils.controllers.LightLevelController;
 import com.zergatul.cheatutils.controllers.UserNameController;
 import com.zergatul.cheatutils.utils.MathUtils;
-import net.minecraft.util.Mth;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
@@ -155,10 +154,6 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(LightLevelConfig config) {
-                if (!config.enabled) {
-                    config.display = false;
-                }
-                config.maxDistance = Math.max(1, config.maxDistance);
                 ConfigStore.instance.getConfig().lightLevelConfig = config;
                 LightLevelController.instance.onChanged();
             }

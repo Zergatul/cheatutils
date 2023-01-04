@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.controllers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.datafixers.util.Pair;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
 import com.zergatul.cheatutils.utils.Dimension;
@@ -10,18 +11,25 @@ import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
@@ -33,6 +41,8 @@ public class LightLevelController {
     public static final LightLevelController instance = new LightLevelController();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private final Logger logger = LogManager.getLogger(LightLevelController.class);
+    private final ResourceLocation[] textures = new ResourceLocation[16];
     private final Object loopWaitEvent = new Object();
     private final Thread eventLoop;
     private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
@@ -40,11 +50,28 @@ public class LightLevelController {
     private final List<BlockPos> listForRendering = new ArrayList<>();
     private boolean active = false;
     private VertexBuffer vertexBuffer;
+    private final Map<Direction, Pair<float[], float[]>> rotations = Map.ofEntries(
+            Map.entry(Direction.NORTH, new Pair<>(
+                    new float[] { 0, 0, 1, 1 },
+                    new float[] { 0, 1, 1, 0 })),
+            Map.entry(Direction.SOUTH, new Pair<>(
+                    new float[] { 1, 1, 0, 0 },
+                    new float[] { 1, 0, 0, 1 })),
+            Map.entry(Direction.EAST, new Pair<>(
+                    new float[] { 0, 1, 1, 0 },
+                    new float[] { 1, 1, 0, 0 })),
+            Map.entry(Direction.WEST, new Pair<>(
+                    new float[] { 1, 0, 0, 1 },
+                    new float[] { 0, 0, 1, 1 })));
 
     private LightLevelController() {
+        for (int i = 0; i < 16; i++) {
+            textures[i] = new ResourceLocation(ModMain.MODID, "textures/light-level-" + i + ".png");
+        }
 
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
 
+        ModApiWrapper.RenderWorldLast.add(this::render);
         ChunkController.instance.addOnChunkLoadedHandler(this::onChunkLoaded);
         ChunkController.instance.addOnChunkUnLoadedHandler(this::onChunkUnLoaded);
         ChunkController.instance.addOnBlockChangedHandler(this::onBlockChanged);
@@ -65,6 +92,9 @@ public class LightLevelController {
             catch (InterruptedException e) {
                 // do nothing
             }
+            catch (Throwable e) {
+                logger.error("LightLevelController scan thread crash.", e);
+            }
         });
 
         eventLoop.start();
@@ -84,128 +114,80 @@ public class LightLevelController {
         }
     }
 
-    public void render(RenderWorldLastEvent event) {
+    private void render(RenderWorldLastEvent event) {
         LightLevelConfig config = ConfigStore.instance.getConfig().lightLevelConfig;
-        if (!config.enabled || !config.display) {
+        if (!config.enabled) {
             return;
         }
 
-        Vec3 view = mc.gameRenderer.getMainCamera().getPosition();
+        Camera camera = mc.gameRenderer.getMainCamera();
+        Vec3 view = camera.getPosition();
 
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferBuilder = tesselator.getBuilder();
-
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glDepthMask(true);
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
         RenderSystem.enableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        Direction direction = Direction.fromYRot(camera.getYRot());
+        Pair<float[], float[]> texRot = rotations.get(direction);
+        float[] u = texRot.getFirst();
+        float[] v = texRot.getSecond();
 
         double maxDistance2 = config.maxDistance * config.maxDistance;
+        double xc = config.useFreeCamPosition ? view.x : mc.player.getX();
+        double yc = config.useFreeCamPosition ? view.y : mc.player.getY();
+        double zc = config.useFreeCamPosition ? view.z : mc.player.getZ();
 
         List<BlockPos> listTracers = new ArrayList<>();
-
         for (BlockPos pos: getBlockForRendering()) {
-            double dx = mc.player.getX() - pos.getX();
-            double dy = mc.player.getY() - pos.getY();
-            double dz = mc.player.getZ() - pos.getZ();
+            double dx = xc - pos.getX();
+            double dy = yc - pos.getY();
+            double dz = zc - pos.getZ();
             if (dx * dx + dy * dy + dz * dz > maxDistance2) {
                 continue;
             }
             int blockLight = mc.level.getBrightness(LightLayer.BLOCK, pos);
-            int skyLight = mc.level.getBrightness(LightLayer.SKY, pos);
             if (blockLight == 0) {
-                float r, g, b;
-                if (skyLight == 0) {
-                    // can spawn any time
-                    r = 1f;
-                    g = 0f;
-                    b = 0f;
-                } else {
-                    // can spawn at night
-                    r = 0f;
-                    g = 0f;
-                    b = 1f;
-                }
-
-                double x1 = pos.getX();
-                double x2 = x1 + 1;
-                double z1 = pos.getZ();
-                double z2 = z1 + 1;
-                double y = pos.getY() + 0.1d;
-                /*bufferBuilder.vertex(x1, y, z1).color(r, g, b, 0.2f).endVertex();
-                bufferBuilder.vertex(x1, y, z2).color(r, g, b, 0.2f).endVertex();
-                bufferBuilder.vertex(x2, y, z2).color(r, g, b, 0.2f).endVertex();
-                bufferBuilder.vertex(x2, y, z1).color(r, g, b, 0.2f).endVertex();*/
-
                 listTracers.add(pos);
+            }
+            if (config.showLightLevelValue) {
+                RenderSystem.setShaderTexture(0, textures[blockLight]);
+                float y = (float)(pos.getY() + 0.05 - view.y);
+                float x1 = (float)(pos.getX() + 0.05 - view.x);
+                float z1 = (float)(pos.getZ() + 0.05 - view.z);
+                float x2 = x1 + 0.9f;
+                float z2 = z1 + 0.9f;
+                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+                bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                bufferBuilder.vertex(x1, y, z1).uv(u[0], v[0]).endVertex();
+                bufferBuilder.vertex(x1, y, z2).uv(u[1], v[1]).endVertex();
+                bufferBuilder.vertex(x2, y, z2).uv(u[2], v[2]).endVertex();
+                bufferBuilder.vertex(x2, y, z1).uv(u[3], v[3]).endVertex();
+
+                vertexBuffer.bind();
+                vertexBuffer.upload(bufferBuilder.end());
+                vertexBuffer.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix().copy(), GameRenderer.getPositionTexShader());
+                VertexBuffer.unbind();
             }
         }
 
-        vertexBuffer.bind();
-        vertexBuffer.upload(bufferBuilder.end());
+        Vec3 tracerCenter = event.getTracerCenter();
+        double tracerX = tracerCenter.x;
+        double tracerY = tracerCenter.y;
+        double tracerZ = tracerCenter.z;
 
-        PoseStack matrix = event.getMatrixStack();
-        matrix.pushPose();
-        matrix.translate(-view.x, -view.y, -view.z);
-        var shader = GameRenderer.getPositionColorShader();
-        vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix().copy(), shader);
-        matrix.popPose();
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
 
-        VertexBuffer.unbind();
-
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GL11.glDepthMask(false);
-        RenderSystem.disableBlend();
-
-        {
-            double tracerX = view.x;
-            double tracerY = view.y;
-            double tracerZ = view.z;
-
-            if (true) {
-                Camera camera = mc.gameRenderer.getMainCamera();
-                float xRot = camera.getXRot();
-                float yRot = camera.getYRot();
-
-                double deltaXRot = 0;
-                double deltaZRot = 0;
-                double translateX = 0;
-                double translateY = 0;
-                if (mc.options.bobView().get() && mc.getCameraEntity() instanceof LocalPlayer) {
-                    LocalPlayer player = (LocalPlayer) mc.getCameraEntity();
-                    float f = player.walkDist - player.walkDistO;
-                    float f1 = -(player.walkDist + f * event.getTickDelta());
-                    float f2 = Mth.lerp(event.getTickDelta(), player.oBob, player.bob);
-                    //p_228383_1_.translate((double)(MathHelper.sin(f1 * (float)Math.PI) * f2 * 0.5F), (double)(-Math.abs(MathHelper.cos(f1 * (float)Math.PI) * f2)), 0.0D);
-                    //p_228383_1_.mulPose(Vector3f.ZP.rotationDegrees(MathHelper.sin(f1 * (float)Math.PI) * f2 * 3.0F));
-                    //p_228383_1_.mulPose(Vector3f.XP.rotationDegrees(Math.abs(MathHelper.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F));
-                    translateX = (double)(Mth.sin(f1 * (float)Math.PI) * f2 * 0.5F);
-                    translateY = (double)(-Math.abs(Mth.cos(f1 * (float)Math.PI) * f2));
-                    deltaZRot = Mth.sin(f1 * (float)Math.PI) * f2 * 3.0F;
-                    deltaXRot = Math.abs(Mth.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F;
-                }
-                double drawBeforeCameraDist = 64;
-                double yaw = yRot * Math.PI / 180;
-                double pitch = (xRot + deltaXRot) * Math.PI / 180;
-
-                tracerY -= translateY;
-                tracerX += translateX * Math.cos(yaw);
-                tracerZ += translateX * Math.sin(yaw);
-
-                tracerX -= Math.sin(yaw) * Math.cos(pitch) * drawBeforeCameraDist;
-                tracerZ += Math.cos(yaw) * Math.cos(pitch) * drawBeforeCameraDist;
-                tracerY -= Math.sin(pitch) * drawBeforeCameraDist;
-            }
-
-            var buffer = tesselator.getBuilder();
-            buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-
-            for (BlockPos pos: listTracers) {
-                double y = pos.getY() + 0.05 - view.y;
+        for (BlockPos pos: listTracers) {
+            double y = pos.getY() + 0.05 - view.y;
+            if (config.showTracers) {
                 buffer.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z).color(1f, 1f, 1f, 0.5f).endVertex();
                 buffer.vertex(pos.getX() + 0.5 - view.x, y, pos.getZ() + 0.5 - view.z).color(1f, 1f, 1f, 0.5f).endVertex();
+            }
 
+            if (config.showLocations) {
                 double x1 = pos.getX() + 0.05 - view.x;
                 double z1 = pos.getZ() + 0.05 - view.z;
                 double x2 = x1 + 0.9;
@@ -219,31 +201,26 @@ public class LightLevelController {
                 buffer.vertex(x2, y, z1).color(1f, 1f, 1f, 0.5f).endVertex();
                 buffer.vertex(x1, y, z1).color(1f, 1f, 1f, 0.5f).endVertex();
             }
-
-            vertexBuffer.bind();
-            vertexBuffer.upload(buffer.end());
-
-            RenderSystem.depthMask(false);
-            RenderSystem.disableCull();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableTexture();
-            GL11.glEnable(GL11.GL_LINE_SMOOTH);
-            GL11.glDisable(GL11.GL_DEPTH_TEST);
-
-            PoseStack poseStack = event.getMatrixStack();
-            poseStack.pushPose();
-            vertexBuffer.drawWithShader(poseStack.last().pose(), event.getProjectionMatrix().copy(), GameRenderer.getPositionColorShader());
-            poseStack.popPose();
-
-            VertexBuffer.unbind();
-
-            RenderSystem.depthMask(true);
-            RenderSystem.disableBlend();
-            RenderSystem.enableCull();
-            RenderSystem.enableTexture();
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
         }
+
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableTexture();
+        RenderSystem.disableDepthTest();
+        GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+        vertexBuffer.bind();
+        vertexBuffer.upload(buffer.end());
+        vertexBuffer.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix().copy(), GameRenderer.getPositionColorShader());
+        VertexBuffer.unbind();
+
+        RenderSystem.depthMask(true);
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
+        RenderSystem.enableTexture();
+        RenderSystem.enableDepthTest();
     }
 
     public List<BlockPos> getBlockForRendering() {
@@ -345,8 +322,7 @@ public class LightLevelController {
     }
 
     private void checkBlock(ChunkAccess chunk, BlockPos pos, HashSet<BlockPos> set) {
-        BlockState state = chunk.getBlockState(pos);
-        if (state.getMaterial().isSolid() && state.isCollisionShapeFullBlock(mc.level, pos)) {
+        if (canSpawnOn(chunk.getBlockState(pos), pos)) {
             BlockPos posAbove = pos.above();
             BlockState stateAbove = chunk.getBlockState(posAbove);
             if (stateAbove.getMaterial().isSolid()) {
@@ -368,4 +344,23 @@ public class LightLevelController {
         }
     }
 
+    private boolean canSpawnOn(BlockState state, BlockPos pos) {
+        if (state.getBlock() instanceof SlabBlock) {
+            return state.getValue(SlabBlock.TYPE) != SlabType.BOTTOM;
+        }
+
+        if (state.getBlock() instanceof StairBlock) {
+            return state.getValue(StairBlock.HALF) == Half.TOP;
+        }
+
+        if (!state.canOcclude()) {
+            return false;
+        }
+
+        if (state.getBlock() == Blocks.BEDROCK) {
+            return false;
+        }
+
+        return state.getMaterial().isSolid() && state.isCollisionShapeFullBlock(mc.level, pos);
+    }
 }
