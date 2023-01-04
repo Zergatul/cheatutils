@@ -42,7 +42,6 @@ public class RenderController {
         float xRot = camera.getXRot();
         float yRot = camera.getYRot();
 
-        LightLevelController.instance.render(event);
         EndCityChunksController.instance.render(event);
 
         double tracerX = view.x;
