@@ -31,8 +31,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     private boolean oldFlying;
     private float oldFlyingSpeed;
 
-    public MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_, @Nullable ProfilePublicKey p_234114_) {
-        super(p_234112_, p_234113_, p_234114_);
+    public MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_) {
+        super(p_234112_, p_234113_);
     }
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V")

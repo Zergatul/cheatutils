@@ -1,7 +1,5 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.helpers.MixinGameRendererHelper;
@@ -20,6 +18,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Locale;
@@ -30,7 +30,7 @@ public class FreeCamController {
     public static final FreeCamController instance = new FreeCamController();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Quaternion rotation = new Quaternion(0.0F, 0.0F, 0.0F, 1.0F);
+    private final Quaternionf rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
     private final Vector3f forwards = new Vector3f(0.0F, 0.0F, 1.0F);
     private final Vector3f up = new Vector3f(0.0F, 1.0F, 0.0F);
     private final Vector3f left = new Vector3f(1.0F, 0.0F, 0.0F);
@@ -238,15 +238,10 @@ public class FreeCamController {
     }
 
     private void calculateVectors() {
-        rotation.set(0.0F, 0.0F, 0.0F, 1.0F);
-        rotation.mul(Vector3f.YP.rotationDegrees(-yRot));
-        rotation.mul(Vector3f.XP.rotationDegrees(xRot));
-        forwards.set(0.0F, 0.0F, 1.0F);
-        forwards.transform(rotation);
-        up.set(0.0F, 1.0F, 0.0F);
-        up.transform(rotation);
-        left.set(1.0F, 0.0F, 0.0F);
-        left.transform(rotation);
+        rotation.rotationYXZ(-yRot * ((float)Math.PI / 180F), xRot * ((float)Math.PI / 180F), 0.0F);
+        forwards.set(0.0F, 0.0F, 1.0F).rotate(rotation);
+        up.set(0.0F, 1.0F, 0.0F).rotate(rotation);
+        left.set(1.0F, 0.0F, 0.0F).rotate(rotation);
     }
 
     private double combineMovement(double velocity, double impulse, double frameTime, double acceleration, double slowdown) {

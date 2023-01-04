@@ -27,7 +27,7 @@ public class MainApi {
     public void chat(String text) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            Minecraft.getInstance().player.chatSigned(text, null);
+            Minecraft.getInstance().player.connection.sendChat(text);
         }
     }
 

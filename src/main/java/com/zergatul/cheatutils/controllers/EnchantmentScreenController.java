@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.scripting.api.overlay.Root;
 import com.zergatul.cheatutils.utils.IntList;
 import com.zergatul.cheatutils.utils.JavaRandom;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -346,7 +347,7 @@ public class EnchantmentScreenController {
     }
 
     private boolean checkSeed(RandomSource random, int seed) {
-        for (int s = 0; s < scanningEnchantingStates.size(); s++) {
+        /*for (int s = 0; s < scanningEnchantingStates.size(); s++) {
             EnchantingState state = scanningEnchantingStates.get(s);
 
             random.setSeed(seed);
@@ -385,7 +386,7 @@ public class EnchantmentScreenController {
                 List<EnchantmentInstance> list = getEnchantmentList(random, seed, state.itemStack, 0, cost0);
                 if (!list.isEmpty()) {
                     EnchantmentInstance enchantmentinstance = list.get(random.nextInt(list.size()));
-                    enchant0 = Registry.ENCHANTMENT.getId(enchantmentinstance.enchantment);
+                    enchant0 = Registries.ENCHANTMENT.(enchantmentinstance.enchantment);
                     level0 = enchantmentinstance.level;
                 }
             }
@@ -419,7 +420,7 @@ public class EnchantmentScreenController {
             if (enchant2 != state.enchantments[2] || level2 != state.levels[2]) {
                 return false;
             }
-        }
+        }*/
 
         return true;
     }

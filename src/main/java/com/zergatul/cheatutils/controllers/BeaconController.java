@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix4f;
 import com.zergatul.cheatutils.configs.BeaconConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.interfaces.GameRendererMixinInterface;
@@ -12,6 +11,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -110,13 +110,15 @@ public class BeaconController {
 
     public Matrix4f getProjectionMatrix(double fov) {
         PoseStack posestack = new PoseStack();
-        posestack.last().pose().setIdentity();
+        posestack.last().pose().identity();
         /*if (this.zoom != 1.0F) {
             posestack.translate((double)this.zoomX, (double)(-this.zoomY), 0.0D);
             posestack.scale(this.zoom, this.zoom, 1.0F);
         }*/
         // only for screenshots???
-        posestack.last().pose().multiply(Matrix4f.perspective(fov, (float)mc.getWindow().getWidth() / (float)mc.getWindow().getHeight(), 0.05F, ClipRange));
+        Matrix4f matrix = new Matrix4f();
+        matrix.setPerspective((float)fov, (float)mc.getWindow().getWidth() / (float)mc.getWindow().getHeight(), 0.05F, ClipRange);
+        posestack.last().pose().mul(matrix);
         return posestack.last().pose();
     }
 }

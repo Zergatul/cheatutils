@@ -69,7 +69,7 @@ public class BetterStatusEffectsController implements IGuiOverlay {
                 }
 
                 TextureAtlasSprite textureatlassprite = manager.get(effectInstance.getEffect());
-                RenderSystem.setShaderTexture(0, textureatlassprite.atlas().location());
+                RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
                 GuiComponent.blit(poseStack, left + 3, top + 3, 200, 18, 18, textureatlassprite);
 

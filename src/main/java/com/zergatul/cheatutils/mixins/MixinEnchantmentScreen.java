@@ -48,7 +48,7 @@ public abstract class MixinEnchantmentScreen extends AbstractContainerScreen<Enc
         int btnWidth = 100;
         int btnHeight = 20;
 
-        addRenderableWidget(new Button(right, cursor, btnWidth, btnHeight, Component.literal("Reset"), this::onResetClick));
+        /*addRenderableWidget(new Button(right, cursor, btnWidth, btnHeight, Component.literal("Reset"), this::onResetClick));
         cursor += btnHeight + space;
         addRenderableWidget(addDataButton = new Button(right, cursor, btnWidth, btnHeight, Component.literal("Add State"), this::onAddDataClick));
         cursor += btnHeight + space;
@@ -77,7 +77,7 @@ public abstract class MixinEnchantmentScreen extends AbstractContainerScreen<Enc
         cursor += btnHeight + space;
         addRenderableWidget(playerSeedEditBox = new EditBox(font, left, cursor, btnWidth, btnHeight, Component.literal("")));
         cursor += btnHeight + space;
-        addRenderableWidget(findDropsButton = new Button(left, cursor, btnWidth, btnHeight, Component.literal("Find drops"), this::onFindDropsClick));
+        addRenderableWidget(findDropsButton = new Button(left, cursor, btnWidth, btnHeight, Component.literal("Find drops"), this::onFindDropsClick));*/
     }
 
     @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/gui/screens/inventory/EnchantmentScreen;containerTick()V")

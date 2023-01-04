@@ -149,7 +149,7 @@ public class LightLevelController {
         matrix.pushPose();
         matrix.translate(-view.x, -view.y, -view.z);
         var shader = GameRenderer.getPositionColorShader();
-        vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix().copy(), shader);
+        vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix(), shader);
         matrix.popPose();
 
         VertexBuffer.unbind();
@@ -233,7 +233,7 @@ public class LightLevelController {
 
             PoseStack poseStack = event.getMatrixStack();
             poseStack.pushPose();
-            vertexBuffer.drawWithShader(poseStack.last().pose(), event.getProjectionMatrix().copy(), GameRenderer.getPositionColorShader());
+            vertexBuffer.drawWithShader(poseStack.last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
             poseStack.popPose();
 
             VertexBuffer.unbind();

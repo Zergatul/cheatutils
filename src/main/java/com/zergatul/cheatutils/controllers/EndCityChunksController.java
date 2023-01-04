@@ -85,7 +85,7 @@ public class EndCityChunksController {
         matrix.pushPose();
         matrix.translate(-view.x, -view.y, -view.z);
         var shader = GameRenderer.getPositionColorShader();
-        vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix().copy(), shader);
+        vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix(), shader);
         matrix.popPose();
 
         VertexBuffer.unbind();

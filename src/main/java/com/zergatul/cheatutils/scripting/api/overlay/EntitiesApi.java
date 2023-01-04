@@ -17,6 +17,7 @@ public class EntitiesApi {
         return config.enabled;
     }
 
+    @SuppressWarnings("unchecked")
     public int getCount(String className) {
         EntityUtils.EntityInfo info = EntityUtils.getEntityClass(className);
         if (info == null) {

@@ -71,21 +71,30 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             int btnWidth = 72;
             int btnHeight = 20;
             cursor -= btnWidth;
-            addRenderableWidget(new Button(cursor, this.topPos - btnHeight, btnWidth, btnHeight, Component.translatable("button.take.all"), this::onTakeAllPress));
+            addRenderableWidget(
+                    new Button.Builder(Component.translatable("button.take.all"), this::onTakeAllPress)
+                            .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
+                            .build());
             cursor -= space;
         }
         if (config.showSmartPut) {
             int btnWidth = 72;
             int btnHeight = 20;
             cursor -= btnWidth;
-            addRenderableWidget(new Button(cursor, this.topPos - btnHeight, btnWidth, btnHeight, Component.translatable("button.smart.put"), this::onSmartPutPress));
+            addRenderableWidget(
+                    new Button.Builder(Component.translatable("button.smart.put"), this::onSmartPutPress)
+                            .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
+                            .build());
             cursor -= space;
         }
         if (config.showDropAll) {
             int btnWidth = 72;
             int btnHeight = 20;
             cursor -= btnWidth;
-            addRenderableWidget(new Button(cursor, this.topPos - btnHeight, btnWidth, btnHeight, Component.translatable("button.drop.all"), this::onDropAllPress));
+            addRenderableWidget(
+                    new Button.Builder(Component.translatable("button.drop.all"), this::onDropAllPress)
+                            .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
+                            .build());
         }
     }
 

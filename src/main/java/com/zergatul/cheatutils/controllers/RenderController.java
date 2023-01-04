@@ -118,7 +118,7 @@ public class RenderController {
         matrix.pushPose();
         //matrix.translate(-view.x, -view.y, -view.z);
         var shader = GameRenderer.getPositionColorShader();
-        vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix().copy(), shader);
+        vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix(), shader);
         matrix.popPose();
 
         VertexBuffer.unbind();
@@ -390,7 +390,7 @@ public class RenderController {
             PoseStack poseStack = event.getMatrixStack();
             poseStack.pushPose();
             var shader = GameRenderer.getPositionColorShader();
-            vertexBuffer.drawWithShader(poseStack.last().pose(), event.getProjectionMatrix().copy(), shader);
+            vertexBuffer.drawWithShader(poseStack.last().pose(), event.getProjectionMatrix(), shader);
             poseStack.popPose();
 
             VertexBuffer.unbind();
