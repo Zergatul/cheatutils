@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.wrappers;
 
 import com.zergatul.cheatutils.wrappers.events.*;
-import net.minecraft.client.Camera;
 import net.minecraft.network.Connection;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -29,6 +28,12 @@ public class ModApiWrapper {
     public static final SimpleEventHandler ClientPlayerLoggingOut = new SimpleEventHandler();
     public static final SimpleEventHandler ChunkLoaded = new SimpleEventHandler();
     public static final SimpleEventHandler ChunkUnloaded = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<LevelChunk> SmartChunkLoaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<LevelChunk> SmartChunkUnloaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<BlockUpdateEvent> BlockUpdated = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<LevelChunk> ScannerChunkLoaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<LevelChunk> ScannerChunkUnloaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<BlockUpdateEvent> ScannerBlockUpdated = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLast = new ParameterizedEventHandler<>();

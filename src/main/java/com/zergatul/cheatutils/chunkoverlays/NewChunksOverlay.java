@@ -121,6 +121,11 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
         }
     }
 
+    @Override
+    protected String getThreadName() {
+        return "NewChunksScanThread";
+    }
+
     private void redrawChunk(ChunkEntry chunk, Segment segment, int xf, int yf) {
         // clear pixels
         for (int dx = 0; dx < 16; dx++) {

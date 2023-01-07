@@ -147,6 +147,11 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         }
     }
 
+    @Override
+    protected String getThreadName() {
+        return "ExplorationMiniMapScanThread";
+    }
+
     private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk, Integer scanFromY) {
         if (dimension.hasCeiling() || scanFromY != null) {
             for (int y1 = scanFromY != null ? scanFromY : dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {

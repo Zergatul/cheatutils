@@ -4,9 +4,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.chunkoverlays.AbstractChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
+import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.GuiUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.wrappers.events.MouseScrollEvent;
 import com.zergatul.cheatutils.wrappers.events.PostRenderGuiEvent;
 import com.zergatul.cheatutils.wrappers.events.PreRenderGuiOverlayEvent;
@@ -44,8 +46,8 @@ public class ChunkOverlayController {
         register(new ExplorationMiniMapChunkOverlay(SegmentSize, UpdateDelay));
         register(new NewChunksOverlay(SegmentSize, UpdateDelay));
 
-        ChunkController.instance.addOnChunkLoadedHandler(this::onChunkLoaded);
-        ChunkController.instance.addOnBlockChangedHandler(this::onBlockChanged);
+        ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
+        ModApiWrapper.ScannerBlockUpdated.add(this::onBlockChanged);
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
         ModApiWrapper.PostRenderGui.add(this::render);
         ModApiWrapper.PreRenderGuiOverlay.add(this::onPreRenderGameOverlay);
@@ -183,15 +185,17 @@ public class ChunkOverlayController {
         overlays.add(overlay);
     }
 
-    private void onChunkLoaded(Dimension dimension, LevelChunk chunk) {
+    private void onChunkLoaded(LevelChunk chunk) {
+        Dimension dimension = ((LevelChunkMixinInterface) chunk).getDimension();
         for (AbstractChunkOverlay overlay: overlays) {
             overlay.onChunkLoaded(dimension, chunk);
         }
     }
 
-    private void onBlockChanged(Dimension dimension, BlockPos pos, BlockState state) {
+    private void onBlockChanged(BlockUpdateEvent event) {
+        Dimension dimension = ((LevelChunkMixinInterface) event.chunk()).getDimension();
         for (AbstractChunkOverlay overlay: overlays) {
-            overlay.onBlockChanged(dimension, pos, state);
+            overlay.onBlockChanged(dimension, event.pos(), event.state());
         }
     }
 

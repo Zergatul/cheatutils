@@ -83,7 +83,6 @@ public class BeaconController {
             RenderSystem.setProjectionMatrix(getProjectionMatrix(fov));
             // bob/hurt views?
 
-            RenderSystem.depthMask(false);
             RenderSystem.disableCull();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
@@ -100,7 +99,6 @@ public class BeaconController {
 
             VertexBuffer.unbind();
 
-            RenderSystem.depthMask(true);
             RenderSystem.disableBlend();
             RenderSystem.enableCull();
             RenderSystem.enableTexture();
@@ -117,7 +115,7 @@ public class BeaconController {
         }*/
         // only for screenshots???
         Matrix4f matrix = new Matrix4f();
-        matrix.setPerspective((float)fov, (float)mc.getWindow().getWidth() / (float)mc.getWindow().getHeight(), 0.05F, ClipRange);
+        matrix.setPerspective((float)(fov * (double)((float)Math.PI / 180F)), (float)mc.getWindow().getWidth() / (float)mc.getWindow().getHeight(), 0.05F, ClipRange);
         posestack.last().pose().mul(matrix);
         return posestack.last().pose();
     }

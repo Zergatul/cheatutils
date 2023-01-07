@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
+import com.zergatul.cheatutils.utils.SharedVertexBuffer;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
@@ -13,24 +14,18 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.opengl.GL11;
 
 public class EndCityChunksController {
 
     public static final EndCityChunksController instance = new EndCityChunksController();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private VertexBuffer vertexBuffer;
 
     private EndCityChunksController() {
-        RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
+        ModApiWrapper.RenderWorldLast.add(this::render);
     }
 
-    public void render(RenderWorldLastEvent event) {
-        if (vertexBuffer == null) {
-            return;
-        }
-
+    private void render(RenderWorldLastEvent event) {
         Config config = ConfigStore.instance.getConfig();
         if (!config.esp || !config.endCityChunksConfig.enabled) {
             return;
@@ -44,16 +39,8 @@ public class EndCityChunksController {
             return;
         }
 
-        Vec3 view = mc.gameRenderer.getMainCamera().getPosition();
-
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferBuilder = tesselator.getBuilder();
-
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glDepthMask(true);
-        RenderSystem.enableBlend();
-        RenderSystem.disableCull();
-
+        Vec3 view = event.getCamera().getPosition();
+        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
@@ -70,28 +57,24 @@ public class EndCityChunksController {
                 float g = 1f;
                 float b = 0f;
                 for (float y = 32.1f; y < 100; y += 32) {
-                    bufferBuilder.vertex(x1, y, z1).color(r, g, b, 0.1f).endVertex();
-                    bufferBuilder.vertex(x1, y, z2).color(r, g, b, 0.1f).endVertex();
-                    bufferBuilder.vertex(x2, y, z2).color(r, g, b, 0.1f).endVertex();
-                    bufferBuilder.vertex(x2, y, z1).color(r, g, b, 0.1f).endVertex();
+                    bufferBuilder.vertex(x1 - view.x, y - view.y, z1 - view.z).color(r, g, b, 0.1f).endVertex();
+                    bufferBuilder.vertex(x1 - view.x, y - view.y, z2 - view.z).color(r, g, b, 0.1f).endVertex();
+                    bufferBuilder.vertex(x2 - view.x, y - view.y, z2 - view.z).color(r, g, b, 0.1f).endVertex();
+                    bufferBuilder.vertex(x2 - view.x, y - view.y, z1 - view.z).color(r, g, b, 0.1f).endVertex();
                 }
             }
         }
 
-        vertexBuffer.bind();
-        vertexBuffer.upload(bufferBuilder.end());
+        SharedVertexBuffer.instance.bind();
+        SharedVertexBuffer.instance.upload(bufferBuilder.end());
 
-        PoseStack matrix = event.getMatrixStack();
-        matrix.pushPose();
-        matrix.translate(-view.x, -view.y, -view.z);
-        var shader = GameRenderer.getPositionColorShader();
-        vertexBuffer.drawWithShader(matrix.last().pose(), event.getProjectionMatrix(), shader);
-        matrix.popPose();
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableBlend();
+        RenderSystem.disableCull();
 
+        SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
         VertexBuffer.unbind();
 
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GL11.glDepthMask(false);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
     }

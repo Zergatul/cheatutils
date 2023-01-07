@@ -6,8 +6,10 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
+import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -72,9 +74,9 @@ public class LightLevelController {
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
 
         ModApiWrapper.RenderWorldLast.add(this::render);
-        ChunkController.instance.addOnChunkLoadedHandler(this::onChunkLoaded);
-        ChunkController.instance.addOnChunkUnLoadedHandler(this::onChunkUnLoaded);
-        ChunkController.instance.addOnBlockChangedHandler(this::onBlockChanged);
+        ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
+        ModApiWrapper.ScannerChunkUnloaded.add(this::onChunkUnLoaded);
+        ModApiWrapper.ScannerBlockUpdated.add(this::onBlockChanged);
 
         eventLoop = new Thread(() -> {
             try {
@@ -93,9 +95,9 @@ public class LightLevelController {
                 // do nothing
             }
             catch (Throwable e) {
-                logger.error("LightLevelController scan thread crash.", e);
+                logger.error("LightLevel scan thread crash.", e);
             }
-        });
+        }, "LightLevelScanThread");
 
         eventLoop.start();
     }
@@ -106,7 +108,7 @@ public class LightLevelController {
             active = value;
             if (active) {
                 for (Pair<Dimension, LevelChunk> pair : ChunkController.instance.getLoadedChunks()) {
-                    onChunkLoaded(pair.getFirst(), pair.getSecond());
+                    onChunkLoaded(pair.getSecond());
                 }
             } else {
                 queue.clear();
@@ -203,7 +205,6 @@ public class LightLevelController {
             }
         }
 
-        RenderSystem.depthMask(false);
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -216,7 +217,6 @@ public class LightLevelController {
         vertexBuffer.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
         VertexBuffer.unbind();
 
-        RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
         RenderSystem.enableTexture();
@@ -235,11 +235,12 @@ public class LightLevelController {
         return listForRendering;
     }
 
-    private void onChunkLoaded(Dimension dimension, ChunkAccess chunk) {
+    private void onChunkLoaded(LevelChunk chunk) {
         if (!active) {
             return;
         }
         queue.add(() -> {
+            Dimension dimension = ((LevelChunkMixinInterface) chunk).getDimension();
             ChunkPos chunkPos = chunk.getPos();
             HashSet<BlockPos> set;
             synchronized (chunks) {
@@ -271,7 +272,7 @@ public class LightLevelController {
         }
     }
 
-    private void onChunkUnLoaded(Dimension dimension, ChunkAccess chunk) {
+    private void onChunkUnLoaded(ChunkAccess chunk) {
         if (!active) {
             return;
         }
@@ -285,24 +286,21 @@ public class LightLevelController {
         }
     }
 
-    private void onBlockChanged(Dimension dimension, BlockPos pos, BlockState state) {
+    private void onBlockChanged(BlockUpdateEvent event) {
         if (!active) {
             return;
         }
         queue.add(() -> {
-            ChunkPos chunkPos = new ChunkPos(pos);
+            LevelChunk chunk = event.chunk();
             HashSet<BlockPos> set;
             synchronized (chunks) {
-                set = chunks.get(chunkPos);
+                set = chunks.get(chunk.getPos());
             }
             if (set == null) {
                 return;
             }
-            ChunkAccess chunk = mc.level.getChunkSource().getChunk(chunkPos.x, chunkPos.z, false);
-            if (chunk == null) {
-                return;
-            }
             synchronized (set) {
+                BlockPos pos = event.pos();
                 BlockPos above = pos.above();
                 BlockPos below = pos.below();
                 BlockPos below2 = below.below();

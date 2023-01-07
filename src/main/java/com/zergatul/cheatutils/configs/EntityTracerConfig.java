@@ -30,15 +30,11 @@ public class EntityTracerConfig extends TracerConfigBase {
         config.enabled = false;
         config.drawTracers = true;
         config.tracerColor = Color.WHITE;
-        config.tracerLineWidth = 2;
-        config.tracerLineStyle = 0;
         config.drawOutline = true;
         config.outlineColor = Color.WHITE;
-        config.outlineLineWidth = 2;
         config.maxDistance = DefaultMaxDistance;
         config.glow = true;
         config.glowColor = Color.WHITE;
         return config;
     }
-
 }

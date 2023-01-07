@@ -41,6 +41,40 @@ public class GuiUtils {
         RenderSystem.disableBlend();
     }
 
+    public static void fill(PoseStack poseStack, double x1, double y1, double x2, double y2, int color) {
+        if (x1 < x2) {
+            double buf = x1;
+            x1 = x2;
+            x2 = buf;
+        }
+
+        if (y1 < y2) {
+            double buf = y1;
+            y1 = y2;
+            y2 = buf;
+        }
+
+        Matrix4f matrix = poseStack.last().pose();
+
+        float f3 = (float)(color >> 24 & 255) / 255.0F;
+        float f = (float)(color >> 16 & 255) / 255.0F;
+        float f1 = (float)(color >> 8 & 255) / 255.0F;
+        float f2 = (float)(color & 255) / 255.0F;
+        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
+        RenderSystem.enableBlend();
+        RenderSystem.disableTexture();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferbuilder.vertex(matrix, (float)x1, (float)y2, 0.0F).color(f, f1, f2, f3).endVertex();
+        bufferbuilder.vertex(matrix, (float)x2, (float)y2, 0.0F).color(f, f1, f2, f3).endVertex();
+        bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(f, f1, f2, f3).endVertex();
+        bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(f, f1, f2, f3).endVertex();
+        BufferUploader.drawWithShader(bufferbuilder.end());
+        RenderSystem.enableTexture();
+        RenderSystem.disableBlend();
+    }
+
     public static void drawTexture(Matrix4f matrix, float x, float y, float width, float height, float z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();

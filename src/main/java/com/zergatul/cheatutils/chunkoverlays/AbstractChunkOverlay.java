@@ -34,7 +34,7 @@ public abstract class AbstractChunkOverlay {
         this.segmentSize = segmentSize;
         this.updateDelay = updateDelay;
 
-        eventLoop = new Thread(this::eventLoopThreadFunc);
+        eventLoop = new Thread(this::eventLoopThreadFunc, getThreadName());
         eventLoop.start();
     }
 
@@ -133,6 +133,19 @@ public abstract class AbstractChunkOverlay {
         return segments.values();
     }
 
+    public final int getScanningQueueCount() {
+        return queue.size();
+    }
+
+    public final String getThreadState() {
+        Thread thread = eventLoop;
+        if (thread != null) {
+            return eventLoop.getState().toString();
+        } else {
+            return null;
+        }
+    }
+
     public abstract int getTranslateZ();
 
     public abstract boolean isEnabled();
@@ -152,6 +165,8 @@ public abstract class AbstractChunkOverlay {
     protected final void addUpdatedSegment(Segment segment) {
         updatedSegments.add(segment);
     }
+
+    protected abstract String getThreadName();
 
     private void eventLoopThreadFunc() {
         try {
