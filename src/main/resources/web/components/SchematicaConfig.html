@@ -1,0 +1,129 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Schematica</h2>
+        <div class="description">
+            ?
+        </div>
+
+        <div class="module-sections">
+            <fieldset>
+                <legend>
+                    File
+                </legend>
+                <div class="input-section">
+                    <input type="file" ref="fileInput" @change="onFileSelected()">
+                </div>
+                <div v-if="schematic" class="schematic-info">
+                    <div>
+                        Size: W={{ schematic.width }} H={{ schematic.height }} L={{ schematic.length }}
+                    </div>
+                    <div>
+                        Palette:
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <td>ID</td>
+                                <td>Count</td>
+                                <td>Block</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in schematic.paletteMap">
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.count }}</td>
+                                <td>
+                                    <input type="text" v-model="item.block">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="section-description">
+                    Select file or use Drag-and-Drop.<br>
+                    Supported formats: .schematic
+                </div>
+            </fieldset>
+
+            <fieldset v-if="schematic">
+                <legend>
+                    <button>Place in the World</button>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">X:</span>
+                    <input type="text" v-model="placing.x">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch" v-model="placing.flipX">
+                        <span>Flip X</span>
+                    </label>
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Y:</span>
+                    <input type="text" v-model="placing.x">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch" v-model="placing.flipY">
+                        <span>Flip Y</span>
+                    </label>
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Z:</span>
+                    <input type="text" v-model="placing.x">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch" v-model="placing.flipZ">
+                        <span>Flip Z</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <!--<div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.overrideFlyingSpeed"
+                            @change="update()">
+                        <span>Override max speed</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Flying speed (default 0.05):</span>
+                    <input type="text" v-model="config.flyingSpeed" @change="update()">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    OnGround flag
+                </legend>
+                <div class="input-section">
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="on-ground" v-model="config.onGroundFlag" v-bind:value="false" @change="update()">
+                            <span class="text">OnGround = false</span>
+                        </label>
+                    </div>
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="on-ground" v-model="config.onGroundFlag" v-bind:value="true" @change="update()">
+                            <span class="text">OnGround = true</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="section-description">
+                    While flying this module overrides onGround flag in MovePlayerPacket. Both options works fine in vanilla. For Fast Break hack, Disable Fly Penalty option you need to set OnGround = true.
+                </div>
+            </fieldset>-->
+        </div>
+    </div>
+</div>

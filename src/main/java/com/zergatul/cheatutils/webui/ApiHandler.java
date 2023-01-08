@@ -44,6 +44,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new StatusOverlayApi());
         apis.add(new ClassNameApi());
         apis.add(new BlockEspRestartApi());
+        apis.add(new SchematicaUploadApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -555,6 +556,19 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ReachConfig config) {
                 ConfigStore.instance.getConfig().reachConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("schematica", SchematicaConfig.class) {
+            @Override
+            protected SchematicaConfig getConfig() {
+                return new SchematicaConfig();
+                //return ConfigStore.instance.getConfig().reachConfig;
+            }
+
+            @Override
+            protected void setConfig(SchematicaConfig config) {
+                //ConfigStore.instance.getConfig().reachConfig = config;
             }
         });
     }

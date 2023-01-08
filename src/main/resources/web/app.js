@@ -88,6 +88,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'ContainerSummaryConfig');
     addComponent(args, 'AutoCraftConfig');
     addComponent(args, 'ReachConfig');
+    addComponent(args, 'SchematicaConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');
