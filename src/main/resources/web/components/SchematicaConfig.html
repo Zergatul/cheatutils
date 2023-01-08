@@ -9,6 +9,29 @@
         </div>
 
         <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.showMissingBlocks"
+                            @change="update()">
+                        <span>Show Missing Blocks</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    ???
+                </div>
+            </fieldset>
+
             <fieldset>
                 <legend>
                     File
@@ -50,31 +73,146 @@
 
             <fieldset v-if="schematic">
                 <legend>
-                    <button>Place in the World</button>
+                    <button @click="place()">Place in the World</button>
                 </legend>
                 <div class="input-section">
-                    <span class="field-description">X:</span>
-                    <input type="text" v-model="placing.x">
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch" v-model="placing.flipX">
-                        <span>Flip X</span>
-                    </label>
-                </div>
-                <div class="input-section">
-                    <span class="field-description">Y:</span>
-                    <input type="text" v-model="placing.x">
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch" v-model="placing.flipY">
-                        <span>Flip Y</span>
-                    </label>
-                </div>
-                <div class="input-section">
-                    <span class="field-description">Z:</span>
-                    <input type="text" v-model="placing.x">
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch" v-model="placing.flipZ">
-                        <span>Flip Z</span>
-                    </label>
+                    <table>
+                        <colgroup>
+                            <col style="width: 24px;">
+                            <col style="width: 220px;">
+                            <col style="width: 160px;">
+                            <col style="width: 80px;">
+                            <col style="width: 80px;">
+                            <col style="width: 80px;">
+                            <col style="width: 80px;">
+                            <col style="width: 80px;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <span class="field-description">X:</span>
+                                </td>
+                                <td>
+                                    <input type="text" v-model="placing.x">
+                                </td>
+                                <td>
+                                    <label class="switch-label">
+                                        <input type="checkbox" class="switch" v-model="placing.flipX">
+                                        <span>Flip X</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <span class="field-description">Rotate X:</span>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="-90">
+                                        <span class="text">-90°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="0">
+                                        <span class="text">0°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="90">
+                                        <span class="text">90°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="180">
+                                        <span class="text">180°</span>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="field-description">Y:</span>
+                                </td>
+                                <td>
+                                    <input type="text" v-model="placing.y">
+                                </td>
+                                <td>
+                                    <label class="switch-label">
+                                        <input type="checkbox" class="switch" v-model="placing.flipY">
+                                        <span>Flip Y</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <span class="field-description">Rotate Y:</span>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="-90">
+                                        <span class="text">-90°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="0">
+                                        <span class="text">0°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="90">
+                                        <span class="text">90°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="180">
+                                        <span class="text">180°</span>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="field-description">Z:</span>
+                                </td>
+                                <td>
+                                    <input type="text" v-model="placing.z">
+                                </td>
+                                <td>
+                                    <label class="switch-label">
+                                        <input type="checkbox" class="switch" v-model="placing.flipZ">
+                                        <span>Flip Z</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <span class="field-description">Rotate Z:</span>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="-90">
+                                        <span class="text">-90°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="0">
+                                        <span class="text">0°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="90">
+                                        <span class="text">90°</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="180">
+                                        <span class="text">180°</span>
+                                    </label>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </fieldset>
 

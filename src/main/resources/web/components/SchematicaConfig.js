@@ -11,22 +11,33 @@ function createComponent(template) {
             return {
                 config: null,
                 schematic: null,
-                placing: {}
+                placing: {
+                    rotateX: 0,
+                    rotateY: 0,
+                    rotateZ: 0
+                }
             };
         },
         methods: {
-            onFileSelected() {
-                let input = this.$refs.fileInput;
-                if (input.files.length == 0) {
-                    return;
-                }
-
+            getFileContent() {
                 let self = this;
-                let file = input.files[0];
-                let reader = new FileReader();
-                reader.onload = event => {
-                    let result = event.target.result.split(',', 2)[1];
-                    axios.post('/api/schematica-upload', result).then(response => {
+                return new Promise((resolve) => {
+                    let input = self.$refs.fileInput;
+                    if (input.files.length == 0) {
+                        resolve(null);
+                        return;
+                    }
+    
+                    let file = input.files[0];
+                    let reader = new FileReader();
+                    reader.onload = event => resolve(event.target.result.split(',', 2)[1]);
+                    reader.readAsDataURL(file);
+                });
+            },
+            onFileSelected() {
+                let self = this;
+                self.getFileContent().then(content => {
+                    axios.post('/api/schematica-upload', content).then(response => {
                         if (response.data.error) {
                             alert(response.data.error);
                             return;
@@ -44,8 +55,16 @@ function createComponent(template) {
                             }
                         }
                     });
-                };
-                reader.readAsDataURL(file);
+                });
+            },
+            place() {
+                let self = this;
+                self.getFileContent().then(content => {
+                    axios.post('/api/schematica-place', {
+                        file: content,
+                        placing: self.placing
+                    });
+                });
             },
             update() {
                 let self = this;
