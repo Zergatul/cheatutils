@@ -10,7 +10,10 @@ public class SchematicaConfig implements ValidatableConfig {
     public double missingBlockTracersMaxDistance;
     public boolean showMissingBlockCubes;
     public double missingBlockCubesMaxDistance;
-    //public boolean showWrongBlocks;
+    public boolean showWrongBlockTracers;
+    public double wrongBlockTracersMaxDistance;
+    public boolean showWrongBlockCubes;
+    public double wrongBlockCubesMaxDistance;
     public boolean autoBuild;
     public double autoBuildDistance;
 
@@ -24,6 +27,12 @@ public class SchematicaConfig implements ValidatableConfig {
         showMissingBlockCubes = true;
         missingBlockCubesMaxDistance = 100;
 
+        showWrongBlockTracers = false;
+        wrongBlockTracersMaxDistance = 10;
+
+        showWrongBlockCubes = false;
+        wrongBlockCubesMaxDistance = 10;
+
         autoBuildDistance = 5;
     }
 
@@ -32,6 +41,8 @@ public class SchematicaConfig implements ValidatableConfig {
         missingBlockGhostsMaxDistance = MathUtils.clamp(missingBlockGhostsMaxDistance, 1, 1000);
         missingBlockTracersMaxDistance = MathUtils.clamp(missingBlockTracersMaxDistance, 1, 1000);
         missingBlockCubesMaxDistance = MathUtils.clamp(missingBlockCubesMaxDistance, 1, 1000);
+        wrongBlockTracersMaxDistance = MathUtils.clamp(wrongBlockTracersMaxDistance, 1, 1000);
+        wrongBlockCubesMaxDistance = MathUtils.clamp(wrongBlockCubesMaxDistance, 1, 1000);
         autoBuildDistance = MathUtils.clamp(autoBuildDistance, 1, 10);
     }
 }

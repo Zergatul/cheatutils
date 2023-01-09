@@ -66,6 +66,39 @@
 
             <fieldset>
                 <legend>
+                    Wrong Blocks
+                </legend>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.showWrongBlockTracers"
+                            @change="update()">
+                        <span>Show tracers</span>
+                    </label>
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Ghost blocks max distance:</span>
+                    <input type="text" v-model="config.wrongBlockTracersMaxDistance" @change="update()">
+                </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.showWrongBlockCubes"
+                            @change="update()">
+                        <span>Show mini-cubes</span>
+                    </label>
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Ghost blocks max distance:</span>
+                    <input type="text" v-model="config.wrongBlockCubesMaxDistance" @change="update()">
+                </div>
+                <div class="section-description">
+                    Wrong Blocks: real world block != schematica block and real world block != Air
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
                             v-model="config.autoBuild"

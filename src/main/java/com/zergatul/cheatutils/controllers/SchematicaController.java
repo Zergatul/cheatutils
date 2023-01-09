@@ -122,218 +122,393 @@ public class SchematicaController {
         }
 
         Vec3 view = event.getCamera().getPosition();
-        double missingBlockGhostsMaxDistanceSqr =
-                config.missingBlockGhostsMaxDistance * config.missingBlockGhostsMaxDistance;
-        double missingBlockTracersMaxDistanceSqr =
-                config.missingBlockTracersMaxDistance * config.missingBlockTracersMaxDistance;
-        double missingBlockCubesMaxDistanceSqr =
-                config.missingBlockCubesMaxDistance * config.missingBlockCubesMaxDistance;
 
-        List<BlockPos> missingBlockTracers = new ArrayList<>();
-        List<BlockPos> missingBlockCubes = new ArrayList<>();
+        if (config.showMissingBlockGhosts || config.showMissingBlockTracers || config.showMissingBlockCubes) {
+            double missingBlockGhostsMaxDistanceSqr =
+                    config.missingBlockGhostsMaxDistance * config.missingBlockGhostsMaxDistance;
+            double missingBlockTracersMaxDistanceSqr =
+                    config.missingBlockTracersMaxDistance * config.missingBlockTracersMaxDistance;
+            double missingBlockCubesMaxDistanceSqr =
+                    config.missingBlockCubesMaxDistance * config.missingBlockCubesMaxDistance;
 
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
-        RenderSystem.enableCull();
-        RenderSystem.enableBlend();
-        RenderSystem.enableTexture();
-        RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
+            List<BlockPos> missingBlockTracers = new ArrayList<>();
+            List<BlockPos> missingBlockCubes = new ArrayList<>();
 
-        BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
-        for (Entry entry: entries) {
-            for (var mapEntry: entry.blocks.entrySet()) {
-                BlockPos pos = mapEntry.getKey();
-                Block block = mapEntry.getValue();
-                BlockState state = mc.level.getBlockState(pos);
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthMask(true);
+            RenderSystem.enableCull();
+            RenderSystem.enableBlend();
+            RenderSystem.enableTexture();
+            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
-                double dx = pos.getX() - view.x;
-                double dy = pos.getY() - view.y;
-                double dz = pos.getZ() - view.z;
-                double distanceSqr = dx * dx + dy * dy + dz * dz;
+            BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
+            for (Entry entry: entries) {
+                for (var mapEntry : entry.blocks.entrySet()) {
+                    BlockPos pos = mapEntry.getKey();
+                    Block block = mapEntry.getValue();
+                    BlockState state = mc.level.getBlockState(pos);
 
-                if (state.isAir()) {
-                    if (config.showMissingBlockGhosts && distanceSqr < missingBlockGhostsMaxDistanceSqr) {
-                        BakedModel model = mc.getBlockRenderer().getBlockModel(block.defaultBlockState());
-                        for (var direction : Direction.values()) {
-                            mpos.setX(pos.getX() + direction.getStepX());
-                            mpos.setY(pos.getY() + direction.getStepY());
-                            mpos.setZ(pos.getZ() + direction.getStepZ());
-                            if (!entry.blocks.containsKey(mpos)) {
-                                List<BakedQuad> quads = model.getQuads(null, direction, random, ModelData.EMPTY, null);
-                                if (quads.size() > 0) {
-                                    BakedQuad quad = quads.get(0);
-                                    TextureAtlasSprite sprite = quad.getSprite();
-                                    BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                                    bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                                    RenderSystem.setShaderTexture(0, sprite.atlasLocation());
+                    double dx = pos.getX() - view.x;
+                    double dy = pos.getY() - view.y;
+                    double dz = pos.getZ() - view.z;
+                    double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-                                    FaceInfo face = FaceInfo.fromFacing(direction);
-                                    FaceInfo.VertexInfo info;
+                    if (state.isAir()) {
+                        if (config.showMissingBlockGhosts && distanceSqr < missingBlockGhostsMaxDistanceSqr) {
+                            BakedModel model = mc.getBlockRenderer().getBlockModel(block.defaultBlockState());
+                            for (var direction : Direction.values()) {
+                                mpos.setX(pos.getX() + direction.getStepX());
+                                mpos.setY(pos.getY() + direction.getStepY());
+                                mpos.setZ(pos.getZ() + direction.getStepZ());
+                                if (!entry.blocks.containsKey(mpos)) {
+                                    List<BakedQuad> quads = model.getQuads(null, direction, random, ModelData.EMPTY, null);
+                                    if (quads.size() > 0) {
+                                        BakedQuad quad = quads.get(0);
+                                        TextureAtlasSprite sprite = quad.getSprite();
+                                        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+                                        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                                        RenderSystem.setShaderTexture(0, sprite.atlasLocation());
 
-                                    info = face.getVertexInfo(0);
-                                    bufferBuilder.vertex(
-                                                    (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                                    (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                                    (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                            .uv(sprite.getU0(), sprite.getV0()).endVertex();
+                                        FaceInfo face = FaceInfo.fromFacing(direction);
+                                        FaceInfo.VertexInfo info;
 
-                                    info = face.getVertexInfo(1);
-                                    bufferBuilder.vertex(
-                                                    (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                                    (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                                    (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                            .uv(sprite.getU0(), sprite.getV1()).endVertex();
+                                        info = face.getVertexInfo(0);
+                                        bufferBuilder.vertex(
+                                                        (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
+                                                        (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
+                                                        (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
+                                                .uv(sprite.getU0(), sprite.getV0()).endVertex();
 
-                                    info = face.getVertexInfo(2);
-                                    bufferBuilder.vertex(
-                                                    (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                                    (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                                    (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                            .uv(sprite.getU1(), sprite.getV1()).endVertex();
+                                        info = face.getVertexInfo(1);
+                                        bufferBuilder.vertex(
+                                                        (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
+                                                        (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
+                                                        (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
+                                                .uv(sprite.getU0(), sprite.getV1()).endVertex();
 
-                                    info = face.getVertexInfo(3);
-                                    bufferBuilder.vertex(
-                                                    (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                                    (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                                    (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                            .uv(sprite.getU1(), sprite.getV0()).endVertex();
+                                        info = face.getVertexInfo(2);
+                                        bufferBuilder.vertex(
+                                                        (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
+                                                        (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
+                                                        (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
+                                                .uv(sprite.getU1(), sprite.getV1()).endVertex();
 
-                                    SharedVertexBuffer.instance.bind();
-                                    SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                                    SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionTexShader());
-                                    VertexBuffer.unbind();
+                                        info = face.getVertexInfo(3);
+                                        bufferBuilder.vertex(
+                                                        (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
+                                                        (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
+                                                        (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
+                                                .uv(sprite.getU1(), sprite.getV0()).endVertex();
+
+                                        SharedVertexBuffer.instance.bind();
+                                        SharedVertexBuffer.instance.upload(bufferBuilder.end());
+                                        SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionTexShader());
+                                        VertexBuffer.unbind();
+                                    }
+                                }
+                            }
+                        }
+
+                        if (config.showMissingBlockTracers && distanceSqr < missingBlockTracersMaxDistanceSqr) {
+                            missingBlockTracers.add(pos);
+                        }
+
+                        if (config.showMissingBlockCubes && distanceSqr < missingBlockCubesMaxDistanceSqr) {
+                            missingBlockCubes.add(pos);
+                        }
+                    }
+                }
+            }
+
+            if (missingBlockTracers.size() > 0) {
+                Vec3 tracerCenter = event.getTracerCenter();
+                double tracerX = tracerCenter.x;
+                double tracerY = tracerCenter.y;
+                double tracerZ = tracerCenter.z;
+
+                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+                bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+                RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+
+                for (BlockPos pos : missingBlockTracers) {
+                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                }
+
+                RenderSystem.disableCull();
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.disableTexture();
+                RenderSystem.disableDepthTest();
+                GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+                SharedVertexBuffer.instance.bind();
+                SharedVertexBuffer.instance.upload(bufferBuilder.end());
+                SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                VertexBuffer.unbind();
+
+                RenderSystem.disableBlend();
+                RenderSystem.enableCull();
+                RenderSystem.enableTexture();
+                RenderSystem.enableDepthTest();
+            }
+
+            if (missingBlockCubes.size() > 0) {
+                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+                bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+                RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+
+                for (BlockPos pos : missingBlockCubes) {
+                    double x1 = pos.getX() + 0.25 - view.x;
+                    double y1 = pos.getY() + 0.25 - view.y;
+                    double z1 = pos.getZ() + 0.25 - view.z;
+                    double x2 = x1 + 0.5;
+                    double y2 = y1 + 0.5;
+                    double z2 = z1 + 0.5;
+
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                }
+
+                RenderSystem.disableCull();
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.disableTexture();
+                RenderSystem.disableDepthTest();
+                GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+                SharedVertexBuffer.instance.bind();
+                SharedVertexBuffer.instance.upload(bufferBuilder.end());
+                SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                VertexBuffer.unbind();
+
+                RenderSystem.disableBlend();
+                RenderSystem.enableCull();
+                RenderSystem.enableTexture();
+                RenderSystem.enableDepthTest();
+            }
+        }
+
+        if (config.showWrongBlockTracers || config.showWrongBlockCubes) {
+            double wrongBlockTracersMaxDistanceSqr =
+                    config.wrongBlockTracersMaxDistance * config.wrongBlockTracersMaxDistance;
+            double wrongBlockCubesMaxDistanceSqr =
+                    config.wrongBlockCubesMaxDistance * config.wrongBlockCubesMaxDistance;
+            double maxCheck = Math.max(wrongBlockTracersMaxDistanceSqr, wrongBlockCubesMaxDistanceSqr);
+
+            List<BlockPos> wrongBlockTracers = new ArrayList<>();
+            List<BlockPos> wrongBlockCubes = new ArrayList<>();
+
+            BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
+            for (Entry entry: entries) {
+                int x1 = entry.x1;
+                int x2 = entry.x2;
+                int y1 = entry.y1;
+                int y2 = entry.y2;
+                int z1 = entry.z1;
+                int z2 = entry.z2;
+                for (int x = x1; x < x2; x++) {
+                    mpos.setX(x);
+                    double dx = x - view.x;
+                    double dxSqr = dx * dx;
+                    for (int y = y1; y < y2; y++) {
+                        mpos.setY(y);
+                        double dy = y - view.y;
+                        double dySqr = dy * dy;
+                        for (int z = z1; z < z2; z++) {
+                            mpos.setZ(z);
+                            double dz = z - view.z;
+                            double dzSqr = dz * dz;
+                            double distanceSqr = dxSqr + dySqr + dzSqr;
+                            if (distanceSqr > maxCheck) {
+                                continue;
+                            }
+
+                            BlockState state = mc.level.getBlockState(mpos);
+                            if (state.isAir()) {
+                                continue;
+                            }
+                            Block block = entry.blocks.getOrDefault(mpos, Blocks.AIR);
+                            if (state.getBlock() != block) {
+                                if (distanceSqr < wrongBlockTracersMaxDistanceSqr) {
+                                    wrongBlockTracers.add(mpos.immutable());
+                                }
+                                if (distanceSqr < wrongBlockCubesMaxDistanceSqr) {
+                                    wrongBlockCubes.add(mpos.immutable());
                                 }
                             }
                         }
                     }
-
-                    if (config.showMissingBlockTracers && distanceSqr < missingBlockTracersMaxDistanceSqr) {
-                        missingBlockTracers.add(pos);
-                    }
-
-                    if (config.showMissingBlockCubes && distanceSqr < missingBlockCubesMaxDistanceSqr) {
-                        missingBlockCubes.add(pos);
-                    }
                 }
             }
-        }
 
-        if (missingBlockTracers.size() > 0) {
-            Vec3 tracerCenter = event.getTracerCenter();
-            double tracerX = tracerCenter.x;
-            double tracerY = tracerCenter.y;
-            double tracerZ = tracerCenter.z;
+            if (wrongBlockTracers.size() > 0) {
+                Vec3 tracerCenter = event.getTracerCenter();
+                double tracerX = tracerCenter.x;
+                double tracerY = tracerCenter.y;
+                double tracerZ = tracerCenter.z;
 
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
+                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+                bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+                RenderSystem.setShaderColor(1.0f, 0.2f, 0.2f, 0.8f);
 
-            for (BlockPos pos: missingBlockTracers) {
-                bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
+                for (BlockPos pos : wrongBlockTracers) {
+                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                }
+
+                RenderSystem.disableCull();
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.disableTexture();
+                RenderSystem.disableDepthTest();
+                GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+                SharedVertexBuffer.instance.bind();
+                SharedVertexBuffer.instance.upload(bufferBuilder.end());
+                SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                VertexBuffer.unbind();
+
+                RenderSystem.disableBlend();
+                RenderSystem.enableCull();
+                RenderSystem.enableTexture();
+                RenderSystem.enableDepthTest();
             }
 
-            RenderSystem.disableCull();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableTexture();
-            RenderSystem.disableDepthTest();
-            GL11.glEnable(GL11.GL_LINE_SMOOTH);
+            if (wrongBlockCubes.size() > 0) {
+                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+                bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+                RenderSystem.setShaderColor(1.0f, 0.2f, 0.2f, 0.8f);
 
-            SharedVertexBuffer.instance.bind();
-            SharedVertexBuffer.instance.upload(bufferBuilder.end());
-            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-            VertexBuffer.unbind();
+                for (BlockPos pos : wrongBlockCubes) {
+                    double x1 = pos.getX() + 0.25 - view.x;
+                    double y1 = pos.getY() + 0.25 - view.y;
+                    double z1 = pos.getZ() + 0.25 - view.z;
+                    double x2 = x1 + 0.5;
+                    double y2 = y1 + 0.5;
+                    double z2 = z1 + 0.5;
 
-            RenderSystem.disableBlend();
-            RenderSystem.enableCull();
-            RenderSystem.enableTexture();
-            RenderSystem.enableDepthTest();
-        }
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
 
-        if (missingBlockCubes.size() > 0) {
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
 
-            for (BlockPos pos: missingBlockCubes) {
-                double x1 = pos.getX() + 0.25 - view.x;
-                double y1 = pos.getY() + 0.25 - view.y;
-                double z1 = pos.getZ() + 0.25 - view.z;
-                double x2 = x1 + 0.5;
-                double y2 = y1 + 0.5;
-                double z2 = z1 + 0.5;
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                }
 
-                bufferBuilder.vertex(x1, y1, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y1, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y1, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y1, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y1, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y1, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y1, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y1, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
+                RenderSystem.disableCull();
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.disableTexture();
+                RenderSystem.disableDepthTest();
+                GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
-                bufferBuilder.vertex(x1, y2, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y2, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y2, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y2, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y2, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y2, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y2, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y2, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
+                SharedVertexBuffer.instance.bind();
+                SharedVertexBuffer.instance.upload(bufferBuilder.end());
+                SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+                VertexBuffer.unbind();
 
-                bufferBuilder.vertex(x1, y1, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y2, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y1, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x1, y2, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y1, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y2, z2)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y1, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
-                bufferBuilder.vertex(x2, y2, z1)
-                        .color(1f, 1f, 1f, 0.5f).endVertex();
+                RenderSystem.disableBlend();
+                RenderSystem.enableCull();
+                RenderSystem.enableTexture();
+                RenderSystem.enableDepthTest();
             }
-
-            RenderSystem.disableCull();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableTexture();
-            RenderSystem.disableDepthTest();
-            GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-            SharedVertexBuffer.instance.bind();
-            SharedVertexBuffer.instance.upload(bufferBuilder.end());
-            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-            VertexBuffer.unbind();
-
-            RenderSystem.disableBlend();
-            RenderSystem.enableCull();
-            RenderSystem.enableTexture();
-            RenderSystem.enableDepthTest();
         }
     }
 
