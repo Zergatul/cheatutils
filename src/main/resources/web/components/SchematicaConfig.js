@@ -19,6 +19,9 @@ function createComponent(template) {
             };
         },
         methods: {
+            clear() {
+                axios.delete('/api/schematica-place/_');
+            },
             getFileContent() {
                 let self = this;
                 return new Promise((resolve) => {

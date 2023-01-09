@@ -1,6 +1,7 @@
 <div>
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
+        <button style="width: 200px;" @click="clear()">Clear</button>
     </div>
     <div class="module-main" v-if="config">
         <h2 class="module-header">Schematica</h2>
@@ -20,15 +21,64 @@
 
             <fieldset>
                 <legend>
+                    Missing Blocks
+                </legend>
+                <div class="input-section">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
-                            v-model="config.showMissingBlocks"
+                            v-model="config.showMissingBlockGhosts"
                             @change="update()">
-                        <span>Show Missing Blocks</span>
+                        <span>Show as ghost blocks</span>
+                    </label>
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Ghost blocks max distance:</span>
+                    <input type="text" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
+                </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.showMissingBlockTracers"
+                            @change="update()">
+                        <span>Show tracers</span>
+                    </label>
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Ghost blocks max distance:</span>
+                    <input type="text" v-model="config.missingBlockTracersMaxDistance" @change="update()">
+                </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.showMissingBlockCubes"
+                            @change="update()">
+                        <span>Show mini-cubes</span>
+                    </label>
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Ghost blocks max distance:</span>
+                    <input type="text" v-model="config.missingBlockCubesMaxDistance" @change="update()">
+                </div>
+                <div class="section-description">
+                    Missing Blocks: real world block = Air, schematica block != Air
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.autoBuild"
+                            @change="update()">
+                        <span>Auto Build</span>
                     </label>
                 </legend>
+                <div class="input-section">
+                    <span class="field-description">Max Build Distance:</span>
+                    <input type="text" v-model="config.autoBuildDistance" @change="update()">
+                </div>
                 <div class="section-description">
-                    ???
+                    Max Build Distance - distance between player eyes and center of block module will try to place.
                 </div>
             </fieldset>
 
