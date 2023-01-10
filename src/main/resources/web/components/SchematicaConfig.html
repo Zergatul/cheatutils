@@ -110,6 +110,19 @@
                     <span class="field-description">Max Build Distance:</span>
                     <input type="text" v-model="config.autoBuildDistance" @change="update()">
                 </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.autoSelectItems"
+                            @change="update()">
+                        <span>Auto select items from inventory</span>
+                    </label>
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Use hotbar slots:</span>
+                    <input type="text" v-model="slots" @change="onSlotsUpdate()">
+                    <div class="input-description">Separated by comma. Example: 6,7,8</div>
+                </div>
                 <div class="section-description">
                     Max Build Distance - distance between player eyes and center of block module will try to place.
                 </div>
@@ -298,53 +311,6 @@
                     </table>
                 </div>
             </fieldset>
-
-            <!--<div>
-                <label class="switch-label">
-                    <input type="checkbox" class="switch"
-                        v-model="config.enabled"
-                        @change="update()">
-                    <span>Enabled</span>
-                </label>
-            </div>
-
-            <fieldset>
-                <legend>
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch"
-                            v-model="config.overrideFlyingSpeed"
-                            @change="update()">
-                        <span>Override max speed</span>
-                    </label>
-                </legend>
-                <div class="input-section">
-                    <span class="field-description">Flying speed (default 0.05):</span>
-                    <input type="text" v-model="config.flyingSpeed" @change="update()">
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>
-                    OnGround flag
-                </legend>
-                <div class="input-section">
-                    <div style="padding: 2px; display: flex;">
-                        <label>
-                            <input type="radio" name="on-ground" v-model="config.onGroundFlag" v-bind:value="false" @change="update()">
-                            <span class="text">OnGround = false</span>
-                        </label>
-                    </div>
-                    <div style="padding: 2px; display: flex;">
-                        <label>
-                            <input type="radio" name="on-ground" v-model="config.onGroundFlag" v-bind:value="true" @change="update()">
-                            <span class="text">OnGround = true</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="section-description">
-                    While flying this module overrides onGround flag in MovePlayerPacket. Both options works fine in vanilla. For Fast Break hack, Disable Fly Penalty option you need to set OnGround = true.
-                </div>
-            </fieldset>-->
         </div>
     </div>
 </div>

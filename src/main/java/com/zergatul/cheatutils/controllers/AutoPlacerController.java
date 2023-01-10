@@ -36,7 +36,7 @@ public class AutoPlacerController {
                             BlockPos pos = new BlockPos(x + dx, y, z + dz);
                             BlockState blockState = mc.level.getBlockState(pos);
                             if (blockState.isAir()) {
-                                if (BlockUtils.placeBlock(mc, pos)) {
+                                if (BlockUtils.placeBlock(pos)) {
                                     placed = true;
                                     break;
                                 }

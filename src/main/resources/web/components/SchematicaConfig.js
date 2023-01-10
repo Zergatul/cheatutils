@@ -5,12 +5,14 @@ function createComponent(template) {
             let self = this;
             axios.get('/api/schematica').then(response => {
                 self.config = response.data;
+                self.onConfigLoaded();
             });
         },
         data() {
             return {
                 config: null,
                 schematic: null,
+                slots: null,
                 placing: {
                     rotateX: 0,
                     rotateY: 0,
@@ -37,6 +39,9 @@ function createComponent(template) {
                     reader.readAsDataURL(file);
                 });
             },
+            onConfigLoaded() {
+                this.slots = this.config.autoSelectSlots.join(',');
+            },
             onFileSelected() {
                 let self = this;
                 self.getFileContent().then(content => {
@@ -60,6 +65,21 @@ function createComponent(template) {
                     });
                 });
             },
+            onSlotsUpdate() {
+                let slots = this.slots.trim().split(',').filter(s => s).map(s => parseInt(s));
+                if (slots.some(i => isNaN(i))) {
+                    this.onConfigLoaded();
+                    alert('Invalid format');
+                    return;
+                }
+                if (slots.some(i => i <= 0 || i >= 10)) {
+                    this.onConfigLoaded();
+                    alert('Slot number out of range. Use 1..9');
+                    return;
+                }
+                this.config.autoSelectSlots = slots;
+                this.update();
+            },
             place() {
                 let self = this;
                 self.getFileContent().then(content => {
@@ -73,6 +93,7 @@ function createComponent(template) {
                 let self = this;
                 axios.post('/api/schematica', this.config).then(response => {
                     self.config = response.data;
+                    self.onConfigLoaded();
                 });
             }
         }

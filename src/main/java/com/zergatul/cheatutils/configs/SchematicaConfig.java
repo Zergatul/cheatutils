@@ -16,6 +16,8 @@ public class SchematicaConfig implements ValidatableConfig {
     public double wrongBlockCubesMaxDistance;
     public boolean autoBuild;
     public double autoBuildDistance;
+    public boolean autoSelectItems;
+    public int[] autoSelectSlots;
 
     public SchematicaConfig() {
         showMissingBlockGhosts = true;
@@ -34,6 +36,8 @@ public class SchematicaConfig implements ValidatableConfig {
         wrongBlockCubesMaxDistance = 10;
 
         autoBuildDistance = 5;
+        autoSelectItems = false;
+        autoSelectSlots = new int[0];
     }
 
     @Override
@@ -44,5 +48,9 @@ public class SchematicaConfig implements ValidatableConfig {
         wrongBlockTracersMaxDistance = MathUtils.clamp(wrongBlockTracersMaxDistance, 1, 1000);
         wrongBlockCubesMaxDistance = MathUtils.clamp(wrongBlockCubesMaxDistance, 1, 1000);
         autoBuildDistance = MathUtils.clamp(autoBuildDistance, 1, 10);
+
+        if (autoSelectSlots == null) {
+            autoSelectSlots = new int[0];
+        }
     }
 }

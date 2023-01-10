@@ -7,9 +7,7 @@ import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.schematics.PlacingConverter;
 import com.zergatul.cheatutils.schematics.PlacingSettings;
 import com.zergatul.cheatutils.schematics.SchematicFile;
-import com.zergatul.cheatutils.utils.BlockUtils;
-import com.zergatul.cheatutils.utils.JavaRandom;
-import com.zergatul.cheatutils.utils.SharedVertexBuffer;
+import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
@@ -21,6 +19,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -30,10 +29,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SchematicaController {
 
@@ -42,10 +38,13 @@ public class SchematicaController {
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();
     private final RandomSource random = new JavaRandom(0);
+    private final long[] lastSlotUsage = new long[9];
 
     private SchematicaController() {
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
         ModApiWrapper.RenderWorldLast.add(this::onRender);
+
+        Arrays.fill(lastSlotUsage, Long.MIN_VALUE);
     }
 
     public synchronized void clear() {
@@ -78,7 +77,11 @@ public class SchematicaController {
         if (itemInHand.getItem() instanceof BlockItem blockItem) {
             blockInHand = blockItem.getBlock();
         } else {
-            return;
+            if (config.autoSelectItems) {
+                blockInHand = null;
+            } else {
+                return;
+            }
         }
 
         BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
@@ -96,14 +99,25 @@ public class SchematicaController {
                         continue;
                     }
 
-                    for (Entry entry: entries) {
+                    for (Entry entry : entries) {
                         Block block = entry.blocks.get(mpos);
-                        if (block != null) {
-                            if (blockInHand == block && mc.level.getBlockState(mpos).isAir()) {
-                                if (BlockUtils.placeBlock(mc, mpos)) {
-                                    return;
-                                }
+                        if (block == null) {
+                            continue;
+                        }
+
+                        BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(mpos);
+                        if (plan == null) {
+                            continue;
+                        }
+
+                        if (config.autoSelectItems) {
+                            if (selectItem(config, block))  {
+                                blockInHand = block;
                             }
+                        }
+                        if (blockInHand == block && mc.level.getBlockState(mpos).isAir()) {
+                            BlockUtils.applyPlacingPlan(plan);
+                            return;
                         }
                     }
                 }
@@ -510,6 +524,50 @@ public class SchematicaController {
                 RenderSystem.enableDepthTest();
             }
         }
+    }
+
+    private boolean selectItem(SchematicaConfig config, Block block) {
+        Inventory inventory = mc.player.getInventory();
+
+        // search on hotbar
+        for (int i = 0; i < 9; i++) {
+            ItemStack itemStack = inventory.getItem(i);
+            if (itemStack.getItem() instanceof BlockItem blockItem) {
+                if (blockItem.getBlock() == block) {
+                    lastSlotUsage[i] = System.nanoTime();
+                    inventory.selected = i;
+                    return true;
+                }
+            }
+        }
+
+        if (config.autoSelectSlots.length == 0) {
+            return false;
+        }
+
+        // search in inventory
+        for (int i = 9; i < 36; i++) {
+            ItemStack itemStack = inventory.getItem(i);
+            if (itemStack.getItem() instanceof BlockItem blockItem) {
+                if (blockItem.getBlock() == block) {
+                    long minTime = Long.MAX_VALUE;
+                    int minSlot = config.autoSelectSlots[0];
+                    for (int slot : config.autoSelectSlots) {
+                        if (lastSlotUsage[slot - 1] < minTime) {
+                            minTime = lastSlotUsage[slot - 1];
+                            minSlot = slot - 1;
+                        }
+                    }
+
+                    InventoryUtils.moveItemStack(new InventorySlot(i), new InventorySlot(minSlot));
+                    lastSlotUsage[minSlot] = System.nanoTime();
+                    inventory.selected = minSlot;
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static class Entry {
