@@ -71,7 +71,7 @@ public class SchematicFile {
     private int[] CreateSummary() {
         int[] summary = new int[256];
         for (byte block: blocks) {
-            summary[block]++;
+            summary[block & 0xFF]++;
         }
         return summary;
     }
@@ -83,6 +83,19 @@ public class SchematicFile {
         }
         if (NbtUtils.hasCompound(compound, "BlockIDs")) {
             throw new InvalidFormatException("Not implemented");
+        }
+        if (NbtUtils.hasString(compound, "Materials")) {
+            String materials = compound.getString("Materials");
+            switch (materials) {
+                case "Alpha":
+                    for (int i = 0; i < AlphaMapping.blocks.length; i++) {
+                        palette[i] = AlphaMapping.blocks[i];
+                    }
+                    return palette;
+
+                default:
+                    throw new InvalidFormatException(String.format("Materials type %s is not implemented.", materials));
+            }
         }
         palette[0] = Blocks.AIR;
         for (int i = 1; i < palette.length; i++) {
@@ -118,10 +131,5 @@ public class SchematicFile {
 
     public Block[] getPalette() {
         return palette;
-    }
-
-    public static SchematicFile read(Path path) throws IOException, InvalidFormatException {
-        File file = path.toFile();
-        return new SchematicFile(NbtIo.readCompressed(file));
     }
 }

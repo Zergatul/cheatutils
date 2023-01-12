@@ -1,9 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
-import net.minecraft.nbt.ByteArrayTag;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ShortTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 
 public class NbtUtils {
 
@@ -29,5 +26,13 @@ public class NbtUtils {
             return false;
         }
         return value instanceof CompoundTag;
+    }
+
+    public static boolean hasString(CompoundTag compound, String key) {
+        Tag value = compound.get(key);
+        if (value == null) {
+            return false;
+        }
+        return value instanceof StringTag;
     }
 }

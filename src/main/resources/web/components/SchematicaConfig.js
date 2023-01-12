@@ -62,6 +62,8 @@ function createComponent(template) {
                                 });
                             }
                         }
+                    }).catch(error => {
+                        alert(error.message + '\n' + error.response.data);
                     });
                 });
             },
