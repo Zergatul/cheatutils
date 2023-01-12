@@ -35,7 +35,6 @@ function createComponent(template) {
     
                     let file = input.files[0];
                     let reader = new FileReader();
-                    debugger;
                     reader.onload = event => resolve({
                         name: file.name,
                         file: event.target.result.split(',', 2)[1]
