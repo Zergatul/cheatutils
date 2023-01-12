@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.schematics.InvalidFormatException;
-import com.zergatul.cheatutils.schematics.SchematicFile;
+import com.zergatul.cheatutils.schematics.*;
 import net.minecraft.world.level.block.Block;
 import org.apache.http.HttpException;
 
@@ -17,22 +16,25 @@ public class SchematicaUploadApi extends ApiBase {
 
     @Override
     public String post(String body) throws HttpException {
-        byte[] data = Base64.getDecoder().decode(body);
-        SchematicFile schematic;
+        Request request = gson.fromJson(body, Request.class);
+        byte[] data = Base64.getDecoder().decode(request.file);
+        SchemaFile schema;
         try {
-            schematic = new SchematicFile(data);
+            schema = SchemaFormatFactory.parse(data, request.name);
         }
         catch (IOException | InvalidFormatException e) {
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
 
         return gson.toJson(new SuccessResponse(
-                schematic.getSummary(),
-                schematic.getPalette(),
-                schematic.getWidth(),
-                schematic.getHeight(),
-                schematic.getLength()));
+                schema.getSummary(),
+                schema.getPalette(),
+                schema.getWidth(),
+                schema.getHeight(),
+                schema.getLength()));
     }
+
+    public record Request(String file, String name) {}
 
     public record ErrorResponse(String error) {}
 

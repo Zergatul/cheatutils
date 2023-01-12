@@ -12,6 +12,14 @@ public class NbtUtils {
         return value instanceof ShortTag;
     }
 
+    public static boolean hasInt(CompoundTag compound, String key) {
+        Tag value = compound.get(key);
+        if (value == null) {
+            return false;
+        }
+        return value instanceof IntTag;
+    }
+
     public static boolean hasBytes(CompoundTag compound, String key) {
         Tag value = compound.get(key);
         if (value == null) {

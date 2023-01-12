@@ -1,9 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.controllers.SchematicaController;
-import com.zergatul.cheatutils.schematics.InvalidFormatException;
-import com.zergatul.cheatutils.schematics.PlacingSettings;
-import com.zergatul.cheatutils.schematics.SchematicFile;
+import com.zergatul.cheatutils.schematics.*;
 import org.apache.http.HttpException;
 
 import java.io.IOException;
@@ -20,15 +18,15 @@ public class SchematicaPlaceApi extends ApiBase {
     public String post(String body) throws HttpException {
         Request request = gson.fromJson(body, Request.class);
         byte[] data = Base64.getDecoder().decode(request.file);
-        SchematicFile schematic;
+        SchemaFile schema;
         try {
-            schematic = new SchematicFile(data);
+            schema = SchemaFormatFactory.parse(data, request.name);
         }
         catch (IOException | InvalidFormatException e) {
             throw new HttpException(e.getMessage());
         }
 
-        SchematicaController.instance.place(schematic, request.placing);
+        SchematicaController.instance.place(schema, request.placing);
         return "{}";
     }
 
@@ -38,5 +36,5 @@ public class SchematicaPlaceApi extends ApiBase {
         return "{}";
     }
 
-    public record Request(String file, PlacingSettings placing) {}
+    public record Request(String file, String name, PlacingSettings placing) {}
 }

@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.schematics.PlacingConverter;
 import com.zergatul.cheatutils.schematics.PlacingSettings;
+import com.zergatul.cheatutils.schematics.SchemaFile;
 import com.zergatul.cheatutils.schematics.SchematicFile;
 import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
@@ -51,7 +52,7 @@ public class SchematicaController {
         entries.clear();
     }
 
-    public synchronized void place(SchematicFile file, PlacingSettings placing) {
+    public synchronized void place(SchemaFile file, PlacingSettings placing) {
         entries.add(new Entry(file, placing));
     }
 
@@ -575,7 +576,7 @@ public class SchematicaController {
         public final int x1, x2, y1, y2, z1, z2;
         public final Map<BlockPos, Block> blocks;
 
-        public Entry(SchematicFile file, PlacingSettings placing) {
+        public Entry(SchemaFile file, PlacingSettings placing) {
             PlacingConverter converter = new PlacingConverter(placing, file.getWidth(), file.getHeight(), file.getLength());
 
             x1 = placing.x;

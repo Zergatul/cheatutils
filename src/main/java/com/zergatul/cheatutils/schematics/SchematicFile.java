@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class SchematicFile {
+public class SchematicFile implements SchemaFile {
 
     private final CompoundTag compound;
     private final int width;
@@ -104,31 +104,33 @@ public class SchematicFile {
         return palette;
     }
 
+    @Override
     public int getWidth() {
         return width;
     }
 
+    @Override
     public int getHeight() {
         return height;
     }
 
+    @Override
     public int getLength() {
         return length;
     }
 
-    public Vec3i getSize() {
-        return new Vec3i(width, height, length);
-    }
-
+    @Override
     public Block getBlock(int x, int y, int z) {
         int index = (y * length + z) * width + x;
         return blocks[index] == 0 ? Blocks.AIR : Blocks.OBSIDIAN;
     }
 
+    @Override
     public int[] getSummary() {
         return summary;
     }
 
+    @Override
     public Block[] getPalette() {
         return palette;
     }

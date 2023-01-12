@@ -24,7 +24,7 @@ function createComponent(template) {
             clear() {
                 axios.delete('/api/schematica-place/_');
             },
-            getFileContent() {
+            getFile() {
                 let self = this;
                 return new Promise((resolve) => {
                     let input = self.$refs.fileInput;
@@ -35,7 +35,11 @@ function createComponent(template) {
     
                     let file = input.files[0];
                     let reader = new FileReader();
-                    reader.onload = event => resolve(event.target.result.split(',', 2)[1]);
+                    debugger;
+                    reader.onload = event => resolve({
+                        name: file.name,
+                        file: event.target.result.split(',', 2)[1]
+                    });
                     reader.readAsDataURL(file);
                 });
             },
@@ -44,8 +48,8 @@ function createComponent(template) {
             },
             onFileSelected() {
                 let self = this;
-                self.getFileContent().then(content => {
-                    axios.post('/api/schematica-upload', content).then(response => {
+                self.getFile().then(file => {
+                    axios.post('/api/schematica-upload', file).then(response => {
                         if (response.data.error) {
                             alert(response.data.error);
                             return;
@@ -84,11 +88,9 @@ function createComponent(template) {
             },
             place() {
                 let self = this;
-                self.getFileContent().then(content => {
-                    axios.post('/api/schematica-place', {
-                        file: content,
-                        placing: self.placing
-                    });
+                self.getFileContent().then(file => {
+                    file.placing = self.placing;
+                    axios.post('/api/schematica-place', file);
                 });
             },
             update() {
