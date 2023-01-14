@@ -13,10 +13,10 @@
                     </div>
                     <div class="smaller" v-if="!entitiesMap[item.clazz].isInterface">
                         <span class="entity-tree" v-for="clazz in entitiesMap[item.clazz].baseClasses">
-                            🠞 {{ clazz }}
+                            🠞 {{ entitiesMap[clazz].simpleName }}
                         </span>
                         <span class="entity-tree" v-for="interface in entitiesMap[item.clazz].interfaces">
-                            ⊕ {{ interface }}
+                            ⊕ {{ entitiesMap[interface].simpleName }}
                         </span>
                     </div>
                     <div class="smaller">{{ item.clazz }}</div>
@@ -84,10 +84,10 @@
                     </div>
                     <div class="smaller" v-if="!item.isInterface">
                         <span class="entity-tree" v-for="clazz in item.baseClasses">
-                            🠞 {{ clazz }}
+                            🠞 {{ entitiesMap[clazz].simpleName }}
                         </span>
                         <span class="entity-tree" v-for="interface in item.interfaces">
-                            ⊕ {{ interface }}
+                            ⊕ {{ entitiesMap[interface].simpleName }}
                         </span>
                     </div>
                     <div class="smaller">{{ item.clazz }}</div>
@@ -110,10 +110,10 @@
                 <div>{{ entitiesMap[selectedConfig.clazz].simpleName }}</div>
                 <div class="smaller">
                     <span class="entity-tree" v-for="clazz in entitiesMap[selectedConfig.clazz].baseClasses">
-                        🠞 {{ clazz }}
+                        🠞 {{ entitiesMap[clazz].simpleName }}
                     </span>
                     <span class="entity-tree" v-for="interface in entitiesMap[selectedConfig.clazz].interfaces">
-                        ⊕ {{ interface }}
+                        ⊕ {{ entitiesMap[interface].simpleName }}
                     </span>
                 </div>
             </div>
