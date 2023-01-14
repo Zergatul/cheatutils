@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
+import com.zergatul.cheatutils.utils.EntityUtils;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
@@ -8,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -22,7 +25,7 @@ public class GenerateEntityMappingApi extends ApiBase {
 
     @Override
     public String get() throws HttpException {
-        String path = "C:\\Users\\Zergatul\\.gradle\\caches\\fabric-loom\\1.19.2\\net.fabricmc.yarn.1_19_2.1.19.2+build.1-v2\\mappings.jar";
+        String path = "C:\\Users\\Zergatul\\.gradle\\caches\\fabric-loom\\1.19.3\\net.fabricmc.yarn.1_19_3.1.19.3+build.5-v2\\mappings.jar";
         String mappings = null;
         try {
             ZipFile file = new ZipFile(path);
@@ -45,6 +48,8 @@ public class GenerateEntityMappingApi extends ApiBase {
             return "mappings = null";
         }
 
+        List<EntityUtils.EntityInfo> classes = EntityUtils.getEntityClasses();
+
         Pattern pattern = Pattern.compile("^c\\t[a-z$]+\\t(?<obf>[a-zA-Z/_0-9$]+)\\t(?<norm>[a-zA-Z/_0-9$/]+)$", Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(mappings);
         StringBuilder builder = new StringBuilder();
@@ -53,12 +58,12 @@ public class GenerateEntityMappingApi extends ApiBase {
             String norm = matcher.group("norm").replace('/', '.');
             Class clazz;
             try {
-                clazz = Class.forName(norm);
+                clazz = Class.forName(norm, false, MinecraftClient.class.getClassLoader());
             } catch (Throwable e) {
                 e.printStackTrace();
                 continue;
             }
-            if (Entity.class.isAssignableFrom(clazz)) {
+            if (classes.stream().anyMatch(i -> i.clazz == clazz)) {
                 builder.append('"').append(obf).append(":").append(norm).append('"').append(",\r\n");
             }
         }

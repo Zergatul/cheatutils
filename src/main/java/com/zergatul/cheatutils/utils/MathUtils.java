@@ -30,4 +30,15 @@ public class MathUtils {
         }
         return value;
     }
+
+    public static double deltaAngle180(double angle1, double angle2) {
+        double result = (angle1 - angle2) % 360;
+        if (result < -180) {
+            result += 360;
+        }
+        if (result >= 180) {
+            result -= 360;
+        }
+        return Math.abs(result);
+    }
 }

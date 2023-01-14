@@ -27,6 +27,7 @@ public class ModApiWrapper {
     public static final CancelableEventHandler<com.zergatul.cheatutils.wrappers.events.MouseScrollEvent> MouseScroll = new CancelableEventHandler<>();
     public static final SimpleEventHandler RenderTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler WorldUnload = new SimpleEventHandler();
+    public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
 
     public static void setup() {
         ClientTickEvents.START_CLIENT_TICK.register(client -> ClientTickStart.trigger());

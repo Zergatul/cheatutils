@@ -26,6 +26,7 @@ public class TeleportController {
                     ChunkController.instance.clear();
                     BlockFinderController.instance.clear();
                     dimension = mc.world.getRegistryKey();
+                    ModApiWrapper.DimensionChange.trigger();
                 }
             }
         }

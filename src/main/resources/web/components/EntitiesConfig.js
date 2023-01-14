@@ -44,24 +44,61 @@ function createComponent(template) {
             },
             filterEntityList() {
                 let search = this.search.toLocaleLowerCase();
-                this.entityListFiltered = this.entitiesList.filter(function (entity) {
-                    if (entity.clazz) {
-                        let name = entity.clazz.toLocaleLowerCase();
-                        if (name.indexOf(search) >= 0) {
-                            return true;
+                if (search == '') {
+                    this.entityListFiltered = this.entitiesList.slice(0);
+                    return;
+                }
+
+                let entries = [];
+                this.entitiesList.forEach(entity => {
+                    if (entity.simpleName) {
+                        let name = entity.simpleName.toLocaleLowerCase();
+                        let index = name.indexOf(search);
+                        if (index >= 0) {
+                            entries.push({
+                                info: entity,
+                                priority: index == 0 ? 100 : 99
+                            });
+                            return;
                         }
                     }
                     if (entity.id) {
-                        if (entity.id.indexOf(search) >= 0) {
-                            return true;
+                        let index = entity.id.indexOf(search);
+                        if (index >= 0) {
+                            entries.push({
+                                info: entity,
+                                priority: index == 0 ? 90 : 89
+                            });
+                            return;
                         }
                     }
-                    return false;
+                    if (entity.baseClasses) {
+                        for (let i = 0; i < entity.baseClasses.length; i++) {
+                            let index = entity.baseClasses[i].toLocaleLowerCase().indexOf(search);
+                            if (index >= 0) {
+                                entries.push({
+                                    info: entity,
+                                    priority: index == 0 ? 80 : 79
+                                });
+                                return;
+                            }
+                        }
+                    }
+                    if (entity.interfaces) {
+                        for (let i = 0; i < entity.interfaces.length; i++) {
+                            let index = entity.interfaces[i].toLocaleLowerCase().indexOf(search);
+                            if (index >= 0) {
+                                entries.push({
+                                    info: entity,
+                                    priority: index == 0 ? 70 : 69
+                                });
+                                return;
+                            }
+                        }
+                    }
                 });
-            },
-            formatClassName(className) {
-                let index = className.lastIndexOf('.');
-                return className.substring(index + 1);
+
+                this.entityListFiltered = entries.sort((e1, e2) => e2.priority - e1.priority).map(e => e.info);
             },
             openAdd() {
                 this.state = 'add';
@@ -108,6 +145,15 @@ function createComponent(template) {
                 });
             },
             update(config) {
+                if (config.tracerMaxDistance == '') {
+                    config.tracerMaxDistance = null;
+                }
+                if (config.glowMaxDistance == '') {
+                    config.glowMaxDistance = null;
+                }
+                if (config.outlineMaxDistance == '') {
+                    config.outlineMaxDistance = null;
+                }
                 axios.put('/api/entities/' + config.clazz, config);
             }
         }

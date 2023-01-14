@@ -6,16 +6,17 @@
         </div>
         <ul class="list-base entities-list">
             <li v-for="item in entitiesConfigList" :key="item.clazz">
-                <div class="c1" style="display: none;">
-                    img
-                </div>
                 <div class="c2">
-                    <div>
-                        {{ formatClassName(entitiesMap[item.clazz].clazz) }} <span v-if="entitiesMap[item.clazz].id">({{ entitiesMap[item.clazz].id }})</span>
+                    <div class="entity-info-r1" :class="{ 'entity-info-interface': entitiesMap[item.clazz].isInterface }">
+                        <div class="entity-info-classname">{{ entitiesMap[item.clazz].simpleName }}</div>
+                        <div class="smaller entity-info-id" v-if="entitiesMap[item.clazz].id">{{ entitiesMap[item.clazz].id }}</div>
                     </div>
-                    <div class="smaller">
+                    <div class="smaller" v-if="!entitiesMap[item.clazz].isInterface">
                         <span class="entity-tree" v-for="clazz in entitiesMap[item.clazz].baseClasses">
-                            🠞 {{ formatClassName(clazz) }}
+                            🠞 {{ entitiesMap[clazz].simpleName }}
+                        </span>
+                        <span class="entity-tree" v-for="interface in entitiesMap[item.clazz].interfaces">
+                            ⊕ {{ entitiesMap[interface].simpleName }}
                         </span>
                     </div>
                     <div class="smaller">{{ item.clazz }}</div>
@@ -76,18 +77,20 @@
         </div>
         <ul class="list-base add-entity-list">
             <li v-for="item in entityListFiltered" :key="item.clazz">
-                <div class="c1" style="display: none;">
-                    img
-                </div>
                 <div class="c2">
-                    <div>
-                        {{ formatClassName(item.clazz) }} <span v-if="item.id">({{ item.id }})</span>
+                    <div class="entity-info-r1" :class="{ 'entity-info-interface': item.isInterface }">
+                        <div class="entity-info-classname">{{ item.simpleName }}</div>
+                        <div class="smaller entity-info-id" v-if="item.id">{{ item.id }}</div>
                     </div>
-                    <div class="smaller">
+                    <div class="smaller" v-if="!item.isInterface">
                         <span class="entity-tree" v-for="clazz in item.baseClasses">
-                            🠞 {{ formatClassName(clazz) }}
+                            🠞 {{ entitiesMap[clazz].simpleName }}
+                        </span>
+                        <span class="entity-tree" v-for="interface in item.interfaces">
+                            ⊕ {{ entitiesMap[interface] ? entitiesMap[interface].simpleName : "HUY " + interface }}
                         </span>
                     </div>
+                    <div class="smaller">{{ item.clazz }}</div>
                 </div>
                 <div class="c3">
                     <button class="edit" v-bind:class="{ 'button-highlight': entitiesConfigMap[item.clazz] }" @click="openEdit(item.clazz)">
@@ -107,7 +110,10 @@
                 <div>{{ entitiesMap[selectedConfig.clazz].simpleName }}</div>
                 <div class="smaller">
                     <span class="entity-tree" v-for="clazz in entitiesMap[selectedConfig.clazz].baseClasses">
-                        🠞 {{ clazz }}
+                        🠞 {{ entitiesMap[clazz].simpleName }}
+                    </span>
+                    <span class="entity-tree" v-for="interface in entitiesMap[selectedConfig.clazz].interfaces">
+                        ⊕ {{ entitiesMap[interface].simpleName }}
                     </span>
                 </div>
             </div>
@@ -140,31 +146,13 @@
                             v-model="selectedConfig.tracerColor"
                             @update:model-value="update(selectedConfig)" />
                     </div>
-                    <div class="group-setting" style="display: none;">
+                    <div class="group-setting esp-additional">
                         <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
-                            <div style="display: inline-block; width: 400px;">
-                                <div class="slidercontainer">
-                                    <input type="range" min="1" max="10" step="1" class="slider"
-                                        v-model="selectedConfig.tracerLineWidth"
-                                        @change="update(selectedConfig)">
-                                </div>
-                            </div>
-                            <div style="display: inline-block; padding-left: 16px;">
-                                {{ selectedConfig.tracerLineWidth }}
-                            </div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
                         </div>
-                        <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line style:</span>
-                            <select
-                                v-model="selectedConfig.tracerLineStyle"
-                                @change="update(selectedConfig)">
-                                <option value="0">Solid</option>
-                                <option value="61680">Dashed (0xF0F0)</option>
-                                <option value="4112">Dotted (0x1010)</option>
-                                <option value="4336">Dot Dash (0x10F0)</option>
-                                <option value="65520">Long Dash (0xFFF0)</option>
-                            </select>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
                         </div>
                     </div>
                 </div>
@@ -184,6 +172,15 @@
                             v-model="selectedConfig.glowColor"
                             @update:model-value="update(selectedConfig)" />
                     </div>
+                    <div class="group-setting esp-additional">
+                        <div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.glowMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
+                        </div>
+                    </div>
                 </div>
             </fieldset>
             <fieldset>
@@ -201,19 +198,13 @@
                             v-model="selectedConfig.outlineColor"
                             @update:model-value="update(selectedConfig)" />
                     </div>
-                    <div class="group-setting" style="display: none;">
+                    <div class="group-setting esp-additional">
                         <div>
-                            <span class="text" style="width: 100px; text-align: right;">Line width:</span>
-                            <div style="display: inline-block; width: 400px;">
-                                <div class="slidercontainer">
-                                    <input type="range" min="1" max="10" step="1" class="slider"
-                                        v-model="selectedConfig.outlineLineWidth"
-                                        @change="update(selectedConfig)">
-                                </div>
-                            </div>
-                            <div style="display: inline-block; padding-left: 16px;">
-                                {{ selectedConfig.outlineLineWidth }}
-                            </div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
                         </div>
                     </div>
                 </div>

@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
-import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
 import com.zergatul.cheatutils.controllers.KeyBindingsController;
 import com.zergatul.cheatutils.controllers.ScriptController;
 import com.zergatul.cheatutils.controllers.StatusOverlayController;
@@ -29,10 +28,10 @@ public class ConfigStore {
     public final Gson gson = new GsonBuilder()
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
+            .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
-            .registerTypeAdapter(KillAuraConfig.PriorityEntry.class, new KillAuraConfig$PriorityEntryTypeAdapter())
             .setPrettyPrinting()
             .create();
 
