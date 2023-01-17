@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.stream.StreamSupport;
 
@@ -150,6 +151,11 @@ public class LitematicFile implements SchemaFile {
     @Override
     public Block[] getPalette() {
         return new Block[0];
+    }
+
+    @Override
+    public void write(OutputStream output) {
+
     }
 
     private static class Region {

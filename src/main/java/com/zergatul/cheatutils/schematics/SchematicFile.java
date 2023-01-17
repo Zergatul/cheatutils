@@ -10,9 +10,18 @@ import net.minecraft.world.level.block.Blocks;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
-public class SchematicFile implements SchemaFile {
+public class SchematicFile implements SchemaFileEditable {
+
+    private static final String WIDTH_TAG = "Width";
+    private static final String HEIGHT_TAG = "Height";
+    private static final String LENGTH_TAG = "Length";
+    private static final String BLOCKS_TAG = "Blocks";
+    private static final String DATA_TAG = "Data";
 
     private final CompoundTag compound;
     private final int width;
@@ -21,40 +30,62 @@ public class SchematicFile implements SchemaFile {
     private final byte[] blocks;
     private final int[] summary;
     private final Block[] palette;
+    private final Map<Block, Integer> reversePalette;
 
     public SchematicFile(byte[] data) throws IOException, InvalidFormatException {
         this(NbtIo.readCompressed(new ByteArrayInputStream(data)));
+    }
+
+    public SchematicFile(int width, int height, int length) {
+        this.width = width;
+        this.height = height;
+        this.length = length;
+
+        blocks = new byte[width * height * length];
+        summary = new int[256];
+        palette = new Block[256];
+
+        palette[0] = Blocks.AIR;
+        reversePalette = CreateReversePalette();
+        summary[0] = blocks.length;
+
+        compound = new CompoundTag();
+        compound.putShort(WIDTH_TAG, (short)width);
+        compound.putShort(HEIGHT_TAG, (short)height);
+        compound.putShort(LENGTH_TAG, (short)length);
+        compound.putByteArray(DATA_TAG, new byte[0]);
     }
 
     private SchematicFile(CompoundTag compound) throws InvalidFormatException {
         ValidateRequiredTags(compound);
         this.compound = compound;
 
-        width = compound.getShort("Width");
-        height = compound.getShort("Height");
-        length = compound.getShort("Length");
-        blocks = compound.getByteArray("Blocks");
+        width = compound.getShort(WIDTH_TAG);
+        height = compound.getShort(HEIGHT_TAG);
+        length = compound.getShort(LENGTH_TAG);
+        blocks = compound.getByteArray(BLOCKS_TAG);
 
         ValidateSize();
 
         summary = CreateSummary();
         palette = CreatePalette();
+        reversePalette = CreateReversePalette();
     }
 
     private void ValidateRequiredTags(CompoundTag compound) throws InvalidFormatException {
-        if (!NbtUtils.hasShort(compound, "Width")) {
+        if (!NbtUtils.hasShort(compound, WIDTH_TAG)) {
             throw new InvalidFormatException("Invalid NBT structure. [Width] ShortTag is required.");
         }
-        if (!NbtUtils.hasShort(compound, "Height")) {
+        if (!NbtUtils.hasShort(compound, HEIGHT_TAG)) {
             throw new InvalidFormatException("Invalid NBT structure. [Height] ShortTag is required.");
         }
-        if (!NbtUtils.hasShort(compound, "Length")) {
+        if (!NbtUtils.hasShort(compound, LENGTH_TAG)) {
             throw new InvalidFormatException("Invalid NBT structure. [Length] ShortTag is required.");
         }
-        if (!NbtUtils.hasBytes(compound, "Blocks")) {
+        if (!NbtUtils.hasBytes(compound, BLOCKS_TAG)) {
             throw new InvalidFormatException("Invalid NBT structure. [Blocks] ByteArrayTag is required.");
         }
-        if (!NbtUtils.hasBytes(compound, "Data")) {
+        if (!NbtUtils.hasBytes(compound, DATA_TAG)) {
             throw new InvalidFormatException("Invalid NBT structure. [Data] ByteArrayTag is required.");
         }
     }
@@ -104,6 +135,17 @@ public class SchematicFile implements SchemaFile {
         return palette;
     }
 
+    private Map<Block, Integer> CreateReversePalette() {
+        Map<Block, Integer> map = new HashMap<>();
+        for (int i = 0; i < 256; i++) {
+            Block block = palette[i];
+            if (block != null) {
+                map.put(block, i);
+            }
+        }
+        return map;
+    }
+
     @Override
     public int getWidth() {
         return width;
@@ -133,5 +175,28 @@ public class SchematicFile implements SchemaFile {
     @Override
     public Block[] getPalette() {
         return palette;
+    }
+
+    @Override
+    public void write(OutputStream output) throws IOException {
+        compound.putByteArray(BLOCKS_TAG, blocks);
+        NbtIo.writeCompressed(compound, output);
+    }
+
+    @Override
+    public void setBlock(int x, int y, int z, Block block) {
+        Integer value = reversePalette.get(block);
+        if (value == null) {
+            return;
+        }
+
+        int index = (y * length + z) * width + x;
+        blocks[index] = (byte) (int) value;
+    }
+
+    @Override
+    public void setPaletteEntry(int index, Block block) {
+        palette[index] = block;
+        reversePalette.put(block, index);
     }
 }
