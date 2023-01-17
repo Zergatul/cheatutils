@@ -23,41 +23,41 @@
                 <legend>
                     Missing Blocks
                 </legend>
-                <div class="input-section">
+                <div class="input-section input-section-flex">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
                             v-model="config.showMissingBlockGhosts"
                             @change="update()">
                         <span>Show as ghost blocks</span>
                     </label>
+                    <div>
+                        <span class="field-description">Max distance:</span>
+                        <input type="text" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
+                    </div>
                 </div>
-                <div class="input-section">
-                    <span class="field-description">Ghost blocks max distance:</span>
-                    <input type="text" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
-                </div>
-                <div class="input-section">
+                <div class="input-section input-section-flex">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
                             v-model="config.showMissingBlockTracers"
                             @change="update()">
                         <span>Show tracers</span>
                     </label>
+                    <div>
+                        <span class="field-description">Max distance:</span>
+                        <input type="text" v-model="config.missingBlockTracersMaxDistance" @change="update()">
+                    </div>
                 </div>
-                <div class="input-section">
-                    <span class="field-description">Ghost blocks max distance:</span>
-                    <input type="text" v-model="config.missingBlockTracersMaxDistance" @change="update()">
-                </div>
-                <div class="input-section">
+                <div class="input-section input-section-flex">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
                             v-model="config.showMissingBlockCubes"
                             @change="update()">
                         <span>Show mini-cubes</span>
                     </label>
-                </div>
-                <div class="input-section">
-                    <span class="field-description">Ghost blocks max distance:</span>
-                    <input type="text" v-model="config.missingBlockCubesMaxDistance" @change="update()">
+                    <div>
+                        <span class="field-description">Max distance:</span>
+                        <input type="text" v-model="config.missingBlockCubesMaxDistance" @change="update()">
+                    </div>
                 </div>
                 <div class="section-description">
                     Missing Blocks: real world block = Air, schematica block != Air
@@ -68,29 +68,29 @@
                 <legend>
                     Wrong Blocks
                 </legend>
-                <div class="input-section">
+                <div class="input-section input-section-flex">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
                             v-model="config.showWrongBlockTracers"
                             @change="update()">
                         <span>Show tracers</span>
                     </label>
+                    <div>
+                        <span class="field-description">Max distance:</span>
+                        <input type="text" v-model="config.wrongBlockTracersMaxDistance" @change="update()">
+                    </div>
                 </div>
-                <div class="input-section">
-                    <span class="field-description">Ghost blocks max distance:</span>
-                    <input type="text" v-model="config.wrongBlockTracersMaxDistance" @change="update()">
-                </div>
-                <div class="input-section">
+                <div class="input-section input-section-flex">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
                             v-model="config.showWrongBlockCubes"
                             @change="update()">
                         <span>Show mini-cubes</span>
                     </label>
-                </div>
-                <div class="input-section">
-                    <span class="field-description">Ghost blocks max distance:</span>
-                    <input type="text" v-model="config.wrongBlockCubesMaxDistance" @change="update()">
+                    <div class="input-section">
+                        <span class="field-description">Max distance:</span>
+                        <input type="text" v-model="config.wrongBlockCubesMaxDistance" @change="update()">
+                    </div>
                 </div>
                 <div class="section-description">
                     Wrong Blocks: real world block != schematica block and real world block != Air

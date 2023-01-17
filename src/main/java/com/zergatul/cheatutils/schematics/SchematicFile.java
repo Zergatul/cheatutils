@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,8 +27,8 @@ public class SchematicFile implements SchemaFileEditable {
     private final int length;
     private final byte[] blocks;
     private final int[] summary;
-    private final Block[] palette;
-    private final Map<Block, Integer> reversePalette;
+    private final BlockState[] palette;
+    private final Map<BlockState, Integer> reversePalette;
 
     public SchematicFile(byte[] data) throws IOException, InvalidFormatException {
         this(NbtIo.readCompressed(new ByteArrayInputStream(data)));
@@ -40,9 +41,9 @@ public class SchematicFile implements SchemaFileEditable {
 
         blocks = new byte[width * height * length];
         summary = new int[256];
-        palette = new Block[256];
+        palette = new BlockState[256];
 
-        palette[0] = Blocks.AIR;
+        palette[0] = Blocks.AIR.defaultBlockState();
         reversePalette = CreateReversePalette();
         summary[0] = blocks.length;
 
@@ -104,8 +105,8 @@ public class SchematicFile implements SchemaFileEditable {
         return summary;
     }
 
-    private Block[] CreatePalette() throws InvalidFormatException {
-        Block[] palette = new Block[256];
+    private BlockState[] CreatePalette() throws InvalidFormatException {
+        BlockState[] palette = new BlockState[256];
         if (NbtUtils.hasCompound(compound, "SchematicaMapping")) {
             throw new InvalidFormatException("Not implemented");
         }
@@ -117,7 +118,7 @@ public class SchematicFile implements SchemaFileEditable {
             switch (materials) {
                 case "Alpha":
                     for (int i = 0; i < AlphaMapping.blocks.length; i++) {
-                        palette[i] = AlphaMapping.blocks[i];
+                        palette[i] = AlphaMapping.blocks[i].defaultBlockState();
                     }
                     return palette;
 
@@ -125,19 +126,19 @@ public class SchematicFile implements SchemaFileEditable {
                     throw new InvalidFormatException(String.format("Materials type %s is not implemented.", materials));
             }
         }
-        palette[0] = Blocks.AIR;
+        palette[0] = Blocks.AIR.defaultBlockState();
         for (int i = 1; i < palette.length; i++) {
-            palette[i] = Blocks.OBSIDIAN;
+            palette[i] = Blocks.OBSIDIAN.defaultBlockState();
         }
         return palette;
     }
 
-    private Map<Block, Integer> CreateReversePalette() {
-        Map<Block, Integer> map = new HashMap<>();
+    private Map<BlockState, Integer> CreateReversePalette() {
+        Map<BlockState, Integer> map = new HashMap<>();
         for (int i = 0; i < 256; i++) {
-            Block block = palette[i];
-            if (block != null) {
-                map.put(block, i);
+            BlockState state = palette[i];
+            if (state != null) {
+                map.put(state, i);
             }
         }
         return map;
@@ -159,9 +160,9 @@ public class SchematicFile implements SchemaFileEditable {
     }
 
     @Override
-    public Block getBlockState(int x, int y, int z) {
+    public BlockState getBlockState(int x, int y, int z) {
         int index = (y * length + z) * width + x;
-        return blocks[index] == 0 ? Blocks.AIR : Blocks.OBSIDIAN;
+        return blocks[index] == 0 ? Blocks.AIR.defaultBlockState() : Blocks.OBSIDIAN.defaultBlockState();
     }
 
     @Override
@@ -170,7 +171,7 @@ public class SchematicFile implements SchemaFileEditable {
     }
 
     @Override
-    public Block[] getPalette() {
+    public BlockState[] getPalette() {
         return palette;
     }
 
@@ -181,8 +182,8 @@ public class SchematicFile implements SchemaFileEditable {
     }
 
     @Override
-    public void setBlock(int x, int y, int z, Block block) throws MissingPaletteEntryException {
-        Integer value = reversePalette.get(block);
+    public void setBlockState(int x, int y, int z, BlockState state) throws MissingPaletteEntryException {
+        Integer value = reversePalette.get(state);
         if (value == null) {
             throw new MissingPaletteEntryException();
         }
@@ -192,8 +193,8 @@ public class SchematicFile implements SchemaFileEditable {
     }
 
     @Override
-    public void setPaletteEntry(int index, Block block) {
-        palette[index] = block;
-        reversePalette.put(block, index);
+    public void setPaletteEntry(int index, BlockState state) {
+        palette[index] = state;
+        reversePalette.put(state, index);
     }
 }

@@ -139,7 +139,7 @@ public class LitematicFile implements SchemaFile {
     }
 
     @Override
-    public Block getBlockState(int x, int y, int z) {
+    public BlockState getBlockState(int x, int y, int z) {
         return null;
     }
 
@@ -149,8 +149,8 @@ public class LitematicFile implements SchemaFile {
     }
 
     @Override
-    public Block[] getPalette() {
-        return new Block[0];
+    public BlockState[] getPalette() {
+        return new BlockState[0];
     }
 
     @Override

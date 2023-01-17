@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.schematics.*;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.http.HttpException;
 
 import java.io.IOException;
@@ -38,5 +39,5 @@ public class SchematicaUploadApi extends ApiBase {
 
     public record ErrorResponse(String error) {}
 
-    public record SuccessResponse(int[] summary, Block[] palette, int width, int height, int length) {}
+    public record SuccessResponse(int[] summary, BlockState[] palette, int width, int height, int length) {}
 }

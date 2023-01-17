@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.schematics;
 
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.IOException;

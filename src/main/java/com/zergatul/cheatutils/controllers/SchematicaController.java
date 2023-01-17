@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.schematics.PlacingSettings;
 import com.zergatul.cheatutils.schematics.SchemaFile;
 import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FaceInfo;
@@ -34,6 +35,7 @@ import net.minecraftforge.client.model.data.ModelData;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -47,7 +49,8 @@ public class SchematicaController {
     private final long[] lastSlotUsage = new long[9];
 
     private SchematicaController() {
-        ModApiWrapper.SmartChunkLoaded.add(this::onChunkLoaded);
+        ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
+        ModApiWrapper.ScannerBlockUpdated.add(this::onBlockUpdated);
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
         ModApiWrapper.RenderWorldLast.add(this::onRender);
 
@@ -146,7 +149,201 @@ public class SchematicaController {
 
         Vec3 view = event.getCamera().getPosition();
 
-        if (config.showMissingBlockGhosts || config.showMissingBlockTracers || config.showMissingBlockCubes) {
+        if (config.showMissingBlockTracers) {
+            Vec3 tracerCenter = event.getTracerCenter();
+            double tracerX = tracerCenter.x;
+            double tracerY = tracerCenter.y;
+            double tracerZ = tracerCenter.z;
+
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+
+            for (Entry entry : entries) {
+                entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
+                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                });
+            }
+
+            RenderSystem.disableCull();
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableTexture();
+            RenderSystem.disableDepthTest();
+            GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+            SharedVertexBuffer.instance.bind();
+            SharedVertexBuffer.instance.upload(bufferBuilder.end());
+            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+            VertexBuffer.unbind();
+
+            RenderSystem.disableBlend();
+            RenderSystem.enableCull();
+            RenderSystem.enableTexture();
+            RenderSystem.enableDepthTest();
+        }
+
+        if (config.showMissingBlockCubes) {
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+
+            for (Entry entry : entries) {
+                entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
+                    double x1 = pos.getX() + 0.25 - view.x;
+                    double y1 = pos.getY() + 0.25 - view.y;
+                    double z1 = pos.getZ() + 0.25 - view.z;
+                    double x2 = x1 + 0.5;
+                    double y2 = y1 + 0.5;
+                    double z2 = z1 + 0.5;
+
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+
+                    bufferBuilder.vertex(x1, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x1, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z2)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y1, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(x2, y2, z1)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                });
+            }
+
+            RenderSystem.disableCull();
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableTexture();
+            RenderSystem.disableDepthTest();
+            GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+            SharedVertexBuffer.instance.bind();
+            SharedVertexBuffer.instance.upload(bufferBuilder.end());
+            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+            VertexBuffer.unbind();
+
+            RenderSystem.disableBlend();
+            RenderSystem.enableCull();
+            RenderSystem.enableTexture();
+            RenderSystem.enableDepthTest();
+        }
+
+        if (config.showMissingBlockGhosts) {
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthMask(true);
+            RenderSystem.enableCull();
+            RenderSystem.enableBlend();
+            RenderSystem.enableTexture();
+            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
+
+            Map<BlockPos, BlockState> ghosts = new HashMap<>();
+            for (Entry entry : entries) {
+                entry.forEachMissingState(view, config.missingBlockGhostsMaxDistance, ghosts::put);
+            }
+
+            BlockPos.MutableBlockPos neighPos = new BlockPos.MutableBlockPos();
+            for (var mapEntry : ghosts.entrySet()) {
+                BlockPos pos = mapEntry.getKey();
+                BlockState state = mapEntry.getValue();
+                BakedModel model = mc.getBlockRenderer().getBlockModel(state);
+                for (var direction : Direction.values()) {
+                    neighPos.setX(pos.getX() + direction.getStepX());
+                    neighPos.setY(pos.getY() + direction.getStepY());
+                    neighPos.setZ(pos.getZ() + direction.getStepZ());
+                    if (!ghosts.containsKey(neighPos)) {
+                        List<BakedQuad> quads = model.getQuads(null, direction, random, ModelData.EMPTY, null);
+                        if (quads.size() > 0) {
+                            BakedQuad quad = quads.get(0);
+                            TextureAtlasSprite sprite = quad.getSprite();
+                            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+                            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                            RenderSystem.setShaderTexture(0, sprite.atlasLocation());
+
+                            FaceInfo face = FaceInfo.fromFacing(direction);
+                            FaceInfo.VertexInfo info;
+
+                            info = face.getVertexInfo(0);
+                            bufferBuilder.vertex(
+                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
+                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
+                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
+                                    .uv(sprite.getU0(), sprite.getV0()).endVertex();
+
+                            info = face.getVertexInfo(1);
+                            bufferBuilder.vertex(
+                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
+                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
+                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
+                                    .uv(sprite.getU0(), sprite.getV1()).endVertex();
+
+                            info = face.getVertexInfo(2);
+                            bufferBuilder.vertex(
+                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
+                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
+                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
+                                    .uv(sprite.getU1(), sprite.getV1()).endVertex();
+
+                            info = face.getVertexInfo(3);
+                            bufferBuilder.vertex(
+                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
+                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
+                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
+                                    .uv(sprite.getU1(), sprite.getV0()).endVertex();
+
+                            SharedVertexBuffer.instance.bind();
+                            SharedVertexBuffer.instance.upload(bufferBuilder.end());
+                            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionTexShader());
+                            VertexBuffer.unbind();
+                        }
+                    }
+                }
+            }
+        }
+
+        /*if (config.showMissingBlockGhosts || config.showMissingBlockTracers || config.showMissingBlockCubes) {
             double missingBlockGhostsMaxDistanceSqr =
                     config.missingBlockGhostsMaxDistance * config.missingBlockGhostsMaxDistance;
             double missingBlockTracersMaxDistanceSqr =
@@ -532,12 +729,18 @@ public class SchematicaController {
                 RenderSystem.enableTexture();
                 RenderSystem.enableDepthTest();
             }
-        }
+        }*/
     }
 
     private synchronized void onChunkLoaded(LevelChunk chunk) {
         for (Entry entry : entries) {
             entry.onChunkLoaded(chunk);
+        }
+    }
+
+    private synchronized void onBlockUpdated(BlockUpdateEvent event) {
+        for (Entry entry : entries) {
+            entry.onBlockUpdated(event);
         }
     }
 
@@ -611,7 +814,11 @@ public class SchematicaController {
                             int wy = y1 + vec.y;
                             int wz = z1 + vec.z;
                             long chunkIndex = blockToChunkIndex(wx, wz);
-                            Chunk chunk = chunks.computeIfAbsent(chunkIndex, i -> new Chunk());
+                            Chunk chunk = chunks.get(chunkIndex);
+                            if (chunk == null) {
+                                chunk = new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0);
+                                chunks.put(chunkIndex, chunk);
+                            }
                             chunk.setBlockState(wx & 0x0F, wy, wz & 0x0F, state);
                         }
                     }
@@ -620,9 +827,52 @@ public class SchematicaController {
         }
 
         public void forEachMissing(Vec3 view, double distance, Consumer<BlockPos> callback) {
-            double chunkDistance2 = (distance + 16) * (distance + 16);
+            double chunkDistance2 = (distance + 23) * (distance + 23);
+            double distance2 = distance * distance;
             for (Chunk chunk : chunks.values()) {
+                if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
+                    continue;
+                }
 
+                for (ChunkSection section : chunk.sections) {
+                    if (section == null) {
+                        continue;
+                    }
+                    if (section.getDistanceSqrTo(view) > chunkDistance2) {
+                        continue;
+                    }
+
+                    for (BlockPos pos : section.missing) {
+                        if (pos.distToCenterSqr(view) < distance2) {
+                            callback.accept(pos);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void forEachMissingState(Vec3 view, double distance, BiConsumer<BlockPos, BlockState> callback) {
+            double chunkDistance2 = (distance + 23) * (distance + 23);
+            double distance2 = distance * distance;
+            for (Chunk chunk : chunks.values()) {
+                if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
+                    continue;
+                }
+
+                for (ChunkSection section : chunk.sections) {
+                    if (section == null) {
+                        continue;
+                    }
+                    if (section.getDistanceSqrTo(view) > chunkDistance2) {
+                        continue;
+                    }
+
+                    for (BlockPos pos : section.missing) {
+                        if (pos.distToCenterSqr(view) < distance2) {
+                            callback.accept(pos, section.getBlockState(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F));
+                        }
+                    }
+                }
             }
         }
 
@@ -644,6 +894,14 @@ public class SchematicaController {
             }
         }
 
+        public void onBlockUpdated(BlockUpdateEvent event) {
+            long chunkIndex = blockToChunkIndex(event.pos().getX(), event.pos().getZ());
+            Chunk chunk = chunks.get(chunkIndex);
+            if (chunk != null) {
+                chunk.onBlockUpdated(event);
+            }
+        }
+
         private long blockToChunkIndex(int x, int z) {
             x = SectionPos.blockToSectionCoord(x);
             z = SectionPos.blockToSectionCoord(z);
@@ -662,9 +920,13 @@ public class SchematicaController {
         private static final int MIN_SECTION_Y = MIN_Y >> 4;
         private static final int MAX_SECTION_Y = MAX_Y >> 4;
 
-        private final ChunkSection[] sections;
+        private final int minX;
+        private final int minZ;
+        public final ChunkSection[] sections;
 
-        public Chunk() {
+        public Chunk(int x, int z) {
+            minX = x;
+            minZ = z;
             sections = new ChunkSection[MAX_SECTION_Y - MIN_SECTION_Y];
         }
 
@@ -678,6 +940,12 @@ public class SchematicaController {
             }
         }
 
+        public double getDistanceSqrTo(Vec3 point) {
+            double dx = point.x - (minX + 8);
+            double dz = point.z - (minZ + 8);
+            return dx * dx + dz * dz;
+        }
+
         public void onChunkLoaded(LevelChunk chunk) {
             for (int i = 0; i < sections.length; i++) {
                 if (sections[i] != null) {
@@ -686,10 +954,18 @@ public class SchematicaController {
             }
         }
 
+        public void onBlockUpdated(BlockUpdateEvent event) {
+            int sectionIndex = (event.pos().getY() - MIN_Y) >> 4;
+            ChunkSection section = sections[sectionIndex];
+            if (section != null) {
+                section.onBlockUpdated(event);
+            }
+        }
+
         public void setBlockState(int x, int y, int z, BlockState state) {
             int sectionIndex = (y - MIN_Y) >> 4;
             if (sections[sectionIndex] == null) {
-                sections[sectionIndex] = new ChunkSection(MIN_Y + (sectionIndex << 4));
+                sections[sectionIndex] = new ChunkSection(minX, MIN_Y + (sectionIndex << 4), minZ);
             }
             sections[sectionIndex].setBlockState(x, y & 0x0F, z, state);
         }
@@ -697,13 +973,17 @@ public class SchematicaController {
 
     private static class ChunkSection {
 
+        private final int minX;
         private final int minY;
+        private final int minZ;
         private final PalettedContainer<BlockState> states;
         private final List<BlockPos> missing = new ArrayList<>();
         private final List<BlockPos> wrong = new ArrayList<>();
 
-        public ChunkSection(int y) {
+        public ChunkSection(int x, int y, int z) {
+            minX = x;
             minY = y;
+            minZ = z;
             states = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
         }
 
@@ -711,8 +991,11 @@ public class SchematicaController {
             return states.get(x, y, z);
         }
 
-        public double distanceSqrTo(Vec3 point) {
-            double dx = point.x -
+        public double getDistanceSqrTo(Vec3 point) {
+            double dx = point.x - (minX + 8);
+            double dy = point.y - (minY + 8);
+            double dz = point.z - (minZ + 8);
+            return dx * dx + dy * dy + dz * dz;
         }
 
         public void onChunkLoaded(LevelChunk chunk) {
@@ -729,13 +1012,27 @@ public class SchematicaController {
                         BlockState chunkState = chunk.getBlockState(pos);
                         BlockState finalState = states.get(x, y, z);
                         if (chunkState.isAir() && !finalState.isAir()) {
-                            missing.add(pos.immutable());
+                            missing.add(new BlockPos(minX | x, minY | y, minZ | z));
                         }
                         if (!chunkState.isAir() && chunkState != finalState) {
-                            wrong.add(pos.immutable());
+                            wrong.add(new BlockPos(minX | x, minY | y, minZ | z));
                         }
                     }
                 }
+            }
+        }
+
+        public void onBlockUpdated(BlockUpdateEvent event) {
+            BlockPos pos = event.pos();
+            missing.removeIf(p -> p.equals(pos));
+            wrong.removeIf(p -> p.equals(pos));
+            BlockState chunkState = event.state();
+            BlockState finalState = states.get(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F);
+            if (chunkState.isAir() && !finalState.isAir()) {
+                missing.add(pos.immutable());
+            }
+            if (!chunkState.isAir() && chunkState != finalState) {
+                wrong.add(pos.immutable());
             }
         }
 

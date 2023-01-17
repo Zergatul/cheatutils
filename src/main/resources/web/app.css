@@ -731,3 +731,8 @@ div.schematic-info table {
 div.schematic-info td {
     border: 2px solid #00627A;
 }
+
+div.input-section-flex {
+    display: flex;
+    gap: 40px;
+}
