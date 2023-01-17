@@ -1,17 +1,14 @@
 package com.zergatul.cheatutils.schematics;
 
 import com.zergatul.cheatutils.utils.NbtUtils;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -184,10 +181,10 @@ public class SchematicFile implements SchemaFileEditable {
     }
 
     @Override
-    public void setBlock(int x, int y, int z, Block block) {
+    public void setBlock(int x, int y, int z, Block block) throws MissingPaletteEntryException {
         Integer value = reversePalette.get(block);
         if (value == null) {
-            return;
+            throw new MissingPaletteEntryException();
         }
 
         int index = (y * length + z) * width + x;

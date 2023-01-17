@@ -2,7 +2,6 @@ package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.schematics.test;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -87,8 +86,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(GetPositionCommand.instance);
         MinecraftForge.EVENT_BUS.register(WaitWorldLoadCommand.instance);
         MinecraftForge.EVENT_BUS.register(MoveToCommand.instance);*/
-
-        test.rofl();
     }
 
     private void onClientSetup(final FMLClientSetupEvent event) {
