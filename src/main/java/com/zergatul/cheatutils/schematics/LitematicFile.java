@@ -139,7 +139,7 @@ public class LitematicFile implements SchemaFile {
     }
 
     @Override
-    public Block getBlock(int x, int y, int z) {
+    public Block getBlockState(int x, int y, int z) {
         return null;
     }
 

@@ -7,7 +7,6 @@ import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.schematics.PlacingConverter;
 import com.zergatul.cheatutils.schematics.PlacingSettings;
 import com.zergatul.cheatutils.schematics.SchemaFile;
-import com.zergatul.cheatutils.schematics.SchematicFile;
 import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
@@ -19,18 +18,24 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class SchematicaController {
 
@@ -42,12 +47,11 @@ public class SchematicaController {
     private final long[] lastSlotUsage = new long[9];
 
     private SchematicaController() {
+        ModApiWrapper.SmartChunkLoaded.add(this::onChunkLoaded);
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
         ModApiWrapper.RenderWorldLast.add(this::onRender);
 
         Arrays.fill(lastSlotUsage, Long.MIN_VALUE);
-
-        // new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES)
     }
 
     public synchronized void clear() {
@@ -55,7 +59,9 @@ public class SchematicaController {
     }
 
     public synchronized void place(SchemaFile file, PlacingSettings placing) {
-        entries.add(new Entry(file, placing));
+        Entry entry = new Entry(file, placing);
+        entries.add(entry);
+        ChunkController.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));
     }
 
     private synchronized void onClientTickEnd() {
@@ -103,8 +109,8 @@ public class SchematicaController {
                     }
 
                     for (Entry entry : entries) {
-                        Block block = entry.blocks.get(mpos);
-                        if (block == null) {
+                        BlockState state = entry.getBlockState(mpos.getX(), mpos.getY(), mpos.getZ());
+                        if (state.isAir()) {
                             continue;
                         }
 
@@ -114,11 +120,11 @@ public class SchematicaController {
                         }
 
                         if (config.autoSelectItems) {
-                            if (selectItem(config, block))  {
-                                blockInHand = block;
+                            if (selectItem(config, state.getBlock()))  {
+                                blockInHand = state.getBlock();
                             }
                         }
-                        if (blockInHand == block && mc.level.getBlockState(mpos).isAir()) {
+                        if (blockInHand == state.getBlock() && mc.level.getBlockState(mpos).isAir()) {
                             BlockUtils.applyPlacingPlan(plan);
                             return;
                         }
@@ -159,7 +165,7 @@ public class SchematicaController {
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
             BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
-            for (Entry entry: entries) {
+            for (Entry entry : entries) {
                 for (var mapEntry : entry.blocks.entrySet()) {
                     BlockPos pos = mapEntry.getKey();
                     Block block = mapEntry.getValue();
@@ -529,6 +535,12 @@ public class SchematicaController {
         }
     }
 
+    private synchronized void onChunkLoaded(LevelChunk chunk) {
+        for (Entry entry : entries) {
+            entry.onChunkLoaded(chunk);
+        }
+    }
+
     private boolean selectItem(SchematicaConfig config, Block block) {
         Inventory inventory = mc.player.getInventory();
 
@@ -576,7 +588,7 @@ public class SchematicaController {
     private static class Entry {
 
         public final int x1, x2, y1, y2, z1, z2;
-        public final Map<BlockPos, Block> blocks;
+        public final Map<Long, Chunk> chunks;
 
         public Entry(SchemaFile file, PlacingSettings placing) {
             PlacingConverter converter = new PlacingConverter(placing, file.getWidth(), file.getHeight(), file.getLength());
@@ -588,18 +600,147 @@ public class SchematicaController {
             z1 = placing.z;
             z2 = z1 + converter.getLength();
 
-            blocks = new HashMap<>();
+            chunks = new HashMap<>();
             for (int x = 0; x < file.getWidth(); x++) {
                 for (int y = 0; y < file.getHeight(); y++) {
                     for (int z = 0; z < file.getLength(); z++) {
-                        Block block = file.getBlock(x, y, z);
-                        if (block != Blocks.AIR) {
+                        BlockState state = file.getBlockState(x, y, z);
+                        if (!state.isAir()) {
                             PlacingConverter.Vec3iMutable vec = converter.convert(x, y, z);
-                            blocks.put(new BlockPos(x1 + vec.x, y1 + vec.y, z1 + vec.z), block);
+                            int wx = x1 + vec.x;
+                            int wy = y1 + vec.y;
+                            int wz = z1 + vec.z;
+                            long chunkIndex = blockToChunkIndex(wx, wz);
+                            Chunk chunk = chunks.computeIfAbsent(chunkIndex, i -> new Chunk());
+                            chunk.setBlockState(wx & 0x0F, wy, wz & 0x0F, state);
                         }
                     }
                 }
             }
+        }
+
+        public void forEachMissing(Vec3 view, double distance, Consumer<BlockPos> callback) {
+            double chunkDistance2 = (distance + 16) * (distance + 16);
+            for (Chunk chunk : chunks.values()) {
+
+            }
+        }
+
+        public BlockState getBlockState(int x, int y, int z) {
+            long chunkIndex = blockToChunkIndex(x, z);
+            Chunk chunk = chunks.get(chunkIndex);
+            if (chunk == null) {
+                return Blocks.AIR.defaultBlockState();
+            } else {
+                return chunk.getBlockState(x & 0x0F, y, z & 0x0F);
+            }
+        }
+
+        public void onChunkLoaded(LevelChunk levelChunk) {
+            long chunkIndex = chunkToChunkIndex(levelChunk);
+            Chunk chunk = chunks.get(chunkIndex);
+            if (chunk != null) {
+                chunk.onChunkLoaded(levelChunk);
+            }
+        }
+
+        private long blockToChunkIndex(int x, int z) {
+            x = SectionPos.blockToSectionCoord(x);
+            z = SectionPos.blockToSectionCoord(z);
+            return ChunkPos.asLong(x, z);
+        }
+
+        private long chunkToChunkIndex(LevelChunk chunk) {
+            return ChunkPos.asLong(chunk.getPos().x, chunk.getPos().z);
+        }
+    }
+
+    private static class Chunk {
+
+        private static final int MIN_Y = -64;
+        private static final int MAX_Y = 320;
+        private static final int MIN_SECTION_Y = MIN_Y >> 4;
+        private static final int MAX_SECTION_Y = MAX_Y >> 4;
+
+        private final ChunkSection[] sections;
+
+        public Chunk() {
+            sections = new ChunkSection[MAX_SECTION_Y - MIN_SECTION_Y];
+        }
+
+        public BlockState getBlockState(int x, int y, int z) {
+            int sectionIndex = (y - MIN_Y) >> 4;
+            ChunkSection section = sections[sectionIndex];
+            if (section == null) {
+                return Blocks.AIR.defaultBlockState();
+            } else {
+                return section.getBlockState(x, y & 0x0F, z);
+            }
+        }
+
+        public void onChunkLoaded(LevelChunk chunk) {
+            for (int i = 0; i < sections.length; i++) {
+                if (sections[i] != null) {
+                    sections[i].onChunkLoaded(chunk);
+                }
+            }
+        }
+
+        public void setBlockState(int x, int y, int z, BlockState state) {
+            int sectionIndex = (y - MIN_Y) >> 4;
+            if (sections[sectionIndex] == null) {
+                sections[sectionIndex] = new ChunkSection(MIN_Y + (sectionIndex << 4));
+            }
+            sections[sectionIndex].setBlockState(x, y & 0x0F, z, state);
+        }
+    }
+
+    private static class ChunkSection {
+
+        private final int minY;
+        private final PalettedContainer<BlockState> states;
+        private final List<BlockPos> missing = new ArrayList<>();
+        private final List<BlockPos> wrong = new ArrayList<>();
+
+        public ChunkSection(int y) {
+            minY = y;
+            states = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
+        }
+
+        public BlockState getBlockState(int x, int y, int z) {
+            return states.get(x, y, z);
+        }
+
+        public double distanceSqrTo(Vec3 point) {
+            double dx = point.x -
+        }
+
+        public void onChunkLoaded(LevelChunk chunk) {
+            missing.clear();
+            wrong.clear();
+
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            for (int x = 0; x < 16; x++) {
+                pos.setX(x);
+                for (int y = 0; y < 16; y++) {
+                    pos.setY(minY | y);
+                    for (int z = 0; z < 16; z++) {
+                        pos.setZ(z);
+                        BlockState chunkState = chunk.getBlockState(pos);
+                        BlockState finalState = states.get(x, y, z);
+                        if (chunkState.isAir() && !finalState.isAir()) {
+                            missing.add(pos.immutable());
+                        }
+                        if (!chunkState.isAir() && chunkState != finalState) {
+                            wrong.add(pos.immutable());
+                        }
+                    }
+                }
+            }
+        }
+
+        public void setBlockState(int x, int y, int z, BlockState state) {
+            states.set(x, y, z, state); // locking can be slow?
         }
     }
 }

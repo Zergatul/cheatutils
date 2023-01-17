@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.schematics;
 
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,9 +11,9 @@ public interface SchemaFile {
     int getWidth();
     int getHeight();
     int getLength();
-    Block getBlock(int x, int y, int z);
+    BlockState getBlockState(int x, int y, int z);
     int[] getSummary();
-    Block[] getPalette();
+    BlockState[] getPalette();
     void write(OutputStream output) throws IOException;
 
     default Vec3i getSize() {
@@ -26,8 +27,8 @@ public interface SchemaFile {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < length; z++) {
-                    Block block = getBlock(x, y, z);
-                    file.setBlock(destX + x, destY + y, destZ + z, block);
+                    BlockState state = getBlockState(x, y, z);
+                    file.setBlockState(destX + x, destY + y, destZ + z, state);
                 }
             }
         }

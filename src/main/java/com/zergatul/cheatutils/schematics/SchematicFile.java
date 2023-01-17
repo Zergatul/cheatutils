@@ -159,7 +159,7 @@ public class SchematicFile implements SchemaFileEditable {
     }
 
     @Override
-    public Block getBlock(int x, int y, int z) {
+    public Block getBlockState(int x, int y, int z) {
         int index = (y * length + z) * width + x;
         return blocks[index] == 0 ? Blocks.AIR : Blocks.OBSIDIAN;
     }
