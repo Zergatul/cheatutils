@@ -46,6 +46,8 @@ public class SchematicaController {
         ModApiWrapper.RenderWorldLast.add(this::onRender);
 
         Arrays.fill(lastSlotUsage, Long.MIN_VALUE);
+
+        // new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES)
     }
 
     public synchronized void clear() {
