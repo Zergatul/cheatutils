@@ -98,10 +98,13 @@ public class SchematicaController {
 
         BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
         for (int dx = -distance; dx <= distance; dx++) {
+            mpos.setX(xp + dx);
             for (int dy = -distance; dy <= distance; dy++) {
+                mpos.setY(yp + dy);
+                if (mpos.getY() < -64 || mpos.getY() >= 320) {
+                    continue;
+                }
                 for (int dz = -distance; dz <= distance; dz++) {
-                    mpos.setX(xp + dx);
-                    mpos.setY(yp + dy);
                     mpos.setZ(zp + dz);
 
                     double blockDx = mpos.getX() + 0.5 - xp;
@@ -955,6 +958,9 @@ public class SchematicaController {
         }
 
         public void onBlockUpdated(BlockUpdateEvent event) {
+            if (event.pos().getY() >= 320) {
+                return;
+            }
             int sectionIndex = (event.pos().getY() - MIN_Y) >> 4;
             ChunkSection section = sections[sectionIndex];
             if (section != null) {
