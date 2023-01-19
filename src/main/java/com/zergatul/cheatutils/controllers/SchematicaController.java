@@ -37,7 +37,6 @@ import org.lwjgl.opengl.GL11;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public class SchematicaController {
 
@@ -158,6 +157,8 @@ public class SchematicaController {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
+
+
             BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
             bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
             RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
@@ -171,22 +172,7 @@ public class SchematicaController {
                 });
             }
 
-            RenderSystem.disableCull();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableTexture();
-            RenderSystem.disableDepthTest();
-            GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-            SharedVertexBuffer.instance.bind();
-            SharedVertexBuffer.instance.upload(bufferBuilder.end());
-            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-            VertexBuffer.unbind();
-
-            RenderSystem.disableBlend();
-            RenderSystem.enableCull();
-            RenderSystem.enableTexture();
-            RenderSystem.enableDepthTest();
+            GlUtils.drawLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
         if (config.showMissingBlockCubes) {
@@ -344,6 +330,10 @@ public class SchematicaController {
                     }
                 }
             }
+        }
+
+        if (config.showWrongBlockTracers) {
+
         }
 
         /*if (config.showMissingBlockGhosts || config.showMissingBlockTracers || config.showMissingBlockCubes) {
@@ -829,6 +819,10 @@ public class SchematicaController {
             }
         }
 
+        public Iterable<BlockPos> getMissing(Vec3 view, double distance) {
+            return () -> new MissingIterator(chunks.values().iterator(), view, distance);
+        }
+
         public void forEachMissing(Vec3 view, double distance, Consumer<BlockPos> callback) {
             double chunkDistance2 = (distance + 23) * (distance + 23);
             double distance2 = distance * distance;
@@ -958,7 +952,7 @@ public class SchematicaController {
         }
 
         public void onBlockUpdated(BlockUpdateEvent event) {
-            if (event.pos().getY() >= 320) {
+            if (event.pos().getY() >= 320) { // light update?
                 return;
             }
             int sectionIndex = (event.pos().getY() - MIN_Y) >> 4;
@@ -1019,9 +1013,10 @@ public class SchematicaController {
                         BlockState finalState = states.get(x, y, z);
                         if (chunkState.getMaterial().isReplaceable() && !finalState.isAir()) {
                             missing.add(new BlockPos(minX | x, minY | y, minZ | z));
-                        }
-                        if (!chunkState.getMaterial().isReplaceable() && chunkState != finalState) {
-                            wrong.add(new BlockPos(minX | x, minY | y, minZ | z));
+                        } else {
+                            if (!chunkState.isAir() && chunkState != finalState) {
+                                wrong.add(new BlockPos(minX | x, minY | y, minZ | z));
+                            }
                         }
                     }
                 }
@@ -1044,6 +1039,60 @@ public class SchematicaController {
 
         public void setBlockState(int x, int y, int z, BlockState state) {
             states.set(x, y, z, state); // locking can be slow?
+        }
+    }
+
+    private static class MissingIterator implements Iterator<BlockPos> {
+
+        private static final Iterator<ChunkSection> EmptyChunkSectionIterator = new EmptyIterator<>();
+        private static final Iterator<BlockPos> EmptyBlockPosIterator = new EmptyIterator<>();
+
+        private final Vec3 view;
+        private double chunkDistance2;
+        private double distance2;
+        private Iterator<Chunk> chunksIterator;
+        private Iterator<ChunkSection> sectionIterator;
+        private Iterator<BlockPos> blockPosIterator;
+
+        public MissingIterator(Iterator<Chunk> chunks, Vec3 view, double distance) {
+            this.view = view;
+            chunkDistance2 = (distance + 23) * (distance + 23);
+            distance2 = distance * distance;
+
+            chunksIterator = chunks;
+            sectionIterator = EmptyChunkSectionIterator;
+            blockPosIterator = EmptyBlockPosIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (!blockPosIterator.hasNext()) {
+                if (!sectionIterator.hasNext()) {
+                    if (!chunksIterator.hasNext()) {
+                        return false;
+                    } else {
+
+                    }
+                }
+            }
+        }
+
+        @Override
+        public BlockPos next() {
+            return null;
+        }
+    }
+
+    private static class EmptyIterator<E> implements Iterator<E> {
+
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public E next() {
+            return null;
         }
     }
 }
