@@ -130,7 +130,7 @@ public class SchematicaController {
                                 blockInHand = state.getBlock();
                             }
                         }
-                        if (blockInHand == state.getBlock() && mc.level.getBlockState(mpos).isAir()) {
+                        if (blockInHand == state.getBlock() && mc.level.getBlockState(mpos).getMaterial().isReplaceable()) {
                             BlockUtils.applyPlacingPlan(plan);
                             return;
                         }
@@ -1017,10 +1017,10 @@ public class SchematicaController {
                         pos.setZ(z);
                         BlockState chunkState = chunk.getBlockState(pos);
                         BlockState finalState = states.get(x, y, z);
-                        if (chunkState.isAir() && !finalState.isAir()) {
+                        if (chunkState.getMaterial().isReplaceable() && !finalState.isAir()) {
                             missing.add(new BlockPos(minX | x, minY | y, minZ | z));
                         }
-                        if (!chunkState.isAir() && chunkState != finalState) {
+                        if (!chunkState.getMaterial().isReplaceable() && chunkState != finalState) {
                             wrong.add(new BlockPos(minX | x, minY | y, minZ | z));
                         }
                     }
@@ -1034,10 +1034,10 @@ public class SchematicaController {
             wrong.removeIf(p -> p.equals(pos));
             BlockState chunkState = event.state();
             BlockState finalState = states.get(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F);
-            if (chunkState.isAir() && !finalState.isAir()) {
+            if (chunkState.getMaterial().isReplaceable() && !finalState.isAir()) {
                 missing.add(pos.immutable());
             }
-            if (!chunkState.isAir() && chunkState != finalState) {
+            if (!chunkState.getMaterial().isReplaceable() && chunkState != finalState) {
                 wrong.add(pos.immutable());
             }
         }

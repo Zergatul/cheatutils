@@ -28,7 +28,7 @@ public class BlockUtils {
         for (Direction direction : Direction.values()) {
             BlockPos neighbourPos = pos.relative(direction);
             BlockState neighbourState = mc.level.getBlockState(neighbourPos);
-            if (!neighbourState.getShape(mc.level, neighbourPos).isEmpty()) {
+            if (!neighbourState.getMaterial().isReplaceable()) {
                 return new PlaceBlockPlan(pos, direction.getOpposite(), neighbourPos);
             }
         }
