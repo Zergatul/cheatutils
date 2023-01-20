@@ -76,10 +76,10 @@ public class SchematicaController {
             return;
         }
 
-        Vec3 pos = mc.player.getEyePosition();
-        int xp = (int)Math.round(pos.x);
-        int yp = (int)Math.round(pos.y);
-        int zp = (int)Math.round(pos.z);
+        Vec3 eyes = mc.player.getEyePosition();
+        int xp = (int)Math.round(eyes.x);
+        int yp = (int)Math.round(eyes.y);
+        int zp = (int)Math.round(eyes.z);
         int distance = (int)Math.round(config.autoBuildDistance) + 1;
         double maxDistanceSqr = config.autoBuildDistance * config.autoBuildDistance;
         ItemStack itemInHand = mc.player.getMainHandItem();
@@ -95,46 +95,54 @@ public class SchematicaController {
             }
         }
 
-        BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
+        BlockUtils.PlaceBlockPlan bestPlan = null;
+        double bestDistance = Double.MAX_VALUE;
+        BlockState finalState = null;
+
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int dx = -distance; dx <= distance; dx++) {
-            mpos.setX(xp + dx);
+            pos.setX(xp + dx);
             for (int dy = -distance; dy <= distance; dy++) {
-                mpos.setY(yp + dy);
-                if (mpos.getY() < -64 || mpos.getY() >= 320) {
+                pos.setY(yp + dy);
+                if (pos.getY() < -64 || pos.getY() >= 320) {
                     continue;
                 }
                 for (int dz = -distance; dz <= distance; dz++) {
-                    mpos.setZ(zp + dz);
+                    pos.setZ(zp + dz);
 
-                    double blockDx = mpos.getX() + 0.5 - xp;
-                    double blockDy = mpos.getY() + 0.5 - yp;
-                    double blockDz = mpos.getZ() + 0.5 - zp;
-                    if (blockDx * blockDx + blockDy * blockDy + blockDz * blockDz > maxDistanceSqr) {
+                    double blockDx = pos.getX() + 0.5 - xp;
+                    double blockDy = pos.getY() + 0.5 - yp;
+                    double blockDz = pos.getZ() + 0.5 - zp;
+                    double d2 = blockDx * blockDx + blockDy * blockDy + blockDz * blockDz;
+                    if (d2 > bestDistance || d2 > maxDistanceSqr) {
                         continue;
                     }
 
                     for (Entry entry : entries) {
-                        BlockState state = entry.getBlockState(mpos.getX(), mpos.getY(), mpos.getZ());
+                        BlockState state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
                         if (state.isAir()) {
                             continue;
                         }
 
-                        BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(mpos);
-                        if (plan == null) {
-                            continue;
-                        }
-
-                        if (config.autoSelectItems) {
-                            if (selectItem(config, state.getBlock()))  {
-                                blockInHand = state.getBlock();
-                            }
-                        }
-                        if (blockInHand == state.getBlock() && mc.level.getBlockState(mpos).getMaterial().isReplaceable()) {
-                            BlockUtils.applyPlacingPlan(plan);
-                            return;
+                        BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos);
+                        if (plan != null) {
+                            bestPlan = plan;
+                            bestDistance = d2;
+                            finalState = state;
                         }
                     }
                 }
+            }
+        }
+
+        if (bestPlan != null) {
+            if (config.autoSelectItems) {
+                if (selectItem(config, finalState.getBlock()))  {
+                    blockInHand = finalState.getBlock();
+                }
+            }
+            if (blockInHand == finalState.getBlock() && mc.level.getBlockState(pos).getMaterial().isReplaceable()) {
+                BlockUtils.applyPlacingPlan(bestPlan, config.useShift);
             }
         }
     }
@@ -157,8 +165,6 @@ public class SchematicaController {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-
-
             BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
             bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
             RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
@@ -172,7 +178,7 @@ public class SchematicaController {
                 });
             }
 
-            GlUtils.drawLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
         if (config.showMissingBlockCubes) {
@@ -188,76 +194,11 @@ public class SchematicaController {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
+                    GlUtils.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
                 });
             }
 
-            RenderSystem.disableCull();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableTexture();
-            RenderSystem.disableDepthTest();
-            GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-            SharedVertexBuffer.instance.bind();
-            SharedVertexBuffer.instance.upload(bufferBuilder.end());
-            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-            VertexBuffer.unbind();
-
-            RenderSystem.disableBlend();
-            RenderSystem.enableCull();
-            RenderSystem.enableTexture();
-            RenderSystem.enableDepthTest();
+            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
         if (config.showMissingBlockGhosts) {
@@ -333,396 +274,46 @@ public class SchematicaController {
         }
 
         if (config.showWrongBlockTracers) {
+            Vec3 tracerCenter = event.getTracerCenter();
+            double tracerX = tracerCenter.x;
+            double tracerY = tracerCenter.y;
+            double tracerZ = tracerCenter.z;
 
-        }
-
-        /*if (config.showMissingBlockGhosts || config.showMissingBlockTracers || config.showMissingBlockCubes) {
-            double missingBlockGhostsMaxDistanceSqr =
-                    config.missingBlockGhostsMaxDistance * config.missingBlockGhostsMaxDistance;
-            double missingBlockTracersMaxDistanceSqr =
-                    config.missingBlockTracersMaxDistance * config.missingBlockTracersMaxDistance;
-            double missingBlockCubesMaxDistanceSqr =
-                    config.missingBlockCubesMaxDistance * config.missingBlockCubesMaxDistance;
-
-            List<BlockPos> missingBlockTracers = new ArrayList<>();
-            List<BlockPos> missingBlockCubes = new ArrayList<>();
-
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(true);
-            RenderSystem.enableCull();
-            RenderSystem.enableBlend();
-            RenderSystem.enableTexture();
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
-            BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
             for (Entry entry : entries) {
-                for (var mapEntry : entry.blocks.entrySet()) {
-                    BlockPos pos = mapEntry.getKey();
-                    Block block = mapEntry.getValue();
-                    BlockState state = mc.level.getBlockState(pos);
-
-                    double dx = pos.getX() - view.x;
-                    double dy = pos.getY() - view.y;
-                    double dz = pos.getZ() - view.z;
-                    double distanceSqr = dx * dx + dy * dy + dz * dz;
-
-                    if (state.isAir()) {
-                        if (config.showMissingBlockGhosts && distanceSqr < missingBlockGhostsMaxDistanceSqr) {
-                            BakedModel model = mc.getBlockRenderer().getBlockModel(block.defaultBlockState());
-                            for (var direction : Direction.values()) {
-                                mpos.setX(pos.getX() + direction.getStepX());
-                                mpos.setY(pos.getY() + direction.getStepY());
-                                mpos.setZ(pos.getZ() + direction.getStepZ());
-                                if (!entry.blocks.containsKey(mpos)) {
-                                    List<BakedQuad> quads = model.getQuads(null, direction, random, ModelData.EMPTY, null);
-                                    if (quads.size() > 0) {
-                                        BakedQuad quad = quads.get(0);
-                                        TextureAtlasSprite sprite = quad.getSprite();
-                                        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                                        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                                        RenderSystem.setShaderTexture(0, sprite.atlasLocation());
-
-                                        FaceInfo face = FaceInfo.fromFacing(direction);
-                                        FaceInfo.VertexInfo info;
-
-                                        info = face.getVertexInfo(0);
-                                        bufferBuilder.vertex(
-                                                        (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                                        (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                                        (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                                .uv(sprite.getU0(), sprite.getV0()).endVertex();
-
-                                        info = face.getVertexInfo(1);
-                                        bufferBuilder.vertex(
-                                                        (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                                        (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                                        (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                                .uv(sprite.getU0(), sprite.getV1()).endVertex();
-
-                                        info = face.getVertexInfo(2);
-                                        bufferBuilder.vertex(
-                                                        (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                                        (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                                        (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                                .uv(sprite.getU1(), sprite.getV1()).endVertex();
-
-                                        info = face.getVertexInfo(3);
-                                        bufferBuilder.vertex(
-                                                        (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                                        (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                                        (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                                .uv(sprite.getU1(), sprite.getV0()).endVertex();
-
-                                        SharedVertexBuffer.instance.bind();
-                                        SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                                        SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionTexShader());
-                                        VertexBuffer.unbind();
-                                    }
-                                }
-                            }
-                        }
-
-                        if (config.showMissingBlockTracers && distanceSqr < missingBlockTracersMaxDistanceSqr) {
-                            missingBlockTracers.add(pos);
-                        }
-
-                        if (config.showMissingBlockCubes && distanceSqr < missingBlockCubesMaxDistanceSqr) {
-                            missingBlockCubes.add(pos);
-                        }
-                    }
-                }
-            }
-
-            if (missingBlockTracers.size() > 0) {
-                Vec3 tracerCenter = event.getTracerCenter();
-                double tracerX = tracerCenter.x;
-                double tracerY = tracerCenter.y;
-                double tracerZ = tracerCenter.z;
-
-                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-                RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
-
-                for (BlockPos pos : missingBlockTracers) {
+                entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
                     bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
                             .color(1f, 1f, 1f, 1f).endVertex();
                     bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
                             .color(1f, 1f, 1f, 1f).endVertex();
-                }
-
-                RenderSystem.disableCull();
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.disableTexture();
-                RenderSystem.disableDepthTest();
-                GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-                SharedVertexBuffer.instance.bind();
-                SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-                VertexBuffer.unbind();
-
-                RenderSystem.disableBlend();
-                RenderSystem.enableCull();
-                RenderSystem.enableTexture();
-                RenderSystem.enableDepthTest();
+                });
             }
 
-            if (missingBlockCubes.size() > 0) {
-                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-                RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
-
-                for (BlockPos pos : missingBlockCubes) {
-                    double x1 = pos.getX() + 0.25 - view.x;
-                    double y1 = pos.getY() + 0.25 - view.y;
-                    double z1 = pos.getZ() + 0.25 - view.z;
-                    double x2 = x1 + 0.5;
-                    double y2 = y1 + 0.5;
-                    double z2 = z1 + 0.5;
-
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                }
-
-                RenderSystem.disableCull();
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.disableTexture();
-                RenderSystem.disableDepthTest();
-                GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-                SharedVertexBuffer.instance.bind();
-                SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-                VertexBuffer.unbind();
-
-                RenderSystem.disableBlend();
-                RenderSystem.enableCull();
-                RenderSystem.enableTexture();
-                RenderSystem.enableDepthTest();
-            }
+            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
-        if (config.showWrongBlockTracers || config.showWrongBlockCubes) {
-            double wrongBlockTracersMaxDistanceSqr =
-                    config.wrongBlockTracersMaxDistance * config.wrongBlockTracersMaxDistance;
-            double wrongBlockCubesMaxDistanceSqr =
-                    config.wrongBlockCubesMaxDistance * config.wrongBlockCubesMaxDistance;
-            double maxCheck = Math.max(wrongBlockTracersMaxDistanceSqr, wrongBlockCubesMaxDistanceSqr);
+        if (config.showWrongBlockCubes) {
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
-            List<BlockPos> wrongBlockTracers = new ArrayList<>();
-            List<BlockPos> wrongBlockCubes = new ArrayList<>();
-
-            BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
-            for (Entry entry: entries) {
-                int x1 = entry.x1;
-                int x2 = entry.x2;
-                int y1 = entry.y1;
-                int y2 = entry.y2;
-                int z1 = entry.z1;
-                int z2 = entry.z2;
-                for (int x = x1; x < x2; x++) {
-                    mpos.setX(x);
-                    double dx = x - view.x;
-                    double dxSqr = dx * dx;
-                    for (int y = y1; y < y2; y++) {
-                        mpos.setY(y);
-                        double dy = y - view.y;
-                        double dySqr = dy * dy;
-                        for (int z = z1; z < z2; z++) {
-                            mpos.setZ(z);
-                            double dz = z - view.z;
-                            double dzSqr = dz * dz;
-                            double distanceSqr = dxSqr + dySqr + dzSqr;
-                            if (distanceSqr > maxCheck) {
-                                continue;
-                            }
-
-                            BlockState state = mc.level.getBlockState(mpos);
-                            if (state.isAir()) {
-                                continue;
-                            }
-                            Block block = entry.blocks.getOrDefault(mpos, Blocks.AIR);
-                            if (state.getBlock() != block) {
-                                if (distanceSqr < wrongBlockTracersMaxDistanceSqr) {
-                                    wrongBlockTracers.add(mpos.immutable());
-                                }
-                                if (distanceSqr < wrongBlockCubesMaxDistanceSqr) {
-                                    wrongBlockCubes.add(mpos.immutable());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (wrongBlockTracers.size() > 0) {
-                Vec3 tracerCenter = event.getTracerCenter();
-                double tracerX = tracerCenter.x;
-                double tracerY = tracerCenter.y;
-                double tracerZ = tracerCenter.z;
-
-                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-                RenderSystem.setShaderColor(1.0f, 0.2f, 0.2f, 0.8f);
-
-                for (BlockPos pos : wrongBlockTracers) {
-                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                }
-
-                RenderSystem.disableCull();
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.disableTexture();
-                RenderSystem.disableDepthTest();
-                GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-                SharedVertexBuffer.instance.bind();
-                SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-                VertexBuffer.unbind();
-
-                RenderSystem.disableBlend();
-                RenderSystem.enableCull();
-                RenderSystem.enableTexture();
-                RenderSystem.enableDepthTest();
-            }
-
-            if (wrongBlockCubes.size() > 0) {
-                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-                RenderSystem.setShaderColor(1.0f, 0.2f, 0.2f, 0.8f);
-
-                for (BlockPos pos : wrongBlockCubes) {
+            for (Entry entry : entries) {
+                entry.forEachWrong(view, config.wrongBlockCubesMaxDistance, pos -> {
                     double x1 = pos.getX() + 0.25 - view.x;
                     double y1 = pos.getY() + 0.25 - view.y;
                     double z1 = pos.getZ() + 0.25 - view.z;
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-
-                    bufferBuilder.vertex(x1, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x1, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z2)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y1, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(x2, y2, z1)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                }
-
-                RenderSystem.disableCull();
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.disableTexture();
-                RenderSystem.disableDepthTest();
-                GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-                SharedVertexBuffer.instance.bind();
-                SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-                VertexBuffer.unbind();
-
-                RenderSystem.disableBlend();
-                RenderSystem.enableCull();
-                RenderSystem.enableTexture();
-                RenderSystem.enableDepthTest();
+                    GlUtils.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
+                });
             }
-        }*/
+
+            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+        }
     }
 
     private synchronized void onChunkLoaded(LevelChunk chunk) {
@@ -819,11 +410,7 @@ public class SchematicaController {
             }
         }
 
-        public Iterable<BlockPos> getMissing(Vec3 view, double distance) {
-            return () -> new MissingIterator(chunks.values().iterator(), view, distance);
-        }
-
-        public void forEachMissing(Vec3 view, double distance, Consumer<BlockPos> callback) {
+        public void forEachMissing(Vec3 view, double distance, Consumer<BlockPos> consumer) {
             double chunkDistance2 = (distance + 23) * (distance + 23);
             double distance2 = distance * distance;
             for (Chunk chunk : chunks.values()) {
@@ -841,14 +428,14 @@ public class SchematicaController {
 
                     for (BlockPos pos : section.missing) {
                         if (pos.distToCenterSqr(view) < distance2) {
-                            callback.accept(pos);
+                            consumer.accept(pos);
                         }
                     }
                 }
             }
         }
 
-        public void forEachMissingState(Vec3 view, double distance, BiConsumer<BlockPos, BlockState> callback) {
+        public void forEachMissingState(Vec3 view, double distance, BiConsumer<BlockPos, BlockState> consumer) {
             double chunkDistance2 = (distance + 23) * (distance + 23);
             double distance2 = distance * distance;
             for (Chunk chunk : chunks.values()) {
@@ -866,7 +453,32 @@ public class SchematicaController {
 
                     for (BlockPos pos : section.missing) {
                         if (pos.distToCenterSqr(view) < distance2) {
-                            callback.accept(pos, section.getBlockState(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F));
+                            consumer.accept(pos, section.getBlockState(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F));
+                        }
+                    }
+                }
+            }
+        }
+
+        public void forEachWrong(Vec3 view, double distance, Consumer<BlockPos> consumer) {
+            double chunkDistance2 = (distance + 23) * (distance + 23);
+            double distance2 = distance * distance;
+            for (Chunk chunk : chunks.values()) {
+                if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
+                    continue;
+                }
+
+                for (ChunkSection section : chunk.sections) {
+                    if (section == null) {
+                        continue;
+                    }
+                    if (section.getDistanceSqrTo(view) > chunkDistance2) {
+                        continue;
+                    }
+
+                    for (BlockPos pos : section.wrong) {
+                        if (pos.distToCenterSqr(view) < distance2) {
+                            consumer.accept(pos);
                         }
                     }
                 }
@@ -1002,6 +614,7 @@ public class SchematicaController {
             missing.clear();
             wrong.clear();
 
+            boolean replaceableAsAir = ConfigStore.instance.getConfig().schematicaConfig.replaceableAsAir;
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int x = 0; x < 16; x++) {
                 pos.setX(x);
@@ -1011,10 +624,10 @@ public class SchematicaController {
                         pos.setZ(z);
                         BlockState chunkState = chunk.getBlockState(pos);
                         BlockState finalState = states.get(x, y, z);
-                        if (chunkState.getMaterial().isReplaceable() && !finalState.isAir()) {
+                        if (isMissing(chunkState, finalState)) {
                             missing.add(new BlockPos(minX | x, minY | y, minZ | z));
                         } else {
-                            if (!chunkState.isAir() && chunkState != finalState) {
+                            if (isWrong(chunkState, finalState, replaceableAsAir)) {
                                 wrong.add(new BlockPos(minX | x, minY | y, minZ | z));
                             }
                         }
@@ -1027,72 +640,32 @@ public class SchematicaController {
             BlockPos pos = event.pos();
             missing.removeIf(p -> p.equals(pos));
             wrong.removeIf(p -> p.equals(pos));
+            boolean replaceableAsAir = ConfigStore.instance.getConfig().schematicaConfig.replaceableAsAir;
             BlockState chunkState = event.state();
             BlockState finalState = states.get(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F);
-            if (chunkState.getMaterial().isReplaceable() && !finalState.isAir()) {
+            if (isMissing(chunkState, finalState)) {
                 missing.add(pos.immutable());
-            }
-            if (!chunkState.getMaterial().isReplaceable() && chunkState != finalState) {
-                wrong.add(pos.immutable());
+            } else {
+                if (isWrong(chunkState, finalState, replaceableAsAir)) {
+                    wrong.add(pos.immutable());
+                }
             }
         }
 
         public void setBlockState(int x, int y, int z, BlockState state) {
             states.set(x, y, z, state); // locking can be slow?
         }
-    }
 
-    private static class MissingIterator implements Iterator<BlockPos> {
-
-        private static final Iterator<ChunkSection> EmptyChunkSectionIterator = new EmptyIterator<>();
-        private static final Iterator<BlockPos> EmptyBlockPosIterator = new EmptyIterator<>();
-
-        private final Vec3 view;
-        private double chunkDistance2;
-        private double distance2;
-        private Iterator<Chunk> chunksIterator;
-        private Iterator<ChunkSection> sectionIterator;
-        private Iterator<BlockPos> blockPosIterator;
-
-        public MissingIterator(Iterator<Chunk> chunks, Vec3 view, double distance) {
-            this.view = view;
-            chunkDistance2 = (distance + 23) * (distance + 23);
-            distance2 = distance * distance;
-
-            chunksIterator = chunks;
-            sectionIterator = EmptyChunkSectionIterator;
-            blockPosIterator = EmptyBlockPosIterator;
+        private boolean isMissing(BlockState chunkState, BlockState finalState) {
+            return chunkState.getMaterial().isReplaceable() && !finalState.isAir();
         }
 
-        @Override
-        public boolean hasNext() {
-            if (!blockPosIterator.hasNext()) {
-                if (!sectionIterator.hasNext()) {
-                    if (!chunksIterator.hasNext()) {
-                        return false;
-                    } else {
-
-                    }
-                }
+        private boolean isWrong(BlockState chunkState, BlockState finalState, boolean replaceableAsAir) {
+            if (replaceableAsAir) {
+                return !chunkState.getMaterial().isReplaceable() && chunkState != finalState;
+            } else {
+                return !chunkState.isAir() && chunkState != finalState;
             }
-        }
-
-        @Override
-        public BlockPos next() {
-            return null;
-        }
-    }
-
-    private static class EmptyIterator<E> implements Iterator<E> {
-
-        @Override
-        public boolean hasNext() {
-            return false;
-        }
-
-        @Override
-        public E next() {
-            return null;
         }
     }
 }

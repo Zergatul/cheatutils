@@ -29,15 +29,15 @@ public class BlockUtils {
             BlockPos neighbourPos = pos.relative(direction);
             BlockState neighbourState = mc.level.getBlockState(neighbourPos);
             if (!neighbourState.getMaterial().isReplaceable()) {
-                return new PlaceBlockPlan(pos, direction.getOpposite(), neighbourPos);
+                return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos);
             }
         }
 
         return null;
     }
 
-    public static void applyPlacingPlan(PlaceBlockPlan plan) {
-        placeBlock(plan.destination, plan.direction, plan.neighbour);
+    public static void applyPlacingPlan(PlaceBlockPlan plan, boolean useShift) {
+        placeBlock(plan.destination, plan.direction, plan.neighbour, useShift);
     }
 
     public static boolean placeBlock(BlockPos pos) {
@@ -54,7 +54,7 @@ public class BlockUtils {
             BlockPos other = pos.relative(direction);
             BlockState state = mc.level.getBlockState(other);
             if (!state.getShape(mc.level, other).isEmpty()) {
-                placeBlock(pos, direction.getOpposite(), other);
+                placeBlock(pos, direction.getOpposite(), other, true);
                 return true;
             }
         }
@@ -62,7 +62,7 @@ public class BlockUtils {
         return false;
     }
 
-    private static void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour) {
+    private static void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, boolean useShift) {
         if (mc.player == null) {
             return;
         }
@@ -73,7 +73,7 @@ public class BlockUtils {
                 destination.getZ() + 0.5f + direction.getOpposite().getStepZ() * 0.5);
         BlockHitResult hit = new BlockHitResult(location, direction, neighbour, false);
 
-        boolean emulateShift = !mc.player.isShiftKeyDown();
+        boolean emulateShift = useShift && !mc.player.isShiftKeyDown();
 
         if (emulateShift) {
             NetworkPacketsController.instance.sendPacket(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY));

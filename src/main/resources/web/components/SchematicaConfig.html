@@ -68,6 +68,14 @@
                 <legend>
                     Wrong Blocks
                 </legend>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                               v-model="config.replaceableAsAir"
+                               @change="update()">
+                        <span>Treat replaceable blocks as air (e.g. snow, water, grass). Requires rescan.</span>
+                    </label>
+                </div>
                 <div class="input-section input-section-flex">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
@@ -123,8 +131,17 @@
                     <input type="text" v-model="slots" @change="onSlotsUpdate()">
                     <div class="input-description">Separated by comma. Example: 6,7,8</div>
                 </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                               v-model="config.useShift"
+                               @change="update()">
+                        <span>Use Shift while placing blocks</span>
+                    </label>
+                </div>
                 <div class="section-description">
-                    Max Build Distance - distance between player eyes and center of block module will try to place.
+                    Max Build Distance - distance between player eyes and center of block module will try to place.<br>
+                    Using shift may cause your character to randomly crouch for a fraction of a second.
                 </div>
             </fieldset>
 

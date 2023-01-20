@@ -14,10 +14,12 @@ public class SchematicaConfig implements ValidatableConfig {
     public double wrongBlockTracersMaxDistance;
     public boolean showWrongBlockCubes;
     public double wrongBlockCubesMaxDistance;
+    public boolean replaceableAsAir;
     public boolean autoBuild;
     public double autoBuildDistance;
     public boolean autoSelectItems;
     public int[] autoSelectSlots;
+    public boolean useShift;
 
     public SchematicaConfig() {
         showMissingBlockGhosts = true;
