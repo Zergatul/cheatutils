@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.zergatul.cheatutils.collections.IntArrayList;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.schematics.PlacingConverter;
@@ -12,6 +13,7 @@ import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FaceInfo;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -25,6 +27,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -61,9 +64,11 @@ public class SchematicaController {
     }
 
     public synchronized void place(SchemaFile file, PlacingSettings placing) {
-        Entry entry = new Entry(file, placing);
-        entries.add(entry);
-        ChunkController.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));
+        if (mc.level != null) {
+            Entry entry = new Entry(mc.level, file, placing);
+            entries.add(entry);
+            ChunkController.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));
+        }
     }
 
     private synchronized void onClientTickEnd() {
@@ -374,10 +379,13 @@ public class SchematicaController {
 
     private static class Entry {
 
+        public final Dimension dimension;
         public final int x1, x2, y1, y2, z1, z2;
         public final Map<Long, Chunk> chunks;
 
-        public Entry(SchemaFile file, PlacingSettings placing) {
+        public Entry(ClientLevel level, SchemaFile file, PlacingSettings placing) {
+            dimension = Dimension.get(level);
+
             PlacingConverter converter = new PlacingConverter(placing, file.getWidth(), file.getHeight(), file.getLength());
 
             x1 = placing.x;
@@ -400,7 +408,7 @@ public class SchematicaController {
                             long chunkIndex = blockToChunkIndex(wx, wz);
                             Chunk chunk = chunks.get(chunkIndex);
                             if (chunk == null) {
-                                chunk = new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0);
+                                chunk = new Chunk(wx & 0xFFFFFFF0, y1, y2, wz & 0xFFFFFFF0);
                                 chunks.put(chunkIndex, chunk);
                             }
                             chunk.setBlockState(wx & 0x0F, wy, wz & 0x0F, state);
@@ -413,6 +421,7 @@ public class SchematicaController {
         public void forEachMissing(Vec3 view, double distance, Consumer<BlockPos> consumer) {
             double chunkDistance2 = (distance + 23) * (distance + 23);
             double distance2 = distance * distance;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (Chunk chunk : chunks.values()) {
                 if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
                     continue;
@@ -424,6 +433,13 @@ public class SchematicaController {
                     }
                     if (section.getDistanceSqrTo(view) > chunkDistance2) {
                         continue;
+                    }
+
+                    int size = section.missing.size();
+                    int[] elements = section.missing.getElements();
+                    for (int i = 0; i < size; i++) {
+                        int value = elements[i];
+                        pos.setX(section.minX | (value))
                     }
 
                     for (BlockPos pos : section.missing) {
@@ -524,29 +540,32 @@ public class SchematicaController {
 
     private static class Chunk {
 
-        private static final int MIN_Y = -64;
-        private static final int MAX_Y = 320;
-        private static final int MIN_SECTION_Y = MIN_Y >> 4;
-        private static final int MAX_SECTION_Y = MAX_Y >> 4;
-
-        private final int minX;
-        private final int minZ;
         public final ChunkSection[] sections;
+        private final int minX;
+        private final int minY;
+        private final int maxY;
+        private final int minZ;
+        private final int sectionMinY;
 
-        public Chunk(int x, int z) {
-            minX = x;
-            minZ = z;
-            sections = new ChunkSection[MAX_SECTION_Y - MIN_SECTION_Y];
+        public Chunk(int x, int minY, int maxY, int z) {
+            this.minX = x;
+            this.minY = minY;
+            this.maxY = maxY;
+            this.minZ = z;
+            this.sectionMinY = minY >> 4 << 4;
+            int sectionMaxY = (((maxY - 1) >> 4) + 1) << 4;
+            sections = new ChunkSection[(sectionMaxY - sectionMinY) >> 4];
+            for (int i = 0; i < sections.length; i++) {
+                sections[i] = new ChunkSection(minX, sectionMinY + (i << 4), minZ);
+            }
         }
 
         public BlockState getBlockState(int x, int y, int z) {
-            int sectionIndex = (y - MIN_Y) >> 4;
-            ChunkSection section = sections[sectionIndex];
-            if (section == null) {
+            if (y < minY || y > maxY) {
                 return Blocks.AIR.defaultBlockState();
-            } else {
-                return section.getBlockState(x, y & 0x0F, z);
             }
+            int sectionIndex = (y - sectionMinY) >> 4;
+            return sections[sectionIndex].getBlockState(x, y & 0x0F, z);
         }
 
         public double getDistanceSqrTo(Vec3 point) {
@@ -557,28 +576,21 @@ public class SchematicaController {
 
         public void onChunkLoaded(LevelChunk chunk) {
             for (int i = 0; i < sections.length; i++) {
-                if (sections[i] != null) {
-                    sections[i].onChunkLoaded(chunk);
-                }
+                sections[i].onChunkLoaded(chunk);
             }
         }
 
         public void onBlockUpdated(BlockUpdateEvent event) {
-            if (event.pos().getY() >= 320) { // light update?
+            int y = event.pos().getY();
+            if (y < minY || y >= maxY) {
                 return;
             }
-            int sectionIndex = (event.pos().getY() - MIN_Y) >> 4;
-            ChunkSection section = sections[sectionIndex];
-            if (section != null) {
-                section.onBlockUpdated(event);
-            }
+            int sectionIndex = (y - sectionMinY) >> 4;
+            sections[sectionIndex].onBlockUpdated(event);
         }
 
         public void setBlockState(int x, int y, int z, BlockState state) {
-            int sectionIndex = (y - MIN_Y) >> 4;
-            if (sections[sectionIndex] == null) {
-                sections[sectionIndex] = new ChunkSection(minX, MIN_Y + (sectionIndex << 4), minZ);
-            }
+            int sectionIndex = (y - sectionMinY) >> 4;
             sections[sectionIndex].setBlockState(x, y & 0x0F, z, state);
         }
     }
@@ -589,14 +601,17 @@ public class SchematicaController {
         private final int minY;
         private final int minZ;
         private final PalettedContainer<BlockState> states;
-        private final List<BlockPos> missing = new ArrayList<>();
-        private final List<BlockPos> wrong = new ArrayList<>();
+        private final IntArrayList missing = new IntArrayList();
+        private final IntArrayList wrong = new IntArrayList();
 
         public ChunkSection(int x, int y, int z) {
             minX = x;
             minY = y;
             minZ = z;
-            states = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
+            states = new PalettedContainer<>(
+                    Block.BLOCK_STATE_REGISTRY,
+                    Blocks.AIR.defaultBlockState(),
+                    PalettedContainer.Strategy.SECTION_STATES);
         }
 
         public BlockState getBlockState(int x, int y, int z) {
@@ -625,10 +640,10 @@ public class SchematicaController {
                         BlockState chunkState = chunk.getBlockState(pos);
                         BlockState finalState = states.get(x, y, z);
                         if (isMissing(chunkState, finalState)) {
-                            missing.add(new BlockPos(minX | x, minY | y, minZ | z));
+                            missing.add(toIndex(x, y, z));
                         } else {
                             if (isWrong(chunkState, finalState, replaceableAsAir)) {
-                                wrong.add(new BlockPos(minX | x, minY | y, minZ | z));
+                                wrong.add(toIndex(x, y, z));
                             }
                         }
                     }
@@ -638,16 +653,20 @@ public class SchematicaController {
 
         public void onBlockUpdated(BlockUpdateEvent event) {
             BlockPos pos = event.pos();
-            missing.removeIf(p -> p.equals(pos));
-            wrong.removeIf(p -> p.equals(pos));
+            int x = pos.getX() & 0x0F;
+            int y = pos.getY() & 0x0F;
+            int z = pos.getZ() & 0x0F;
+            int index = toIndex(x, y, z);
+            missing.remove(index);
+            wrong.remove(index);
             boolean replaceableAsAir = ConfigStore.instance.getConfig().schematicaConfig.replaceableAsAir;
             BlockState chunkState = event.state();
-            BlockState finalState = states.get(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F);
+            BlockState finalState = states.get(x, y, z);
             if (isMissing(chunkState, finalState)) {
-                missing.add(pos.immutable());
+                missing.add(index);
             } else {
                 if (isWrong(chunkState, finalState, replaceableAsAir)) {
-                    wrong.add(pos.immutable());
+                    wrong.add(index);
                 }
             }
         }
@@ -666,6 +685,14 @@ public class SchematicaController {
             } else {
                 return !chunkState.isAir() && chunkState != finalState;
             }
+        }
+
+        private static int toIndex(int x, int y, int z) {
+            return (x << 8) | (y << 4) | z;
+        }
+
+        private static int toX(int index) {
+            return (index >> 8) & 0x0F;
         }
     }
 }
