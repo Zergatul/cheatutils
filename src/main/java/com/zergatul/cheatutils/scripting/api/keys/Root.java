@@ -16,6 +16,7 @@ public class Root {
     public static MovementApi movement = new MovementApi();
     public static ScaffoldApi scaffold = new ScaffoldApi();
     public static FakeLagApi fakeLag = new FakeLagApi();
+    public static NoFallApi noFall = new NoFallApi();
 
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();
     public static ShulkerTooltipApi shulkerTooltip = new ShulkerTooltipApi();

@@ -9,4 +9,5 @@ public class Root {
     public static FlyHackApi flyHack = new FlyHackApi();
     public static KillAuraApi killAura = new KillAuraApi();
     public static MovementApi movement = new MovementApi();
+    public static NoFallApi noFall = new NoFallApi();
 }
