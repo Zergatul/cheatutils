@@ -103,6 +103,7 @@ public class SchematicaController {
         BlockUtils.PlaceBlockPlan bestPlan = null;
         double bestDistance = Double.MAX_VALUE;
         BlockState finalState = null;
+        Dimension dimension = Dimension.get(mc.level);
 
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int dx = -distance; dx <= distance; dx++) {
@@ -124,6 +125,10 @@ public class SchematicaController {
                     }
 
                     for (Entry entry : entries) {
+                        if (entry.dimension != dimension) {
+                            continue;
+                        }
+
                         BlockState state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
                         if (state.isAir()) {
                             continue;
@@ -163,60 +168,23 @@ public class SchematicaController {
         }
 
         Vec3 view = event.getCamera().getPosition();
-
-        if (config.showMissingBlockTracers) {
-            Vec3 tracerCenter = event.getTracerCenter();
-            double tracerX = tracerCenter.x;
-            double tracerY = tracerCenter.y;
-            double tracerZ = tracerCenter.z;
-
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
-
-            for (Entry entry : entries) {
-                entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
-                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                });
-            }
-
-            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
-        }
-
-        if (config.showMissingBlockCubes) {
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
-
-            for (Entry entry : entries) {
-                entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
-                    double x1 = pos.getX() + 0.25 - view.x;
-                    double y1 = pos.getY() + 0.25 - view.y;
-                    double z1 = pos.getZ() + 0.25 - view.z;
-                    double x2 = x1 + 0.5;
-                    double y2 = y1 + 0.5;
-                    double z2 = z1 + 0.5;
-                    GlUtils.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
-                });
-            }
-
-            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
-        }
+        Dimension dimension = Dimension.get(mc.level);
 
         if (config.showMissingBlockGhosts) {
             RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(true);
             RenderSystem.enableCull();
             RenderSystem.enableBlend();
             RenderSystem.enableTexture();
-            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
+            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 1f/*0.6f*/);
 
             Map<BlockPos, BlockState> ghosts = new HashMap<>();
             for (Entry entry : entries) {
-                entry.forEachMissingState(view, config.missingBlockGhostsMaxDistance, ghosts::put);
+                if (entry.dimension != dimension) {
+                    continue;
+                }
+                entry.forEachMissingState(view, config.missingBlockGhostsMaxDistance, (pos, state) -> {
+                    ghosts.put(pos.immutable(), state);
+                });
             }
 
             BlockPos.MutableBlockPos neighPos = new BlockPos.MutableBlockPos();
@@ -278,6 +246,54 @@ public class SchematicaController {
             }
         }
 
+        if (config.showMissingBlockTracers) {
+            Vec3 tracerCenter = event.getTracerCenter();
+            double tracerX = tracerCenter.x;
+            double tracerY = tracerCenter.y;
+            double tracerZ = tracerCenter.z;
+
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+
+            for (Entry entry : entries) {
+                if (entry.dimension != dimension) {
+                    continue;
+                }
+                entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
+                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                });
+            }
+
+            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+        }
+
+        if (config.showMissingBlockCubes) {
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+
+            for (Entry entry : entries) {
+                if (entry.dimension != dimension) {
+                    continue;
+                }
+                entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
+                    double x1 = pos.getX() + 0.25 - view.x;
+                    double y1 = pos.getY() + 0.25 - view.y;
+                    double z1 = pos.getZ() + 0.25 - view.z;
+                    double x2 = x1 + 0.5;
+                    double y2 = y1 + 0.5;
+                    double z2 = z1 + 0.5;
+                    GlUtils.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
+                });
+            }
+
+            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+        }
+
         if (config.showWrongBlockTracers) {
             Vec3 tracerCenter = event.getTracerCenter();
             double tracerX = tracerCenter.x;
@@ -289,6 +305,9 @@ public class SchematicaController {
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
             for (Entry entry : entries) {
+                if (entry.dimension != dimension) {
+                    continue;
+                }
                 entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
                     bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
                             .color(1f, 1f, 1f, 1f).endVertex();
@@ -306,6 +325,9 @@ public class SchematicaController {
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
             for (Entry entry : entries) {
+                if (entry.dimension != dimension) {
+                    continue;
+                }
                 entry.forEachWrong(view, config.wrongBlockCubesMaxDistance, pos -> {
                     double x1 = pos.getX() + 0.25 - view.x;
                     double y1 = pos.getY() + 0.25 - view.y;
@@ -419,7 +441,9 @@ public class SchematicaController {
         }
 
         public void forEachMissing(Vec3 view, double distance, Consumer<BlockPos> consumer) {
-            double chunkDistance2 = (distance + 23) * (distance + 23);
+            // 16 * sqrt(3) = 27, 16x16x16 diagonal
+            // use 25 for perf
+            double chunkDistance2 = (distance + 25) * (distance + 25);
             double distance2 = distance * distance;
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (Chunk chunk : chunks.values()) {
@@ -439,10 +463,9 @@ public class SchematicaController {
                     int[] elements = section.missing.getElements();
                     for (int i = 0; i < size; i++) {
                         int value = elements[i];
-                        pos.setX(section.minX | (value))
-                    }
-
-                    for (BlockPos pos : section.missing) {
+                        pos.setX(section.minX | ChunkSection.toX(value));
+                        pos.setY(section.minY | ChunkSection.toY(value));
+                        pos.setZ(section.minZ | ChunkSection.toZ(value));
                         if (pos.distToCenterSqr(view) < distance2) {
                             consumer.accept(pos);
                         }
@@ -452,8 +475,11 @@ public class SchematicaController {
         }
 
         public void forEachMissingState(Vec3 view, double distance, BiConsumer<BlockPos, BlockState> consumer) {
-            double chunkDistance2 = (distance + 23) * (distance + 23);
+            // 16 * sqrt(3) = 27, 16x16x16 diagonal
+            // use 25 for perf
+            double chunkDistance2 = (distance + 25) * (distance + 25);
             double distance2 = distance * distance;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (Chunk chunk : chunks.values()) {
                 if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
                     continue;
@@ -467,7 +493,13 @@ public class SchematicaController {
                         continue;
                     }
 
-                    for (BlockPos pos : section.missing) {
+                    int size = section.missing.size();
+                    int[] elements = section.missing.getElements();
+                    for (int i = 0; i < size; i++) {
+                        int value = elements[i];
+                        pos.setX(section.minX | ChunkSection.toX(value));
+                        pos.setY(section.minY | ChunkSection.toY(value));
+                        pos.setZ(section.minZ | ChunkSection.toZ(value));
                         if (pos.distToCenterSqr(view) < distance2) {
                             consumer.accept(pos, section.getBlockState(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F));
                         }
@@ -477,8 +509,11 @@ public class SchematicaController {
         }
 
         public void forEachWrong(Vec3 view, double distance, Consumer<BlockPos> consumer) {
-            double chunkDistance2 = (distance + 23) * (distance + 23);
+            // 16 * sqrt(3) = 27, 16x16x16 diagonal
+            // use 25 for perf
+            double chunkDistance2 = (distance + 25) * (distance + 25);
             double distance2 = distance * distance;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (Chunk chunk : chunks.values()) {
                 if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
                     continue;
@@ -492,7 +527,13 @@ public class SchematicaController {
                         continue;
                     }
 
-                    for (BlockPos pos : section.wrong) {
+                    int size = section.wrong.size();
+                    int[] elements = section.wrong.getElements();
+                    for (int i = 0; i < size; i++) {
+                        int value = elements[i];
+                        pos.setX(section.minX | ChunkSection.toX(value));
+                        pos.setY(section.minY | ChunkSection.toY(value));
+                        pos.setZ(section.minZ | ChunkSection.toZ(value));
                         if (pos.distToCenterSqr(view) < distance2) {
                             consumer.accept(pos);
                         }
@@ -515,12 +556,18 @@ public class SchematicaController {
             long chunkIndex = chunkToChunkIndex(levelChunk);
             Chunk chunk = chunks.get(chunkIndex);
             if (chunk != null) {
-                chunk.onChunkLoaded(levelChunk);
+                chunk.onChunkLoaded(this, levelChunk);
             }
         }
 
         public void onBlockUpdated(BlockUpdateEvent event) {
-            long chunkIndex = blockToChunkIndex(event.pos().getX(), event.pos().getZ());
+            int x = event.pos().getX();
+            int y = event.pos().getY();
+            int z = event.pos().getZ();
+            if (x < x1 || x >= x2 || y < y1 || y >= y2 || z < z1 || z >= z2) {
+                return;
+            }
+            long chunkIndex = blockToChunkIndex(x, z);
             Chunk chunk = chunks.get(chunkIndex);
             if (chunk != null) {
                 chunk.onBlockUpdated(event);
@@ -574,9 +621,9 @@ public class SchematicaController {
             return dx * dx + dz * dz;
         }
 
-        public void onChunkLoaded(LevelChunk chunk) {
+        public void onChunkLoaded(Entry entry, LevelChunk chunk) {
             for (int i = 0; i < sections.length; i++) {
-                sections[i].onChunkLoaded(chunk);
+                sections[i].onChunkLoaded(entry, chunk);
             }
         }
 
@@ -625,17 +672,24 @@ public class SchematicaController {
             return dx * dx + dy * dy + dz * dz;
         }
 
-        public void onChunkLoaded(LevelChunk chunk) {
+        public void onChunkLoaded(Entry entry, LevelChunk chunk) {
             missing.clear();
             wrong.clear();
 
+            int x1 = Math.max(0, entry.x1 - minX);
+            int x2 = Math.min(16, entry.x2 - minX);
+            int y1 = Math.max(0, entry.y1 - minY);
+            int y2 = Math.min(16, entry.y2 - minY);
+            int z1 = Math.max(0, entry.z1 - minZ);
+            int z2 = Math.min(16, entry.z2 - minZ);
+
             boolean replaceableAsAir = ConfigStore.instance.getConfig().schematicaConfig.replaceableAsAir;
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-            for (int x = 0; x < 16; x++) {
+            for (int x = x1; x < x2; x++) {
                 pos.setX(x);
-                for (int y = 0; y < 16; y++) {
+                for (int y = y1; y < y2; y++) {
                     pos.setY(minY | y);
-                    for (int z = 0; z < 16; z++) {
+                    for (int z = z1; z < z2; z++) {
                         pos.setZ(z);
                         BlockState chunkState = chunk.getBlockState(pos);
                         BlockState finalState = states.get(x, y, z);
@@ -693,6 +747,14 @@ public class SchematicaController {
 
         private static int toX(int index) {
             return (index >> 8) & 0x0F;
+        }
+
+        private static int toY(int index) {
+            return (index >> 4) & 0x0F;
+        }
+
+        private static int toZ(int index) {
+            return index & 0x0F;
         }
     }
 }
