@@ -1,19 +1,14 @@
 package com.zergatul.cheatutils.schematics;
 
+import com.zergatul.cheatutils.collections.BitArray;
 import com.zergatul.cheatutils.utils.NbtUtils;
-import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraft.core.IdMapper;
 import net.minecraft.nbt.*;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.stream.StreamSupport;
 
 public class LitematicFile implements SchemaFile {
 
@@ -53,27 +48,18 @@ public class LitematicFile implements SchemaFile {
             throw new InvalidFormatException("More than 1 regions. Not supported.");
         }
 
-        width = 0;
-        height = 0;
-        length = 0;
-        /*width = compound.getShort("Width");
-        height = compound.getShort("Height");
-        length = compound.getShort("Length");
-        blocks = compound.getByteArray("Blocks");
-
-        ValidateSize();
-
-        summary = CreateSummary();
-        palette = CreatePalette();*/
+        width = regions[0].width;
+        height = regions[0].height;
+        length = regions[0].length;
     }
 
     private void ValidateRequiredTags(CompoundTag compound) throws InvalidFormatException {
         if (!NbtUtils.hasInt(compound, "Version")) {
             throw new InvalidFormatException("Invalid NBT structure. [Version] IntTag is required.");
         }
-        if (!NbtUtils.hasInt(compound, "SubVersion")) {
+        /*if (!NbtUtils.hasInt(compound, "SubVersion")) {
             throw new InvalidFormatException("Invalid NBT structure. [SubVersion] IntTag is required.");
-        }
+        }*/
         if (!NbtUtils.hasInt(compound, "MinecraftDataVersion")) {
             throw new InvalidFormatException("Invalid NBT structure. [MinecraftDataVersion] IntTag is required.");
         }
@@ -125,32 +111,32 @@ public class LitematicFile implements SchemaFile {
 
     @Override
     public int getWidth() {
-        return 0;
+        return regions[0].width;
     }
 
     @Override
     public int getHeight() {
-        return 0;
+        return regions[0].height;
     }
 
     @Override
     public int getLength() {
-        return 0;
+        return regions[0].length;
     }
 
     @Override
     public BlockState getBlockState(int x, int y, int z) {
-        return null;
+        return regions[0].getBlockState(x, y, z);
     }
 
     @Override
     public int[] getSummary() {
-        return new int[0];
+        return regions[0].summary;
     }
 
     @Override
     public BlockState[] getPalette() {
-        return new BlockState[0];
+        return regions[0].palette;
     }
 
     @Override
@@ -166,32 +152,36 @@ public class LitematicFile implements SchemaFile {
         private final int height;
         private final int length;
         private final BlockState[] palette;
+        private final BitArray blocks;
+        private final int[] summary;
 
         public Region(String name, CompoundTag compound) throws InvalidFormatException {
             this.name = name;
             this.compound = compound;
 
             CompoundTag sizeTag = compound.getCompound("Size");
-            width = sizeTag.getInt("x");
-            height = sizeTag.getInt("y");
-            length = sizeTag.getInt("z");
+            width = Math.abs(sizeTag.getInt("x"));
+            height = Math.abs(sizeTag.getInt("y"));
+            length = Math.abs(sizeTag.getInt("z"));
 
-            palette = ParsePalette((ListTag) compound.get("BlockStatePalette"));
+            palette = parsePalette((ListTag) compound.get("BlockStatePalette"));
+
+            int bits = Math.max(2, Integer.SIZE - Integer.numberOfLeadingZeros(palette.length - 1));
+            blocks = new BitArray(compound.getLongArray("BlockStates"), bits);
+
+            if (blocks.size() < width * height * length) {
+                throw new InvalidFormatException("[BlockStates] size mismatch.");
+            }
+
+            summary = createSummary();
         }
 
-        public int getWidth() {
-            return width;
+        public BlockState getBlockState(int x, int y, int z) {
+            int index = (y * length + z) * width + x;
+            return palette[blocks.get(index)];
         }
 
-        public int getHeight() {
-            return height;
-        }
-
-        public int getLength() {
-            return length;
-        }
-
-        private BlockState[] ParsePalette(ListTag list) throws InvalidFormatException {
+        private BlockState[] parsePalette(ListTag list) throws InvalidFormatException {
             BlockState[] palette = new BlockState[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag item = (CompoundTag) list.get(i);
@@ -222,7 +212,7 @@ public class LitematicFile implements SchemaFile {
                         if (property == null) {
                             continue BlockStateMappingLoop;
                         }
-                        if (!value.equals(m.tags.get(property).toString())) {
+                        if (!value.equalsIgnoreCase(m.tags.get(property).toString())) {
                             continue BlockStateMappingLoop;
                         }
                     }
@@ -232,12 +222,21 @@ public class LitematicFile implements SchemaFile {
                 }
 
                 if (mapping == null) {
-                    throw new InvalidFormatException("Cannot read BlockState.");
+                    throw new InvalidFormatException(String.format("Cannot find BlockState [%s]%s.", blockId, propertiesTag));
                 }
 
                 palette[i] = mapping.state;
             }
             return palette;
+        }
+
+        private int[] createSummary() {
+            int[] summary = new int[palette.length];
+            int size = width * height * length;
+            for (int i = 0; i < size; i++) {
+                summary[blocks.get(i)]++;
+            }
+            return summary;
         }
     }
 }

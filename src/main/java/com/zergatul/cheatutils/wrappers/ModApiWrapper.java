@@ -36,6 +36,7 @@ public class ModApiWrapper {
     public static final ParameterizedEventHandler<BlockUpdateEvent> ScannerBlockUpdated = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderSolidBlocksEnd = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLast = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderGuiOverlayEvent> PreRenderGuiOverlay = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<PostRenderGuiEvent> PostRenderGui = new ParameterizedEventHandler<>();
@@ -84,6 +85,9 @@ public class ModApiWrapper {
 
         @SubscribeEvent
         public void onRenderLevel(RenderLevelStageEvent event) {
+            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS) {
+                RenderSolidBlocksEnd.trigger(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
+            }
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER) {
                 RenderWorldLast.trigger(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
             }

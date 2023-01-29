@@ -14,7 +14,6 @@ import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FaceInfo;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -27,7 +26,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,7 +33,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -54,6 +51,7 @@ public class SchematicaController {
         ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
         ModApiWrapper.ScannerBlockUpdated.add(this::onBlockUpdated);
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
+        ModApiWrapper.RenderSolidBlocksEnd.add(this::onRenderSolidBlocksEnd);
         ModApiWrapper.RenderWorldLast.add(this::onRender);
 
         Arrays.fill(lastSlotUsage, Long.MIN_VALUE);
@@ -157,7 +155,7 @@ public class SchematicaController {
         }
     }
 
-    private synchronized void onRender(RenderWorldLastEvent event) {
+    private synchronized void onRenderSolidBlocksEnd(RenderWorldLastEvent event) {
         SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
         if (!config.enabled) {
             return;
@@ -173,7 +171,7 @@ public class SchematicaController {
         if (config.showMissingBlockGhosts) {
             RenderSystem.enableDepthTest();
             RenderSystem.enableCull();
-            RenderSystem.enableBlend();
+            RenderSystem.disableBlend(); // transparency
             RenderSystem.enableTexture();
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 1f/*0.6f*/);
 
@@ -188,53 +186,45 @@ public class SchematicaController {
             }
 
             BlockPos.MutableBlockPos neighPos = new BlockPos.MutableBlockPos();
+            List<BakedQuad> quads = new ArrayList<>();
             for (var mapEntry : ghosts.entrySet()) {
                 BlockPos pos = mapEntry.getKey();
                 BlockState state = mapEntry.getValue();
                 BakedModel model = mc.getBlockRenderer().getBlockModel(state);
+
+                quads.clear();
                 for (var direction : Direction.values()) {
-                    neighPos.setX(pos.getX() + direction.getStepX());
+                    quads.addAll(model.getQuads(state, direction, random, ModelData.EMPTY, null));
+                }
+                quads.addAll(model.getQuads(state, null, random, ModelData.EMPTY, null));
+                /*for (var direction : Direction.values())*/ {
+                    /*neighPos.setX(pos.getX() + direction.getStepX());
                     neighPos.setY(pos.getY() + direction.getStepY());
-                    neighPos.setZ(pos.getZ() + direction.getStepZ());
-                    if (!ghosts.containsKey(neighPos)) {
-                        List<BakedQuad> quads = model.getQuads(null, direction, random, ModelData.EMPTY, null);
-                        if (quads.size() > 0) {
-                            BakedQuad quad = quads.get(0);
+                    neighPos.setZ(pos.getZ() + direction.getStepZ());*/
+                    /*if (!ghosts.containsKey(neighPos))*/ {
+                        //List<BakedQuad> quads = model.getQuads(state, null/*direction*/, random, ModelData.EMPTY, null);
+                        for (BakedQuad quad : quads) {
                             TextureAtlasSprite sprite = quad.getSprite();
                             BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
                             RenderSystem.setShaderTexture(0, sprite.atlasLocation());
 
-                            FaceInfo face = FaceInfo.fromFacing(direction);
-                            FaceInfo.VertexInfo info;
+                            int[] vertices = quad.getVertices();
+                            for (int i = 0; i < 4; i++) {
+                                int offset = i * 8;
+                                float x = Float.intBitsToFloat(vertices[offset]);
+                                float y = Float.intBitsToFloat(vertices[offset + 1]);
+                                float z = Float.intBitsToFloat(vertices[offset + 2]);
+                                int color = vertices[offset + 3];
+                                float u = Float.intBitsToFloat(vertices[offset + 4]);
+                                float v = Float.intBitsToFloat(vertices[offset + 5]);
 
-                            info = face.getVertexInfo(0);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU0(), sprite.getV0()).endVertex();
-
-                            info = face.getVertexInfo(1);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU0(), sprite.getV1()).endVertex();
-
-                            info = face.getVertexInfo(2);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU1(), sprite.getV1()).endVertex();
-
-                            info = face.getVertexInfo(3);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU1(), sprite.getV0()).endVertex();
+                                bufferBuilder.vertex(
+                                        pos.getX() + x - view.x,
+                                        pos.getY() + y - view.y,
+                                        pos.getZ() + z - view.z)
+                                        .uv(u, v).color(color).endVertex();
+                            }
 
                             SharedVertexBuffer.instance.bind();
                             SharedVertexBuffer.instance.upload(bufferBuilder.end());
@@ -245,6 +235,20 @@ public class SchematicaController {
                 }
             }
         }
+    }
+
+    private synchronized void onRender(RenderWorldLastEvent event) {
+        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
+        if (!config.enabled) {
+            return;
+        }
+
+        if (mc.level == null) {
+            return;
+        }
+
+        Vec3 view = event.getCamera().getPosition();
+        Dimension dimension = Dimension.get(mc.level);
 
         if (config.showMissingBlockTracers) {
             Vec3 tracerCenter = event.getTracerCenter();
@@ -353,6 +357,10 @@ public class SchematicaController {
         for (Entry entry : entries) {
             entry.onBlockUpdated(event);
         }
+    }
+
+    private static void modelPoint(int[] vertices, int index, BlockPos pos) {
+
     }
 
     private boolean selectItem(SchematicaConfig config, Block block) {

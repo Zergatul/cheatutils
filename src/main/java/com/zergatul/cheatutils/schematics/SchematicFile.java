@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.schematics;
 import com.zergatul.cheatutils.utils.NbtUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -44,7 +43,7 @@ public class SchematicFile implements SchemaFileEditable {
         palette = new BlockState[256];
 
         palette[0] = Blocks.AIR.defaultBlockState();
-        reversePalette = CreateReversePalette();
+        reversePalette = createReversePalette();
         summary[0] = blocks.length;
 
         compound = new CompoundTag();
@@ -55,7 +54,7 @@ public class SchematicFile implements SchemaFileEditable {
     }
 
     private SchematicFile(CompoundTag compound) throws InvalidFormatException {
-        ValidateRequiredTags(compound);
+        validateRequiredTags(compound);
         this.compound = compound;
 
         width = compound.getShort(WIDTH_TAG);
@@ -63,14 +62,14 @@ public class SchematicFile implements SchemaFileEditable {
         length = compound.getShort(LENGTH_TAG);
         blocks = compound.getByteArray(BLOCKS_TAG);
 
-        ValidateSize();
+        validateSize();
 
-        summary = CreateSummary();
-        palette = CreatePalette();
-        reversePalette = CreateReversePalette();
+        summary = createSummary();
+        palette = createPalette();
+        reversePalette = createReversePalette();
     }
 
-    private void ValidateRequiredTags(CompoundTag compound) throws InvalidFormatException {
+    private void validateRequiredTags(CompoundTag compound) throws InvalidFormatException {
         if (!NbtUtils.hasShort(compound, WIDTH_TAG)) {
             throw new InvalidFormatException("Invalid NBT structure. [Width] ShortTag is required.");
         }
@@ -88,7 +87,7 @@ public class SchematicFile implements SchemaFileEditable {
         }
     }
 
-    private void ValidateSize() throws InvalidFormatException {
+    private void validateSize() throws InvalidFormatException {
         if (blocks.length != width * height * length) {
             throw new InvalidFormatException(
                     String.format("[Blocks] ByteArrayTag length is %s, but it should be %s.",
@@ -97,15 +96,15 @@ public class SchematicFile implements SchemaFileEditable {
         }
     }
 
-    private int[] CreateSummary() {
+    private int[] createSummary() {
         int[] summary = new int[256];
-        for (byte block: blocks) {
+        for (byte block : blocks) {
             summary[block & 0xFF]++;
         }
         return summary;
     }
 
-    private BlockState[] CreatePalette() throws InvalidFormatException {
+    private BlockState[] createPalette() throws InvalidFormatException {
         BlockState[] palette = new BlockState[256];
         if (NbtUtils.hasCompound(compound, "SchematicaMapping")) {
             throw new InvalidFormatException("Not implemented");
@@ -133,7 +132,7 @@ public class SchematicFile implements SchemaFileEditable {
         return palette;
     }
 
-    private Map<BlockState, Integer> CreateReversePalette() {
+    private Map<BlockState, Integer> createReversePalette() {
         Map<BlockState, Integer> map = new HashMap<>();
         for (int i = 0; i < 256; i++) {
             BlockState state = palette[i];
