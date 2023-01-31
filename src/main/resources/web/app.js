@@ -53,7 +53,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'AutoDisconnectConfig');
     addComponent(args, 'BlocksConfig');
     addComponent(args, 'EntitiesConfig');
-    addComponent(args, 'EnderPearlPathConfig');
+    addComponent(args, 'ProjectilePathConfig');
     addComponent(args, 'ShulkerTooltipConfig');
     addComponent(args, 'LightLevelConfig');
     addComponent(args, 'EndCityChunksConfig');

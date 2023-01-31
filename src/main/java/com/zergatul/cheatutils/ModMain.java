@@ -44,7 +44,7 @@ public class ModMain {
         register(WorldScannerController.instance);
         register(BlockEspController.instance);
         register(EntityEspController.instance);
-        register(EnderPearlPathController.instance);
+        register(ProjectilePathController.instance);
         register(EndCityChunksController.instance);
         //register(EntityTagsController.instance);
     }

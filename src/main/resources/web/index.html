@@ -69,7 +69,7 @@
                             <button @click="current = 'auto-fish'">Auto Fish</button>
                         </td>
                         <td>
-                            <button @click="current = 'ender-pearl-path'">Ender Pearl Path</button>
+                            <button @click="current = 'projectile-path'">Projectile Path</button>
                         </td>
                         <td>
                             <button @click="current = 'pig-hack'">Pig</button>
@@ -250,10 +250,10 @@
             @back="backToMain()">
         </shulker-tooltip-config>
 
-        <ender-pearl-path-config
-            v-if="current == 'ender-pearl-path'"
+        <projectile-path-config
+            v-if="current == 'projectile-path'"
             @back="backToMain()">
-        </ender-pearl-path-config>
+        </projectile-path-config>
 
         <end-city-chunks-config
             v-if="current == 'end-city-chunks'"

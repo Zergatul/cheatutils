@@ -160,15 +160,15 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("ender-pearl-path", EnderPearlPathConfig.class) {
+        apis.add(new SimpleConfigApi<>("projectile-path", ProjectilePathConfig.class) {
             @Override
-            protected EnderPearlPathConfig getConfig() {
-                return ConfigStore.instance.getConfig().enderPearlPathConfig;
+            protected ProjectilePathConfig getConfig() {
+                return ConfigStore.instance.getConfig().projectilePathConfig;
             }
 
             @Override
-            protected void setConfig(EnderPearlPathConfig config) {
-                ConfigStore.instance.getConfig().enderPearlPathConfig = config;
+            protected void setConfig(ProjectilePathConfig config) {
+                ConfigStore.instance.getConfig().projectilePathConfig = config;
             }
         });
 

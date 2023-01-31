@@ -12,7 +12,7 @@ public class Config {
     public BoatHackConfig boatHackConfig = new BoatHackConfig();
     public AutoDisconnectConfig autoDisconnectConfig = new AutoDisconnectConfig();
     public ShulkerTooltipConfig shulkerTooltipConfig = new ShulkerTooltipConfig();
-    public EnderPearlPathConfig enderPearlPathConfig = new EnderPearlPathConfig();
+    public ProjectilePathConfig projectilePathConfig = new ProjectilePathConfig();
     public ElytraHackConfig elytraHackConfig = new ElytraHackConfig();
     public PigHackConfig pigHackConfig = new PigHackConfig();
     public EndCityChunksConfig endCityChunksConfig = new EndCityChunksConfig();
