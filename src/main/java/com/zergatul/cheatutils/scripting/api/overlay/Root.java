@@ -10,4 +10,5 @@ public class Root {
     public static KillAuraApi killAura = new KillAuraApi();
     public static MovementApi movement = new MovementApi();
     public static NoFallApi noFall = new NoFallApi();
+    public static AutoCriticalsApi autoCriticals = new AutoCriticalsApi();
 }

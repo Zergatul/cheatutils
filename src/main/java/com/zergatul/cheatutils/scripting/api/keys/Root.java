@@ -17,6 +17,7 @@ public class Root {
     public static ScaffoldApi scaffold = new ScaffoldApi();
     public static FakeLagApi fakeLag = new FakeLagApi();
     public static NoFallApi noFall = new NoFallApi();
+    public static AutoCriticalsApi autoCriticals = new AutoCriticalsApi();
 
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();
     public static ShulkerTooltipApi shulkerTooltip = new ShulkerTooltipApi();
