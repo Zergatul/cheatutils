@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.api.keys;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -27,7 +28,17 @@ public class MainApi {
     public void chat(String text) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            Minecraft.getInstance().player.connection.sendChat(text);
+            player.connection.sendChat(text);
+        }
+    }
+
+    @HelpText("for server commands, like /home")
+    public void command(String text) {
+        if (text != null && text.startsWith("/")) {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (player != null) {
+                player.connection.sendCommand(text.substring(1));
+            }
         }
     }
 
