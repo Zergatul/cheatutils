@@ -13,9 +13,8 @@ import net.minecraft.world.entity.projectile.ShulkerBullet;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class KillAuraConfig implements ValidatableConfig {
+public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
 
-    public boolean active;
     public float maxRange;
     public int attackTickInterval;
     public Double maxHorizontalAngle;
@@ -24,7 +23,6 @@ public class KillAuraConfig implements ValidatableConfig {
     public ImmutableList<CustomPriorityEntry> customEntries;
 
     public KillAuraConfig() {
-        active = false;
         maxRange = 6;
         attackTickInterval = 5;
         priorities = new ImmutableList<PriorityEntry>()

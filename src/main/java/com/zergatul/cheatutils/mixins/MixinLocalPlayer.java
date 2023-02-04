@@ -132,6 +132,12 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         if (!MixinMouseHandlerHelper.insideTurnPlayer) {
             return;
         }
+
+        if (ZoomController.instance.isActive()) {
+            xRot *= ZoomController.instance.getFovFactor();
+            yRot *= ZoomController.instance.getFovFactor();
+        }
+
         if (FreeCamController.instance.isActive()) {
             FreeCamController.instance.onMouseTurn(yRot, xRot);
             return;
@@ -139,11 +145,6 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
             if (ConfigStore.instance.getConfig().lockInputsConfig.mouseInputDisabled) {
                 return;
             }
-        }
-
-        if (ZoomController.instance.isActive()) {
-            xRot *= ZoomController.instance.getFovFactor();
-            yRot *= ZoomController.instance.getFovFactor();
         }
 
         super.turn(yRot, xRot);

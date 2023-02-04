@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-public class ShulkerTooltipConfig {
-
-    public boolean enabled;
+public class ShulkerTooltipConfig extends ModuleConfig {
 
     public ShulkerTooltipConfig() {
         enabled = true;

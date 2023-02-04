@@ -44,6 +44,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new StatusOverlayApi());
         apis.add(new ClassNameApi());
         apis.add(new BlockEspRestartApi());
+        apis.add(new GameTickScriptingCodeApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -141,7 +142,7 @@ public class ApiHandler implements HttpHandler {
                 KillAuraConfig oldConfig = ConfigStore.instance.getConfig().killAuraConfig;
                 ConfigStore.instance.getConfig().killAuraConfig = config;
 
-                if (!oldConfig.active && config.active) {
+                if (!oldConfig.enabled && config.enabled) {
                     KillAuraController.instance.onEnabled();
                 }
             }
@@ -555,6 +556,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ReachConfig config) {
                 ConfigStore.instance.getConfig().reachConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("game-tick-scripting", GameTickScriptingConfig.class) {
+            @Override
+            protected GameTickScriptingConfig getConfig() {
+                return ConfigStore.instance.getConfig().gameTickScriptingConfig;
+            }
+
+            @Override
+            protected void setConfig(GameTickScriptingConfig config) {
+                ConfigStore.instance.getConfig().gameTickScriptingConfig.enabled = config.enabled;
             }
         });
     }

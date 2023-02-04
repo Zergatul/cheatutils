@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-public class ArmorOverlayConfig {
-
-    public boolean enabled;
+public class ArmorOverlayConfig extends ModuleConfig {
 
     public ArmorOverlayConfig() {
         enabled = true;

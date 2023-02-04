@@ -112,6 +112,10 @@ public class ScriptController {
         return overlayCompiler.compile(code);
     }
 
+    public Runnable compileKeys(String code) throws ParseException, ScriptCompileException {
+        return keysCompiler.compile(code);
+    }
+
     public static class Script {
         public String name;
         public String code;

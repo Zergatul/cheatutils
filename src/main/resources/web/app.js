@@ -88,6 +88,8 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'ContainerSummaryConfig');
     addComponent(args, 'AutoCraftConfig');
     addComponent(args, 'ReachConfig');
+    addComponent(args, 'GameTickScriptingConfig');
+    addComponent(args, 'ZoomConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

@@ -37,8 +37,13 @@ public class ScriptsDocsApi extends ApiBase {
         Field[] fields = clazz.getDeclaredFields();
         String space = "&nbsp;";
         Arrays.stream(fields).sorted(Comparator.comparing(Field::getName)).forEach(f -> {
-            Method[] methods = f.getType().getDeclaredMethods();
-            Arrays.stream(methods).filter(m -> Modifier.isPublic(m.getModifiers())).sorted(Comparator.comparing(Method::getName)).forEach(m -> {
+            Method[] methods = f.getType().getMethods();
+            Arrays.stream(methods).filter(m -> {
+                if (m.getDeclaringClass() == Object.class) {
+                    return false; // skip Object methods
+                }
+                return Modifier.isPublic(m.getModifiers());
+            }).sorted(Comparator.comparing(Method::getName)).forEach(m -> {
                 Parameter[] parameters = m.getParameters();
                 String paramsStr = Arrays.stream(parameters).map(p -> formatClass(p.getType()) + space + p.getName()).reduce((s1, s2) -> s1 + "," + space + s2).orElse("");
                 String returnStr = "";

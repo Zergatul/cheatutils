@@ -46,7 +46,7 @@ public class KillAuraController {
         ticks++;
 
         KillAuraConfig config = ConfigStore.instance.getConfig().killAuraConfig;
-        if (!config.active) {
+        if (!config.enabled) {
             target = null;
             return;
         }

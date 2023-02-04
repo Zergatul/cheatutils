@@ -710,7 +710,10 @@ public class ScriptingLanguageCompiler {
     }
 
     private Method findMethod(Field field, String name, ScriptingLanguageType[] argumentTypes, BufferVisitor[] argumentVisitors) throws ScriptCompileException {
-        Method method = Arrays.stream(field.getType().getDeclaredMethods()).filter(m -> {
+        Method method = Arrays.stream(field.getType().getMethods()).filter(m -> {
+            if (m.getDeclaringClass() == Objects.class) {
+                return false; // skip Object methods
+            }
             if (!m.getName().equals(name)) {
                 return false;
             }

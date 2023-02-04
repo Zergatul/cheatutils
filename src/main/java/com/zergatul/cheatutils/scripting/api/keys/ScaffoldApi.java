@@ -3,19 +3,10 @@ package com.zergatul.cheatutils.scripting.api.keys;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ScaffoldConfig;
 
-public class ScaffoldApi {
+public class ScaffoldApi extends ModuleApi<ScaffoldConfig> {
 
-    public boolean isEnabled() {
-        var config = getConfig();
-        return config.enabled;
-    }
-
-    public void toggle() {
-        var config = getConfig();
-        config.enabled = !config.enabled;
-    }
-
-    private ScaffoldConfig getConfig() {
+    @Override
+    protected ScaffoldConfig getConfig() {
         return ConfigStore.instance.getConfig().scaffoldConfig;
     }
 }

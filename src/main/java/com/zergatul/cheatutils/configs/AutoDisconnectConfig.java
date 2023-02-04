@@ -1,9 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-public class AutoDisconnectConfig {
-    public boolean enabled;
+public class AutoDisconnectConfig extends ModuleConfig {
 
-    public AutoDisconnectConfig() {
-        enabled = false;
-    }
 }

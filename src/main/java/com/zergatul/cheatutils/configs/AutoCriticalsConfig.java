@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-public class AutoCriticalsConfig {
-    public boolean enabled;
+public class AutoCriticalsConfig extends ModuleConfig {
     public boolean onlyOnGround;
 }

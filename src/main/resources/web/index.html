@@ -112,7 +112,7 @@
                             <button @click="current = 'exploration-mini-map'">Exploration Mini Map</button>
                         </td>
                         <td>
-                            <button @click="current = 'container-summary'">Container Summary</button>
+                            <button @click="current = 'game-tick-scripting'">Game Tick Scripting</button>
                         </td>
                     </tr>
                     <tr>
@@ -127,6 +127,9 @@
                         </td>
                         <td>
                             <button @click="current = 'death-coordinates'">Death Coordinates</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'container-summary'">Container Summary</button>
                         </td>
                     </tr>
                     <tr>
@@ -154,7 +157,7 @@
                             <button @click="current = 'scaffold'">Scaffold</button>
                         </td>
                         <td>
-                            <button @click="current = 'beacons'">Beacons (BETA)</button>
+                            <button @click="current = 'chunks'">Chunks</button>
                         </td>
                     </tr>
                     <tr>
@@ -166,7 +169,7 @@
                             <button @click="current = 'no-fall'">No Fall</button>
                         </td>
                         <td>
-                            <button @click="current = 'chunks'">Chunks</button>
+                            <button @click="current = 'status-effects'">Status Effects</button>
                         </td>
                     </tr>
                     <tr>
@@ -178,7 +181,7 @@
                             <button @click="current = 'fast-break'">Fast Break</button>
                         </td>
                         <td>
-                            <button @click="current = 'status-effects'">Status Effects</button>
+                            <button @click="current = 'particles'">Particles</button>
                         </td>
                     </tr>
                     <tr>
@@ -188,7 +191,15 @@
                             <button @click="current = 'reach'">Reach</button>
                         </td>
                         <td>
-                            <button @click="current = 'particles'">Particles</button>
+                            <button @click="current = 'zoom'">Zoom</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'beacons'">Beacons (BETA)</button>
                         </td>
                     </tr>
                 </tbody>
@@ -419,6 +430,16 @@
             v-if="current == 'reach'"
             @back="backToMain()">
         </reach-config>
+
+        <game-tick-scripting-config
+            v-if="current == 'game-tick-scripting'"
+            @back="backToMain()">
+        </game-tick-scripting-config>
+
+        <zoom-config
+            v-if="current == 'zoom'"
+            @back="backToMain()">
+        </zoom-config>
 
     </div>
 

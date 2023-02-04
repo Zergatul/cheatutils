@@ -1,0 +1,25 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main">
+        <h2 class="module-header">Zoom</h2>
+        <div class="description">
+            Allows you to zoom to see distant objects.
+        </div>
+        <div class="module-sections">
+            <div class="description">
+                Use <b>Game Tick Scripting</b> module to assign key bindings. Example script:
+                <pre>
+if (input.isKeyDown("c"))
+    zoom.start(10, 0.2);
+else
+    zoom.stop();
+                </pre>
+                Here:<br>
+                10 - final FOV<br>
+                0.2 - how quickly zoom (in seconds, can be zero)
+            </div>
+        </div>
+    </div>
+</div>

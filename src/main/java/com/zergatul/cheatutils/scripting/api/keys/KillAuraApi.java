@@ -3,20 +3,10 @@ package com.zergatul.cheatutils.scripting.api.keys;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KillAuraConfig;
 
-public class KillAuraApi {
+public class KillAuraApi extends ModuleApi<KillAuraConfig> {
 
-    public boolean isEnabled() {
-        var config = getConfig();
-        return config.active;
-    }
-
-    public void toggle() {
-        var config = getConfig();
-        config.active = !config.active;
-        ConfigStore.instance.requestWrite();
-    }
-
-    private KillAuraConfig getConfig() {
+    @Override
+    protected KillAuraConfig getConfig() {
         return ConfigStore.instance.getConfig().killAuraConfig;
     }
 }

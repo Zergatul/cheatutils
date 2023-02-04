@@ -24,6 +24,7 @@ public class KeyBindingsController {
         }
 
         ModApiWrapper.RegisterKeyBindings.add(this::onRegisterKeyBindings);
+        ModApiWrapper.HandleKeyBindings.add(this::onHandleKeyBindings);
     }
 
     public void assign(int index, String name) {
@@ -47,7 +48,7 @@ public class KeyBindingsController {
         }
     }
 
-    public void onHandleKeyBindings() {
+    private void onHandleKeyBindings() {
         if (mc.player == null) {
             return;
         }

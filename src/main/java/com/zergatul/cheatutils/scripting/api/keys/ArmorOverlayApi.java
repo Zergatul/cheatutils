@@ -1,13 +1,12 @@
 package com.zergatul.cheatutils.scripting.api.keys;
 
+import com.zergatul.cheatutils.configs.ArmorOverlayConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 
-public class ArmorOverlayApi {
+public class ArmorOverlayApi extends ModuleApi<ArmorOverlayConfig> {
 
-    public void toggle() {
-        var config = ConfigStore.instance.getConfig().armorOverlayConfig;
-        config.enabled = !config.enabled;
-        ConfigStore.instance.requestWrite();
+    @Override
+    protected ArmorOverlayConfig getConfig() {
+        return ConfigStore.instance.getConfig().armorOverlayConfig;
     }
-
 }
