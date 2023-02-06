@@ -147,6 +147,10 @@
                         <td>
                             <button @click="current = 'fog'">Fog</button>
                         </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'world-download'">World Download</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -456,6 +460,11 @@
             v-if="current == 'auto-bucket'"
             @back="backToMain()">
         </auto-bucket-config>
+
+        <world-download-config
+            v-if="current == 'world-download'"
+            @back="backToMain()">
+        </world-download-config>
 
     </div>
 

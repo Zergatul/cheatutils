@@ -92,6 +92,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'ZoomConfig');
     addComponent(args, 'SchematicaConfig');
     addComponent(args, 'AutoBucketConfig');
+    addComponent(args, 'WorldDownloadConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

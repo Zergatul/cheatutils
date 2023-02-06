@@ -49,6 +49,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new GameTickScriptingCodeApi());
         apis.add(new SchematicaUploadApi());
         apis.add(new SchematicaPlaceApi());
+        apis.add(new WorldDownloadApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override

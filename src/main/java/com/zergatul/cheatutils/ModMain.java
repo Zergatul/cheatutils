@@ -55,6 +55,7 @@ public class ModMain {
         //register(EntityTagsController.instance);
         register(GameTickScriptingController.instance);
         register(AutoBucketController.instance);
+        register(WorldDownloadController.instance);
     }
 
     private void register(Object instance) {
