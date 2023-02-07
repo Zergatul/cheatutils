@@ -29,6 +29,11 @@ public class ZoomController {
                 end = begin + (long) (seconds * 1e9);
                 finalFov = fov;
             }
+            case ZOOM_STATIC -> {
+                if (finalFov != fov) {
+                    finalFov = fov;
+                }
+            }
             case ZOOM_OUT -> {
                 state = State.ZOOM_IN;
                 long duration = end - begin;

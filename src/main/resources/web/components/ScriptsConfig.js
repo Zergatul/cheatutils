@@ -1,5 +1,7 @@
+import { addComponent } from '/components/Loader.js'
+
 function createComponent(template) {
-    return {
+    let args = {
         template: template,
         created() {
             this.refresh();
@@ -10,7 +12,8 @@ function createComponent(template) {
                 list: null,
                 name: null,
                 refs: null,
-                script: null
+                script: null,
+                showRefs: false
             };
         },
         methods: {
@@ -20,7 +23,7 @@ function createComponent(template) {
             },
             assign(script) {
                 let self = this;
-                axios.put(`/api/scripts-assign/${script.name}`, script.key).then(function (response) {
+                axios.put(`/api/scripts-assign/${encodeURIComponent(script.name)}`, script.key).then(function (response) {
                     self.list.forEach(s => {
                         if (s != script && s.key == script.key) {
                             s.key = -1;
@@ -66,17 +69,24 @@ function createComponent(template) {
                 }
             },
             showApiRef() {
-                if (this.refs) {
-                    this.refs = null;
+                if (this.showRefs) {
+                    this.showRefs = false;
                 } else {
-                    let self = this;
-                    axios.get('/api/scripts-doc/keys').then(function (response) {
-                        self.refs = response.data;
-                    });
+                    if (this.refs) {
+                        this.showRefs = true;
+                    } else {
+                        let self = this;
+                        axios.get('/api/scripts-doc/keys').then(response => {
+                            self.showRefs = true;
+                            self.refs = response.data;
+                        });
+                    }
                 }
             }
         }
-    }
+    };
+    addComponent(args, 'ScriptEditor');
+    return args;
 }
 
 export { createComponent }

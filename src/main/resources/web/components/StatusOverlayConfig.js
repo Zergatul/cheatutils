@@ -1,5 +1,7 @@
+import { addComponent } from '/components/Loader.js'
+
 function createComponent(template) {
-    return {
+    let args = {
         template: template,
         created() {
             this.refresh();
@@ -7,7 +9,8 @@ function createComponent(template) {
         data() {
             return {
                 config: null,
-                refs: null
+                refs: null,
+                showRefs: false
             };
         },
         methods: {
@@ -26,13 +29,18 @@ function createComponent(template) {
                 });
             },
             showApiRef() {
-                if (this.refs) {
-                    this.refs = null;
+                if (this.showRefs) {
+                    this.showRefs = false;
                 } else {
-                    let self = this;
-                    axios.get('/api/scripts-doc/overlay').then(function (response) {
-                        self.refs = response.data;
-                    });
+                    if (this.refs) {
+                        this.showRefs = true;
+                    } else {
+                        let self = this;
+                        axios.get('/api/scripts-doc/overlay').then(response => {
+                            self.showRefs = true;
+                            self.refs = response.data;
+                        });
+                    }
                 }
             },
             update() {
@@ -42,7 +50,9 @@ function createComponent(template) {
                 });
             }
         }
-    }
+    };
+    addComponent(args, 'ScriptEditor');
+    return args;
 }
 
 export { createComponent }

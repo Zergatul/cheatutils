@@ -23,15 +23,25 @@ public class ScriptCompilerTestEntryPoint {
             program.run();
         } catch (ParseException | ScriptCompileException | IOException e) {
             e.printStackTrace();
+        } catch (Throwable e) {
+            System.out.println("Generic exception!");
+            e.printStackTrace();
         }
 
         int successCount = TestRoot.Assert.getSuccess().size();
         int failCount = TestRoot.Assert.getFail().size();
         System.out.println("Success: " + successCount +", Fail: " + failCount);
+        if (failCount > 0) {
+            System.out.println("Fails:");
+            for (var x : TestRoot.Assert.getFail()) {
+                System.out.println(x);
+            }
+        }
     }
 
     public static class TestRoot {
         public static Assertion Assert = new Assertion();
+        public static Deep deep = new Deep();
     }
 
     public static class Assertion {
@@ -61,6 +71,49 @@ public class ScriptCompilerTestEntryPoint {
 
         public void notEquals(String name, double value1, double value2) {
             (value1 != value2 ? success : fail).add(name);
+        }
+    }
+
+    public static class Deep {
+
+        public Deep1 deep = new Deep1();
+
+        public int getValue() {
+            return 987;
+        }
+    }
+
+    public static class Deep1 {
+
+        public Deep2 deep = new Deep2();
+
+        public int getValue() {
+            return 101;
+        }
+    }
+
+    public static class Deep2 {
+
+        public Deep3 deep = new Deep3();
+
+        public int getValue() {
+            return 654;
+        }
+    }
+
+    public static class Deep3 {
+
+        public Deep4 deep = new Deep4();
+
+        public int getValue() {
+            return 321;
+        }
+    }
+
+    public static class Deep4 {
+
+        public int getValue() {
+            return 100;
         }
     }
 }

@@ -65,7 +65,7 @@ public class ScriptsApi extends ApiBase {
         return "true";
     }
 
-    public class Script {
+    public static class Script {
         public String name;
         public String code;
         public int key;

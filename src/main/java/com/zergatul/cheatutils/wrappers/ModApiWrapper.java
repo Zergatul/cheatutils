@@ -24,7 +24,8 @@ public class ModApiWrapper {
     public static final WrapperRegistry<EntityType<?>> ENTITY_TYPES = new WrapperRegistry<>(ForgeRegistries.ENTITY_TYPES);
 
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
-    public static final SimpleEventHandler HandleKeyBindings = new SimpleEventHandler();
+    public static final SimpleEventHandler BeforeHandleKeyBindings = new SimpleEventHandler();
+    public static final SimpleEventHandler AfterHandleKeyBindings = new SimpleEventHandler();
     public static final ParameterizedEventHandler<Connection> ClientPlayerLoggingIn = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientPlayerLoggingOut = new SimpleEventHandler();
     public static final SimpleEventHandler ChunkLoaded = new SimpleEventHandler();

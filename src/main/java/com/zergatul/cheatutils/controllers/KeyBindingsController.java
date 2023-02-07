@@ -24,7 +24,7 @@ public class KeyBindingsController {
         }
 
         ModApiWrapper.RegisterKeyBindings.add(this::onRegisterKeyBindings);
-        ModApiWrapper.HandleKeyBindings.add(this::onHandleKeyBindings);
+        ModApiWrapper.AfterHandleKeyBindings.add(this::onHandleKeyBindings);
     }
 
     public void assign(int index, String name) {

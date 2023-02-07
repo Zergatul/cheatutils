@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.mixins;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
-import com.zergatul.cheatutils.controllers.KeyBindingsController;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -42,9 +41,14 @@ public class MixinMinecraft {
         ConfigStore.instance.onClose();
     }
 
+    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;handleKeybinds()V")
+    private void onBeforeHandleKeyBindings(CallbackInfo info) {
+        ModApiWrapper.BeforeHandleKeyBindings.trigger();
+    }
+
     @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/Minecraft;handleKeybinds()V")
-    private void onHandleKeyBindings(CallbackInfo info) {
-        ModApiWrapper.HandleKeyBindings.trigger();
+    private void onAfterHandleKeyBindings(CallbackInfo info) {
+        ModApiWrapper.AfterHandleKeyBindings.trigger();
     }
 
     @Inject(at = @At("RETURN"), method = "Lnet/minecraft/client/Minecraft;createTitle()Ljava/lang/String;", cancellable = true)

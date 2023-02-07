@@ -32,6 +32,8 @@ public class ScriptingLanguageCompiler {
     }
 
     public Runnable compile(String program) throws ParseException, ScriptCompileException {
+        program += "\r\n"; // temp fix for error if last token is comment
+
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         String name = "com/zergatul/scripting/dynamic/DynamicClass_" + counter.incrementAndGet();
         writer.visit(V1_5, ACC_PUBLIC, name, null, Type.getInternalName(Object.class), new String[] { Type.getInternalName(Runnable.class) });
@@ -153,12 +155,11 @@ public class ScriptingLanguageCompiler {
     }
 
     private ScriptingLanguageType compile(ASTName name, ASTArguments arguments, CompilerMethodVisitor visitor) throws ScriptCompileException {
-        if (name.jjtGetNumChildren() != 2) {
-            throw new ScriptCompileException("Method call node should have 2 names.");
+        if (name.jjtGetNumChildren() < 2) {
+            throw new ScriptCompileException("Method call node should have at least 2 names.");
         }
 
         String fieldName = (String) ((SimpleNode) name.jjtGetChild(0)).jjtGetValue();
-        String methodName = (String) ((SimpleNode) name.jjtGetChild(1)).jjtGetValue();
 
         Field field;
         try {
@@ -174,6 +175,26 @@ public class ScriptingLanguageCompiler {
                 Type.getInternalName(root),
                 field.getName(),
                 Type.getDescriptor(field.getType()));
+
+        Class<?> currentInstance = field.getType();
+        for (int i = 1; i < name.jjtGetNumChildren() - 1; i++) {
+            fieldName = (String) ((SimpleNode) name.jjtGetChild(i)).jjtGetValue();
+            try {
+                field = currentInstance.getDeclaredField(fieldName);
+            }
+            catch (NoSuchFieldException e) {
+                e.printStackTrace();
+                throw new ScriptCompileException("Cannot find field \"" + fieldName + "\".");
+            }
+
+            visitor.visitFieldInsn(
+                    GETFIELD,
+                    Type.getInternalName(currentInstance),
+                    field.getName(),
+                    Type.getDescriptor(field.getType()));
+
+            currentInstance = field.getType();
+        }
 
         int argsLength;
         ScriptingLanguageType[] methodArgumentTypes;
@@ -192,6 +213,8 @@ public class ScriptingLanguageCompiler {
                 methodArgumentTypes[i] = compile((ASTExpression) argumentList.jjtGetChild(i), methodArgumentVisitors[i]);
             }
         }
+
+        String methodName = (String) ((SimpleNode) name.jjtGetChild(name.jjtGetNumChildren() - 1)).jjtGetValue();
 
         Method method = findMethod(field, methodName, methodArgumentTypes, methodArgumentVisitors);
         if (method == null) {
@@ -349,8 +372,8 @@ public class ScriptingLanguageCompiler {
     }
 
     private ScriptingLanguageType compile(ASTEqualityExpression equalityExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
-        var additiveExpression = (ASTAdditiveExpression) equalityExpression.jjtGetChild(0);
-        ScriptingLanguageType type = compile(additiveExpression, visitor);
+        var relationalExpression = (ASTRelationalExpression) equalityExpression.jjtGetChild(0);
+        ScriptingLanguageType type = compile(relationalExpression, visitor);
 
         int numChildren = equalityExpression.jjtGetNumChildren();
         if (numChildren == 1) {
@@ -361,11 +384,11 @@ public class ScriptingLanguageCompiler {
         for (int i = 1; i < numChildren; i += 2) {
             Node operator = equalityExpression.jjtGetChild(i);
             BufferVisitor bufferVisitor = new BufferVisitor();
-            ScriptingLanguageType typeRight = compile((ASTAdditiveExpression) equalityExpression.jjtGetChild(i + 1), bufferVisitor);
-            Label elseLabel = new Label();
-            Label endLabel = new Label();
+            ScriptingLanguageType typeRight = compile((ASTRelationalExpression) equalityExpression.jjtGetChild(i + 1), bufferVisitor);
             if (typeLeft == typeRight) {
                 bufferVisitor.releaseBuffer(visitor);
+                Label elseLabel = new Label();
+                Label endLabel = new Label();
                 switch (typeLeft) {
                     case BOOLEAN, INT -> {
                         visitor.visitJumpInsn(IF_ICMPEQ, elseLabel);
@@ -417,6 +440,79 @@ public class ScriptingLanguageCompiler {
             typeLeft = ScriptingLanguageType.BOOLEAN;
         }
         return ScriptingLanguageType.BOOLEAN;
+    }
+
+    private ScriptingLanguageType compile(ASTRelationalExpression relationalExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
+        var additiveExpression = (ASTAdditiveExpression) relationalExpression.jjtGetChild(0);
+        ScriptingLanguageType type = compile(additiveExpression, visitor);
+
+        int numChildren = relationalExpression.jjtGetNumChildren();
+        if (numChildren == 1) {
+            return type;
+        }
+
+        ScriptingLanguageType typeLeft = type;
+        for (int i = 1; i < numChildren; i += 2) {
+            Node operator = relationalExpression.jjtGetChild(i);
+            BufferVisitor bufferVisitor = new BufferVisitor();
+            ScriptingLanguageType typeRight = compile((ASTAdditiveExpression) relationalExpression.jjtGetChild(i + 1), bufferVisitor);
+            if (typeLeft == typeRight) {
+                bufferVisitor.releaseBuffer(visitor);
+                Label elseLabel = new Label();
+                Label endLabel = new Label();
+                switch (typeLeft) {
+                    case BOOLEAN, INT -> {
+                        int opcode;
+                        if (operator instanceof ASTLessThan) {
+                            opcode = IF_ICMPLT;
+                        } else if (operator instanceof ASTGreaterThan) {
+                            opcode = IF_ICMPGT;
+                        } else if (operator instanceof ASTLessEquals) {
+                            opcode = IF_ICMPLE;
+                        } else if (operator instanceof ASTGreaterEquals) {
+                            opcode = IF_ICMPGE;
+                        } else {
+                            throw new ScriptCompileException("ASTRelationalExpression: Unknown operator for INT: " + operator.getClass().getName());
+                        }
+                        visitor.visitJumpInsn(opcode, elseLabel);
+                        visitor.visitInsn(ICONST_0);
+                        visitor.visitJumpInsn(GOTO, endLabel);
+                        visitor.visitLabel(elseLabel);
+                        visitor.visitInsn(ICONST_1);
+                        visitor.visitLabel(endLabel);
+                    }
+                    case DOUBLE -> {
+                        int opcode;
+                        if (operator instanceof ASTLessThan) {
+                            opcode = IF_ICMPLT;
+                        } else if (operator instanceof ASTGreaterThan) {
+                            opcode = IF_ICMPGT;
+                        } else if (operator instanceof ASTLessEquals) {
+                            opcode = IF_ICMPLE;
+                        } else if (operator instanceof ASTGreaterEquals) {
+                            opcode = IF_ICMPGE;
+                        } else {
+                            throw new ScriptCompileException("ASTRelationalExpression: Unknown operator for DOUBLE: " + operator.getClass().getName());
+                        }
+                        visitor.visitInsn(DCMPG);
+                        visitor.visitInsn(ICONST_0);
+                        visitor.visitJumpInsn(opcode, elseLabel);
+                        visitor.visitInsn(ICONST_0);
+                        visitor.visitJumpInsn(GOTO, endLabel);
+                        visitor.visitLabel(elseLabel);
+                        visitor.visitInsn(ICONST_1);
+                        visitor.visitLabel(endLabel);
+                    }
+                    case STRING -> throw new ScriptCompileException("ASTRelationalExpression comparing STRING not implemented.");
+                    default -> throw new ScriptCompileException("ASTRelationalExpression type not implemented.");
+                }
+            } else {
+                throw new ScriptCompileException("ASTRelationalExpression comparing different types not implemented.");
+            }
+            typeLeft = ScriptingLanguageType.BOOLEAN;
+        }
+
+        return typeLeft;
     }
 
     private ScriptingLanguageType compile(ASTAdditiveExpression additiveExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
@@ -693,7 +789,7 @@ public class ScriptingLanguageCompiler {
         }
         if (node instanceof ASTIntegerLiteral integerLiteral) {
             int value = Integer.parseInt((String) integerLiteral.jjtGetValue());
-            visitor.visitIntInsn(BIPUSH, value);
+            visitor.visitLdcInsn(value);
             return ScriptingLanguageType.INT;
         }
         if (node instanceof ASTFloatingPointLiteral floatingPointLiteral) {

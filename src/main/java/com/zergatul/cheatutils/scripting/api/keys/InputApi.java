@@ -5,7 +5,6 @@ import com.zergatul.cheatutils.mixins.InputConstantsKeyMapAccessor;
 import com.zergatul.cheatutils.scripting.api.HelpText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.language.I18n;
 
 import java.util.HashMap;
 import java.util.Map;

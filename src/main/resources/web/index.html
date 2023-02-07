@@ -5,6 +5,7 @@
     <title>Zergatul Cheat Utils</title>
     <link rel="stylesheet" type="text/css" href="app.css">
     <script src="axios.js"></script>
+    <script src="ace/ace.js"></script>
 </head>
 <body>
 
@@ -26,6 +27,7 @@
                         <th>ESP</th>
                         <th>Hacks</th>
                         <th>Visuals</th>
+                        <th>Scripting</th>
                         <th>Utility</th>
                     </tr>
                 </thead>
@@ -44,7 +46,10 @@
                             <button @click="current = 'full-bright'">Full Bright</button>
                         </td>
                         <td>
-                            <button @click="current = 'scripts'">Scripts</button>
+                            <button @click="current = 'scripts'">Key Bindings</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'lock-inputs'">Lock Inputs</button>
                         </td>
                     </tr>
                     <tr>
@@ -61,7 +66,10 @@
                             <button @click="current = 'armor-overlay'">Armor Overlay</button>
                         </td>
                         <td>
-                            <button @click="current = 'lock-inputs'">Lock Inputs</button>
+                            <button @click="current = 'status-overlay'">Status Overlay</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'user-name'">User Name</button>
                         </td>
                     </tr>
                     <tr>
@@ -77,8 +85,11 @@
                         <td>
                             <button @click="current = 'shulker-tooltip'">Shulker Tooltip</button>
                         </td>
+                        <td rowspan="2" style="vertical-align: top;">
+                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
+                        </td>
                         <td>
-                            <button @click="current = 'user-name'">User Name</button>
+                            <button @click="current = 'container-summary'">Container Summary</button>
                         </td>
                     </tr>
                     <tr>
@@ -94,9 +105,6 @@
                         <td>
                             <button @click="current = 'advanced-tooltips'">Advanced Tooltips</button>
                         </td>
-                        <td>
-                            <button @click="current = 'status-overlay'">Status Overlay</button>
-                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -111,9 +119,6 @@
                         <td>
                             <button @click="current = 'exploration-mini-map'">Exploration Mini Map</button>
                         </td>
-                        <td>
-                            <button @click="current = 'game-tick-scripting'">Game Tick Scripting</button>
-                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -127,9 +132,6 @@
                         </td>
                         <td>
                             <button @click="current = 'death-coordinates'">Death Coordinates</button>
-                        </td>
-                        <td>
-                            <button @click="current = 'container-summary'">Container Summary</button>
                         </td>
                     </tr>
                     <tr>

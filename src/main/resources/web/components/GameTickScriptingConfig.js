@@ -1,5 +1,7 @@
+import { addComponent } from '/components/Loader.js'
+
 function createComponent(template) {
-    return {
+    let args = {
         template: template,
         created() {
             this.refresh();
@@ -8,7 +10,8 @@ function createComponent(template) {
             return {
                 config: null,
                 code: null,
-                refs: null
+                refs: null,
+                showRefs: false
             };
         },
         methods: {
@@ -29,23 +32,27 @@ function createComponent(template) {
                 });
             },
             showApiRef() {
-                if (this.refs) {
-                    this.refs = null;
+                if (this.showRefs) {
+                    this.showRefs = false;
                 } else {
-                    let self = this;
-                    axios.get('/api/scripts-doc/keys').then(response => {
-                        self.refs = response.data;
-                    });
+                    if (this.refs) {
+                        this.showRefs = true;
+                    } else {
+                        let self = this;
+                        axios.get('/api/scripts-doc/keys').then(response => {
+                            self.showRefs = true;
+                            self.refs = response.data;
+                        });
+                    }
                 }
             },
             update() {
-                //let self = this;
-                axios.post('/api/game-tick-scripting', this.config).then(response => {
-                    //self.config = response.data;
-                });
+                axios.post('/api/game-tick-scripting', this.config);
             }
         }
-    }
+    };
+    addComponent(args, 'ScriptEditor');
+    return args;
 }
 
 export { createComponent }

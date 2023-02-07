@@ -15,32 +15,37 @@ public interface ScriptingLanguageTreeConstants
   public int JJTCONDITIONALOREXPRESSION = 9;
   public int JJTCONDITIONALANDEXPRESSION = 10;
   public int JJTEQUALITYEXPRESSION = 11;
-  public int JJTADDITIVEEXPRESSION = 12;
-  public int JJTMULTIPLICATIVEEXPRESSION = 13;
-  public int JJTUNARYEXPRESSION = 14;
-  public int JJTUNARYEXPRESSIONNOTPLUSMINUS = 15;
-  public int JJTPRIMARYEXPRESSION = 16;
-  public int JJTPRIMARYPREFIX = 17;
-  public int JJTPRIMARYSUFFIX = 18;
-  public int JJTARGUMENTS = 19;
-  public int JJTARGUMENTLIST = 20;
-  public int JJTNAME = 21;
-  public int JJTIDENTIFIER = 22;
-  public int JJTPLUS = 23;
-  public int JJTMINUS = 24;
-  public int JJTMULT = 25;
-  public int JJTDIV = 26;
-  public int JJTMOD = 27;
-  public int JJTEQUALITY = 28;
-  public int JJTINEQUALITY = 29;
-  public int JJTNOT = 30;
-  public int JJTTILDE = 31;
-  public int JJTLITERAL = 32;
-  public int JJTINTEGERLITERAL = 33;
-  public int JJTFLOATINGPOINTLITERAL = 34;
-  public int JJTSTRINGLITERAL = 35;
-  public int JJTBOOLEANLITERAL = 36;
-  public int JJTNULLLITERAL = 37;
+  public int JJTRELATIONALEXPRESSION = 12;
+  public int JJTADDITIVEEXPRESSION = 13;
+  public int JJTMULTIPLICATIVEEXPRESSION = 14;
+  public int JJTUNARYEXPRESSION = 15;
+  public int JJTUNARYEXPRESSIONNOTPLUSMINUS = 16;
+  public int JJTPRIMARYEXPRESSION = 17;
+  public int JJTPRIMARYPREFIX = 18;
+  public int JJTPRIMARYSUFFIX = 19;
+  public int JJTARGUMENTS = 20;
+  public int JJTARGUMENTLIST = 21;
+  public int JJTNAME = 22;
+  public int JJTIDENTIFIER = 23;
+  public int JJTPLUS = 24;
+  public int JJTMINUS = 25;
+  public int JJTMULT = 26;
+  public int JJTDIV = 27;
+  public int JJTMOD = 28;
+  public int JJTEQUALITY = 29;
+  public int JJTINEQUALITY = 30;
+  public int JJTGREATERTHAN = 31;
+  public int JJTLESSTHAN = 32;
+  public int JJTGREATEREQUALS = 33;
+  public int JJTLESSEQUALS = 34;
+  public int JJTNOT = 35;
+  public int JJTTILDE = 36;
+  public int JJTLITERAL = 37;
+  public int JJTINTEGERLITERAL = 38;
+  public int JJTFLOATINGPOINTLITERAL = 39;
+  public int JJTSTRINGLITERAL = 40;
+  public int JJTBOOLEANLITERAL = 41;
+  public int JJTNULLLITERAL = 42;
 
 
   public String[] jjtNodeName = {
@@ -56,6 +61,7 @@ public interface ScriptingLanguageTreeConstants
     "ConditionalOrExpression",
     "ConditionalAndExpression",
     "EqualityExpression",
+    "RelationalExpression",
     "AdditiveExpression",
     "MultiplicativeExpression",
     "UnaryExpression",
@@ -74,6 +80,10 @@ public interface ScriptingLanguageTreeConstants
     "Mod",
     "Equality",
     "Inequality",
+    "GreaterThan",
+    "LessThan",
+    "GreaterEquals",
+    "LessEquals",
     "Not",
     "Tilde",
     "Literal",
@@ -84,4 +94,4 @@ public interface ScriptingLanguageTreeConstants
     "NullLiteral",
   };
 }
-/* JavaCC - OriginalChecksum=f6113c3fb2b7b90401ba502221ccfd80 (do not edit this line) */
+/* JavaCC - OriginalChecksum=d3fcd7a50d497fc7da5b036cdc9619bf (do not edit this line) */

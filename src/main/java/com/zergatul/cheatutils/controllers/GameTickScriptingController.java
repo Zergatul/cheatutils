@@ -11,7 +11,7 @@ public class GameTickScriptingController {
     private Runnable script;
 
     private GameTickScriptingController() {
-        ModApiWrapper.HandleKeyBindings.add(this::onHandleKeyBindings);
+        ModApiWrapper.BeforeHandleKeyBindings.add(this::onHandleKeyBindings);
     }
 
     public void setScript(Runnable script) {

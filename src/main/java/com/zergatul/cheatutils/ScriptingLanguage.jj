@@ -5,8 +5,8 @@ javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatu
 */
 
 /*
-jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
-javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
+.\jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
+.\javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
 */
 
 PARSER_BEGIN(ScriptingLanguage)
@@ -48,7 +48,7 @@ TOKEN :
       | <HEX_LITERAL> (["l","L"])?
   >
 |
-  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* | "0" >
 |
   < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
 |
@@ -175,7 +175,13 @@ void ConditionalAndExpression() :
 void EqualityExpression() :
 {}
 {
-  AdditiveExpression() ( ( Equality() | Inequality() ) AdditiveExpression() )*
+  RelationalExpression() ( ( Equality() | Inequality() ) RelationalExpression() )*
+}
+
+void RelationalExpression() :
+{}
+{
+  AdditiveExpression() ( ( LessThan() | GreaterThan() | LessEquals() | GreaterEquals() ) AdditiveExpression() )*
 }
 
 void AdditiveExpression() :
@@ -297,6 +303,30 @@ void Inequality() :
 {}
 {
   "!="
+}
+
+void GreaterThan() :
+{}
+{
+  ">"
+}
+
+void LessThan() :
+{}
+{
+  "<"
+}
+
+void GreaterEquals() :
+{}
+{
+  ">="
+}
+
+void LessEquals() :
+{}
+{
+  "<="
 }
 
 void Not() :

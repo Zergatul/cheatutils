@@ -669,21 +669,16 @@ ul.scripts-list span {
     align-items: center;
 }
 
-textarea.script-code {
-    box-sizing: border-box;
-    font-family: monospace;
-    font-size: 16px;
-    width: 100%;
-}
-
 ul.refs {
     list-style: none;
     width: 1000px;
+    height: 600px;
     border: 4px solid rgb(0, 0, 0);
     border-radius: 2px;
     padding: 0;
     font-family: monospace;
     font-size: 16px;
+    overflow: auto;
 }
 
 ul.refs > li {
@@ -707,4 +702,9 @@ ul.refs .comment {
 ul.item-list > li {
     align-items: center;
     gap: 12px;
+}
+
+div.script-editor {
+    width: 1000px;
+    height: 600px;
 }
