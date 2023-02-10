@@ -37,12 +37,11 @@ public class ScriptsDocsApi extends ApiBase {
     private List<String> generateRootRefs(Class<?> clazz) {
         List<String> refs = new ArrayList<>();
 
-        Field[] fields = clazz.getDeclaredFields();
-        Arrays.stream(fields).sorted(Comparator.comparing(Field::getName)).forEach(field -> {
+        getFields(clazz, false).sorted(Comparator.comparing(Field::getName)).forEach(field -> {
             getMethods(field.getType()).forEach(method -> {
                 refs.add(generateHtml(field.getName(), method));
             });
-            Arrays.stream(field.getType().getFields()).forEach(f -> {
+            getFields(field.getType(), true).forEach(f -> {
                 String prefix = field.getName() + "." + f.getName();
                 refs.addAll(generateChildRefs(prefix, f.getType()));
             });
@@ -60,7 +59,7 @@ public class ScriptsDocsApi extends ApiBase {
 
         Field[] fields = clazz.getDeclaredFields();
         Arrays.stream(fields).filter(f -> Modifier.isPublic(f.getModifiers())).sorted(Comparator.comparing(Field::getName)).forEach(field -> {
-            Arrays.stream(field.getType().getFields()).forEach(f -> {
+            getFields(field.getType(), true).forEach(f -> {
                 String prefixInner = prefix + "." + field.getName() + "." + f.getName();
                 refs.addAll(generateChildRefs(prefixInner, f.getType()));
             });
@@ -77,6 +76,12 @@ public class ScriptsDocsApi extends ApiBase {
             }
             return Modifier.isPublic(m.getModifiers());
         }).sorted(Comparator.comparing(Method::getName));
+    }
+
+    private Stream<Field> getFields(Class<?> clazz, boolean isInstance) {
+        return Arrays.stream(clazz.getFields())
+                .filter(f -> Modifier.isPublic(f.getModifiers()))
+                .filter(f -> isInstance ^ Modifier.isStatic(f.getModifiers()));
     }
 
     private String generateHtml(String prefix, Method method) {

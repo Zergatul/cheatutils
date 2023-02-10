@@ -623,7 +623,7 @@ public class ApiHandler implements HttpHandler {
         catch (HttpException e) {
             sendMessage(exchange, 503, e.getMessage());
         }
-        catch (Exception e) {
+        catch (Throwable e) {
             sendMessage(exchange, 500, e.getMessage());
         }
     }

@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
@@ -60,6 +61,22 @@ public class MainApi {
 
     public String getCoordinates() {
         return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
+    }
+
+    @HelpText("If you are in the Overworld, returns calculated coordinates in the Nether")
+    public String getCalcNetherCoordinates() {
+        if (mc.level == null || mc.level.dimension() == Level.NETHER) {
+            return "";
+        }
+        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() / 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() / 8);
+    }
+
+    @HelpText("If you are in the Nether, returns calculated coordinates in the Overworld")
+    public String getCalcOverworldCoordinates() {
+        if (mc.level == null || mc.level.dimension() == Level.OVERWORLD) {
+            return "";
+        }
+        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() * 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() * 8);
     }
 
     public boolean isDebugScreenEnabled() {
@@ -182,6 +199,9 @@ public class MainApi {
     }
 
     public String getBiome() {
+        if (mc.level == null || mc.getCameraEntity() == null) {
+            return "";
+        }
         BlockPos blockPos = mc.getCameraEntity().blockPosition();
         Holder<Biome> holder = mc.level.getBiome(blockPos);
         return holder.unwrap().map(id -> id.location().toString(), biome -> "[unregistered " + biome + "]");
