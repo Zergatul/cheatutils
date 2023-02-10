@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.scripting.api.keys;
 
+import com.zergatul.cheatutils.scripting.api.Variables;
+
 public class Root {
 
     public static MainApi main = new MainApi();
@@ -26,6 +28,7 @@ public class Root {
     public static ZoomApi zoom = new ZoomApi();
     public static LockInputsApi lockInputs = new LockInputsApi();
 
+    public static Variables variables = Variables.instance;
     public static GameApi game = new GameApi();
     public static PlayerApi player = new PlayerApi();
     public static KeysApi keys = new KeysApi();

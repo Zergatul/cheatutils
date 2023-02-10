@@ -1,7 +1,11 @@
 package com.zergatul.cheatutils.scripting.api.overlay;
 
+import com.zergatul.cheatutils.scripting.api.Variables;
+
 public class Root {
     public static MainApi main = new MainApi();
+    public static Variables variables = Variables.instance;
+    public static GameApi game = new GameApi();
     public static BlocksApi blocks = new BlocksApi();
     public static EntitiesApi entities = new EntitiesApi();
     public static FreeCamApi freeCam = new FreeCamApi();
