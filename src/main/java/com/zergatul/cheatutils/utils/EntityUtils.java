@@ -78,16 +78,24 @@ public class EntityUtils {
 
         EntityType playerEntityType = ModApiWrapper.ENTITY_TYPES.getValue(new ResourceLocation("minecraft:player"));
 
-        HashSet<EntityInfo> set = new HashSet<>();
+        List<EntityInfo> finalClasses = new ArrayList<>();
+
+        EntityInfo playerInfo = null;
         try {
-            set.add(new EntityInfo(Player.class, "minecraft:player"));
+            playerInfo = new EntityInfo(Player.class, "minecraft:player");
         }
         catch (Exception ex) {
             ex.printStackTrace();
         }
 
+        HashSet<EntityInfo> set = new HashSet<>();
+        if (playerInfo != null) {
+            finalClasses.add(playerInfo);
+            set.add(playerInfo);
+        }
+
         Level level = new FakeLevel();
-        List<EntityInfo> finalClasses = ModApiWrapper.ENTITY_TYPES.getValues().stream().map(et -> {
+        ModApiWrapper.ENTITY_TYPES.getValues().stream().map(et -> {
             if (et == playerEntityType) {
                 return null;
             }
@@ -107,7 +115,7 @@ public class EntityUtils {
                 throwable.printStackTrace();
                 return null;
             }
-        }).filter(Objects::nonNull).toList();
+        }).filter(Objects::nonNull).forEach(finalClasses::add);
 
         Set<Class<?>> interfaces = new HashSet<>();
 
@@ -159,8 +167,8 @@ public class EntityUtils {
         public Class clazz;
         public boolean isInterface;
         public String simpleName;
-        public List<String> baseClasses;
-        public List<String> interfaces;
+        public List<Class> baseClasses;
+        public List<Class> interfaces;
         public String id;
 
         public EntityInfo(Class clazz) throws Exception {
@@ -185,14 +193,11 @@ public class EntityUtils {
                 baseClasses = new ArrayList<>();
                 while (clazz != Entity.class) {
                     clazz = clazz.getSuperclass();
-                    baseClasses.add(clazz.getSimpleName());
+                    baseClasses.add(clazz);
                 }
 
                 interfaces = new ArrayList<>();
-                forEachInterface(this.clazz, iface -> {
-                    String interfaceName = iface.getSimpleName();
-                    interfaces.add(interfaceName);
-                });
+                forEachInterface(this.clazz, iface -> interfaces.add(iface));
             }
         }
 

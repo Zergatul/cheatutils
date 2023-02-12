@@ -47,6 +47,8 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ClassNameApi());
         apis.add(new BlockEspRestartApi());
         apis.add(new GameTickScriptingCodeApi());
+        apis.add(new SchematicaUploadApi());
+        apis.add(new SchematicaPlaceApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -570,6 +572,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(GameTickScriptingConfig config) {
                 ConfigStore.instance.getConfig().gameTickScriptingConfig.enabled = config.enabled;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("schematica", SchematicaConfig.class) {
+            @Override
+            protected SchematicaConfig getConfig() {
+                return ConfigStore.instance.getConfig().schematicaConfig;
+            }
+
+            @Override
+            protected void setConfig(SchematicaConfig config) {
+                ConfigStore.instance.getConfig().schematicaConfig = config;
             }
         });
     }

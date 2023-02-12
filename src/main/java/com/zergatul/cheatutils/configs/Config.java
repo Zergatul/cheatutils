@@ -50,6 +50,7 @@ public class Config {
     public ReachConfig reachConfig = new ReachConfig();
     public GameTickScriptingConfig gameTickScriptingConfig = new GameTickScriptingConfig();
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
+    public SchematicaConfig schematicaConfig = new SchematicaConfig();
 
     public Config() {
         esp = true;

@@ -90,6 +90,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'ReachConfig');
     addComponent(args, 'GameTickScriptingConfig');
     addComponent(args, 'ZoomConfig');
+    addComponent(args, 'SchematicaConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

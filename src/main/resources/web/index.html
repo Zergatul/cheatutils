@@ -187,7 +187,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'schematica'">Schematica</button>
+                        </td>
                         <td></td>
                         <td>
                             <button @click="current = 'reach'">Reach</button>
@@ -442,6 +444,11 @@
             v-if="current == 'zoom'"
             @back="backToMain()">
         </zoom-config>
+
+        <schematica-config
+            v-if="current == 'schematica'"
+            @back="backToMain()">
+        </schematica-config>
 
     </div>
 

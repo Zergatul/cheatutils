@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,6 +29,7 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
+            .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
@@ -148,6 +150,7 @@ public class ConfigStore {
         config.explorationMiniMapConfig.validate();
         config.reachConfig.validate();
         config.lightLevelConfig.validate();
+        config.schematicaConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

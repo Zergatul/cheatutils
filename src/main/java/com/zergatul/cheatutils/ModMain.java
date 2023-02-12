@@ -2,8 +2,10 @@ package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
+import com.zergatul.cheatutils.schematics.SchematicFile;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -12,8 +14,12 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 @Mod(ModMain.MODID)
 public class ModMain {
@@ -106,4 +112,28 @@ public class ModMain {
         ArmorOverlayController.instance.onRegister(event);
         BetterStatusEffectsController.instance.onRegister(event);
     }
+
+    /*private static void multiply(String smallPath, String bigPath) {
+        try {
+            var input = new FileInputStream(smallPath);
+            byte[] data = IOUtils.toByteArray(input);
+            input.close();
+
+            var small = new SchematicFile(data);
+            var big = new SchematicFile(small.getWidth() * 2, small.getHeight() * 2, small.getLength() * 2);
+            big.setPaletteEntry(49, Blocks.OBSIDIAN);
+            small.copyTo(big, 0, 0, 0);
+            small.copyTo(big, small.getWidth(), 0, 0);
+            small.copyTo(big, 0, 0, small.getLength());
+            small.copyTo(big, small.getWidth(), 0, small.getLength());
+            small.copyTo(big, small.getWidth() / 2, small.getHeight(), small.getLength() / 2);
+
+            var output = new FileOutputStream(bigPath);
+            big.write(output);
+            output.close();
+        }
+        catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }*/
 }
