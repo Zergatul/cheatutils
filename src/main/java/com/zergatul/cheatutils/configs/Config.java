@@ -49,6 +49,7 @@ public class Config {
     public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
     public ReachConfig reachConfig = new ReachConfig();
     public GameTickScriptingConfig gameTickScriptingConfig = new GameTickScriptingConfig();
+    public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
 
     public Config() {
         esp = true;

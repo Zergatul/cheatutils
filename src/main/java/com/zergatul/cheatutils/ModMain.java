@@ -48,6 +48,7 @@ public class ModMain {
         register(EndCityChunksController.instance);
         //register(EntityTagsController.instance);
         register(GameTickScriptingController.instance);
+        register(AutoBucketController.instance);
     }
 
     private void register(Object instance) {
