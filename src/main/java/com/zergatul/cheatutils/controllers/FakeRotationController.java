@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.utils.RotationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -19,13 +20,8 @@ public class FakeRotationController {
     }
 
     public void setServerRotation(Vec3 pos) {
-        LocalPlayer player = mc.player;
-        Vec3 eyePos = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
-        Vec3 diff = pos.subtract(eyePos);
-        double diffXZ = Math.sqrt(diff.x * diff.x + diff.y * diff.y);
-        float xRot = (float)Math.toDegrees(-Math.atan2(diff.y, diffXZ));
-        float yRot = (float)Math.toDegrees(Math.atan2(diff.z, diff.x)) - 90F;
-        setServerRotation(xRot, yRot);
+        RotationUtils.Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), pos);
+        setServerRotation(rotation.xRot(), rotation.yRot());
     }
 
     public void setServerRotation(float xRot, float yRot) {

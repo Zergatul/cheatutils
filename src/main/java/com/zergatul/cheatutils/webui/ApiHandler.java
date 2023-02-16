@@ -586,6 +586,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().schematicaConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("auto-bucket", AutoBucketConfig.class) {
+            @Override
+            protected AutoBucketConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoBucketConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoBucketConfig config) {
+                ConfigStore.instance.getConfig().autoBucketConfig = config;
+            }
+        });
     }
 
     @Override

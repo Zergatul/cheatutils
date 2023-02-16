@@ -151,6 +151,7 @@ public class ConfigStore {
         config.reachConfig.validate();
         config.lightLevelConfig.validate();
         config.schematicaConfig.validate();
+        config.autoBucketConfig.validate();
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

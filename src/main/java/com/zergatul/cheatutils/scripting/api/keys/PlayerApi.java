@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.scripting.api.keys;
 
+import com.zergatul.cheatutils.utils.RotationUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
 
 public class PlayerApi {
 
@@ -53,5 +55,14 @@ public class PlayerApi {
             return;
         }
         mc.player.setYRot((float)value);
+    }
+
+    public void lookAt(double x, double y, double z) {
+        if (mc.player == null) {
+            return;
+        }
+        RotationUtils.Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), new Vec3(x, y, z));
+        mc.player.setXRot(rotation.xRot());
+        mc.player.setYRot(rotation.yRot());
     }
 }

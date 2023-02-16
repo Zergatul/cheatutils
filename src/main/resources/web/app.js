@@ -91,6 +91,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'GameTickScriptingConfig');
     addComponent(args, 'ZoomConfig');
     addComponent(args, 'SchematicaConfig');
+    addComponent(args, 'AutoBucketConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

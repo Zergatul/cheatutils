@@ -188,7 +188,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'schematica'">Schematica</button>
+                            <button @click="current = 'schematica'">Schematica (ALPHA)</button>
                         </td>
                         <td></td>
                         <td>
@@ -199,7 +199,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-bucket'">Auto Bucket (BETA)</button>
+                        </td>
                         <td></td>
                         <td></td>
                         <td>
@@ -449,6 +451,11 @@
             v-if="current == 'schematica'"
             @back="backToMain()">
         </schematica-config>
+
+        <auto-bucket-config
+            v-if="current == 'auto-bucket'"
+            @back="backToMain()">
+        </auto-bucket-config>
 
     </div>
 

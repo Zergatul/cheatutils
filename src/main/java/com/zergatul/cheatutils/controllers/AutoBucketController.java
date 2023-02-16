@@ -4,16 +4,20 @@ import com.zergatul.cheatutils.configs.AutoBucketConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.interfaces.ServerboundMovePlayerPacketMixinInterface;
 import com.zergatul.cheatutils.utils.BlockUtils;
+import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.logging.log4j.LogManager;
@@ -65,7 +69,7 @@ public class AutoBucketController {
         double hw = mc.player.getBbWidth() / 2;
         double px1 = mc.player.getX() - hw;
         double px2 = mc.player.getX() + hw;
-        double py = mc.player.getY();
+        double py = mc.player.getY() - 0.2; // from entity.getOnPosLegacy
         double pz1 = mc.player.getZ() - hw;
         double pz2 = mc.player.getZ() + hw;
         Set<BlockPos> checked = new HashSet<>();
@@ -94,6 +98,10 @@ public class AutoBucketController {
                 if (!checked.contains(pos)) {
                     checked.add(pos);
                     BlockState state = mc.level.getBlockState(pos);
+                    if (isOkToFallOn(state)) {
+                        continue;
+                    }
+                    // TODO: check shape, check waterlogged state?
                     VoxelShape shape = state.getCollisionShape(mc.level, pos);
                     if (Block.isShapeFullBlock(shape)) {
                         collisionPos = pos;
@@ -112,10 +120,34 @@ public class AutoBucketController {
             return;
         }
 
-        if (stack.getItem() instanceof BlockItem) {
-            BlockUtils.placeBlock(mc, collisionPos.above());
-        } else {
+        //logger.info("Collision pos = " + collisionPos);
 
+        if (stack.getItem() instanceof BlockItem) {
+            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(collisionPos.above());
+            if (plan == null) {
+                return;
+            }
+            double d2 = plan.destination().distToCenterSqr(mc.player.position());
+            if (d2 < 16) {
+                BlockUtils.applyPlacingPlan(plan, true);
+            }
+        } else {
+            Vec3 lookAt = new Vec3(
+                    collisionPos.getX() + 0.5,
+                    collisionPos.getY() + 1,
+                    collisionPos.getZ() + 0.5);
+            RotationUtils.Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), lookAt);
+            //logger.info("Rotate x=" + rotation.xRot() + " y=" + rotation.yRot());
+            float oldXRot = mc.player.getXRot();
+            float oldYRot = mc.player.getYRot();
+            mc.player.setXRot(rotation.xRot());
+            mc.player.setYRot(rotation.yRot());
+            HitResult result = mc.player.pick(mc.gameMode.getPickRange(), 1, true);
+            if (result.getType() != HitResult.Type.MISS) {
+                mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
+            }
+            mc.player.setXRot(oldXRot);
+            mc.player.setYRot(oldYRot);
         }
     }
 
@@ -148,5 +180,15 @@ public class AutoBucketController {
             }
         }
         return null;
+    }
+
+    private boolean isOkToFallOn(BlockState state) {
+        if (state.getBlock() == Blocks.SLIME_BLOCK) {
+            return true;
+        }
+        if (state.getBlock() == Blocks.COBWEB) {
+            return true;
+        }
+        return false;
     }
 }
