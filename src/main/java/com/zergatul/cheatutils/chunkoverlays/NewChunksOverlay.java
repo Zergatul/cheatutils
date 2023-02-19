@@ -32,6 +32,9 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
         oldChunkImage = loadImage("textures/newchunks/old.png");
         newChunkImage = loadImage("textures/newchunks/new.png");
         semiNewChunkImage = loadImage("textures/newchunks/seminew.png");
+
+        // TODO: check better way
+        //new LevelChunk(mc.level, new ChunkPos(0,0)).replaceWithPacketData();
     }
 
     @Override
@@ -63,11 +66,8 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
                 for (int y = dimension.getMinY(); y <= height; y++) {
                     pos.setY(y);
                     BlockState blockState = chunk.getBlockState(pos);
-                    if (blockState.getBlock() instanceof LiquidBlock) {
-                        FluidState fluidState = blockState.getFluidState();
-                        if (!fluidState.isSource()) {
-                            entry.addExistingFlow(x, y - dimension.getMinY(), z);
-                        }
+                    if (isFlowingLiquid(blockState)) {
+                        entry.addExistingFlow(x, y - dimension.getMinY(), z);
                     }
                 }
             }
@@ -93,12 +93,7 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
 
     @Override
     protected void processBlockChange(Dimension dimension, ChunkPos chunkPos, Segment segment, BlockPos pos, BlockState state) {
-        if (!(state.getBlock() instanceof LiquidBlock)) {
-            return;
-        }
-
-        FluidState fluidState = state.getFluidState();
-        if (fluidState.isSource()) {
+        if (!isFlowingLiquid(state)) {
             return;
         }
 
@@ -158,6 +153,11 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
                 segment.image.setPixelRGBA(xf + dx, yf + dy, image.getPixelRGBA(dx, dy));
             }
         }
+    }
+
+    private boolean isFlowingLiquid(BlockState blockState) {
+        FluidState fluidState = blockState.getFluidState();
+        return !fluidState.isEmpty() && !fluidState.isSource();
     }
 
     private NativeImage loadImage(String filename) {

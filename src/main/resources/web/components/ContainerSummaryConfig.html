@@ -16,5 +16,13 @@
                 <span>Enabled</span>
             </label>
         </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.showForInventory"
+                    @change="update()">
+                <span>Show for player inventory</span>
+            </label>
+        </div>
     </fieldset>
 </div>

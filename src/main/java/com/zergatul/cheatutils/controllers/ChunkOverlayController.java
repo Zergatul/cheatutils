@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.chunkoverlays.AbstractChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
+import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
 import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.GuiUtils;
@@ -45,6 +46,7 @@ public class ChunkOverlayController {
     private ChunkOverlayController() {
         register(new ExplorationMiniMapChunkOverlay(SegmentSize, UpdateDelay));
         register(new NewChunksOverlay(SegmentSize, UpdateDelay));
+        register(new WorldDownloadChunkOverlay(SegmentSize, UpdateDelay));
 
         ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
         ModApiWrapper.ScannerBlockUpdated.add(this::onBlockChanged);

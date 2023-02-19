@@ -65,7 +65,7 @@ public abstract class AbstractChunkOverlay {
             return;
         }
 
-        Map<SegmentPos, Segment> segments = dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
+        Map<SegmentPos, Segment> segments = getSegmentsMap(dimension);
 
         queue.add(() -> {
             if (!drawChunk(dimension, segments, chunk)) {
@@ -129,8 +129,7 @@ public abstract class AbstractChunkOverlay {
     }
 
     public final Collection<Segment> getSegments(Dimension dimension) {
-        Map<SegmentPos, Segment> segments = dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
-        return segments.values();
+        return getSegmentsMap(dimension).values();
     }
 
     public final int getScanningQueueCount() {
@@ -152,6 +151,10 @@ public abstract class AbstractChunkOverlay {
 
     public void onPostDrawSegments(Dimension dimension, PoseStack poseStack, float xp, float zp, float xc, float zc, float multiplier) {
 
+    }
+
+    protected final Map<SegmentPos, Segment> getSegmentsMap(Dimension dimension) {
+        return dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
     }
 
     protected abstract boolean drawChunk(Dimension dimension, Map<SegmentPos, Segment> segments, LevelChunk chunk);

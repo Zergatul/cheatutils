@@ -599,6 +599,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().autoBucketConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("performance", PerformanceConfig.class) {
+            @Override
+            protected PerformanceConfig getConfig() {
+                return ConfigStore.instance.getConfig().performanceConfig;
+            }
+
+            @Override
+            protected void setConfig(PerformanceConfig config) {
+                ConfigStore.instance.getConfig().performanceConfig = config;
+            }
+        });
     }
 
     @Override

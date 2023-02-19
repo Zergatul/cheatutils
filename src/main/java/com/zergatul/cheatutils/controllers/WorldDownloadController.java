@@ -1,24 +1,19 @@
 package com.zergatul.cheatutils.controllers;
+
 import com.mojang.serialization.Codec;
-import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
+import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.SectionPos;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.LongArrayTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LightLayer;
+import net.minecraft.nbt.*;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
@@ -30,12 +25,16 @@ import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.storage.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WorldDownloadController {
 
@@ -49,16 +48,33 @@ public class WorldDownloadController {
                     BlockState.CODEC,
                     PalettedContainer.Strategy.SECTION_STATES,
                     Blocks.AIR.defaultBlockState());
-    private volatile ChunkStorage chunkStorage;
+    private volatile Map<ResourceKey<Level>, ChunkStorage> chunkStorages;
+    private LevelStorageSource.LevelStorageAccess access;
+
+    private final Object loopWaitEvent = new Object();
+    private volatile boolean stopRequested;
+    private volatile Thread thread;
+    private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
     //private EntityStorage entityStorage;
 
+    // net.minecraft.world.level.storage.LevelResource
+    // PrimaryLevelData
+
     public WorldDownloadController() {
-        ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
+        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        //ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
     }
 
-    public void begin(String name) {
-        if (chunkStorage != null) {
-            end();
+    public boolean isActive() {
+        return chunkStorages != null;
+    }
+
+    public void start(String name) throws Exception {
+        stop();
+
+        File file = new File("./saves/" + name + "/level.dat");
+        if (!file.exists()) {
+            throw new IllegalStateException("World [" + name + "] doesn't exist in [saves] directory.");
         }
 
         /*entityStorage = new EntityStorage(
@@ -67,32 +83,129 @@ public class WorldDownloadController {
                 null, // data fixer
                 true, // sync
                 this::execute);*/
-        chunkStorage = new ChunkStorage(
-                Path.of("C:\\Users\\Zergatul\\source\\repos\\cheatutils-1.19.3-forge\\run\\saves\\dl-test\\region"),
-                null, // data fixer
-                true); // sync
-    }
-
-    public void end() {
-        ChunkStorage storage = chunkStorage;
-        chunkStorage = null;
 
         try {
-            storage.flushWorker();
-            storage.close();
+            /*WorldOpenFlows worldOpenFlows = mc.createWorldOpenFlows();
+            WorldOpenFlowsMixinInterface worldOpenFlows2 = (WorldOpenFlowsMixinInterface) worldOpenFlows;
+            // copy from WorldOpenFlows.doLoadLevel
+            LevelStorageSource.LevelStorageAccess levelstoragesource$levelstorageaccess = mc.getLevelSource().createAccess(name);
+            PackRepository packrepository = ServerPacksSource.createPackRepository(levelstoragesource$levelstorageaccess);
+            levelstoragesource$levelstorageaccess.readAdditionalLevelSaveData();
+            WorldStem worldstem = worldOpenFlows2.loadWorldStem2(levelstoragesource$levelstorageaccess, false, packrepository);
+            if (worldstem.worldData() instanceof PrimaryLevelData pld) {
+                pld.withConfirmedWarning(true);
+            }*/
+
+            stopRequested = false;
+            access = mc.getLevelSource().createAccess(name);
+            thread = new Thread(this::threadFunc, "WorldDownloadChunkSaveThread");
+            thread.start();
+            chunkStorages = new HashMap<>();
+
+            ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).onEnabledChanged();
         }
-        catch (IOException e) {
-            e.printStackTrace();
+        catch (Throwable e) {
+            stop();
+            throw e;
         }
     }
 
-    private void onChunkLoaded(LevelChunk chunk) {
-        if (chunkStorage == null || mc.level == null) {
-            return;
+    public void stop() {
+        if (thread != null) {
+            stopRequested = true;
+            try {
+                thread.join(1000);
+            }
+            catch (InterruptedException e) {
+                thread.interrupt();
+            }
+            thread = null;
         }
 
-        CompoundTag compoundtag = write(mc.level, chunk);
-        chunkStorage.write(chunk.getPos(), compoundtag);
+        queue.clear();
+
+        if (chunkStorages != null) {
+            for (ChunkStorage storage : chunkStorages.values()) {
+                try {
+                    storage.flushWorker();
+                    storage.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if (mc.player != null && access != null) {
+            PlayerDataStorage playerDataStorage = access.createPlayerStorage();
+            playerDataStorage.save(mc.player);
+        }
+
+        chunkStorages = null;
+
+        closeAccess();
+
+        ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).onEnabledChanged();
+    }
+
+    private void threadFunc() {
+        try {
+            while (!stopRequested) {
+                synchronized (loopWaitEvent) {
+                    loopWaitEvent.wait();
+                }
+                while (queue.size() > 0) {
+                    queue.poll().run();
+                }
+            }
+        } catch (InterruptedException e) {
+            // do nothing
+        } catch (Throwable e) {
+            e.printStackTrace();
+            stop();
+        }
+    }
+
+    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+        if (args.packet instanceof ClientboundLevelChunkWithLightPacket packet) {
+            processChunkPacket(packet.getX(), packet.getZ(), packet.getChunkData());
+        }
+    }
+
+    private void processChunkPacket(int x, int z, ClientboundLevelChunkPacketData packet) {
+        queue.add(() -> {
+            ClientLevel level = mc.level;
+            if (level == null) {
+                return;
+            }
+
+            Map<ResourceKey<Level>, ChunkStorage> storages = chunkStorages;
+            if (storages == null) {
+                return;
+            }
+
+            Dimension dimension = Dimension.get(level);
+            ResourceKey<Level> levelDimension = level.dimension();
+            ChunkStorage storage;
+            if (storages.containsKey(levelDimension)) {
+                storage = storages.get(levelDimension);
+            } else {
+                storage = new ChunkStorage(
+                        access.getDimensionPath(levelDimension).resolve("region"),
+                        null, // data fixer
+                        true); // sync
+                storages.put(levelDimension, storage);
+            }
+
+            LevelChunk chunk = new LevelChunk(level, new ChunkPos(x, z));
+            chunk.replaceWithPacketData(packet.getReadBuffer(), packet.getHeightmaps(), packet.getBlockEntitiesTagsConsumer(x, z));
+            CompoundTag compoundtag = write(mc.level, chunk);
+            storage.write(chunk.getPos(), compoundtag);
+
+            ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).notifyChunkSaved(dimension, x, z);
+        });
+        synchronized (loopWaitEvent) {
+            loopWaitEvent.notify();
+        }
     }
 
     // copied from ChunkSerializer.write
@@ -203,6 +316,18 @@ public class WorldDownloadController {
         return PalettedContainer.codecRO(p_188261_.asHolderIdMap(), p_188261_.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, p_188261_.getHolderOrThrow(Biomes.PLAINS));
     }
 
+    private void closeAccess() {
+        if (access != null) {
+            try {
+                access.close();
+            }
+            catch (Throwable e) {
+                e.printStackTrace();
+            }
+            access = null;
+        }
+    }
+
     private static void saveTicks(ClientLevel p_188236_, CompoundTag p_188237_, ChunkAccess.TicksToSave p_188238_) {
         long i = p_188236_.getLevelData().getGameTime();
         p_188237_.put("block_ticks", p_188238_.blocks().save(i, (p_258987_) -> {
@@ -220,12 +345,7 @@ public class WorldDownloadController {
         compoundtag.put("starts", compoundtag1);
         CompoundTag compoundtag2 = new CompoundTag();
 
-
         compoundtag.put("References", compoundtag2);
         return compoundtag;
     }
-
-    /*private void execute(Runnable command) {
-
-    }*/
 }

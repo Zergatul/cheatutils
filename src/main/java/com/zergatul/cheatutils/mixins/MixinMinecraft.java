@@ -1,11 +1,14 @@
 package com.zergatul.cheatutils.mixins;
 
+import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.configs.PerformanceConfig;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,13 +19,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import javax.annotation.Nullable;
 
 @Mixin(Minecraft.class)
-public class MixinMinecraft {
+public abstract class MixinMinecraft {
 
     @Shadow
     @Nullable
     public LocalPlayer player;
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
+    @Shadow
+    public abstract boolean isWindowActive();
+
+    @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
         if (!ConfigStore.instance.getConfig().esp) {
             return;
@@ -36,25 +42,33 @@ public class MixinMinecraft {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;close()V")
+    @Inject(at = @At("HEAD"), method = "close()V")
     private void onClose(CallbackInfo info) {
         ConfigStore.instance.onClose();
     }
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;handleKeybinds()V")
+    @Inject(at = @At("HEAD"), method = "handleKeybinds()V")
     private void onBeforeHandleKeyBindings(CallbackInfo info) {
         ModApiWrapper.BeforeHandleKeyBindings.trigger();
     }
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/Minecraft;handleKeybinds()V")
+    @Inject(at = @At("TAIL"), method = "handleKeybinds()V")
     private void onAfterHandleKeyBindings(CallbackInfo info) {
         ModApiWrapper.AfterHandleKeyBindings.trigger();
     }
 
-    @Inject(at = @At("RETURN"), method = "Lnet/minecraft/client/Minecraft;createTitle()Ljava/lang/String;", cancellable = true)
+    @Inject(at = @At("RETURN"), method = "createTitle()Ljava/lang/String;", cancellable = true)
     private void onCreateTitle(CallbackInfoReturnable<String> info) {
         if (ConfigStore.instance.getConfig().userNameConfig.showNameInTitle) {
             info.setReturnValue(Minecraft.getInstance().getUser().getName() + " - " + info.getReturnValue());
+        }
+    }
+
+    @Inject(at = @At("HEAD"), method = "getFramerateLimit()I", cancellable = true)
+    private void onGetFramerateLimit(CallbackInfoReturnable<Integer> info) {
+        PerformanceConfig config = ConfigStore.instance.getConfig().performanceConfig;
+        if (config.limitBackgroundWindowFps && !isWindowActive()) {
+            info.setReturnValue(config.backgroundWindowFps);
         }
     }
 }

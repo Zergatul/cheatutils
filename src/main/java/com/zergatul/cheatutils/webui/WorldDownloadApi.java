@@ -12,16 +12,36 @@ public class WorldDownloadApi extends ApiBase {
     }
 
     @Override
+    public String get() throws HttpException {
+        return gson.toJson(new Status());
+    }
+
+    @Override
     public String post(String body) throws HttpException {
-        if (body.startsWith("begin:")) {
-            WorldDownloadController.instance.begin(body.substring(6));
-            return "{ \"ok\": true }";
+        if (body.startsWith("start:")) {
+            try {
+                WorldDownloadController.instance.start(body.substring(6));
+                return get();
+            }
+            catch (Throwable e) {
+                e.printStackTrace();
+                throw new InternalServerErrorException(e.getMessage());
+            }
         }
-        if (body.equals("end")) {
-            WorldDownloadController.instance.end();
-            return "{ \"ok\": true }";
+
+        if (body.equals("stop")) {
+            WorldDownloadController.instance.stop();
+            return get();
         }
 
         throw new MethodNotSupportedException("Invalid body");
+    }
+
+    public static class Status {
+        public boolean active;
+
+        public Status() {
+            active = WorldDownloadController.instance.isActive();
+        }
     }
 }

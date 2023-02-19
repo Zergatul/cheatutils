@@ -1,0 +1,30 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Performance</h2>
+        <div class="description">
+            ?
+        </div>
+        <div class="module-sections">
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.limitBackgroundWindowFps"
+                            @change="update()">
+                        <span>Limit FPS in background</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Max FPS:</span>
+                    <input type="text" v-model="config.backgroundWindowFps" @change="update()">
+                </div>
+                <div class="section-description">
+                    If you run AFK farms and want to do something in parallel you can reduce GPU usage by limiting FPS in background Minecraft windows.
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

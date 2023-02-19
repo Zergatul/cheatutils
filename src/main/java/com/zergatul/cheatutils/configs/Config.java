@@ -51,6 +51,7 @@ public class Config {
     public GameTickScriptingConfig gameTickScriptingConfig = new GameTickScriptingConfig();
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
+    public PerformanceConfig performanceConfig = new PerformanceConfig();
 
     public Config() {
         esp = true;

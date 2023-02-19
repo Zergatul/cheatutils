@@ -93,6 +93,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'SchematicaConfig');
     addComponent(args, 'AutoBucketConfig');
     addComponent(args, 'WorldDownloadConfig');
+    addComponent(args, 'PerformanceConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

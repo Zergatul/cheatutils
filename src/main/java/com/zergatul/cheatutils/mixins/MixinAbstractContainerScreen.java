@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
+import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
 import com.zergatul.cheatutils.controllers.ContainerSummaryController;
 import com.zergatul.cheatutils.utils.GuiUtils;
 import net.minecraft.client.Minecraft;
@@ -16,10 +17,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.EnchantmentMenu;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -54,7 +52,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
         super(component);
     }
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;init()V")
+    @Inject(at = @At("TAIL"), method = "init()V")
     private void onInit(CallbackInfo info) {
         Object self = this;
         if (self instanceof EnchantmentScreen) {
@@ -98,9 +96,10 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;render(Lcom/mojang/blaze3d/vertex/PoseStack;IIF)V")
-    private void onRender(PoseStack poseStack, int slot, int k, float l1, CallbackInfo info) {
-        if (!ConfigStore.instance.getConfig().containerSummaryConfig.enabled) {
+    @Inject(at = @At("TAIL"), method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;IIF)V")
+    private void onRender(PoseStack poseStack, int slotIndex, int k, float l1, CallbackInfo info) {
+        ContainerSummaryConfig config = ConfigStore.instance.getConfig().containerSummaryConfig;
+        if (!config.enabled) {
             return;
         }
 
@@ -108,36 +107,52 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
         if (slots.size() == 0) {
             return;
         }
+
+        List<ItemStack> items = new ArrayList<>();
         if (slots.get(0).container instanceof SimpleContainer container) {
-            List<ItemStack> items = new ArrayList<>();
             for (int i = 0; i < container.getContainerSize(); i++) {
                 ItemStack itemStack = container.getItem(i);
                 if (!itemStack.isEmpty()) {
                     items.add(itemStack);
                 }
             }
-
-            List<ContainerSummaryController.ItemDrawable> list = ContainerSummaryController.instance.groupItems(items);
-
-
-            this.setBlitOffset(100);
-            this.itemRenderer.blitOffset = 100.0F;
-            RenderSystem.enableDepthTest();
-
-            boolean group = !Screen.hasAltDown();
-
-            list.forEach(d -> d.initDraw(this.font, group));
-            List<ContainerSummaryController.ItemsColumn> columns = ContainerSummaryController.instance.split(list);
-            columns.forEach(ContainerSummaryController.ItemsColumn::calculateWidth);
-
-            int cursor = this.leftPos + this.imageWidth + 2;
-            for (ContainerSummaryController.ItemsColumn column: columns) {
-                cursor += column.draw(poseStack, this.font, this.itemRenderer, this.minecraft.player, cursor, this.topPos);
+        } else {
+            if (config.showForInventory) {
+                Screen screen = this;
+                if (screen instanceof InventoryScreen inventory) {
+                    for (Slot slot : slots) {
+                        if (slot.container instanceof ResultContainer) {
+                            continue;
+                        }
+                        items.add(slot.getItem());
+                    }
+                }
             }
-
-            this.itemRenderer.blitOffset = 0.0F;
-            this.setBlitOffset(0);
         }
+
+        if (items.size() == 0) {
+            return;
+        }
+
+        List<ContainerSummaryController.ItemDrawable> list = ContainerSummaryController.instance.groupItems(items);
+
+        this.setBlitOffset(100);
+        this.itemRenderer.blitOffset = 100.0F;
+        RenderSystem.enableDepthTest();
+
+        boolean group = !Screen.hasAltDown();
+
+        list.forEach(d -> d.initDraw(this.font, group));
+        List<ContainerSummaryController.ItemsColumn> columns = ContainerSummaryController.instance.split(list);
+        columns.forEach(ContainerSummaryController.ItemsColumn::calculateWidth);
+
+        int cursor = this.leftPos + this.imageWidth + 2;
+        for (ContainerSummaryController.ItemsColumn column: columns) {
+            cursor += column.draw(poseStack, this.font, this.itemRenderer, this.minecraft.player, cursor, this.topPos);
+        }
+
+        this.itemRenderer.blitOffset = 0.0F;
+        this.setBlitOffset(0);
     }
 
     private void onTakeAllPress(Button button) {

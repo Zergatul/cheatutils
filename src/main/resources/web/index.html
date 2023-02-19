@@ -209,6 +209,14 @@
                         <td></td>
                         <td></td>
                         <td>
+                            <button @click="current = 'performance'">Performance</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
                             <button @click="current = 'beacons'">Beacons (BETA)</button>
                         </td>
                     </tr>
@@ -465,6 +473,11 @@
             v-if="current == 'world-download'"
             @back="backToMain()">
         </world-download-config>
+
+        <performance-config
+            v-if="current == 'performance'"
+            @back="backToMain()">
+        </performance-config>
 
     </div>
 

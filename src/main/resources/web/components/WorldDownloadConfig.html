@@ -2,14 +2,29 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;">
-        <legend>World Download</legend>
+    <div class="module-main">
+        <h2 class="module-header">World Download</h2>
         <div class="description">
-            ???
+            Downloads chunks from multiplayer server into your singleplayer world.<br>
+            To start downloading:<br>
+            - Create new singleplayer world (or use existing one)<br>
+            - Enter directory name of singleplayer world save directory (you can find it in "/saves" directory)<br>
+            - Press "Start" button (no need to be logged in multiplayer server)<br>
+            - Start loading server chunks by moving or logging in.<br>
+            - Use Exploration Mini Map to see which chunks were saved to disk (dotted square)<br>
+            - Press "Stop" button (don't forget to Stop before loading singleplayer world!)<br>
+            Module only saves original chunks sent by server. For example, if you loaded chunk, built something here - this will not be saved. You need to unload/load this chunk to save new changes.<br><br>
+            Note: some servers use custom dimensions, for example for spawn region. In this case region files will be saved into "/dimensions/somename1/somename2/region". You can manually copy region files into root "/region" directory to see them in your single player world.
         </div>
-        <div>
-            <button style="width: 200px;" @click="start()">Start</button>
-            <button style="width: 200px;" @click="stop()">Stop</button>
+        <div class="module-sections">
+            <div class="input-section">
+                <span class="field-description">Singleplayer directory name:</span>
+                <input type="text" v-model="name">
+            </div>
+            <div>
+                <button style="width: 200px;" :disabled="loading || status != 'stopped'" @click="start()">Start</button>
+                <button style="width: 200px;" :disabled="loading || status != 'running'" @click="stop()">Stop</button>
+            </div>
         </div>
-    </fieldset>
+    </div>
 </div>

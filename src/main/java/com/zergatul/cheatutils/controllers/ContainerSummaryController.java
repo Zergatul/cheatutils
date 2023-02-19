@@ -45,7 +45,7 @@ public class ContainerSummaryController {
             if (compare != 0) {
                 return compare;
             }
-            String id1 =ForgeRegistries.ITEMS.getKey(i1.item).toString();
+            String id1 = ForgeRegistries.ITEMS.getKey(i1.item).toString();
             String id2 = ForgeRegistries.ITEMS.getKey(i2.item).toString();
             return id1.compareTo(id2);
         }).toList();
