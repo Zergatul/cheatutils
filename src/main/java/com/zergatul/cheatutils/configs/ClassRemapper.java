@@ -15,7 +15,6 @@ public class ClassRemapper {
             "net.minecraft.class_1915:net.minecraft.village.Merchant",
             "net.minecraft.class_2615:net.minecraft.block.entity.Hopper",
             "net.minecraft.class_5718$class_5719:net.minecraft.world.event.listener.VibrationListener$Callback",
-            "net.minecraft.class_746:net.minecraft.client.network.ClientPlayerEntity",
             "net.minecraft.class_1265:net.minecraft.inventory.InventoryChangedListener",
             "net.minecraft.class_1296:net.minecraft.entity.passive.PassiveEntity",
             "net.minecraft.class_1295:net.minecraft.entity.AreaEffectCloudEntity",
@@ -151,6 +150,7 @@ public class ClassRemapper {
             "net.minecraft.class_1646:net.minecraft.entity.passive.VillagerEntity",
             "net.minecraft.class_3851:net.minecraft.village.VillagerDataContainer",
             "net.minecraft.class_3989:net.minecraft.entity.passive.WanderingTraderEntity",
+            "net.minecraft.class_1657:net.minecraft.entity.player.PlayerEntity",
             "net.minecraft.class_1665:net.minecraft.entity.projectile.PersistentProjectileEntity",
             "net.minecraft.class_1667:net.minecraft.entity.projectile.ArrowEntity",
             "net.minecraft.class_1668:net.minecraft.entity.projectile.ExplosiveProjectileEntity",
@@ -188,7 +188,7 @@ public class ClassRemapper {
             "net.minecraft.class_1697:net.minecraft.entity.vehicle.CommandBlockMinecartEntity",
             "net.minecraft.class_1699:net.minecraft.entity.vehicle.SpawnerMinecartEntity",
             "net.minecraft.class_1700:net.minecraft.entity.vehicle.HopperMinecartEntity",
-            "net.minecraft.class_1701:net.minecraft.entity.vehicle.TntMinecartEntity",
+            "net.minecraft.class_1701:net.minecraft.entity.vehicle.TntMinecartEntity"
     };
 
     public static boolean isEnabled() {
@@ -199,14 +199,14 @@ public class ClassRemapper {
         if (!enabled) {
             return className;
         }
-        return obfToNorm.get(className);
+        return obfToNorm.getOrDefault(className, className);
     }
 
     public static String toObf(String className) {
         if (!enabled) {
             return className;
         }
-        return normToObf.get(className);
+        return normToObf.getOrDefault(className, className);
     }
 
     static {

@@ -44,7 +44,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new StatusOverlayApi());
         apis.add(new ClassNameApi());
 
-        /*apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
+        apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
             protected FullBrightConfig getConfig() {
                 return ConfigStore.instance.getConfig().fullBrightConfig;
@@ -54,7 +54,7 @@ public class ApiHandler implements HttpHandler {
             protected void setConfig(FullBrightConfig config) {
                 ConfigStore.instance.getConfig().fullBrightConfig = config;
             }
-        });*/
+        });
 
         apis.add(new SimpleConfigApi<>("auto-fish", AutoFishConfig.class) {
             @Override
@@ -264,7 +264,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        /*apis.add(new SimpleConfigApi<>("death-coordinates", DeathCoordinatesConfig.class) {
+        apis.add(new SimpleConfigApi<>("death-coordinates", DeathCoordinatesConfig.class) {
             @Override
             protected DeathCoordinatesConfig getConfig() {
                 return ConfigStore.instance.getConfig().deathCoordinatesConfig;
@@ -276,7 +276,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("elytra-tunnel", ElytraTunnelConfig.class) {
+        /*apis.add(new SimpleConfigApi<>("elytra-tunnel", ElytraTunnelConfig.class) {
             @Override
             protected ElytraTunnelConfig getConfig() {
                 return ConfigStore.instance.getConfig().elytraTunnelConfig;
