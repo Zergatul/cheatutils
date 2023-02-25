@@ -182,7 +182,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'auto-bucket'">Auto Bucket (BETA)</button>
+                        </td>
                         <td></td>
                         <td>
                             <button @click="current = 'reach'">Reach</button>
@@ -419,6 +421,11 @@
             v-if="current == 'reach'"
             @back="backToMain()">
         </reach-config>
+
+        <auto-bucket-config
+            v-if="current == 'auto-bucket'"
+            @back="backToMain()">
+        </auto-bucket-config>
 
     </div>
 

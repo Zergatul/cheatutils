@@ -48,6 +48,7 @@ public class Config {
     public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();
     public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
     public ReachConfig reachConfig = new ReachConfig();
+    public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
 
     public Config() {
         esp = true;

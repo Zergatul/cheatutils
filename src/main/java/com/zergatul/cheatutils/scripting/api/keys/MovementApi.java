@@ -23,6 +23,19 @@ public class MovementApi {
         ConfigStore.instance.requestWrite();
     }
 
+    public void toggleOverrideJumpHeight() {
+        var config = getConfig();
+        config.scaleJumpHeight = !config.scaleJumpHeight;
+        ConfigStore.instance.requestWrite();
+    }
+
+    public void setJumpFactor(double value) {
+        var config = getConfig();
+        config.jumpHeightFactor = value;
+        config.validate();
+        ConfigStore.instance.requestWrite();
+    }
+
     private MovementHackConfig getConfig() {
         return ConfigStore.instance.getConfig().movementHackConfig;
     }
