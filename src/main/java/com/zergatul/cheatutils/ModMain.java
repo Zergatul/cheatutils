@@ -52,10 +52,10 @@ public class ModMain {
         register(EntityEspController.instance);
         register(ProjectilePathController.instance);
         register(EndCityChunksController.instance);
-        //register(EntityTagsController.instance);
         register(GameTickScriptingController.instance);
         register(AutoBucketController.instance);
         register(WorldDownloadController.instance);
+        register(EntityTitleController.instance);
     }
 
     private void register(Object instance) {
@@ -74,7 +74,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(AutoDisconnectController.instance);
         MinecraftForge.EVENT_BUS.register(ArmorOverlayController.instance);
         MinecraftForge.EVENT_BUS.register(ElytraHackController.instance);
-        MinecraftForge.EVENT_BUS.register(EntityOwnerController.instance);
         MinecraftForge.EVENT_BUS.register(AutoCriticalsController.instance);
         MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
         MinecraftForge.EVENT_BUS.register(AdvancedTooltipsController.instance);

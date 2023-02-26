@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
-import com.zergatul.cheatutils.configs.adapters.KillAuraConfig$PriorityEntryTypeAdapter;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
@@ -153,6 +152,10 @@ public class ConfigStore {
         config.schematicaConfig.validate();
         config.autoBucketConfig.validate();
         config.performanceConfig.validate();
+        config.entityTitleConfig.validate();
+
+        EntityTitleController.instance.onFontChange(config.entityTitleConfig);
+        EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

@@ -78,10 +78,24 @@ ul.entities-list > li > div.c2 {
 ul.blocks-list > li > div.c3,
 ul.entities-list > li > div.c3,
 ul.blocks-list > li > div.c4,
-ul.entities-list > li > div.c4,
-ul.blocks-list > li > div.c5,
-ul.entities-list > li > div.c5 {
+ul.blocks-list > li > div.c5 {
     flex: 5;
+    display: flex;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+}
+
+ul.entities-list > li > div.c4 {
+    flex: 3;
+    display: flex;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+}
+
+ul.entities-list > li > div.c5 {
+    flex: 3;
     display: flex;
     font-size: 14px;
     align-items: center;

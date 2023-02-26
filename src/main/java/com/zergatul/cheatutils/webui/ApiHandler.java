@@ -5,10 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
-import com.zergatul.cheatutils.controllers.ChunkOverlayController;
-import com.zergatul.cheatutils.controllers.KillAuraController;
-import com.zergatul.cheatutils.controllers.LightLevelController;
-import com.zergatul.cheatutils.controllers.UserNameController;
+import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.utils.MathUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
@@ -50,6 +47,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new SchematicaUploadApi());
         apis.add(new SchematicaPlaceApi());
         apis.add(new WorldDownloadApi());
+        apis.add(new EntityConfigMoveApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -187,18 +185,6 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(EndCityChunksConfig config) {
                 ConfigStore.instance.getConfig().endCityChunksConfig = config;
-            }
-        });
-
-        apis.add(new SimpleConfigApi<>("entity-owner", EntityOwnerConfig.class) {
-            @Override
-            protected EntityOwnerConfig getConfig() {
-                return ConfigStore.instance.getConfig().entityOwnerConfig;
-            }
-
-            @Override
-            protected void setConfig(EntityOwnerConfig config) {
-                ConfigStore.instance.getConfig().entityOwnerConfig = config;
             }
         });
 
@@ -609,6 +595,27 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(PerformanceConfig config) {
                 ConfigStore.instance.getConfig().performanceConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("entity-title", EntityTitleConfig.class) {
+            @Override
+            protected EntityTitleConfig getConfig() {
+                return ConfigStore.instance.getConfig().entityTitleConfig;
+            }
+
+            @Override
+            protected void setConfig(EntityTitleConfig config) {
+                EntityTitleConfig oldConfig = ConfigStore.instance.getConfig().entityTitleConfig;
+                ConfigStore.instance.getConfig().entityTitleConfig = config;
+
+                if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
+                    EntityTitleController.instance.onFontChange(config);
+                }
+
+                if (oldConfig.enchFontSize != config.enchFontSize || oldConfig.enchAntiAliasing != config.enchAntiAliasing) {
+                    EntityTitleController.instance.onEnchantmentFontChange(config);
+                }
             }
         });
     }

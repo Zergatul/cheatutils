@@ -66,9 +66,9 @@ public class EntityEspController {
 
             EntityTracerConfig config = list.stream().filter(c ->
                     c.enabled &&
-                            c.drawOutline &&
-                            c.clazz.isInstance(entity) &&
-                            distanceSqr < c.getOutlineMaxDistanceSqr()).findFirst().orElse(null);
+                    c.drawOutline &&
+                    c.isValidEntity(entity) &&
+                    distanceSqr < c.getOutlineMaxDistanceSqr()).findFirst().orElse(null);
 
             if (config != null) {
                 renderEntityBounding(buffer, view, partialTicks, entity, config);

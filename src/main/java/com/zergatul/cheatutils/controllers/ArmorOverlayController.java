@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.render.ItemRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -36,18 +37,13 @@ public class ArmorOverlayController implements IGuiOverlay {
             gui.rightHeight += 12;
 
             List<ItemStack> armor = mc.player.getInventory().armor;
-            renderItem(armor.get(3), left, top);
+            ItemRenderHelper.renderItem(mc.player, armor.get(3), left, top);
             left += 16;
-            renderItem(armor.get(2), left, top);
+            ItemRenderHelper.renderItem(mc.player, armor.get(2), left, top);
             left += 16;
-            renderItem(armor.get(1), left, top);
+            ItemRenderHelper.renderItem(mc.player, armor.get(1), left, top);
             left += 16;
-            renderItem(armor.get(0), left, top);
+            ItemRenderHelper.renderItem(mc.player, armor.get(0), left, top);
         }
-    }
-
-    private void renderItem(ItemStack itemStack, int x, int y) {
-        mc.getItemRenderer().renderAndDecorateItem(mc.player, itemStack, x, y, 123);
-        mc.getItemRenderer().renderGuiItemDecorations(mc.font, itemStack, x, y, null);
     }
 }

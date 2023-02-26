@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.utils.GuiUtils;
+import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.player.LocalPlayer;
@@ -178,7 +178,7 @@ public class ContainerSummaryController {
             int yo = y;
             int fullWidth = width + H_PADDING * 2;
 
-            GuiUtils.fill(poseStack, x, y, x + fullWidth, y + ItemDrawable.HEIGHT * list.size(), -1873784752);
+            Primitives.fill(poseStack, x, y, x + fullWidth, y + ItemDrawable.HEIGHT * list.size(), -1873784752);
             for (ItemDrawable drawable: list) {
                 y += drawable.draw(poseStack, font, itemRenderer, player, x + (width - drawable.width) / 2 + H_PADDING, y + 2);
             }
@@ -186,10 +186,10 @@ public class ContainerSummaryController {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShaderTexture(0, CONTAINER_TEXTURE);
-            GuiUtils.drawTexture(poseStack.last().pose(), x, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
-            GuiUtils.drawTexture(poseStack.last().pose(), x + fullWidth, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
+            Primitives.drawTexture(poseStack.last().pose(), x, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
+            Primitives.drawTexture(poseStack.last().pose(), x + fullWidth, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
             for (int i = 0; i <= list.size(); i++) {
-                GuiUtils.drawTexture(poseStack.last().pose(), x, yo + ItemDrawable.HEIGHT * i, fullWidth, 1, 124, 3, 3, 1, 1, 256, 256);
+                Primitives.drawTexture(poseStack.last().pose(), x, yo + ItemDrawable.HEIGHT * i, fullWidth, 1, 124, 3, 3, 1, 1, 256, 256);
             }
 
             return fullWidth;

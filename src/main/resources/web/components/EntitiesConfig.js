@@ -20,11 +20,7 @@ function createComponent(template) {
                 self.entitiesList = info.entitiesList;
                 self.entitiesMap = info.entitiesMap;
             });
-            axios.get('/api/entities').then(function (response) {
-                self.entitiesConfigList = response.data;
-                self.entitiesConfigMap = {};
-                self.entitiesConfigList.forEach(c => self.entitiesConfigMap[c.clazz] = c);
-            });
+            self.loadEntityConfigs();
         },
         data() {
             return {
@@ -99,6 +95,42 @@ function createComponent(template) {
                 });
 
                 this.entityListFiltered = entries.sort((e1, e2) => e2.priority - e1.priority).map(e => e.info);
+            },
+            loadEntityConfigs() {
+                let self = this;
+                axios.get('/api/entities').then(function (response) {
+                    self.entitiesConfigList = response.data;
+                    self.entitiesConfigMap = {};
+                    self.entitiesConfigList.forEach(c => self.entitiesConfigMap[c.clazz] = c);
+                });
+            },
+            moveDown(config) {
+                let self = this;
+                axios.post('/api/entities-move', {
+                    direction: 'down',
+                    clazz: config.clazz
+                }).then(response => {
+                    response = response.data;
+                    if (!response.ok) {
+                        alert(response.message);
+                    } else {
+                        self.loadEntityConfigs();
+                    }
+                });
+            },
+            moveUp(config) {
+                let self = this;
+                axios.post('/api/entities-move', {
+                    direction: 'up',
+                    clazz: config.clazz
+                }).then(response => {
+                    response = response.data;
+                    if (!response.ok) {
+                        alert(response.message);
+                    } else {
+                        self.loadEntityConfigs();
+                    }
+                });
             },
             openAdd() {
                 this.state = 'add';

@@ -4,18 +4,14 @@ import com.google.common.collect.Ordering;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.utils.GuiUtils;
+import com.zergatul.cheatutils.render.Primitives;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
@@ -77,7 +73,7 @@ public class BetterStatusEffectsController implements IGuiOverlay {
                 int width = mc.font.width(duration);
                 int textLeft = left + (24 - width) / 2;
                 int textTop = top + 25;
-                GuiUtils.fill(poseStack, textLeft, textTop, textLeft + width, textTop + mc.font.lineHeight, -1873784752);
+                Primitives.fill(poseStack, textLeft, textTop, textLeft + width, textTop + mc.font.lineHeight, -1873784752);
                 mc.font.draw(poseStack, duration, textLeft, textTop, 16777215);
 
                 left += 25;

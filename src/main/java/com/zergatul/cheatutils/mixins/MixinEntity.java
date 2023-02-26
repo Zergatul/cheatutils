@@ -31,8 +31,8 @@ public abstract class MixinEntity {
             return;
         }
         var entity = (Entity) (Object) this;
-        for (EntityTracerConfig config: ConfigStore.instance.getConfig().entities.configs) {
-            if (config.enabled && config.clazz.isInstance(entity) && config.glow) {
+        for (EntityTracerConfig config : ConfigStore.instance.getConfig().entities.configs) {
+            if (config.enabled && config.isValidEntity(entity) && config.glow) {
                 info.setReturnValue(config.glowColor.getRGB());
                 info.cancel();
                 return;

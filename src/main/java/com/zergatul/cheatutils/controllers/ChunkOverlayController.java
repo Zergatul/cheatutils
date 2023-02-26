@@ -6,8 +6,8 @@ import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
 import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
+import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.Dimension;
-import com.zergatul.cheatutils.utils.GuiUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.wrappers.events.MouseScrollEvent;
@@ -16,9 +16,7 @@ import com.zergatul.cheatutils.wrappers.events.PreRenderGuiOverlayEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
@@ -131,7 +129,7 @@ public class ChunkOverlayController {
                 float x = (segment.pos.x * 16 * SegmentSize - xc) * multiplier;
                 float y = (segment.pos.z * 16 * SegmentSize - zc) * multiplier;
 
-                GuiUtils.drawTexture(
+                Primitives.drawTexture(
                         event.getMatrixStack().last().pose(),
                         x, y, scale, scale, z,
                         0, 0, 16 * SegmentSize, 16 * SegmentSize,

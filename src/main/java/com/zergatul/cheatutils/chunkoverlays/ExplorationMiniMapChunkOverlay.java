@@ -5,8 +5,8 @@ import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
+import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.Dimension;
-import com.zergatul.cheatutils.utils.GuiUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
@@ -64,7 +64,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
         for (Vector3d vec: markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
             RenderSystem.setShaderTexture(0, MarkerTexture);
-            GuiUtils.drawTexture(poseStack.last().pose(),
+            Primitives.drawTexture(poseStack.last().pose(),
                     -ImageSize / 2f + ((float) vec.x - xc) * multiplier, -ImageSize / 2f + ((float) vec.z - zc) * multiplier,
                     ImageSize, ImageSize, getTranslateZ() + 2, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
         }
@@ -72,13 +72,13 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         double distanceToPlayer = Math.sqrt((xp - xc) * (xp - xc) + (zp - zc) * (zp - zc));
         if (distanceToPlayer * multiplier > 2 * ImageSize) {
             RenderSystem.setShaderTexture(0, CenterPosTexture);
-            GuiUtils.drawTexture(poseStack.last().pose(),
+            Primitives.drawTexture(poseStack.last().pose(),
                     -ImageSize / 2f, -ImageSize / 2f,
                     ImageSize, ImageSize, getTranslateZ() + 3, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
         }
 
         RenderSystem.setShaderTexture(0, PlayerPosTexture);
-        GuiUtils.drawTexture(poseStack.last().pose(),
+        Primitives.drawTexture(poseStack.last().pose(),
                 -ImageSize / 2f + (xp - xc) * multiplier, -ImageSize / 2f + (zp - zc) * multiplier,
                 ImageSize, ImageSize, getTranslateZ() + 4, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
     }

@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
+import net.minecraft.world.entity.Entity;
+
 import java.awt.*;
 
 public class EntityTracerConfig extends TracerConfigBase {
@@ -8,6 +10,17 @@ public class EntityTracerConfig extends TracerConfigBase {
     public boolean glow;
     public Color glowColor;
     public Double glowMaxDistance;
+
+    // Entity Title
+    public boolean drawTitles;
+    public boolean showDefaultNames;
+    public boolean showHp;
+    public boolean showEquippedItems;
+    public boolean showOwner;
+
+    public boolean isValidEntity(Entity entity) {
+        return clazz.isInstance(entity);
+    }
 
     public double getGlowMaxDistanceSqr() {
         if (glowMaxDistance != null) {
@@ -22,6 +35,12 @@ public class EntityTracerConfig extends TracerConfigBase {
         glow = jsonConfig.glow;
         glowColor = jsonConfig.glowColor;
         glowMaxDistance = jsonConfig.glowMaxDistance;
+
+        drawTitles = jsonConfig.drawTitles;
+        showDefaultNames = jsonConfig.showDefaultNames;
+        showHp = jsonConfig.showHp;
+        showEquippedItems = jsonConfig.showEquippedItems;
+        showOwner = jsonConfig.showOwner;
     }
 
     public static EntityTracerConfig createDefault(Class clazz) {

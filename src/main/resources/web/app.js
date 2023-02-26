@@ -94,6 +94,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'AutoBucketConfig');
     addComponent(args, 'WorldDownloadConfig');
     addComponent(args, 'PerformanceConfig');
+    addComponent(args, 'EntityTitleConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

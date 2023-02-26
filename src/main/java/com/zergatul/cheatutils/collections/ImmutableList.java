@@ -35,6 +35,16 @@ public class ImmutableList<E> implements Iterable<E> {
         return (E) array[index];
     }
 
+    @SuppressWarnings("unchecked")
+    public int indexOf(Predicate<E> predicate) {
+        for (int i = 0; i < array.length; i++) {
+            if (predicate.test((E) array[i])) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public ImmutableList<E> remove(E element) {
         int size = array.length;
         int i = 0;
@@ -80,6 +90,15 @@ public class ImmutableList<E> implements Iterable<E> {
         Object[] newArray = new Object[size];
         System.arraycopy(array, 0, newArray, 0, size);
         newArray[index] = element;
+        return new ImmutableList<>(newArray);
+    }
+
+    public ImmutableList<E> swap(int index1, int index2) {
+        int size = array.length;
+        Object[] newArray = new Object[size];
+        System.arraycopy(array, 0, newArray, 0, size);
+        newArray[index1] = array[index2];
+        newArray[index2] = array[index1];
         return new ImmutableList<>(newArray);
     }
 

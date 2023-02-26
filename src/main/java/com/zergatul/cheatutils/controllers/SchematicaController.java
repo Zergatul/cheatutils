@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
+import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.schematics.PlacingConverter;
 import com.zergatul.cheatutils.schematics.PlacingSettings;
 import com.zergatul.cheatutils.schematics.SchemaFile;
@@ -32,7 +33,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -178,7 +178,7 @@ public class SchematicaController {
                 });
             }
 
-            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
         if (config.showMissingBlockCubes) {
@@ -194,11 +194,11 @@ public class SchematicaController {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    GlUtils.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
+                    Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
                 });
             }
 
-            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
         if (config.showMissingBlockGhosts) {
@@ -292,7 +292,7 @@ public class SchematicaController {
                 });
             }
 
-            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
         if (config.showWrongBlockCubes) {
@@ -308,11 +308,11 @@ public class SchematicaController {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    GlUtils.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
+                    Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
                 });
             }
 
-            GlUtils.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
     }
 

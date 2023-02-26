@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.controllers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
-import com.zergatul.cheatutils.utils.GuiUtils;
+import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.PostRenderGuiEvent;
 import net.minecraft.client.Minecraft;
@@ -90,7 +90,7 @@ public class StatusOverlayController {
                 int width = mc.font.width(text);
                 int x = getLeft(align.hAlign, mc.getWindow().getGuiScaledWidth(), width);
                 int y = getTop(align.vAlign, mc.getWindow().getGuiScaledHeight(), mc.font.lineHeight, i, list.size());
-                GuiUtils.fill(event.getMatrixStack(), x, y, x + width, y + mc.font.lineHeight, -1873784752);
+                Primitives.fill(event.getMatrixStack(), x, y, x + width, y + mc.font.lineHeight, -1873784752);
                 mc.font.draw(event.getMatrixStack(), text, x, y, 16777215);
             }
         }

@@ -170,7 +170,9 @@
                         <td>
                             <button @click="current = 'anti-respawn-reset'">Anti Respawn Reset</button>
                         </td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'entity-title'">Entity Titles</button>
+                        </td>
                         <td>
                             <button @click="current = 'no-fall'">No Fall</button>
                         </td>
@@ -192,7 +194,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'schematica'">Schematica (ALPHA)</button>
+                            <button @click="current = 'schematica'" style="display: none;">Schematica (ALPHA)</button>
                         </td>
                         <td></td>
                         <td>
@@ -478,6 +480,11 @@
             v-if="current == 'performance'"
             @back="backToMain()">
         </performance-config>
+
+        <entity-title-config
+            v-if="current == 'entity-title'"
+            @back="backToMain()">
+        </entity-title-config>
 
     </div>
 

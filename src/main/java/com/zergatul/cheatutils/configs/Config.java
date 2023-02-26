@@ -16,7 +16,6 @@ public class Config {
     public ElytraHackConfig elytraHackConfig = new ElytraHackConfig();
     public PigHackConfig pigHackConfig = new PigHackConfig();
     public EndCityChunksConfig endCityChunksConfig = new EndCityChunksConfig();
-    public EntityOwnerConfig entityOwnerConfig = new EntityOwnerConfig();
     public ExplorationMiniMapConfig explorationMiniMapConfig = new ExplorationMiniMapConfig();
     public AutoCriticalsConfig autoCriticalsConfig = new AutoCriticalsConfig();
     public FlyHackConfig flyHackConfig = new FlyHackConfig();
@@ -52,6 +51,7 @@ public class Config {
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();
+    public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
 
     public Config() {
         esp = true;

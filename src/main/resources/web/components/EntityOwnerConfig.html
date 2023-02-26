@@ -2,18 +2,11 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Entity Owner</legend>
+    <div class="module-main">
+        <h2 class="module-header">Entity Owne</h2>
         <div class="description">
-            Shows who owns tamable animal.
+            Shows who owns tamable animal.<br>
+            This module was moved under Custom Title System in Entity ESP. Open Entity ESP, search for entity type you want to see owner (for example Animal base class). Check "Custom Title System" and "Show Owner".
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.enabled"
-                    @change="update()">
-                <span>Enabled</span>
-            </label>
-        </div>
-    </fieldset>
+    </div>
 </div>

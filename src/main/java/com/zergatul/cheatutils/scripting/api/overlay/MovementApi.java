@@ -17,6 +17,16 @@ public class MovementApi {
         return String.format(Locale.ROOT, "%.3f", config.inputVectorFactor);
     }
 
+    public boolean isOverrideJumpHeightEnabled() {
+        var config = getConfig();
+        return config.scaleJumpHeight;
+    }
+
+    public String getJumpFactor() {
+        var config = getConfig();
+        return String.format(Locale.ROOT, "%.3f", config.jumpHeightFactor);
+    }
+
     private MovementHackConfig getConfig() {
         return ConfigStore.instance.getConfig().movementHackConfig;
     }
