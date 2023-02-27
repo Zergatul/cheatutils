@@ -29,9 +29,9 @@ public class BlockFinderController {
 
     private final Logger logger = LogManager.getLogger(BlockFinderController.class);
     private final Object loopWaitEvent = new Object();
+    private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+    private final ThreadLoadCounter counter = new ThreadLoadCounter();
     private Thread eventLoop;
-    private Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
-    private ThreadLoadCounter counter = new ThreadLoadCounter();
 
     private BlockFinderController() {
         ModApiWrapper.ScannerChunkLoaded.add(this::scanChunk);
@@ -65,11 +65,16 @@ public class BlockFinderController {
         /* start */
 
         eventLoop = new Thread(() -> {
+            boolean first = true;
             try {
                 while (true) {
                     counter.startWait();
-                    synchronized (loopWaitEvent) {
-                        loopWaitEvent.wait();
+                    if (first) {
+                        first = false;
+                    } else {
+                        synchronized (loopWaitEvent) {
+                            loopWaitEvent.wait();
+                        }
                     }
                     counter.startLoad();
                     while (queue.size() > 0) {
