@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
+import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
 import net.minecraft.block.Block;
@@ -11,6 +12,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,27 +26,54 @@ public class BlockFinderController {
     // all modification to blocks are done in eventLoop thread
     public final Map<Block, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
 
-    private MinecraftClient mc = MinecraftClient.getInstance();
+    private final Logger logger = LogManager.getLogger(BlockFinderController.class);
     private final Object loopWaitEvent = new Object();
+    private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+    private final ThreadLoadCounter counter = new ThreadLoadCounter();
     private Thread eventLoop;
-    private Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
-    private ThreadLoadCounter counter = new ThreadLoadCounter();
 
     private BlockFinderController() {
         ChunkController.instance.addOnChunkLoadedHandler(this::scanChunk);
         ChunkController.instance.addOnChunkUnLoadedHandler(this::unloadChunk);
         ChunkController.instance.addOnBlockChangedHandler(this::handleBlockUpdate);
-        start();
+
+        restartBackgroundThread(null);
     }
 
-    public void start() {
-        stop();
+    public void restart() {
+        restartBackgroundThread(() -> {
+            clear();
+            for (Pair<Dimension, WorldChunk> pair: ChunkController.instance.getLoadedChunks()) {
+                scanChunk(pair.getSecond());
+            }
+        });
+    }
+
+    private void restartBackgroundThread(Runnable beforeThreadStart) {
+        /* stop */
+        if (eventLoop != null) {
+            queue.clear();
+            synchronized (loopWaitEvent) {
+                loopWaitEvent.notify();
+            }
+            eventLoop.interrupt();
+        }
+
+        eventLoop = null;
+
+        /* start */
+
         eventLoop = new Thread(() -> {
+            boolean first = true;
             try {
                 while (true) {
                     counter.startWait();
-                    synchronized (loopWaitEvent) {
-                        loopWaitEvent.wait();
+                    if (first) {
+                        first = false;
+                    } else {
+                        synchronized (loopWaitEvent) {
+                            loopWaitEvent.wait();
+                        }
                     }
                     counter.startLoad();
                     while (queue.size() > 0) {
@@ -56,24 +86,19 @@ public class BlockFinderController {
             catch (InterruptedException e) {
                 // do nothing
             }
+            catch (Throwable e) {
+                logger.error("BlockFinder scan thread crash.", e);
+            }
             finally {
                 counter.dispose();
             }
-        });
+        }, "BlockFinderScanThread");
 
-        eventLoop.start();
-    }
-
-    public void stop() {
-        if (eventLoop != null) {
-            queue.clear();
-            synchronized (loopWaitEvent) {
-                loopWaitEvent.notify();
-            }
-            eventLoop.interrupt();
+        if (beforeThreadStart != null) {
+            beforeThreadStart.run();
         }
 
-        eventLoop = null;
+        eventLoop.start();
     }
 
     public void clear() {
@@ -99,6 +124,15 @@ public class BlockFinderController {
         addToQueue(blocks::clear);
     }
 
+    public String getThreadState() {
+        Thread thread = eventLoop;
+        if (thread != null) {
+            return eventLoop.getState().toString();
+        } else {
+            return null;
+        }
+    }
+
     public double getScanningThreadLoadPercent() {
         return 100d * counter.getLoad(1);
     }
@@ -107,13 +141,15 @@ public class BlockFinderController {
         return queue.size();
     }
 
-    private void scanChunk(Dimension dimension, WorldChunk chunk) {
+    private void scanChunk(WorldChunk chunk) {
         addToQueue(() -> {
+            LevelChunkMixinInterface mixinChunk = (LevelChunkMixinInterface) chunk;
+            Dimension dimension = mixinChunk.getDimension();
             if (chunk.getStatus() != ChunkStatus.FULL) {
                 // re-add chunk to the queue
                 // but check if this chunk is still valid
                 if (ChunkController.instance.getLoadedChunks().stream().anyMatch(p -> p.getFirst() == dimension && p.getSecond() == chunk)) {
-                    scanChunk(dimension, chunk);
+                    scanChunk(chunk);
                 }
                 return;
             }
@@ -137,7 +173,7 @@ public class BlockFinderController {
         });
     }
 
-    private void unloadChunk(Dimension dimension, WorldChunk chunk) {
+    private void unloadChunk(WorldChunk chunk) {
         addToQueue(() -> {
             int cx = chunk.getPos().x;
             int cz = chunk.getPos().z;

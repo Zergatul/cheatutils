@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.chunkoverlays.AbstractChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
+import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.GuiUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
@@ -183,8 +184,9 @@ public class ChunkOverlayController {
         overlays.add(overlay);
     }
 
-    private void onChunkLoaded(Dimension dimension, WorldChunk chunk) {
+    private void onChunkLoaded(WorldChunk chunk) {
         for (AbstractChunkOverlay overlay: overlays) {
+            Dimension dimension = ((LevelChunkMixinInterface) chunk).getDimension();
             overlay.onChunkLoaded(dimension, chunk);
         }
     }

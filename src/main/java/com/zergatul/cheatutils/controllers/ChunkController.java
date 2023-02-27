@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.configs.ChunksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.interfaces.ClientPlayNetworkHandlerMixinInterface;
+import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.TriConsumer;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class ChunkController {
 
@@ -31,8 +33,8 @@ public class ChunkController {
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private final Map<Long, Pair<Dimension, WorldChunk>> loadedChunks = new HashMap<>();
     private final Map<Long, ChunkEntry> chunksMap = new HashMap<>();
-    private final List<BiConsumer<Dimension, WorldChunk>> onChunkLoadedHandlers = new ArrayList<>();
-    private final List<BiConsumer<Dimension, WorldChunk>> onChunkUnLoadedHandlers = new ArrayList<>();
+    private final List<Consumer<WorldChunk>> onChunkLoadedHandlers = new ArrayList<>();
+    private final List<Consumer<WorldChunk>> onChunkUnLoadedHandlers = new ArrayList<>();
     private final List<TriConsumer<Dimension, BlockPos, BlockState>> onBlockChangedHandlers = new ArrayList<>();
     private final List<ChunkPos> serverUnloadedChunks = new ArrayList<>();
 
@@ -44,11 +46,11 @@ public class ChunkController {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
     }
 
-    public synchronized void addOnChunkLoadedHandler(BiConsumer<Dimension, WorldChunk> handler) {
+    public synchronized void addOnChunkLoadedHandler(Consumer<WorldChunk> handler) {
         onChunkLoadedHandlers.add(handler);
     }
 
-    public synchronized void addOnChunkUnLoadedHandler(BiConsumer<Dimension, WorldChunk> handler) {
+    public synchronized void addOnChunkUnLoadedHandler(Consumer<WorldChunk> handler) {
         onChunkUnLoadedHandlers.add(handler);
     }
 
@@ -204,14 +206,15 @@ public class ChunkController {
     }
 
     private void invokeChunkLoadHandlers(Dimension dimension, WorldChunk chunk) {
-        for (BiConsumer<Dimension, WorldChunk> handler: onChunkLoadedHandlers) {
-            handler.accept(dimension, chunk);
+        ((LevelChunkMixinInterface) chunk).onLoad();
+        for (Consumer<WorldChunk> handler: onChunkLoadedHandlers) {
+            handler.accept(chunk);
         }
     }
 
     private void invokeChunkUnloadHandlers(Dimension dimension,WorldChunk chunk) {
-        for (BiConsumer<Dimension, WorldChunk> handler: onChunkUnLoadedHandlers) {
-            handler.accept(dimension, chunk);
+        for (Consumer<WorldChunk> handler: onChunkUnLoadedHandlers) {
+            handler.accept(chunk);
         }
     }
 

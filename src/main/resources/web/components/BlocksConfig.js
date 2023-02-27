@@ -141,6 +141,9 @@ function createComponent(template) {
                     delete self.blocksConfigMap[id];
                 });
             },
+            restart() {
+                axios.post('/api/block-esp-restart');
+            },
             update(config) {
                 axios.put('/api/blocks/' + config.block, config);
             }

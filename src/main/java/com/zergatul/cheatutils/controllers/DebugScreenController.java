@@ -20,8 +20,10 @@ public class DebugScreenController {
         list.add("");
         list.add("Zergatul Cheat Utils");
         list.add("Loaded chunks: " + ChunkController.instance.getLoadedChunksCount());
-        list.add("Block scanning thread queue size: " + BlockFinderController.instance.getScanningQueueCount());
-        list.add("Block scanning thread load: " + format.format(BlockFinderController.instance.getScanningThreadLoadPercent()) + "%");
+        list.add(String.format("BlockFinder scan thread: queue size=%s; load=%s; state=%s;",
+                BlockFinderController.instance.getScanningQueueCount(),
+                format.format(BlockFinderController.instance.getScanningThreadLoadPercent()) + "%",
+                BlockFinderController.instance.getThreadState()));
         //list.add("Horizontal speed: " + format.format(SpeedCounterController.instance.getSpeed()));
 
         FreeCamController.instance.onDebugScreenGetGameInformation(list);

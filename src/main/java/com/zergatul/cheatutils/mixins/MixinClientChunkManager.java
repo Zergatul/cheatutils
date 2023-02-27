@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 @Mixin(ClientChunkManager.class)
 public abstract class MixinClientChunkManager {
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/world/ClientChunkManager;loadChunkFromPacket(IILnet/minecraft/network/PacketByteBuf;Lnet/minecraft/nbt/NbtCompound;Ljava/util/function/Consumer;)Lnet/minecraft/world/chunk/WorldChunk;")
+    @Inject(at = @At("TAIL"), method = "loadChunkFromPacket(IILnet/minecraft/network/PacketByteBuf;Lnet/minecraft/nbt/NbtCompound;Ljava/util/function/Consumer;)Lnet/minecraft/world/chunk/WorldChunk;")
     private void onLoadChunkFromPacket(int x, int z, PacketByteBuf buf, NbtCompound nbt, Consumer<ChunkData.BlockEntityVisitor> consumer, CallbackInfoReturnable<WorldChunk> info) {
         WorldChunk chunk = info.getReturnValue();
         if (chunk != null) {
@@ -25,7 +25,7 @@ public abstract class MixinClientChunkManager {
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/world/ClientChunkManager;unload(II)V")
+    @Inject(at = @At("TAIL"), method = "unload(II)V")
     private void onUnload(int chunkX, int chunkZ, CallbackInfo info) {
         ModApiWrapper.ChunkUnloaded.trigger();
     }

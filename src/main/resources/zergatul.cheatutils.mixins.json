@@ -18,6 +18,7 @@
     "MixinDebugHud",
     "MixinGameRenderer",
     "MixinEntity",
+    "MixinLevelChunk",
     "MixinHandledScreen",
     "MixinInGameHud",
     "MixinKeyBinding",
