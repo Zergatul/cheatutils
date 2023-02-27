@@ -11,6 +11,7 @@ import com.zergatul.cheatutils.configs.EntityTitleConfig;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.font.GlyphFontRenderer;
 import com.zergatul.cheatutils.font.TextBounds;
+import com.zergatul.cheatutils.interfaces.ProjectileMixinInterface;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
@@ -28,6 +29,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -104,6 +107,10 @@ public class EntityTitleController {
             return;
         }
 
+        if (!ConfigStore.instance.getConfig().esp) {
+            return;
+        }
+
         ImmutableList<EntityTracerConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
 
         Vec3 view = event.getCamera().getPosition();
@@ -166,6 +173,10 @@ public class EntityTitleController {
             return;
         }
 
+        if (!ConfigStore.instance.getConfig().esp) {
+            return;
+        }
+
         double scale = mc.getWindow().getGuiScale();
         double invScale = 1 / scale;
         double scaledHalfWidth = mc.getWindow().getWidth() * invScale / 2;
@@ -211,8 +222,8 @@ public class EntityTitleController {
                 fontRenderer.drawText(event.getMatrixStack(), text, (float)xp, (float)yp, invScale);
             }
 
-            if (entry.showOwner && entry.entity instanceof LivingEntity livingEntity) {
-                UUID owner = getOwner(livingEntity);
+            if (entry.showOwner) {
+                UUID owner = getOwner(entry.entity);
                 if (owner != null) {
                     Optional<String> nameOpt = usernameCache.getUnchecked(owner);
                     if (nameOpt.isPresent()) {
@@ -388,12 +399,16 @@ public class EntityTitleController {
         return enchantments;
     }
 
-    private UUID getOwner(LivingEntity entity) {
+    private UUID getOwner(Entity entity) {
         if (entity instanceof TamableAnimal animal) {
             return animal.getOwnerUUID();
         }
         if (entity instanceof AbstractHorse horse) {
             return horse.getOwnerUUID();
+        }
+        if (entity instanceof Projectile projectile) {
+            ProjectileMixinInterface projectileMixin = (ProjectileMixinInterface) projectile;
+            return projectileMixin.getOwnerUUID();
         }
         // fox?
         return null;

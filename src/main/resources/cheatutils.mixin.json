@@ -35,6 +35,7 @@
     "MixinOptions",
     "MixinParticleEngine",
     "MixinPig",
+    "MixinProjectile",
     "MixinScreen",
     "MixinServerboundMovePlayerPacket",
     "MixinSlimeBlock",
