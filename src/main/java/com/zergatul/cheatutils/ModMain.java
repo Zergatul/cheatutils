@@ -2,6 +2,7 @@ package com.zergatul.cheatutils;
 
 import com.mojang.logging.LogUtils;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -65,6 +66,7 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(AutoEatController.instance);
         MinecraftForge.EVENT_BUS.register(NoFallController.instance);
         MinecraftForge.EVENT_BUS.register(StatusOverlayController.instance);
+        MinecraftForge.EVENT_BUS.register(ContainerButtonsController.instance);
 
         //MinecraftForge.EVENT_BUS.register(TestController.instance);
 

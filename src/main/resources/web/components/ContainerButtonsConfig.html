@@ -2,37 +2,93 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Container Buttons</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Container Buttons</h2>
         <div class="description">
             Show additional buttons for containers UI (chects, barrels, ender chests and so on).
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.showTakeAll"
-                    @change="update()">
-                <span>Show "Take All" button</span>
-            </label>
+
+        <div class="module-sections">
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.showTakeAll"
+                            @change="update()">
+                        <span>Show "Take All" button</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    Takes everything from container.
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.showSmartPut"
+                            @change="update()">
+                        <span>Show "Smart Put" button</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    "Smart Put" moves items from your inventory to container. It moves only the same items that are already inside container. For example, if you have wood and planks in chest, it will move only wood and planks from your inventory to the chest.
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.showDropAll"
+                            @change="update()">
+                        <span>Show "Drop All" button</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    "Drop All" drops everything in container on the ground.
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.useFilter"
+                            @change="update()">
+                        <span>Use Filter</span>
+                    </label>
+                </legend>
+                <items-list v-model="config.items" @change="update()"></items-list>
+                <div class="section-description">
+                    Add items you want to take with "Take All" or "Drop All" buttons.
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    Automation
+                </legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.autoTakeAll"
+                        @change="update()">
+                    <span>Apply "Take All" on container open</span>
+                </label>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.autoDropAll"
+                        @change="update()">
+                    <span>Apply "Drop All" on container open</span>
+                </label>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.autoClose"
+                        @change="update()">
+                    <span>Auto close containers</span>
+                </label>
+            </fieldset>
         </div>
-        <div class="description">
-            "Smart Put" moves items from your inventory to container. It moves only the same items that are already inside container. For example, if you have wood and planks in chest, it will move only wood and planks from your inventory to the chest.
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.showSmartPut"
-                    @change="update()">
-                <span>Show "Smart Put" button</span>
-            </label>
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.showDropAll"
-                    @change="update()">
-                <span>Show "Drop All" button</span>
-            </label>
-        </div>
-    </fieldset>
+    </div>
 </div>

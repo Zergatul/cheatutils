@@ -2,10 +2,7 @@ package com.zergatul.cheatutils.collections;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -15,6 +12,10 @@ public class ImmutableList<E> implements Iterable<E> {
 
     public ImmutableList() {
         array = new Object[0];
+    }
+
+    public ImmutableList(Collection<E> collection) {
+        this(collection.toArray());
     }
 
     private ImmutableList(Object[] array) {
@@ -27,6 +28,30 @@ public class ImmutableList<E> implements Iterable<E> {
         System.arraycopy(array, 0, newArray, 0, size);
         newArray[size] = element;
         return new ImmutableList<>(newArray);
+    }
+
+    public boolean contains(E item) {
+        for (int i = 0; i < array.length; i++) {
+            if (Objects.equals(array[i], item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public E get(int index) {
+        return (E) array[index];
+    }
+
+    @SuppressWarnings("unchecked")
+    public int indexOf(Predicate<E> predicate) {
+        for (int i = 0; i < array.length; i++) {
+            if (predicate.test((E) array[i])) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public ImmutableList<E> remove(E element) {
@@ -67,6 +92,27 @@ public class ImmutableList<E> implements Iterable<E> {
             }
         }
         return new ImmutableList<>(list.toArray());
+    }
+
+    public ImmutableList<E> set(int index, E element) {
+        int size = array.length;
+        Object[] newArray = new Object[size];
+        System.arraycopy(array, 0, newArray, 0, size);
+        newArray[index] = element;
+        return new ImmutableList<>(newArray);
+    }
+
+    public ImmutableList<E> swap(int index1, int index2) {
+        int size = array.length;
+        Object[] newArray = new Object[size];
+        System.arraycopy(array, 0, newArray, 0, size);
+        newArray[index1] = array[index2];
+        newArray[index2] = array[index1];
+        return new ImmutableList<>(newArray);
+    }
+
+    public int size() {
+        return array.length;
     }
 
     @SuppressWarnings("unchecked")
