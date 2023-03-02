@@ -50,6 +50,45 @@
                     "Drop All" drops everything in container on the ground.
                 </div>
             </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.useFilter"
+                            @change="update()">
+                        <span>Use Filter</span>
+                    </label>
+                </legend>
+                <items-list v-model="config.items" @change="update()"></items-list>
+                <div class="section-description">
+                    Add items you want to take with "Take All" or "Drop All" buttons.
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    Automation
+                </legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.autoTakeAll"
+                        @change="update()">
+                    <span>Apply "Take All" on container open</span>
+                </label>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.autoDropAll"
+                        @change="update()">
+                    <span>Apply "Drop All" on container open</span>
+                </label>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.autoClose"
+                        @change="update()">
+                    <span>Auto close containers</span>
+                </label>
+            </fieldset>
         </div>
     </div>
 </div>

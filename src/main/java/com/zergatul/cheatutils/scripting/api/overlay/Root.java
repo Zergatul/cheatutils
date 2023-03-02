@@ -15,4 +15,5 @@ public class Root {
     public static MovementApi movement = new MovementApi();
     public static NoFallApi noFall = new NoFallApi();
     public static AutoCriticalsApi autoCriticals = new AutoCriticalsApi();
+    public static ContainerButtonsApi containerButtons = new ContainerButtonsApi();
 }

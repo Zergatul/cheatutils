@@ -5,19 +5,16 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
 import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
+import com.zergatul.cheatutils.controllers.ContainerButtonsController;
 import com.zergatul.cheatutils.controllers.ContainerSummaryController;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.*;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -51,11 +48,8 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
 
     @Inject(at = @At("TAIL"), method = "init()V")
     private void onInit(CallbackInfo info) {
-        Object self = this;
-        if (self instanceof EnchantmentScreen) {
-            return;
-        }
-        if (self instanceof InventoryScreen) {
+        Screen self = this;
+        if (!ContainerButtonsController.instance.isValidScreen(self)) {
             return;
         }
 
@@ -153,73 +147,14 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     }
 
     private void onTakeAllPress(Button button) {
-        NonNullList<Slot> slots = this.menu.slots;
-        if (slots.size() > 0) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.gameMode == null || mc.player == null) {
-                return;
-            }
-            Container container = slots.get(0).container;
-            for (int i = 0; i < slots.size(); i++) {
-                Slot slot = slots.get(i);
-                if (slot.container != container) {
-                    break;
-                }
-                if (slot.getItem().isEmpty()) {
-                    continue;
-                }
-                mc.gameMode.handleInventoryMouseClick(this.menu.containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
-            }
-        }
+        ContainerButtonsController.instance.takeAll(false);
     }
 
     private void onSmartPutPress(Button button) {
-        NonNullList<Slot> slots = this.menu.slots;
-        if (slots.size() > 0) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.gameMode == null || mc.player == null) {
-                return;
-            }
-            Container container = slots.get(0).container;
-            List<Item> containerItems = new ArrayList<>();
-            for (int i = 0; i < slots.size(); i++) {
-                Slot slot = slots.get(i);
-                if (slot.getItem().isEmpty()) {
-                    continue;
-                }
-
-                Item item = slot.getItem().getItem();
-                if (slot.container == container) {
-                    if (!containerItems.contains(item)) {
-                        containerItems.add(item);
-                    }
-                } else {
-                    if (containerItems.contains(item)) {
-                        mc.gameMode.handleInventoryMouseClick(this.menu.containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
-                    }
-                }
-            }
-        }
+        ContainerButtonsController.instance.smartPut();
     }
 
     private void onDropAllPress(Button button) {
-        NonNullList<Slot> slots = this.menu.slots;
-        if (slots.size() > 0) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.gameMode == null || mc.player == null) {
-                return;
-            }
-            Container container = slots.get(0).container;
-            for (int i = 0; i < slots.size(); i++) {
-                Slot slot = slots.get(i);
-                if (slot.container != container) {
-                    break;
-                }
-                if (slot.getItem().isEmpty()) {
-                    continue;
-                }
-                mc.gameMode.handleInventoryMouseClick(this.menu.containerId, i, 1, ClickType.THROW, mc.player);
-            }
-        }
+        ContainerButtonsController.instance.dropAll(false);
     }
 }

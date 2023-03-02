@@ -1,41 +1,15 @@
 <div>
-    <div v-if="state == 'list'">
-        <div>
-            <button style="width: 200px;" @click="$emit('back')">Back</button>
-        </div>
-        <fieldset style="padding-top: 16px;" v-if="config">
-            <legend>Auto Drop</legend>
-            <div class="description">
-                Drops gargabe from inventory. Use Scripting to assign key bind.
-            </div>
-            <div>
-                <button style="width: 200px;" @click="openAdd()">Add Item</button>
-            </div>
-            <div>
-                <ul class="list-base" style="width: 800px;">
-                    <li v-for="item in config">
-                        <button style="width: 200px;" @click="remove(item)">Remove</button>
-                        {{ item }}
-                    </li>
-                </ul>
-            </div>
-        </fieldset>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <div v-if="state == 'add'">
-        <div style="padding-bottom: 16px;">
-            <button style="width: 200px;" @click="backToList()">Back</button>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Auto Drop</h2>
+        <div class="description">
+            Drops gargabe from inventory. Use Scripting to assign key bind.
         </div>
-        <div>
-            <span class="text">Filter:</span>
-            <input type="text" class="search"
-                v-model="search"
-                @input="filterItemList()">
+
+        <div class="module-sections">
+            <items-list v-model="config.items" @change="onChange()"></items-list>
         </div>
-        <ul class="list-base" style="width: 800px;">
-            <li v-for="item in itemListFiltered">
-                <button style="width: 200px;" @click="add(item)">Add</button>
-                {{ item }}
-            </li>
-        </ul>
     </div>
 </div>

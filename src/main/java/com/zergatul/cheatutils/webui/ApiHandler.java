@@ -38,7 +38,6 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
         apis.add(new BeaconsListApi());
-        apis.add(new AutoDropApi());
         apis.add(new ItemInfoApi());
         apis.add(new StatusOverlayApi());
         apis.add(new ClassNameApi());
@@ -426,6 +425,13 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(ContainerButtonsConfig config) {
+                ContainerButtonsConfig oldConfig = ConfigStore.instance.getConfig().containerButtonsConfig;
+                if (!oldConfig.autoDropAll && config.autoDropAll) {
+                    config.autoTakeAll = false;
+                }
+                if (!oldConfig.autoTakeAll && config.autoTakeAll) {
+                    config.autoDropAll = false;
+                }
                 ConfigStore.instance.getConfig().containerButtonsConfig = config;
             }
         });
@@ -616,6 +622,18 @@ public class ApiHandler implements HttpHandler {
                 if (oldConfig.enchFontSize != config.enchFontSize || oldConfig.enchAntiAliasing != config.enchAntiAliasing) {
                     EntityTitleController.instance.onEnchantmentFontChange(config);
                 }
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("auto-drop", AutoDropConfig.class) {
+            @Override
+            protected AutoDropConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoDropConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoDropConfig config) {
+                ConfigStore.instance.getConfig().autoDropConfig = config;
             }
         });
     }

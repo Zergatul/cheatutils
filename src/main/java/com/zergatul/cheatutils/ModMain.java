@@ -56,6 +56,7 @@ public class ModMain {
         register(AutoBucketController.instance);
         register(WorldDownloadController.instance);
         register(EntityTitleController.instance);
+        register(ContainerButtonsController.instance);
     }
 
     private void register(Object instance) {

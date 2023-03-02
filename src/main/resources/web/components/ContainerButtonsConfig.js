@@ -1,5 +1,7 @@
+import { addComponent } from '/components/Loader.js'
+
 function createComponent(template) {
-    return {
+    let args = {
         template: template,
         created() {
             let self = this;
@@ -20,7 +22,9 @@ function createComponent(template) {
                 });
             }
         }
-    }
+    };
+    addComponent(args, 'ItemsList');
+    return args;
 }
 
 export { createComponent }

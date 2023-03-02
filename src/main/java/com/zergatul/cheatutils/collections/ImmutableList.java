@@ -30,6 +30,15 @@ public class ImmutableList<E> implements Iterable<E> {
         return new ImmutableList<>(newArray);
     }
 
+    public boolean contains(E item) {
+        for (int i = 0; i < array.length; i++) {
+            if (Objects.equals(array[i], item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @SuppressWarnings("unchecked")
     public E get(int index) {
         return (E) array[index];

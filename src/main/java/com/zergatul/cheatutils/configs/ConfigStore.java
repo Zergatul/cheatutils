@@ -153,6 +153,7 @@ public class ConfigStore {
         config.autoBucketConfig.validate();
         config.performanceConfig.validate();
         config.entityTitleConfig.validate();
+        config.keyBindingsConfig.validate();
 
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
