@@ -2,15 +2,43 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Fog</legend>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.disableFog"
-                    @change="update()">
-                <span>Disable all fogs (water, lava, powder snow)</span>
-            </label>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Fog</h2>
+        <div class="description">
+            Disable all fogs (water, lava, powder snow).
         </div>
-    </fieldset>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.disableFog"
+                        @change="update()">
+                    <span>Disable</span>
+                </label>
+            </div>
+            <fieldset>
+                <legend>
+                    Method
+                </legend>
+                <div class="input-section">
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="on-ground" value="SkipSetupFog" v-model="config.method" @change="update()">
+                            <span class="text">Skip FogRenderer.setupFog(...)</span>
+                        </label>
+                    </div>
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="on-ground" value="FogDistanceMod" v-model="config.method" @change="update()">
+                            <span class="text">Modify fog distances: near plane = 10000, far plane = 1000000</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="section-description">
+                    First option may not work properly with graphic optimization mods or shaders.
+                </div>
+            </fieldset>
+        </div>
+    </div>
 </div>
