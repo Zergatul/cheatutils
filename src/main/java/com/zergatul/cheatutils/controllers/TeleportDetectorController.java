@@ -5,14 +5,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-public class TeleportController {
+public class TeleportDetectorController {
 
-    public static final TeleportController instance = new TeleportController();
+    public static final TeleportDetectorController instance = new TeleportDetectorController();
 
     private final Minecraft mc = Minecraft.getInstance();
     private ResourceKey<Level> dimension;
 
-    private TeleportController() {
+    private TeleportDetectorController() {
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
         ModApiWrapper.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
     }

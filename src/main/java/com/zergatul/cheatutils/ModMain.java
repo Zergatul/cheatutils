@@ -2,10 +2,8 @@ package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.schematics.SchematicFile;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -14,12 +12,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 @Mod(ModMain.MODID)
 public class ModMain {
@@ -37,7 +31,7 @@ public class ModMain {
         register(KeyBindingsController.instance);
         register(ChunkController.instance);
         register(NetworkPacketsController.instance);
-        register(TeleportController.instance);
+        register(TeleportDetectorController.instance);
         register(AutoTotemController.instance);
         register(KillAuraController.instance);
         register(AutoEatController.instance);
@@ -57,6 +51,7 @@ public class ModMain {
         register(WorldDownloadController.instance);
         register(EntityTitleController.instance);
         register(ContainerButtonsController.instance);
+        register(TeleportHackController.instance);
     }
 
     private void register(Object instance) {
@@ -83,6 +78,7 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(StatusOverlayController.instance);
         MinecraftForge.EVENT_BUS.register(ChunkOverlayController.instance);
         MinecraftForge.EVENT_BUS.register(ZoomController.instance);
+        MinecraftForge.EVENT_BUS.register(FogController.instance);
 
         //MinecraftForge.EVENT_BUS.register(TestController.instance);
 

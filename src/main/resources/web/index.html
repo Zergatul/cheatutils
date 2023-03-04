@@ -209,7 +209,9 @@
                             <button @click="current = 'auto-bucket'">Auto Bucket (BETA)</button>
                         </td>
                         <td></td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'teleport-hack'">Teleport</button>
+                        </td>
                         <td>
                             <button @click="current = 'performance'">Performance</button>
                         </td>
@@ -485,6 +487,11 @@
             v-if="current == 'entity-title'"
             @back="backToMain()">
         </entity-title-config>
+
+        <teleport-hack-config
+            v-if="current == 'teleport-hack'"
+            @back="backToMain()">
+        </teleport-hack-config>
 
     </div>
 

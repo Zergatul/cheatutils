@@ -95,6 +95,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'WorldDownloadConfig');
     addComponent(args, 'PerformanceConfig');
     addComponent(args, 'EntityTitleConfig');
+    addComponent(args, 'TeleportHackConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');
