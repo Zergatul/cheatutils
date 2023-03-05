@@ -4,17 +4,18 @@ import com.zergatul.cheatutils.configs.AutoBucketConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.RotationUtils;
+import com.zergatul.cheatutils.utils.VoxelShapeUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -99,19 +100,24 @@ public class AutoBucketController {
         double multiplier = 1d / stepsPerTick;
         Vec3 speedPerStep = speed.multiply(multiplier, multiplier, multiplier);
         double hw = mc.player.getBbWidth() / 2;
-        double px1 = mc.player.getX() - hw;
-        double px2 = mc.player.getX() + hw;
+        double px = mc.player.getX();
+        double px1 = px - hw;
+        double px2 = px + hw;
         double py = mc.player.getY() - 0.2; // from entity.getOnPosLegacy
-        double pz1 = mc.player.getZ() - hw;
-        double pz2 = mc.player.getZ() + hw;
+        double pz = mc.player.getZ();
+        double pz1 = pz - hw;
+        double pz2 = pz + hw;
         Set<BlockPos> checked = new HashSet<>();
         List<Long> covered = new ArrayList<>(); // covered XZ by negate fall dmg block
         BlockPos collisionPos = null;
+        EntityDimensions dimensions = mc.player.getDimensions(mc.player.getPose());
         stepsLoop:
         for (int i = 0; i < steps; i++) {
+            px += speedPerStep.x;
             px1 += speedPerStep.x;
             px2 += speedPerStep.x;
             py += speedPerStep.y;
+            pz += speedPerStep.z;
             pz1 += speedPerStep.z;
             pz2 += speedPerStep.z;
 
@@ -139,11 +145,14 @@ public class AutoBucketController {
                         covered.add(coveredXZ);
                         continue;
                     }
-                    // TODO: check shape, check waterlogged state?
+
+                    // TODO: check if it already waterlogged?
                     VoxelShape shape = state.getCollisionShape(mc.level, pos);
-                    if (Block.isShapeFullBlock(shape)) {
-                        collisionPos = pos;
-                        break stepsLoop;
+                    if (!shape.isEmpty()) {
+                        if (VoxelShapeUtils.intersects(pos, shape, dimensions.makeBoundingBox(px, py, pz))) {
+                            collisionPos = pos;
+                            break stepsLoop;
+                        }
                     }
                 }
             }
