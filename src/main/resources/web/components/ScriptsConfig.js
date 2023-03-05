@@ -76,7 +76,7 @@ function createComponent(template) {
                         this.showRefs = true;
                     } else {
                         let self = this;
-                        axios.get('/api/scripts-doc/keys').then(response => {
+                        axios.get('/api/scripts-doc/handle-keybindings').then(response => {
                             self.showRefs = true;
                             self.refs = response.data;
                         });

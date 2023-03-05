@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.tests;
 
+import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptingLanguageCompiler;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
@@ -13,7 +14,7 @@ import java.util.List;
 
 public class ScriptCompilerTestEntryPoint {
     public static void main(String[] args) {
-        var compiler = new ScriptingLanguageCompiler(TestRoot.class);
+        var compiler = new ScriptingLanguageCompiler(TestRoot.class, new ApiType[0]);
         try {
             ClassLoader classLoader = ScriptCompilerTestEntryPoint.class.getClassLoader();
             InputStream stream = classLoader.getResourceAsStream("test-script.txt");

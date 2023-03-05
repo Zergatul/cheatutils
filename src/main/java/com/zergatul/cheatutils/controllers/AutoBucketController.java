@@ -2,10 +2,10 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.configs.AutoBucketConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.interfaces.ServerboundMovePlayerPacketMixinInterface;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -17,13 +17,17 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class AutoBucketController {
@@ -32,9 +36,14 @@ public class AutoBucketController {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final Logger logger = LogManager.getLogger(AutoBucketController.class);
+    private volatile boolean waterPlaced;
+    private volatile long waterPlacedTime;
+    private volatile BlockPos apprWaterPlacedPos;
+    private volatile BlockPos realWaterPlacedPos;
 
     private AutoBucketController() {
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
+        ModApiWrapper.ScannerBlockUpdated.add(this::onBlockUpdated);
     }
 
     private void onClientTickEnd() {
@@ -57,6 +66,29 @@ public class AutoBucketController {
 
         Vec3 speed = mc.player.getDeltaMovement();
         if (speed.y > -config.speedThreshold / 20) {
+            if (realWaterPlacedPos != null) {
+                // not more than 4 sec
+                if (System.nanoTime() - waterPlacedTime < 4000000000L) {
+                    Vec3 blockCenter = new Vec3(
+                            realWaterPlacedPos.getX() + 0.5,
+                            realWaterPlacedPos.getY() + 0.5,
+                            realWaterPlacedPos.getZ() + 0.5);
+                    double d2 = mc.player.getPosition(1).distanceToSqr(blockCenter);
+                    if (d2 < config.reachDistance * config.reachDistance) {
+                        // try to pickup water
+                        RotationUtils.Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), blockCenter);
+                        float oldXRot = mc.player.getXRot();
+                        float oldYRot = mc.player.getYRot();
+                        mc.player.setXRot(rotation.xRot());
+                        mc.player.setYRot(rotation.yRot());
+                        mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
+                        mc.player.setXRot(oldXRot);
+                        mc.player.setYRot(oldYRot);
+                    }
+                }
+
+                realWaterPlacedPos = null;
+            }
             return;
         }
 
@@ -73,6 +105,7 @@ public class AutoBucketController {
         double pz1 = mc.player.getZ() - hw;
         double pz2 = mc.player.getZ() + hw;
         Set<BlockPos> checked = new HashSet<>();
+        List<Long> covered = new ArrayList<>(); // covered XZ by negate fall dmg block
         BlockPos collisionPos = null;
         stepsLoop:
         for (int i = 0; i < steps; i++) {
@@ -97,8 +130,13 @@ public class AutoBucketController {
             for (BlockPos pos : positions) {
                 if (!checked.contains(pos)) {
                     checked.add(pos);
+                    long coveredXZ = toLong(pos);
+                    if (covered.contains(coveredXZ)) {
+                        continue;
+                    }
                     BlockState state = mc.level.getBlockState(pos);
                     if (isOkToFallOn(state)) {
+                        covered.add(coveredXZ);
                         continue;
                     }
                     // TODO: check shape, check waterlogged state?
@@ -142,12 +180,43 @@ public class AutoBucketController {
             float oldYRot = mc.player.getYRot();
             mc.player.setXRot(rotation.xRot());
             mc.player.setYRot(rotation.yRot());
-            HitResult result = mc.player.pick(mc.gameMode.getPickRange(), 1, true);
-            if (result.getType() != HitResult.Type.MISS) {
+            HitResult result = mc.player.pick(config.reachDistance, 1, true);
+            if (result instanceof BlockHitResult blockHitResult && result.getType() != HitResult.Type.MISS) {
                 mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
+                if (config.autoPickUp) {
+                    waterPlaced = true;
+                    waterPlacedTime = System.nanoTime();
+                    apprWaterPlacedPos = blockHitResult.getBlockPos();
+                }
             }
             mc.player.setXRot(oldXRot);
             mc.player.setYRot(oldYRot);
+        }
+    }
+
+    private void onBlockUpdated(BlockUpdateEvent event) {
+        if (waterPlaced) {
+            // wait not more than 3 sec
+            if (System.nanoTime() - waterPlacedTime > 3000000000L) {
+                waterPlaced = false;
+                return;
+            }
+
+            // check if distance to block update <=3
+            if (event.pos().distManhattan(apprWaterPlacedPos) > 3) {
+                return;
+            }
+
+            if (event.state().is(Blocks.WATER) && event.state().getFluidState().isSource()) {
+                waterPlaced = false;
+                realWaterPlacedPos = event.pos();
+                return;
+            }
+
+            if (event.state().hasProperty(BlockStateProperties.WATERLOGGED) && event.state().getValue(BlockStateProperties.WATERLOGGED)) {
+                waterPlaced = false;
+                realWaterPlacedPos = event.pos();
+            }
         }
     }
 
@@ -189,6 +258,13 @@ public class AutoBucketController {
         if (state.getBlock() == Blocks.COBWEB) {
             return true;
         }
+        if (state.getBlock() == Blocks.WATER) {
+            return true;
+        }
         return false;
+    }
+
+    private long toLong(BlockPos pos) {
+        return ((long)pos.getX() << 32) | pos.getZ();
     }
 }

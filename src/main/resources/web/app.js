@@ -96,6 +96,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'PerformanceConfig');
     addComponent(args, 'EntityTitleConfig');
     addComponent(args, 'TeleportHackConfig');
+    addComponent(args, 'FakeLagConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

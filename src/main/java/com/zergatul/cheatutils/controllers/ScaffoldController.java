@@ -108,6 +108,7 @@ public class ScaffoldController {
     }
 
     private void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, ScaffoldConfig config) {
+        int selectedSlot = mc.player.getInventory().selected;
         Optional<InteractionHand> optional = selectItem(config);
         if (optional.isEmpty()) {
             return;
@@ -130,6 +131,10 @@ public class ScaffoldController {
             if (result.shouldSwing()) {
                 mc.player.swing(hand);
             }
+        }
+
+        if (config.keepSelectedSlot) {
+            mc.player.getInventory().selected = selectedSlot;
         }
 
         if (itemStack.isEmpty() && config.replaceBlocksFromInventory) {

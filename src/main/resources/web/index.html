@@ -219,7 +219,9 @@
                     <tr>
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'fake-lag'">Fake Lag</button>
+                        </td>
                         <td>
                             <button @click="current = 'beacons'">Beacons (BETA)</button>
                         </td>
@@ -492,6 +494,11 @@
             v-if="current == 'teleport-hack'"
             @back="backToMain()">
         </teleport-hack-config>
+
+        <fake-lag-config
+            v-if="current == 'fake-lag'"
+            @back="backToMain()">
+        </fake-lag-config>
 
     </div>
 

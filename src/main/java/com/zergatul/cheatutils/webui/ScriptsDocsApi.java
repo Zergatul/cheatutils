@@ -1,6 +1,9 @@
 package com.zergatul.cheatutils.webui;
 
+import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.HelpText;
+import com.zergatul.cheatutils.scripting.api.Root;
+import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpException;
 
@@ -20,40 +23,33 @@ public class ScriptsDocsApi extends ApiBase {
 
     @Override
     public String get(String id) throws HttpException {
-        Class<?> clazz;
-        switch (id) {
-            case "keys":
-                clazz = com.zergatul.cheatutils.scripting.api.keys.Root.class;
-                break;
-            case "overlay":
-                clazz = com.zergatul.cheatutils.scripting.api.overlay.Root.class;
-                break;
-            default:
-                return null;
+        ApiType[] types = VisibilityCheck.getTypes(id);
+        if (types == null) {
+            return null;
         }
-        return gson.toJson(generateRootRefs(clazz));
+        return gson.toJson(generateRootRefs(types));
     }
 
-    private List<String> generateRootRefs(Class<?> clazz) {
+    private List<String> generateRootRefs(ApiType[] types) {
         List<String> refs = new ArrayList<>();
 
-        getFields(clazz, false).sorted(Comparator.comparing(Field::getName)).forEach(field -> {
-            getMethods(field.getType()).forEach(method -> {
+        getFields(Root.class, false).sorted(Comparator.comparing(Field::getName)).forEach(field -> {
+            getMethods(field.getType(), types).forEach(method -> {
                 refs.add(generateHtml(field.getName(), method));
             });
             getFields(field.getType(), true).forEach(f -> {
                 String prefix = field.getName() + "." + f.getName();
-                refs.addAll(generateChildRefs(prefix, f.getType()));
+                refs.addAll(generateChildRefs(prefix, f.getType(), types));
             });
         });
 
         return refs;
     }
 
-    private List<String> generateChildRefs(String prefix, Class<?> clazz) {
+    private List<String> generateChildRefs(String prefix, Class<?> clazz, ApiType[] types) {
         List<String> refs = new ArrayList<>();
 
-        getMethods(clazz).forEach(method -> {
+        getMethods(clazz, types).forEach(method -> {
             refs.add(generateHtml(prefix, method));
         });
 
@@ -61,18 +57,21 @@ public class ScriptsDocsApi extends ApiBase {
         Arrays.stream(fields).filter(f -> Modifier.isPublic(f.getModifiers())).sorted(Comparator.comparing(Field::getName)).forEach(field -> {
             getFields(field.getType(), true).forEach(f -> {
                 String prefixInner = prefix + "." + field.getName() + "." + f.getName();
-                refs.addAll(generateChildRefs(prefixInner, f.getType()));
+                refs.addAll(generateChildRefs(prefixInner, f.getType(), types));
             });
         });
 
         return refs;
     }
 
-    private Stream<Method> getMethods(Class<?> clazz) {
+    private Stream<Method> getMethods(Class<?> clazz, ApiType[] types) {
         Method[] methods = clazz.getMethods();
         return Arrays.stream(methods).filter(m -> {
             if (m.getDeclaringClass() == Object.class) {
                 return false; // skip Object methods
+            }
+            if (!VisibilityCheck.isOk(m, types)) {
+                return false;
             }
             return Modifier.isPublic(m.getModifiers());
         }).sorted(Comparator.comparing(Method::getName));

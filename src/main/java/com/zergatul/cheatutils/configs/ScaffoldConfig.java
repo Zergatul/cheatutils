@@ -6,6 +6,7 @@ public class ScaffoldConfig extends ModuleConfig implements ValidatableConfig {
     public double distance;
     public boolean replaceBlocksFromInventory;
     public boolean attachToAir;
+    public boolean keepSelectedSlot;
     //public boolean useSlabs;
 
     @Override

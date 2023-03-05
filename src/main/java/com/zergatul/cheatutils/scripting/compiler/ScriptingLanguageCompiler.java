@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.scripting.compiler;
 
+import com.zergatul.cheatutils.scripting.api.ApiType;
+import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
 import com.zergatul.cheatutils.scripting.generated.*;
 import org.objectweb.asm.*;
 
@@ -26,9 +28,11 @@ public class ScriptingLanguageCompiler {
     private static AtomicInteger counter = new AtomicInteger(0);
     private static ScriptingClassLoader classLoader = new ScriptingClassLoader();
     private final Class<?> root;
+    private final ApiType[] types;
 
-    public ScriptingLanguageCompiler(Class<?> root) {
+    public ScriptingLanguageCompiler(Class<?> root, ApiType[] types) {
         this.root = root;
+        this.types = types;
     }
 
     public Runnable compile(String program) throws ParseException, ScriptCompileException {
@@ -811,6 +815,9 @@ public class ScriptingLanguageCompiler {
                 return false; // skip Object methods
             }
             if (!m.getName().equals(name)) {
+                return false;
+            }
+            if (!VisibilityCheck.isOk(m, types)) {
                 return false;
             }
             Parameter[] parameters = m.getParameters();

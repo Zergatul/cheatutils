@@ -1,11 +1,8 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.datafixers.util.Pair;
-import com.zergatul.cheatutils.scripting.api.overlay.Root;
 import com.zergatul.cheatutils.utils.IntList;
 import com.zergatul.cheatutils.utils.JavaRandom;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -14,7 +11,6 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -255,7 +251,7 @@ public class EnchantmentScreenController {
                 List<EnchantmentInstance> list = getEnchantmentList(mcRandom, seed, itemStack, 2, cost2);
                 for (var ei: list) {
                     var id = ForgeRegistries.ENCHANTMENTS.getKey(ei.enchantment);
-                    com.zergatul.cheatutils.scripting.api.keys.Root.main.systemMessage(id.toString() + " - " + ei.level);
+                    com.zergatul.cheatutils.scripting.api.Root.main.systemMessage(id.toString() + " - " + ei.level);
                 }
                 return list.size();
             }

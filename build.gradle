@@ -21,7 +21,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '1.8.0'
+version = '1.8.1'
 group = 'com.zergatul.cheatutils' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'zergatul.cheatutils'
 
