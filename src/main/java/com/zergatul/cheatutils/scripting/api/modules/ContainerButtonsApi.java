@@ -41,7 +41,7 @@ public class ContainerButtonsApi {
         ConfigStore.instance.requestWrite();
     }
 
-    @ApiVisibility(ApiType.ACTION)
+    /*@ApiVisibility(ApiType.ACTION)
     public void dropAll(boolean autoClose) {
         ContainerButtonsController.instance.dropAll(autoClose);
     }
@@ -54,7 +54,7 @@ public class ContainerButtonsApi {
     @ApiVisibility(ApiType.ACTION)
     public void smartPut() {
         ContainerButtonsController.instance.smartPut();
-    }
+    }*/
 
     private ContainerButtonsConfig getConfig() {
         return ConfigStore.instance.getConfig().containerButtonsConfig;
