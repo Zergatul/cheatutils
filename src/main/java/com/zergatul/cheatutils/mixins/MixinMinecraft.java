@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.mixins;
 
-import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.controllers.KeyBindingsController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,6 +30,11 @@ public abstract class MixinMinecraft {
                 }
             }
         }
+    }
+
+    @Inject(at = @At("TAIL"), method = "handleKeybinds()V")
+    private void onAfterHandleKeyBindings(CallbackInfo info) {
+        KeyBindingsController.instance.onHandleKeybindings();
     }
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Minecraft;close()V")

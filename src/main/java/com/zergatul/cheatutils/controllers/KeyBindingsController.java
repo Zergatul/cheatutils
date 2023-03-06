@@ -52,16 +52,18 @@ public class KeyBindingsController {
         }
     }
 
-    @SubscribeEvent
-    public void onKeyInputEvent(InputEvent.KeyInputEvent event) {
-
+    public void onHandleKeybindings() {
         if (mc.player == null) {
             return;
         }
 
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i].isDown() && actions[i] != null) {
-                actions[i].run();
+            KeyMapping key = keys[i];
+            Runnable action = actions[i];
+            while (key.consumeClick()) {
+                if (action != null) {
+                    action.run();
+                }
             }
         }
     }
