@@ -19,12 +19,16 @@ public abstract class MixinCamera {
     @Shadow(aliases = "Lnet/minecraft/client/Camera;setPosition(DDD)V")
     protected abstract void setPosition(double p_90585_, double p_90586_, double p_90587_);
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/Camera;setup(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/world/entity/Entity;ZZF)V", cancellable = true)
+    @Inject(
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setRotation(FF)V", ordinal = 0),
+            method = "setup(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/world/entity/Entity;ZZF)V",
+            cancellable = true)
     private void onSetup(BlockGetter level, Entity entity, boolean detached, boolean mirrored, float particalTicks, CallbackInfo info) {
         FreeCamController controller = FreeCamController.instance;
         if (FreeCamController.instance.isActive()) {
             setRotation(controller.getYRot(), controller.getXRot());
             setPosition(controller.getX(), controller.getY(), controller.getZ());
+            info.cancel();
         }
     }
 }

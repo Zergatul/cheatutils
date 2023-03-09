@@ -2,18 +2,40 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Auto Eat</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Auto Eat</h2>
         <div class="description">
             Automatically consumes item held in offhand. Can be useful for afk farms.
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.enabled"
-                    @change="update()">
-                <span>Enabled</span>
-            </label>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.isHungerLimitEnabled"
+                            @change="update()">
+                        <span>Enable Hunger Limit</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Min Hunger:</span>
+                    <input type="text" v-model="config.hungerLimit" @change="update()">
+                </div>
+                <div class="section-description">
+                    If Hunger Limit is disabled module consumes food as soon as it can do.<br>
+                    You can specify hunger limit after which module will consume food.
+                </div>
+            </fieldset>
         </div>
-    </fieldset>
+    </div>
 </div>

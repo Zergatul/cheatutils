@@ -38,7 +38,7 @@ public class DebugScreenController {
                 newChunksOverlay.getScanningQueueCount(),
                 newChunksOverlay.getThreadState()));
 
-        FreeCamController.instance.onDebugScreenGetGameInformation(list);
+        FreeCamController.instance.onRenderDebugScreenLeft(list);
     }
 
     public void onGetSystemInformation(List<String> list) {

@@ -2,33 +2,83 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Free Cam</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Free Cam</h2>
         <div class="description">
             You can move camera around and through blocks. Default key F6, but can be changed in options. You can open chests through walls or attack entities.<br>
-            You can adjust camera movements settings here.
         </div>
-        <div>
-            <span class="text">Acceleration:</span>
-            <input type="text" v-model="config.acceleration" @change="update()">
-            <span class="explanation">(how quickly you reach max speed)</span>
+
+        <div class="module-sections">
+            <fieldset>
+                <legend>
+                    Camera Speed Settings
+                </legend>
+                <div>
+                    <span class="field-description" style="width: 132px;">Acceleration:</span>
+                    <input type="text" v-model="config.acceleration" @change="update()">
+                    <div class="input-description">How quickly you reach max speed. Blocks/sec^2</div>
+                </div>
+                <div>
+                    <span class="field-description" style="width: 132px;">Max Speed:</span>
+                    <input type="text" v-model="config.maxSpeed" @change="update()">
+                    <div class="input-description">Blocks/second</div>
+                </div>
+                <div>
+                    <span class="field-description" style="width: 132px;">Slowdown Factor:</span>
+                    <input type="text" v-model="config.slowdownFactor" @change="update()">
+                    <div class="input-description">How quickly you slowdown after releasing key, closer to zero = quicker, closer to one = slower.</div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.renderHands"
+                            @change="update()">
+                        <span>Render hands</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    Doesn't work with OptiFine
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.target"
+                            @change="update()">
+                        <span>FreeCam Targeting</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    Use FreeCam position and rotation to target blocks/entities.
+                </div>
+            </fieldset>
+
+            <fieldset v-if="path">
+                <legend>Path</legend>
+                <div>
+                    <button style="width: 200px;" @click="addPathPoint()">Add</button>
+                    <button style="width: 200px;" @click="clearPath()">Clear</button>
+                </div>
+                <div>
+                    <span class="field-description">Points: {{ path.length }}</span>
+                </div>
+                <div>
+                    <span class="field-description">Time (ms):</span>
+                    <input type="text" v-model="time">
+                </div>
+                <div class="section-description">
+                    Create path and automate camera movement (similar to Replay Mod). Use <b>freeCam.startPath();</b> API method to assign keybinding.<br>
+                    To stop moving along path you can exit FreeCam mode.<br>
+                    Specify time in millisecond between 2 points. Time is ignored for first point.<br>
+                    To add camera point you must be in FreeCam mode. Module remembers current camera position and rotation.<br>
+                    You can see camera path while in FreeCam.<br>
+                </div>
+            </fieldset>
         </div>
-        <div>
-            <span class="text">Max Speed:</span>
-            <input type="text" v-model="config.maxSpeed" @change="update()">
-        </div>
-        <div>
-            <span class="text">Slowdown Factor:</span>
-            <input type="text" v-model="config.slowdownFactor" @change="update()">
-            <span class="explanation">(how quickly you slowdown after releasing key, closer to zero = quicker slowdown, closer to one = slower)</span>
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.renderHands"
-                    @change="update()">
-                <span>Render hands (doesn't work with OptiFine)</span>
-            </label>
-        </div>
-    </fieldset>
+    </div>
 </div>

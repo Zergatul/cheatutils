@@ -9,6 +9,7 @@ public class Root {
     // automation
     public static AutoDisconnectApi autoDisconnect = new AutoDisconnectApi();
     public static AutoDropApi autoDrop = new AutoDropApi();
+    public static AutoEatApi autoEat = new AutoEatApi();
     public static ContainerButtonsApi containerButtons = new ContainerButtonsApi();
 
     // ESP
@@ -19,6 +20,7 @@ public class Root {
     // hacks
     public static AutoCriticalsApi autoCriticals = new AutoCriticalsApi();
     public static FakeLagApi fakeLag = new FakeLagApi();
+    public static FastBreakApi fastBreak = new FastBreakApi();
     public static FlyHackApi flyHack = new FlyHackApi();
     public static KillAuraApi killAura = new KillAuraApi();
     public static MovementApi movement = new MovementApi();

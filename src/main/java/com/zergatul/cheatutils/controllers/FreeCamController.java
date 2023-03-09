@@ -1,14 +1,21 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
-import com.zergatul.cheatutils.helpers.MixinGameRendererHelper;
+import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -34,20 +41,28 @@ public class FreeCamController {
     private final Vector3f forwards = new Vector3f(0.0F, 0.0F, 1.0F);
     private final Vector3f up = new Vector3f(0.0F, 1.0F, 0.0F);
     private final Vector3f left = new Vector3f(1.0F, 0.0F, 0.0F);
+    private final FreeCamPath path = new FreeCamPath(this);
     private boolean active;
     private CameraType oldCameraType;
-    private Input oldInput;
+    private Input playerInput;
+    private Input freecamInput;
     private double x, y, z;
     private float yRot, xRot;
     private double forwardVelocity;
     private double leftVelocity;
     private double upVelocity;
     private long lastTime;
-    private boolean insideRenderDebug;
+    private boolean freecamHitResultPicking;
+    private boolean cameraLock;
+    private boolean eyeLock;
+    private boolean gameRendererPicking;
+    private boolean moveAlongPath;
+    private long pathStartTime;
 
     private FreeCamController() {
         ModApiWrapper.ClientTickStart.add(this::onClientTickStart);
         ModApiWrapper.RenderTickStart.add(this::onRenderTickStart);
+        ModApiWrapper.RenderWorldLast.add(this::onRenderWorldLast);
         ModApiWrapper.WorldUnload.add(this::onWorldUnload);
     }
 
@@ -83,73 +98,149 @@ public class FreeCamController {
         }
     }
 
-    public void enable() {
-        if (!active) {
-            active = true;
-            oldCameraType = mc.options.getCameraType();
-            oldInput = mc.player.input;
-            mc.player.input = new Input();
-            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-            if (oldCameraType.isFirstPerson() != mc.options.getCameraType().isFirstPerson()) {
-                mc.gameRenderer.checkEntityPostEffect(mc.options.getCameraType().isFirstPerson() ? mc.getCameraEntity() : null);
-            }
-
-            float frameTime = mc.getFrameTime();
-            Entity entity = mc.getCameraEntity();
-            x = Mth.lerp(frameTime, entity.xo, entity.getX());
-            y = Mth.lerp(frameTime, entity.yo, entity.getY()) + entity.getEyeHeight();
-            z = Mth.lerp(frameTime, entity.zo, entity.getZ());
-            yRot = entity.getViewYRot(frameTime);
-            xRot = entity.getViewXRot(frameTime);
-
-            calculateVectors();
-
-            double distance = -2;
-            x += (double)this.forwards.x() * distance;
-            y += (double)this.forwards.y() * distance;
-            z += (double)this.forwards.z() * distance;
-
-            forwardVelocity = 0;
-            leftVelocity = 0;
-            upVelocity = 0;
-            lastTime = 0;
+    public void toggleCameraLock() {
+        if (mc.player == null) {
+            return;
         }
+
+        if (active) {
+            cameraLock = !cameraLock;
+            if (cameraLock) {
+                mc.player.input = playerInput;
+            } else {
+                mc.player.input = freecamInput;
+            }
+        }
+    }
+
+    public void toggleEyeLock() {
+        if (active) {
+            eyeLock = !eyeLock;
+        }
+    }
+
+    public FreeCamPath getPath() {
+        return path;
+    }
+
+    public void enable() {
+        if (active) {
+            return;
+        }
+
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return;
+        }
+
+        active = true;
+        cameraLock = false;
+        eyeLock = false;
+        oldCameraType = mc.options.getCameraType();
+        playerInput = mc.player.input;
+        mc.player.input = freecamInput = new Input();
+        mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+        if (oldCameraType.isFirstPerson() != mc.options.getCameraType().isFirstPerson()) {
+            mc.gameRenderer.checkEntityPostEffect(mc.options.getCameraType().isFirstPerson() ? mc.getCameraEntity() : null);
+        }
+
+        float frameTime = mc.getFrameTime();
+        Vec3 pos = entity.getEyePosition(frameTime);
+        x = pos.x;
+        y = pos.y;
+        z = pos.z;
+        yRot = entity.getViewYRot(frameTime);
+        xRot = entity.getViewXRot(frameTime);
+
+        calculateVectors();
+
+        double distance = -2;
+        x += (double)this.forwards.x() * distance;
+        y += (double)this.forwards.y() * distance;
+        z += (double)this.forwards.z() * distance;
+
+        forwardVelocity = 0;
+        leftVelocity = 0;
+        upVelocity = 0;
+        lastTime = 0;
     }
 
     public void disable() {
-        if (active) {
-            active = false;
-            CameraType cameraType = mc.options.getCameraType();
-            mc.options.setCameraType(oldCameraType);
-            mc.player.input = oldInput;
-            if (cameraType.isFirstPerson() != mc.options.getCameraType().isFirstPerson()) {
-                mc.gameRenderer.checkEntityPostEffect(mc.options.getCameraType().isFirstPerson() ? mc.getCameraEntity() : null);
+        if (!active) {
+            return;
+        }
+
+        active = false;
+        moveAlongPath = false;
+        CameraType cameraType = mc.options.getCameraType();
+        mc.options.setCameraType(oldCameraType);
+        mc.player.input = playerInput;
+        if (cameraType.isFirstPerson() != mc.options.getCameraType().isFirstPerson()) {
+            mc.gameRenderer.checkEntityPostEffect(mc.options.getCameraType().isFirstPerson() ? mc.getCameraEntity() : null);
+        }
+        oldCameraType = null;
+    }
+
+    public void onPlayerTurn(LocalPlayer player, double yRot, double xRot) {
+        if (active && !cameraLock) {
+            if (!eyeLock && !moveAlongPath) {
+                this.xRot += (float) xRot * 0.15F;
+                this.yRot += (float) yRot * 0.15F;
+                this.xRot = Mth.clamp(this.xRot, -90, 90);
+                calculateVectors();
             }
-            oldCameraType = null;
+        } else {
+            player.turn(yRot, xRot);
         }
     }
 
-    public void onMouseTurn(double yRot, double xRot) {
-        this.xRot += (float)xRot * 0.15F;
-        this.yRot += (float)yRot * 0.15F;
-        this.xRot = Mth.clamp(this.xRot, -90, 90);
-        calculateVectors();
+    public boolean onRenderCrosshairIsFirstPerson(CameraType cameraType) {
+        FreeCamConfig config = getConfig();
+        if (active && !cameraLock && !eyeLock && config.target) {
+            return true;
+        } else {
+            return cameraType.isFirstPerson();
+        }
+    }
+
+    public boolean onRenderItemInHandIsFirstPerson(CameraType cameraType) {
+        FreeCamConfig config = getConfig();
+        if (active && config.renderHands && !cameraLock && !eyeLock) {
+            return true;
+        } else {
+            return cameraType.isFirstPerson();
+        }
     }
 
     private void onRenderTickStart() {
-        if (active) {
-            if (lastTime == 0) {
-                lastTime = System.nanoTime();
-                return;
+        if (!active) {
+            return;
+        }
+
+        if (lastTime == 0) {
+            lastTime = System.nanoTime();
+            return;
+        }
+
+        long currTime = System.nanoTime();
+        float frameTime = (currTime - lastTime) / 1e9f;
+        lastTime = currTime;
+
+        FreeCamConfig config = getConfig();
+
+        if (moveAlongPath) {
+            FreeCamPath.Entry entry = path.interpolate((currTime - pathStartTime) / 1e6);
+            if (entry == null) {
+                moveAlongPath = false;
+            } else {
+                x = entry.position().x;
+                y = entry.position().y;
+                z = entry.position().z;
+                xRot = (float) entry.xRot();
+                yRot = (float) entry.yRot();
             }
-
-            long currTime = System.nanoTime();
-            float frameTime = (currTime - lastTime) / 1e9f;
-            lastTime = currTime;
-
-            FreeCamConfig config = ConfigStore.instance.getConfig().freeCamConfig;
-
-            Input input = oldInput;
+        } else {
+            Input input = playerInput;
             float forwardImpulse = (input.up ? 1 : 0) + (input.down ? -1 : 0);
             float leftImpulse = (input.left ? 1 : 0) + (input.right ? -1 : 0);
             float upImpulse = ((input.jumping ? 1 : 0) + (input.shiftKeyDown ? -1 : 0));
@@ -178,6 +269,8 @@ public class FreeCamController {
             y += dy;
             z += dz;
         }
+
+        applyEyeLock();
     }
 
     private void onClientTickStart() {
@@ -185,7 +278,7 @@ public class FreeCamController {
             while (mc.options.keyTogglePerspective.consumeClick()) {
                 // consume clicks
             }
-            oldInput.tick(false, 0);
+            playerInput.tick(false, 0);
         }
     }
 
@@ -193,48 +286,134 @@ public class FreeCamController {
         disable();
     }
 
-    public boolean shouldOverridePlayerPosition() {
-        return MixinGameRendererHelper.insidePick || insideRenderDebug;
+    private void onRenderWorldLast(RenderWorldLastEvent event) {
+        if (!active || moveAlongPath) {
+            return;
+        }
+
+        List<FreeCamPath.Entry> path = getPath().get();
+        if (path.size() < 2) {
+            return;
+        }
+
+        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        RenderSystem.setShaderColor(1f, 1.0f, 1f, 1f);
+
+        Vec3 view = event.getCamera().getPosition();
+        for (int i = 1; i < path.size(); i++) {
+            FreeCamPath.Entry e1 = path.get(i - 1);
+            FreeCamPath.Entry e2 = path.get(i);
+
+            bufferBuilder.vertex(
+                    e1.position().x - view.x,
+                    e1.position().y - view.y,
+                    e1.position().z - view.z)
+                    .color(1, 1, 1, 1f).endVertex();
+            bufferBuilder.vertex(
+                            e2.position().x - view.x,
+                            e2.position().y - view.y,
+                            e2.position().z - view.z)
+                    .color(1, 1, 1, 1f).endVertex();
+        }
+
+        Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
     }
 
-    public void onDebugScreenGetGameInformation(List<String> list) {
+    public void startPath() {
+        if (!active) {
+            return;
+        }
+
+        moveAlongPath = true;
+        pathStartTime = System.nanoTime();
+    }
+
+    public boolean shouldOverrideCameraEntityPosition(Entity entity) {
+        FreeCamConfig config = getConfig();
+        if (active && !cameraLock && !eyeLock && config.target) {
+            return entity == mc.getCameraEntity() && gameRendererPicking || freecamHitResultPicking;
+        } else {
+            return false;
+        }
+    }
+
+    public void onRenderDebugScreenLeft(List<String> list) {
         if (active) {
+            list.add("");
             String coordinates = String.format(Locale.ROOT, "Free Cam XYZ: %.3f / %.5f / %.3f", x, y, z);
             list.add(coordinates);
         }
     }
 
     public HitResult getHitResult() {
-        if (active) {
-            insideRenderDebug = true;
-            try {
-                return mc.player.pick(20.0D, 0.0F, false);
-            }
-            finally {
-                insideRenderDebug = false;
-            }
-        } else {
+        if (!active || mc.player == null) {
             return null;
+        }
+        if (cameraLock || eyeLock) {
+            return null;
+        }
+        if (!getConfig().target) {
+            return null;
+        }
+
+        freecamHitResultPicking = true;
+        try {
+            return mc.player.pick(20.0D, 0.0F, false);
+        }
+        finally {
+            freecamHitResultPicking = false;
         }
     }
 
     public void onDebugScreenGetSystemInformation(List<String> list) {
-        if (active) {
-            HitResult hit = getHitResult();
-            if (hit.getType() == HitResult.Type.BLOCK) {
-                BlockPos pos = ((BlockHitResult)hit).getBlockPos();
-                BlockState state = mc.level.getBlockState(pos);
-                list.add("");
-                list.add(ChatFormatting.UNDERLINE + "Free Cam Targeted Block: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
-                list.add(String.valueOf(ForgeRegistries.BLOCKS.getKey(state.getBlock())));
-
-                for (var entry: state.getValues().entrySet()) {
-                    list.add(getPropertyValueString(entry));
-                }
-
-                state.getTags().map(tag -> "#" + tag.location()).forEach(list::add);
-            }
+        HitResult hit = getHitResult();
+        if (hit == null) {
+            return;
         }
+
+        if (hit.getType() == HitResult.Type.BLOCK) {
+            BlockPos pos = ((BlockHitResult)hit).getBlockPos();
+            BlockState state = mc.level.getBlockState(pos);
+            list.add("");
+            list.add(ChatFormatting.UNDERLINE + "Free Cam Targeted Block: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+            list.add(String.valueOf(ForgeRegistries.BLOCKS.getKey(state.getBlock())));
+
+            for (var entry : state.getValues().entrySet()) {
+                list.add(getPropertyValueString(entry));
+            }
+
+            state.getTags().map(tag -> "#" + tag.location()).forEach(list::add);
+        }
+    }
+
+    public void onBeforeGameRendererPick() {
+        gameRendererPicking = true;
+    }
+
+    public void onAfterGameRendererPick() {
+        gameRendererPicking = false;
+    }
+
+    private void applyEyeLock() {
+        if (!eyeLock) {
+            return;
+        }
+
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return;
+        }
+
+        float partialTicks = mc.getPartialTick();
+        Vec3 pos = entity.getEyePosition(partialTicks);
+        double dx = x - pos.x;
+        double dy = y - pos.y;
+        double dz = z - pos.z;
+        this.xRot = (float) (Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)) / Math.PI * 180);
+        this.yRot = (float) (Math.atan2(dz, dx) / Math.PI * 180 + 90);
+        this.xRot = Mth.clamp(this.xRot, -90, 90);
+        calculateVectors();
     }
 
     private void calculateVectors() {
@@ -270,5 +449,9 @@ public class FreeCamController {
         }
 
         return property.getName() + ": " + s;
+    }
+
+    private FreeCamConfig getConfig() {
+        return ConfigStore.instance.getConfig().freeCamConfig;
     }
 }

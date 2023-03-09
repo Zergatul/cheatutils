@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins;
 
 import com.zergatul.cheatutils.configs.ChunksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.controllers.FreeCamController;
 import com.zergatul.cheatutils.helpers.MixinOptionsHelper;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
@@ -31,6 +32,13 @@ public abstract class MixinOptions {
         ChunksConfig config = ConfigStore.instance.getConfig().chunksConfig;
         if (config.ignoreServerViewDistance) {
             info.setReturnValue(this.renderDistance.get());
+        }
+    }
+
+    @Inject(at = @At("HEAD"), method = "bobView()Lnet/minecraft/client/OptionInstance;", cancellable = true)
+    private void onBobView(CallbackInfoReturnable<OptionInstance<Boolean>> info) {
+        if (FreeCamController.instance.isActive()) {
+            info.setReturnValue(OptionInstance.createBoolean("", false));
         }
     }
 }

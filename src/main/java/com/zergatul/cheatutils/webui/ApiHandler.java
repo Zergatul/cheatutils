@@ -47,6 +47,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new SchematicaPlaceApi());
         apis.add(new WorldDownloadApi());
         apis.add(new EntityConfigMoveApi());
+        apis.add(new FreeCamPathApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override

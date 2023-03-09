@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.configs.AutoEatConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.helpers.MixinMultiPlayerGameModeHelper;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
@@ -24,8 +25,9 @@ public class AutoEatController {
         if (mc.player == null || mc.level == null) {
             return;
         }
-        var config = ConfigStore.instance.getConfig().autoEatConfig;
-        if (config.enabled) {
+
+        AutoEatConfig config = ConfigStore.instance.getConfig().autoEatConfig;
+       if (config.enabled && (!config.isHungerLimitEnabled || mc.player.getFoodData().getFoodLevel() <= config.hungerLimit)) {
             ItemStack itemStack = mc.player.getInventory().offhand.get(0);
             if (itemStack.isEdible() && mc.player.getFoodData().needsFood()) {
                 startEating();

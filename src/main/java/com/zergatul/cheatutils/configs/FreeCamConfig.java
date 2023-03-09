@@ -7,11 +7,13 @@ public class FreeCamConfig implements ValidatableConfig {
     public double maxSpeed;
     public double slowdownFactor;
     public boolean renderHands;
+    public boolean target;
 
     public FreeCamConfig() {
         acceleration = 50;
         maxSpeed = 50;
         slowdownFactor = 0.01;
+        target = true;
     }
 
     @Override

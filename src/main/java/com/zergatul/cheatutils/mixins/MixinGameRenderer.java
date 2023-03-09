@@ -1,14 +1,15 @@
 package com.zergatul.cheatutils.mixins;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.helpers.MixinGameRendererHelper;
+import com.zergatul.cheatutils.controllers.FreeCamController;
 import com.zergatul.cheatutils.interfaces.GameRendererMixinInterface;
 import net.minecraft.client.Camera;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameRenderer.class)
@@ -17,19 +18,21 @@ public abstract class MixinGameRenderer implements GameRendererMixinInterface {
     @Shadow
     protected abstract double getFov(Camera camera, float partialTicks, boolean usedConfiguredFov);
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/renderer/GameRenderer;pick(F)V")
+    @Inject(at = @At("HEAD"), method = "pick(F)V")
     private void onBeforePick(float vec33, CallbackInfo info) {
-        MixinGameRendererHelper.insidePick = true;
+        FreeCamController.instance.onBeforeGameRendererPick();
     }
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/renderer/GameRenderer;pick(F)V")
+    @Inject(at = @At("TAIL"), method = "pick(F)V")
     private void onAfterPick(float vec33, CallbackInfo info) {
-        MixinGameRendererHelper.insidePick = false;
+        FreeCamController.instance.onAfterGameRendererPick();
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"), method = "Lnet/minecraft/client/renderer/GameRenderer;renderItemInHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/Camera;F)V", require = 0)
-    private void onRenderItemInHand(PoseStack p_109121_, Camera p_109122_, float p_109123_, CallbackInfo info) {
-        MixinGameRendererHelper.insideRenderItemInHand = true;
+    @Redirect(
+            method = "renderItemInHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/Camera;F)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z", ordinal = 0))
+    private boolean onRenderItemInHandIsFirstPerson(CameraType cameraType) {
+        return FreeCamController.instance.onRenderItemInHandIsFirstPerson(cameraType);
     }
 
     @Override

@@ -7,6 +7,22 @@ import com.zergatul.cheatutils.scripting.api.ApiVisibility;
 
 public class LockInputsApi {
 
+    public boolean isHoldForwardEnabled() {
+        return getConfig().holdForward;
+    }
+
+    public boolean isHoldUseEnabled() {
+        return getConfig().holdUse;
+    }
+
+    public boolean isHoldAttackEnabled() {
+        return getConfig().holdAttack;
+    }
+
+    public boolean isMouseInputDisabled() {
+        return getConfig().mouseInputDisabled;
+    }
+
     @ApiVisibility(ApiType.UPDATE)
     public void toggleHoldForward() {
         var config = getConfig();
@@ -18,6 +34,13 @@ public class LockInputsApi {
     public void toggleHoldUse() {
         var config = getConfig();
         config.holdUse = !config.holdUse;
+        ConfigStore.instance.requestWrite();
+    }
+
+    @ApiVisibility(ApiType.UPDATE)
+    public void toggleHoldAttack() {
+        var config = getConfig();
+        config.holdAttack = !config.holdAttack;
         ConfigStore.instance.requestWrite();
     }
 

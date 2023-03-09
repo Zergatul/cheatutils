@@ -90,6 +90,11 @@ public class FreeCamApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @ApiVisibility(ApiType.UPDATE)
+    public void startPath() {
+        FreeCamController.instance.startPath();
+    }
+
     private FreeCamConfig getConfig() {
         return ConfigStore.instance.getConfig().freeCamConfig;
     }
