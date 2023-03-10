@@ -190,6 +190,10 @@ public class FreeCamController {
                 calculateVectors();
             }
         } else {
+            if (ConfigStore.instance.getConfig().lockInputsConfig.mouseInputDisabled) {
+                return;
+            }
+
             player.turn(yRot, xRot);
         }
     }
