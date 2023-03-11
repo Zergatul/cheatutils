@@ -476,6 +476,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().fastBreakConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("projectile-path", ProjectilePathConfig.class) {
+            @Override
+            protected ProjectilePathConfig getConfig() {
+                return ConfigStore.instance.getConfig().projectilePathConfig;
+            }
+
+            @Override
+            protected void setConfig(ProjectilePathConfig config) {
+                ConfigStore.instance.getConfig().projectilePathConfig = config;
+            }
+        });
     }
 
     @Override

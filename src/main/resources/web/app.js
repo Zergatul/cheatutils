@@ -81,6 +81,7 @@ import { addComponent } from '/components/Loader.js'
     addComponent(args, 'StatusOverlayConfig');
     addComponent(args, 'NoFallConfig');
     addComponent(args, 'FastBreakConfig');
+    addComponent(args, 'ProjectilePathConfig');
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

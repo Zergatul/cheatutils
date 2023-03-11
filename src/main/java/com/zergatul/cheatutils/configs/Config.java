@@ -41,6 +41,7 @@ public class Config {
     public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
     public NoFallConfig noFallConfig = new NoFallConfig();
     public FastBreakConfig fastBreakConfig = new FastBreakConfig();
+    public ProjectilePathConfig projectilePathConfig = new ProjectilePathConfig();
 
     public Config() {
         esp = true;

@@ -38,6 +38,7 @@ public class ModMain implements ClientModInitializer {
 		register(NoFallController.instance);
 		register(AutoCriticalsController.instance);
 		register(FullBrightController.instance);
+		register(ProjectilePathController.instance);
 
 		ModApiWrapper.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
 	}

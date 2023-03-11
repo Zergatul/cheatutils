@@ -69,7 +69,7 @@
                             <button @click="current = 'auto-disconnect'" class="hidden">Auto Disconnect</button>
                         </td>
                         <td>
-                            <button @click="current = 'ender-pearl-path'" class="hidden">Ender Pearl Path</button>
+                            <button @click="current = 'projectile-path'">Projectile Path</button>
                         </td>
                         <td>
                             <button @click="current = 'kill-aura'">Kill Aura</button>
@@ -363,6 +363,11 @@
             v-if="current == 'fast-break'"
             @back="backToMain()">
         </fast-break-config>
+
+        <projectile-path-config
+            v-if="current == 'projectile-path'"
+            @back="backToMain()">
+        </projectile-path-config>
 
     </div>
 
