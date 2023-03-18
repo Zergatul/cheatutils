@@ -175,10 +175,10 @@ public class ChunkController {
             processSectionBlocksUpdatePacket(packet);
         }
 
-        if (args.packet instanceof UnloadChunkS2CPacket packet) {
+        /*if (args.packet instanceof UnloadChunkS2CPacket packet) {
             processForgetWorldChunkPacket(packet);
             args.skip = true;
-        }
+        }*/
     }
 
     private synchronized void processBlockUpdatePacket(BlockUpdateS2CPacket packet) {
