@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.wrappers;
 
 import com.zergatul.cheatutils.wrappers.events.*;
+import com.zergatul.cheatutils.wrappers.events.RenderGuiEvent;
 import net.minecraft.network.Connection;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -40,13 +41,16 @@ public class ModApiWrapper {
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLast = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderGuiOverlayEvent> PreRenderGuiOverlay = new CancelableEventHandler<>();
-    public static final ParameterizedEventHandler<PostRenderGuiEvent> PostRenderGui = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<RenderGuiEvent> PreRenderGui = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<RenderGuiEvent> PostRenderGui = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<MouseScrollEvent> MouseScroll = new CancelableEventHandler<>();
     public static final SimpleEventHandler RenderTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler WorldUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
 
     public static class ForgeApi {
+
+        private static RenderWorldLastEvent renderWorldLastEvent;
 
         @SubscribeEvent
         public void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
@@ -87,13 +91,23 @@ public class ModApiWrapper {
         @SubscribeEvent
         public void onRenderLevel(RenderLevelStageEvent event) {
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER) {
-                RenderWorldLast.trigger(new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix()));
+                renderWorldLastEvent = new RenderWorldLastEvent(event.getPoseStack(), event.getPartialTick(), event.getProjectionMatrix());
+                RenderWorldLast.trigger(renderWorldLastEvent);
             }
         }
 
         @SubscribeEvent
-        public void render(RenderGuiEvent.Post event) {
-            PostRenderGui.trigger(new PostRenderGuiEvent(event.getPoseStack(), event.getPartialTick()));
+        public void onPreRenderGui(net.minecraftforge.client.event.RenderGuiEvent.Pre event) {
+            if (renderWorldLastEvent != null) {
+                PreRenderGui.trigger(new RenderGuiEvent(event.getPoseStack(), renderWorldLastEvent));
+            }
+        }
+
+        @SubscribeEvent
+        public void onPostRenderGui(net.minecraftforge.client.event.RenderGuiEvent.Post event) {
+            if (renderWorldLastEvent != null) {
+                PostRenderGui.trigger(new RenderGuiEvent(event.getPoseStack(), renderWorldLastEvent));
+            }
         }
 
         @SubscribeEvent

@@ -60,6 +60,20 @@
                 </div>
             </fieldset>
 
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.attackAll"
+                            @change="update()">
+                        <span>Attack multiple targets per tick</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    Module attack all targets in range. Only first target (closest) receives full damage.
+                </div>
+            </fieldset>
+
             <fieldset v-if="priorityList">
                 <legend>Priorities</legend>
 

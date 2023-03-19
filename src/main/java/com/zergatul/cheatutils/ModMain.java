@@ -52,6 +52,7 @@ public class ModMain {
         register(EntityTitleController.instance);
         register(ContainerButtonsController.instance);
         register(TeleportHackController.instance);
+        register(WorldMarkersController.instance);
     }
 
     private void register(Object instance) {
@@ -74,7 +75,6 @@ public class ModMain {
         MinecraftForge.EVENT_BUS.register(FlyHackController.instance);
         MinecraftForge.EVENT_BUS.register(AdvancedTooltipsController.instance);
         MinecraftForge.EVENT_BUS.register(InstantDisconnectController.instance);
-        MinecraftForge.EVENT_BUS.register(BeaconController.instance);
         MinecraftForge.EVENT_BUS.register(StatusOverlayController.instance);
         MinecraftForge.EVENT_BUS.register(ChunkOverlayController.instance);
         MinecraftForge.EVENT_BUS.register(ZoomController.instance);

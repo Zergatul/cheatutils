@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
+import java.awt.*;
 import java.util.Locale;
 
 public class ColorUtils {
@@ -26,5 +27,21 @@ public class ColorUtils {
             return Integer.parseInt(str.substring(1, 3), 16) << 16 | Integer.parseInt(str.substring(3, 5), 16) << 8 | Integer.parseInt(str.substring(5, 7), 16);
         }
         return null;
+    }
+
+    public static Color inverse(Color color) {
+        return new Color(
+                255 - color.getRed(),
+                255 - color.getGreen(),
+                255 - color.getBlue(),
+                color.getAlpha());
+    }
+
+    public static int inverse(int color) {
+        int a = color >> 24 & 255;
+        int r = color >> 16 & 255;
+        int g = color >> 8 & 255;
+        int b = color & 255;
+        return (a << 24) | ((255 - r) << 16) | ((255 - g) << 8) | (255 - b);
     }
 }

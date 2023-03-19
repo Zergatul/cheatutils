@@ -11,6 +11,7 @@ import org.joml.Matrix4f;
 public class RenderWorldLastEvent {
 
     private final PoseStack matrixStack;
+    private final Matrix4f poseMatrix;
     private final float tickDelta;
     private final Matrix4f projectionMatrix;
     private final Vec3 tracerCenter;
@@ -19,8 +20,9 @@ public class RenderWorldLastEvent {
 
     public RenderWorldLastEvent(PoseStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
         this.matrixStack = matrixStack;
+        this.poseMatrix = new Matrix4f(matrixStack.last().pose());
         this.tickDelta = tickDelta;
-        this.projectionMatrix = projectionMatrix;
+        this.projectionMatrix = new Matrix4f(projectionMatrix);
 
         Minecraft mc = Minecraft.getInstance();
         camera = mc.gameRenderer.getMainCamera();
@@ -72,6 +74,10 @@ public class RenderWorldLastEvent {
 
     public float getTickDelta() {
         return tickDelta;
+    }
+
+    public Matrix4f getPoseMatrix() {
+        return poseMatrix;
     }
 
     public Matrix4f getProjectionMatrix() {

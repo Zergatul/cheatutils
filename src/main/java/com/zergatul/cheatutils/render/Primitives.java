@@ -109,20 +109,21 @@ public class Primitives {
 
         Matrix4f matrix = poseStack.last().pose();
 
-        float f3 = (float)(color >> 24 & 255) / 255.0F;
-        float f = (float)(color >> 16 & 255) / 255.0F;
-        float f1 = (float)(color >> 8 & 255) / 255.0F;
-        float f2 = (float)(color & 255) / 255.0F;
+        float a = (float)(color >> 24 & 255) / 255.0F;
+        float r = (float)(color >> 16 & 255) / 255.0F;
+        float g = (float)(color >> 8 & 255) / 255.0F;
+        float b = (float)(color & 255) / 255.0F;
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         RenderSystem.enableBlend();
         RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        bufferbuilder.vertex(matrix, (float)x1, (float)y2, 0.0F).color(f, f1, f2, f3).endVertex();
-        bufferbuilder.vertex(matrix, (float)x2, (float)y2, 0.0F).color(f, f1, f2, f3).endVertex();
-        bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(f, f1, f2, f3).endVertex();
-        bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(f, f1, f2, f3).endVertex();
+        bufferbuilder.vertex(matrix, (float)x1, (float)y2, 0.0F).color(r, g, b, a).endVertex();
+        bufferbuilder.vertex(matrix, (float)x2, (float)y2, 0.0F).color(r, g, b, a).endVertex();
+        bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(r, g, b, a).endVertex();
+        bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(r, g, b, a).endVertex();
         BufferUploader.drawWithShader(bufferbuilder.end());
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();

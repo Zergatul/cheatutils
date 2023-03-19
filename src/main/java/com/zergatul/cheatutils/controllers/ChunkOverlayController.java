@@ -11,7 +11,7 @@ import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import com.zergatul.cheatutils.wrappers.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.wrappers.events.MouseScrollEvent;
-import com.zergatul.cheatutils.wrappers.events.PostRenderGuiEvent;
+import com.zergatul.cheatutils.wrappers.events.RenderGuiEvent;
 import com.zergatul.cheatutils.wrappers.events.PreRenderGuiOverlayEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -59,7 +59,7 @@ public class ChunkOverlayController {
         return (T) overlays.stream().filter(o -> o.getClass() == clazz).findFirst().orElse(null);
     }
 
-    private void render(PostRenderGuiEvent event) {
+    private void render(RenderGuiEvent event) {
         if (!isSomeOverlayEnabled()) {
             return;
         }

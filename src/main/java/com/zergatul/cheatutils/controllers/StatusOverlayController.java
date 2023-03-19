@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import com.zergatul.cheatutils.wrappers.events.PostRenderGuiEvent;
+import com.zergatul.cheatutils.wrappers.events.RenderGuiEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.MutableComponent;
@@ -49,7 +49,7 @@ public class StatusOverlayController {
         vAlign = align;
     }
 
-    private void render(PostRenderGuiEvent event) {
+    private void render(RenderGuiEvent event) {
         if (mc.player == null) {
             return;
         }

@@ -154,9 +154,11 @@ public class ConfigStore {
         config.performanceConfig.validate();
         config.entityTitleConfig.validate();
         config.keyBindingsConfig.validate();
+        config.worldMarkersConfig.validate();
 
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
+        WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";

@@ -8,10 +8,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class KillAuraController {
 
@@ -21,6 +26,7 @@ public class KillAuraController {
     private long ticks;
     private long lastAttackTick;
     private Entity target;
+    private final List<Entity> targets = new ArrayList<>();
 
     private KillAuraController() {
         PlayerMotionController.instance.addOnAfterSendPosition(this::onAfterSendPosition);
@@ -48,6 +54,7 @@ public class KillAuraController {
         KillAuraConfig config = ConfigStore.instance.getConfig().killAuraConfig;
         if (!config.enabled) {
             target = null;
+            targets.clear();
             return;
         }
 
@@ -63,12 +70,15 @@ public class KillAuraController {
         }
 
         target = null;
+        targets.clear();
         int targetPriority = Integer.MAX_VALUE;
         double targetDistance2 = Double.MAX_VALUE;
 
         float maxRange2 = config.maxRange * config.maxRange;
-        for (Entity entity: world.entitiesForRendering()) {
-            double distance2 = player.distanceToSqr(entity);
+        Vec3 eyePos = player.getEyePosition();
+
+        for (Entity entity : world.entitiesForRendering()) {
+            double distance2 = entity.distanceToSqr(eyePos);
             if (distance2 > maxRange2) {
                 continue;
             }
@@ -86,7 +96,6 @@ public class KillAuraController {
 
             if (config.maxHorizontalAngle != null || config.maxVerticalAngle != null) {
                 Vec3 attackPoint = getAttackPoint(entity);
-                Vec3 eyePos = new Vec3(player.getX(), player.getY() + player.getEyeHeight(), player.getZ());
                 Vec3 diff = attackPoint.subtract(eyePos);
                 double diffXZ = Math.sqrt(diff.x * diff.x + diff.y * diff.y);
 
@@ -107,15 +116,23 @@ public class KillAuraController {
                 }
             }
 
-            if (priority < targetPriority || (priority == targetPriority && distance2 < targetDistance2)) {
-                target = entity;
-                targetPriority = priority;
-                targetDistance2 = distance2;
+            if (config.attackAll) {
+                targets.add(entity);
+            } else {
+                if (priority < targetPriority || (priority == targetPriority && distance2 < targetDistance2)) {
+                    target = entity;
+                    targetPriority = priority;
+                    targetDistance2 = distance2;
+                }
             }
         }
 
         if (target != null) {
             FakeRotationController.instance.setServerRotation(getAttackPoint(target));
+        }
+
+        if (targets.size() > 0) {
+            targets.sort(Comparator.comparingDouble(e -> e.distanceToSqr(eyePos)));
         }
     }
 
@@ -135,15 +152,24 @@ public class KillAuraController {
     }
 
     private void onAfterSendPosition() {
-        if (target == null) {
-            return;
+        if (target != null) {
+            LocalPlayer player = mc.player;
+            mc.gameMode.attack(player, target);
+            mc.player.swing(InteractionHand.MAIN_HAND);
+            target = null;
+
+            lastAttackTick = ticks;
         }
+        if (targets.size() > 0) {
+            LocalPlayer player = mc.player;
+            mc.gameMode.attack(player, targets.get(0));
+            for (int i = 1; i < targets.size(); i++) {
+                NetworkPacketsController.instance.sendPacket(ServerboundInteractPacket.createAttackPacket(targets.get(i), player.isShiftKeyDown()));
+            }
+            mc.player.swing(InteractionHand.MAIN_HAND);
+            targets.clear();
 
-        LocalPlayer player = mc.player;
-        mc.gameMode.attack(player, target);
-        mc.player.swing(InteractionHand.MAIN_HAND);
-        target = null;
-
-        lastAttackTick = ticks;
+            lastAttackTick = ticks;
+        }
     }
 }

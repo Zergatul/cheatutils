@@ -31,7 +31,7 @@ public class Config {
     public InstantDisconnectConfig instantDisconnectConfig = new InstantDisconnectConfig();
     public ScriptsConfig scriptsConfig = new ScriptsConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
-    public BeaconConfig beaconConfig = new BeaconConfig();
+    public WorldMarkersConfig worldMarkersConfig = new WorldMarkersConfig();
     public UserNameConfig userNameConfig = new UserNameConfig();
     public NewChunksConfig newChunksConfig = new NewChunksConfig();
     public AutoDropConfig autoDropConfig = new AutoDropConfig();
@@ -52,6 +52,7 @@ public class Config {
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();
     public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
+    public CoordinateLeakProtectionConfig coordinateLeakProtectionConfig = new CoordinateLeakProtectionConfig();
 
     public Config() {
         esp = true;

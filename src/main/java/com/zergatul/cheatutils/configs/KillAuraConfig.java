@@ -21,6 +21,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
     public Double maxVerticalAngle;
     public ImmutableList<PriorityEntry> priorities;
     public ImmutableList<CustomPriorityEntry> customEntries;
+    public boolean attackAll;
 
     public KillAuraConfig() {
         maxRange = 6;

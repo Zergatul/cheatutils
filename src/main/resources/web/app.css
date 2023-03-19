@@ -1,3 +1,7 @@
+button.faded {
+    opacity: 0.2;
+}
+
 table.main-table > thead > tr > th {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
@@ -749,4 +753,42 @@ div.schematic-info td {
 div.input-section-flex {
     display: flex;
     gap: 40px;
+}
+
+ul.marker-list {
+    width: 1000px;
+}
+
+ul.marker-list > li {
+    align-items: center;
+    gap: 8px;
+}
+
+ul.marker-list button.btn {
+    width: 80px;
+}
+
+ul.marker-list div.name {
+    width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+ul.marker-list div.dimension {
+    width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+ul.marker-list div.color {
+    width: 40px;
+}
+
+ul.marker-list div.coordinates {
+    width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

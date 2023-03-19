@@ -161,8 +161,9 @@ public class ChunkController {
         }
 
         if (args.packet instanceof ClientboundForgetLevelChunkPacket packet) {
-            processForgetLevelChunkPacket(packet);
-            args.skip = true;
+            if (processForgetLevelChunkPacket(packet)) {
+                args.skip = true;
+            }
         }
     }
 
@@ -183,10 +184,13 @@ public class ChunkController {
         });
     }
 
-    private synchronized void processForgetLevelChunkPacket(ClientboundForgetLevelChunkPacket packet) {
+    private synchronized boolean processForgetLevelChunkPacket(ClientboundForgetLevelChunkPacket packet) {
         ChunksConfig config = ConfigStore.instance.getConfig().chunksConfig;
         if (config.dontUnloadChunks) {
             serverUnloadedChunks.add(new ChunkPos(packet.getX(), packet.getZ()));
+            return true;
+        } else {
+            return false;
         }
     }
 

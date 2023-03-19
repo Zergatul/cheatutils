@@ -37,7 +37,6 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsApi());
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
-        apis.add(new BeaconsListApi());
         apis.add(new ItemInfoApi());
         apis.add(new StatusOverlayApi());
         apis.add(new ClassNameApi());
@@ -48,6 +47,8 @@ public class ApiHandler implements HttpHandler {
         apis.add(new WorldDownloadApi());
         apis.add(new EntityConfigMoveApi());
         apis.add(new FreeCamPathApi());
+        apis.add(new DimensionApi());
+        apis.add(new CoordinatesApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -362,17 +363,20 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("beacons", BeaconConfig.class) {
+        apis.add(new SimpleConfigApi<>("world-markers", WorldMarkersConfig.class) {
             @Override
-            protected BeaconConfig getConfig() {
-                BeaconConfig config = new BeaconConfig();
-                config.enabled = ConfigStore.instance.getConfig().beaconConfig.enabled;
-                return config;
+            protected WorldMarkersConfig getConfig() {
+                return ConfigStore.instance.getConfig().worldMarkersConfig;
             }
 
             @Override
-            protected void setConfig(BeaconConfig config) {
-                ConfigStore.instance.getConfig().beaconConfig.enabled = config.enabled;
+            protected void setConfig(WorldMarkersConfig config) {
+                WorldMarkersConfig oldConfig = ConfigStore.instance.getConfig().worldMarkersConfig;
+                ConfigStore.instance.getConfig().worldMarkersConfig = config;
+
+                if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
+                    WorldMarkersController.instance.onFontChange(config);
+                }
             }
         });
 
@@ -635,6 +639,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(AutoDropConfig config) {
                 ConfigStore.instance.getConfig().autoDropConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("coordinate-leak-protection", CoordinateLeakProtectionConfig.class) {
+            @Override
+            protected CoordinateLeakProtectionConfig getConfig() {
+                return ConfigStore.instance.getConfig().coordinateLeakProtectionConfig;
+            }
+
+            @Override
+            protected void setConfig(CoordinateLeakProtectionConfig config) {
+                ConfigStore.instance.getConfig().coordinateLeakProtectionConfig = config;
             }
         });
     }

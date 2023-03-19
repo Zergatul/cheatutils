@@ -8,10 +8,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientChunkCache.class)
-public class MixinClientChunkCache {
+public abstract class MixinClientChunkCache {
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/multiplayer/ClientChunkCache;updateViewRadius(I)V")
-    public void onUpdateViewRadius(int p_104417_, CallbackInfo info) {
+    @Inject(at = @At("TAIL"), method = "updateViewRadius(I)V")
+    private void onUpdateViewRadius(int p_104417_, CallbackInfo info) {
         ChunkController.instance.syncChunks();
     }
 }

@@ -1,0 +1,109 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">World Markers</h2>
+        <div class="description">
+            Add markers to your world so you can see them from any location. For example your base or some farm.
+        </div>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>Style</legend>
+                <div class="input-section">
+                    <span class="field-description">Border Width:</span> <input type="text" v-model="config.borderWidth" @change="update()">
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Font Size:</span>
+                    <input type="text" v-model="config.fontSize" @change="update()">
+                </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.antiAliasing"
+                            @change="update()">
+                        <span>Anti Aliasing</span>
+                    </label>
+                </div>
+                <div class="section-description">
+                    Font face: Consolas. Anti Aliasing looks better with bigger font size (about 18+).
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    <button @click="addMarker()">Add Marker</button>
+                </legend>
+                <div>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td><span class="field-description">Name:</span></td>
+                                <td><input type="text" v-model="marker.name"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="field-description">Dimension:</span></td>
+                                <td><input type="text" v-model="marker.dimension"></td>
+                                <td><button @click="fillDimension()">Fill dimension</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="field-description">X:</span></td>
+                                <td><input type="text" v-model="marker.x"></td>
+                                <td><button @click="fillCoords()">Fill coordinates</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="field-description">Y:</span></td>
+                                <td><input type="text" v-model="marker.y"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="field-description">Z:</span></td>
+                                <td><input type="text" v-model="marker.z"></td>
+                            </tr>
+                            <tr>
+                                <td><span class="field-description">Min Distance:</span></td>
+                                <td><input type="text" v-model="marker.minDistance"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <color-picker v-model="marker.color"></color-picker>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Markers</legend>
+                <div>
+                    <ul class="list-base marker-list">
+                        <li v-for="(entry, index) in config.entries">
+                            <button class="btn" @click="remove(index)">Remove</button>
+                            <div class="name">{{ entry.name }}</div>
+                            <div class="dimension">{{ entry.dimension }}</div>
+                            <div class="color"><color-box :color="entry.color"></color-box></div>
+                            <div class="coordinates">X: {{ entry.x }}; Y: {{ entry.y }}; Z: {{ entry.z }}</div>
+                            <div>
+                                <label class="switch-label">
+                                    <input type="checkbox" class="switch"
+                                        v-model="entry.enabled"
+                                        @change="update()">
+                                </label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

@@ -15,7 +15,7 @@ import com.zergatul.cheatutils.interfaces.ProjectileMixinInterface;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
-import com.zergatul.cheatutils.wrappers.events.PostRenderGuiEvent;
+import com.zergatul.cheatutils.wrappers.events.RenderGuiEvent;
 import com.zergatul.cheatutils.wrappers.events.RenderWorldLastEvent;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -30,7 +30,6 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -75,12 +74,10 @@ public class EntityTitleController {
     private final List<EntityEntry> entities = new ArrayList<>();
     private GlyphFontRenderer fontRenderer;
     private GlyphFontRenderer enchFontRenderer;
-    private Matrix4f projMatrix;
-    private Matrix4f poseMatrix;
 
     private EntityTitleController() {
         ModApiWrapper.RenderWorldLast.add(this::onRenderWorld);
-        ModApiWrapper.PostRenderGui.add(this::onRenderGui);
+        ModApiWrapper.PreRenderGui.add(this::onRenderGui);
     }
 
     public void onFontChange(EntityTitleConfig config) {
@@ -158,17 +155,9 @@ public class EntityTitleController {
         }
 
         entities.sort((e1, e2) -> -Double.compare(e1.distanceSqr, e2.distanceSqr));
-
-        try {
-            poseMatrix = (Matrix4f) event.getMatrixStack().last().pose().clone();
-            projMatrix = (Matrix4f) event.getProjectionMatrix().clone();
-        }
-        catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
     }
 
-    public void onRenderGui(PostRenderGuiEvent event) {
+    public void onRenderGui(RenderGuiEvent event) {
         if (fontRenderer == null) {
             return;
         }
@@ -191,8 +180,8 @@ public class EntityTitleController {
         event.getMatrixStack().last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
 
         for (EntityEntry entry : entities) {
-            Vector4f v1 = poseMatrix.transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
-            Vector4f v2 = projMatrix.transform(v1);
+            Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
+            Vector4f v2 = event.getWorldProjectionMatrix().transform(v1);
             if (v2.z <= 0) {
                 continue; // behind
             }
@@ -456,6 +445,7 @@ public class EntityTitleController {
                 Map.entry(Enchantments.POWER_ARROWS, new EnchantmentDisplayEntry("Po")),
                 Map.entry(Enchantments.PUNCH_ARROWS, new EnchantmentDisplayEntry("Pu")),
                 Map.entry(Enchantments.INFINITY_ARROWS, new EnchantmentDisplayEntry("In")),
+                Map.entry(Enchantments.FLAMING_ARROWS, new EnchantmentDisplayEntry("Fl")),
                 Map.entry(Enchantments.FISHING_LUCK, new EnchantmentDisplayEntry("Lc")),
                 Map.entry(Enchantments.FISHING_SPEED, new EnchantmentDisplayEntry("Lr")),
                 Map.entry(Enchantments.LOYALTY, new EnchantmentDisplayEntry("Lo")),
