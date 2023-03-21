@@ -37,13 +37,13 @@ public class ArmorOverlayController implements IGuiOverlay {
             gui.rightHeight += 12;
 
             List<ItemStack> armor = mc.player.getInventory().armor;
-            ItemRenderHelper.renderItem(mc.player, armor.get(3), left, top);
+            ItemRenderHelper.renderItem(poseStack, mc.player, armor.get(3), left, top);
             left += 16;
-            ItemRenderHelper.renderItem(mc.player, armor.get(2), left, top);
+            ItemRenderHelper.renderItem(poseStack, mc.player, armor.get(2), left, top);
             left += 16;
-            ItemRenderHelper.renderItem(mc.player, armor.get(1), left, top);
+            ItemRenderHelper.renderItem(poseStack, mc.player, armor.get(1), left, top);
             left += 16;
-            ItemRenderHelper.renderItem(mc.player, armor.get(0), left, top);
+            ItemRenderHelper.renderItem(poseStack, mc.player, armor.get(0), left, top);
         }
     }
 }

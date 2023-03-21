@@ -25,7 +25,7 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/level/block/SlimeBlock;fallOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;F)V", cancellable = true)
     private void onFallOn(Level level, BlockState state, BlockPos pos, Entity entity, float p_154571_, CallbackInfo info) {
         if (shouldFallback(entity)) {
-            entity.causeFallDamage(p_154571_, 1.0F, DamageSource.FALL);
+            entity.causeFallDamage(p_154571_, 1.0F, level.damageSources().fall());
             info.cancel();
         }
     }

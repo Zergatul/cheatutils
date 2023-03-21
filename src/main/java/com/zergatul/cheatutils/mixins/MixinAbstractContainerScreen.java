@@ -127,8 +127,8 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
 
         List<ContainerSummaryController.ItemDrawable> list = ContainerSummaryController.instance.groupItems(items);
 
-        this.setBlitOffset(100);
-        this.itemRenderer.blitOffset = 100.0F;
+        //this.setBlitOffset(100);
+        //this.itemRenderer.blitOffset = 100.0F;
         RenderSystem.enableDepthTest();
 
         boolean group = !Screen.hasAltDown();
@@ -142,8 +142,8 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             cursor += column.draw(poseStack, this.font, this.itemRenderer, this.minecraft.player, cursor, this.topPos);
         }
 
-        this.itemRenderer.blitOffset = 0.0F;
-        this.setBlitOffset(0);
+        //this.itemRenderer.blitOffset = 0.0F;
+        //this.setBlitOffset(0);
     }
 
     private void onTakeAllPress(Button button) {

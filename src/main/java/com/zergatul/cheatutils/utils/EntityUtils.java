@@ -1,12 +1,15 @@
 package com.zergatul.cheatutils.utils;
 
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
 import com.zergatul.cheatutils.webui.EntityInfoApi;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientRegistryLayer;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.data.worldgen.DimensionTypes;
 import net.minecraft.resources.ResourceKey;
@@ -14,8 +17,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -42,6 +47,7 @@ import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -222,6 +228,22 @@ public class EntityUtils {
             super(
                     new FakeWritableLevelData(),
                     Level.OVERWORLD,
+                    new RegistryAccess() {
+                        @Override
+                        public <E> Optional<Registry<E>> registry(ResourceKey<? extends Registry<? extends E>> p_123085_) {
+                            if (p_123085_.equals(Registries.DAMAGE_TYPE)) {
+                                var x = (Registry<E>) createDamageTypeRegistry();
+                                return Optional.of(x);
+                            } else {
+                                return Optional.empty();
+                            }
+                        }
+
+                        @Override
+                        public Stream<RegistryEntry<?>> registries() {
+                            return null;
+                        }
+                    },
                     createHolder(),
                     () -> null,
                     true,
@@ -242,6 +264,175 @@ public class EntityUtils {
             DimensionTypes.bootstrap(context);
             holder.bindValue(context.overworld);
             return holder;
+        }
+
+        private static Registry<DamageType> createDamageTypeRegistry() {
+            return new Registry<DamageType>() {
+                @Override
+                public ResourceKey<? extends Registry<DamageType>> key() {
+                    return null;
+                }
+
+                @Nullable
+                @Override
+                public ResourceLocation getKey(DamageType p_123006_) {
+                    return null;
+                }
+
+                @Override
+                public Optional<ResourceKey<DamageType>> getResourceKey(DamageType p_123008_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public int getId(@Nullable DamageType p_122977_) {
+                    return 0;
+                }
+
+                @Nullable
+                @Override
+                public DamageType get(@Nullable ResourceKey<DamageType> p_122980_) {
+                    return null;
+                }
+
+                @Nullable
+                @Override
+                public DamageType get(@Nullable ResourceLocation p_123002_) {
+                    return null;
+                }
+
+                @Override
+                public Lifecycle lifecycle(DamageType p_123012_) {
+                    return null;
+                }
+
+                @Override
+                public Lifecycle registryLifecycle() {
+                    return null;
+                }
+
+                @Override
+                public Set<ResourceLocation> keySet() {
+                    return null;
+                }
+
+                @Override
+                public Set<Map.Entry<ResourceKey<DamageType>, DamageType>> entrySet() {
+                    return null;
+                }
+
+                @Override
+                public Set<ResourceKey<DamageType>> registryKeySet() {
+                    return null;
+                }
+
+                @Override
+                public Optional<Holder.Reference<DamageType>> getRandom(RandomSource p_235781_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public boolean containsKey(ResourceLocation p_123011_) {
+                    return false;
+                }
+
+                @Override
+                public boolean containsKey(ResourceKey<DamageType> p_175475_) {
+                    return false;
+                }
+
+                @Override
+                public Registry<DamageType> freeze() {
+                    return null;
+                }
+
+                @Override
+                public Holder.Reference<DamageType> createIntrusiveHolder(DamageType p_206068_) {
+                    return null;
+                }
+
+                @Override
+                public Optional<Holder.Reference<DamageType>> getHolder(int p_206051_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public Optional<Holder.Reference<DamageType>> getHolder(ResourceKey<DamageType> p_206050_) {
+                    return Optional.of(Holder.Reference.createStandAlone(new HolderOwner<DamageType>() {
+                        @Override
+                        public boolean canSerializeIn(HolderOwner<DamageType> p_255875_) {
+                            return false;
+                        }
+                    }, p_206050_));
+                }
+
+                @Override
+                public Holder<DamageType> wrapAsHolder(DamageType p_263382_) {
+                    return null;
+                }
+
+                @Override
+                public Stream<Holder.Reference<DamageType>> holders() {
+                    return null;
+                }
+
+                @Override
+                public Optional<HolderSet.Named<DamageType>> getTag(TagKey<DamageType> p_206052_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public HolderSet.Named<DamageType> getOrCreateTag(TagKey<DamageType> p_206045_) {
+                    return null;
+                }
+
+                @Override
+                public Stream<Pair<TagKey<DamageType>, HolderSet.Named<DamageType>>> getTags() {
+                    return null;
+                }
+
+                @Override
+                public Stream<TagKey<DamageType>> getTagNames() {
+                    return null;
+                }
+
+                @Override
+                public void resetTags() {
+
+                }
+
+                @Override
+                public void bindTags(Map<TagKey<DamageType>, List<Holder<DamageType>>> p_205997_) {
+
+                }
+
+                @Override
+                public HolderOwner<DamageType> holderOwner() {
+                    return null;
+                }
+
+                @Override
+                public HolderLookup.RegistryLookup<DamageType> asLookup() {
+                    return null;
+                }
+
+                @Nullable
+                @Override
+                public DamageType byId(int p_122651_) {
+                    return null;
+                }
+
+                @Override
+                public int size() {
+                    return 0;
+                }
+
+                @NotNull
+                @Override
+                public Iterator<DamageType> iterator() {
+                    return null;
+                }
+            };
         }
 
         @Override

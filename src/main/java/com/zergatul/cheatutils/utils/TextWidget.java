@@ -43,4 +43,14 @@ public class TextWidget extends GuiComponent implements Renderable, GuiEventList
     public void updateNarration(NarrationElementOutput p_169152_) {
 
     }
+
+    @Override
+    public void setFocused(boolean p_265728_) {
+
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
+    }
 }

@@ -79,7 +79,7 @@ public class ShulkerTooltipController {
             lockedY = y;
         }
 
-        renderShulkerInventory(event.getItemStack(), event.getPoseStack().last().pose(), x, y);
+        renderShulkerInventory(event.getPoseStack(), event.getItemStack(), event.getPoseStack().last().pose(), x, y);
 
         event.getPoseStack().popPose();
         RenderSystem.applyModelViewMatrix();
@@ -94,14 +94,14 @@ public class ShulkerTooltipController {
                 event.getPoseStack().mulPoseMatrix(lockedPose);
                 RenderSystem.applyModelViewMatrix();
 
-                int x = globalToScreenX(lockedX, event.getContainerScreen()); //lockedX - Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2 + event.getContainerScreen().getXSize() / 2;
-                int y = globalToScreenY(lockedY, event.getContainerScreen()); //lockedY - Minecraft.getInstance().getWindow().getGuiScaledHeight() / 2 + event.getContainerScreen().getYSize() / 2;
+                int x = lockedX; //globalToScreenX(lockedX, event.getContainerScreen()); //lockedX - Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2 + event.getContainerScreen().getXSize() / 2;
+                int y = lockedY; //globalToScreenY(lockedY, event.getContainerScreen()); //lockedY - Minecraft.getInstance().getWindow().getGuiScaledHeight() / 2 + event.getContainerScreen().getYSize() / 2;
 
                 PoseStack.Pose pose = event.getPoseStack().last();
-                renderShulkerInventory(lockedStack, pose.pose(), x, y);
+                renderShulkerInventory(event.getPoseStack(), lockedStack, pose.pose(), x, y);
 
-                int mx = globalToScreenX(event.getMouseX(), event.getContainerScreen());
-                int my = globalToScreenY(event.getMouseY(), event.getContainerScreen());
+                int mx = event.getMouseX(); //globalToScreenX(event.getMouseX(), event.getContainerScreen());
+                int my = event.getMouseY(); //globalToScreenY(event.getMouseY(), event.getContainerScreen());
                 renderTooltip(event.getPoseStack(), x, y, mx, my);
 
                 event.getPoseStack().popPose();
@@ -120,7 +120,7 @@ public class ShulkerTooltipController {
         return y - Minecraft.getInstance().getWindow().getGuiScaledHeight() / 2 + screen.getYSize() / 2;
     }
 
-    private void renderShulkerInventory(ItemStack itemStack, Matrix4f matrix, int x, int y) {
+    private void renderShulkerInventory(PoseStack matrixStack, ItemStack itemStack, Matrix4f matrix, int x, int y) {
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -136,7 +136,7 @@ public class ShulkerTooltipController {
             int slotX = i % 9;
             int slotY = i / 9;
             if (!slot.isEmpty()) {
-                renderSlot(slot, x + 8 + 18 * slotX, y + 10 + 18 * slotY);
+                renderSlot(matrixStack, slot, x + 8 + 18 * slotX, y + 10 + 18 * slotY);
             }
         }
     }
@@ -179,14 +179,14 @@ public class ShulkerTooltipController {
         BufferUploader.drawWithShader(bufferbuilder.end());
     }
 
-    private void renderSlot(ItemStack itemStack, int x, int y) {
+    private void renderSlot(PoseStack matrixStack, ItemStack itemStack, int x, int y) {
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
         RenderSystem.enableDepthTest();
-        float oldOffset = itemRenderer.blitOffset;
-        itemRenderer.blitOffset = TranslateZ + 1;
-        itemRenderer.renderAndDecorateItem(itemStack, x, y, 1); // check last parameters
-        itemRenderer.renderGuiItemDecorations(Minecraft.getInstance().font, itemStack, x, y, null);
-        itemRenderer.blitOffset = oldOffset;
+        //float oldOffset = itemRenderer.blitOffset;
+        //itemRenderer.blitOffset = TranslateZ + 1;
+        itemRenderer.renderAndDecorateItem(matrixStack, itemStack, x, y, 1); // check last parameters
+        itemRenderer.renderGuiItemDecorations(matrixStack, Minecraft.getInstance().font, itemStack, x, y, null);
+        //itemRenderer.blitOffset = oldOffset;
     }
 
     private void clearLocked() {

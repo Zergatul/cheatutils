@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -69,7 +70,7 @@ public class BetterStatusEffectsController implements IGuiOverlay {
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
                 GuiComponent.blit(poseStack, left + 3, top + 3, 200, 18, 18, textureatlassprite);
 
-                String duration = MobEffectUtil.formatDuration(effectInstance, 1);
+                Component duration = MobEffectUtil.formatDuration(effectInstance, 1);
                 int width = mc.font.width(duration);
                 int textLeft = left + (24 - width) / 2;
                 int textTop = top + 25;

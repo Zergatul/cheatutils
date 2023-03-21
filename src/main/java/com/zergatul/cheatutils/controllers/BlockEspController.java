@@ -83,7 +83,7 @@ public class BlockEspController {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableTexture();
+        //RenderSystem.disableTexture();
         RenderSystem.disableDepthTest();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
@@ -92,7 +92,7 @@ public class BlockEspController {
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-        RenderSystem.enableTexture();
+        //RenderSystem.enableTexture();
         RenderSystem.enableDepthTest();
     }
 
