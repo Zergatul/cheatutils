@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.scripting.api.keys;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.LiteralTextContent;
@@ -10,9 +9,11 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 
-import java.util.Locale;
-
 public class MainApi {
+
+    public boolean isEspEnabled() {
+        return ConfigStore.instance.getConfig().esp;
+    }
 
     public void toggleEsp() {
         ConfigStore.instance.getConfig().esp = !ConfigStore.instance.getConfig().esp;

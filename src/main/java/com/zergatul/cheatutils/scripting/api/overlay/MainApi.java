@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.api.overlay;
 
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.StatusOverlayController;
 import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.utils.ColorUtils;
@@ -49,6 +50,10 @@ public class MainApi {
 
     public String getCoordinates() {
         return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
+    }
+
+    public boolean isEspEnabled() {
+        return ConfigStore.instance.getConfig().esp;
     }
 
     public boolean isDebugScreenEnabled() {
