@@ -22,7 +22,6 @@ public class FreeCamApi {
         return FreeCamController.instance.isActive();
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getCoordinates() {
         FreeCamController fc = FreeCamController.instance;
         if (fc.isActive()) {
@@ -32,7 +31,6 @@ public class FreeCamApi {
         }
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getTargetBlockCoordinates() {
         if (mc.level == null || !FreeCamController.instance.isActive()) {
             return "";
@@ -51,7 +49,6 @@ public class FreeCamApi {
         }
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getTargetBlockName() {
         if (mc.level == null || !FreeCamController.instance.isActive()) {
             return "";

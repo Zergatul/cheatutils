@@ -1,8 +1,5 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
-import com.zergatul.cheatutils.scripting.api.ApiType;
-import com.zergatul.cheatutils.scripting.api.ApiVisibility;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +25,15 @@ public class VariablesApi {
         }
     }
 
+    public double getFloat(String name) {
+        Object value = variables.get(name);
+        if (value instanceof Double) {
+            return (double) value;
+        } else {
+            return 0;
+        }
+    }
+
     public String getString(String name) {
         Object value = variables.get(name);
         if (value instanceof String) {
@@ -37,17 +43,18 @@ public class VariablesApi {
         }
     }
 
-    @ApiVisibility(ApiType.UPDATE)
     public void setBoolean(String name, boolean value) {
         variables.put(name, value);
     }
 
-    @ApiVisibility(ApiType.UPDATE)
     public void setInteger(String name, int value) {
         variables.put(name, value);
     }
 
-    @ApiVisibility(ApiType.UPDATE)
+    public void setFloat(String name, double value) {
+        variables.put(name, value);
+    }
+
     public void setString(String name, String value) {
         if (value != null && value.length() > 1000000) {
             // prevent stupid scripts that can occupy all RAM

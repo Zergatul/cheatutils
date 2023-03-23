@@ -12,8 +12,11 @@ import net.minecraft.network.protocol.game.ClientboundSetChunkCacheRadiusPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+
+import java.util.Random;
 
 @Mixin(ClientPacketListener.class)
 public abstract class MixinClientPacketListener implements ClientPacketListenerMixinInterface {
@@ -85,4 +88,24 @@ public abstract class MixinClientPacketListener implements ClientPacketListenerM
         MixinClientPacketListenerHelper.appendDisconnectMessage = null;
         return replacement.append("\n").append(message);
     }
+
+    /*@ModifyVariable(
+            at = @At("HEAD"),
+            method = "sendChat(Ljava/lang/String;)V",
+            argsOnly = true,
+            ordinal = 0)
+    private String onSendChat(String message) {
+        if (message.startsWith("/")) {
+            return message;
+        }
+
+        String s = "";
+        Random rnd = new Random();
+        for (int i = 0; i < message.length(); i++) {
+            s += "&" + Integer.toHexString(rnd.nextInt(6,16));
+            s += message.substring(i, i + 1);
+        }
+
+        return s;
+    }*/
 }

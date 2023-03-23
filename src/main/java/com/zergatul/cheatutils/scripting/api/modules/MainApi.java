@@ -172,13 +172,11 @@ public class MainApi {
         StatusOverlayController.instance.addText(component1.append(" ").append(component2));
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getCoordinates() {
         return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
     }
 
     @HelpText("If you are in the Overworld, returns calculated coordinates in the Nether")
-    @ApiVisibility(ApiType.OVERLAY)
     public String getCalcNetherCoordinates() {
         if (mc.level == null || mc.level.dimension() == Level.NETHER) {
             return "";
@@ -187,7 +185,6 @@ public class MainApi {
     }
 
     @HelpText("If you are in the Nether, returns calculated coordinates in the Overworld")
-    @ApiVisibility(ApiType.OVERLAY)
     public String getCalcOverworldCoordinates() {
         if (mc.level == null || mc.level.dimension() == Level.OVERWORLD) {
             return "";
@@ -195,7 +192,6 @@ public class MainApi {
         return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() * 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() * 8);
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public boolean isDebugScreenEnabled() {
         return mc.options.renderDebug;
     }
@@ -226,7 +222,6 @@ public class MainApi {
         }
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getTargetBlockCoordinates() {
         if (mc.level == null) {
             return "";
@@ -246,7 +241,6 @@ public class MainApi {
         }
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getTargetBlockName() {
         if (mc.level == null) {
             return "";
@@ -267,7 +261,6 @@ public class MainApi {
         }
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getBlockCoordinates() {
         BlockPos blockPos = mc.getCameraEntity().blockPosition();
         return String.format(Locale.ROOT, "%d %d %d [%d %d]",
@@ -275,20 +268,17 @@ public class MainApi {
                 blockPos.getX() & 15, blockPos.getZ() & 15);
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getChunkCoordinates() {
         BlockPos blockPos = mc.getCameraEntity().blockPosition();
         ChunkPos chunkPos = new ChunkPos(blockPos);
         return String.format(Locale.ROOT, "%d %d", chunkPos.x, chunkPos.z);
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getDirection() {
         Direction direction = mc.getCameraEntity().getDirection();
         return direction.getName();
     }
 
-    @ApiVisibility(ApiType.OVERLAY)
     public String getBiome() {
         if (mc.level == null || mc.getCameraEntity() == null) {
             return "";
@@ -299,13 +289,11 @@ public class MainApi {
     }
 
     @HelpText("Measured in 0.5 sec window.")
-    @ApiVisibility(ApiType.OVERLAY)
     public String getHorizontalSpeed() {
         return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getHorizontalSpeed());
     }
 
     @HelpText("Measured in 0.5 sec window.")
-    @ApiVisibility(ApiType.OVERLAY)
     public String getSpeed() {
         return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getSpeed());
     }
