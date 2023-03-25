@@ -28,7 +28,7 @@ public class ScriptController {
 
     }
 
-    public void add(String name, String code) throws IllegalArgumentException, ScriptCompileException, ParseException {
+    public void add(String name, String code, boolean addIfCompilationFails) throws IllegalArgumentException, ScriptCompileException, ParseException {
         if (name == null) {
             throw new IllegalArgumentException("Name is required.");
         }
@@ -38,12 +38,22 @@ public class ScriptController {
         if (exists(name)) {
             throw new IllegalArgumentException("Script with the same name already exists.");
         }
+
         var script = new Script();
         script.name = name;
         script.code = code;
+
+        if (addIfCompilationFails) {
+            scripts.add(script);
+            ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
+        }
+
         script.compiled = handleKeybindingsCompiler.compile(code);
-        scripts.add(script);
-        ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
+
+        if (!addIfCompilationFails) {
+            scripts.add(script);
+            ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
+        }
     }
 
     public void update(String oldName, String newName, String code) throws IllegalArgumentException, ScriptCompileException, ParseException {

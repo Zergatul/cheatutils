@@ -14,10 +14,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -107,6 +104,15 @@ public class ScriptingLanguageCompiler {
             compile(ifStatement, visitor);
             return;
         }
+        if (node instanceof ASTLocalVariableDeclaration localVariableDeclaration) {
+            compile(localVariableDeclaration, visitor);
+            return;
+        }
+        if (node instanceof ASTAssignStatement assignStatement) {
+            compile(assignStatement, visitor);
+            return;
+        }
+
         throw new ScriptCompileException("ASTStatement case not implemented: " + node.getClass().getName() + ".");
     }
 
@@ -123,10 +129,34 @@ public class ScriptingLanguageCompiler {
     }
 
     private void compile(ASTBlock block, CompilerMethodVisitor visitor) throws ScriptCompileException {
+        visitor.getContextStack().begin();
         int numChildren = block.jjtGetNumChildren();
         for (int i = 0; i < numChildren; i++) {
             compile((ASTBlockStatement) block.jjtGetChild(i), visitor);
         }
+        visitor.getContextStack().end();
+    }
+
+    private void compile(ASTAssignStatement assignStatement, CompilerMethodVisitor visitor) throws ScriptCompileException {
+        ASTName name = (ASTName) assignStatement.jjtGetChild(0);
+        ASTExpression expression = (ASTExpression) assignStatement.jjtGetChild(2);
+
+        if (name.jjtGetNumChildren() > 1) {
+            throw new ScriptCompileException("ASTAssignStatement: cannot assign field.");
+        }
+
+        ASTIdentifier identifier = (ASTIdentifier) name.jjtGetChild(0);
+        VariableEntry variable = visitor.getContextStack().get((String) identifier.jjtGetValue());
+        if (variable == null) {
+            throw new ScriptCompileException(String.format("Variable %s is not declared.", identifier.jjtGetValue()));
+        }
+
+        ScriptingLanguageType type = compile(expression, visitor);
+        if (type != variable.type) {
+            throw new ScriptCompileException(String.format("Attempt to assign %s to variable %s of type %s.", type, identifier.jjtGetValue(), variable.type));
+        }
+
+        visitor.visitVarInsn(variable.getStoreInst(), variable.index);
     }
 
     private ScriptingLanguageType compile(ASTPrimaryExpression primaryExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
@@ -136,8 +166,19 @@ public class ScriptingLanguageCompiler {
             if (prefixNode instanceof ASTLiteral literal) {
                 return compile(literal, visitor);
             }
-            if (prefixNode instanceof ASTName) {
-                throw new ScriptCompileException("ASTPrimaryExpression cannot reference fields.");
+            if (prefixNode instanceof ASTName name) {
+                if (name.jjtGetNumChildren() > 1) {
+                    throw new ScriptCompileException("ASTPrimaryExpression cannot reference fields.");
+                }
+
+                ASTIdentifier identifier = (ASTIdentifier) name.jjtGetChild(0);
+                VariableEntry variable = visitor.getContextStack().get((String) identifier.jjtGetValue());
+                if (variable == null) {
+                    throw new ScriptCompileException(String.format("Variable %s is not declared.", identifier.jjtGetValue()));
+                }
+
+                visitor.visitVarInsn(variable.getLoadInst(), variable.index);
+                return variable.type;
             }
             if (prefixNode instanceof ASTExpression expression) {
                 return compile(expression, visitor);
@@ -213,7 +254,7 @@ public class ScriptingLanguageCompiler {
             methodArgumentTypes = new ScriptingLanguageType[argsLength];
             methodArgumentVisitors = new BufferVisitor[argsLength];
             for (int i = 0; i < argsLength; i++) {
-                methodArgumentVisitors[i] = new BufferVisitor();
+                methodArgumentVisitors[i] = new BufferVisitor(visitor.getContextStack());
                 methodArgumentTypes[i] = compile((ASTExpression) argumentList.jjtGetChild(i), methodArgumentVisitors[i]);
             }
         }
@@ -241,8 +282,57 @@ public class ScriptingLanguageCompiler {
 
     private void compile(ASTBlockStatement blockStatement, CompilerMethodVisitor visitor) throws ScriptCompileException {
         for (int i = 0; i < blockStatement.jjtGetNumChildren(); i++) {
-            compile((ASTStatement) blockStatement.jjtGetChild(i), visitor);
+            if (blockStatement.jjtGetChild(i) instanceof ASTStatement statement) {
+                compile(statement, visitor);
+            } else {
+                throw new ScriptCompileException("Unexpected type in ASTBlockStatement.");
+            }
         }
+    }
+
+    private void compile(ASTLocalVariableDeclaration localVariableDeclaration, CompilerMethodVisitor visitor) throws ScriptCompileException {
+        ASTType astType = (ASTType) localVariableDeclaration.jjtGetChild(0);
+        ASTPrimitiveType primitiveType = (ASTPrimitiveType) astType.jjtGetChild(0);
+        ASTVariableDeclarator variableDeclarator = (ASTVariableDeclarator) localVariableDeclaration.jjtGetChild(1);
+        ASTVariableDeclaratorId variableDeclaratorId = (ASTVariableDeclaratorId) variableDeclarator.jjtGetChild(0);
+        ASTIdentifier identifier = (ASTIdentifier) variableDeclaratorId.jjtGetChild(0);
+        ASTVariableInitializer initializer = null;
+        if (variableDeclarator.jjtGetNumChildren() > 1) {
+            initializer = (ASTVariableInitializer) variableDeclarator.jjtGetChild(1);
+        }
+
+        ScriptingLanguageType type;
+        if (primitiveType.jjtGetChild(0) instanceof ASTBooleanType) {
+            type = ScriptingLanguageType.BOOLEAN;
+        } else if (primitiveType.jjtGetChild(0) instanceof ASTIntType) {
+            type = ScriptingLanguageType.INT;
+        }  else if (primitiveType.jjtGetChild(0) instanceof ASTFloatType) {
+            type = ScriptingLanguageType.DOUBLE;
+        } else if (primitiveType.jjtGetChild(0) instanceof ASTStringType) {
+            type = ScriptingLanguageType.STRING;
+        } else {
+            throw new ScriptCompileException(String.format("Unknown type %s in ASTLocalVariableDeclaration.", primitiveType.jjtGetChild(0).getClass().getName()));
+        }
+
+        if (initializer != null) {
+            ScriptingLanguageType returnType = compile((ASTExpression) initializer.jjtGetChild(0), visitor);
+            if (returnType != type) {
+                if (ImplicitCast.canCast(returnType, type)) {
+                    ImplicitCast.cast(visitor, returnType, type);
+                } else {
+                    throw new ScriptCompileException(String.format("Variable type %s assigned to expression of type %s.", type, returnType));
+                }
+            }
+        } else {
+            switch (type) {
+                case BOOLEAN, INT -> visitor.visitIntInsn(BIPUSH, 0);
+                case DOUBLE -> visitor.visitLdcInsn(0.0);
+                case STRING -> visitor.visitLdcInsn("");
+            }
+        }
+
+        VariableEntry variable = visitor.getContextStack().add((String) identifier.jjtGetValue(), type);
+        visitor.visitVarInsn(variable.getStoreInst(), variable.index);
     }
 
     private void compile(ASTIfStatement ifStatement, CompilerMethodVisitor visitor) throws ScriptCompileException {
@@ -387,60 +477,67 @@ public class ScriptingLanguageCompiler {
         ScriptingLanguageType typeLeft = type;
         for (int i = 1; i < numChildren; i += 2) {
             Node operator = equalityExpression.jjtGetChild(i);
-            BufferVisitor bufferVisitor = new BufferVisitor();
+            BufferVisitor bufferVisitor = new BufferVisitor(visitor.getContextStack());
             ScriptingLanguageType typeRight = compile((ASTRelationalExpression) equalityExpression.jjtGetChild(i + 1), bufferVisitor);
-            if (typeLeft == typeRight) {
-                bufferVisitor.releaseBuffer(visitor);
-                Label elseLabel = new Label();
-                Label endLabel = new Label();
-                switch (typeLeft) {
-                    case BOOLEAN, INT -> {
-                        visitor.visitJumpInsn(IF_ICMPEQ, elseLabel);
-                        visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 0 : 1);
-                        visitor.visitJumpInsn(GOTO, endLabel);
-                        visitor.visitLabel(elseLabel);
-                        visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 1 : 0);
-                        visitor.visitLabel(endLabel);
-                    }
-                    case DOUBLE -> {
-                        visitor.visitInsn(DCMPL);
-                        visitor.visitInsn(ICONST_0);
-                        visitor.visitJumpInsn(IF_ICMPEQ, elseLabel);
-                        visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 0 : 1);
-                        visitor.visitJumpInsn(GOTO, endLabel);
-                        visitor.visitLabel(elseLabel);
-                        visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 1 : 0);
-                        visitor.visitLabel(endLabel);
-                    }
-                    case STRING -> {
-                        Method equalsMethod;
-                        try {
-                            equalsMethod = Objects.class.getDeclaredMethod("equals", Object.class, Object.class);
-                        } catch (NoSuchMethodException e) {
-                            e.printStackTrace();
-                            throw new ScriptCompileException("ASTEqualityExpression cannot find Objects.equals method.");
-                        }
-
-                        visitor.visitMethodInsn(
-                                INVOKESTATIC,
-                                Type.getInternalName(Objects.class),
-                                equalsMethod.getName(),
-                                Type.getMethodDescriptor(equalsMethod),
-                                false);
-
-                        if (operator instanceof ASTInequality) {
-                            visitor.visitInsn(ICONST_1);
-                            visitor.visitInsn(SWAP);
-                            visitor.visitInsn(ISUB);
-                        }
-                    }
-                    case NULL -> throw new ScriptCompileException("ASTEqualityExpression Null not implemented.");
-                    case VOID -> throw new ScriptCompileException("ASTEqualityExpression cannot compare Void.");
-                    default -> throw new ScriptCompileException("ASTEqualityExpression type not implemented.");
+            if (typeLeft != typeRight) {
+                UpCastTask task = OperatorUpCast.tryUpCast(typeLeft, typeRight);
+                if (task != null) {
+                    typeLeft = task.getType();
+                    task.upCastLeft(visitor);
+                    task.upCastRight(bufferVisitor);
+                } else {
+                    throw new ScriptCompileException(String.format("ASTEqualityExpression: cannot process %s and %s.", typeLeft, typeRight));
                 }
-            } else {
-                throw new ScriptCompileException("ASTEqualityExpression comparing different types not implemented.");
             }
+
+            bufferVisitor.releaseBuffer(visitor);
+            Label elseLabel = new Label();
+            Label endLabel = new Label();
+            switch (typeLeft) {
+                case BOOLEAN, INT -> {
+                    visitor.visitJumpInsn(IF_ICMPEQ, elseLabel);
+                    visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 0 : 1);
+                    visitor.visitJumpInsn(GOTO, endLabel);
+                    visitor.visitLabel(elseLabel);
+                    visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 1 : 0);
+                    visitor.visitLabel(endLabel);
+                }
+                case DOUBLE -> {
+                    visitor.visitInsn(DCMPL);
+                    visitor.visitInsn(ICONST_0);
+                    visitor.visitJumpInsn(IF_ICMPEQ, elseLabel);
+                    visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 0 : 1);
+                    visitor.visitJumpInsn(GOTO, endLabel);
+                    visitor.visitLabel(elseLabel);
+                    visitor.visitIntInsn(BIPUSH, operator instanceof ASTEquality ? 1 : 0);
+                    visitor.visitLabel(endLabel);
+                }
+                case STRING -> {
+                    Method equalsMethod;
+                    try {
+                        equalsMethod = Objects.class.getDeclaredMethod("equals", Object.class, Object.class);
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                        throw new ScriptCompileException("ASTEqualityExpression cannot find Objects.equals method.");
+                    }
+
+                    visitor.visitMethodInsn(
+                            INVOKESTATIC,
+                            Type.getInternalName(Objects.class),
+                            equalsMethod.getName(),
+                            Type.getMethodDescriptor(equalsMethod),
+                            false);
+
+                    if (operator instanceof ASTInequality) {
+                        visitor.visitInsn(ICONST_1);
+                        visitor.visitInsn(SWAP);
+                        visitor.visitInsn(ISUB);
+                    }
+                }
+                case VOID -> throw new ScriptCompileException("ASTEqualityExpression cannot compare Void.");
+                default -> throw new ScriptCompileException("ASTEqualityExpression type not implemented.");
+            }
+
             typeLeft = ScriptingLanguageType.BOOLEAN;
         }
         return ScriptingLanguageType.BOOLEAN;
@@ -458,61 +555,69 @@ public class ScriptingLanguageCompiler {
         ScriptingLanguageType typeLeft = type;
         for (int i = 1; i < numChildren; i += 2) {
             Node operator = relationalExpression.jjtGetChild(i);
-            BufferVisitor bufferVisitor = new BufferVisitor();
+            BufferVisitor bufferVisitor = new BufferVisitor(visitor.getContextStack());
             ScriptingLanguageType typeRight = compile((ASTAdditiveExpression) relationalExpression.jjtGetChild(i + 1), bufferVisitor);
-            if (typeLeft == typeRight) {
-                bufferVisitor.releaseBuffer(visitor);
-                Label elseLabel = new Label();
-                Label endLabel = new Label();
-                switch (typeLeft) {
-                    case BOOLEAN, INT -> {
-                        int opcode;
-                        if (operator instanceof ASTLessThan) {
-                            opcode = IF_ICMPLT;
-                        } else if (operator instanceof ASTGreaterThan) {
-                            opcode = IF_ICMPGT;
-                        } else if (operator instanceof ASTLessEquals) {
-                            opcode = IF_ICMPLE;
-                        } else if (operator instanceof ASTGreaterEquals) {
-                            opcode = IF_ICMPGE;
-                        } else {
-                            throw new ScriptCompileException("ASTRelationalExpression: Unknown operator for INT: " + operator.getClass().getName());
-                        }
-                        visitor.visitJumpInsn(opcode, elseLabel);
-                        visitor.visitInsn(ICONST_0);
-                        visitor.visitJumpInsn(GOTO, endLabel);
-                        visitor.visitLabel(elseLabel);
-                        visitor.visitInsn(ICONST_1);
-                        visitor.visitLabel(endLabel);
-                    }
-                    case DOUBLE -> {
-                        int opcode;
-                        if (operator instanceof ASTLessThan) {
-                            opcode = IF_ICMPLT;
-                        } else if (operator instanceof ASTGreaterThan) {
-                            opcode = IF_ICMPGT;
-                        } else if (operator instanceof ASTLessEquals) {
-                            opcode = IF_ICMPLE;
-                        } else if (operator instanceof ASTGreaterEquals) {
-                            opcode = IF_ICMPGE;
-                        } else {
-                            throw new ScriptCompileException("ASTRelationalExpression: Unknown operator for DOUBLE: " + operator.getClass().getName());
-                        }
-                        visitor.visitInsn(DCMPG);
-                        visitor.visitInsn(ICONST_0);
-                        visitor.visitJumpInsn(opcode, elseLabel);
-                        visitor.visitInsn(ICONST_0);
-                        visitor.visitJumpInsn(GOTO, endLabel);
-                        visitor.visitLabel(elseLabel);
-                        visitor.visitInsn(ICONST_1);
-                        visitor.visitLabel(endLabel);
-                    }
-                    case STRING -> throw new ScriptCompileException("ASTRelationalExpression comparing STRING not implemented.");
-                    default -> throw new ScriptCompileException("ASTRelationalExpression type not implemented.");
+            if (typeLeft != typeRight) {
+                UpCastTask task = OperatorUpCast.tryUpCast(typeLeft, typeRight);
+                if (task != null) {
+                    typeLeft = task.getType();
+                    task.upCastLeft(visitor);
+                    task.upCastRight(bufferVisitor);
+                } else {
+                    throw new ScriptCompileException(String.format("ASTRelationalExpression: cannot process %s and %s.", typeLeft, typeRight));
                 }
-            } else {
-                throw new ScriptCompileException("ASTRelationalExpression comparing different types not implemented.");
             }
+
+            bufferVisitor.releaseBuffer(visitor);
+            Label elseLabel = new Label();
+            Label endLabel = new Label();
+            switch (typeLeft) {
+                case BOOLEAN, INT -> {
+                    int opcode;
+                    if (operator instanceof ASTLessThan) {
+                        opcode = IF_ICMPLT;
+                    } else if (operator instanceof ASTGreaterThan) {
+                        opcode = IF_ICMPGT;
+                    } else if (operator instanceof ASTLessEquals) {
+                        opcode = IF_ICMPLE;
+                    } else if (operator instanceof ASTGreaterEquals) {
+                        opcode = IF_ICMPGE;
+                    } else {
+                        throw new ScriptCompileException("ASTRelationalExpression: Unknown operator for INT: " + operator.getClass().getName());
+                    }
+                    visitor.visitJumpInsn(opcode, elseLabel);
+                    visitor.visitInsn(ICONST_0);
+                    visitor.visitJumpInsn(GOTO, endLabel);
+                    visitor.visitLabel(elseLabel);
+                    visitor.visitInsn(ICONST_1);
+                    visitor.visitLabel(endLabel);
+                }
+                case DOUBLE -> {
+                    int opcode;
+                    if (operator instanceof ASTLessThan) {
+                        opcode = IF_ICMPLT;
+                    } else if (operator instanceof ASTGreaterThan) {
+                        opcode = IF_ICMPGT;
+                    } else if (operator instanceof ASTLessEquals) {
+                        opcode = IF_ICMPLE;
+                    } else if (operator instanceof ASTGreaterEquals) {
+                        opcode = IF_ICMPGE;
+                    } else {
+                        throw new ScriptCompileException("ASTRelationalExpression: Unknown operator for DOUBLE: " + operator.getClass().getName());
+                    }
+                    visitor.visitInsn(DCMPG);
+                    visitor.visitInsn(ICONST_0);
+                    visitor.visitJumpInsn(opcode, elseLabel);
+                    visitor.visitInsn(ICONST_0);
+                    visitor.visitJumpInsn(GOTO, endLabel);
+                    visitor.visitLabel(elseLabel);
+                    visitor.visitInsn(ICONST_1);
+                    visitor.visitLabel(endLabel);
+                }
+                case STRING -> throw new ScriptCompileException("ASTRelationalExpression comparing STRING not implemented.");
+                default -> throw new ScriptCompileException("ASTRelationalExpression type not implemented.");
+            }
+
             typeLeft = ScriptingLanguageType.BOOLEAN;
         }
 
@@ -531,49 +636,50 @@ public class ScriptingLanguageCompiler {
         ScriptingLanguageType typeLeft = type;
         for (int i = 1; i < numChildren; i += 2) {
             Node operator = additiveExpression.jjtGetChild(i);
-            BufferVisitor bufferVisitor = new BufferVisitor();
+            BufferVisitor bufferVisitor = new BufferVisitor(visitor.getContextStack());
             ScriptingLanguageType typeRight = compile((ASTMultiplicativeExpression) additiveExpression.jjtGetChild(i + 1), bufferVisitor);
-            if (operator instanceof ASTPlus) {
-                if (typeLeft == typeRight) {
-                    switch (typeLeft) {
-                        case INT -> {
-                            bufferVisitor.releaseBuffer(visitor);
-                            visitor.visitInsn(IADD);
-                        }
-                        case BOOLEAN -> throw new ScriptCompileException("ASTAdditiveExpression cannot add 2 Booleans.");
-                        case DOUBLE -> {
-                            bufferVisitor.releaseBuffer(visitor);
-                            visitor.visitInsn(DADD);
-                        }
-                        case STRING -> compileStringConcat(bufferVisitor, visitor);
-                        case NULL -> throw new ScriptCompileException("ASTAdditiveExpression Null not implemented.");
-                        case VOID -> throw new ScriptCompileException("ASTAdditiveExpression cannot add Void.");
-                        default -> throw new ScriptCompileException("ASTAdditiveExpression type not implemented.");
-                    }
+            if (typeLeft != typeRight) {
+                UpCastTask task = OperatorUpCast.tryUpCast(typeLeft, typeRight);
+                if (task != null) {
+                    typeLeft = task.getType();
+                    task.upCastLeft(visitor);
+                    task.upCastRight(bufferVisitor);
                 } else {
-                    throw new ScriptCompileException("ASTAdditiveExpression adding different types not implemented.");
+                    throw new ScriptCompileException(String.format("ASTAdditiveExpression: cannot process %s and %s.", typeLeft, typeRight));
+                }
+            }
+
+            if (operator instanceof ASTPlus) {
+                switch (typeLeft) {
+                    case INT -> {
+                        bufferVisitor.releaseBuffer(visitor);
+                        visitor.visitInsn(IADD);
+                    }
+                    case BOOLEAN -> throw new ScriptCompileException("ASTAdditiveExpression cannot add 2 Booleans.");
+                    case DOUBLE -> {
+                        bufferVisitor.releaseBuffer(visitor);
+                        visitor.visitInsn(DADD);
+                    }
+                    case STRING -> compileStringConcat(bufferVisitor, visitor);
+                    case VOID -> throw new ScriptCompileException("ASTAdditiveExpression cannot add Void.");
+                    default -> throw new ScriptCompileException("ASTAdditiveExpression type not implemented.");
                 }
                 continue;
             }
             if (operator instanceof ASTMinus) {
-                if (typeLeft == typeRight) {
-                    switch (typeLeft) {
-                        case INT -> {
-                            bufferVisitor.releaseBuffer(visitor);
-                            visitor.visitInsn(ISUB);
-                        }
-                        case BOOLEAN -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract 2 Booleans.");
-                        case DOUBLE -> {
-                            bufferVisitor.releaseBuffer(visitor);
-                            visitor.visitInsn(DSUB);
-                        }
-                        case STRING -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract 2 Strings.");
-                        case NULL -> throw new ScriptCompileException("ASTAdditiveExpression Null not implemented.");
-                        case VOID -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract Void.");
-                        default -> throw new ScriptCompileException("ASTAdditiveExpression type not implemented.");
+                switch (typeLeft) {
+                    case INT -> {
+                        bufferVisitor.releaseBuffer(visitor);
+                        visitor.visitInsn(ISUB);
                     }
-                } else {
-                    throw new ScriptCompileException("ASTAdditiveExpression subtracting different types not implemented.");
+                    case BOOLEAN -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract 2 Booleans.");
+                    case DOUBLE -> {
+                        bufferVisitor.releaseBuffer(visitor);
+                        visitor.visitInsn(DSUB);
+                    }
+                    case STRING -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract 2 Strings.");
+                    case VOID -> throw new ScriptCompileException("ASTAdditiveExpression cannot subtract Void.");
+                    default -> throw new ScriptCompileException("ASTAdditiveExpression type not implemented.");
                 }
                 continue;
             }
@@ -658,49 +764,48 @@ public class ScriptingLanguageCompiler {
         ScriptingLanguageType typeLeft = type;
         for (int i = 1; i < numChildren; i += 2) {
             Node operator = multiplicativeExpression.jjtGetChild(i);
-            ScriptingLanguageType typeRight = compile((ASTUnaryExpression) multiplicativeExpression.jjtGetChild(i + 1), visitor);
-            if (operator instanceof ASTMult) {
-                if (typeLeft == typeRight) {
-                    switch (typeLeft) {
-                        case INT -> visitor.visitInsn(IMUL);
-                        case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Booleans.");
-                        case DOUBLE -> visitor.visitInsn(DMUL);
-                        case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Strings.");
-                        case NULL -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Nulls.");
-                        case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Voids.");
-                    }
+            BufferVisitor bufferVisitor = new BufferVisitor(visitor.getContextStack());
+            ScriptingLanguageType typeRight = compile((ASTUnaryExpression) multiplicativeExpression.jjtGetChild(i + 1), bufferVisitor);
+            if (typeLeft != typeRight) {
+                UpCastTask task = OperatorUpCast.tryUpCast(typeLeft, typeRight);
+                if (task != null) {
+                    typeLeft = task.getType();
+                    task.upCastLeft(visitor);
+                    task.upCastRight(bufferVisitor);
                 } else {
-                    throw new ScriptCompileException("ASTMultiplicativeExpression multiplying different types not implemented.");
+                    throw new ScriptCompileException(String.format("ASTMultiplicativeExpression: cannot process %s and %s.", typeLeft, typeRight));
+                }
+            }
+
+            bufferVisitor.releaseBuffer(visitor);
+
+            if (operator instanceof ASTMult) {
+                switch (typeLeft) {
+                    case INT -> visitor.visitInsn(IMUL);
+                    case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Booleans.");
+                    case DOUBLE -> visitor.visitInsn(DMUL);
+                    case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Strings.");
+                    case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot multiply Voids.");
                 }
                 continue;
             }
             if (operator instanceof ASTDiv) {
-                if (typeLeft == typeRight) {
-                    switch (typeLeft) {
-                        case INT -> visitor.visitInsn(IDIV);
-                        case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Booleans.");
-                        case DOUBLE -> visitor.visitInsn(DDIV);
-                        case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Strings.");
-                        case NULL -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Nulls.");
-                        case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Voids.");
-                    }
-                } else {
-                    throw new ScriptCompileException("ASTMultiplicativeExpression dividing different types not implemented.");
+                switch (typeLeft) {
+                    case INT -> visitor.visitInsn(IDIV);
+                    case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Booleans.");
+                    case DOUBLE -> visitor.visitInsn(DDIV);
+                    case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Strings.");
+                    case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot divide Voids.");
                 }
                 continue;
             }
             if (operator instanceof ASTMod) {
-                if (typeLeft == typeRight) {
-                    switch (typeLeft) {
-                        case INT -> visitor.visitInsn(IREM);
-                        case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Booleans.");
-                        case DOUBLE -> visitor.visitInsn(DREM);
-                        case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Strings.");
-                        case NULL -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Nulls.");
-                        case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Voids.");
-                    }
-                } else {
-                    throw new ScriptCompileException("ASTMultiplicativeExpression dividing different types not implemented.");
+                switch (typeLeft) {
+                    case INT -> visitor.visitInsn(IREM);
+                    case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Booleans.");
+                    case DOUBLE -> visitor.visitInsn(DREM);
+                    case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Strings.");
+                    case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Voids.");
                 }
                 continue;
             }
@@ -722,7 +827,6 @@ public class ScriptingLanguageCompiler {
                     case BOOLEAN -> throw new ScriptCompileException("ASTUnaryExpression cannot use Boolean.");
                     case INT, DOUBLE -> {}
                     case STRING -> throw new ScriptCompileException("ASTUnaryExpression cannot use String.");
-                    case NULL -> throw new ScriptCompileException("ASTUnaryExpression cannot use Null.");
                     case VOID -> throw new ScriptCompileException("ASTUnaryExpression cannot use Void.");
                 }
                 return type;
@@ -733,7 +837,6 @@ public class ScriptingLanguageCompiler {
                     case INT -> visitor.visitInsn(INEG);
                     case DOUBLE -> visitor.visitInsn(DNEG);
                     case STRING -> throw new ScriptCompileException("ASTUnaryExpression cannot use String.");
-                    case NULL -> throw new ScriptCompileException("ASTUnaryExpression cannot use Null.");
                     case VOID -> throw new ScriptCompileException("ASTUnaryExpression cannot use Void.");
                 }
                 return type;
@@ -802,100 +905,72 @@ public class ScriptingLanguageCompiler {
             return ScriptingLanguageType.DOUBLE;
         }
         if (node instanceof ASTNullLiteral) {
-            visitor.visitInsn(ACONST_NULL);
-            return ScriptingLanguageType.NULL;
+            throw new ScriptCompileException("Cannot use null.");
+            //visitor.visitInsn(ACONST_NULL);
+            //return ScriptingLanguageType.NULL;
         }
 
         throw new ScriptCompileException("ASTLiteral case not implemented: " + node.getClass().getName() + ".");
     }
 
     private Method findMethod(Field field, String name, ScriptingLanguageType[] argumentTypes, BufferVisitor[] argumentVisitors) throws ScriptCompileException {
-        Method method = Arrays.stream(field.getType().getMethods()).filter(m -> {
-            if (m.getDeclaringClass() == Objects.class) {
-                return false; // skip Object methods
+        FindMethodResult methodResult = null;
+        for (Method m : field.getType().getMethods()) {
+            if (m.getDeclaringClass() == Object.class) {
+                continue; // skip Object methods
             }
             if (!m.getName().equals(name)) {
-                return false;
+                continue;
             }
             if (!VisibilityCheck.isOk(m, types)) {
-                return false;
+                continue;
             }
             Parameter[] parameters = m.getParameters();
             if (parameters.length != argumentTypes.length) {
-                return false;
+                continue;
             }
+
+            BufferVisitor[] casts = new BufferVisitor[parameters.length];
+            boolean ok = true;
             for (int i = 0; i < parameters.length; i++) {
-                Class methodParameterClass = parameters[i].getType();
-                Class scriptParameterClass = argumentTypes[i].getJavaClass();
+                Class<?> methodParameterClass = parameters[i].getType();
+                Class<?> scriptParameterClass = argumentTypes[i].getJavaClass();
                 if (methodParameterClass == scriptParameterClass) {
                     continue;
                 }
-                if (canBeCast(methodParameterClass, scriptParameterClass)) {
+                if (ImplicitCast.canCast(scriptParameterClass, methodParameterClass)) {
+                    casts[i] = new BufferVisitor(null);
+                    ImplicitCast.cast(casts[i], scriptParameterClass, methodParameterClass);
                     continue;
                 }
-                return false;
+                ok = false;
+                break;
             }
-            return true;
-        }).findFirst().orElse(null);
 
-        if (method == null) {
+            if (!ok) {
+                continue;
+            }
+
+            FindMethodResult result = new FindMethodResult(
+                    m,
+                    (int)Arrays.stream(casts).filter(Objects::nonNull).count(),
+                    casts);
+            if (methodResult == null || methodResult.count > result.count) {
+                methodResult = result;
+            }
+        }
+
+        if (methodResult == null) {
             return null;
         }
 
-        // check if we need to cast any parameters
-        Parameter[] parameters = method.getParameters();
-        for (int i = 0; i < parameters.length; i++) {
-            Class methodParameterClass = parameters[i].getType();
-            Class scriptParameterClass = argumentTypes[i].getJavaClass();
-            if (methodParameterClass == scriptParameterClass) {
-                continue;
-            }
-            if (canBeCast(methodParameterClass, scriptParameterClass)) {
-                argumentTypes[i] = cast(argumentTypes[i], methodParameterClass, argumentVisitors[i]);
-            } else {
-                throw new ScriptCompileException("Method parameter cannot be cast. Method: \"" + name + "\", index: " + i + ".");
+        for (int i = 0; i < argumentVisitors.length; i++) {
+            if (methodResult.casts[i] != null) {
+                methodResult.casts[i].releaseBuffer(argumentVisitors[i]);
             }
         }
 
-        return method;
-    }
-
-    private boolean canBeCast(Class<?> methodParameterClass, Class<?> scriptParameterClass) {
-        if (methodParameterClass == double.class && scriptParameterClass == int.class) {
-            return true;
-        }
-        if (methodParameterClass == String.class && scriptParameterClass == int.class) {
-            return true;
-        }
-        return false;
-    }
-
-    private ScriptingLanguageType cast(ScriptingLanguageType type, Class<?> methodParameterClass, CompilerMethodVisitor visitor) throws ScriptCompileException {
-        if (methodParameterClass == double.class && type.getJavaClass() == int.class) {
-            visitor.visitInsn(I2D);
-            return ScriptingLanguageType.DOUBLE;
-        }
-
-        if (methodParameterClass == String.class && type.getJavaClass() == int.class) {
-            Method method;
-            try {
-                method = Integer.class.getDeclaredMethod("toString", int.class);
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-                throw new ScriptCompileException("Cannot find Integer.toString() method.");
-            }
-
-            visitor.visitMethodInsn(
-                    INVOKESTATIC,
-                    Type.getInternalName(method.getDeclaringClass()),
-                    method.getName(),
-                    Type.getMethodDescriptor(method),
-                    false);
-
-            return ScriptingLanguageType.STRING;
-        }
-
-        throw new ScriptCompileException("Cannot cast.");
+        return methodResult.method;
     }
 
     private String parseString(String value) throws ScriptCompileException {
@@ -957,7 +1032,8 @@ public class ScriptingLanguageCompiler {
                 false);
     }
 
-    private abstract class CompilerMethodVisitor {
+    private static abstract class CompilerMethodVisitor {
+        public abstract VariableContextStack getContextStack();
         public abstract void visitInsn(final int opcode);
         public abstract void visitIntInsn(final int opcode, final int operand);
         public abstract void visitFieldInsn(final int opcode, final String owner, final String name, final String descriptor);
@@ -969,12 +1045,17 @@ public class ScriptingLanguageCompiler {
         public abstract void visitVarInsn(final int opcode, final int index);
     }
 
-    private class MethodVisitorWrapper extends CompilerMethodVisitor {
+    private static class MethodVisitorWrapper extends CompilerMethodVisitor {
 
         private final MethodVisitor visitor;
+        private final VariableContextStack contexts = new VariableContextStack();
 
         public MethodVisitorWrapper(MethodVisitor visitor) {
             this.visitor = visitor;
+        }
+
+        public VariableContextStack getContextStack() {
+            return contexts;
         }
 
         @Override
@@ -1023,9 +1104,18 @@ public class ScriptingLanguageCompiler {
         }
     }
 
-    private class BufferVisitor extends CompilerMethodVisitor {
+    private static class BufferVisitor extends CompilerMethodVisitor {
 
+        private final VariableContextStack contexts;
         private final List<Consumer<CompilerMethodVisitor>> list = new ArrayList<>();
+
+        public BufferVisitor(VariableContextStack contexts) {
+            this.contexts = contexts;
+        }
+
+        public VariableContextStack getContextStack() {
+            return contexts;
+        }
 
         public void releaseBuffer(CompilerMethodVisitor visitor) {
             list.forEach(c -> c.accept(visitor));
@@ -1077,4 +1167,237 @@ public class ScriptingLanguageCompiler {
             list.add(v -> v.visitVarInsn(opcode, index));
         }
     }
+
+    private static class VariableContextStack {
+
+        private final Stack<VariableContext> stack = new Stack<>();
+        private int index = 2; // index=1 reserved for StringBuilder
+
+        public VariableContextStack() {
+            stack.add(new VariableContext(index));
+        }
+
+        public VariableEntry add(String identifier, ScriptingLanguageType type) throws ScriptCompileException {
+            checkIdentifier(identifier);
+            VariableEntry variable = stack.peek().add(identifier, type, index);
+            if (type == ScriptingLanguageType.DOUBLE) {
+                index += 2;
+            } else {
+                index += 1;
+            }
+            return variable;
+        }
+
+        public void begin() {
+            stack.add(new VariableContext(index));
+        }
+
+        public void end() {
+            index = stack.pop().getStartIndex();
+        }
+
+        public VariableEntry get(String identifier) {
+            for (int i = stack.size() - 1; i >= 0; i--) {
+                VariableEntry entry = stack.get(i).get(identifier);
+                if (entry != null) {
+                    return entry;
+                }
+            }
+
+            return null;
+        }
+
+        private void checkIdentifier(String identifier) throws ScriptCompileException {
+            for (int i = stack.size() - 1; i >= 0; i--) {
+                if (stack.get(i).contains(identifier)) {
+                    throw new ScriptCompileException(String.format("Identifier %s is already declared.", identifier));
+                }
+            }
+        }
+    }
+
+    private static class VariableContext {
+
+        private final int startIndex;
+        private final Map<String, VariableEntry> variables = new HashMap<>();
+
+        public VariableContext(int startIndex) {
+            this.startIndex = startIndex;
+        }
+
+        public VariableEntry add(String identifier, ScriptingLanguageType type, int index) {
+            VariableEntry variable = new VariableEntry(type, index);
+            variables.put(identifier, variable);
+            return variable;
+        }
+
+        public boolean contains(String identifier) {
+            return variables.containsKey(identifier);
+        }
+
+        public VariableEntry get(String identifier) {
+            return variables.get(identifier);
+        }
+
+        public int getStartIndex() {
+            return startIndex;
+        }
+    }
+
+    private record VariableEntry(ScriptingLanguageType type, int index) {
+
+        public int getStoreInst() {
+            return switch (type) {
+                case BOOLEAN, INT -> ISTORE;
+                case DOUBLE -> DSTORE;
+                case STRING -> ASTORE;
+                default -> throw new IllegalStateException("Unexpected value: " + type);
+            };
+        }
+
+        public int getLoadInst() {
+            return switch (type) {
+                case BOOLEAN, INT -> ILOAD;
+                case DOUBLE -> DLOAD;
+                case STRING -> ALOAD;
+                default -> throw new IllegalStateException("Unexpected value: " + type);
+            };
+        }
+    }
+
+    private static abstract class ImplicitCast {
+
+        public static final ImplicitCast[] list = new ImplicitCast[] {
+                new IntToDoubleCast(),
+                new IntToStringCast()
+        };
+
+        public static boolean canCast(Class<?> input, Class<?> output) throws ScriptCompileException {
+            return canCast(ScriptingLanguageType.fromJavaClass(input), ScriptingLanguageType.fromJavaClass(output));
+        }
+
+        public static boolean canCast(ScriptingLanguageType input, ScriptingLanguageType output) {
+            return Arrays.stream(list).anyMatch(c -> c.getInputType() == input && c.getOutputType() == output);
+        }
+
+        public static void cast(CompilerMethodVisitor visitor, Class<?> input, Class<?> output) throws ScriptCompileException {
+            cast(visitor, ScriptingLanguageType.fromJavaClass(input), ScriptingLanguageType.fromJavaClass(output));
+        }
+
+        public static void cast(CompilerMethodVisitor visitor, ScriptingLanguageType input, ScriptingLanguageType output) throws ScriptCompileException {
+            ImplicitCast cast = Arrays.stream(list)
+                    .filter(c -> c.getInputType() == input && c.getOutputType() == output)
+                    .findFirst()
+                    .orElse(null);
+            if (cast == null) {
+                throw new ScriptCompileException("Cannot find ImplicitCast instance.");
+            }
+            cast.cast(visitor);
+        }
+
+        public abstract ScriptingLanguageType getInputType();
+        public abstract ScriptingLanguageType getOutputType();
+        public abstract void cast(CompilerMethodVisitor visitor) throws ScriptCompileException;
+    }
+
+    private static class IntToDoubleCast extends ImplicitCast {
+        @Override
+        public ScriptingLanguageType getInputType() {
+            return ScriptingLanguageType.INT;
+        }
+
+        @Override
+        public ScriptingLanguageType getOutputType() {
+            return ScriptingLanguageType.DOUBLE;
+        }
+
+        @Override
+        public void cast(CompilerMethodVisitor visitor) {
+            visitor.visitInsn(I2D);
+        }
+    }
+
+    private static class IntToStringCast extends ImplicitCast {
+
+        @Override
+        public ScriptingLanguageType getInputType() {
+            return ScriptingLanguageType.INT;
+        }
+
+        @Override
+        public ScriptingLanguageType getOutputType() {
+            return ScriptingLanguageType.STRING;
+        }
+
+        @Override
+        public void cast(CompilerMethodVisitor visitor) throws ScriptCompileException {
+            Method method;
+            try {
+                method = Integer.class.getDeclaredMethod("toString", int.class);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+                throw new ScriptCompileException("Cannot find Integer.toString() method.");
+            }
+
+            visitor.visitMethodInsn(
+                    INVOKESTATIC,
+                    Type.getInternalName(method.getDeclaringClass()),
+                    method.getName(),
+                    Type.getMethodDescriptor(method),
+                    false);
+        }
+    }
+
+    private static class OperatorUpCast {
+
+        public static UpCastTask tryUpCast(ScriptingLanguageType left, ScriptingLanguageType right) {
+            if (left == ScriptingLanguageType.INT && right == ScriptingLanguageType.DOUBLE) {
+                return new UpCastTask() {
+                    @Override
+                    public ScriptingLanguageType getType() {
+                        return ScriptingLanguageType.DOUBLE;
+                    }
+
+                    @Override
+                    public void upCastLeft(CompilerMethodVisitor visitor) {
+                        visitor.visitInsn(I2D);
+                    }
+
+                    @Override
+                    public void upCastRight(CompilerMethodVisitor visitor) {
+
+                    }
+                };
+            }
+
+            if (left == ScriptingLanguageType.DOUBLE && right == ScriptingLanguageType.INT) {
+                return new UpCastTask() {
+                    @Override
+                    public ScriptingLanguageType getType() {
+                        return ScriptingLanguageType.DOUBLE;
+                    }
+
+                    @Override
+                    public void upCastLeft(CompilerMethodVisitor visitor) {
+
+                    }
+
+                    @Override
+                    public void upCastRight(CompilerMethodVisitor visitor) {
+                        visitor.visitInsn(I2D);
+                    }
+                };
+            }
+
+            return null;
+        }
+    }
+
+    private static abstract class UpCastTask {
+        public abstract ScriptingLanguageType getType();
+        public abstract void upCastLeft(CompilerMethodVisitor visitor);
+        public abstract void upCastRight(CompilerMethodVisitor visitor);
+    }
+
+    private record FindMethodResult(Method method, int count, BufferVisitor[] casts) {}
 }

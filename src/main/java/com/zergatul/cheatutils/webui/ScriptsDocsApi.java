@@ -104,7 +104,7 @@ public class ScriptsDocsApi extends ApiBase {
     }
 
     private String formatClass(Class<?> clazz) {
-        String name = clazz == String.class ? "String" : (clazz == double.class ? "float" : clazz.getName());
+        String name = clazz == String.class ? "string" : (clazz == double.class ? "float" : clazz.getName());
         return "<span class=\"class\">" + name + "</span>";
     }
 

@@ -49,7 +49,7 @@ public class ScriptsApi extends ApiBase {
     public String post(String body) throws HttpException {
         Script script = gson.fromJson(body, Script.class);
         try {
-            ScriptController.instance.add(script.name, script.code);
+            ScriptController.instance.add(script.name, script.code, false);
         }
         catch (Throwable e) {
             throw new HttpException(e.getMessage());

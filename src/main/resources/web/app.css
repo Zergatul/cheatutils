@@ -35,6 +35,11 @@ button:hover:not(:disabled) {
     background-color: #bbbfff;
 }
 
+a {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
 ul.list-base {
     list-style: none;
     height: 400px;

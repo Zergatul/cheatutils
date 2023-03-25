@@ -2,23 +2,22 @@ package com.zergatul.cheatutils.scripting.compiler;
 
 public enum ScriptingLanguageType {
     VOID(null),
-    NULL(Object.class),
     INT(int.class),
     DOUBLE(double.class),
     BOOLEAN(boolean.class),
     STRING(String.class);
 
-    private final Class type;
+    private final Class<?> type;
 
-    ScriptingLanguageType(Class type) {
+    ScriptingLanguageType(Class<?> type) {
         this.type = type;
     }
 
-    public Class getJavaClass() {
+    public Class<?> getJavaClass() {
         return type;
     }
 
-    public static ScriptingLanguageType fromJavaClass(Class type) throws ScriptCompileException {
+    public static ScriptingLanguageType fromJavaClass(Class<?> type) throws ScriptCompileException {
         if (type == void.class) {
             return VOID;
         }

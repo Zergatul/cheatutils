@@ -17,43 +17,51 @@ public interface ScriptingLanguageConstants {
   /** RegularExpression Id. */
   int MULTI_LINE_COMMENT = 7;
   /** RegularExpression Id. */
-  int FALSE = 8;
+  int BOOLEAN = 8;
   /** RegularExpression Id. */
-  int NULL = 9;
+  int FALSE = 9;
   /** RegularExpression Id. */
-  int TRUE = 10;
+  int FLOAT = 10;
   /** RegularExpression Id. */
-  int INTEGER_LITERAL = 11;
+  int INT = 11;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 12;
+  int NULL = 12;
   /** RegularExpression Id. */
-  int HEX_LITERAL = 13;
+  int STRING = 13;
   /** RegularExpression Id. */
-  int FLOATING_POINT_LITERAL = 14;
+  int TRUE = 14;
   /** RegularExpression Id. */
-  int EXPONENT = 15;
+  int INTEGER_LITERAL = 15;
   /** RegularExpression Id. */
-  int STRING_LITERAL = 16;
+  int DECIMAL_LITERAL = 16;
   /** RegularExpression Id. */
-  int IF = 17;
+  int HEX_LITERAL = 17;
   /** RegularExpression Id. */
-  int ELSE = 18;
+  int FLOATING_POINT_LITERAL = 18;
   /** RegularExpression Id. */
-  int IDENTIFIER = 19;
+  int EXPONENT = 19;
   /** RegularExpression Id. */
-  int LETTER = 20;
+  int STRING_LITERAL = 20;
   /** RegularExpression Id. */
-  int DIGIT = 21;
+  int IF = 21;
   /** RegularExpression Id. */
-  int LPAREN = 22;
+  int ELSE = 22;
   /** RegularExpression Id. */
-  int RPAREN = 23;
+  int IDENTIFIER = 23;
   /** RegularExpression Id. */
-  int SEMICOLON = 24;
+  int LETTER = 24;
   /** RegularExpression Id. */
-  int COMMA = 25;
+  int DIGIT = 25;
   /** RegularExpression Id. */
-  int DOT = 26;
+  int LPAREN = 26;
+  /** RegularExpression Id. */
+  int RPAREN = 27;
+  /** RegularExpression Id. */
+  int SEMICOLON = 28;
+  /** RegularExpression Id. */
+  int COMMA = 29;
+  /** RegularExpression Id. */
+  int DOT = 30;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -68,8 +76,12 @@ public interface ScriptingLanguageConstants {
     "<SINGLE_LINE_COMMENT>",
     "<FORMAL_COMMENT>",
     "<MULTI_LINE_COMMENT>",
+    "\"boolean\"",
     "\"false\"",
+    "\"float\"",
+    "\"int\"",
     "\"null\"",
+    "\"string\"",
     "\"true\"",
     "<INTEGER_LITERAL>",
     "<DECIMAL_LITERAL>",
@@ -89,6 +101,7 @@ public interface ScriptingLanguageConstants {
     "\".\"",
     "\"{\"",
     "\"}\"",
+    "\"=\"",
     "\"?\"",
     "\":\"",
     "\"||\"",

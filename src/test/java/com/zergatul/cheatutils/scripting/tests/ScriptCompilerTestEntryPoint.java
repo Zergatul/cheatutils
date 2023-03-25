@@ -14,10 +14,17 @@ import java.util.List;
 
 public class ScriptCompilerTestEntryPoint {
     public static void main(String[] args) {
+        testFile("test-script.txt");
+        testFile("variable-script.txt");
+        testFile("casts.txt");
+        testFile("parameters.txt");
+    }
+
+    private static void testFile(String name) {
         var compiler = new ScriptingLanguageCompiler(TestRoot.class, new ApiType[0]);
         try {
             ClassLoader classLoader = ScriptCompilerTestEntryPoint.class.getClassLoader();
-            InputStream stream = classLoader.getResourceAsStream("test-script.txt");
+            InputStream stream = classLoader.getResourceAsStream(name);
             String code = IOUtils.toString(stream, Charset.defaultCharset());
 
             Runnable program = compiler.compile(code);
@@ -43,6 +50,7 @@ public class ScriptCompilerTestEntryPoint {
     public static class TestRoot {
         public static Assertion Assert = new Assertion();
         public static Deep deep = new Deep();
+        public static Methods methods = new Methods();
     }
 
     public static class Assertion {
@@ -72,6 +80,11 @@ public class ScriptCompilerTestEntryPoint {
 
         public void notEquals(String name, double value1, double value2) {
             (value1 != value2 ? success : fail).add(name);
+        }
+
+        public void clear() {
+            success.clear();
+            fail.clear();
         }
     }
 
@@ -115,6 +128,16 @@ public class ScriptCompilerTestEntryPoint {
 
         public int getValue() {
             return 100;
+        }
+    }
+
+    public static class Methods {
+        public double m1(int x, int y, int z, String s) {
+            return x;
+        }
+
+        public double m1(double x, double y, double z, String s) {
+            return y;
         }
     }
 }

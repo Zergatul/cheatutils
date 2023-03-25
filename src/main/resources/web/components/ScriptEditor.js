@@ -11,7 +11,7 @@ function createComponent(template) {
             self.editor.setSelectionStyle('text');
             self.editor.setFontSize('16px');
             self.editor.setShowPrintMargin(false);
-            self.editor.session.setMode("ace/mode/javascript");
+            self.editor.session.setMode("ace/mode/java");
             if (self.modelValue) {
                 self.editor.setValue(self.modelValue, -1);
             }

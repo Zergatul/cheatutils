@@ -163,7 +163,7 @@ public class ConfigStore {
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";
             try {
-                ScriptController.instance.add(toggleEspName, "main.toggleEsp();");
+                ScriptController.instance.add(toggleEspName, "main.toggleEsp();", false);
                 KeyBindingsController.instance.keys[0].setKeyModifierAndCode(net.minecraftforge.client.settings.KeyModifier.NONE, InputConstants.getKey("key.keyboard.backslash"));
                 KeyBindingsController.instance.assign(0, toggleEspName);
             } catch (ParseException | ScriptCompileException e) {
@@ -172,7 +172,7 @@ public class ConfigStore {
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();");
+                ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
                 KeyBindingsController.instance.keys[1].setKeyModifierAndCode(net.minecraftforge.client.settings.KeyModifier.NONE, InputConstants.getKey("key.keyboard.f6"));
                 KeyBindingsController.instance.assign(1, toggleFreeCamName);
             } catch (ParseException | ScriptCompileException e) {
@@ -183,7 +183,7 @@ public class ConfigStore {
             config.scriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    ScriptController.instance.add(s.name, s.code);
+                    ScriptController.instance.add(s.name, s.code, true);
                 } catch (ParseException | ScriptCompileException e) {
                     e.printStackTrace();
                 }

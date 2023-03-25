@@ -35,8 +35,12 @@ SPECIAL_TOKEN :
 
 TOKEN :
 {
-  < FALSE: "false" >
+  < BOOLEAN: "boolean" >
+| < FALSE: "false" >
+| < FLOAT: "float" >
+| < INT: "int" >
 | < NULL: "null" >
+| < STRING: "string" >
 | < TRUE: "true" >
 }
 
@@ -113,7 +117,11 @@ void Statement() :
 |
   EmptyStatement()
 |
-  StatementExpression() ";"
+  LOOKAHEAD(2) StatementExpression() ";"
+|
+  LocalVariableDeclaration() ";"
+|
+  LOOKAHEAD(2) AssignStatement() ";"
 |
   IfStatement()
 }
@@ -136,10 +144,46 @@ void EmptyStatement() :
   ";"
 }
 
+void AssignStatement() :
+{}
+{
+  Name() AssignmentOperator() Expression()
+}
+
+void AssignmentOperator() :
+{}
+{
+  "="
+}
+
 void StatementExpression() :
 {}
 {
   PrimaryExpression()
+}
+
+void LocalVariableDeclaration() :
+{}
+{
+  Type() VariableDeclarator()
+}
+
+void VariableDeclarator() :
+{}
+{
+  VariableDeclaratorId() [ "=" VariableInitializer() ]
+}
+
+void VariableDeclaratorId() :
+{}
+{
+  Identifier()
+}
+
+void VariableInitializer() :
+{}
+{
+  Expression()
 }
 
 void IfStatement() :
@@ -341,6 +385,42 @@ void Tilde() :
   "~"
 }
 
+void Type() :
+{}
+{
+  PrimitiveType()
+}
+
+void PrimitiveType() :
+{}
+{
+  BooleanType() | IntType() | FloatType() | StringType()
+}
+
+void BooleanType() :
+{}
+{
+  <BOOLEAN>
+}
+
+void IntType() :
+{}
+{
+  <INT>
+}
+
+void FloatType() :
+{}
+{
+  <FLOAT>
+}
+
+void StringType() :
+{}
+{
+  <STRING>
+}
+
 void Literal() :
 {}
 {
@@ -393,12 +473,12 @@ void BooleanLiteral() :
   Token token;
 }
 {
-  token = "true"
+  token = <TRUE>
   {
     jjtThis.jjtSetValue(true);
   }
 |
-  token = "false"
+  token = <FALSE>
   {
     jjtThis.jjtSetValue(false);
   }
