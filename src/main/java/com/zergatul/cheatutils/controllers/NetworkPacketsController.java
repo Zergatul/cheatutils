@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.interfaces.ClientConnectionMixinInterface;
 import com.zergatul.cheatutils.wrappers.ModApiWrapper;
 import io.netty.channel.*;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 
 import java.util.ArrayList;
 import java.util.List;

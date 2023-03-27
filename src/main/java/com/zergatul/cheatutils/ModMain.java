@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils;
 
-import com.zergatul.cheatutils.configs.AutoTotemConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;

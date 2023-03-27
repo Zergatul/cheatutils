@@ -7,7 +7,6 @@ import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.ChunkOverlayController;
 import com.zergatul.cheatutils.controllers.KillAuraController;
-import com.zergatul.cheatutils.utils.MathUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
@@ -17,7 +16,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class ApiHandler implements HttpHandler {
@@ -141,7 +139,7 @@ public class ApiHandler implements HttpHandler {
                 KillAuraConfig oldConfig = ConfigStore.instance.getConfig().killAuraConfig;
                 ConfigStore.instance.getConfig().killAuraConfig = config;
 
-                if (!oldConfig.active && config.active) {
+                if (!oldConfig.enabled && config.enabled) {
                     KillAuraController.instance.onEnabled();
                 }
             }

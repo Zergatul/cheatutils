@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ScaffoldConfig implements ValidatableConfig {
-    public boolean enabled;
+public class ScaffoldConfig extends ModuleConfig implements ValidatableConfig {
+
     public double distance;
     public boolean replaceBlocksFromInventory;
     public boolean attachToAir;

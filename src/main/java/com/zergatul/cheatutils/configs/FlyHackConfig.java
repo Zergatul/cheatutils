@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class FlyHackConfig implements ValidatableConfig {
-    public boolean enabled;
+public class FlyHackConfig extends ModuleConfig implements ValidatableConfig {
+
     public boolean overrideFlyingSpeed;
     public float flyingSpeed;
 

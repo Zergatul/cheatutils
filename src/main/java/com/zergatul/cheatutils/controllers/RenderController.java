@@ -117,7 +117,7 @@ public class RenderController {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableTexture();
+        //RenderSystem.disableTexture();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
 
@@ -133,7 +133,7 @@ public class RenderController {
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-        RenderSystem.enableTexture();
+        //RenderSystem.enableTexture();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
 
         //drawEnderPearlPath(event, view);

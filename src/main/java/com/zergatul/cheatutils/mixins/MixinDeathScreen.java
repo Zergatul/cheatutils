@@ -27,7 +27,7 @@ public abstract class MixinDeathScreen {
             MinecraftClient mc = MinecraftClient.getInstance();
             if (mc.player != null) {
                 String text = "XYZ: " + format.format(mc.player.getX()) + " / " + format.format(mc.player.getY()) + " / " + format.format(mc.player.getZ());
-                DrawableHelper.drawCenteredText(matrices, screenMixin.getFont(), text, screen.width / 2, 115, 16777215);
+                DrawableHelper.drawCenteredTextWithShadow(matrices, screenMixin.getFont(), text, screen.width / 2, 115, 16777215);
             }
         }
     }

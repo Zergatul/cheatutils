@@ -14,16 +14,19 @@
                 <span>Enabled</span>
             </label>
         </div>
-        <div>
-            <span class="text">Code:</span>
+        <div v-show="!showRefs">
+            <div>
+                <span class="text">Code:</span>
+            </div>
+            <div>
+                <script-editor v-model="config.code"></script-editor>
+            </div>
         </div>
-        <div>
-            <textarea class="script-code" spellcheck="false" v-model="config.code"></textarea>
-        </div>
-        <div v-if="refs">
+        <div v-show="showRefs">
             <ul class="refs">
                 <li v-for="item in refs" v-html="item"></li>
             </ul>
         </div>
     </fieldset>
+    <a href="https://github.com/Zergatul/cheatutils/wiki/Scripting-Language-Reference" target="_blank">Scripting Language Reference</a>
 </div>

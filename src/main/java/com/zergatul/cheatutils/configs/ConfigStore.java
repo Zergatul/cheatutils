@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.controllers.StatusOverlayController;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -153,6 +154,7 @@ public class ConfigStore {
                 ScriptController.instance.add(toggleEspName, "main.toggleEsp();");
                 KeyBindingsController.instance.keys[0].setBoundKey(InputUtil.fromTranslationKey("key.keyboard.backslash"));
                 KeyBindingsController.instance.assign(0, toggleEspName);
+                KeyBinding.updateKeysByCode();
             } catch (ParseException | ScriptCompileException e) {
                 e.printStackTrace();
             }
@@ -162,6 +164,7 @@ public class ConfigStore {
                 ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();");
                 KeyBindingsController.instance.keys[1].setBoundKey(InputUtil.fromTranslationKey("key.keyboard.f6"));
                 KeyBindingsController.instance.assign(1, toggleFreeCamName);
+                KeyBinding.updateKeysByCode();
             } catch (ParseException | ScriptCompileException e) {
                 e.printStackTrace();
             }

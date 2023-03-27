@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.configs.ScriptsConfig;
+import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.compiler.ScriptingLanguageCompiler;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
@@ -15,8 +16,12 @@ public class ScriptController {
 
     public static final ScriptController instance = new ScriptController();
 
-    private ScriptingLanguageCompiler keysCompiler = new ScriptingLanguageCompiler(com.zergatul.cheatutils.scripting.api.keys.Root.class);
-    private ScriptingLanguageCompiler overlayCompiler = new ScriptingLanguageCompiler(com.zergatul.cheatutils.scripting.api.overlay.Root.class);
+    private final ScriptingLanguageCompiler handleKeybindingsCompiler = new ScriptingLanguageCompiler(
+            com.zergatul.cheatutils.scripting.api.Root.class,
+            VisibilityCheck.getTypes("handle-keybindings"));
+    private final ScriptingLanguageCompiler overlayCompiler = new ScriptingLanguageCompiler(
+            com.zergatul.cheatutils.scripting.api.Root.class,
+            VisibilityCheck.getTypes("overlay"));
     private List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
     private ScriptController() {
@@ -36,7 +41,7 @@ public class ScriptController {
         var script = new Script();
         script.name = name;
         script.code = code;
-        script.compiled = keysCompiler.compile(code);
+        script.compiled = handleKeybindingsCompiler.compile(code);
         scripts.add(script);
         ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
     }
@@ -79,7 +84,7 @@ public class ScriptController {
             if (bindingIndex >= 0) {
                 bindings[bindingIndex] = newName;
             }
-            script.compiled = keysCompiler.compile(code);
+            script.compiled = handleKeybindingsCompiler.compile(code);
             if (bindingIndex >= 0) {
                 KeyBindingsController.instance.assign(bindingIndex, newName);
             }

@@ -98,7 +98,7 @@ public abstract class MixinBoatEntity extends Entity {
         BoatEntity boat = (BoatEntity) (Object) this;
         MinecraftClient mc = MinecraftClient.getInstance();
         ClientPlayerEntity player = mc.player;
-        if (boat.getPrimaryPassenger() != player) {
+        if (boat.getControllingPassenger() != player) {
             super.move(type, speed);
             return;
         }

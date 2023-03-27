@@ -28,7 +28,7 @@ public class GuiUtils {
         float f2 = (float)(color & 255) / 255.0F;
         BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuffer();
         RenderSystem.enableBlend();
-        RenderSystem.disableTexture();
+        //RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         bufferbuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -37,7 +37,7 @@ public class GuiUtils {
         bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(f, f1, f2, f3).next();
         bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(f, f1, f2, f3).next();
         BufferRenderer.drawWithGlobalProgram(bufferbuilder.end());
-        RenderSystem.enableTexture();
+        //RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 

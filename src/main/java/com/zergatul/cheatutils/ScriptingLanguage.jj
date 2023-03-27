@@ -5,8 +5,8 @@ javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatu
 */
 
 /*
-jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
-javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.2\src\main\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
+.\jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
+.\javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
 */
 
 PARSER_BEGIN(ScriptingLanguage)
@@ -35,8 +35,12 @@ SPECIAL_TOKEN :
 
 TOKEN :
 {
-  < FALSE: "false" >
+  < BOOLEAN: "boolean" >
+| < FALSE: "false" >
+| < FLOAT: "float" >
+| < INT: "int" >
 | < NULL: "null" >
+| < STRING: "string" >
 | < TRUE: "true" >
 }
 
@@ -48,7 +52,7 @@ TOKEN :
       | <HEX_LITERAL> (["l","L"])?
   >
 |
-  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* | "0" >
 |
   < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
 |
@@ -113,7 +117,11 @@ void Statement() :
 |
   EmptyStatement()
 |
-  StatementExpression() ";"
+  LOOKAHEAD(2) StatementExpression() ";"
+|
+  LocalVariableDeclaration() ";"
+|
+  LOOKAHEAD(2) AssignStatement() ";"
 |
   IfStatement()
 }
@@ -136,10 +144,46 @@ void EmptyStatement() :
   ";"
 }
 
+void AssignStatement() :
+{}
+{
+  Name() AssignmentOperator() Expression()
+}
+
+void AssignmentOperator() :
+{}
+{
+  "="
+}
+
 void StatementExpression() :
 {}
 {
   PrimaryExpression()
+}
+
+void LocalVariableDeclaration() :
+{}
+{
+  Type() VariableDeclarator()
+}
+
+void VariableDeclarator() :
+{}
+{
+  VariableDeclaratorId() [ "=" VariableInitializer() ]
+}
+
+void VariableDeclaratorId() :
+{}
+{
+  Identifier()
+}
+
+void VariableInitializer() :
+{}
+{
+  Expression()
 }
 
 void IfStatement() :
@@ -175,7 +219,13 @@ void ConditionalAndExpression() :
 void EqualityExpression() :
 {}
 {
-  AdditiveExpression() ( ( Equality() | Inequality() ) AdditiveExpression() )*
+  RelationalExpression() ( ( Equality() | Inequality() ) RelationalExpression() )*
+}
+
+void RelationalExpression() :
+{}
+{
+  AdditiveExpression() ( ( LessThan() | GreaterThan() | LessEquals() | GreaterEquals() ) AdditiveExpression() )*
 }
 
 void AdditiveExpression() :
@@ -299,6 +349,30 @@ void Inequality() :
   "!="
 }
 
+void GreaterThan() :
+{}
+{
+  ">"
+}
+
+void LessThan() :
+{}
+{
+  "<"
+}
+
+void GreaterEquals() :
+{}
+{
+  ">="
+}
+
+void LessEquals() :
+{}
+{
+  "<="
+}
+
 void Not() :
 {}
 {
@@ -309,6 +383,42 @@ void Tilde() :
 {}
 {
   "~"
+}
+
+void Type() :
+{}
+{
+  PrimitiveType()
+}
+
+void PrimitiveType() :
+{}
+{
+  BooleanType() | IntType() | FloatType() | StringType()
+}
+
+void BooleanType() :
+{}
+{
+  <BOOLEAN>
+}
+
+void IntType() :
+{}
+{
+  <INT>
+}
+
+void FloatType() :
+{}
+{
+  <FLOAT>
+}
+
+void StringType() :
+{}
+{
+  <STRING>
 }
 
 void Literal() :
@@ -363,12 +473,12 @@ void BooleanLiteral() :
   Token token;
 }
 {
-  token = "true"
+  token = <TRUE>
   {
     jjtThis.jjtSetValue(true);
   }
 |
-  token = "false"
+  token = <FALSE>
   {
     jjtThis.jjtSetValue(false);
   }

@@ -25,7 +25,7 @@ public class GenerateEntityMappingApi extends ApiBase {
 
     @Override
     public String get() throws HttpException {
-        String path = "C:\\Users\\Zergatul\\.gradle\\caches\\fabric-loom\\1.19.3\\net.fabricmc.yarn.1_19_3.1.19.3+build.5-v2\\mappings.jar";
+        String path = "C:\\Users\\Zergatul\\.gradle\\caches\\fabric-loom\\1.19.4\\net.fabricmc.yarn.1_19_4.1.19.4+build.1-v2\\mappings.jar";
         String mappings = null;
         try {
             ZipFile file = new ZipFile(path);
