@@ -130,6 +130,14 @@ public class SchematicaController {
                             bestDistance = d2;
                             finalState = state;
                         }
+
+                        if (plan == null && config.attachToAir) {
+                            if (mc.level.getBlockState(pos).getMaterial().isReplaceable()) {
+                                bestPlan = new BlockUtils.PlaceBlockPlan(pos.immutable(), Direction.NORTH, pos.relative(Direction.SOUTH));
+                                bestDistance = d2;
+                                finalState = state;
+                            }
+                        }
                     }
                 }
             }

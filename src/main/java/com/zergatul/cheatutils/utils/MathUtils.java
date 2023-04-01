@@ -31,6 +31,18 @@ public class MathUtils {
         return value;
     }
 
+    public static double absClamp(double value, double min, double max) {
+        if (value == 0) {
+            return min;
+        }
+
+        if (value < 0) {
+            return clamp(value, -max, -min);
+        } else {
+            return clamp(value, min, max);
+        }
+    }
+
     public static double deltaAngle180(double angle1, double angle2) {
         double result = (angle1 - angle2) % 360;
         if (result < -180) {

@@ -37,6 +37,18 @@
                 <button @click="addMarker()">Add Marker</button>
                 <button @click="clearMarkers()">Clear Markers</button>
             </div>
+
+            <div>
+                <div>
+                    <textarea v-model="markersJson"></textarea>
+                </div>
+                <div>
+                    <button @click="addMarkers()">Add Markers from JSON</button>
+                </div>
+                <div>
+                    Example: [{ x: 100, z: 200}, { x: 200, z: 300 }]
+                </div>
+            </div>
         </div>
     </div>
 </div>

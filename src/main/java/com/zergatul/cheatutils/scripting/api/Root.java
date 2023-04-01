@@ -36,12 +36,14 @@ public class Root {
 
     // utility
     public static LockInputsApi lockInputs = new LockInputsApi();
+    public static TpsApi tps = new TpsApi();
 
     // others
     public static GameApi game = new GameApi();
     public static InputApi input = new InputApi();
     public static KeysApi keys = new KeysApi();
     public static PlayerApi player = new PlayerApi();
+    public static InventoryApi inventory = new InventoryApi();
     public static VariablesApi variables = new VariablesApi();
     public static MathApi math = new MathApi();
     public static ColorApi color = new ColorApi();

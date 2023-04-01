@@ -26,6 +26,12 @@
                 If you collide with blocks in the destination position, it will search for empty space just like in the example above.
                 Servers are more forgiving for vertical teleports allowing you to go through any blocks for a long distance.
             </div>
+            <div class="description">
+                Example 3: <b>teleport.vertical(-1, -50, true, 5);</b> - module tries to find appropriate position with some block below your feet.
+                It starts from 1 block below and goes down to 50 blocks below.
+                In other words module tries to find empty space with block belows in range -1..-50.
+                You can swap -1 and -50 and module with try to find destination point from -50 and go back to -1.
+            </div>
         </div>
     </div>
 </div>

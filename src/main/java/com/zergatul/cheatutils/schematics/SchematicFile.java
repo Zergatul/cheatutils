@@ -117,8 +117,12 @@ public class SchematicFile implements SchemaFileEditable {
             String materials = compound.getString("Materials");
             switch (materials) {
                 case "Alpha":
-                    for (int i = 0; i < AlphaMapping.blocks.length; i++) {
+                    /*for (int i = 0; i < AlphaMapping.blocks.length; i++) {
                         palette[i] = AlphaMapping.blocks[i].defaultBlockState();
+                    }*/
+                    palette[0] = Blocks.AIR.defaultBlockState();
+                    for (int i = 1; i < 256; i++) {
+                        palette[1] = Blocks.OBSIDIAN.defaultBlockState();
                     }
                     return palette;
 

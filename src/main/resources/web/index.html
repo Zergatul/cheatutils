@@ -174,6 +174,10 @@
                         <td>
                             <button @click="current = 'chunks'" :class="{ faded: !filtered.Chunks }">Chunks</button>
                         </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'tps'" :class="{ faded: !filtered.Tps }">TPS</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -513,6 +517,11 @@
             v-if="current == 'coordinate-leak-protection'"
             @back="backToMain()">
         </coordinate-leak-protection-config>
+
+        <tps-config
+            v-if="current == 'tps'"
+            @back="backToMain()">
+        </tps-config>
 
     </div>
 

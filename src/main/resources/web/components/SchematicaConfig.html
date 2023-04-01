@@ -143,6 +143,14 @@
                     Max Build Distance - distance between player eyes and center of block module will try to place.<br>
                     Using shift may cause your character to randomly crouch for a fraction of a second.
                 </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                               v-model="config.attachToAir"
+                               @change="update()">
+                        <span>Attach to Air</span>
+                    </label>
+                </div>
             </fieldset>
 
             <fieldset>

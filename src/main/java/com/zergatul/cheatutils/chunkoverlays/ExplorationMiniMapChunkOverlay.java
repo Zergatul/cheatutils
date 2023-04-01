@@ -15,7 +15,6 @@ import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.MaterialColor;
-import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,16 +27,26 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     private static final ResourceLocation CenterPosTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-center.png");
     private static final ResourceLocation MarkerTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-marker.png");
 
-    private final Map<Dimension, List<Vector3d>> markers = new HashMap<>();
+    private final Map<Dimension, List<Marker>> markers = new HashMap<>();
 
     public ExplorationMiniMapChunkOverlay(int segmentSize, long updateDelay) {
         super(segmentSize, updateDelay);
     }
 
     public void addMarker() {
+        if (mc.player != null) {
+            addMarker(mc.player.getX(), mc.player.getZ());
+        }
+    }
+
+    public void addMarker(double x, double z) {
         if (mc.player != null && mc.level != null) {
             Dimension dimension = Dimension.get(mc.level);
-            markers.computeIfAbsent(dimension, d -> new ArrayList<>()).add(new Vector3d(mc.player.getX(), mc.player.getY(), mc.player.getZ()));
+            List<Marker> list = markers.computeIfAbsent(dimension, d -> new ArrayList<>());
+            Marker marker = new Marker(x, z);
+            if (!list.contains(marker)) {
+                list.add(marker);
+            }
         }
     }
 
@@ -62,10 +71,10 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     public void onPostDrawSegments(Dimension dimension, PoseStack poseStack, float xp, float zp, float xc, float zc, float multiplier) {
         final int ImageSize = 8;
 
-        for (Vector3d vec: markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
+        for (Marker marker : markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
             RenderSystem.setShaderTexture(0, MarkerTexture);
             Primitives.drawTexture(poseStack.last().pose(),
-                    -ImageSize / 2f + ((float) vec.x - xc) * multiplier, -ImageSize / 2f + ((float) vec.z - zc) * multiplier,
+                    -ImageSize / 2f + ((float) marker.x - xc) * multiplier, -ImageSize / 2f + ((float) marker.z - zc) * multiplier,
                     ImageSize, ImageSize, getTranslateZ() + 2, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
         }
 
@@ -209,5 +218,24 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         int green = (color >> 8) & 0xFF;
         int blue = (color) & 0xFF;
         return 0xFF000000 | (blue << 16) | (green << 8) | red;
+    }
+
+    public static class Marker {
+        public int x;
+        public int z;
+
+        public Marker(double x, double z) {
+            this.x = (int) Math.round(x);
+            this.z = (int) Math.round(z);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Marker other) {
+                return x == other.x && z == other.z;
+            } else {
+                return false;
+            }
+        }
     }
 }

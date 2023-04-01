@@ -20,31 +20,31 @@ public class InventorySlot {
     public ItemStack get() {
         if (slot >= 0) {
             return Minecraft.getInstance().player.getInventory().items.get(slot);
+        } else {
+            return Minecraft.getInstance().player.getItemBySlot(equipmentSlot);
         }
-        if (equipmentSlot == EquipmentSlot.OFFHAND) {
-            return Minecraft.getInstance().player.getInventory().offhand.get(0);
-        }
-        return null;
     }
 
     public void set(ItemStack itemStack) {
         if (slot >= 0) {
             Minecraft.getInstance().player.getInventory().items.set(slot, itemStack.copy());
-            return;
-        }
-        if (equipmentSlot == EquipmentSlot.OFFHAND) {
-            Minecraft.getInstance().player.getInventory().offhand.set(0, itemStack.copy());
-            return;
+        }else {
+            Minecraft.getInstance().player.setItemSlot(equipmentSlot, itemStack.copy());
         }
     }
 
     public int toServer() {
         if (slot >= 0) {
             return slot < 9 ? slot + 36 : slot;
+        } else {
+            return switch (equipmentSlot) {
+                case HEAD -> 5;
+                case CHEST -> 6;
+                case LEGS -> 7;
+                case FEET -> 8;
+                case MAINHAND -> -1; // ?
+                case OFFHAND -> 45;
+            };
         }
-        if (equipmentSlot == EquipmentSlot.OFFHAND) {
-            return 45;
-        }
-        return -1;
     }
 }

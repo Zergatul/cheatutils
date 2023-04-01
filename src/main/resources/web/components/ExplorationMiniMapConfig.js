@@ -9,12 +9,16 @@ function createComponent(template) {
         },
         data() {
             return {
-                config: null
+                config: null,
+                markersJson: ''
             };
         },
         methods: {
             addMarker() {
                 axios.post('/api/exploration-mini-map-markers', {});
+            },
+            addMarkers() {
+                axios.put('/api/exploration-mini-map-markers/import', this.markersJson);
             },
             clearMarkers() {
                 axios.delete('/api/exploration-mini-map-markers/all', {});

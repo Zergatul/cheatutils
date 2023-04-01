@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
+import com.zergatul.cheatutils.scripting.api.HelpText;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
@@ -27,6 +28,14 @@ public class GameApi {
             return 0;
         }
         return (int) mc.level.getGameTime();
+    }
+
+    @HelpText("In ticks. Cycles from 0 to 24000.")
+    public int getDayTime() {
+        if (mc.level == null) {
+            return 0;
+        }
+        return (int) (mc.level.getDayTime() % 24000);
     }
 
     public static class DimensionApi {

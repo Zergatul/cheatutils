@@ -12,6 +12,7 @@ public class TeleportHackController {
 
     public static final TeleportHackController instance = new TeleportHackController();
 
+    private final double minDistanceSqr = 1; // skip teleports for such distances
     private final Minecraft mc = Minecraft.getInstance();
 
     private TeleportHackController() {
@@ -19,6 +20,10 @@ public class TeleportHackController {
     }
 
     public boolean teleportToCrosshair(double distance, int repeats) {
+        if (distance < 1) {
+            return false;
+        }
+
         if (mc.player == null || mc.level == null) {
             return false;
         }
@@ -27,62 +32,86 @@ public class TeleportHackController {
         HitResult result = mc.player.pick(distance, partialTicks, false);
         if (result instanceof BlockHitResult blockHitResult) {
             Vec3 target = blockHitResult.getLocation();
-            return teleport(target, repeats);
+            Vec3 pos = mc.player.getPosition(partialTicks);
+            if (pos.distanceToSqr(target) < minDistanceSqr) {
+                return false;
+            }
+
+            Vec3 direction = target.subtract(target).normalize();
+            return teleport(pos, target, pos.add(direction), false, repeats);
         } else {
             return false;
         }
     }
 
     public boolean verticalTeleport(double distance, int repeats) {
-        if (mc.player == null || mc.level == null) {
-            return false;
-        }
-
-        float partialTicks = mc.getPartialTick();
-        Vec3 pos = mc.player.getPosition(partialTicks);
-        return teleport(pos.add(0, distance, 0), repeats);
+        return verticalTeleport(distance, Math.signum(distance), false, repeats);
     }
 
-    private boolean teleport(Vec3 target, int repeats) {
+    public boolean verticalTeleport(double from, double to, boolean findSurface, int repeats) {
+        if (Math.signum(from) != Math.signum(to)) {
+            return false;
+        }
+
+        if (Math.abs(from) < 1 || Math.abs(to) < 1) {
+            return false;
+        }
+
         if (mc.player == null || mc.level == null) {
             return false;
         }
 
-        // skip teleports for such distances
-        final double minDistanceSqr = 1;
-
         float partialTicks = mc.getPartialTick();
         Vec3 pos = mc.player.getPosition(partialTicks);
-        if (pos.distanceToSqr(target) < minDistanceSqr) {
+        return teleport(pos, pos.add(0, from, 0), pos.add(0, to, 0), findSurface, repeats);
+    }
+
+    private boolean teleport(Vec3 playerPos, Vec3 from, Vec3 to, boolean findSurface, int repeats) {
+            if (mc.player == null || mc.level == null) {
+            return false;
+        }
+
+        double maxDistanceSqr = from.distanceToSqr(to);
+        if (maxDistanceSqr < 0.01f) {
             return false;
         }
 
         EntityDimensions dimensions = mc.player.getDimensions(mc.player.getPose());
-        Vec3 direction = target.subtract(pos).normalize();
+        Vec3 direction = to.subtract(from).normalize();
 
+        Vec3 target = from;
         while (true) {
-            if (pos.distanceToSqr(target) < minDistanceSqr) {
+            if (from.distanceToSqr(target) > maxDistanceSqr) {
                 return false;
             }
 
             Iterable<VoxelShape> collisions = mc.level.getBlockCollisions(mc.player, dimensions.makeBoundingBox(target));
-            if (collisions.iterator().hasNext()) {
-                // move backwards
-                double mult = dimensions.width * 0.1;
-                target = target.subtract(direction.x * mult, direction.y * mult, direction.z * mult);
-            } else {
-                // no collision
-                break;
+            if (!collisions.iterator().hasNext()) {
+                // no collisions
+                if (findSurface) {
+                    Iterable<VoxelShape> belowCollisions = mc.level.getBlockCollisions(
+                            mc.player,
+                            dimensions.makeBoundingBox(target.add(0, -0.1, 0)));
+                    if (belowCollisions.iterator().hasNext()) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
             }
+
+            // move target
+            double mult = dimensions.width * 0.1;
+            target = target.add(direction.x * mult, direction.y * mult, direction.z * mult);
         }
 
         for (int i = 0 ; i < repeats; i++) {
             NetworkPacketsController.instance.sendPacket(
-                    new ServerboundMovePlayerPacket.Pos(pos.x, pos.y, pos.z, mc.player.isOnGround()));
+                    new ServerboundMovePlayerPacket.Pos(playerPos.x, playerPos.y, playerPos.z, mc.player.isOnGround()));
         }
 
         NetworkPacketsController.instance.sendPacket(
-                new ServerboundMovePlayerPacket.Pos(target.x, target.y, target.z, false));
+                new ServerboundMovePlayerPacket.Pos(target.x, target.y, target.z, findSurface));
 
         mc.player.moveTo(target);
 

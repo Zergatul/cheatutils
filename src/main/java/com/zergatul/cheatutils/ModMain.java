@@ -53,6 +53,7 @@ public class ModMain {
         register(ContainerButtonsController.instance);
         register(TeleportHackController.instance);
         register(WorldMarkersController.instance);
+        register(TpsCounterController.instance);
     }
 
     private void register(Object instance) {

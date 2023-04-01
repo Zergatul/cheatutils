@@ -16,6 +16,7 @@ public class SchematicaConfig implements ValidatableConfig {
     public double wrongBlockCubesMaxDistance;
     public boolean replaceableAsAir;
     public boolean autoBuild;
+    public boolean attachToAir;
     public double autoBuildDistance;
     public boolean autoSelectItems;
     public int[] autoSelectSlots;
