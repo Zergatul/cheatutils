@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
+import com.zergatul.cheatutils.configs.ClassRemapper;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.interfaces.ClientWorldMixinInterface;
@@ -32,7 +33,7 @@ public class EntitiesApi {
 
     @SuppressWarnings("unchecked")
     public int getCount(String className) {
-        EntityUtils.EntityInfo info = EntityUtils.getEntityClass(className);
+        EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
         if (info == null) {
             return Integer.MIN_VALUE;
         }

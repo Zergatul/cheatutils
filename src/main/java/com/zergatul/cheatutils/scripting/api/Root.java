@@ -42,7 +42,7 @@ public class Root {
     public static GameApi game = new GameApi();
     //public static InputApi input = new InputApi();
     //public static KeysApi keys = new KeysApi();
-    //public static PlayerApi player = new PlayerApi();
+    public static PlayerApi player = new PlayerApi();
     public static VariablesApi variables = new VariablesApi();
     public static MathApi math = new MathApi();
     public static ColorApi color = new ColorApi();
