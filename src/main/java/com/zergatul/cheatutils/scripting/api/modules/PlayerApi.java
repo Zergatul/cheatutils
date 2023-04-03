@@ -21,14 +21,14 @@ public class PlayerApi {
         if (mc.player == null) {
             return 0;
         }
-        return mc.player.getX();
+        return mc.player.getY();
     }
 
     public double getZ() {
         if (mc.player == null) {
             return 0;
         }
-        return mc.player.getX();
+        return mc.player.getZ();
     }
 
     public double getXRot() {
