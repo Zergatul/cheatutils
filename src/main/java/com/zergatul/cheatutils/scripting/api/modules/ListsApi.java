@@ -235,4 +235,11 @@ public class ListsApi {
     public boolean exists(String vname) {
         return lists.containsKey(vname);
     }
+    public String toString(Object item) {
+        if (item instanceof Float || item instanceof Integer) {
+            return item.toString();
+        } else {
+            return "";
+        }
+    }
 }
