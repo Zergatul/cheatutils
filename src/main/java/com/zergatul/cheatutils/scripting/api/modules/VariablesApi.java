@@ -88,4 +88,35 @@ public class VariablesApi {
         list.add(value);
         variables.put(vname, list);
     }
+    @ApiVisibility(ApiType.UPDATE)
+    public void getBooleanI(String vname, int i) {
+        List<Object> list = variables.get(vname);
+        list.indexOf(i);
+        if (value instanceof Integer) {
+            return (boolean) value;
+        } else {
+            return false;
+        }
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public void getStringI(String vname, int i) {
+        List<Object> list = variables.get(vname);
+        list.indexOf(i);
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            return "";
+        }
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public void getIntegerI(String vname, int i) {
+        List<Object> list = variables.get(vname);
+        list.indexOf(i);
+        if (value instanceof Integer) {
+            return (int) value;
+        } else {
+            return 0;
+        }
+    }
+    
 }
