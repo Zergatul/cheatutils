@@ -151,6 +151,40 @@ public class VariablesApi {
             return "";
         }
     }
+
+    @ApiVisibility(ApiType.UPDATE)
+    public boolean removeBoolean(String vname, int i) {
+        List<Object> list = lists.get(vname);
+        Object value = list.remove(i);
+        lists.put(vname, list);
+        if (value instanceof Boolean) {
+            return (boolean) value;
+        } else {
+            return false;
+        }
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public int removeInteger(String vname, int i) {
+        List<Object> list = lists.get(vname);
+        Object value = list.remove(i);
+        lists.put(vname, list);
+        if (value instanceof Integer) {
+            return (int) value;
+        } else {
+            return 0;
+        }
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public String removeString(String vname, int i) {
+        List<Object> list = lists.get(vname);
+        Object value = list.remove(i);
+        lists.put(vname, list);
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            return "";
+        }
+    }
     public boolean getBooleanI(String vname, int i) {
         List<Object> list = lists.get(vname);
         Object value = list.get(i);
