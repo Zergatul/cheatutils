@@ -91,7 +91,7 @@ public class VariablesApi {
     @ApiVisibility(ApiType.UPDATE)
     public boolean getBooleanI(String vname, int i) {
         List<Object> list = lists.get(vname);
-        boolean value = list.get(i);
+        Object value = list.get(i);
         if (value instanceof Boolean) {
             return (boolean) value;
         } else {
