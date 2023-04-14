@@ -10,9 +10,18 @@ import java.util.List;
 
 public class ListsApi {
     private final Map<String, List<Object>> lists = new HashMap<>();
+    private final Map<String, Object> maxSizes = new HashMap<>();
+    private boolean checkUseable(String vname) {
+        List<Object> list = lists.get(vname);
+        return list.size() != (int) maxSizes.get(vname);
+    }
+    private boolean compareIndex(List<Object> list, int i) {
+        return i > -1 && (list.size()-1) > i;
+    }
     @ApiVisibility(ApiType.UPDATE)
     public void newList(String vname, int length) {
         List<Object> list = new ArrayList<Object>(length);
+        maxSizes.put(vname, length);
         lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
@@ -22,6 +31,7 @@ public class ListsApi {
             value = value.substring(0, 1000000);
         }
         List<Object> list = lists.get(vname);
+        if (!checkUseable(vname)) return;
         list.add(value);
         lists.put(vname, list);
     }
@@ -29,6 +39,7 @@ public class ListsApi {
     @ApiVisibility(ApiType.UPDATE)
     public void pushInteger(String vname, int value) {
         List<Object> list = lists.get(vname);
+        if (!checkUseable(vname)) return;
         list.add(value);
         lists.put(vname, list);
     }
@@ -36,12 +47,14 @@ public class ListsApi {
     @ApiVisibility(ApiType.UPDATE)
     public void pushBoolean(String vname, boolean value) {
         List<Object> list = lists.get(vname);
+        if (!checkUseable(vname)) return;
         list.add(value);
         lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
     public void removeI(String vname, int i) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i)) return;
         list.remove(i);
         lists.put(vname, list);
     }
@@ -105,36 +118,42 @@ public class ListsApi {
     @ApiVisibility(ApiType.UPDATE)
     public void setBoolean(String vname, int i, boolean value) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i)) return;
         list.set(i, value);
         lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
     public void setInteger(String vname, int i, int value) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i)) return;
         list.set(i, value);
         lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
     public void setString(String vname, int i, String value) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i)) return;
         list.set(i, value);
         lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
     public void insertBoolean(String vname, int i, boolean value) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i) || !checkUseable(vname)) return;
         list.add(i, value);
         lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
     public void insertInteger(String vname, int i, int value) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i) || !checkUseable(vname)) return;
         list.add(i, value);
         lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
     public void insertString(String vname, int i, String value) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i) || !checkUseable(vname)) return;
         list.add(i, value);
         lists.put(vname, list);
     }
@@ -171,8 +190,9 @@ public class ListsApi {
             return "";
         }
     }
-    public boolean getBooleanI(String vname, int i) {
+    public boolean getBoolean(String vname, int i) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i)) return false;
         Object value = list.get(i);
         if (value instanceof Boolean) {
             return (boolean) value;
@@ -180,8 +200,9 @@ public class ListsApi {
             return false;
         }
     }
-    public String getStringI(String vname, int i) {
+    public String getString(String vname, int i) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i)) return "";
         Object value = list.get(i);
         if (value instanceof String) {
             return (String) value;
@@ -189,13 +210,29 @@ public class ListsApi {
             return "";
         }
     }
-    public int getIntegerI(String vname, int i) {
+    public int getInteger(String vname, int i) {
         List<Object> list = lists.get(vname);
+        if (!compareIndex(list, i)) return 0;
         Object value = list.get(i);
         if (value instanceof Integer) {
             return (int) value;
         } else {
             return 0;
         }
+    }
+    public int length(String vname) {
+        List<Object> list = lists.get(vname);
+        return list.size();
+    }
+    public int maxCapacity(String vname) {
+        List<Object> list = lists.get(vname);
+        return (int) maxSizes.get(vname);
+    }
+    public int lastIndex(String vname) {
+        List<Object> list = lists.get(vname);
+        return list.size()-1;
+    }
+    public boolean exists(String vname) {
+        return lists.containsKey(vname);
     }
 }
