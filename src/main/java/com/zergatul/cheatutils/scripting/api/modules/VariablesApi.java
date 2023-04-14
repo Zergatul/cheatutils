@@ -88,7 +88,6 @@ public class VariablesApi {
         list.add(value);
         lists.put(vname, list);
     }
-    @ApiVisibility(ApiType.UPDATE)
     public boolean getBooleanI(String vname, int i) {
         List<Object> list = lists.get(vname);
         Object value = list.get(i);
@@ -98,7 +97,6 @@ public class VariablesApi {
             return false;
         }
     }
-    @ApiVisibility(ApiType.UPDATE)
     public String getStringI(String vname, int i) {
         List<Object> list = lists.get(vname);
         Object value = list.get(i);
@@ -108,7 +106,6 @@ public class VariablesApi {
             return "";
         }
     }
-    @ApiVisibility(ApiType.UPDATE)
     public int getIntegerI(String vname, int i) {
         List<Object> list = lists.get(vname);
         Object value = list.get(i);
