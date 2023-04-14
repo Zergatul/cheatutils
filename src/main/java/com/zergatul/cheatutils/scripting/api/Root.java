@@ -43,4 +43,5 @@ public class Root {
     public static KeysApi keys = new KeysApi();
     public static PlayerApi player = new PlayerApi();
     public static VariablesApi variables = new VariablesApi();
+    public static ListsApi lists = new ListsApi();
 }
