@@ -4,11 +4,15 @@ import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.ApiVisibility;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Map;	
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class VariablesApi {
 
     private final Map<String, Object> variables = new HashMap<>();
+    private final Map<String, List<Object>> lists = new HashMap<>();
 
     public boolean getBoolean(String name) {
         Object value = variables.get(name);
@@ -58,7 +62,7 @@ public class VariablesApi {
     @ApiVisibility(ApiType.UPDATE)
     public void newList(String vname, int length) {
         List<Object> list = new ArrayList<Object>(length);
-        variables.put(vname, list);
+        lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
     public void addString(String vname, String value) {
@@ -66,28 +70,28 @@ public class VariablesApi {
             // prevent stupid scripts that can occupy all RAM
             value = value.substring(0, 1000000);
         }
-        List<Object> list = variables.get(vname);
+        List<Object> list = lists.get(vname);
         list.add(value);
-        variables.put(vname, list);
+        lists.put(vname, list);
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void addInteger(String vname, int value) {
-        List<Object> list = variables.get(vname);
+        List<Object> list = lists.get(vname);
         list.add(value);
-        variables.put(vname, list);
+        lists.put(vname, list);
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void addBoolean(String vname, boolean value) {
-        List<Object> list = variables.get(vname);
+        List<Object> list = lists.get(vname);
         list.add(value);
-        variables.put(vname, list);
+        lists.put(vname, list);
     }
     @ApiVisibility(ApiType.UPDATE)
-    public void getBooleanI(String vname, int i) {
-        List<Object> list = variables.get(vname);
-        boolean value = list.indexOf(i);
+    public boolean getBooleanI(String vname, int i) {
+        List<Object> list = lists.get(vname);
+        boolean value = list.get(i);
         if (value instanceof Boolean) {
             return (boolean) value;
         } else {
@@ -95,9 +99,9 @@ public class VariablesApi {
         }
     }
     @ApiVisibility(ApiType.UPDATE)
-    public void getStringI(String vname, int i) {
-        List<Object> list = variables.get(vname);
-        String value = list.indexOf(i);
+    public String getStringI(String vname, int i) {
+        List<Object> list = lists.get(vname);
+        String value = list.get(i);
         if (value instanceof String) {
             return (String) value;
         } else {
@@ -105,9 +109,9 @@ public class VariablesApi {
         }
     }
     @ApiVisibility(ApiType.UPDATE)
-    public void getIntegerI(String vname, int i) {
-        List<Object> list = variables.get(vname);
-        int value = list.indexOf(i);
+    public int getIntegerI(String vname, int i) {
+        List<Object> list = lists.get(vname);
+        int value = list.get(i);
         if (value instanceof Integer) {
             return (int) value;
         } else {
