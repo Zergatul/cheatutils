@@ -101,7 +101,7 @@ public class VariablesApi {
     @ApiVisibility(ApiType.UPDATE)
     public String getStringI(String vname, int i) {
         List<Object> list = lists.get(vname);
-        String value = list.get(i);
+        Object value = list.get(i);
         if (value instanceof String) {
             return (String) value;
         } else {
@@ -111,7 +111,7 @@ public class VariablesApi {
     @ApiVisibility(ApiType.UPDATE)
     public int getIntegerI(String vname, int i) {
         List<Object> list = lists.get(vname);
-        int value = list.get(i);
+        Object value = list.get(i);
         if (value instanceof Integer) {
             return (int) value;
         } else {
