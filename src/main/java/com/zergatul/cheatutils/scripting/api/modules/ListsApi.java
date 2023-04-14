@@ -102,7 +102,42 @@ public class ListsApi {
             return "";
         }
     }
-
+    @ApiVisibility(ApiType.UPDATE)
+    public void setBoolean(String vname, int i, boolean value) {
+        List<Object> list = lists.get(vname);
+        list.set(i, value);
+        lists.put(vname, list);
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public void setInteger(String vname, int i, int value) {
+        List<Object> list = lists.get(vname);
+        list.set(i, value);
+        lists.put(vname, list);
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public void setString(String vname, int i, String value) {
+        List<Object> list = lists.get(vname);
+        list.set(i, value);
+        lists.put(vname, list);
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public void insertBoolean(String vname, int i, boolean value) {
+        List<Object> list = lists.get(vname);
+        list.add(i, value);
+        lists.put(vname, list);
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public void insertInteger(String vname, int i, int value) {
+        List<Object> list = lists.get(vname);
+        list.add(i, value);
+        lists.put(vname, list);
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public void insertString(String vname, int i, String value) {
+        List<Object> list = lists.get(vname);
+        list.add(i, value);
+        lists.put(vname, list);
+    }
     @ApiVisibility(ApiType.UPDATE)
     public boolean removeBoolean(String vname, int i) {
         List<Object> list = lists.get(vname);
