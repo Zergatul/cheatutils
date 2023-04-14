@@ -55,4 +55,37 @@ public class VariablesApi {
         }
         variables.put(name, value);
     }
+    @ApiVisibility(ApiType.UPDATE)
+    public void newList(String vname, int length) {
+        if (value != null && value.length() > 1000000) {
+            // prevent stupid scripts that can occupy all RAM
+            value = value.substring(0, 1000000);
+        }
+        List<Object> list = new ArrayList<Object>(length);
+        variables.put(vname, list);
+    }
+    @ApiVisibility(ApiType.UPDATE)
+    public void addString(String vname, String name, String value) {
+        if (value != null && value.length() > 1000000) {
+            // prevent stupid scripts that can occupy all RAM
+            value = value.substring(0, 1000000);
+        }
+        List<Object> list = variables.get(vname);
+        list.add(value);
+        variables.put(vname, list);
+    }
+
+    @ApiVisibility(ApiType.UPDATE)
+    public void addInteger(String vname, String name, int value) {
+        List<Object> list = variables.get(vname);
+        list.add(value);
+        variables.put(vname, list);
+    }
+
+    @ApiVisibility(ApiType.UPDATE)
+    public void addBoolean(String vname, String name, boolean value) {
+        List<Object> list = variables.get(vname);
+        list.add(value);
+        variables.put(vname, list);
+    }
 }
