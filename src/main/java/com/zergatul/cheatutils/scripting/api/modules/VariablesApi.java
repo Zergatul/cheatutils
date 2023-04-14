@@ -91,8 +91,8 @@ public class VariablesApi {
     @ApiVisibility(ApiType.UPDATE)
     public void getBooleanI(String vname, int i) {
         List<Object> list = variables.get(vname);
-        list.indexOf(i);
-        if (value instanceof Integer) {
+        boolean value = list.indexOf(i);
+        if (value instanceof Boolean) {
             return (boolean) value;
         } else {
             return false;
@@ -101,7 +101,7 @@ public class VariablesApi {
     @ApiVisibility(ApiType.UPDATE)
     public void getStringI(String vname, int i) {
         List<Object> list = variables.get(vname);
-        list.indexOf(i);
+        String value = list.indexOf(i);
         if (value instanceof String) {
             return (String) value;
         } else {
@@ -111,7 +111,7 @@ public class VariablesApi {
     @ApiVisibility(ApiType.UPDATE)
     public void getIntegerI(String vname, int i) {
         List<Object> list = variables.get(vname);
-        list.indexOf(i);
+        int value = list.indexOf(i);
         if (value instanceof Integer) {
             return (int) value;
         } else {
