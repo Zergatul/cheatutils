@@ -57,10 +57,6 @@ public class VariablesApi {
     }
     @ApiVisibility(ApiType.UPDATE)
     public void newList(String vname, int length) {
-        if (value != null && value.length() > 1000000) {
-            // prevent stupid scripts that can occupy all RAM
-            value = value.substring(0, 1000000);
-        }
         List<Object> list = new ArrayList<Object>(length);
         variables.put(vname, list);
     }
