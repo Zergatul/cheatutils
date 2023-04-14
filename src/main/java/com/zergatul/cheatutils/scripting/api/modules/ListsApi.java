@@ -262,7 +262,7 @@ public class ListsApi {
         List<Object> list = lists.get(vname);
         return list.size()-1;
     }
-    public String floatToString(Float item) {
-        return item.toString();
+    public String floatToString(float item) {
+        return Float.toString(item);
     }
 }
