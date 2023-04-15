@@ -9,6 +9,7 @@ public class VisibilityCheck {
         return switch (scriptType) {
             case "overlay" -> new ApiType[] { ApiType.OVERLAY };
             case "handle-keybindings" -> new ApiType[] { ApiType.ACTION, ApiType.UPDATE };
+            case "block-placer" -> new ApiType[] { ApiType.CURRENT_BLOCK, ApiType.BLOCK_PLACER };
             default -> null;
         };
     }

@@ -53,6 +53,7 @@ public class Config {
     public PerformanceConfig performanceConfig = new PerformanceConfig();
     public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
     public CoordinateLeakProtectionConfig coordinateLeakProtectionConfig = new CoordinateLeakProtectionConfig();
+    public ScriptedBlockPlacerConfig scriptedBlockPlacerConfig = new ScriptedBlockPlacerConfig();
 
     public Config() {
         esp = true;

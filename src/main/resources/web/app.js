@@ -137,6 +137,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('FakeLagConfig', ['fake', 'lag']);
     loadModule('CoordinateLeakProtectionConfig', ['coordinate', 'leak']);
     loadModule('TpsConfig', ['tps', 'tick', 'rate']);
+    loadModule('ScriptedBlockPlacerConfig', ['scripted', 'block', 'placer']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

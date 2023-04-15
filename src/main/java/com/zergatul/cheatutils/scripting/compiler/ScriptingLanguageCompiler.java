@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.compiler;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
 import com.zergatul.cheatutils.scripting.generated.*;
+import net.minecraft.util.Mth;
 import org.objectweb.asm.*;
 
 import java.io.ByteArrayInputStream;
@@ -806,6 +807,52 @@ public class ScriptingLanguageCompiler {
                     case DOUBLE -> visitor.visitInsn(DREM);
                     case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Strings.");
                     case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot modulo Voids.");
+                }
+                continue;
+            }
+            if (operator instanceof ASTFloorDiv) {
+                switch (typeLeft) {
+                    case INT -> {
+                        Method method;
+                        try {
+                            method = Math.class.getDeclaredMethod("floorDiv", int.class, int.class);
+                        } catch (NoSuchMethodException e) {
+                            throw new ScriptCompileException("Cannot find Math.floorDiv(int, int) method.");
+                        }
+                        visitor.visitMethodInsn(
+                                INVOKESTATIC,
+                                Type.getInternalName(Math.class),
+                                method.getName(),
+                                Type.getMethodDescriptor(method),
+                                false);
+                    }
+                    case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot floordiv Booleans.");
+                    case DOUBLE -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot floordiv Floats.");
+                    case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot floordiv Strings.");
+                    case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot floordiv Voids.");
+                }
+                continue;
+            }
+            if (operator instanceof ASTFloorMod) {
+                switch (typeLeft) {
+                    case INT -> {
+                        Method method;
+                        try {
+                            method = Math.class.getDeclaredMethod("floorMod", int.class, int.class);
+                        } catch (NoSuchMethodException e) {
+                            throw new ScriptCompileException("Cannot find Math.floorMod(int, int) method.");
+                        }
+                        visitor.visitMethodInsn(
+                                INVOKESTATIC,
+                                Type.getInternalName(Math.class),
+                                method.getName(),
+                                Type.getMethodDescriptor(method),
+                                false);
+                    }
+                    case BOOLEAN -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot floormod Booleans.");
+                    case DOUBLE -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot floormod Floats.");
+                    case STRING -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot floormod Strings.");
+                    case VOID -> throw new ScriptCompileException("ASTMultiplicativeExpression cannot floormod Voids.");
                 }
                 continue;
             }

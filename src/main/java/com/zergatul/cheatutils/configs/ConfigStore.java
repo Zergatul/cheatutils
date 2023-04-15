@@ -214,5 +214,14 @@ public class ConfigStore {
                 e.printStackTrace();
             }
         }
+
+        if (config.scriptedBlockPlacerConfig.code != null) {
+            try {
+                Runnable script = ScriptController.instance.compileBlockPlacer(config.scriptedBlockPlacerConfig.code);
+                ScriptedBlockPlacerController.instance.setScript(script);
+            } catch (ParseException | ScriptCompileException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

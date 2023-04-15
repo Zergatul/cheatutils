@@ -38,26 +38,28 @@ public interface ScriptingLanguageTreeConstants
   public int JJTMULT = 32;
   public int JJTDIV = 33;
   public int JJTMOD = 34;
-  public int JJTEQUALITY = 35;
-  public int JJTINEQUALITY = 36;
-  public int JJTGREATERTHAN = 37;
-  public int JJTLESSTHAN = 38;
-  public int JJTGREATEREQUALS = 39;
-  public int JJTLESSEQUALS = 40;
-  public int JJTNOT = 41;
-  public int JJTTILDE = 42;
-  public int JJTTYPE = 43;
-  public int JJTPRIMITIVETYPE = 44;
-  public int JJTBOOLEANTYPE = 45;
-  public int JJTINTTYPE = 46;
-  public int JJTFLOATTYPE = 47;
-  public int JJTSTRINGTYPE = 48;
-  public int JJTLITERAL = 49;
-  public int JJTINTEGERLITERAL = 50;
-  public int JJTFLOATINGPOINTLITERAL = 51;
-  public int JJTSTRINGLITERAL = 52;
-  public int JJTBOOLEANLITERAL = 53;
-  public int JJTNULLLITERAL = 54;
+  public int JJTFLOORDIV = 35;
+  public int JJTFLOORMOD = 36;
+  public int JJTEQUALITY = 37;
+  public int JJTINEQUALITY = 38;
+  public int JJTGREATERTHAN = 39;
+  public int JJTLESSTHAN = 40;
+  public int JJTGREATEREQUALS = 41;
+  public int JJTLESSEQUALS = 42;
+  public int JJTNOT = 43;
+  public int JJTTILDE = 44;
+  public int JJTTYPE = 45;
+  public int JJTPRIMITIVETYPE = 46;
+  public int JJTBOOLEANTYPE = 47;
+  public int JJTINTTYPE = 48;
+  public int JJTFLOATTYPE = 49;
+  public int JJTSTRINGTYPE = 50;
+  public int JJTLITERAL = 51;
+  public int JJTINTEGERLITERAL = 52;
+  public int JJTFLOATINGPOINTLITERAL = 53;
+  public int JJTSTRINGLITERAL = 54;
+  public int JJTBOOLEANLITERAL = 55;
+  public int JJTNULLLITERAL = 56;
 
 
   public String[] jjtNodeName = {
@@ -96,6 +98,8 @@ public interface ScriptingLanguageTreeConstants
     "Mult",
     "Div",
     "Mod",
+    "FloorDiv",
+    "FloorMod",
     "Equality",
     "Inequality",
     "GreaterThan",
@@ -118,4 +122,4 @@ public interface ScriptingLanguageTreeConstants
     "NullLiteral",
   };
 }
-/* JavaCC - OriginalChecksum=5aeafd60398d07ee3a59adcae31d70ea (do not edit this line) */
+/* JavaCC - OriginalChecksum=bc5583b2fb7aeacd2351e7e7db0d9449 (do not edit this line) */

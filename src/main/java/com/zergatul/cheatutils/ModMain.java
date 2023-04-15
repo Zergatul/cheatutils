@@ -35,7 +35,6 @@ public class ModMain {
         register(AutoTotemController.instance);
         register(KillAuraController.instance);
         register(AutoEatController.instance);
-        //register(AutoPlacerController.instance);
         register(NoFallController.instance);
         register(ScaffoldController.instance);
         register(SpeedCounterController.instance);
@@ -54,6 +53,7 @@ public class ModMain {
         register(TeleportHackController.instance);
         register(WorldMarkersController.instance);
         register(TpsCounterController.instance);
+        register(ScriptedBlockPlacerController.instance);
     }
 
     private void register(Object instance) {

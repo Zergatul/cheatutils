@@ -91,8 +91,8 @@
                         <td>
                             <button @click="current = 'shulker-tooltip'" :class="{ faded: !filtered.ShulkerTooltip }">Shulker Tooltip</button>
                         </td>
-                        <td rowspan="2" style="vertical-align: top;">
-                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
+                        <td>
+                            <button @click="current = 'scripted-block-placer'" :class="{ faded: !filtered.ScriptedBlockPlacer }">Block Placer</button>
                         </td>
                         <td>
                             <button @click="current = 'container-summary'" :class="{ faded: !filtered.ContainerSummary }">Container Summary</button>
@@ -110,6 +110,9 @@
                         </td>
                         <td>
                             <button @click="current = 'advanced-tooltips'" :class="{ faded: !filtered.AdvancedTooltips }">Advanced Tooltips</button>
+                        </td>
+                        <td rowspan="2" style="vertical-align: top;">
+                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
                         </td>
                         <td>
                             <button @click="current = 'coordinate-leak-protection'" :class="{ faded: !filtered.CoordinateLeakProtection }" style="display: none;">CLP</button>
@@ -522,6 +525,11 @@
             v-if="current == 'tps'"
             @back="backToMain()">
         </tps-config>
+
+        <scripted-block-placer-config
+            v-if="current == 'scripted-block-placer'"
+            @back="backToMain()">
+        </scripted-block-placer-config>
 
     </div>
 

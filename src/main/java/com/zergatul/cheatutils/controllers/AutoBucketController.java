@@ -170,7 +170,7 @@ public class AutoBucketController {
         //logger.info("Collision pos = " + collisionPos);
 
         if (stack.getItem() instanceof BlockItem) {
-            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(collisionPos.above());
+            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(collisionPos.above(), false);
             if (plan == null) {
                 return;
             }

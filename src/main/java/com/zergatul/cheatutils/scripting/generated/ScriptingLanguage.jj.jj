@@ -744,7 +744,7 @@ void MultiplicativeExpression() :
 {/*@bgen(jjtree) MultiplicativeExpression */
   try {
 /*@egen*/
-  UnaryExpression() ( ( Mult() | Div() | Mod() ) UnaryExpression() )*/*@bgen(jjtree)*/
+  UnaryExpression() ( ( Mult() | Div() | Mod() | FloorDiv() | FloorMod() ) UnaryExpression() )*/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -1141,6 +1141,42 @@ void Mod() :
   try {
 /*@egen*/
   "%"/*@bgen(jjtree)*/
+  } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+  }
+/*@egen*/
+}
+
+void FloorDiv() :
+{/*@bgen(jjtree) FloorDiv */
+  ASTFloorDiv jjtn000 = new ASTFloorDiv(JJTFLOORDIV);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) FloorDiv */
+  try {
+/*@egen*/
+  "!/"/*@bgen(jjtree)*/
+  } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+  }
+/*@egen*/
+}
+
+void FloorMod() :
+{/*@bgen(jjtree) FloorMod */
+  ASTFloorMod jjtn000 = new ASTFloorMod(JJTFLOORMOD);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) FloorMod */
+  try {
+/*@egen*/
+  "!%"/*@bgen(jjtree)*/
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);

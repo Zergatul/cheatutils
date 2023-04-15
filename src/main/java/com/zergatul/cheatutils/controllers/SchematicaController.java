@@ -22,7 +22,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -45,15 +44,13 @@ public class SchematicaController {
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();
     private final RandomSource random = new JavaRandom(0);
-    private final long[] lastSlotUsage = new long[9];
+    private final SlotSelector slotSelector = new SlotSelector();
 
     private SchematicaController() {
         ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
         ModApiWrapper.ScannerBlockUpdated.add(this::onBlockUpdated);
         ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
         ModApiWrapper.RenderWorldLast.add(this::onRender);
-
-        Arrays.fill(lastSlotUsage, Long.MIN_VALUE);
     }
 
     public synchronized void clear() {
@@ -76,82 +73,47 @@ public class SchematicaController {
             return;
         }
 
-        Vec3 eyes = mc.player.getEyePosition();
-        int xp = (int)Math.round(eyes.x);
-        int yp = (int)Math.round(eyes.y);
-        int zp = (int)Math.round(eyes.z);
-        int distance = (int)Math.round(config.autoBuildDistance) + 1;
-        double maxDistanceSqr = config.autoBuildDistance * config.autoBuildDistance;
+        Vec3 eyePos = mc.player.getEyePosition();
         ItemStack itemInHand = mc.player.getMainHandItem();
 
         Block blockInHand;
         if (itemInHand.getItem() instanceof BlockItem blockItem) {
             blockInHand = blockItem.getBlock();
         } else {
-            if (config.autoSelectItems) {
-                blockInHand = null;
-            } else {
-                return;
-            }
+            blockInHand = null;
         }
 
-        BlockUtils.PlaceBlockPlan bestPlan = null;
-        double bestDistance = Double.MAX_VALUE;
-        BlockState finalState = null;
-
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int dx = -distance; dx <= distance; dx++) {
-            pos.setX(xp + dx);
-            for (int dy = -distance; dy <= distance; dy++) {
-                pos.setY(yp + dy);
-                if (pos.getY() < -64 || pos.getY() >= 320) {
+        BlockUtils.PlaceBlockPlan plan = null;
+        BlockState state = null;
+        for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
+            for (Entry entry : entries) {
+                state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
+                if (state.isAir()) {
                     continue;
                 }
-                for (int dz = -distance; dz <= distance; dz++) {
-                    pos.setZ(zp + dz);
 
-                    double blockDx = pos.getX() + 0.5 - xp;
-                    double blockDy = pos.getY() + 0.5 - yp;
-                    double blockDz = pos.getZ() + 0.5 - zp;
-                    double d2 = blockDx * blockDx + blockDy * blockDy + blockDz * blockDz;
-                    if (d2 > bestDistance || d2 > maxDistanceSqr) {
-                        continue;
-                    }
-
-                    for (Entry entry : entries) {
-                        BlockState state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
-                        if (state.isAir()) {
-                            continue;
-                        }
-
-                        BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos);
-                        if (plan != null) {
-                            bestPlan = plan;
-                            bestDistance = d2;
-                            finalState = state;
-                        }
-
-                        if (plan == null && config.attachToAir) {
-                            if (mc.level.getBlockState(pos).getMaterial().isReplaceable()) {
-                                bestPlan = new BlockUtils.PlaceBlockPlan(pos.immutable(), Direction.NORTH, pos.relative(Direction.SOUTH));
-                                bestDistance = d2;
-                                finalState = state;
-                            }
-                        }
-                    }
+                plan = BlockUtils.getPlacingPlan(pos, config.attachToAir);
+                if (plan != null) {
+                    break;
                 }
+            }
+
+            if (plan != null) {
+                break;
             }
         }
 
-        if (bestPlan != null) {
-            if (config.autoSelectItems) {
-                if (selectItem(config, finalState.getBlock()))  {
-                    blockInHand = finalState.getBlock();
-                }
-            }
-            if (blockInHand == finalState.getBlock() && mc.level.getBlockState(pos).getMaterial().isReplaceable()) {
-                BlockUtils.applyPlacingPlan(bestPlan, config.useShift);
-            }
+        if (plan == null) {
+            return;
+        }
+
+        int slot = slotSelector.selectBlock(config, state.getBlock());
+        if (slot >= 0)  {
+            mc.player.getInventory().selected = slot;
+            blockInHand = state.getBlock();
+        }
+        if (blockInHand == state.getBlock()) {
+            BlockUtils.applyPlacingPlan(plan, config.useShift);
         }
     }
 
@@ -334,50 +296,6 @@ public class SchematicaController {
         for (Entry entry : entries) {
             entry.onBlockUpdated(event);
         }
-    }
-
-    private boolean selectItem(SchematicaConfig config, Block block) {
-        Inventory inventory = mc.player.getInventory();
-
-        // search on hotbar
-        for (int i = 0; i < 9; i++) {
-            ItemStack itemStack = inventory.getItem(i);
-            if (itemStack.getItem() instanceof BlockItem blockItem) {
-                if (blockItem.getBlock() == block) {
-                    lastSlotUsage[i] = System.nanoTime();
-                    inventory.selected = i;
-                    return true;
-                }
-            }
-        }
-
-        if (config.autoSelectSlots.length == 0) {
-            return false;
-        }
-
-        // search in inventory
-        for (int i = 9; i < 36; i++) {
-            ItemStack itemStack = inventory.getItem(i);
-            if (itemStack.getItem() instanceof BlockItem blockItem) {
-                if (blockItem.getBlock() == block) {
-                    long minTime = Long.MAX_VALUE;
-                    int minSlot = config.autoSelectSlots[0];
-                    for (int slot : config.autoSelectSlots) {
-                        if (lastSlotUsage[slot - 1] < minTime) {
-                            minTime = lastSlotUsage[slot - 1];
-                            minSlot = slot - 1;
-                        }
-                    }
-
-                    InventoryUtils.moveItemStack(new InventorySlot(i), new InventorySlot(minSlot));
-                    lastSlotUsage[minSlot] = System.nanoTime();
-                    inventory.selected = minSlot;
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     private static class Entry {

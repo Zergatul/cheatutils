@@ -7,7 +7,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -15,8 +17,9 @@ import java.util.List;
 
 public class InventoryUtils {
 
+    private static final Minecraft mc = Minecraft.getInstance();
+
     public static void moveItemStack(InventorySlot fromSlot, InventorySlot toSlot) {
-        Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
@@ -88,7 +91,6 @@ public class InventoryUtils {
             return;
         }
 
-        Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
@@ -123,5 +125,40 @@ public class InventoryUtils {
         if (!(mc.screen instanceof InventoryScreen)) {
             NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(0));
         }
+    }
+
+    public static boolean hasItem(Item item) {
+        if (mc.player == null) {
+            return false;
+        }
+
+        Inventory inventory = mc.player.getInventory();
+        for (int i = 0; i < 36; i++) {
+            if (inventory.getItem(i).is(item)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean selectItem(Item item, int slot) {
+        if (mc.player == null) {
+            return false;
+        }
+
+        Inventory inventory = mc.player.getInventory();
+        if (inventory.getItem(slot).is(item)) {
+            return true;
+        }
+
+        for (int i = 0; i < 36; i++) {
+            if (inventory.getItem(i).is(item)) {
+                moveItemStack(new InventorySlot(i), new InventorySlot(slot));
+                return true;
+            }
+        }
+
+        return false;
     }
 }

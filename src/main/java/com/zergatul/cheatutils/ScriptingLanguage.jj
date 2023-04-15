@@ -237,7 +237,7 @@ void AdditiveExpression() :
 void MultiplicativeExpression() :
 {}
 {
-  UnaryExpression() ( ( Mult() | Div() | Mod() ) UnaryExpression() )*
+  UnaryExpression() ( ( Mult() | Div() | Mod() | FloorDiv() | FloorMod() ) UnaryExpression() )*
 }
 
 void UnaryExpression() :
@@ -335,6 +335,18 @@ void Mod() :
 {}
 {
   "%"
+}
+
+void FloorDiv() :
+{}
+{
+  "!/"
+}
+
+void FloorMod() :
+{}
+{
+  "!%"
 }
 
 void Equality() :

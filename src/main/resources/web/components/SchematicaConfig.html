@@ -116,15 +116,7 @@
                 </legend>
                 <div class="input-section">
                     <span class="field-description">Max Build Distance:</span>
-                    <input type="text" v-model="config.autoBuildDistance" @change="update()">
-                </div>
-                <div class="input-section">
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch"
-                            v-model="config.autoSelectItems"
-                            @change="update()">
-                        <span>Auto select items from inventory</span>
-                    </label>
+                    <input type="text" v-model="config.maxRange" @change="update()">
                 </div>
                 <div class="input-section">
                     <span class="field-description">Use hotbar slots:</span>

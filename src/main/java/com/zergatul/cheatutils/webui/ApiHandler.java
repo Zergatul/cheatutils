@@ -49,6 +49,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new FreeCamPathApi());
         apis.add(new DimensionApi());
         apis.add(new CoordinatesApi());
+        apis.add(new ScriptedBlockPlacerCodeApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -651,6 +652,19 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(CoordinateLeakProtectionConfig config) {
                 ConfigStore.instance.getConfig().coordinateLeakProtectionConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("scripted-block-placer", ScriptedBlockPlacerConfig.class) {
+            @Override
+            protected ScriptedBlockPlacerConfig getConfig() {
+                return ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+            }
+
+            @Override
+            protected void setConfig(ScriptedBlockPlacerConfig config) {
+                ScriptedBlockPlacerConfig current = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+                config.copyTo(current);
             }
         });
     }

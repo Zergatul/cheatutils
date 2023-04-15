@@ -37,6 +37,14 @@ public class MathApi {
         return Mth.ceil(value);
     }
 
+    public int abs(int value) {
+        return Math.abs(value);
+    }
+
+    public double abs(double value) {
+        return Math.abs(value);
+    }
+
     public static class RadiansApi {
 
         public double sin(double value) {

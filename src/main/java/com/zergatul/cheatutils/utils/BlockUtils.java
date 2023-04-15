@@ -7,15 +7,17 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockUtils {
 
     private static final Minecraft mc = Minecraft.getInstance();
 
-    public static PlaceBlockPlan getPlacingPlan(BlockPos pos) {
+    public static PlaceBlockPlan getPlacingPlan(BlockPos pos, boolean attachToAir) {
         if (mc.level == null) {
             return null;
         }
@@ -25,12 +27,24 @@ public class BlockUtils {
             return null;
         }
 
+        if (mc.player != null) {
+            CollisionContext collisioncontext = CollisionContext.of(mc.player);
+            if (!mc.level.isUnobstructed(Blocks.STONE.defaultBlockState(), pos, collisioncontext)) {
+                return null;
+            }
+        }
+
         for (Direction direction : Direction.values()) {
             BlockPos neighbourPos = pos.relative(direction);
             BlockState neighbourState = mc.level.getBlockState(neighbourPos);
             if (!neighbourState.getMaterial().isReplaceable()) {
                 return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos);
             }
+        }
+
+        if (attachToAir) {
+            pos = pos.relative(Direction.DOWN);
+            return new PlaceBlockPlan(pos.immutable(), Direction.DOWN, pos.relative(Direction.UP));
         }
 
         return null;

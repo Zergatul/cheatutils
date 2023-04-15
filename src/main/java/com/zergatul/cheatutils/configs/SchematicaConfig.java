@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class SchematicaConfig implements ValidatableConfig {
-    public boolean enabled;
+public class SchematicaConfig extends BlockPlacerConfig implements ValidatableConfig {
+
     public boolean showMissingBlockGhosts;
     public double missingBlockGhostsMaxDistance;
     public boolean showMissingBlockTracers;
@@ -16,13 +16,11 @@ public class SchematicaConfig implements ValidatableConfig {
     public double wrongBlockCubesMaxDistance;
     public boolean replaceableAsAir;
     public boolean autoBuild;
-    public boolean attachToAir;
-    public double autoBuildDistance;
-    public boolean autoSelectItems;
-    public int[] autoSelectSlots;
-    public boolean useShift;
+
 
     public SchematicaConfig() {
+        super();
+
         showMissingBlockGhosts = true;
         missingBlockGhostsMaxDistance = 10;
 
@@ -37,10 +35,6 @@ public class SchematicaConfig implements ValidatableConfig {
 
         showWrongBlockCubes = false;
         wrongBlockCubesMaxDistance = 10;
-
-        autoBuildDistance = 5;
-        autoSelectItems = false;
-        autoSelectSlots = new int[0];
     }
 
     @Override
@@ -50,10 +44,6 @@ public class SchematicaConfig implements ValidatableConfig {
         missingBlockCubesMaxDistance = MathUtils.clamp(missingBlockCubesMaxDistance, 1, 1000);
         wrongBlockTracersMaxDistance = MathUtils.clamp(wrongBlockTracersMaxDistance, 1, 1000);
         wrongBlockCubesMaxDistance = MathUtils.clamp(wrongBlockCubesMaxDistance, 1, 1000);
-        autoBuildDistance = MathUtils.clamp(autoBuildDistance, 1, 10);
-
-        if (autoSelectSlots == null) {
-            autoSelectSlots = new int[0];
-        }
+        super.validate();
     }
 }

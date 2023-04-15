@@ -8,5 +8,9 @@ public enum ApiType {
     UPDATE,
 
     // in-game action leading to interaction with server
-    ACTION
+    ACTION,
+
+    CURRENT_BLOCK,
+
+    BLOCK_PLACER
 }

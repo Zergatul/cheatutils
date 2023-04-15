@@ -1,0 +1,86 @@
+package com.zergatul.cheatutils.controllers;
+
+import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ScriptedBlockPlacerConfig;
+import com.zergatul.cheatutils.utils.BlockUtils;
+import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
+import com.zergatul.cheatutils.utils.SlotSelector;
+import com.zergatul.cheatutils.wrappers.ModApiWrapper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+
+public class ScriptedBlockPlacerController {
+
+    public static final ScriptedBlockPlacerController instance = new ScriptedBlockPlacerController();
+
+    private final Minecraft mc = Minecraft.getInstance();
+    private final SlotSelector slotSelector = new SlotSelector();
+    private Runnable script;
+    private String blockId;
+
+    private ScriptedBlockPlacerController() {
+        ModApiWrapper.ClientTickEnd.add(this::onClientTickEnd);
+    }
+
+    public void setScript(Runnable script) {
+        this.script = script;
+    }
+
+    public void setBlock(String blockId) {
+        this.blockId = blockId;
+    }
+
+    private void onClientTickEnd() {
+        ScriptedBlockPlacerConfig config = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+        if (!config.enabled) {
+            return;
+        }
+
+        if (mc.player == null || mc.level == null) {
+            return;
+        }
+
+        if (script == null) {
+            return;
+        }
+
+        Vec3 eyePos = mc.player.getEyePosition(1);
+        for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
+            BlockState state = mc.level.getBlockState(pos);
+            if (!state.getMaterial().isReplaceable()) {
+                continue;
+            }
+
+            blockId = null;
+            CurrentBlockController.instance.set(pos, state);
+            script.run();
+            CurrentBlockController.instance.clear();
+
+            if (blockId == null) {
+                continue;
+            }
+
+            Block block = ModApiWrapper.BLOCKS.getValue(new ResourceLocation(blockId));
+            if (block == Blocks.AIR) {
+                continue;
+            }
+
+            int slot = slotSelector.selectBlock(config, block);
+            if (slot < 0) {
+                continue;
+            }
+
+            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir);
+            if (plan != null) {
+                mc.player.getInventory().selected = slot;
+                BlockUtils.applyPlacingPlan(plan, config.useShift);
+                return;
+            }
+        }
+    }
+}

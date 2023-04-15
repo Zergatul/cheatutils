@@ -1,0 +1,73 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+        <button style="width: 200px;" @click="save()" v-if="config">Save</button>
+        <button style="width: 200px;" @click="showApiRef()">Show/Hide API Reference</button>
+    </div>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Scripted Block Placer</h2>
+        <div class="description">
+            Write script to place blocks in range.<br>
+            Every game tick module runs your script for all blocks in range, which can be replaced (for example, air, water, sea grass). You can get current block information from <b>currentBlock</b> API.
+            If your script calls <b>blockPlacer.setBlockId("block_id");</b> with valid block id, module tries to place block here.
+            Module can only place 1 block per tick.
+        </div>
+
+        <div class="module-sections">
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.enabled"
+                            @change="update()">
+                        <span>Enabled</span>
+                    </label>
+                </legend>
+                <div class="input-section">
+                    <span class="field-description">Max Build Distance:</span>
+                    <input type="text" v-model="config.maxRange" @change="update()">
+                </div>
+                <div class="input-section">
+                    <span class="field-description">Use hotbar slots:</span>
+                    <input type="text" v-model="slots" @change="onSlotsUpdate()">
+                    <div class="input-description">Separated by comma. Example: 6,7,8</div>
+                </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                               v-model="config.useShift"
+                               @change="update()">
+                        <span>Use Shift while placing blocks</span>
+                    </label>
+                </div>
+                <div class="section-description">
+                    Max Build Distance - distance between player eyes and center of block module will try to place.<br>
+                    Using shift may cause your character to randomly crouch for a fraction of a second.
+                </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                               v-model="config.attachToAir"
+                               @change="update()">
+                        <span>Attach to Air</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    Code
+                </legend>
+                <div v-show="!showRefs">
+                    <script-editor v-model="code"></script-editor>
+                </div>
+                <div v-show="showRefs">
+                    <ul class="refs">
+                        <li v-for="item in refs" v-html="item"></li>
+                    </ul>
+                </div>
+                <a href="https://github.com/Zergatul/cheatutils/wiki/Scripting-Language-Reference" target="_blank">Scripting Language Reference</a>
+            </fieldset>
+        </div>
+    </div>
+</div>

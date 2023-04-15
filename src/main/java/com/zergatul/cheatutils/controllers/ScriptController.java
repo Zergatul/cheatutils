@@ -22,6 +22,9 @@ public class ScriptController {
     private final ScriptingLanguageCompiler overlayCompiler = new ScriptingLanguageCompiler(
             com.zergatul.cheatutils.scripting.api.Root.class,
             VisibilityCheck.getTypes("overlay"));
+    private final ScriptingLanguageCompiler blockPlacerCompiler = new ScriptingLanguageCompiler(
+            com.zergatul.cheatutils.scripting.api.Root.class,
+            VisibilityCheck.getTypes("block-placer"));
     private List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
     private ScriptController() {
@@ -129,6 +132,10 @@ public class ScriptController {
 
     public Runnable compileKeys(String code) throws ParseException, ScriptCompileException {
         return handleKeybindingsCompiler.compile(code);
+    }
+
+    public Runnable compileBlockPlacer(String code) throws ParseException, ScriptCompileException {
+        return blockPlacerCompiler.compile(code);
     }
 
     public static class Script {
