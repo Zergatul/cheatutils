@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zergatul Cheat Utils</title>
+    <link rel="icon" href="/images/favicon.png">
+    <link rel="stylesheet" type="text/css" href="app.css">
+    <script src="axios.js"></script>
+    <script src="ace/ace.js"></script>
+</head>
+<body>
+
+    <div id="vue-app">
+
+        <div v-show="current == 'main'">
+            <div style="padding-top: 16px; display: none;">
+                <button v-on:click="hardSwitch()">Hard Switch</button>
+            </div>
+
+            <div>
+                <span class="text">Filter:</span>
+                <input type="text" class="search"
+                    v-model="search"
+                    ref="search"
+                    @input="filterModules()"
+                    @keydown="onFilterKeyDown($event)">
+            </div>
+
+            <table class="main-table">
+                <thead>
+                    <tr>
+                        <th>Automation</th>
+                        <th>ESP</th>
+                        <th>Hacks</th>
+                        <th>Visuals</th>
+                        <th>Scripting</th>
+                        <th>Utility</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <button @click="current = 'auto-disconnect'" :class="{ faded: !filtered.AutoDisconnect }">Auto Disconnect</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'blocks'" :class="{ faded: !filtered.Blocks }">Blocks</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'boat-hack'" :class="{ faded: !filtered.BoatHack }">Boat</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'full-bright'" :class="{ faded: !filtered.FullBright }">Full Bright</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'scripts'" :class="{ faded: !filtered.Scripts }">Key Bindings</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'lock-inputs'" :class="{ faded: !filtered.LockInputs }">Lock Inputs</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'kill-aura'" :class="{ faded: !filtered.KillAura }">Kill Aura</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'entities'" :class="{ faded: !filtered.Entities }">Entities</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'elytra-hack'" :class="{ faded: !filtered.ElytraHack }">Elytra</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'armor-overlay'" :class="{ faded: !filtered.ArmorOverlay }">Armor Overlay</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'status-overlay'" :class="{ faded: !filtered.StatusOverlay }">Status Overlay</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'user-name'" :class="{ faded: !filtered.UserName }">User Name</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'auto-fish'" :class="{ faded: !filtered.AutoFish }">Auto Fish</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'projectile-path'" :class="{ faded: !filtered.ProjectilePath }">Projectile Path</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'pig-hack'" :class="{ faded: !filtered.PigHack }">Pig</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'shulker-tooltip'" :class="{ faded: !filtered.ShulkerTooltip }">Shulker Tooltip</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'scripted-block-placer'" :class="{ faded: !filtered.ScriptedBlockPlacer }">Block Placer</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'container-summary'" :class="{ faded: !filtered.ContainerSummary }">Container Summary</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'auto-totem'" :class="{ faded: !filtered.AutoTotem }">Auto Totem</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'light-level'" :class="{ faded: !filtered.LightLevel }">Light Level</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'auto-criticals'" :class="{ faded: !filtered.AutoCriticals }">Auto Criticals</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'advanced-tooltips'" :class="{ faded: !filtered.AdvancedTooltips }">Advanced Tooltips</button>
+                        </td>
+                        <td rowspan="2" style="vertical-align: top;">
+                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
+                        </td>
+                        <td>
+                            <button @click="current = 'coordinate-leak-protection'" :class="{ faded: !filtered.CoordinateLeakProtection }" style="display: none;">CLP</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <!--<button @click="current = 'instant-disconnect'" :class="{ faded: !filtered.InstantDisconnect }">Instant Disconnect</button>-->
+                            <button @click="current = 'auto-drop'" :class="{ faded: !filtered.AutoDrop }">Auto Drop</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'end-city-chunks'" :class="{ faded: !filtered.EndCityChunks }">End City Chunks</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'fly-hack'" :class="{ faded: !filtered.FlyHack }">Fly</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'exploration-mini-map'" :class="{ faded: !filtered.ExplorationMiniMap }">Exploration Mini Map</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'container-buttons'" :class="{ faded: !filtered.ContainerButtons }">Container Buttons</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'entity-owner'" :class="{ faded: !filtered.EntityOwner }">Entity Owner</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'elytra-tunnel'" :class="{ faded: !filtered.ElytraTunnel }">Elytra Tunnel</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'death-coordinates'" :class="{ faded: !filtered.DeathCoordinates }">Death Coordinates</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'auto-eat'" :class="{ faded: !filtered.AutoEat }">Auto Eat</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'free-cam'" :class="{ faded: !filtered.FreeCam }">Free Cam</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'movement-hack'" :class="{ faded: !filtered.MovementHack }">Movement</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'fog'" :class="{ faded: !filtered.Fog }">Fog</button>
+                        </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'world-download'" :class="{ faded: !filtered.WorldDownload }">World Download</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'anti-respawn-reset'" :class="{ faded: !filtered.AntiRespawnReset }">Anti Respawn Reset</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'new-chunks'" :class="{ faded: !filtered.NewChunks }">New Chunks</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'scaffold'" :class="{ faded: !filtered.Scaffold }">Scaffold</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'chunks'" :class="{ faded: !filtered.Chunks }">Chunks</button>
+                        </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'tps'" :class="{ faded: !filtered.Tps }">TPS</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'auto-craft'" :class="{ faded: !filtered.AutoCraft }">Auto Craft</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'entity-title'" :class="{ faded: !filtered.EntityTitle }">Entity Titles</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'no-fall'" :class="{ faded: !filtered.NoFall }">No Fall</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'status-effects'" :class="{ faded: !filtered.StatusEffects }">Status Effects</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'auto-bucket'" :class="{ faded: !filtered.AutoBucket }">Auto Bucket (BETA)</button>
+                        </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'fast-break'" :class="{ faded: !filtered.FastBreak }">Fast Break</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'particles'" :class="{ faded: !filtered.Particles }">Particles</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button @click="current = 'schematica'" style="display: none;">Schematica (ALPHA)</button>
+                        </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'reach'" :class="{ faded: !filtered.Reach }">Reach</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'zoom'" :class="{ faded: !filtered.Zoom }">Zoom</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+
+                        </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'teleport-hack'" :class="{ faded: !filtered.TeleportHack }">Teleport</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'performance'" :class="{ faded: !filtered.Performance }">Performance</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'fake-lag'" :class="{ faded: !filtered.FakeLag }">Fake Lag</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'world-markers'" :class="{ faded: !filtered.WorldMarkers }">World Markers</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <blocks-config
+            v-if="current == 'blocks'"
+            @back="backToMain()">
+        </blocks-config>
+
+        <entities-config
+            v-if="current == 'entities'"
+            @back="backToMain()">
+        </entities-config>
+
+        <auto-fish-config
+            v-if="current == 'auto-fish'"
+            @back="backToMain()">
+        </auto-fish-config>
+
+        <full-bright-config
+            v-if="current == 'full-bright'"
+            @back="backToMain()">
+        </full-bright-config>
+
+        <armor-overlay-config
+            v-if="current == 'armor-overlay'"
+            @back="backToMain()">
+        </armor-overlay-config>
+
+        <kill-aura-config
+            v-if="current == 'kill-aura'"
+            @back="backToMain()">
+        </kill-aura-config>
+
+        <boat-hack-config
+            v-if="current == 'boat-hack'"
+            @back="backToMain()">
+        </boat-hack-config>
+
+        <elytra-hack-config
+            v-if="current == 'elytra-hack'"
+            @back="backToMain()">
+        </elytra-hack-config>
+
+        <pig-hack-config
+            v-if="current == 'pig-hack'"
+            @back="backToMain()">
+        </pig-hack-config>
+
+        <auto-disconnect-config
+            v-if="current == 'auto-disconnect'"
+            @back="backToMain()">
+        </auto-disconnect-config>
+
+        <shulker-tooltip-config
+            v-if="current == 'shulker-tooltip'"
+            @back="backToMain()">
+        </shulker-tooltip-config>
+
+        <projectile-path-config
+            v-if="current == 'projectile-path'"
+            @back="backToMain()">
+        </projectile-path-config>
+
+        <end-city-chunks-config
+            v-if="current == 'end-city-chunks'"
+            @back="backToMain()">
+        </end-city-chunks-config>
+
+        <light-level-config
+            v-if="current == 'light-level'"
+            @back="backToMain()">
+        </light-level-config>
+
+        <lock-inputs-config
+            v-if="current == 'lock-inputs'"
+            @back="backToMain()">
+        </lock-inputs-config>
+
+        <entity-owner-config
+            v-if="current == 'entity-owner'"
+            @back="backToMain()">
+        </entity-owner-config>
+
+        <exploration-mini-map-config
+            v-if="current == 'exploration-mini-map'"
+            @back="backToMain()">
+        </exploration-mini-map-config>
+
+        <auto-criticals-config
+            v-if="current == 'auto-criticals'"
+            @back="backToMain()">
+        </auto-criticals-config>
+
+        <fly-hack-config
+            v-if="current == 'fly-hack'"
+            @back="backToMain()">
+        </fly-hack-config>
+
+        <auto-totem-config
+            v-if="current == 'auto-totem'"
+            @back="backToMain()">
+        </auto-totem-config>
+
+        <death-coordinates-config
+            v-if="current == 'death-coordinates'"
+            @back="backToMain()">
+        </death-coordinates-config>
+
+        <elytra-tunnel-config
+            v-if="current == 'elytra-tunnel'"
+            @back="backToMain()">
+        </elytra-tunnel-config>
+
+        <free-cam-config
+            v-if="current == 'free-cam'"
+            @back="backToMain()">
+        </free-cam-config>
+
+        <movement-hack-config
+            v-if="current == 'movement-hack'"
+            @back="backToMain()">
+        </movement-hack-config>
+
+        <scaffold-config
+            v-if="current == 'scaffold'"
+            @back="backToMain()">
+        </scaffold-config>
+
+        <advanced-tooltips-config
+            v-if="current == 'advanced-tooltips'"
+            @back="backToMain()">
+        </advanced-tooltips-config>
+
+        <fog-config
+            v-if="current == 'fog'"
+            @back="backToMain()">
+        </fog-config>
+
+        <instant-disconnect-config
+            v-if="current == 'instant-disconnect'"
+            @back="backToMain()">
+        </instant-disconnect-config>
+
+        <scripts-config
+            v-if="current == 'scripts'"
+            @back="backToMain()">
+        </scripts-config>
+
+        <world-markers-config
+            v-if="current == 'world-markers'"
+            @back="backToMain()">
+        </world-markers-config>
+
+        <user-name-config
+            v-if="current == 'user-name'"
+            @back="backToMain()">
+        </user-name-config>
+
+        <new-chunks-config
+            v-if="current == 'new-chunks'"
+            @back="backToMain()">
+        </new-chunks-config>
+
+        <auto-drop-config
+            v-if="current == 'auto-drop'"
+            @back="backToMain()">
+        </auto-drop-config>
+
+        <chunks-config
+            v-if="current == 'chunks'"
+            @back="backToMain()">
+        </chunks-config>
+
+        <container-buttons-config
+            v-if="current == 'container-buttons'"
+            @back="backToMain()">
+        </container-buttons-config>
+
+        <status-overlay-config
+            v-if="current == 'status-overlay'"
+            @back="backToMain()">
+        </status-overlay-config>
+
+        <status-effects-config
+            v-if="current == 'status-effects'"
+            @back="backToMain()">
+        </status-effects-config>
+
+        <auto-eat-config
+            v-if="current == 'auto-eat'"
+            @back="backToMain()">
+        </auto-eat-config>
+
+        <no-fall-config
+            v-if="current == 'no-fall'"
+            @back="backToMain()">
+        </no-fall-config>
+
+        <particles-config
+            v-if="current == 'particles'"
+            @back="backToMain()">
+        </particles-config>
+
+        <anti-respawn-reset-config
+            v-if="current == 'anti-respawn-reset'"
+            @back="backToMain()">
+        </anti-respawn-reset-config>
+
+        <fast-break-config
+            v-if="current == 'fast-break'"
+            @back="backToMain()">
+        </fast-break-config>
+
+        <container-summary-config
+            v-if="current == 'container-summary'"
+            @back="backToMain()">
+        </container-summary-config>
+
+        <auto-craft-config
+            v-if="current == 'auto-craft'"
+            @back="backToMain()">
+        </auto-craft-config>
+
+        <reach-config
+            v-if="current == 'reach'"
+            @back="backToMain()">
+        </reach-config>
+
+        <game-tick-scripting-config
+            v-if="current == 'game-tick-scripting'"
+            @back="backToMain()">
+        </game-tick-scripting-config>
+
+        <zoom-config
+            v-if="current == 'zoom'"
+            @back="backToMain()">
+        </zoom-config>
+
+        <schematica-config
+            v-if="current == 'schematica'"
+            @back="backToMain()">
+        </schematica-config>
+
+        <auto-bucket-config
+            v-if="current == 'auto-bucket'"
+            @back="backToMain()">
+        </auto-bucket-config>
+
+        <world-download-config
+            v-if="current == 'world-download'"
+            @back="backToMain()">
+        </world-download-config>
+
+        <performance-config
+            v-if="current == 'performance'"
+            @back="backToMain()">
+        </performance-config>
+
+        <entity-title-config
+            v-if="current == 'entity-title'"
+            @back="backToMain()">
+        </entity-title-config>
+
+        <teleport-hack-config
+            v-if="current == 'teleport-hack'"
+            @back="backToMain()">
+        </teleport-hack-config>
+
+        <fake-lag-config
+            v-if="current == 'fake-lag'"
+            @back="backToMain()">
+        </fake-lag-config>
+
+        <coordinate-leak-protection-config
+            v-if="current == 'coordinate-leak-protection'"
+            @back="backToMain()">
+        </coordinate-leak-protection-config>
+
+        <tps-config
+            v-if="current == 'tps'"
+            @back="backToMain()">
+        </tps-config>
+
+        <scripted-block-placer-config
+            v-if="current == 'scripted-block-placer'"
+            @back="backToMain()">
+        </scripted-block-placer-config>
+
+    </div>
+
+    <script type="module" src="app.js"></script>
+
+</body>
+</html>

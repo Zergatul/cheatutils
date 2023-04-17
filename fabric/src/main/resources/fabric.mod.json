@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "cheatutils",
+  "version": "${version}",
+
+  "name": "CheatUtils",
+  "description": "Open http://localhost:5005/ in your browser to access mod settings.\nYou can find tutorial videos on curseforge page: https://www.curseforge.com/minecraft/mc-mods/cheatutils-by-zergatul\nSource code: https://github.com/Zergatul/cheatutils",
+  "authors": [
+    "Zergatul"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/cheatutils-by-zergatul",
+    "sources": "https://github.com/Zergatul/cheatutils",
+    "issues": "https://github.com/Zergatul/cheatutils/issues"
+  },
+
+  "license": "MIT",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.zergatul.cheatutils.ModMain"
+    ]
+  },
+  "mixins": [
+    "zergatul.cheatutils.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": "~1.19",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
