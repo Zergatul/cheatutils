@@ -28,6 +28,7 @@ public class Root {
     public static NoFallApi noFall = new NoFallApi();
     public static ScaffoldApi scaffold = new ScaffoldApi();
     public static TeleportApi teleport = new TeleportApi();
+    public static BlinkApi blink = new BlinkApi();
 
     // visuals
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();

@@ -87,13 +87,6 @@ public abstract class MixinMinecraft {
     }
 
     @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;render(FJZ)V"),
-            method = "runTick(Z)V")
-    private void onRenderTick(boolean p_91384_, CallbackInfo info) {
-        Events.RenderTickStart.trigger();
-    }
-
-    @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetData()V", shift = At.Shift.AFTER),
             method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V")
     private void onPlayerLoggingOut(Screen screen, CallbackInfo info) {

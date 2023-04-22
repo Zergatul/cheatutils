@@ -13,6 +13,7 @@
     "common.accessors.InputConstantsKeyAccessor",
     "common.accessors.ItemRendererAccessor",
     "common.accessors.KeyMappingAccessor",
+    "common.accessors.LivingEntityAccessor",
     "common.accessors.ProjectileAccessor",
     "common.accessors.ScreenAccessor",
 
@@ -42,6 +43,7 @@
     "common.MixinOptions",
     "common.MixinParticleEngine",
     "common.MixinPig",
+    "common.MixinPlayerRenderer",
     "common.MixinScreen",
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSlimeBlock",

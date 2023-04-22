@@ -467,6 +467,9 @@ public class SchematicaController {
 
         public BlockState getBlockState(int x, int y, int z) {
             int sectionIndex = (y - MIN_Y) >> 4;
+            if (sectionIndex >= sections.length) {
+                return Blocks.AIR.defaultBlockState();
+            }
             ChunkSection section = sections[sectionIndex];
             if (section == null) {
                 return Blocks.AIR.defaultBlockState();

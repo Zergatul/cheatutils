@@ -1,0 +1,55 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main">
+        <h2 class="module-header">Blink</h2>
+        <div class="description">
+            Use Keybindings to assign keys.<br>
+
+            When enable module blocks all MovePlayer packets (contains position/rotation) send by client. You can continue moving on client, but you stay at original position on the server.
+            Use <b>blink.enable()</b> for keybind.
+
+            Once module is enabled you have to 2 options. Disable module with <b>blink.disable();</b>. In this case you will be teleported back to original position and all movement packets will be discarded.
+            Or send movement packets to server with <b>blink.apply()</b>
+
+            You can use <b>blink.getDistance()</b> to see how far you moved from position you enabled blink. <b>blink.getPackets()</b> - to see amount of captured packets.
+        </div>
+
+        <div class="module-sections">
+            <div class="description">
+                Example 1. When assigned to button first click enables blink, second click sends packets to server teleporting you for other players to current position.
+                <pre>
+    if (blink.isEnabled()) {
+        blink.apply();
+    } else {
+        blink.enable();
+    }
+                </pre>
+            </div>
+            <div class="description">
+                Example 2. Add this to <b>Status Overlay</b> script to see blink status under crosshair.
+                <pre>
+    if (blink.isEnabled()) {
+        main.setOverlayHorizontalPosition("center");
+        main.setOverlayVerticalPosition("middle");
+        main.addText("");
+        main.addText("BLINK:" +
+            " Packets=" + convert.toString(blink.getPackets()) + 
+            " Distance=" + convert.toString(blink.getDistance(), 1));
+    }
+                </pre>
+            </div>
+            <div class="description">
+                Example 3. Add this to <b>Game Tick Scripting</b> to automatically disable blink if distance > 10 blocks, or captured packets > 50.
+                <pre>
+    if (blink.isEnabled()) {
+        if (blink.getDistance() > 10 || blink.getPackets() > 50) {
+            blink.disable();
+        }
+    }
+                </pre>
+            </div>
+        </div>
+    </div>
+</div>

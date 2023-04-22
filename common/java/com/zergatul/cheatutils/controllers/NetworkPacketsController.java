@@ -13,9 +13,10 @@ public class NetworkPacketsController {
 
     public static final NetworkPacketsController instance = new NetworkPacketsController();
 
-    private List<Consumer<ServerPacketArgs>> serverPacketHandlers = new ArrayList<>();
-    private List<Consumer<ClientPacketArgs>> clientPacketHandlers = new ArrayList<>();
+    private final List<Consumer<ServerPacketArgs>> serverPacketHandlers = new ArrayList<>();
+    private final List<Consumer<ClientPacketArgs>> clientPacketHandlers = new ArrayList<>();
     private Connection connection;
+    private boolean handlersStopped;
 
     private NetworkPacketsController() {
         Events.ClientPlayerLoggingIn.add(this::onClientPlayerLoggingIn);
@@ -41,6 +42,14 @@ public class NetworkPacketsController {
         ((ConnectionAccessor) connection).getChannel_CU().pipeline().fireChannelRead(packet);
     }
 
+    public void stopHandlers() {
+        handlersStopped = true;
+    }
+
+    public void resumeHandlers() {
+        handlersStopped = false;
+    }
+
     private void onClientPlayerLoggingIn(Connection connection) {
         this.connection = connection;
         ChannelPipeline pipeline = ((ConnectionAccessor) connection).getChannel_CU().pipeline();
@@ -50,18 +59,18 @@ public class NetworkPacketsController {
                 pipeline.addBefore("packet_handler", "PacketReader", new SimpleChannelInboundHandler<Packet<?>>() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, Packet<?> msg) throws Exception {
+                        if (!handlersStopped) {
+                            ServerPacketArgs args = new ServerPacketArgs();
+                            args.packet = msg;
 
-                        ServerPacketArgs args = new ServerPacketArgs();
-                        args.packet = msg;
-
-                        // do we need synchronized here???
-                        for (Consumer<ServerPacketArgs> handler : serverPacketHandlers) {
-                            handler.accept(args);
-                            if (args.skip) {
-                                return;
+                            // do we need synchronized here???
+                            for (Consumer<ServerPacketArgs> handler : serverPacketHandlers) {
+                                handler.accept(args);
+                                if (args.skip) {
+                                    return;
+                                }
                             }
                         }
-
                         ctx.fireChannelRead(msg);
                     }
                 });
@@ -71,20 +80,22 @@ public class NetworkPacketsController {
                 pipeline.addBefore("packet_handler", "PacketWriter", new ChannelOutboundHandlerAdapter() {
                     @Override
                     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+                        if (!handlersStopped) {
+                            ClientPacketArgs args = new ClientPacketArgs();
+                            args.packet = (Packet<?>) msg;
 
-                        ClientPacketArgs args = new ClientPacketArgs();
-                        args.packet = (Packet<?>)msg;
-
-                        // do we need synchronized here???
-                        for (Consumer<ClientPacketArgs> handler : clientPacketHandlers) {
-                            handler.accept(args);
-                            if (args.skip) {
-                                promise.setSuccess();
-                                return;
+                            // do we need synchronized here???
+                            for (Consumer<ClientPacketArgs> handler : clientPacketHandlers) {
+                                handler.accept(args);
+                                if (args.skip) {
+                                    promise.setSuccess();
+                                    return;
+                                }
                             }
+                            ctx.write(args.packet, promise);
+                        } else {
+                            ctx.write(msg, promise);
                         }
-
-                        ctx.write(args.packet, promise);
                     }
                 });
             }

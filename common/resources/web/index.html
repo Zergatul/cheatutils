@@ -199,7 +199,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'auto-bucket'" :class="{ faded: !filtered.AutoBucket }">Auto Bucket (BETA)</button>
+                            <button @click="current = 'auto-bucket'" :class="{ faded: !filtered.AutoBucket }">Auto Bucket</button>
                         </td>
                         <td></td>
                         <td>
@@ -211,7 +211,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'schematica'" style="display: none;">Schematica (ALPHA)</button>
+                            <button @click="current = 'schematica'">Schematica (ALPHA)</button>
                         </td>
                         <td></td>
                         <td>
@@ -241,6 +241,13 @@
                         </td>
                         <td>
                             <button @click="current = 'world-markers'" :class="{ faded: !filtered.WorldMarkers }">World Markers</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'blink'" :class="{ faded: !filtered.Blink }">Blink</button>
                         </td>
                     </tr>
                 </tbody>
@@ -531,6 +538,11 @@
             v-if="current == 'scripted-block-placer'"
             @back="backToMain()">
         </scripted-block-placer-config>
+
+        <blink-config
+            v-if="current == 'blink'"
+            @back="backToMain()">
+        </blink-config>
 
     </div>
 

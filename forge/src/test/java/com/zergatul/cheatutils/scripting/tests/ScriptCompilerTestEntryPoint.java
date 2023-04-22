@@ -139,5 +139,13 @@ public class ScriptCompilerTestEntryPoint {
         public double m1(double x, double y, double z, String s) {
             return y;
         }
+
+        public String toString(int value) {
+            return "int";
+        }
+
+        public String toString(double value) {
+            return "double";
+        }
     }
 }

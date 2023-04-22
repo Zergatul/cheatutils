@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GetFieldOfViewEvent;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.modules.visuals.FullBright;
+import com.zergatul.cheatutils.render.PartTick;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.renderer.GameRenderer;
@@ -47,5 +48,11 @@ public abstract class MixinGameRenderer {
         if (fov != event.get()) {
             info.setReturnValue(event.get());
         }
+    }
+
+    @Inject(at = @At("HEAD"), method = "render(FJZ)V")
+    private void onBeforeRender(float partialTicks, long nanoTime, boolean p_109096_, CallbackInfo info) {
+        PartTick.value = partialTicks;
+        Events.RenderTickStart.trigger();
     }
 }
