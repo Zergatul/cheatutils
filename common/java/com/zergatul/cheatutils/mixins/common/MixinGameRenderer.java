@@ -1,10 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GetFieldOfViewEvent;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
-import com.zergatul.cheatutils.modules.visuals.FullBright;
 import com.zergatul.cheatutils.render.PartTick;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;

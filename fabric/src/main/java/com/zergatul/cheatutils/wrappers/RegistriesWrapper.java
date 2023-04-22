@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.wrappers;
 
 import com.zergatul.cheatutils.common.WrappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -14,19 +13,19 @@ import java.util.Collection;
 public class RegistriesWrapper {
 
     public static WrappedRegistry<Block> getBlocks() {
-        return new VanillaWrapperRegistry<>(BuiltInRegistries.BLOCK);
+        return new VanillaWrapperRegistry<>(Registry.BLOCK);
     }
 
     public static WrappedRegistry<Item> getItems() {
-        return new VanillaWrapperRegistry<>(BuiltInRegistries.ITEM);
+        return new VanillaWrapperRegistry<>(Registry.ITEM);
     }
 
     public static WrappedRegistry<EntityType<?>> getEntityTypes() {
-        return new VanillaWrapperRegistry<>(BuiltInRegistries.ENTITY_TYPE);
+        return new VanillaWrapperRegistry<>(Registry.ENTITY_TYPE);
     }
 
     public static WrappedRegistry<Enchantment> getEnchantments() {
-        return new VanillaWrapperRegistry<>(BuiltInRegistries.ENCHANTMENT);
+        return new VanillaWrapperRegistry<>(Registry.ENCHANTMENT);
     }
 
     private record VanillaWrapperRegistry<T>(Registry<T> registry) implements WrappedRegistry<T> {

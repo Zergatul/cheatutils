@@ -7,8 +7,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.*;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.*;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
@@ -223,7 +221,7 @@ public class WorldDownloadController {
         LevelChunkSection[] alevelchunksection = chunk.getSections();
         ListTag listtag = new ListTag();
         LevelLightEngine levellightengine = level.getChunkSource().getLightEngine();
-        Registry<Biome> registry = level.registryAccess().registryOrThrow(Registries.BIOME);
+        Registry<Biome> registry = level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
         Codec<PalettedContainerRO<Holder<Biome>>> codec = makeBiomeCodec(registry);
         boolean flag = chunk.isLightCorrect();
 
@@ -331,10 +329,10 @@ public class WorldDownloadController {
     private static void saveTicks(ClientLevel p_188236_, CompoundTag p_188237_, ChunkAccess.TicksToSave p_188238_) {
         long i = p_188236_.getLevelData().getGameTime();
         p_188237_.put("block_ticks", p_188238_.blocks().save(i, (p_258987_) -> {
-            return BuiltInRegistries.BLOCK.getKey(p_258987_).toString();
+            return Registry.BLOCK.getKey(p_258987_).toString();
         }));
         p_188237_.put("fluid_ticks", p_188238_.fluids().save(i, (p_258989_) -> {
-            return BuiltInRegistries.FLUID.getKey(p_258989_).toString();
+            return Registry.FLUID.getKey(p_258989_).toString();
         }));
     }
 

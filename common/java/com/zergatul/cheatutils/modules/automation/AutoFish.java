@@ -71,7 +71,7 @@ public class AutoFish implements Module {
             return;
         }
         if (args.packet instanceof ClientboundSoundPacket soundPacket) {
-            if (soundPacket.getSound().value() == SoundEvents.FISHING_BOBBER_SPLASH) {
+            if (soundPacket.getSound() == SoundEvents.FISHING_BOBBER_SPLASH) {
                 if (bobber.distanceToSqr(soundPacket.getX(), soundPacket.getY(), soundPacket.getZ()) < 1) {
                     KeyUtils.click(mc.options.keyUse);
                     lastPullIn = System.nanoTime();

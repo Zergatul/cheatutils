@@ -5,6 +5,8 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -27,8 +29,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +39,7 @@ public class FreeCam implements Module {
     public static final FreeCam instance = new FreeCam();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Quaternionf rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
+    private final Quaternion rotation = new Quaternion(0.0F, 0.0F, 0.0F, 1.0F);
     private final Vector3f forwards = new Vector3f(0.0F, 0.0F, 1.0F);
     private final Vector3f up = new Vector3f(0.0F, 1.0F, 0.0F);
     private final Vector3f left = new Vector3f(1.0F, 0.0F, 0.0F);
@@ -423,10 +423,15 @@ public class FreeCam implements Module {
     }
 
     private void calculateVectors() {
-        rotation.rotationYXZ(-yRot * ((float)Math.PI / 180F), xRot * ((float)Math.PI / 180F), 0.0F);
-        forwards.set(0.0F, 0.0F, 1.0F).rotate(rotation);
-        up.set(0.0F, 1.0F, 0.0F).rotate(rotation);
-        left.set(1.0F, 0.0F, 0.0F).rotate(rotation);
+        rotation.set(0.0F, 0.0F, 0.0F, 1.0F);
+        rotation.mul(Vector3f.YP.rotationDegrees(-yRot));
+        rotation.mul(Vector3f.XP.rotationDegrees(xRot));
+        forwards.set(0.0F, 0.0F, 1.0F);
+        forwards.transform(rotation);
+        up.set(0.0F, 1.0F, 0.0F);
+        up.transform(rotation);
+        left.set(1.0F, 0.0F, 0.0F);
+        left.transform(rotation);
     }
 
     private double combineMovement(double velocity, double impulse, double frameTime, double acceleration, double slowdown) {

@@ -200,7 +200,7 @@ public class SchematicaController {
                             TextureAtlasSprite sprite = quad.getSprite();
                             BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
                             bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                            RenderSystem.setShaderTexture(0, sprite.atlasLocation());
+                            RenderSystem.setShaderTexture(0, sprite.atlas().location());
 
                             FaceInfo face = FaceInfo.fromFacing(direction);
                             FaceInfo.VertexInfo info;

@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
@@ -13,7 +15,6 @@ import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector4f;
 
 import java.awt.*;
 
@@ -59,7 +60,7 @@ public class WorldMarkersController {
         double scaledHalfHeight = mc.getWindow().getHeight() * invScale / 2;
 
         event.getMatrixStack().pushPose();
-        event.getMatrixStack().last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
+        event.getMatrixStack().last().pose().translate(new Vector3f((float)scaledHalfWidth, (float)scaledHalfHeight, 0));
 
         String dimension = mc.level.dimension().location().toString();
         for (WorldMarkersConfig.Entry entry : config.entries) {
@@ -77,14 +78,17 @@ public class WorldMarkersController {
                 continue;
             }
 
-            Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)x, (float)y, (float)z, 1));
-            Vector4f v2 = event.getWorldProjectionMatrix().transform(v1);
-            if (v2.z <= 0) {
+            Vector4f v1 = new Vector4f((float)x, (float)y, (float)z, 1);
+            v1.transform(event.getWorldPoseMatrix());
+
+            Vector4f v2 = new Vector4f(v1.x(), v1.y(), v1.z(), v1.w());
+            v2.transform(event.getWorldProjectionMatrix());
+            if (v2.z() <= 0) {
                 continue; // behind
             }
 
-            double xc = v2.x / v2.w * scaledHalfWidth;
-            double yc = -v2.y / v2.w * scaledHalfHeight;
+            double xc = v2.x() / v2.w() * scaledHalfWidth;
+            double yc = -v2.y() / v2.w() * scaledHalfHeight;
 
             TextBounds bounds = fontRenderer.getTextSize(entry.name);
             double width = bounds.width() * invScale;

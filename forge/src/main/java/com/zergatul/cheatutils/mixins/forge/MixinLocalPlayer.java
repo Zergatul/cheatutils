@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     public MixinLocalPlayer(ClientLevel p_250460_, GameProfile p_249912_) {
-        super(p_250460_, p_249912_);
+        super(p_250460_, p_249912_, null);
     }
 
     @Override

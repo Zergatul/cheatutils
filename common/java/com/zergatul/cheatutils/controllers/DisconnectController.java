@@ -46,7 +46,7 @@ public class DisconnectController {
         }
 
         addText = message;
-        mc.player.connection.sendChat("\u00a7");
+        mc.player.chatSigned("\u00a7", null);
     }
 
     public void selfAttack(String message) {

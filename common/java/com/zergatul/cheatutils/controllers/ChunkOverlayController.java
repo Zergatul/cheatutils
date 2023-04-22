@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Vector3f;
 import com.zergatul.cheatutils.chunkoverlays.AbstractChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
@@ -18,7 +19,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.chunk.LevelChunk;
-import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -90,10 +90,9 @@ public class ChunkOverlayController {
         event.getMatrixStack().pushPose();
         event.getMatrixStack().setIdentity();
         event.getMatrixStack().translate(1d * mc.getWindow().getGuiScaledWidth() / 2, 1d * mc.getWindow().getGuiScaledHeight() / 2, TranslateZ);
-
-        Quaternionf quaternion = new Quaternionf(0, 0, 0, 1);
-        quaternion.rotationYXZ(-(float)Math.PI, -(float)Math.PI, -yRot * ((float)Math.PI / 180F));
-        event.getMatrixStack().mulPose(quaternion);
+        event.getMatrixStack().mulPose(Vector3f.ZN.rotationDegrees(yRot));
+        event.getMatrixStack().mulPose(Vector3f.XN.rotationDegrees(180));
+        event.getMatrixStack().mulPose(Vector3f.YN.rotationDegrees(180));
         RenderSystem.applyModelViewMatrix();
 
         //RenderSystem.enableDepthTest();

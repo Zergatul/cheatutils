@@ -5,6 +5,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
@@ -37,7 +39,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector4f;
 
 import java.awt.*;
 import java.util.*;
@@ -176,17 +177,20 @@ public class EntityTitleController {
         List<Integer> enchantmentTextWidths = new ArrayList<>();
 
         event.getMatrixStack().pushPose();
-        event.getMatrixStack().last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
+        event.getMatrixStack().last().pose().translate(new Vector3f((float)scaledHalfWidth, (float)scaledHalfHeight, 0));
 
         for (EntityEntry entry : entities) {
-            Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
-            Vector4f v2 = event.getWorldProjectionMatrix().transform(v1);
-            if (v2.z <= 0) {
+            Vector4f v1 = new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1);
+            v1.transform(event.getWorldPoseMatrix());
+
+            Vector4f v2 = new Vector4f(v1.x(), v1.y(), v1.z(), v1.z());
+            v2.transform(event.getWorldProjectionMatrix());
+            if (v2.z() <= 0) {
                 continue; // behind
             }
 
-            double xc = v2.x / v2.w * scaledHalfWidth;
-            double yc = -v2.y / v2.w * scaledHalfHeight;
+            double xc = v2.x() / v2.w() * scaledHalfWidth;
+            double yc = -v2.y() / v2.w() * scaledHalfHeight;
 
             String text = getEntityText(entry);
             if (text != null) {

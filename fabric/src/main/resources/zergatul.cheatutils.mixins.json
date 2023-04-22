@@ -8,7 +8,6 @@
     "common.accessors.ClientPacketListenerAccessor",
     "common.accessors.ConnectionAccessor",
     "common.accessors.CraftingScreenAccessor",
-    "common.accessors.HolderReferenceAccessor",
     "common.accessors.InputConstantsKeyAccessor",
     "common.accessors.ItemRendererAccessor",
     "common.accessors.KeyMappingAccessor",

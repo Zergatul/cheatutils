@@ -5,7 +5,6 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,9 +30,9 @@ public abstract class MixinScreen {
 
     @Inject(
             at = @At("HEAD"),
-            method = "renderTooltipInternal(Lcom/mojang/blaze3d/vertex/PoseStack;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;)V",
+            method = "renderTooltipInternal(Lcom/mojang/blaze3d/vertex/PoseStack;Ljava/util/List;II)V",
             cancellable = true)
-    private void onRenderTooltipInternal(PoseStack poseStack, List<ClientTooltipComponent> list, int x, int y, ClientTooltipPositioner p_262920_, CallbackInfo info) {
+    private void onRenderTooltipInternal(PoseStack poseStack, List<ClientTooltipComponent> list, int x, int y, CallbackInfo info) {
         if (currentTooltipItemStack == null) {
             return;
         }

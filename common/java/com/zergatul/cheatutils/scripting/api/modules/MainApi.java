@@ -50,7 +50,7 @@ public class MainApi {
     public void chat(String text) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            player.connection.sendChat(text);
+            player.chatSigned(text, null);
         }
     }
 
@@ -60,7 +60,7 @@ public class MainApi {
         if (text != null && text.startsWith("/")) {
             LocalPlayer player = Minecraft.getInstance().player;
             if (player != null) {
-                player.connection.sendCommand(text.substring(1));
+                player.commandSigned(text.substring(1), null);
             }
         }
     }

@@ -57,7 +57,7 @@ public class BetterStatusEffects implements Module {
             }
 
             TextureAtlasSprite textureatlassprite = manager.get(effectInstance.getEffect());
-            RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
+            RenderSystem.setShaderTexture(0, textureatlassprite.atlas().location());
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             GuiComponent.blit(poseStack, left + 3, y + 3, 200, 18, 18, textureatlassprite);
 

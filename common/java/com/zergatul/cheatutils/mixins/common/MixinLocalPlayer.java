@@ -25,7 +25,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     private float oldFlyingSpeed;
 
     public MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_) {
-        super(p_234112_, p_234113_);
+        super(p_234112_, p_234113_, null);
     }
 
     @Inject(at = @At("HEAD"), method = "sendPosition()V")

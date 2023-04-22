@@ -22,7 +22,7 @@ public class FakePlayer extends RemotePlayer {
     private final ItemStack head;
 
     public FakePlayer(LocalPlayer player) {
-        super((ClientLevel) player.level, player.getGameProfile());
+        super((ClientLevel) player.level, player.getGameProfile(), null);
         list.add(this);
 
         this.animationPosition = player.animationPosition;
