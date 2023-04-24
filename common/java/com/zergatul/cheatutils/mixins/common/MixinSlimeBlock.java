@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -22,15 +21,15 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
         super(properties);
     }
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/level/block/SlimeBlock;fallOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;F)V", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "fallOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;F)V", cancellable = true)
     private void onFallOn(Level level, BlockState state, BlockPos pos, Entity entity, float p_154571_, CallbackInfo info) {
         if (shouldFallback(entity)) {
-            entity.causeFallDamage(p_154571_, 1.0F, DamageSource.FALL);
+            entity.causeFallDamage(p_154571_, 1.0F, level.damageSources().fall());
             info.cancel();
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/level/block/SlimeBlock;updateEntityAfterFallOn(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/world/entity/Entity;)V", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "updateEntityAfterFallOn(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/world/entity/Entity;)V", cancellable = true)
     private void onUpdateEntityAfterFallOn(BlockGetter p_56406_, Entity entity, CallbackInfo info) {
         if (shouldFallback(entity)) {
             entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
@@ -39,7 +38,7 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/level/block/SlimeBlock;stepOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/Entity;)V", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "stepOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/Entity;)V", cancellable = true)
     private void onStepOn(Level level, BlockPos pos, BlockState state, Entity entity, CallbackInfo info) {
         if (shouldFallback(entity)) {
             info.cancel();

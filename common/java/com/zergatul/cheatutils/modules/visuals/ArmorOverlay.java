@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.modules.visuals;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import net.minecraft.client.Minecraft;
@@ -17,7 +18,7 @@ public class ArmorOverlay {
 
     }
 
-    public boolean render(int left, int top) {
+    public boolean render(PoseStack poseStack, int left, int top) {
         if (mc.player == null) {
             return false;
         }
@@ -27,13 +28,13 @@ public class ArmorOverlay {
         }
 
         List<ItemStack> armor = mc.player.getInventory().armor;
-        ItemRenderHelper.renderItem(mc.player, armor.get(3), left, top);
+        ItemRenderHelper.renderItem(poseStack, mc.player, armor.get(3), left, top);
         left += 16;
-        ItemRenderHelper.renderItem(mc.player, armor.get(2), left, top);
+        ItemRenderHelper.renderItem(poseStack, mc.player, armor.get(2), left, top);
         left += 16;
-        ItemRenderHelper.renderItem(mc.player, armor.get(1), left, top);
+        ItemRenderHelper.renderItem(poseStack, mc.player, armor.get(1), left, top);
         left += 16;
-        ItemRenderHelper.renderItem(mc.player, armor.get(0), left, top);
+        ItemRenderHelper.renderItem(poseStack, mc.player, armor.get(0), left, top);
 
         return true;
     }

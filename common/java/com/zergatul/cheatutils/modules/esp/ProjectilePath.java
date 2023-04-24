@@ -116,7 +116,6 @@ public class ProjectilePath {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableTexture();
         RenderSystem.enableDepthTest();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
@@ -125,7 +124,6 @@ public class ProjectilePath {
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-        RenderSystem.enableTexture();
     }
 
     private ProjectilePathConfig getConfig() {

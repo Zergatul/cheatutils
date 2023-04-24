@@ -131,8 +131,8 @@ public class ContainerSummaryController {
                 }
 
                 var stack = new ItemStack(item, stackSize);
-                itemRenderer.renderAndDecorateItem(player, stack, x, y, 123);
-                itemRenderer.renderGuiItemDecorations(font, stack, x, y, null);
+                itemRenderer.renderAndDecorateItem(poseStack, player, stack, x, y, 123);
+                itemRenderer.renderGuiItemDecorations(poseStack, font, stack, x, y, null);
                 x += 16 + ITEM_PADDING;
 
                 if (remCount > 0) {
@@ -143,8 +143,8 @@ public class ContainerSummaryController {
 
             if (remCount > 0) {
                 var stack = new ItemStack(item, remCount);
-                itemRenderer.renderAndDecorateItem(player, stack, x, y, 123);
-                itemRenderer.renderGuiItemDecorations(font, stack, x, y, null);
+                itemRenderer.renderAndDecorateItem(poseStack, player, stack, x, y, 123);
+                itemRenderer.renderGuiItemDecorations(poseStack, font, stack, x, y, null);
                 //x += 16 + ITEM_PADDING;
             }
 

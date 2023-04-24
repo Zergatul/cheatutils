@@ -45,7 +45,6 @@ public class Primitives {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableTexture();
         RenderSystem.disableDepthTest();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
@@ -56,7 +55,6 @@ public class Primitives {
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-        RenderSystem.enableTexture();
         RenderSystem.enableDepthTest();
     }
 
@@ -81,7 +79,6 @@ public class Primitives {
         float f2 = (float)(color & 255) / 255.0F;
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         RenderSystem.enableBlend();
-        RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
@@ -90,7 +87,6 @@ public class Primitives {
         bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(f, f1, f2, f3).endVertex();
         bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(f, f1, f2, f3).endVertex();
         BufferUploader.drawWithShader(bufferbuilder.end());
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
@@ -115,7 +111,6 @@ public class Primitives {
         float b = (float)(color & 255) / 255.0F;
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         RenderSystem.enableBlend();
-        RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
@@ -125,7 +120,6 @@ public class Primitives {
         bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(r, g, b, a).endVertex();
         bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(r, g, b, a).endVertex();
         BufferUploader.drawWithShader(bufferbuilder.end());
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 

@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import net.minecraft.client.model.PlayerModel;

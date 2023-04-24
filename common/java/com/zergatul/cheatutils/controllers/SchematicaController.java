@@ -176,7 +176,6 @@ public class SchematicaController {
             RenderSystem.depthMask(true);
             RenderSystem.enableCull();
             RenderSystem.enableBlend();
-            RenderSystem.enableTexture();
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
             Map<BlockPos, BlockState> ghosts = new HashMap<>();

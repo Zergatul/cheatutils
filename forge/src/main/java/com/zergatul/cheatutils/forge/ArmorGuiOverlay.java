@@ -19,7 +19,7 @@ public class ArmorGuiOverlay implements IGuiOverlay {
             int left = screenWidth / 2 + 28;
             int top = screenHeight - gui.rightHeight - 6;
 
-            if (com.zergatul.cheatutils.modules.visuals.ArmorOverlay.instance.render(left, top)) {
+            if (com.zergatul.cheatutils.modules.visuals.ArmorOverlay.instance.render(poseStack, left, top)) {
                 gui.rightHeight += 12;
             }
         }

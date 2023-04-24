@@ -212,7 +212,7 @@ public class WorldDownloadController {
     private CompoundTag write(ClientLevel level, ChunkAccess chunk) {
         ChunkPos chunkpos = chunk.getPos();
         CompoundTag compoundtag = new CompoundTag();
-        compoundtag.putInt("DataVersion", SharedConstants.getCurrentVersion().getWorldVersion());
+        compoundtag.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
         compoundtag.putInt("xPos", chunkpos.x);
         compoundtag.putInt("yPos", chunk.getMinSection());
         compoundtag.putInt("zPos", chunkpos.z);

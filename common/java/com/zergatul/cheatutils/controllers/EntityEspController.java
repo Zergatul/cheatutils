@@ -96,7 +96,6 @@ public class EntityEspController {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableTexture();
         RenderSystem.disableDepthTest();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
@@ -105,7 +104,6 @@ public class EntityEspController {
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-        RenderSystem.enableTexture();
         RenderSystem.enableDepthTest();
     }
 

@@ -61,7 +61,7 @@ public class BetterStatusEffects implements Module {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             GuiComponent.blit(poseStack, left + 3, y + 3, 200, 18, 18, textureatlassprite);
 
-            String duration = MobEffectUtil.formatDuration(effectInstance, 1);
+            String duration = MobEffectUtil.formatDuration(effectInstance, 1).getString();
             if (duration.startsWith("00")) {
                 duration = duration.substring(1);
             }

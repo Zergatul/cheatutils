@@ -210,7 +210,6 @@ public class LightLevel implements Module {
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableTexture();
         RenderSystem.disableDepthTest();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
@@ -221,7 +220,6 @@ public class LightLevel implements Module {
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-        RenderSystem.enableTexture();
         RenderSystem.enableDepthTest();
     }
 

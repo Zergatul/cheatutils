@@ -33,7 +33,7 @@ public class AutoCraft {
     }
 
     private void onClientTickEnd() {
-        if (mc.player == null) {
+        if (mc.player == null || mc.level == null) {
             state = State.NONE;
             return;
         }
@@ -60,7 +60,7 @@ public class AutoCraft {
                     for (Item item: config.items) {
                         CraftEntry entry = getCraftingEntry(item, inventory, List.of(item));
                         if (entry != null) {
-                            boolean shift = entry.recipe.getResultItem().getItem().getMaxStackSize() > 1;
+                            boolean shift = entry.recipe.getResultItem(mc.level.registryAccess()).getItem().getMaxStackSize() > 1;
                             mc.gameMode.handlePlaceRecipe(craftingScreen.getMenu().containerId, entry.recipe, shift);
                             state = State.RECIPE_CLICKED;
                         }
@@ -92,7 +92,7 @@ public class AutoCraft {
     private CraftEntry getCraftingEntry(Item item, ImmutableList<ItemStack> inventory, List<Item> exclude) {
         List<Recipe<?>> recipes = mc.player.getRecipeBook().getCollections().stream()
                 .flatMap(c -> c.getRecipes().stream())
-                .filter(r -> r.getResultItem().getItem() == item)
+                .filter(r -> r.getResultItem(mc.level.registryAccess()).getItem() == item)
                 .filter(r -> r.getIngredients().stream().noneMatch(ingr -> exclude.stream().anyMatch(i -> Arrays.stream(ingr.getItems()).anyMatch(is -> is.is(i)))))
                 .toList();
 

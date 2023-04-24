@@ -15,6 +15,7 @@
     "common.accessors.LivingEntityAccessor",
     "common.accessors.ProjectileAccessor",
     "common.accessors.ScreenAccessor",
+    "common.accessors.WalkAnimationStateAccessor",
 
     "common.MixinAbstractContainerScreen",
     "common.MixinBoat",

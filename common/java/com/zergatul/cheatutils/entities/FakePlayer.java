@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.entities;
 
 import com.zergatul.cheatutils.mixins.common.accessors.LivingEntityAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.WalkAnimationStateAccessor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
@@ -25,8 +26,6 @@ public class FakePlayer extends RemotePlayer {
         super((ClientLevel) player.level, player.getGameProfile());
         list.add(this);
 
-        this.animationPosition = player.animationPosition;
-        this.animationSpeed = this.animationSpeedOld = player.animationSpeed;
         this.animStep = this.animStepO = 0;
         this.attackAnim = this.oAttackAnim = player.attackAnim;
         this.bob = this.oBob = player.bob;
@@ -36,7 +35,7 @@ public class FakePlayer extends RemotePlayer {
         this.fallFlyTicks = player.getFallFlyingTicks();
         this.hurtDuration = player.hurtDuration;
         this.hurtTime = player.hurtTime;
-        this.hurtDir = player.hurtDir;
+        this.hurtDir = player.getHurtDir();
         //this.lastHurt = player.lasthurt
         ((LivingEntityAccessor) this).setSwimAmount_CU(((LivingEntityAccessor) player).getSwimAmount_CU());
         ((LivingEntityAccessor) this).setSwimAmount0_CU(((LivingEntityAccessor) player).getSwimAmount_CU());
@@ -50,6 +49,10 @@ public class FakePlayer extends RemotePlayer {
         this.yCloak = this.yCloakO = player.yCloak;
         this.zCloak = this.zCloakO = player.zCloak;
 
+        ((WalkAnimationStateAccessor) this.walkAnimation).setSpeedOld_CU(player.walkAnimation.speed());
+        this.walkAnimation.setSpeed(player.walkAnimation.speed());
+        ((WalkAnimationStateAccessor) this.walkAnimation).setPosition_CU(player.walkAnimation.position());
+
         this.setPos(player.getPosition(1));
         this.setRot(player.getYRot(), player.getXRot());
         this.setOldPosAndRot();
@@ -57,12 +60,12 @@ public class FakePlayer extends RemotePlayer {
         this.yBodyRot = this.yBodyRotO = player.yBodyRot;
         this.yHeadRot = this.yHeadRotO = player.yHeadRot;
 
-        this.mainHand = player.getItemBySlot(EquipmentSlot.MAINHAND);
-        this.offHand = player.getItemBySlot(EquipmentSlot.OFFHAND);
-        this.head = player.getItemBySlot(EquipmentSlot.HEAD);
-        this.chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        this.legs = player.getItemBySlot(EquipmentSlot.LEGS);
-        this.feet = player.getItemBySlot(EquipmentSlot.FEET);
+        this.mainHand = player.getItemBySlot(EquipmentSlot.MAINHAND).copy();
+        this.offHand = player.getItemBySlot(EquipmentSlot.OFFHAND).copy();
+        this.head = player.getItemBySlot(EquipmentSlot.HEAD).copy();
+        this.chest = player.getItemBySlot(EquipmentSlot.CHEST).copy();
+        this.legs = player.getItemBySlot(EquipmentSlot.LEGS).copy();
+        this.feet = player.getItemBySlot(EquipmentSlot.FEET).copy();
 
         this.entityData.set(DATA_SHARED_FLAGS_ID, player.getEntityData().get(DATA_SHARED_FLAGS_ID));
         this.entityData.set(DATA_POSE, player.getEntityData().get(DATA_POSE));

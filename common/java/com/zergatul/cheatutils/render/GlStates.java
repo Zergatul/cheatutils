@@ -26,14 +26,8 @@ public class GlStates {
             RenderSystem.disableDepthTest();
         }
 
-        if (texture != null)
-        {
-            RenderSystem.enableTexture();
+        if (texture != null) {
             RenderSystem.setShaderTexture(0, texture);
-        }
-        else
-        {
-            RenderSystem.disableTexture();
         }
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

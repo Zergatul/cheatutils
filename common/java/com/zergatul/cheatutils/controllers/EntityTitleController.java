@@ -307,7 +307,6 @@ public class EntityTitleController {
 
                     GlStates.setupOverlayRenderState(true, false);
 
-                    mc.getItemRenderer().blitOffset = 0;
                     double xpl = xp;
                     for (int i = 0; i < items.size(); i++) {
                         double xCenterOffset = enchantmentTextWidths.get(i) > 16 ? (enchantmentTextWidths.get(i) - 16) / 2d : 0;
