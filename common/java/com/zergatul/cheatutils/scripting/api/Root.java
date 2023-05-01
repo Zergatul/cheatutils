@@ -12,6 +12,7 @@ public class Root {
     public static AutoEatApi autoEat = new AutoEatApi();
     public static ContainerButtonsApi containerButtons = new ContainerButtonsApi();
     public static AutoCraftApi autoCraft = new AutoCraftApi();
+    public static AutoBucketApi autoBucket = new AutoBucketApi();
 
     // ESP
     public static BlocksApi blocks = new BlocksApi();
@@ -20,6 +21,8 @@ public class Root {
 
     // hacks
     public static AutoCriticalsApi autoCriticals = new AutoCriticalsApi();
+    public static BlinkApi blink = new BlinkApi();
+    public static BoatHackApi boatHack = new BoatHackApi();
     public static FakeLagApi fakeLag = new FakeLagApi();
     public static FastBreakApi fastBreak = new FastBreakApi();
     public static FlyHackApi flyHack = new FlyHackApi();
@@ -28,7 +31,6 @@ public class Root {
     public static NoFallApi noFall = new NoFallApi();
     public static ScaffoldApi scaffold = new ScaffoldApi();
     public static TeleportApi teleport = new TeleportApi();
-    public static BlinkApi blink = new BlinkApi();
 
     // visuals
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();

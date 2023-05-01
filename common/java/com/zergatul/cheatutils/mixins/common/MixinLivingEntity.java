@@ -1,14 +1,17 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.hacks.ElytraFly;
 import com.zergatul.cheatutils.modules.visuals.FullBright;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)

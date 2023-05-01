@@ -13,11 +13,13 @@
     "common.accessors.ItemRendererAccessor",
     "common.accessors.KeyMappingAccessor",
     "common.accessors.LivingEntityAccessor",
+    "common.accessors.MinecraftAccessor",
     "common.accessors.ProjectileAccessor",
     "common.accessors.ScreenAccessor",
     "common.accessors.WalkAnimationStateAccessor",
 
     "common.MixinAbstractContainerScreen",
+    "common.MixinBlockBehaviourBlockStateBase",
     "common.MixinBoat",
     "common.MixinCamera",
     "common.MixinClientboundDisconnectPacket",
@@ -46,8 +48,8 @@
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSlimeBlock",
     "common.MixinScreen",
+    "common.MixinSoundManager",
     "common.MixinUser",
-    "common.MixinBlockBehaviourBlockStateBase",
 
     "fabric.MixinGameRenderer",
     "fabric.MixinGui",

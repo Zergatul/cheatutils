@@ -33,7 +33,7 @@ public class InventorySlot {
         }
     }
 
-    public int toServer() {
+    public int toMenuIndex() {
         if (slot >= 0) {
             return slot < 9 ? slot + 36 : slot;
         } else {
@@ -44,6 +44,21 @@ public class InventorySlot {
                 case FEET -> 8;
                 case MAINHAND -> -1; // ?
                 case OFFHAND -> 45;
+            };
+        }
+    }
+
+    public int toInventoryIndex() {
+        if (slot >= 0) {
+            return slot;
+        } else {
+            return switch (equipmentSlot) {
+                case HEAD -> 39;
+                case CHEST -> 38;
+                case LEGS -> 37;
+                case FEET -> 36;
+                case MAINHAND -> -1; // ?
+                case OFFHAND -> 40;
             };
         }
     }

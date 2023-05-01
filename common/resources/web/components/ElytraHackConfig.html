@@ -2,62 +2,62 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Elytra Hack</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Elytra Fly</h2>
         <div class="description">
-            Hack doesn't work on most servers.
-            <br>
-            Height Control - use Jump to give yourself acceleration in up direction, Crouch - to give acceleration in down direction.
-            <br>
-            Speed Control - use Up/Down keys to give you acceleration/deceleration in forward direction.
+            Allows you to fly with Elytra without rockets.
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.enabled"
-                    @change="update()">
-                <span>Enabled</span>
-            </label>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                           v-model="config.enabled"
+                           @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>
+                    Method
+                </legend>
+                <div class="input-section">
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="method" value="VanillaFly" v-model="config.method" @change="update()">
+                            <span class="text">Vanilla Fly (use Jump/Sneak/Forward/Backward keys to gain speed)</span>
+                        </label>
+                    </div>
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="method" value="CreativeFly" v-model="config.method" @change="update()">
+                            <span class="text">Creative Fly (you fly like in creative mode)</span>
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>
+                    Speed Settings
+                </legend>
+                <div>
+                    <span class="field-description" style="width: 180px;">Max Speed:</span>
+                    <input type="text" v-model="config.maxSpeed" @change="update()">
+                    <div class="input-description">Blocks/second</div>
+                </div>
+                <div v-show="config.method == 'VanillaFly'">
+                    <span class="field-description" style="width: 180px;">Vertical Acceleration:</span>
+                    <input type="text" v-model="config.vanillaFlyVerticalAcceleration" @change="update()">
+                    <div class="input-description">Blocks/sec^2, when you hold Jump or Sneak</div>
+                </div>
+                <div v-show="config.method == 'VanillaFly'">
+                    <span class="field-description" style="width: 180px;">Horizontal Acceleration:</span>
+                    <input type="text" v-model="config.vanillaFlyHorizontalAcceleration" @change="update()">
+                    <div class="input-description">Blocks/sec^2, when you hold Forward or Backward</div>
+                </div>
+            </fieldset>
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.heightControl"
-                    @change="update()">
-                <span>Height Control</span>
-            </label>
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.speedControl"
-                    @change="update()">
-                <span>Speed Control</span>
-            </label>
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.speedLimitEnabled"
-                    @change="update()">
-                <span>Enable Speed Limit</span>
-            </label>
-        </div>
-        <div>
-            <span class="text">Speed Limit:</span>
-            <input type="text" v-model="config.speedLimit" @change="update()">
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.horizontalSpeedLimitEnabled"
-                    @change="update()">
-                <span>Enable Horizontal Speed Limit</span>
-            </label>
-        </div>
-        <div>
-            <span class="text">Horizontal Speed Limit:</span>
-            <input type="text" v-model="config.horizontalSpeedLimit" @change="update()">
-        </div>
-    </fieldset>
+    </div>
 </div>

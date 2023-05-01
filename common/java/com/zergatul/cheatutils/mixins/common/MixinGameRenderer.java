@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GetFieldOfViewEvent;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.modules.visuals.FullBright;
 import com.zergatul.cheatutils.render.PartTick;
@@ -54,5 +55,12 @@ public abstract class MixinGameRenderer {
     private void onBeforeRender(float partialTicks, long nanoTime, boolean p_109096_, CallbackInfo info) {
         PartTick.value = partialTicks;
         Events.RenderTickStart.trigger();
+    }
+
+    @Inject(at = @At("HEAD"), method = "bobHurt(Lcom/mojang/blaze3d/vertex/PoseStack;F)V", cancellable = true)
+    private void onBobHurt(PoseStack poseStack, float partialTicks, CallbackInfo info) {
+        if (ConfigStore.instance.getConfig().bobHurtConfig.enabled) {
+            info.cancel();
+        }
     }
 }

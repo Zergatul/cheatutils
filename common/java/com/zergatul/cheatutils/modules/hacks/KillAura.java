@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.MathUtils;
+import com.zergatul.cheatutils.wrappers.AttackRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -69,7 +70,7 @@ public class KillAura implements Module {
             return;
         }
 
-        if (ticks - lastAttackTick < config.attackTickInterval) {
+        if (!shouldAttackNow(config)) {
             return;
         }
 
@@ -78,7 +79,7 @@ public class KillAura implements Module {
         int targetPriority = Integer.MAX_VALUE;
         double targetDistance2 = Double.MAX_VALUE;
 
-        float maxRange2 = config.maxRange * config.maxRange;
+        double maxRange2 = getRangeSquared(config);
         Vec3 eyePos = player.getEyePosition();
 
         for (Entity entity : world.entitiesForRendering()) {
@@ -174,6 +175,19 @@ public class KillAura implements Module {
             targets.clear();
 
             lastAttackTick = ticks;
+        }
+    }
+
+    private double getRangeSquared(KillAuraConfig config) {
+        double range = config.overrideAttackRange ? config.maxRange : AttackRange.get();
+        return range * range;
+    }
+
+    private boolean shouldAttackNow(KillAuraConfig config) {
+        if (KillAuraConfig.Cooldown.equals(config.delayMode)) {
+            return mc.player.getAttackStrengthScale((float) -config.extraTicks) == 1;
+        } else {
+            return ticks - lastAttackTick >= config.attackTickInterval;
         }
     }
 }

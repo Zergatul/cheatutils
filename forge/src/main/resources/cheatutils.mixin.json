@@ -14,6 +14,7 @@
     "common.accessors.ItemRendererAccessor",
     "common.accessors.KeyMappingAccessor",
     "common.accessors.LivingEntityAccessor",
+    "common.accessors.MinecraftAccessor",
     "common.accessors.ProjectileAccessor",
     "common.accessors.ScreenAccessor",
     "common.accessors.WalkAnimationStateAccessor",
@@ -48,6 +49,7 @@
     "common.MixinScreen",
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSlimeBlock",
+    "common.MixinSoundManager",
     "common.MixinUser",
 
     "forge.MixinC2SModListReply",

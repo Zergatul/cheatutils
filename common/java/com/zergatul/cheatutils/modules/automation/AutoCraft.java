@@ -12,9 +12,7 @@ import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,7 +37,7 @@ public class AutoCraft {
         }
 
         AutoCraftConfig config = ConfigStore.instance.getConfig().autoCraftConfig;
-        if (!config.enabled) {
+        if (!config.enabled || config.items.length == 0) {
             state = State.NONE;
             return;
         }
@@ -53,17 +51,16 @@ public class AutoCraft {
             state = State.START;
         }
 
+        mc.getProfiler().push("auto-craft");
+
         try {
             switch (state) {
                 case START:
-                    ImmutableList<ItemStack> inventory = new ImmutableList<>(mc.player.getInventory().items.stream().map(ItemStack::copy).toList());
-                    for (Item item: config.items) {
-                        CraftEntry entry = getCraftingEntry(item, inventory, List.of(item));
-                        if (entry != null) {
-                            boolean shift = entry.recipe.getResultItem(mc.level.registryAccess()).getItem().getMaxStackSize() > 1;
-                            mc.gameMode.handlePlaceRecipe(craftingScreen.getMenu().containerId, entry.recipe, shift);
-                            state = State.RECIPE_CLICKED;
-                        }
+                    Recipe<?> recipe = findRecipe(config);
+                    if (recipe != null) {
+                        boolean shift = recipe.getResultItem(mc.level.registryAccess()).getItem().getMaxStackSize() > 1;
+                        mc.gameMode.handlePlaceRecipe(craftingScreen.getMenu().containerId, recipe, shift);
+                        state = State.RECIPE_CLICKED;
                     }
                     break;
 
@@ -87,34 +84,62 @@ public class AutoCraft {
             logger.error(e);
             config.enabled = false;
         }
+
+        mc.getProfiler().pop();
     }
 
-    private CraftEntry getCraftingEntry(Item item, ImmutableList<ItemStack> inventory, List<Item> exclude) {
+    private Recipe<?> findRecipe(AutoCraftConfig config) {
+        ImmutableList<ItemStack> inventory = new ImmutableList<>(mc.player.getInventory().items.stream().map(ItemStack::copy).toList());
         List<Recipe<?>> recipes = mc.player.getRecipeBook().getCollections().stream()
                 .flatMap(c -> c.getRecipes().stream())
-                .filter(r -> r.getResultItem(mc.level.registryAccess()).getItem() == item)
-                .filter(r -> r.getIngredients().stream().noneMatch(ingr -> exclude.stream().anyMatch(i -> Arrays.stream(ingr.getItems()).anyMatch(is -> is.is(i)))))
+                .filter(r -> r instanceof CraftingRecipe)
                 .toList();
 
-        CraftingPlanEntry[] planEntries = new CraftingPlanEntry[recipes.size()];
-        for (int i = 0; i < recipes.size(); i++) {
-            planEntries[i] = new CraftingPlanEntry(recipes.get(i), getMissingIngredients(recipes.get(i), inventory, exclude));
-        }
+        for (Item baseItem : config.items) {
+            // queue for next recipes to process
+            Queue<CraftingTreeEntry> queue = new LinkedList<>();
 
-        Arrays.sort(planEntries, Comparator.comparingInt(pe -> pe.missing.size()));
-        for (CraftingPlanEntry planEntry: planEntries) {
-            if (planEntry.missing.size() == 0) {
-                return new CraftEntry(planEntry, inventory);
+            // add base recipes to queue
+            for (Recipe<?> recipe : recipes) {
+                if (!recipe.getResultItem(mc.level.registryAccess()).is(baseItem)) {
+                    continue;
+                }
+
+                queue.add(new CraftingTreeEntry(recipe, null));
             }
 
-            for (Ingredient missingIngredient: planEntry.missing) {
-                for (ItemStack possibleItemStack: missingIngredient.getItems()) {
-                    Item tryItem = possibleItemStack.getItem();
-                    List<Item> newExclude = new ArrayList<>(exclude);
-                    newExclude.add(tryItem);
-                    CraftEntry subPlan = getCraftingEntry(tryItem, inventory, newExclude);
-                    if (subPlan != null) {
-                        return subPlan;
+            while (queue.size() > 0) {
+                CraftingTreeEntry entry = queue.poll();
+                List<Item> missing = getMissingIngredients(entry, inventory);
+                if (missing.size() == 0) {
+                    // found recipe we can craft
+                    return entry.recipe;
+                }
+
+                // add missing items to queue
+                for (Item item : missing) {
+                    // find recipes
+                    recipesLoop:
+                    for (Recipe<?> recipe : recipes) {
+                        if (!recipe.getResultItem(mc.level.registryAccess()).is(item)) {
+                            continue;
+                        }
+
+                        // don't use the same recipe to prevent loops
+                        if (entry.has(recipe)) {
+                            continue;
+                        }
+
+                        // don't use the same items to prevent loops
+                        for (Ingredient ingredient : recipe.getIngredients()) {
+                            for (ItemStack itemStack : ingredient.getItems()) {
+                                if (entry.has(itemStack.getItem())) {
+                                    continue recipesLoop;
+                                }
+                            }
+                        }
+
+                        queue.add(new CraftingTreeEntry(recipe, entry));
                     }
                 }
             }
@@ -123,13 +148,13 @@ public class AutoCraft {
         return null;
     }
 
-    private List<Ingredient> getMissingIngredients(Recipe<?> recipe, ImmutableList<ItemStack> inventory, List<Item> exclude) {
-        List<Ingredient> list = new ArrayList<>();
-        for (Ingredient ingredient: recipe.getIngredients()) {
+    private List<Item> getMissingIngredients(CraftingTreeEntry entry, ImmutableList<ItemStack> inventory) {
+        List<Item> list = new ArrayList<>();
+        for (Ingredient ingredient : entry.recipe.getIngredients()) {
             boolean has = false;
             for (int i = 0; i < inventory.size(); i++) {
                 ItemStack itemStack = inventory.get(i);
-                if (testIngredient(ingredient, itemStack, exclude)) {
+                if (ingredient.test(itemStack)) {
                     ItemStack newItemStack = itemStack.copy();
                     newItemStack.setCount(itemStack.getCount() - 1);
                     inventory = inventory.set(i, newItemStack);
@@ -138,35 +163,15 @@ public class AutoCraft {
                 }
             }
             if (!has) {
-                list.add(ingredient);
+                for (ItemStack itemStack : ingredient.getItems()) {
+                    Item item = itemStack.getItem();
+                    if (!list.contains(item)) {
+                        list.add(item);
+                    }
+                }
             }
         }
         return list;
-    }
-
-    private boolean testIngredient(Ingredient ingredient, ItemStack itemStack, List<Item> exclude) {
-        if (!ingredient.test(itemStack)) {
-            return false;
-        }
-
-        if (itemStack == null) {
-            return false;
-        } else {
-            if (ingredient.getItems().length == 0) {
-                return itemStack.isEmpty();
-            } else {
-                for (ItemStack ingrItemStack: ingredient.getItems()) {
-                    if (exclude.stream().anyMatch(ingrItemStack::is)) {
-                        continue;
-                    }
-                    if (ingrItemStack.is(itemStack.getItem())) {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }
     }
 
     private enum State {
@@ -177,62 +182,26 @@ public class AutoCraft {
         INVALID
     }
 
-    private static class CraftingPlanEntry {
-        public Recipe<?> recipe;
-        public List<Ingredient> missing;
+    private record CraftingTreeEntry(Recipe<?> recipe, AutoCraft.CraftingTreeEntry parent) {
 
-        public CraftingPlanEntry(Recipe<?> recipe, List<Ingredient> missing) {
-            this.recipe = recipe;
-            this.missing = missing;
-        }
-    }
-
-    private static class CraftEntry {
-
-        public Recipe<?> recipe;
-        public ItemStack[] itemStacks = new ItemStack[9];
-        public ImmutableList<ItemStack> inventory;
-
-        public CraftEntry(CraftingPlanEntry entry, ImmutableList<ItemStack> inventory) {
-            this.recipe = entry.recipe;
-            this.inventory = inventory;
-
-            if (entry.recipe instanceof ShapedRecipe shapedRecipe) {
-                for (int i = 0; i < 9; i++) {
-                    int x = i % 3;
-                    int y = i / 3;
-                    if (x < shapedRecipe.getWidth() && y < shapedRecipe.getHeight()) {
-                        int index = y * shapedRecipe.getWidth() + x;
-                        itemStacks[i] = applyIngredient(entry.recipe.getIngredients().get(index));
-                    } else {
-                        itemStacks[i] = ItemStack.EMPTY;
-                    }
-                }
-            } else {
-                for (int i = 0; i < entry.recipe.getIngredients().size(); i++) {
-                    itemStacks[i] = applyIngredient(entry.recipe.getIngredients().get(i));
-                }
-                for (int i = entry.recipe.getIngredients().size(); i < 9; i++) {
-                    itemStacks[i] = ItemStack.EMPTY;
-                }
-            }
-        }
-
-        private ItemStack applyIngredient(Ingredient ingredient) {
-            for (int i = 0; i < inventory.size(); i++) {
-                ItemStack itemStack = inventory.get(i);
-                if (ingredient.test(itemStack)) {
-                    ItemStack newItemStack = itemStack.copy();
-                    newItemStack.setCount(itemStack.getCount() - 1);
-                    inventory = inventory.set(i, newItemStack);
-
-                    ItemStack craftItemStack = itemStack.copy();
-                    craftItemStack.setCount(1);
-                    return craftItemStack;
+        public boolean has(Recipe<?> recipe) {
+            for (CraftingTreeEntry current = this; current != null; current = current.parent) {
+                if (current.recipe == recipe) {
+                    return true;
                 }
             }
 
-            throw new IllegalStateException("Cannot apply Ingredient in CraftEntry at current Inventory state.");
+            return false;
+        }
+
+        public boolean has(Item item) {
+            for (CraftingTreeEntry current = this; current != null; current = current.parent) {
+                if (current.recipe.getResultItem(Minecraft.getInstance().level.registryAccess()).is(item)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
