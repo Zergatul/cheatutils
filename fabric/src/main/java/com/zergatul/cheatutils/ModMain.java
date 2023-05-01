@@ -68,13 +68,14 @@ public class ModMain implements ClientModInitializer {
 		register(StatusOverlay.instance);
 		register(AutoCriticals.instance);
 		register(LightLevel.instance);
-		register(ElytraHack.instance);
+		register(ElytraFly.instance);
 		register(AdvancedTooltips.instance);
 		register(AutoDisconnect.instance);
 		register(Zoom.instance);
 		register(ShulkerTooltipController.instance);
 		register(ArmorOverlay.instance);
 		register(Fog.instance);
+		register(AutoAttack.instance);
 
 		Events.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
 	}

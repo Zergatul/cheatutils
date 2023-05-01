@@ -46,7 +46,7 @@
                             <button @click="current = 'blocks'" :class="{ faded: !filtered.Blocks }">Blocks</button>
                         </td>
                         <td>
-                            <button @click="current = 'boat-hack'" :class="{ faded: !filtered.BoatHack }">Boat</button>
+                            <button @click="current = 'kill-aura'" :class="{ faded: !filtered.KillAura }">Kill Aura</button>
                         </td>
                         <td>
                             <button @click="current = 'full-bright'" :class="{ faded: !filtered.FullBright }">Full Bright</button>
@@ -60,13 +60,13 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'kill-aura'" :class="{ faded: !filtered.KillAura }">Kill Aura</button>
+                            <button @click="current = 'auto-bucket'" :class="{ faded: !filtered.AutoBucket }">Auto Bucket</button>
                         </td>
                         <td>
                             <button @click="current = 'entities'" :class="{ faded: !filtered.Entities }">Entities</button>
                         </td>
                         <td>
-                            <button @click="current = 'elytra-hack'" :class="{ faded: !filtered.ElytraHack }">Elytra</button>
+                            <button @click="current = 'elytra-hack'" :class="{ faded: !filtered.ElytraHack }">Elytra Fly</button>
                         </td>
                         <td>
                             <button @click="current = 'armor-overlay'" :class="{ faded: !filtered.ArmorOverlay }">Armor Overlay</button>
@@ -199,7 +199,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'auto-bucket'" :class="{ faded: !filtered.AutoBucket }">Auto Bucket</button>
+                            <button @click="current = 'auto-attack'">Auto Attack</button>
                         </td>
                         <td></td>
                         <td>
@@ -248,6 +248,16 @@
                         <td></td>
                         <td>
                             <button @click="current = 'blink'" :class="{ faded: !filtered.Blink }">Blink</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'bob-hurt'" :class="{ faded: !filtered.BobHurt }">Hurt Bobbing</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'boat-hack'" :class="{ faded: !filtered.BoatHack }">Boat</button>
                         </td>
                     </tr>
                 </tbody>
@@ -543,6 +553,16 @@
             v-if="current == 'blink'"
             @back="backToMain()">
         </blink-config>
+
+        <bob-hurt-config
+            v-if="current == 'bob-hurt'"
+            @back="backToMain()">
+        </bob-hurt-config>
+
+        <auto-attack-config
+            v-if="current == 'auto-attack'"
+            @back="backToMain()">
+        </auto-attack-config>
 
     </div>
 

@@ -3,8 +3,8 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.utils.KeyUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.sounds.SoundEvents;
@@ -15,6 +15,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 public class AutoFish implements Module {
 
@@ -46,14 +48,14 @@ public class AutoFish implements Module {
                 mc.player.getX() + 100,
                 mc.player.getY() + 100,
                 mc.player.getZ() + 100);
-            var bobbers = mc.player.clientLevel.getEntitiesOfClass(FishingHook.class, box);
+            List<FishingHook> bobbers = mc.player.clientLevel.getEntitiesOfClass(FishingHook.class, box);
             bobber = bobbers.stream().filter(b -> b.getPlayerOwner() == mc.player).findFirst().orElse(null);
 
             if (bobber == null && lastPullIn != 0) {
                 if (System.nanoTime() - lastPullIn > REHOOK_DELAY) {
                     ItemStack stack = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
                     if (stack.getItem() == Items.FISHING_ROD) {
-                        KeyUtils.click(mc.options.keyUse);
+                        ((MinecraftAccessor) mc).startUseItem_CU();
                     }
                     lastPullIn = 0;
                 }
@@ -73,7 +75,7 @@ public class AutoFish implements Module {
         if (args.packet instanceof ClientboundSoundPacket soundPacket) {
             if (soundPacket.getSound().value() == SoundEvents.FISHING_BOBBER_SPLASH) {
                 if (bobber.distanceToSqr(soundPacket.getX(), soundPacket.getY(), soundPacket.getZ()) < 1) {
-                    KeyUtils.click(mc.options.keyUse);
+                    ((MinecraftAccessor) mc).startUseItem_CU();
                     lastPullIn = System.nanoTime();
                 }
             }

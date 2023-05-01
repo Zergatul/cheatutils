@@ -4,16 +4,14 @@ import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
+import com.zergatul.cheatutils.modules.hacks.ElytraFly;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -56,6 +54,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
             flyHackOverride = true;
         }
+
+        ElytraFly.instance.onBeforeAiStep();
     }
 
     @Inject(at = @At("TAIL"), method = "aiStep()V")
@@ -68,6 +68,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
             player.getAbilities().setFlyingSpeed(oldFlyingSpeed);
             flyHackOverride = false;
         }
+
+        ElytraFly.instance.onAfterAiStep();
     }
 
     @Inject(at = @At("HEAD"), method = "isUsingItem()Z", cancellable = true)
@@ -90,6 +92,11 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
             return false;
         }
         return isMovingSlowly;
+    }
+
+    @ModifyConstant(method = "aiStep()V", constant = @Constant(floatValue = 3.0f))
+    private float onModifyFlyingHorizontalMultiplier(float value) {
+        return ElytraFly.instance.onModifyFlyingHorizontalMultiplier(value);
     }
 
     @Override
@@ -118,5 +125,11 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         } else {
             return super.getJumpPower();
         }
+    }
+
+    @Override
+    public void move(MoverType type, Vec3 delta) {
+        delta = ElytraFly.instance.onBeforeMove(type, delta);
+        super.move(type, delta);
     }
 }

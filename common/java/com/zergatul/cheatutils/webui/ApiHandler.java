@@ -659,6 +659,30 @@ public class ApiHandler implements HttpHandler {
                 config.copyTo(current);
             }
         });
+
+        apis.add(new SimpleConfigApi<>("bob-hurt", BobHurtConfig.class) {
+            @Override
+            protected BobHurtConfig getConfig() {
+                return ConfigStore.instance.getConfig().bobHurtConfig;
+            }
+
+            @Override
+            protected void setConfig(BobHurtConfig config) {
+                ConfigStore.instance.getConfig().bobHurtConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("auto-attack", AutoAttackConfig.class) {
+            @Override
+            protected AutoAttackConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoAttackConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoAttackConfig config) {
+                ConfigStore.instance.getConfig().autoAttackConfig = config;
+            }
+        });
     }
 
     @Override

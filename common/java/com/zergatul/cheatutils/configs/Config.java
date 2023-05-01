@@ -54,6 +54,8 @@ public class Config {
     public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
     public CoordinateLeakProtectionConfig coordinateLeakProtectionConfig = new CoordinateLeakProtectionConfig();
     public ScriptedBlockPlacerConfig scriptedBlockPlacerConfig = new ScriptedBlockPlacerConfig();
+    public BobHurtConfig bobHurtConfig = new BobHurtConfig();
+    public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
 
     public Config() {
         esp = true;

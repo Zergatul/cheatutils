@@ -139,6 +139,8 @@ import { addComponent } from '/components/Loader.js'
     loadModule('TpsConfig', ['tps', 'tick', 'rate']);
     loadModule('ScriptedBlockPlacerConfig', ['scripted', 'block', 'placer']);
     loadModule('BlinkConfig', ['blink']);
+    loadModule('BobHurtConfig', ['nohurtcam', 'bobhurt']);
+    loadModule('AutoAttackConfig', ['auto', 'attack']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

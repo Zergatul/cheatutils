@@ -57,12 +57,12 @@ public class FakePlayer extends RemotePlayer {
         this.yBodyRot = this.yBodyRotO = player.yBodyRot;
         this.yHeadRot = this.yHeadRotO = player.yHeadRot;
 
-        this.mainHand = player.getItemBySlot(EquipmentSlot.MAINHAND);
-        this.offHand = player.getItemBySlot(EquipmentSlot.OFFHAND);
-        this.head = player.getItemBySlot(EquipmentSlot.HEAD);
-        this.chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        this.legs = player.getItemBySlot(EquipmentSlot.LEGS);
-        this.feet = player.getItemBySlot(EquipmentSlot.FEET);
+        this.mainHand = player.getItemBySlot(EquipmentSlot.MAINHAND).copy();
+        this.offHand = player.getItemBySlot(EquipmentSlot.OFFHAND).copy();
+        this.head = player.getItemBySlot(EquipmentSlot.HEAD).copy();
+        this.chest = player.getItemBySlot(EquipmentSlot.CHEST).copy();
+        this.legs = player.getItemBySlot(EquipmentSlot.LEGS).copy();
+        this.feet = player.getItemBySlot(EquipmentSlot.FEET).copy();
 
         this.entityData.set(DATA_SHARED_FLAGS_ID, player.getEntityData().get(DATA_SHARED_FLAGS_ID));
         this.entityData.set(DATA_POSE, player.getEntityData().get(DATA_POSE));

@@ -2,29 +2,33 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ElytraHackConfig implements ValidatableConfig {
+public class ElytraHackConfig extends ModuleConfig implements ValidatableConfig {
 
-    public boolean enabled;
-    public boolean heightControl;
-    public boolean speedControl;
-    public boolean horizontalSpeedLimitEnabled;
-    public double horizontalSpeedLimit;
-    public boolean speedLimitEnabled;
-    public double speedLimit;
+    public static final String VANILLA_FLY = "VanillaFly";
+    public static final String CREATIVE_FLY = "CreativeFly";
+
+    public String method;
+
+    public double vanillaFlyVerticalAcceleration;
+    public double vanillaFlyHorizontalAcceleration;
+
+    public double maxSpeed;
 
     public ElytraHackConfig() {
         enabled = false;
-        heightControl = false;
-        speedControl = false;
-        horizontalSpeedLimitEnabled = false;
-        horizontalSpeedLimit = 100;
-        speedLimitEnabled = false;
-        speedLimit = 100;
+        method = VANILLA_FLY;
+
+        maxSpeed = 50;
+
+        vanillaFlyVerticalAcceleration = 4;
+        vanillaFlyHorizontalAcceleration = 1;
     }
 
     @Override
     public void validate() {
-        horizontalSpeedLimit = MathUtils.clamp(horizontalSpeedLimit, 10, 1000);
-        speedLimit = MathUtils.clamp(speedLimit, 10, 1000);
+        maxSpeed = MathUtils.clamp(maxSpeed, 1, 1000);
+
+        vanillaFlyVerticalAcceleration = MathUtils.clamp(vanillaFlyVerticalAcceleration, 0, 50);
+        vanillaFlyHorizontalAcceleration = MathUtils.clamp(vanillaFlyHorizontalAcceleration, 0, 50);
     }
 }

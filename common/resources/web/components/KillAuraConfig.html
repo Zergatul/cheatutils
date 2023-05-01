@@ -20,22 +20,54 @@
 
             <fieldset>
                 <legend>
-                    Tick Interval
+                    Delay Method
                 </legend>
-                <div class="input-section">
-                    <input type="text" v-model="config.attackTickInterval" @change="update()">
-                    <div class="section-description">
-                        How often kill aura attacks. 1 = fastest (attack every tick), 20 = attack once a second and so on. In other words: attack every X ticks.
+                <div>
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="method" value="ConstDelay" v-model="config.delayMode" @change="update()">
+                            <span class="text">Constant Tick Delay</span>
+                        </label>
+                    </div>
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="method" value="Cooldown" v-model="config.delayMode" @change="update()">
+                            <span class="text">Item Cooldown</span>
+                        </label>
+                    </div>
+                    <div class="input-section" v-show="config.delayMode == 'ConstDelay'">
+                        <span class="field-description">Tick Interval:</span>
+                        <input type="text" v-model="config.attackTickInterval" @change="update()">
+                        <div class="section-description">
+                            How often kill aura attacks. 1 = fastest (attack every tick), 20 = attack once a second and so on. In other words: attack every X ticks.
+                        </div>
+                    </div>
+                    <div class="input-section" v-show="config.delayMode == 'Cooldown'">
+                        <span class="field-description">Extra Ticks:</span>
+                        <input type="text" v-model="config.extraTicks" @change="update()">
+                        <div class="section-description">
+                            Wait additional ticks once cooldown passed. Can be negative, in this case module will attack before cooldown.
+                        </div>
                     </div>
                 </div>
             </fieldset>
 
             <fieldset>
                 <legend>
-                    Max Range
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.overrideAttackRange"
+                            @change="update()">
+                        <span>Override attack range</span>
+                    </label>
                 </legend>
                 <div class="input-section">
+                    <span class="field-description">Max Range:</span>
                     <input type="text" v-model="config.maxRange" @change="update()">
+                </div>
+                <div class="section-description">
+                    If disabled uses current attack range, possibly modified by Reach hack.<br>
+                    When disabled in Fabric version, it will not be able to detect attack range modified by other mods.
                 </div>
             </fieldset>
 
