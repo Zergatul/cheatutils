@@ -1,14 +1,14 @@
 package com.zergatul.cheatutils.schematics;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.zergatul.cheatutils.common.Registries;
-import net.minecraft.core.IdMapper;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class BlockStateMapping {
 
@@ -25,12 +25,15 @@ public class BlockStateMapping {
     }
 
     public static synchronized List<BlockStateMapping> get() {
-        // TODO: restore code
-        /*if (mappings == null) {
-            IdMapper<BlockState> mapper = net.minecraftforge.registries.GameData.getBlockStateIDMap();
-            Stream<BlockState> stream = StreamSupport.stream(mapper.spliterator(), false);
-            mappings = stream.map(BlockStateMapping::new).toList();
-        }*/
+        if (mappings == null) {
+            mappings = new ArrayList<>();
+            for (Block block : Registries.BLOCKS.getValues()) {
+                ImmutableList<BlockState> states = block.getStateDefinition().getPossibleStates();
+                for (BlockState blockState : states) {
+                    mappings.add(new BlockStateMapping(blockState));
+                }
+            }
+        }
 
         return mappings;
     }

@@ -3,9 +3,12 @@ package com.zergatul.cheatutils.modules.esp;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.zergatul.cheatutils.collections.LinesIterable;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ProjectilePathConfig;
+import com.zergatul.cheatutils.render.Primitives;
+import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.utils.SharedVertexBuffer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
@@ -13,12 +16,14 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.*;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 public class ProjectilePath {
@@ -35,6 +40,7 @@ public class ProjectilePath {
             new BowItemEntry(),
             new CrossbowItemEntry(),
             new TridentItemEntry());
+    private final Map<Integer, LinkedList<TraceRecord>> traces = new HashMap<>();
 
     // TODO: highlight block?
 
@@ -43,8 +49,75 @@ public class ProjectilePath {
     }
 
     private void render(RenderWorldLastEvent event) {
+        if (mc.level == null) {
+            return;
+        }
+
         if (!ConfigStore.instance.getConfig().esp) {
             return;
+        }
+
+        ProjectilePathConfig config = getConfig();
+        if (config.showTraces) {
+            long time = System.nanoTime();
+            for (Entity entity : mc.level.entitiesForRendering()) {
+                if (entity instanceof Projectile) {
+                    if (!traces.containsKey(entity.getId())) {
+                        traces.put(entity.getId(), new LinkedList<>());
+                    }
+
+                    LinkedList<TraceRecord> list = traces.get(entity.getId());
+                    Vec3 position = entity.getPosition(event.getTickDelta());
+                    if (list.size() == 0) {
+                        list.addFirst(new TraceRecord(position, time));
+                    } else {
+                        TraceRecord first = list.getFirst();
+                        if (first.position.distanceToSqr(position) > 0.01) {
+                            list.addFirst(new TraceRecord(position, time));
+                        } else {
+                            first.position = position;
+                            first.time = time;
+                        }
+                    }
+                }
+            }
+
+            Iterator<Map.Entry<Integer, LinkedList<TraceRecord>>> iterator = traces.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Integer, LinkedList<TraceRecord>> entry = iterator.next();
+                LinkedList<TraceRecord> list = entry.getValue();
+                while (list.size() > 0 && list.getLast().time + config.tracesDuration * 1000000000L < time) {
+                    list.removeLast();
+                }
+                if (list.size() == 0) {
+                    iterator.remove();
+                }
+            }
+
+            // rendering
+
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+
+            Vec3 view = event.getCamera().getPosition();
+            for (List<TraceRecord> list : traces.values()) {
+                if (list.size() < 2) {
+                    continue;
+                }
+
+                for (TraceRecord record : new LinesIterable<>(list)) {
+                    long remain = record.time + config.tracesDuration * 1000000000L - time;
+                    float alpha = Math.min(1f, remain / 1e9f / config.fadeDuration);
+                    bufferBuilder.vertex(
+                            record.position.x - view.x,
+                            record.position.y - view.y,
+                            record.position.z - view.z)
+                            .color(0.5f, 1f, 0.5f, alpha).endVertex();
+                }
+            }
+
+            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
         ThrowableItemEntry entry = null;
@@ -83,6 +156,12 @@ public class ProjectilePath {
         float speedY = -Mth.sin((xRot + entry.getXRotDelta()) * ((float)Math.PI / 180F));
         float speedZ = Mth.cos(yRot * ((float)Math.PI / 180F)) * Mth.cos(xRot * ((float)Math.PI / 180F));
         Vec3 movement = new Vec3(speedX, speedY, speedZ).normalize().scale(entry.getSpeed());
+
+        Vec3 playerSpeed = mc.player.getDeltaMovement();
+        if (mc.player.isOnGround()) {
+            playerSpeed = playerSpeed.subtract(0, playerSpeed.y, 0);
+        }
+        movement = movement.add(playerSpeed);
 
         /*final double deviationBase = 0.0172275D;
         double dev = deviationBase * entry.getDeviation();
@@ -399,6 +478,17 @@ public class ProjectilePath {
             }
 
             return CrossbowItem.containsChargedProjectile(itemStack, Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
+        }
+    }
+
+    private static class TraceRecord {
+
+        public Vec3 position;
+        public long time;
+
+        public TraceRecord(Vec3 position, long time) {
+            this.position = position;
+            this.time = time;
         }
     }
 }

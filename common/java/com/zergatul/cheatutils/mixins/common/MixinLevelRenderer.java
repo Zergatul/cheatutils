@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
@@ -94,6 +95,13 @@ public abstract class MixinLevelRenderer {
             if (fake.distanceToSqr(player) > 1) {
                 this.renderEntity(fake, x, y, z, partialTicks, matrices, source);
             }
+        }
+    }
+
+    @Inject(at = @At("HEAD"), method = "renderSnowAndRain", cancellable = true)
+    private void onRenderSnowAndRain(LightTexture p_109704_, float p_109705_, double p_109706_, double p_109707_, double p_109708_, CallbackInfo info) {
+        if (ConfigStore.instance.getConfig().noWeatherConfig.enabled) {
+            info.cancel();
         }
     }
 }

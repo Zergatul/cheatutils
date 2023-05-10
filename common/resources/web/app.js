@@ -141,6 +141,8 @@ import { addComponent } from '/components/Loader.js'
     loadModule('BlinkConfig', ['blink']);
     loadModule('BobHurtConfig', ['nohurtcam', 'bobhurt']);
     loadModule('AutoAttackConfig', ['auto', 'attack']);
+    loadModule('NoWeatherConfig', ['no', 'weather']);
+    loadModule('FakeWeatherConfig', ['fake', 'weather']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

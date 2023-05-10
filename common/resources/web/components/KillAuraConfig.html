@@ -113,7 +113,7 @@
                     <button @click="openAddNew()">Add Priority Entry</button>
                     <button @click="openCreateNewCustomEntry()">Create Custom Priority Entry...</button>
                 </div>
-                <ul class="kill-aura-priority-list" v-if="state == 'list'">
+                <ul class="list-base kill-aura-priority-list" v-if="state == 'list'">
                     <li v-for="(entry, index) in config.priorities">
                         <div class="c0">
                             <input type="checkbox" class="switch"
@@ -141,7 +141,7 @@
                         v-model="search"
                         @input="filterPriorityList()">
                 </div>
-                <ul class="kill-aura-priority-list" v-if="state == 'add'">
+                <ul class="list-base kill-aura-priority-list" v-if="state == 'add'">
                     <li v-for="entry in priorityListFiltered">
                         <div class="c1">
                             <div class="text">{{ entry.name }}</div>

@@ -119,7 +119,7 @@ function createComponent(template) {
             remove() {
                 if (this.selectedConfig) {
                     var self = this;
-                    axios.delete('/api/blocks/' + this.selectedConfig.block).then(function (response) {
+                    axios.delete('/api/blocks/' + encodeURIComponent(this.selectedConfig.block)).then(function (response) {
                         let id = self.selectedConfig.block;
                         let index = self.blocksConfigList.indexOf(self.selectedConfig);
                         if (index >= 0) {
@@ -133,7 +133,7 @@ function createComponent(template) {
             },
             removeById(id) {
                 let self = this;
-                axios.delete('/api/blocks/' + id).then(function (response) {
+                axios.delete('/api/blocks/' + encodeURIComponent(id)).then(function (response) {
                     let index = self.blocksConfigList.findIndex(b => b.block == id);
                     if (index >= 0) {
                         self.blocksConfigList.splice(index, 1);
@@ -151,7 +151,7 @@ function createComponent(template) {
                 if (config.outlineMaxDistance == '') {
                     config.outlineMaxDistance = null;
                 }
-                axios.put('/api/blocks/' + config.block, config);
+                axios.put('/api/blocks/' + encodeURIComponent(config.block), config);
             }
         }
     };

@@ -16,9 +16,6 @@ public class LitematicFile implements SchemaFile {
     private final int subVersion;
     private final int dataVersion;
     private final Region[] regions;
-    private final int width;
-    private final int height;
-    private final int length;
 
     public LitematicFile(byte[] data) throws IOException, InvalidFormatException {
         this(NbtIo.readCompressed(new ByteArrayInputStream(data)));
@@ -46,19 +43,6 @@ public class LitematicFile implements SchemaFile {
         if (regions.length > 1) {
             throw new InvalidFormatException("More than 1 regions. Not supported.");
         }
-
-        width = 0;
-        height = 0;
-        length = 0;
-        /*width = compound.getShort("Width");
-        height = compound.getShort("Height");
-        length = compound.getShort("Length");
-        blocks = compound.getByteArray("Blocks");
-
-        ValidateSize();
-
-        summary = CreateSummary();
-        palette = CreatePalette();*/
     }
 
     private void ValidateRequiredTags(CompoundTag compound) throws InvalidFormatException {
@@ -119,32 +103,32 @@ public class LitematicFile implements SchemaFile {
 
     @Override
     public int getWidth() {
-        return 0;
+        return regions[0].width;
     }
 
     @Override
     public int getHeight() {
-        return 0;
+        return regions[0].height;
     }
 
     @Override
     public int getLength() {
-        return 0;
+        return regions[0].length;
     }
 
     @Override
     public BlockState getBlockState(int x, int y, int z) {
-        return null;
+        return regions[0].getBlockState(x, y, z);
     }
 
     @Override
     public int[] getSummary() {
-        return new int[0];
+        return regions[0].getSummary();
     }
 
     @Override
     public BlockState[] getPalette() {
-        return new BlockState[0];
+        return regions[0].palette;
     }
 
     @Override
@@ -155,15 +139,17 @@ public class LitematicFile implements SchemaFile {
     private static class Region {
 
         public final String name;
-        private final CompoundTag compound;
         private final int width;
         private final int height;
         private final int length;
         private final BlockState[] palette;
+        private final long[] blocks;
+        private final int bitSize;
+        private final long bitMask;
+        private final int[] summary;
 
         public Region(String name, CompoundTag compound) throws InvalidFormatException {
             this.name = name;
-            this.compound = compound;
 
             CompoundTag sizeTag = compound.getCompound("Size");
             width = sizeTag.getInt("x");
@@ -171,6 +157,10 @@ public class LitematicFile implements SchemaFile {
             length = sizeTag.getInt("z");
 
             palette = ParsePalette((ListTag) compound.get("BlockStatePalette"));
+            blocks = compound.getLongArray("BlockStates");
+            bitSize = 32 - Integer.numberOfLeadingZeros(palette.length);
+            bitMask = (1L << bitSize) - 1L;
+            summary = CreateSummary();
         }
 
         public int getWidth() {
@@ -183,6 +173,14 @@ public class LitematicFile implements SchemaFile {
 
         public int getLength() {
             return length;
+        }
+
+        public BlockState getBlockState(int x, int y, int z) {
+            return palette[getPaletteIndex(x, y, z)];
+        }
+
+        public int[] getSummary() {
+            return summary;
         }
 
         private BlockState[] ParsePalette(ListTag list) throws InvalidFormatException {
@@ -232,6 +230,36 @@ public class LitematicFile implements SchemaFile {
                 palette[i] = mapping.state;
             }
             return palette;
+        }
+
+        private int[] CreateSummary() {
+            int[] summary = new int[palette.length];
+            int size = width * height * length;
+            for (int i = 0; i < size; i++) {
+                summary[getPaletteIndex(i)]++;
+            }
+            return summary;
+        }
+
+        private int getPaletteIndex(int x, int y, int z) {
+            return getPaletteIndex(((long) y * length + z) * width + x);
+        }
+
+        private int getPaletteIndex(long index) {
+            long startOffset = index * bitSize;
+            int startArrIndex = (int) (startOffset >> 6); // startOffset / 64
+            int endArrIndex = (int) (((index + 1L) * (long) bitSize - 1L) >> 6);
+            int startBitOffset = (int) (startOffset & 0x3F); // startOffset % 64
+
+            if (startArrIndex == endArrIndex)
+            {
+                return (int) (blocks[startArrIndex] >>> startBitOffset & bitMask);
+            }
+            else
+            {
+                int endOffset = 64 - startBitOffset;
+                return (int) ((blocks[startArrIndex] >>> startBitOffset | blocks[endArrIndex] << endOffset) & bitMask);
+            }
         }
     }
 }

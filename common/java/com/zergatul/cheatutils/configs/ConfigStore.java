@@ -159,6 +159,7 @@ public class ConfigStore {
         config.keyBindingsConfig.validate();
         config.worldMarkersConfig.validate();
         config.autoAttackConfig.validate();
+        config.projectilePathConfig.validate();
 
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);

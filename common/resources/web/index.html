@@ -199,7 +199,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'auto-attack'">Auto Attack</button>
+                            <button @click="current = 'auto-attack'" :class="{ faded: !filtered.AutoAttack }">Auto Attack</button>
                         </td>
                         <td></td>
                         <td>
@@ -211,7 +211,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button @click="current = 'schematica'">Schematica (ALPHA)</button>
+                            <button @click="current = 'schematica'" :class="{ faded: !filtered.Schematica }">Schematica (ALPHA)</button>
                         </td>
                         <td></td>
                         <td>
@@ -258,6 +258,17 @@
                         <td></td>
                         <td>
                             <button @click="current = 'boat-hack'" :class="{ faded: !filtered.BoatHack }">Boat</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'no-weather'" :class="{ faded: !filtered.NoWeather }">No Weather</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'fake-weather'" :class="{ faded: !filtered.FakeWeather }">Fake Weather</button>
                         </td>
                     </tr>
                 </tbody>
@@ -563,6 +574,16 @@
             v-if="current == 'auto-attack'"
             @back="backToMain()">
         </auto-attack-config>
+
+        <no-weather-config
+            v-if="current == 'no-weather'"
+            @back="backToMain()">
+        </no-weather-config>
+
+        <fake-weather-config
+            v-if="current == 'fake-weather'"
+            @back="backToMain()">
+        </fake-weather-config>
 
     </div>
 

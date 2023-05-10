@@ -37,6 +37,10 @@ public class ClientTickController {
         }
     }
 
+    public void run(Runnable runnable) {
+        queue.add(runnable);
+    }
+
     private void onClientTickEnd() {
         while (queue.size() > 0) {
             Runnable item = queue.poll();

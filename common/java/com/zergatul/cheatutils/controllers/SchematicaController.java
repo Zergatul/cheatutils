@@ -283,6 +283,8 @@ public class SchematicaController {
 
             Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
     private synchronized void onChunkLoaded(LevelChunk chunk) {

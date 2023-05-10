@@ -53,6 +53,8 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptedBlockPlacerCodeApi());
         apis.add(new AutoDisconnectCodeApi());
         apis.add(new GenerateEntityMappingApi());
+        apis.add(new FakeWeatherSetTimeApi());
+        apis.add(new FakeWeatherSetRainApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -681,6 +683,30 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(AutoAttackConfig config) {
                 ConfigStore.instance.getConfig().autoAttackConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("no-weather", NoWeatherConfig.class) {
+            @Override
+            protected NoWeatherConfig getConfig() {
+                return ConfigStore.instance.getConfig().noWeatherConfig;
+            }
+
+            @Override
+            protected void setConfig(NoWeatherConfig config) {
+                ConfigStore.instance.getConfig().noWeatherConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("fake-weather", FakeWeatherConfig.class) {
+            @Override
+            protected FakeWeatherConfig getConfig() {
+                return ConfigStore.instance.getConfig().fakeWeatherConfig;
+            }
+
+            @Override
+            protected void setConfig(FakeWeatherConfig config) {
+                ConfigStore.instance.getConfig().fakeWeatherConfig = config;
             }
         });
     }

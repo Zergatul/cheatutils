@@ -56,6 +56,9 @@ public class Config {
     public ScriptedBlockPlacerConfig scriptedBlockPlacerConfig = new ScriptedBlockPlacerConfig();
     public BobHurtConfig bobHurtConfig = new BobHurtConfig();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
+    public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
+    public FakeWeatherConfig fakeWeatherConfig = new FakeWeatherConfig();
+    public AutoAimConfig autoAimConfig = new AutoAimConfig();
 
     public Config() {
         esp = true;
