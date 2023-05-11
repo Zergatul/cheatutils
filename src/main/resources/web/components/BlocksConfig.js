@@ -119,7 +119,7 @@ function createComponent(template) {
             remove() {
                 if (this.selectedConfig) {
                     var self = this;
-                    axios.delete('/api/blocks/' + this.selectedConfig.block).then(function (response) {
+                    axios.delete('/api/blocks/' + encodeURIComponent(this.selectedConfig.block)).then(function (response) {
                         let id = self.selectedConfig.block;
                         let index = self.blocksConfigList.indexOf(self.selectedConfig);
                         if (index >= 0) {
@@ -135,7 +135,7 @@ function createComponent(template) {
                 axios.post('/api/block-esp-restart');
             },
             update(config) {
-                axios.put('/api/blocks/' + config.block, config);
+                axios.put('/api/blocks/' + encodeURIComponent(config.block), config);
             }
         }
     };

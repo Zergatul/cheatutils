@@ -15,6 +15,8 @@ import org.apache.http.MethodNotSupportedException;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -469,8 +471,10 @@ public class ApiHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
-        String[] parts = exchange.getRequestURI().getPath().split("/");
+        String[] parts = exchange.getRequestURI().getRawPath().split("/");
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = URLDecoder.decode(parts[i], Charset.defaultCharset());
+        }
 
         Optional<ApiBase> api;
         synchronized (apis) {
