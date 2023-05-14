@@ -22,16 +22,32 @@
                 <legend>
                     Override
                 </legend>
-                <div class="input-section">
-                    <span class="field-description">Set day time (0..24000):</span>
-                    <input type="text" v-model="dayTime">
-                    <button style="width: 80px;" @click="setDayTime()">Set</button>
-                </div>
-                <div class="input-section">
-                    <span class="field-description">Set rain level (0..1, 0 - no rain):</span>
-                    <input type="text" v-model="rainLevel">
-                    <button style="width: 80px;" @click="setRainLevel()">Set</button>
-                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="field-description">Set day time (0..24000):</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="dayTime">
+                            </td>
+                            <td>
+                                <button style="width: 80px;" @click="setDayTime()">Set</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="field-description">Set rain level (0..1, 0 - no rain):</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="rainLevel">
+                            </td>
+                            <td>
+                                <button style="width: 80px;" @click="setRainLevel()">Set</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </fieldset>
         </div>
     </div>

@@ -53,6 +53,7 @@ public class Root {
     public static ColorApi color = new ColorApi();
     public static TimeApi time = new TimeApi();
     public static ConvertApi convert = new ConvertApi();
+    public static PacketApi packet = new PacketApi();
 
     // specific
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();

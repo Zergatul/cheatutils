@@ -12,6 +12,7 @@ import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.esp.ProjectilePath;
 import com.zergatul.cheatutils.modules.hacks.*;
+import com.zergatul.cheatutils.modules.scripting.Exec;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.AdvancedTooltips;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
@@ -93,6 +94,7 @@ public class ModMain {
         register(ArmorOverlay.instance);
         register(Fog.instance);
         register(AutoAttack.instance);
+        register(Exec.instance);
     }
 
     private void register(Module module) {

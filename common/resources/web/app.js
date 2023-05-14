@@ -143,6 +143,8 @@ import { addComponent } from '/components/Loader.js'
     loadModule('AutoAttackConfig', ['auto', 'attack']);
     loadModule('NoWeatherConfig', ['no', 'weather']);
     loadModule('FakeWeatherConfig', ['fake', 'weather']);
+    loadModule('ChatUtilitiesConfig', ['chat']);
+    loadModule('ExecConfig', ['exec']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

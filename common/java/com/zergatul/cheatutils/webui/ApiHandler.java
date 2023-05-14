@@ -8,7 +8,9 @@ import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
+import com.zergatul.cheatutils.modules.utilities.ChatUtilities;
 import com.zergatul.cheatutils.utils.MathUtils;
+import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
@@ -20,6 +22,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ApiHandler implements HttpHandler {
@@ -707,6 +710,35 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(FakeWeatherConfig config) {
                 ConfigStore.instance.getConfig().fakeWeatherConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("chat-utilities", ChatUtilitiesConfig.class) {
+            @Override
+            protected ChatUtilitiesConfig getConfig() {
+                return ConfigStore.instance.getConfig().chatUtilitiesConfig;
+            }
+
+            @Override
+            protected void setConfig(ChatUtilitiesConfig config) {
+                ChatUtilitiesConfig oldConfig = ConfigStore.instance.getConfig().chatUtilitiesConfig;
+                ConfigStore.instance.getConfig().chatUtilitiesConfig = config;
+
+                if (oldConfig.showTime != config.showTime || !Objects.equals(oldConfig.timeFormat, config.timeFormat)) {
+                    Minecraft.getInstance().gui.getChat().rescaleChat();
+                }
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("exec", ExecConfig.class) {
+            @Override
+            protected ExecConfig getConfig() {
+                return ConfigStore.instance.getConfig().execConfig;
+            }
+
+            @Override
+            protected void setConfig(ExecConfig config) {
+                ConfigStore.instance.getConfig().execConfig = config;
             }
         });
     }

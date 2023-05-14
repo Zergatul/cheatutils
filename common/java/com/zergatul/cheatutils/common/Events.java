@@ -35,4 +35,5 @@ public class Events {
     public static final CancelableEventHandler<PreRenderTooltipEvent> PreRenderTooltip = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<ContainerRenderLabelsEvent> ContainerRenderLabels = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<SetupFogEvent> SetupFog = new ParameterizedEventHandler<>();
+    public static final CancelableEventHandler<SendChatEvent> SendChat = new CancelableEventHandler<>();
 }

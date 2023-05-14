@@ -20,13 +20,26 @@
 
             <fieldset>
                 <legend>Style</legend>
-                <div class="input-section">
-                    <span class="field-description">Border Width:</span> <input type="text" v-model="config.borderWidth" @change="update()">
-                </div>
-                <div class="input-section">
-                    <span class="field-description">Font Size:</span>
-                    <input type="text" v-model="config.fontSize" @change="update()">
-                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="field-description">Border Width:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="config.borderWidth" @change="update()">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="field-description">Font Size:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="config.fontSize" @change="update()">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 <div class="input-section">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"

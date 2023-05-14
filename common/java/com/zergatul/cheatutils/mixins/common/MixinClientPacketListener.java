@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.SendChatEvent;
 import com.zergatul.cheatutils.helpers.MixinClientPacketListenerHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -80,6 +81,14 @@ public abstract class MixinClientPacketListener {
     private void onPlayerLoggingIn(ClientboundLoginPacket packet, CallbackInfo info) {
         Events.ClientPlayerLoggingIn.trigger(this.getConnection());
     }
+
+    @Inject(method = "sendChat", at = @At("HEAD"), cancellable = true)
+    private void onSendChat(String message, CallbackInfo info) {
+        if (Events.SendChat.trigger(new SendChatEvent(message))) {
+            info.cancel();
+        }
+    }
+
 
     /*@ModifyVariable(
             at = @At("HEAD"),

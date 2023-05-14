@@ -28,6 +28,7 @@ public class ConfigStore {
     private static long WRITE_FILE_DELAY = 15 * 1000000000L;
 
     public final Gson gson = new GsonBuilder()
+            .setExclusionStrategies(new GsonSkipExcludeStrategy())
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
@@ -160,6 +161,7 @@ public class ConfigStore {
         config.worldMarkersConfig.validate();
         config.autoAttackConfig.validate();
         config.projectilePathConfig.validate();
+        config.chatUtilitiesConfig.validate();
 
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);

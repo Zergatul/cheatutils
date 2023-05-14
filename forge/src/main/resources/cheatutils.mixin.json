@@ -23,6 +23,8 @@
     "common.MixinBlockBehaviourBlockStateBase",
     "common.MixinBoat",
     "common.MixinCamera",
+    "common.MixinChatComponent",
+    "common.MixinChatScreen",
     "common.MixinClientboundDisconnectPacket",
     "common.MixinClientChunkCache",
     "common.MixinClientLevel",

@@ -23,27 +23,45 @@
                         <span>Enabled</span>
                     </label>
                 </legend>
-                <div class="input-section">
-                    <span class="field-description">Max Build Distance:</span>
-                    <input type="text" v-model="config.maxRange" @change="update()">
-                </div>
-                <div class="input-section">
-                    <span class="field-description">Use hotbar slots:</span>
-                    <input type="text" v-model="slots" @change="onSlotsUpdate()">
-                    <div class="input-description">Separated by comma. Example: 6,7,8</div>
-                </div>
-                <div class="input-section">
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch"
-                               v-model="config.useShift"
-                               @change="update()">
-                        <span>Use Shift while placing blocks</span>
-                    </label>
-                </div>
-                <div class="section-description">
-                    Max Build Distance - distance between player eyes and center of block module will try to place.<br>
-                    Using shift may cause your character to randomly crouch for a fraction of a second.
-                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="field-description">Max Build Distance:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="config.maxRange" @change="update()">
+                            </td>
+                            <td>
+                                <div class="input-description">Distance between player eyes and center of block module will try to place</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="field-description">Use hotbar slots:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="slots" @change="onSlotsUpdate()">
+                            </td>
+                            <td>
+                                <div class="input-description">Separated by comma. Example: 6,7,8</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <label class="switch-label">
+                                    <input type="checkbox" class="switch"
+                                           v-model="config.useShift"
+                                           @change="update()">
+                                    <span>Use Shift while placing blocks</span>
+                                </label>
+                            </td>
+                            <td>
+                                <div class="input-description">Using shift may cause your character to randomly crouch for a fraction of a second</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 <div class="input-section">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"

@@ -111,11 +111,11 @@
                         <td>
                             <button @click="current = 'advanced-tooltips'" :class="{ faded: !filtered.AdvancedTooltips }">Advanced Tooltips</button>
                         </td>
-                        <td rowspan="2" style="vertical-align: top;">
-                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
+                        <td>
+                            <button @click="current = 'exec'" :class="{ faded: !filtered.Exec }">Exec</button>
                         </td>
                         <td>
-                            <button @click="current = 'coordinate-leak-protection'" :class="{ faded: !filtered.CoordinateLeakProtection }" style="display: none;">CLP</button>
+                            <button @click="current = 'chat-utilities'" :class="{ faded: !filtered.ChatUtilities }">Chat</button>
                         </td>
                     </tr>
                     <tr>
@@ -131,6 +131,12 @@
                         </td>
                         <td>
                             <button @click="current = 'exploration-mini-map'" :class="{ faded: !filtered.ExplorationMiniMap }">Exploration Mini Map</button>
+                        </td>
+                        <td rowspan="2" style="vertical-align: top;">
+                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
+                        </td>
+                        <td>
+                            <button @click="current = 'coordinate-leak-protection'" :class="{ faded: !filtered.CoordinateLeakProtection }" style="display: none;">CLP</button>
                         </td>
                     </tr>
                     <tr>
@@ -584,6 +590,16 @@
             v-if="current == 'fake-weather'"
             @back="backToMain()">
         </fake-weather-config>
+
+        <chat-utilities-config
+            v-if="current == 'chat-utilities'"
+            @back="backToMain()">
+        </chat-utilities-config>
+
+        <exec-config
+            v-if="current == 'exec'"
+            @back="backToMain()">
+        </exec-config>
 
     </div>
 

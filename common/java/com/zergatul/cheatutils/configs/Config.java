@@ -59,6 +59,8 @@ public class Config {
     public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
     public FakeWeatherConfig fakeWeatherConfig = new FakeWeatherConfig();
     public AutoAimConfig autoAimConfig = new AutoAimConfig();
+    public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
+    public ExecConfig execConfig = new ExecConfig();
 
     public Config() {
         esp = true;

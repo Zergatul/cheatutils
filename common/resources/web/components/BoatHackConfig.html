@@ -33,14 +33,26 @@
                         <span>Boat Fly</span>
                     </label>
                 </legend>
-                <div class="input-section">
-                    <span class="field-description">Horizontal Speed:</span>
-                    <input type="text" v-model="config.horizontalFlySpeed" @change="update()">
-                </div>
-                <div class="input-section">
-                    <span class="field-description">Vertical Speed:</span>
-                    <input type="text" v-model="config.verticalFlySpeed" @change="update()">
-                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="field-description">Horizontal Speed:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="config.horizontalFlySpeed" @change="update()">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="field-description">Vertical Speed:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="config.verticalFlySpeed" @change="update()">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 <div class="section-description">
                     Use "Jump" key to move up, "Sprint" key to move down. "Sneak" key behavior remains the same.
                 </div>
