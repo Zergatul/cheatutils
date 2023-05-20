@@ -11,6 +11,7 @@ public class VisibilityCheck {
             case "handle-keybindings" -> new ApiType[] { ApiType.ACTION, ApiType.UPDATE };
             case "block-placer" -> new ApiType[] { ApiType.CURRENT_BLOCK, ApiType.BLOCK_PLACER };
             case "auto-disconnect" -> new ApiType[] { ApiType.ACTION, ApiType.DISCONNECT };
+            case "villager-roller" -> new ApiType[] { ApiType.VILLAGER_ROLLER, ApiType.LOGGING };
             default -> null;
         };
     }

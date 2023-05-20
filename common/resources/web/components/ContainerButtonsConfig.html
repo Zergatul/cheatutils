@@ -35,6 +35,15 @@
                 <div class="section-description">
                     "Smart Put" moves items from your inventory to container. It moves only the same items that are already inside container. For example, if you have wood and planks in chest, it will move only wood and planks from your inventory to the chest.
                 </div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.checkShulkerContent"
+                        @change="update()">
+                    <span>Check Shulker Content</span>
+                </label>
+                <div class="section-description">
+                    Only move shulkers with the same content.
+                </div>
             </fieldset>
 
             <fieldset>

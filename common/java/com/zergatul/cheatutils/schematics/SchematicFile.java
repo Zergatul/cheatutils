@@ -25,6 +25,7 @@ public class SchematicFile implements SchemaFileEditable {
     private final int height;
     private final int length;
     private final byte[] blocks;
+    private final byte[] data;
     private final int[] summary;
     private final BlockState[] palette;
     private final Map<BlockState, Integer> reversePalette;
@@ -39,6 +40,7 @@ public class SchematicFile implements SchemaFileEditable {
         this.length = length;
 
         blocks = new byte[width * height * length];
+        data = new byte[width * height * length];
         summary = new int[256];
         palette = new BlockState[256];
 
@@ -61,6 +63,7 @@ public class SchematicFile implements SchemaFileEditable {
         height = compound.getShort(HEIGHT_TAG);
         length = compound.getShort(LENGTH_TAG);
         blocks = compound.getByteArray(BLOCKS_TAG);
+        data = compound.getByteArray(DATA_TAG);
 
         ValidateSize();
 
@@ -82,30 +85,31 @@ public class SchematicFile implements SchemaFileEditable {
         if (!NbtUtils.hasBytes(compound, BLOCKS_TAG)) {
             throw new InvalidFormatException("Invalid NBT structure. [Blocks] ByteArrayTag is required.");
         }
-        if (!NbtUtils.hasBytes(compound, DATA_TAG)) {
+        /*if (!NbtUtils.hasBytes(compound, DATA_TAG)) {
             throw new InvalidFormatException("Invalid NBT structure. [Data] ByteArrayTag is required.");
-        }
+        }*/
     }
 
     private void ValidateSize() throws InvalidFormatException {
-        if (blocks.length != width * height * length) {
+        int size = width * height * length;
+        if (blocks.length != size) {
             throw new InvalidFormatException(
                     String.format("[Blocks] ByteArrayTag length is %s, but it should be %s.",
                             blocks.length,
-                            width * height * length));
+                            size));
         }
     }
 
     private int[] CreateSummary() {
-        int[] summary = new int[256];
-        for (byte block: blocks) {
-            summary[block & 0xFF]++;
+        int[] summary = new int[65536];
+        int size = width * height * length;
+        for (int i = 0; i < size; i++) {
+            summary[(Byte.toUnsignedInt(blocks[i]) << 8) | getData(i)]++;
         }
         return summary;
     }
 
     private BlockState[] CreatePalette() throws InvalidFormatException {
-        BlockState[] palette = new BlockState[256];
         if (NbtUtils.hasCompound(compound, "SchematicaMapping")) {
             throw new InvalidFormatException("Not implemented");
         }
@@ -116,35 +120,29 @@ public class SchematicFile implements SchemaFileEditable {
             String materials = compound.getString("Materials");
             switch (materials) {
                 case "Alpha":
-                    /*for (int i = 0; i < AlphaMapping.blocks.length; i++) {
-                        palette[i] = AlphaMapping.blocks[i].defaultBlockState();
-                    }*/
-                    palette[0] = Blocks.AIR.defaultBlockState();
-                    for (int i = 1; i < 256; i++) {
-                        palette[1] = Blocks.OBSIDIAN.defaultBlockState();
-                    }
-                    return palette;
+                    return AlphaMapping.get();
 
                 default:
                     throw new InvalidFormatException(String.format("Materials type %s is not implemented.", materials));
             }
         }
-        palette[0] = Blocks.AIR.defaultBlockState();
-        for (int i = 1; i < palette.length; i++) {
-            palette[i] = Blocks.OBSIDIAN.defaultBlockState();
-        }
-        return palette;
+
+        return AlphaMapping.get();
     }
 
     private Map<BlockState, Integer> CreateReversePalette() {
         Map<BlockState, Integer> map = new HashMap<>();
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < palette.length; i++) {
             BlockState state = palette[i];
-            if (state != null) {
+            if (state != null && !map.containsKey(state)) {
                 map.put(state, i);
             }
         }
         return map;
+    }
+
+    private int getData(int index) {
+        return index < data.length ? Byte.toUnsignedInt(data[index]) : 0;
     }
 
     @Override
@@ -165,7 +163,7 @@ public class SchematicFile implements SchemaFileEditable {
     @Override
     public BlockState getBlockState(int x, int y, int z) {
         int index = (y * length + z) * width + x;
-        return blocks[index] == 0 ? Blocks.AIR.defaultBlockState() : Blocks.OBSIDIAN.defaultBlockState();
+        return palette[(Byte.toUnsignedInt(blocks[index]) << 8) | getData(index)];
     }
 
     @Override

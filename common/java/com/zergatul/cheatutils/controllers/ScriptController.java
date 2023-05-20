@@ -29,6 +29,9 @@ public class ScriptController {
     private final ScriptingLanguageCompiler autoDisconnectCompiler = new ScriptingLanguageCompiler(
             Root.class,
             VisibilityCheck.getTypes("auto-disconnect"));
+    private final ScriptingLanguageCompiler villagerRollerCompiler = new ScriptingLanguageCompiler(
+            Root.class,
+            VisibilityCheck.getTypes("villager-roller"));
     private List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
     private ScriptController() {
@@ -144,6 +147,10 @@ public class ScriptController {
 
     public Runnable compileAutoDisconnect(String code) throws ParseException, ScriptCompileException {
         return autoDisconnectCompiler.compile(code);
+    }
+
+    public Runnable compileVillagerRoller(String code) throws ParseException, ScriptCompileException {
+        return villagerRollerCompiler.compile(code);
     }
 
     public static class Script {

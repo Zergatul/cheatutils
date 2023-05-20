@@ -4,356 +4,422 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.Map;
+import java.util.Arrays;
 
 public class AlphaMapping {
-    /*private static final Map<Integer, BlockState> map = Map.ofEntries(
-            Map.entry(makeId(0, 0), Blocks.AIR.defaultBlockState()),
-    );
-*/
-    private static final Map<String, Block> blocksMappingExtended = Map.ofEntries(
-            Map.entry("0:0", Blocks.AIR),
-            Map.entry("1:0", Blocks.STONE),
-            Map.entry("1:1", Blocks.GRANITE),
-            Map.entry("1:2", Blocks.POLISHED_GRANITE),
-            Map.entry("1:3", Blocks.DIORITE),
-            Map.entry("1:4", Blocks.POLISHED_DIORITE),
-            Map.entry("1:5", Blocks.ANDESITE),
-            Map.entry("1:6", Blocks.POLISHED_ANDESITE),
-            Map.entry("2:0", Blocks.GRASS),
-            Map.entry("3:0", Blocks.DIRT),
-            Map.entry("3:1", Blocks.COARSE_DIRT),
-            Map.entry("3:2", Blocks.PODZOL),
-            Map.entry("4:0", Blocks.COBBLESTONE),
-            Map.entry("5:0", Blocks.OAK_PLANKS),
-            Map.entry("5:1", Blocks.SPRUCE_PLANKS),
-            Map.entry("5:2", Blocks.BIRCH_PLANKS),
-            Map.entry("5:3", Blocks.JUNGLE_PLANKS),
-            Map.entry("5:4", Blocks.ACACIA_PLANKS),
-            Map.entry("5:5", Blocks.DARK_OAK_PLANKS),
-            Map.entry("6:0", Blocks.OAK_SAPLING),
-            Map.entry("6:1", Blocks.SPRUCE_SAPLING),
-            Map.entry("6:2", Blocks.BIRCH_SAPLING),
-            Map.entry("6:3", Blocks.JUNGLE_SAPLING),
-            Map.entry("6:4", Blocks.ACACIA_SAPLING),
-            Map.entry("6:5", Blocks.DARK_OAK_SAPLING),
-            Map.entry("7:0", Blocks.BEDROCK),
-            Map.entry("8:0", Blocks.WATER),
-            Map.entry("9:0", Blocks.WATER),
-            Map.entry("10:0", Blocks.LAVA),
-            Map.entry("11:0", Blocks.LAVA),
-            Map.entry("12:0", Blocks.SAND),
-            Map.entry("12:1", Blocks.RED_SAND),
-            Map.entry("13:0", Blocks.GRAVEL),
-            Map.entry("14:0", Blocks.GOLD_ORE),
-            Map.entry("15:0", Blocks.IRON_ORE),
-            Map.entry("16:0", Blocks.COAL_ORE),
-            Map.entry("17:0", Blocks.OAK_LOG),
-            Map.entry("17:1", Blocks.SPRUCE_LOG),
-            Map.entry("17:2", Blocks.BIRCH_LOG),
-            Map.entry("17:3", Blocks.JUNGLE_LOG),
-            Map.entry("18:0", Blocks.OAK_LEAVES),
-            Map.entry("18:1", Blocks.SPRUCE_LEAVES),
-            Map.entry("18:2", Blocks.BIRCH_LEAVES),
-            Map.entry("18:3", Blocks.JUNGLE_LEAVES),
-            Map.entry("35:0", Blocks.WHITE_WOOL),
-            Map.entry("35:1", Blocks.ORANGE_WOOL),
-            Map.entry("35:10", Blocks.PURPLE_WOOL),
-            Map.entry("35:11", Blocks.BLUE_WOOL),
-            Map.entry("35:12", Blocks.BROWN_WOOL),
-            Map.entry("35:13", Blocks.GREEN_WOOL),
-            Map.entry("35:14", Blocks.RED_WOOL),
-            Map.entry("35:15", Blocks.BLACK_WOOL),
-            Map.entry("35:2", Blocks.MAGENTA_WOOL),
-            Map.entry("35:3", Blocks.LIGHT_BLUE_WOOL),
-            Map.entry("35:4", Blocks.YELLOW_WOOL),
-            Map.entry("35:5", Blocks.LIME_WOOL),
-            Map.entry("35:6", Blocks.PINK_WOOL),
-            Map.entry("35:7", Blocks.GRAY_WOOL),
-            Map.entry("35:8", Blocks.LIGHT_GRAY_WOOL),
-            Map.entry("35:9", Blocks.CYAN_WOOL));
 
-    private static final Block[] blockIds = new Block[] {
-            Blocks.AIR,
-            Blocks.STONE,
-            Blocks.GRASS,
-            Blocks.DIRT,
-            Blocks.COBBLESTONE,
-            null, //Blocks.PLANKS,
-            null, //Blocks.SAPLING,
-            Blocks.BEDROCK,
-            null, //Blocks.FLOWING_WATER,
-            Blocks.WATER,
-            null, //Blocks.FLOWING_LAVA,
-            Blocks.LAVA,
-            Blocks.SAND,
-            Blocks.GRAVEL,
-            Blocks.GOLD_ORE,
-            Blocks.IRON_ORE,
-            Blocks.COAL_ORE,
-            null, //Blocks.LOG,
-            null, //Blocks.LEAVES,
-            Blocks.SPONGE,
-            Blocks.GLASS,
-            Blocks.LAPIS_ORE,
-            Blocks.LAPIS_BLOCK,
-            Blocks.DISPENSER,
-            Blocks.SANDSTONE,
-            null, //Blocks.NOTEBLOCK,
-            null, //Blocks.BED,
-            null, //Blocks.GOLDEN_RAIL,
-            Blocks.DETECTOR_RAIL,
-            Blocks.STICKY_PISTON,
-            null, //Blocks.WEB,
-            null, //Blocks.TALLGRASS,
-            null, //Blocks.DEADBUSH,
-            Blocks.PISTON,
-            Blocks.PISTON_HEAD,
-            null, //Blocks.WOOL,
-            null,
-            null, //Blocks.YELLOW_FLOWER,
-            null, //Blocks.RED_FLOWER,
-            Blocks.BROWN_MUSHROOM,
-            Blocks.RED_MUSHROOM,
-            Blocks.GOLD_BLOCK,
-            Blocks.IRON_BLOCK,
-            null, //Blocks.DOUBLE_STONE_SLAB,
-            Blocks.STONE_SLAB,
-            null, //Blocks.BRICK_BLOCK,
-            Blocks.TNT,
-            Blocks.BOOKSHELF,
-            Blocks.MOSSY_COBBLESTONE,
-            Blocks.OBSIDIAN,
-            Blocks.TORCH,
-            Blocks.FIRE,
-            Blocks.SPAWNER,
-            Blocks.OAK_STAIRS,
-            Blocks.CHEST,
-            Blocks.REDSTONE_WIRE,
-            Blocks.DIAMOND_ORE,
-            Blocks.DIAMOND_BLOCK,
-            Blocks.CRAFTING_TABLE,
-            Blocks.WHEAT,
-            Blocks.FARMLAND,
-            Blocks.FURNACE,
-            null, //Blocks.LIT_FURNACE,
-            null, //Blocks.STANDING_SIGN,
-            null, //Blocks.WOODEN_DOOR,
-            Blocks.LADDER,
-            Blocks.RAIL,
-            Blocks.STONE_STAIRS,
-            null, //Blocks.WALL_SIGN,
-            Blocks.LEVER,
-            Blocks.STONE_PRESSURE_PLATE,
-            Blocks.IRON_DOOR,
-            null, //Blocks.WOODEN_PRESSURE_PLATE,
-            Blocks.REDSTONE_ORE,
-            null, //Blocks.LIT_REDSTONE_ORE,
-            null, //Blocks.OFF - UNLIT_REDSTONE_TORCH,
-            null, //Blocks.ON - REDSTONE_TORCH,
-            Blocks.STONE_BUTTON,
-            null, //Blocks.SNOW_LAYER,
-            Blocks.ICE,
-            Blocks.SNOW,
-            Blocks.CACTUS,
-            Blocks.CLAY,
-            null, //Blocks.REEDS,
-            Blocks.JUKEBOX,
-            null, //Blocks.FENCE,
-            Blocks.PUMPKIN,
-            Blocks.NETHERRACK,
-            Blocks.SOUL_SAND,
-            Blocks.GLOWSTONE,
-            null, //Blocks.PORTAL,
-            null, //Blocks.LIT_PUMPKIN,
-            Blocks.CAKE,
-            null, //Blocks.OFF - UNPOWERED_REPEATER,
-            null, //Blocks.ON - POWERED_REPEATER,
-            null, //Blocks.STAINED_GLASS,
-            null, //Blocks.TRAPDOOR,
-            null, //Blocks.MONSTER_EGG,
-            null, //Blocks.STONEBRICK,
-            Blocks.BROWN_MUSHROOM_BLOCK,
-            Blocks.RED_MUSHROOM_BLOCK,
-            Blocks.IRON_BARS,
-            Blocks.GLASS_PANE,
-            Blocks.MELON,
-            Blocks.PUMPKIN_STEM,
-            Blocks.MELON_STEM,
-            Blocks.VINE,
-            null, //Blocks.FENCE_GATE,
-            Blocks.BRICK_STAIRS,
-            Blocks.STONE_BRICK_STAIRS,
-            Blocks.MYCELIUM,
-            null, //Blocks.WATERLILY,
-            null, //Blocks.NETHER_BRICK,
-            Blocks.NETHER_BRICK_FENCE,
-            Blocks.NETHER_BRICK_STAIRS,
-            Blocks.NETHER_WART,
-            Blocks.ENCHANTING_TABLE,
-            Blocks.BREWING_STAND,
-            Blocks.CAULDRON,
-            Blocks.END_PORTAL,
-            Blocks.END_PORTAL_FRAME,
-            Blocks.END_STONE,
-            Blocks.DRAGON_EGG,
-            null, //Blocks.INACTIVE - REDSTONE_LAMP,
-            null, //Blocks.ACTIVE - LIT_REDSTONE_LAMP,
-            null, //Blocks.DOUBLE_WOODEN_SLAB,
-            null, //Blocks.WOODEN_SLAB,
-            Blocks.COCOA,
-            Blocks.SANDSTONE_STAIRS,
-            Blocks.EMERALD_ORE,
-            Blocks.ENDER_CHEST,
-            Blocks.TRIPWIRE_HOOK,
-            Blocks.TRIPWIRE_HOOK,
-            Blocks.EMERALD_BLOCK,
-            Blocks.SPRUCE_STAIRS,
-            Blocks.BIRCH_STAIRS,
-            Blocks.JUNGLE_STAIRS,
-            Blocks.COMMAND_BLOCK,
-            Blocks.BEACON,
-            Blocks.COBBLESTONE_WALL,
-            Blocks.FLOWER_POT,
-            Blocks.CARROTS,
-            Blocks.POTATOES,
-            null, //Blocks.WOODEN_BUTTON,
-            null, //Blocks.SKULL,
-            Blocks.ANVIL,
-            Blocks.TRAPPED_CHEST,
-            null, //Blocks.LIGHT - LIGHT_WEIGHTED_PRESSURE_PLATE,
-            null, //Blocks.HEAVY - HEAVY_WEIGHTED_PRESSURE_PLATE,
-            null, //Blocks.INACTIVE - UNPOWERED_COMPARATOR,
-            null, //Blocks.ACTIVE - POWERED_COMPARATOR,
-            Blocks.DAYLIGHT_DETECTOR,
-            Blocks.REDSTONE_BLOCK,
-            Blocks.NETHER_QUARTZ_ORE,
-            Blocks.HOPPER,
-            Blocks.QUARTZ_BLOCK,
-            Blocks.QUARTZ_STAIRS,
-            Blocks.ACTIVATOR_RAIL,
-            Blocks.DROPPER,
-            null, //Blocks.STAINED_HARDENED_CLAY,
-            null, //Blocks.STAINED_GLASS_PANE,
-            null, //Blocks.LEAVES2,
-            null, //Blocks.LOG2,
-            Blocks.ACACIA_STAIRS,
-            Blocks.DARK_OAK_STAIRS,
-            Blocks.SLIME_BLOCK,
-            Blocks.BARRIER,
-            Blocks.IRON_TRAPDOOR,
-            Blocks.PRISMARINE,
-            Blocks.SEA_LANTERN,
-            Blocks.HAY_BLOCK,
-            null, //Blocks.CARPET,
-            null, //Blocks.HARDENED_CLAY,
-            Blocks.COAL_BLOCK,
-            Blocks.PACKED_ICE,
-            null, //Blocks.DOUBLE_PLANT,
-            null, //Blocks.STANDING_BANNER,
-            null, //Blocks.WALL_BANNER,
-            null, //Blocks.DAYLIGHT_DETECTOR_INVERTED,
-            Blocks.RED_SANDSTONE,
-            Blocks.RED_SANDSTONE_STAIRS,
-            null, //Blocks.DOUBLE_STONE_SLAB2,
-            null, //Blocks.STONE_SLAB2,
-            Blocks.SPRUCE_FENCE_GATE,
-            Blocks.BIRCH_FENCE_GATE,
-            Blocks.JUNGLE_FENCE_GATE,
-            Blocks.DARK_OAK_FENCE_GATE,
-            Blocks.ACACIA_FENCE_GATE,
-            Blocks.SPRUCE_FENCE,
-            Blocks.BIRCH_FENCE,
-            Blocks.JUNGLE_FENCE,
-            Blocks.DARK_OAK_FENCE,
-            Blocks.ACACIA_FENCE,
-            Blocks.SPRUCE_DOOR,
-            Blocks.BIRCH_DOOR,
-            Blocks.JUNGLE_DOOR,
-            Blocks.ACACIA_DOOR,
-            Blocks.DARK_OAK_DOOR,
-            Blocks.END_ROD,
-            Blocks.CHORUS_PLANT,
-            Blocks.CHORUS_FLOWER,
-            Blocks.PURPUR_BLOCK,
-            Blocks.PURPUR_PILLAR,
-            Blocks.PURPUR_STAIRS,
-            null, //Blocks.PURPUR_DOUBLE_SLAB,
-            Blocks.PURPUR_SLAB,
-            null, //Blocks.END_BRICKS,
-            Blocks.BEETROOTS,
-            null, //Blocks.GRASS_PATH,
-            Blocks.END_GATEWAY,
-            Blocks.REPEATING_COMMAND_BLOCK,
-            Blocks.CHAIN_COMMAND_BLOCK,
-            Blocks.FROSTED_ICE,
-            null, //Blocks.MAGMA,
-            Blocks.NETHER_WART_BLOCK,
-            null, //Blocks.RED_NETHER_BRICK,
-            Blocks.BONE_BLOCK,
-            Blocks.STRUCTURE_VOID,
-            Blocks.OBSERVER,
-            Blocks.WHITE_SHULKER_BOX,
-            Blocks.ORANGE_SHULKER_BOX,
-            Blocks.MAGENTA_SHULKER_BOX,
-            Blocks.LIGHT_BLUE_SHULKER_BOX,
-            Blocks.YELLOW_SHULKER_BOX,
-            Blocks.LIME_SHULKER_BOX,
-            Blocks.PINK_SHULKER_BOX,
-            Blocks.GRAY_SHULKER_BOX,
-            null, //Blocks.SILVER_SHULKER_BOX,
-            Blocks.CYAN_SHULKER_BOX,
-            Blocks.PURPLE_SHULKER_BOX,
-            Blocks.BLUE_SHULKER_BOX,
-            Blocks.BROWN_SHULKER_BOX,
-            Blocks.GREEN_SHULKER_BOX,
-            Blocks.RED_SHULKER_BOX,
-            Blocks.BLACK_SHULKER_BOX,
-            Blocks.WHITE_GLAZED_TERRACOTTA,
-            Blocks.ORANGE_GLAZED_TERRACOTTA,
-            Blocks.MAGENTA_GLAZED_TERRACOTTA,
-            Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA,
-            Blocks.YELLOW_GLAZED_TERRACOTTA,
-            Blocks.LIME_GLAZED_TERRACOTTA,
-            Blocks.PINK_GLAZED_TERRACOTTA,
-            Blocks.GRAY_GLAZED_TERRACOTTA,
-            Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA,
-            Blocks.CYAN_GLAZED_TERRACOTTA,
-            Blocks.PURPLE_GLAZED_TERRACOTTA,
-            Blocks.BLUE_GLAZED_TERRACOTTA,
-            Blocks.BROWN_GLAZED_TERRACOTTA,
-            Blocks.GREEN_GLAZED_TERRACOTTA,
-            Blocks.RED_GLAZED_TERRACOTTA,
-            Blocks.BLACK_GLAZED_TERRACOTTA,
-            null, //Blocks.CONCRETE,
-            null, //Blocks.CONCRETE_POWDER,
-    };
+    private static BlockState[] mapping;
+
+    public static synchronized BlockState[] get() {
+        if (mapping == null) {
+            buildMapping();
+        }
+
+        return mapping;
+    }
+
+    private static void buildMapping() {
+        mapping = new BlockState[65536];
+        Arrays.fill(mapping, Blocks.AIR.defaultBlockState());
+
+        int id1 = 0;
+
+        fill(id1++, Blocks.AIR);
+
+        fill(id1, Blocks.STONE);
+        fill(id1, 0x01, Blocks.GRANITE);
+        fill(id1, 0x02, Blocks.POLISHED_GRANITE);
+        fill(id1, 0x03, Blocks.DIORITE);
+        fill(id1, 0x04, Blocks.POLISHED_DIORITE);
+        fill(id1, 0x05, Blocks.ANDESITE);
+        fill(id1, 0x06, Blocks.POLISHED_ANDESITE);
+        id1++;
+
+        fill(id1++, Blocks.GRASS_BLOCK);
+
+        fill(id1, Blocks.DIRT);
+        fill(id1, 0x01, Blocks.COARSE_DIRT);
+        fill(id1, 0x02, Blocks.PODZOL);
+        id1++;
+
+        fill(id1++, Blocks.COBBLESTONE);
+
+        fill(id1, Blocks.OAK_PLANKS);
+        fill(id1, 0x01, Blocks.SPRUCE_PLANKS);
+        fill(id1, 0x02, Blocks.BIRCH_PLANKS);
+        fill(id1, 0x03, Blocks.JUNGLE_PLANKS);
+        fill(id1, 0x04, Blocks.ACACIA_PLANKS);
+        fill(id1, 0x05, Blocks.DARK_OAK_PLANKS);
+        id1++;
+
+        fill(id1, Blocks.OAK_SAPLING);
+        fill(id1, 0x01, Blocks.SPRUCE_SAPLING);
+        fill(id1, 0x02, Blocks.BIRCH_SAPLING);
+        fill(id1, 0x03, Blocks.JUNGLE_SAPLING);
+        fill(id1, 0x04, Blocks.ACACIA_SAPLING);
+        fill(id1, 0x05, Blocks.DARK_OAK_SAPLING);
+        id1++;
+
+        fill(id1++, Blocks.BEDROCK);
+
+        fill(id1++, Blocks.WATER);
+
+        fill(id1++, Blocks.WATER);
+
+        fill(id1++, Blocks.LAVA);
+
+        fill(id1++, Blocks.LAVA);
+
+        fill(id1, Blocks.SAND);
+        fill(id1, 0x01, Blocks.RED_SAND);
+        id1++;
+
+        fill(id1++, Blocks.GRAVEL);
+
+        fill(id1++, Blocks.GOLD_ORE);
+
+        fill(id1++, Blocks.IRON_ORE);
+
+        fill(id1++, Blocks.COAL_ORE);
+
+        fill(id1, Blocks.OAK_LOG);
+        fill(id1, 0x01, Blocks.SPRUCE_LOG);
+        fill(id1, 0x02, Blocks.BIRCH_LOG);
+        fill(id1, 0x03, Blocks.JUNGLE_LOG);
+        fill(id1, 0x04, Blocks.ACACIA_LOG);
+        fill(id1, 0x05, Blocks.DARK_OAK_LOG);
+        id1++;
+
+        fill(id1, Blocks.OAK_LEAVES);
+        fill(id1, 0x01, Blocks.SPRUCE_LEAVES);
+        fill(id1, 0x02, Blocks.BIRCH_LEAVES);
+        fill(id1, 0x03, Blocks.JUNGLE_LEAVES);
+        fill(id1, 0x04, Blocks.ACACIA_LEAVES);
+        fill(id1, 0x05, Blocks.DARK_OAK_LEAVES);
+        id1++;
+
+        fill(id1++, Blocks.SPONGE);
+
+        fill(id1++, Blocks.GLASS);
+
+        fill(id1++, Blocks.LAPIS_ORE);
+
+        fill(id1++, Blocks.LAPIS_BLOCK);
+
+        fill(id1++, Blocks.DISPENSER);
+
+        fill(id1++, Blocks.SANDSTONE);
+
+        fill(id1++, Blocks.NOTE_BLOCK);
+
+        id1++; //fill(0x1A, Blocks.WHITE_BED);
+
+        fill(id1++, Blocks.POWERED_RAIL);
+
+        fill(id1++, Blocks.DETECTOR_RAIL);
+
+        fill(id1++, Blocks.STICKY_PISTON);
+
+        fill(id1++, Blocks.COBWEB);
+
+        fill(id1++, Blocks.TALL_GRASS);
+
+        fill(id1++, Blocks.DEAD_BUSH);
+
+        fill(id1++, Blocks.PISTON);
+
+        fill(id1++, Blocks.PISTON_HEAD);
+
+        fill(id1, Blocks.WHITE_WOOL);
+        fill(id1, 0x01, Blocks.ORANGE_WOOL);
+        fill(id1, 0x02, Blocks.MAGENTA_WOOL);
+        fill(id1, 0x03, Blocks.LIGHT_BLUE_WOOL);
+        fill(id1, 0x04, Blocks.YELLOW_WOOL);
+        fill(id1, 0x05, Blocks.LIME_WOOL);
+        fill(id1, 0x06, Blocks.PINK_WOOL);
+        fill(id1, 0x07, Blocks.GRAY_WOOL);
+        fill(id1, 0x08, Blocks.LIGHT_GRAY_WOOL);
+        fill(id1, 0x09, Blocks.CYAN_WOOL);
+        fill(id1, 0x0A, Blocks.PURPLE_WOOL);
+        fill(id1, 0x0B, Blocks.BLUE_WOOL);
+        fill(id1, 0x0C, Blocks.BROWN_WOOL);
+        fill(id1, 0x0D, Blocks.GREEN_WOOL);
+        fill(id1, 0x0E, Blocks.RED_WOOL);
+        fill(id1, 0x0F, Blocks.BLACK_WOOL);
+        id1++;
+
+        id1++; //fill(0x24, null);
+
+        fill(id1++, Blocks.DANDELION);
+
+        fill(id1++, Blocks.POPPY);
+
+        fill(id1++, Blocks.BROWN_MUSHROOM);
+
+        fill(id1++, Blocks.RED_MUSHROOM);
+
+        fill(id1++, Blocks.GOLD_BLOCK);
+
+        fill(id1++, Blocks.IRON_BLOCK);
+
+        id1++; //fill(0x2B, Blocks.STONE_SLAB); // double
+
+        fill(id1++, Blocks.STONE_SLAB);
+
+        fill(id1++, Blocks.BRICKS);
+
+        fill(id1++, Blocks.TNT);
+
+        fill(id1++, Blocks.BOOKSHELF);
+
+        fill(id1++, Blocks.MOSSY_COBBLESTONE);
+
+        fill(id1++, Blocks.OBSIDIAN);
+
+        fill(id1++, Blocks.TORCH);
+
+        fill(id1++, Blocks.FIRE);
+
+        fill(id1++, Blocks.SPAWNER);
+
+        fill(id1++, Blocks.OAK_STAIRS);
+
+        fill(id1++, Blocks.CHEST);
+
+        fill(id1++, Blocks.REDSTONE_WIRE);
+
+        fill(id1++, Blocks.REDSTONE_WIRE);
+
+        fill(id1++, Blocks.DIAMOND_ORE);
+
+        fill(id1++, Blocks.DIAMOND_BLOCK);
+
+        fill(id1++, Blocks.CRAFTING_TABLE);
+
+        fill(id1++, Blocks.WHEAT);
+
+        fill(id1++, Blocks.FARMLAND);
+
+        fill(id1++, Blocks.FURNACE);
+
+        //fill(0x3F, Blocks.FURNACE); // lit
+        id1++;
+
+        fill(id1++, Blocks.OAK_SIGN);
+
+        fill(id1++, Blocks.OAK_DOOR);
+        fill(id1++, Blocks.LADDER);
+        fill(id1++, Blocks.RAIL);
+        fill(id1++, Blocks.STONE_STAIRS);
+        fill(id1++, Blocks.OAK_WALL_SIGN);
+        fill(id1++, Blocks.LEVER);
+        fill(id1++, Blocks.STONE_PRESSURE_PLATE);
+        fill(id1++, Blocks.IRON_DOOR);
+        fill(id1++, Blocks.OAK_PRESSURE_PLATE);
+        fill(id1++, Blocks.REDSTONE_ORE);
+        fill(id1++, Blocks.REDSTONE_ORE); // lit
+        fill(id1++, Blocks.REDSTONE_TORCH); // off
+        fill(id1++, Blocks.REDSTONE_TORCH); // on
+        fill(id1++, Blocks.STONE_BUTTON);
+        fill(id1++, Blocks.SNOW);
+
+        fill(id1++, Blocks.ICE);
+        fill(id1++, Blocks.SNOW_BLOCK);
+        fill(id1++, Blocks.CACTUS);
+        fill(id1++, Blocks.CLAY);
+        id1++; //fill(0x54, Blocks.REEDS);
+        fill(id1++, Blocks.JUKEBOX);
+        fill(id1++, Blocks.OAK_FENCE);
+        fill(id1++, Blocks.PUMPKIN);
+        fill(id1++, Blocks.NETHERRACK);
+        fill(id1++, Blocks.SOUL_SAND);
+        fill(id1++, Blocks.GLOWSTONE);
+        fill(id1++, Blocks.NETHER_PORTAL);
+        fill(id1++, Blocks.JACK_O_LANTERN);
+        fill(id1++, Blocks.CAKE);
+        fill(id1++, Blocks.REPEATER); // off
+        fill(id1++, Blocks.REPEATER); // on
+
+        fill(id1++, Blocks.WHITE_STAINED_GLASS);
+        fill(id1++, Blocks.OAK_TRAPDOOR);
+        id1++; //fill(0x62, Blocks.egg);
+        fill(id1++, Blocks.STONE_BRICKS);
+        fill(id1++, Blocks.BROWN_MUSHROOM_BLOCK);
+        fill(id1++, Blocks.RED_MUSHROOM_BLOCK);
+        fill(id1++, Blocks.IRON_BARS);
+        fill(id1++, Blocks.GLASS_PANE);
+        fill(id1++, Blocks.MELON);
+        fill(id1++, Blocks.PUMPKIN_STEM);
+        fill(id1++, Blocks.MELON_STEM);
+        fill(id1++, Blocks.VINE);
+        fill(id1++, Blocks.OAK_FENCE_GATE);
+        fill(id1++, Blocks.BRICK_STAIRS);
+        fill(id1++, Blocks.STONE_BRICK_STAIRS);
+        fill(id1++, Blocks.MYCELIUM);
+
+        fill(id1++, Blocks.LILY_PAD);
+        fill(id1++, Blocks.NETHER_BRICKS);
+        fill(id1++, Blocks.NETHER_BRICK_FENCE);
+        fill(id1++, Blocks.NETHER_BRICK_STAIRS);
+        fill(id1++, Blocks.NETHER_WART);
+        fill(id1++, Blocks.ENCHANTING_TABLE);
+        fill(id1++, Blocks.BREWING_STAND);
+        fill(id1++, Blocks.CAULDRON);
+        fill(id1++, Blocks.END_PORTAL);
+        fill(id1++, Blocks.END_PORTAL_FRAME);
+        fill(id1++, Blocks.END_STONE);
+        fill(id1++, Blocks.DRAGON_EGG);
+        fill(id1++, Blocks.REDSTONE_LAMP); // off
+        fill(id1++, Blocks.REDSTONE_LAMP); // on
+        fill(id1++, Blocks.OAK_SLAB); // double
+        fill(id1++, Blocks.OAK_SLAB);
+
+        fill(id1++, Blocks.COCOA);
+        fill(id1++, Blocks.SANDSTONE_STAIRS);
+        fill(id1++, Blocks.EMERALD_ORE);
+        fill(id1++, Blocks.ENDER_CHEST);
+        fill(id1++, Blocks.TRIPWIRE_HOOK);
+        fill(id1++, Blocks.TRIPWIRE_HOOK);
+        fill(id1++, Blocks.EMERALD_BLOCK);
+        fill(id1++, Blocks.SPRUCE_STAIRS);
+        fill(id1++, Blocks.BIRCH_STAIRS);
+        fill(id1++, Blocks.JUNGLE_STAIRS);
+        fill(id1++, Blocks.COMMAND_BLOCK);
+        fill(id1++, Blocks.BEACON);
+        fill(id1++, Blocks.COBBLESTONE_WALL);
+        fill(id1++, Blocks.FLOWER_POT);
+        fill(id1++, Blocks.CARROTS);
+        fill(id1++, Blocks.POTATOES);
+
+        fill(id1++, Blocks.OAK_BUTTON);
+        fill(id1++, Blocks.SKELETON_SKULL);
+        fill(id1++, Blocks.ANVIL);
+        fill(id1++, Blocks.TRAPPED_CHEST);
+        fill(id1++, Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE);
+        fill(id1++, Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE);
+        fill(id1++, Blocks.COMPARATOR); // off
+        fill(id1++, Blocks.COMPARATOR); // on
+        fill(id1++, Blocks.DAYLIGHT_DETECTOR);
+        fill(id1++, Blocks.REDSTONE_BLOCK);
+        fill(id1++, Blocks.NETHER_QUARTZ_ORE);
+        fill(id1++, Blocks.HOPPER);
+        fill(id1++, Blocks.QUARTZ_BLOCK);
+        fill(id1++, Blocks.QUARTZ_STAIRS);
+        fill(id1++, Blocks.ACTIVATOR_RAIL);
+        fill(id1++, Blocks.DROPPER);
+
+        id1++; //fill(0xA0, Blocks.CLAY);
+        fill(id1++, Blocks.WHITE_STAINED_GLASS_PANE);
+        id1++; //fill(0xA2, Blocks.LEAVES);
+        id1++; //fill(0xA3, Blocks.log);
+        fill(id1++, Blocks.ACACIA_STAIRS);
+        fill(id1++, Blocks.DARK_OAK_STAIRS);
+        fill(id1++, Blocks.SLIME_BLOCK);
+        fill(id1++, Blocks.BARRIER);
+        fill(id1++, Blocks.IRON_TRAPDOOR);
+        fill(id1++, Blocks.PRISMARINE);
+        fill(id1++, Blocks.SEA_LANTERN);
+        fill(id1++, Blocks.HAY_BLOCK);
+        fill(id1++, Blocks.WHITE_CARPET);
+        id1++; //fill(0xAD, Blocks.clay);
+        fill(id1++, Blocks.COAL_BLOCK);
+        fill(id1++, Blocks.PACKED_ICE);
+
+        id1++; //fill(0xB0, Blocks.double_plant);
+        fill(id1++, Blocks.WHITE_BANNER);
+        fill(id1++, Blocks.WHITE_WALL_BANNER);
+        id1++; //fill(0xB3, Blocks.daylight_detector_inverted);
+        fill(id1++, Blocks.RED_SANDSTONE);
+        fill(id1++, Blocks.RED_SANDSTONE_STAIRS);
+        fill(id1++, Blocks.RED_SANDSTONE_SLAB);
+        fill(id1++, Blocks.STONE_SLAB);
+        fill(id1++, Blocks.SPRUCE_FENCE_GATE);
+        fill(id1++, Blocks.BIRCH_FENCE_GATE);
+        fill(id1++, Blocks.JUNGLE_FENCE_GATE);
+        fill(id1++, Blocks.DARK_OAK_FENCE_GATE);
+        fill(id1++, Blocks.ACACIA_FENCE_GATE);
+        fill(id1++, Blocks.SPRUCE_FENCE);
+        fill(id1++, Blocks.BIRCH_FENCE);
+        fill(id1++, Blocks.JUNGLE_FENCE);
+
+        fill(id1++, Blocks.DARK_OAK_FENCE);
+        fill(id1++, Blocks.ACACIA_FENCE);
+        fill(id1++, Blocks.SPRUCE_DOOR);
+        fill(id1++, Blocks.BIRCH_DOOR);
+        fill(id1++, Blocks.JUNGLE_DOOR);
+        fill(id1++, Blocks.ACACIA_DOOR);
+        fill(id1++, Blocks.DARK_OAK_DOOR);
+        fill(id1++, Blocks.END_ROD);
+        fill(id1++, Blocks.CHORUS_PLANT);
+        fill(id1++, Blocks.CHORUS_FLOWER);
+        fill(id1++, Blocks.PURPUR_BLOCK);
+        fill(id1++, Blocks.PURPUR_PILLAR);
+        fill(id1++, Blocks.PURPUR_STAIRS);
+        id1++; //fill(id1++, null, //Blocks.PURPUR_DOUBLE_SLAB,
+        fill(id1++, Blocks.PURPUR_SLAB);
+        fill(id1++, Blocks.END_STONE_BRICKS);
+        fill(id1++, Blocks.BEETROOTS);
+        fill(id1++, Blocks.DIRT_PATH);
+        fill(id1++, Blocks.END_GATEWAY);
+        fill(id1++, Blocks.REPEATING_COMMAND_BLOCK);
+        fill(id1++, Blocks.CHAIN_COMMAND_BLOCK);
+        fill(id1++, Blocks.FROSTED_ICE);
+        fill(id1++, Blocks.MAGMA_BLOCK);
+        fill(id1++, Blocks.NETHER_WART_BLOCK);
+        id1++; //fill(id1++, null, //Blocks.RED_NETHER_BRICK,
+        fill(id1++, Blocks.BONE_BLOCK);
+        fill(id1++, Blocks.STRUCTURE_VOID);
+        fill(id1++, Blocks.OBSERVER);
+        fill(id1++, Blocks.WHITE_SHULKER_BOX);
+        fill(id1++, Blocks.ORANGE_SHULKER_BOX);
+        fill(id1++, Blocks.MAGENTA_SHULKER_BOX);
+        fill(id1++, Blocks.LIGHT_BLUE_SHULKER_BOX);
+        fill(id1++, Blocks.YELLOW_SHULKER_BOX);
+        fill(id1++, Blocks.LIME_SHULKER_BOX);
+        fill(id1++, Blocks.PINK_SHULKER_BOX);
+        fill(id1++, Blocks.GRAY_SHULKER_BOX);
+        id1++; //fill(id1++, null, //Blocks.SILVER_SHULKER_BOX,
+        fill(id1++, Blocks.CYAN_SHULKER_BOX);
+        fill(id1++, Blocks.PURPLE_SHULKER_BOX);
+        fill(id1++, Blocks.BLUE_SHULKER_BOX);
+        fill(id1++, Blocks.BROWN_SHULKER_BOX);
+        fill(id1++, Blocks.GREEN_SHULKER_BOX);
+        fill(id1++, Blocks.RED_SHULKER_BOX);
+        fill(id1++, Blocks.BLACK_SHULKER_BOX);
+        fill(id1++, Blocks.WHITE_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.ORANGE_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.MAGENTA_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.YELLOW_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.LIME_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.PINK_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.GRAY_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.CYAN_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.PURPLE_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.BLUE_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.BROWN_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.GREEN_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.RED_GLAZED_TERRACOTTA);
+        fill(id1++, Blocks.BLACK_GLAZED_TERRACOTTA);
+        //fill(id1++, null, //Blocks.CONCRETE,
+        //fill(id1++, null, //Blocks.CONCRETE_POWDER,
+    }
+
+    private static void fill(int id1, Block block) {
+        for (int id2 = 0; id2 < 256; id2++) {
+            fill(id1, id2, block);
+        }
+    }
+
+    private static void fill(int id1, int id2, Block block) {
+        mapping[(id1 << 8) | id2] = block.defaultBlockState();
+    }
 
     /*
     properties:
     	blockProperties: {
-		"0:0" : {},
-		"1:0" : {
-			"variant" : "stone"
-		},
-		"1:1" : {
-			"variant" : "granite"
-		},
-		"1:2" : {
-			"variant" : "smooth_granite"
-		},
-		"1:3" : {
-			"variant" : "diorite"
-		},
-		"1:4" : {
-			"variant" : "smooth_diorite"
-		},
-		"1:5" : {
-			"variant" : "andesite"
-		},
-		"1:6" : {
-			"variant" : "smooth_andesite"
-		},
+
 		"2:0" : {
 			"snowy" : "false"
 		},

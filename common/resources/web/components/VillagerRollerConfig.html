@@ -1,0 +1,35 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+        <button style="width: 200px;" @click="save()" v-if="config">Save</button>
+        <button style="width: 200px;" @click="showApiRef()">Show/Hide API Reference</button>
+    </div>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Villager Roller</h2>
+        <div class="description">
+            Automatically places/breaks lectern and checks Librarian trades. Write script to decide when module should stop.<br>
+            Look at <b>villagerRoller.getState()</b> to see current module state and perform correct initial setup.
+        </div>
+
+        <div class="module-sections">
+            <div>
+                <button style="width: 200px;" @click="start()" v-if="config">Start</button>
+                <button style="width: 200px;" @click="stop()" v-if="config">Stop</button>
+            </div>
+            <fieldset>
+                <legend>
+                    Code
+                </legend>
+                <div v-show="!showRefs">
+                    <script-editor v-model="code"></script-editor>
+                </div>
+                <div v-show="showRefs">
+                    <ul class="refs">
+                        <li v-for="item in refs" v-html="item"></li>
+                    </ul>
+                </div>
+                <a href="https://github.com/Zergatul/cheatutils/wiki/Scripting-Language-Reference" target="_blank">Scripting Language Reference</a>
+            </fieldset>
+        </div>
+    </div>
+</div>

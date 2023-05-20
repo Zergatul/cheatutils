@@ -176,7 +176,7 @@ public class SchematicaController {
             RenderSystem.depthMask(true);
             RenderSystem.enableCull();
             RenderSystem.enableBlend();
-            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
+            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 1f);
 
             Map<BlockPos, BlockState> ghosts = new HashMap<>();
             for (Entry entry : entries) {
@@ -422,11 +422,11 @@ public class SchematicaController {
             }
         }
 
-        public void onChunkLoaded(LevelChunk levelChunk) {
+        public void onChunkLoaded( LevelChunk levelChunk) {
             long chunkIndex = chunkToChunkIndex(levelChunk);
             Chunk chunk = chunks.get(chunkIndex);
             if (chunk != null) {
-                chunk.onChunkLoaded(levelChunk);
+                chunk.onChunkLoaded(this, levelChunk);
             }
         }
 
@@ -485,10 +485,10 @@ public class SchematicaController {
             return dx * dx + dz * dz;
         }
 
-        public void onChunkLoaded(LevelChunk chunk) {
+        public void onChunkLoaded(Entry entry, LevelChunk chunk) {
             for (int i = 0; i < sections.length; i++) {
                 if (sections[i] != null) {
-                    sections[i].onChunkLoaded(chunk);
+                    sections[i].onChunkLoaded(entry, chunk);
                 }
             }
         }
@@ -540,25 +540,40 @@ public class SchematicaController {
             return dx * dx + dy * dy + dz * dz;
         }
 
-        public void onChunkLoaded(LevelChunk chunk) {
+        public void onChunkLoaded(Entry entry, LevelChunk chunk) {
             missing.clear();
             wrong.clear();
 
             boolean replaceableAsAir = ConfigStore.instance.getConfig().schematicaConfig.replaceableAsAir;
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int x = 0; x < 16; x++) {
+                int worldX = minX | x;
+                if (worldX < entry.x1 || worldX >= entry.x2) {
+                    continue;
+                }
+
                 pos.setX(x);
                 for (int y = 0; y < 16; y++) {
-                    pos.setY(minY | y);
+                    int worldY = minY | y;
+                    if (worldY < entry.y1 || worldY >= entry.y2) {
+                        continue;
+                    }
+
+                    pos.setY(worldY);
                     for (int z = 0; z < 16; z++) {
+                        int worldZ = minZ | z;
+                        if (worldZ < entry.z1 || worldZ >= entry.z2) {
+                            continue;
+                        }
+
                         pos.setZ(z);
                         BlockState chunkState = chunk.getBlockState(pos);
                         BlockState finalState = states.get(x, y, z);
                         if (isMissing(chunkState, finalState)) {
-                            missing.add(new BlockPos(minX | x, minY | y, minZ | z));
+                            missing.add(new BlockPos(worldX, worldY, worldZ));
                         } else {
                             if (isWrong(chunkState, finalState, replaceableAsAir)) {
-                                wrong.add(new BlockPos(minX | x, minY | y, minZ | z));
+                                wrong.add(new BlockPos(worldX, worldY, worldZ));
                             }
                         }
                     }

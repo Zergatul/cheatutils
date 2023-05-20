@@ -95,6 +95,7 @@ public class ModMain {
         register(Fog.instance);
         register(AutoAttack.instance);
         register(Exec.instance);
+        register(VillagerRoller.instance);
     }
 
     private void register(Module module) {

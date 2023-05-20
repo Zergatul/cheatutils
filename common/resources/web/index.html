@@ -132,8 +132,8 @@
                         <td>
                             <button @click="current = 'exploration-mini-map'" :class="{ faded: !filtered.ExplorationMiniMap }">Exploration Mini Map</button>
                         </td>
-                        <td rowspan="2" style="vertical-align: top;">
-                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
+                        <td>
+                            <button @click="current = 'villager-roller'" :class="{ faded: !filtered.VillagerRoller }">Villager Roller</button>
                         </td>
                         <td>
                             <button @click="current = 'coordinate-leak-protection'" :class="{ faded: !filtered.CoordinateLeakProtection }" style="display: none;">CLP</button>
@@ -152,6 +152,9 @@
                         <td>
                             <button @click="current = 'death-coordinates'" :class="{ faded: !filtered.DeathCoordinates }">Death Coordinates</button>
                         </td>
+                        <td rowspan="2" style="vertical-align: top;">
+                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -166,7 +169,6 @@
                         <td>
                             <button @click="current = 'fog'" :class="{ faded: !filtered.Fog }">Fog</button>
                         </td>
-                        <td></td>
                         <td>
                             <button @click="current = 'world-download'" :class="{ faded: !filtered.WorldDownload }">World Download</button>
                         </td>
@@ -600,6 +602,11 @@
             v-if="current == 'exec'"
             @back="backToMain()">
         </exec-config>
+
+        <villager-roller-config
+            v-if="current == 'villager-roller'"
+            @back="backToMain()">
+        </villager-roller-config>
 
     </div>
 

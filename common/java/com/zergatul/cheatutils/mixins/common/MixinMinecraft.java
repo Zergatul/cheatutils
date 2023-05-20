@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.configs.PerformanceConfig;
+import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -31,6 +33,9 @@ public abstract class MixinMinecraft {
 
     @Shadow
     public abstract boolean isWindowActive();
+
+    @Shadow
+    protected abstract void continueAttack(boolean p_91387_);
 
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
@@ -107,5 +112,16 @@ public abstract class MixinMinecraft {
         if (this.level != null) {
             Events.WorldUnload.trigger();
         }
+    }
+
+    @Redirect(
+            method = "handleKeybinds",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
+    private void onShouldContinueAttack(Minecraft instance, boolean value) {
+        if (VillagerRoller.instance.isBreakingBlock()) {
+            return;
+        }
+
+        this.continueAttack(value);
     }
 }

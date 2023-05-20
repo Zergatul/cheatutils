@@ -13,6 +13,7 @@ public class Root {
     public static ContainerButtonsApi containerButtons = new ContainerButtonsApi();
     public static AutoCraftApi autoCraft = new AutoCraftApi();
     public static AutoBucketApi autoBucket = new AutoBucketApi();
+    public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
 
     // ESP
     public static BlocksApi blocks = new BlocksApi();

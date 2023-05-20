@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
+import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.scripting.api.ApiVisibility;
@@ -8,7 +9,9 @@ import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 
 public class EntitiesApi {
 
@@ -45,6 +48,28 @@ public class EntitiesApi {
         int count = 0;
         for (Entity entity: level.entitiesForRendering()) {
             if (info.clazz.isAssignableFrom(entity.getClass())) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    public int getCountById(String id) {
+        ResourceLocation location = new ResourceLocation(id);
+        EntityType<?> type = Registries.ENTITY_TYPES.getValue(location);
+        if (type == null) {
+            return Integer.MIN_VALUE;
+        }
+
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (Entity entity: level.entitiesForRendering()) {
+            if (entity.getType() == type) {
                 count++;
             }
         }

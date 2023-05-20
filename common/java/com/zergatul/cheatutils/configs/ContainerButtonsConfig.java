@@ -6,6 +6,7 @@ import net.minecraft.world.item.Item;
 public class ContainerButtonsConfig {
     public boolean showTakeAll;
     public boolean showSmartPut;
+    public boolean checkShulkerContent;
     public boolean showDropAll;
     public boolean autoTakeAll;
     public boolean autoDropAll;

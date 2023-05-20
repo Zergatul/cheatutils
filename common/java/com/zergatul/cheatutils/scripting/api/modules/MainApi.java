@@ -7,15 +7,18 @@ import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.ApiVisibility;
 import com.zergatul.cheatutils.scripting.api.HelpText;
+import com.zergatul.cheatutils.scripting.api.Root;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
@@ -65,32 +68,32 @@ public class MainApi {
         }
     }
 
-    @ApiVisibility(ApiType.ACTION)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
     public void systemMessage(String text) {
         showMessage(constructMessage(text), false);
     }
 
-    @ApiVisibility(ApiType.ACTION)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
     public void overlayMessage(String text) {
         showMessage(constructMessage(text), true);
     }
 
-    @ApiVisibility(ApiType.ACTION)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
     public void systemMessage(String color, String text) {
         showMessage(constructMessage(color, text), false);
     }
 
-    @ApiVisibility(ApiType.ACTION)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
     public void overlayMessage(String color, String text) {
         showMessage(constructMessage(color, text), true);
     }
 
-    @ApiVisibility(ApiType.ACTION)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
     public void systemMessage(String color1, String text1, String color2, String text2) {
         showMessage(constructMessage(color1, text1, color2, text2), false);
     }
 
-    @ApiVisibility(ApiType.ACTION)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
     public void overlayMessage(String color1, String text1, String color2, String text2) {
         showMessage(constructMessage(color1, text1, color2, text2), true);
     }
@@ -364,4 +367,24 @@ public class MainApi {
     private void showMessage(MutableComponent message, boolean overlay) {
         Minecraft.getInstance().getChatListener().handleSystemMessage(message, overlay);
     }
+
+    /*public String getSpeed2() {
+        Minecraft mc = Minecraft.getInstance();
+        IntegratedServer server = mc.getSingleplayerServer();
+        if (mc.level != null && server != null) {
+            ServerPlayer player = null;
+            for (Entity e : server.overworld().getEntities().getAll()) {
+                if (e instanceof ServerPlayer p) {
+                    player = p;
+                    break;
+                }
+            }
+            if (player == null) {
+                return "";
+            }
+            return "Client: " + Root.convert.toString(mc.player.getDeltaMovement().length(), 1) + " Server: " + Root.convert.toString(player.getDeltaMovement().length(), 1);
+        } else {
+            return "";
+        }
+    }*/
 }

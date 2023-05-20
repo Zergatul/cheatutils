@@ -159,7 +159,7 @@
                     <div>
                         Palette:
                     </div>
-                    <table>
+                    <table v-if="schematic.palette.length != 65536">
                         <thead>
                             <tr>
                                 <td>ID</td>
@@ -177,10 +177,29 @@
                             </tr>
                         </tbody>
                     </table>
+                    <table v-if="schematic.palette.length == 65536">
+                        <thead>
+                            <tr>
+                                <td>ID1</td>
+                                <td>ID2</td>
+                                <td>Count</td>
+                                <td>Block</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in schematic.paletteMap">
+                                <td>{{ item.id >> 8 }}</td>
+                                <td>{{ item.id & 0xFF }}</td>
+                                <td>{{ item.count }}</td>
+                                <td>
+                                    <input type="text" v-model="item.block">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <div class="section-description">
-                    Select file or use Drag-and-Drop.<br>
-                    Supported formats: .schematic
+                    Supported formats: .schematic, .litematic
                 </div>
             </fieldset>
 

@@ -145,6 +145,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('FakeWeatherConfig', ['fake', 'weather']);
     loadModule('ChatUtilitiesConfig', ['chat']);
     loadModule('ExecConfig', ['exec']);
+    loadModule('VillagerRollerConfig', ['villager', 'roller']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

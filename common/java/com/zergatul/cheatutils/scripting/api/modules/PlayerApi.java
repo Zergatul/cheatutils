@@ -79,6 +79,30 @@ public class PlayerApi {
         return mc.player.getFoodData().getFoodLevel();
     }
 
+    public boolean isUnderwater() {
+        if (mc.player == null) {
+            return false;
+        }
+
+        return mc.player.isUnderWater();
+    }
+
+    public boolean isElytraFlying() {
+        if (mc.player == null) {
+            return false;
+        }
+
+        return mc.player.isFallFlying();
+    }
+
+    public boolean isOnGround() {
+        if (mc.player == null) {
+            return false;
+        }
+
+        return mc.player.isOnGround();
+    }
+
     @ApiVisibility(ApiType.ACTION)
     public void lookAt(double x, double y, double z) {
         if (mc.player == null) {

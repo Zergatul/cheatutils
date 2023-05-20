@@ -58,6 +58,8 @@ public class ApiHandler implements HttpHandler {
         apis.add(new GenerateEntityMappingApi());
         apis.add(new FakeWeatherSetTimeApi());
         apis.add(new FakeWeatherSetRainApi());
+        apis.add(new VillagerRollerCodeApi());
+        apis.add(new VillagerRollerStatusApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -739,6 +741,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ExecConfig config) {
                 ConfigStore.instance.getConfig().execConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("villager-roller", VillagerRollerConfig.class) {
+            @Override
+            protected VillagerRollerConfig getConfig() {
+                return ConfigStore.instance.getConfig().villagerRollerConfig;
+            }
+
+            @Override
+            protected void setConfig(VillagerRollerConfig config) {
+                // do nothing
             }
         });
     }

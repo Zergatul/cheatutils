@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
+import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -13,9 +14,12 @@ import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ContainerButtonsController {
 
@@ -119,6 +123,8 @@ public class ContainerButtonsController {
         }
 
         if (mc.screen instanceof AbstractContainerScreen<?> screen) {
+            boolean checkShulkerContent = ConfigStore.instance.getConfig().containerButtonsConfig.checkShulkerContent;
+
             NonNullList<Slot> slots = screen.getMenu().slots;
             if (slots.size() > 0) {
                 if (mc.gameMode == null || mc.player == null) {
@@ -126,20 +132,77 @@ public class ContainerButtonsController {
                 }
                 Container container = slots.get(0).container;
                 List<Item> containerItems = new ArrayList<>();
+                Map<Item, List<NonNullList<ItemStack>>> shulkers = new HashMap<>();
                 for (int i = 0; i < slots.size(); i++) {
                     Slot slot = slots.get(i);
                     if (slot.getItem().isEmpty()) {
                         continue;
                     }
 
-                    Item item = slot.getItem().getItem();
+                    ItemStack itemStack = slot.getItem();
+                    Item item = itemStack.getItem();
                     if (slot.container == container) {
-                        if (!containerItems.contains(item)) {
-                            containerItems.add(item);
+                        if (checkShulkerContent && ItemUtils.isShulkerBox(itemStack)) {
+                            // add shulker content to list of shulkers
+                            if (!shulkers.containsKey(item)) {
+                                shulkers.put(item, new ArrayList<>());
+                            }
+                            shulkers.get(item).add(ItemUtils.getShulkerContent(itemStack));
+                        } else {
+                            // add item to list if doesn't exist
+                            if (!containerItems.contains(item)) {
+                                containerItems.add(item);
+                            }
                         }
                     } else {
-                        if (containerItems.contains(item)) {
-                            mc.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
+                        if (checkShulkerContent && ItemUtils.isShulkerBox(itemStack)) {
+                            if (shulkers.containsKey(item)) {
+                                NonNullList<ItemStack> current = ItemUtils.getShulkerContent(itemStack);
+                                boolean sameShulker = false;
+                                for (NonNullList<ItemStack> existing: shulkers.get(item)) {
+                                    // compare content of 2 shulkers
+                                    if (existing.size() != current.size()) {
+                                        continue;
+                                    }
+
+                                    boolean sameItems = true;
+                                    for (int j = 0; j < current.size(); j++) {
+                                        ItemStack itemStack1 = existing.get(j);
+                                        ItemStack itemStack2 = current.get(j);
+                                        if (itemStack1.isEmpty() && itemStack2.isEmpty()) {
+                                            continue;
+                                        }
+                                        if (!itemStack1.is(itemStack2.getItem())) {
+                                            sameItems = false;
+                                            break;
+                                        }
+                                        if (itemStack1.getCount() != itemStack2.getCount()) {
+                                            sameItems = false;
+                                            break;
+                                        }
+                                        if (!ItemStack.tagMatches(itemStack1, itemStack2)) {
+                                            sameItems = false;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!sameItems) {
+                                        continue;
+                                    }
+
+                                    sameShulker = true;
+                                    break;
+                                }
+
+                                if (sameShulker) {
+                                    mc.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
+                                }
+                            }
+                        } else {
+                            // double click on item if same item exists
+                            if (containerItems.contains(item)) {
+                                mc.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
+                            }
                         }
                     }
                 }
