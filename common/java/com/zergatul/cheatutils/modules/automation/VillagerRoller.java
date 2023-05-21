@@ -76,6 +76,7 @@ public class VillagerRoller implements Module {
             lecternPlaced = false;
             lecternDestroyed = false;
             offers = null;
+            stopReason = null;
         }
     }
 

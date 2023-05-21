@@ -21,7 +21,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '2.3.0'
+version = '2.4.0'
 group = 'com.zergatul.cheatutils' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'zergatul.cheatutils'
 
@@ -95,7 +95,7 @@ dependencies {
     // Specify the version of Minecraft to use. If this is any group other than 'net.minecraft', it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.19.4-45.0.46'
+    minecraft 'net.minecraftforge:forge:1.19.4-45.0.59'
 
     // Real mod deobf dependency examples - these get remapped to your current mappings
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
