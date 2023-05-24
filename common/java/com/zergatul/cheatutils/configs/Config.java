@@ -62,6 +62,7 @@ public class Config {
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
     public ExecConfig execConfig = new ExecConfig();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
+    public AutoHotbarConfig autoHotbarConfig = new AutoHotbarConfig();
 
     public Config() {
         esp = true;

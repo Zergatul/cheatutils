@@ -1,0 +1,106 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Auto Hotbar</h2>
+        <div class="description">
+            Automatically refills configured slots on hotbar from inventory if number of items fall below 50% of stack size.<br>
+            Can be useful for AFK farms.
+        </div>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </div>
+            <fieldset>
+                <legend>Slots</legend>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot1"
+                            @change="update()">
+                        <span>Slot 1</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot2"
+                            @change="update()">
+                        <span>Slot 2</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot3"
+                            @change="update()">
+                        <span>Slot 3</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot4"
+                            @change="update()">
+                        <span>Slot 4</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot5"
+                            @change="update()">
+                        <span>Slot 5</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot6"
+                            @change="update()">
+                        <span>Slot 6</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot7"
+                            @change="update()">
+                        <span>Slot 7</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot8"
+                            @change="update()">
+                        <span>Slot 8</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlot9"
+                            @change="update()">
+                        <span>Slot 9</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.refillSlotOffhand"
+                            @change="update()">
+                        <span>Offhand</span>
+                    </label>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>

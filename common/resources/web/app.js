@@ -146,6 +146,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('ChatUtilitiesConfig', ['chat']);
     loadModule('ExecConfig', ['exec']);
     loadModule('VillagerRollerConfig', ['villager', 'roller']);
+    loadModule('AutoHotbarConfig', ['auto', 'hotbar']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

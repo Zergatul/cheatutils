@@ -13,7 +13,7 @@ public class Root {
     public static ContainerButtonsApi containerButtons = new ContainerButtonsApi();
     public static AutoCraftApi autoCraft = new AutoCraftApi();
     public static AutoBucketApi autoBucket = new AutoBucketApi();
-    public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
+    public static AutoHotbarApi autoHotbar = new AutoHotbarApi();
 
     // ESP
     public static BlocksApi blocks = new BlocksApi();
@@ -38,6 +38,9 @@ public class Root {
     public static ExplorationMiniMapApi explorationMiniMap = new ExplorationMiniMapApi();
     public static ShulkerTooltipApi shulkerTooltip = new ShulkerTooltipApi();
     public static ZoomApi zoom = new ZoomApi();
+
+    // scripting
+    public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
 
     // utility
     public static LockInputsApi lockInputs = new LockInputsApi();

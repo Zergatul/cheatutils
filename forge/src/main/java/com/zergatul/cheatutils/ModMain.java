@@ -96,6 +96,7 @@ public class ModMain {
         register(AutoAttack.instance);
         register(Exec.instance);
         register(VillagerRoller.instance);
+        register(AutoHotbar.instance);
     }
 
     private void register(Module module) {

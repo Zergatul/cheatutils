@@ -231,7 +231,7 @@
                     </tr>
                     <tr>
                         <td>
-
+                            <button @click="current = 'auto-hotbar'" :class="{ faded: !filtered.AutoHotbar }">Auto Hotbar</button>
                         </td>
                         <td></td>
                         <td>
@@ -607,6 +607,11 @@
             v-if="current == 'villager-roller'"
             @back="backToMain()">
         </villager-roller-config>
+
+        <auto-hotbar-config
+            v-if="current == 'auto-hotbar'"
+            @back="backToMain()">
+        </auto-hotbar-config>
 
     </div>
 

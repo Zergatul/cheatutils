@@ -8,7 +8,6 @@ import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
-import com.zergatul.cheatutils.modules.utilities.ChatUtilities;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
@@ -753,6 +752,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(VillagerRollerConfig config) {
                 // do nothing
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("auto-hotbar", AutoHotbarConfig.class) {
+            @Override
+            protected AutoHotbarConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoHotbarConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoHotbarConfig config) {
+                ConfigStore.instance.getConfig().autoHotbarConfig = config;
             }
         });
     }

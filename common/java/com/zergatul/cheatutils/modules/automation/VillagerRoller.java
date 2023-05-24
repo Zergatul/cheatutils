@@ -14,7 +14,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.locale.Language;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
@@ -61,6 +60,7 @@ public class VillagerRoller implements Module {
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.ScannerBlockUpdated.add(this::onBlockChanged);
         Events.EntityInteract.add(this::onEntityInteract);
+        Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
     }
 
@@ -399,10 +399,13 @@ public class VillagerRoller implements Module {
         }
     }
 
+    private void onPlayerLoggingOut() {
+        stop("Logout");
+    }
+
     private void stop(String reason) {
         if (active) {
             stopReason = reason;
-            mc.getChatListener().handleSystemMessage(Component.literal("[Villager Roller] Stopped. Reason: " + reason), false);
             state = State.STOPPED;
             active = false;
         }
