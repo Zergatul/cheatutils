@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccess
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.EntityInteraction;
+import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -214,7 +215,7 @@ public class VillagerRoller implements Module {
                     }
 
                     if (lecternSlot >= 0) {
-                        double reachDistance = mc.player.getReachDistance();
+                        double reachDistance = PickRange.get();
                         if (pos.distToCenterSqr(mc.player.getEyePosition()) > reachDistance * reachDistance) {
                             // player too far
                             return;
