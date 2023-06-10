@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.zergatul.cheatutils.mixins.common.accessors.ItemRendererAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -26,9 +27,9 @@ public class ItemRenderHelper {
 
     private static final Minecraft mc = Minecraft.getInstance();
 
-    public static void renderItem(PoseStack matrixStack, LivingEntity entity, ItemStack itemStack, int x, int y) {
-        mc.getItemRenderer().renderAndDecorateItem(matrixStack, entity, itemStack, x, y, 123);
-        mc.getItemRenderer().renderGuiItemDecorations(matrixStack, mc.font, itemStack, x, y);
+    public static void renderItem(GuiGraphics graphics, ItemStack itemStack, int x, int y) {
+        graphics.renderFakeItem(itemStack, x, y);
+        graphics.renderItemDecorations(mc.font, itemStack, x, y);
     }
     
     public static void renderItem(LivingEntity entity, ItemStack itemStack, double x, double y, double z) {

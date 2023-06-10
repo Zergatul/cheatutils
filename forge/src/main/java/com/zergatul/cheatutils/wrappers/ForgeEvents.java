@@ -22,14 +22,14 @@ public class ForgeEvents {
     @SubscribeEvent
     public void onPreRenderGui(net.minecraftforge.client.event.RenderGuiEvent.Pre event) {
         if (RenderWorldLastEvent.last != null) {
-            PreRenderGui.trigger(new RenderGuiEvent(event.getPoseStack(), RenderWorldLastEvent.last));
+            PreRenderGui.trigger(new RenderGuiEvent(event.getGuiGraphics(), RenderWorldLastEvent.last));
         }
     }
 
     @SubscribeEvent
     public void onPostRenderGui(net.minecraftforge.client.event.RenderGuiEvent.Post event) {
         if (RenderWorldLastEvent.last != null) {
-            PostRenderGui.trigger(new RenderGuiEvent(event.getPoseStack(), RenderWorldLastEvent.last));
+            PostRenderGui.trigger(new RenderGuiEvent(event.getGuiGraphics(), RenderWorldLastEvent.last));
         }
     }
 

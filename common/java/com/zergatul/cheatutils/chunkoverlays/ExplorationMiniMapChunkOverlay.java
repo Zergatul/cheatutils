@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.MapColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -172,8 +172,8 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                         pos = new BlockPos(dx, y2, dz);
                         state = chunk.getBlockState(pos);
                         if (!state.isAir()) {
-                            MaterialColor materialColor = state.getMapColor(mc.level, pos);
-                            if (materialColor == MaterialColor.NONE) {
+                            MapColor materialColor = state.getMapColor(mc.level, pos);
+                            if (materialColor == MapColor.NONE) {
                                 continue;
                             }
                             int color = convert(materialColor.col);
@@ -194,8 +194,8 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         for (int y = height; y >= dimension.getMinY(); y--) {
             BlockPos pos = new BlockPos(dx, y, dz);
             BlockState state = chunk.getBlockState(pos);
-            MaterialColor materialColor = state.getMapColor(mc.level, pos);
-            if (materialColor != MaterialColor.NONE) {
+            MapColor materialColor = state.getMapColor(mc.level, pos);
+            if (materialColor != MapColor.NONE) {
                 int color = convert(materialColor.col);
                 if (segment.image.getPixelRGBA(xf + dx, yf + dz) != color) {
                     segment.image.setPixelRGBA(xf + dx, yf + dz, color);

@@ -23,7 +23,7 @@ public class BlockUtils {
         }
 
         BlockState state = mc.level.getBlockState(pos);
-        if (!state.getMaterial().isReplaceable()) {
+        if (!state.canBeReplaced()) {
             return null;
         }
 
@@ -37,7 +37,7 @@ public class BlockUtils {
         for (Direction direction : Direction.values()) {
             BlockPos neighbourPos = pos.relative(direction);
             BlockState neighbourState = mc.level.getBlockState(neighbourPos);
-            if (!neighbourState.getMaterial().isReplaceable()) {
+            if (!neighbourState.canBeReplaced()) {
                 return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos);
             }
         }
@@ -60,7 +60,7 @@ public class BlockUtils {
         }
 
         BlockState blockState = mc.level.getBlockState(pos);
-        if (!blockState.getMaterial().isReplaceable()) {
+        if (!blockState.canBeReplaced()) {
             return false;
         }
 

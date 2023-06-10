@@ -105,7 +105,7 @@ public class TeleportHackController {
 
         for (int i = 0 ; i < repeats; i++) {
             NetworkPacketsController.instance.sendPacket(
-                    new ServerboundMovePlayerPacket.Pos(playerPos.x, playerPos.y, playerPos.z, mc.player.isOnGround()));
+                    new ServerboundMovePlayerPacket.Pos(playerPos.x, playerPos.y, playerPos.z, mc.player.onGround()));
         }
 
         NetworkPacketsController.instance.sendPacket(

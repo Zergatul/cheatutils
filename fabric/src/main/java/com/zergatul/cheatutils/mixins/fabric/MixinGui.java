@@ -1,11 +1,11 @@
 package com.zergatul.cheatutils.mixins.fabric;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.fabric.GuiOverlays;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -34,24 +34,24 @@ public abstract class MixinGui {
 
     @Shadow protected abstract int getVisibleVehicleHeartRows(int i);
 
-    @Inject(at = @At("HEAD"), method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;F)V")
-    private void onBeforeRender(PoseStack poseStack, float partialTick, CallbackInfo info) {
+    @Inject(at = @At("HEAD"), method = "render(Lnet/minecraft/client/gui/GuiGraphics;F)V")
+    private void onBeforeRender(GuiGraphics graphics, float partialTick, CallbackInfo info) {
         if (RenderWorldLastEvent.last != null) {
-            Events.PreRenderGui.trigger(new RenderGuiEvent(poseStack, RenderWorldLastEvent.last));
+            Events.PreRenderGui.trigger(new RenderGuiEvent(graphics, RenderWorldLastEvent.last));
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;F)V")
-    private void onAfterRender(PoseStack poseStack, float partialTick, CallbackInfo info) {
+    @Inject(at = @At("TAIL"), method = "render(Lnet/minecraft/client/gui/GuiGraphics;F)V")
+    private void onAfterRender(GuiGraphics graphics, float partialTick, CallbackInfo info) {
         if (RenderWorldLastEvent.last != null) {
-            Events.PostRenderGui.trigger(new RenderGuiEvent(poseStack, RenderWorldLastEvent.last));
+            Events.PostRenderGui.trigger(new RenderGuiEvent(graphics, RenderWorldLastEvent.last));
         }
     }
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;pop()V"),
-            method = "renderPlayerHealth(Lcom/mojang/blaze3d/vertex/PoseStack;)V")
-    private void onAfterRenderHealth(PoseStack poseStack, CallbackInfo info) {
+            method = "renderPlayerHealth(Lnet/minecraft/client/gui/GuiGraphics;)V")
+    private void onAfterRenderHealth(GuiGraphics graphics, CallbackInfo info) {
         // copy from original code
         Player player = this.getCameraPlayer();
         int o = this.screenHeight - 39;
@@ -70,6 +70,6 @@ public abstract class MixinGui {
             t += aa * 10;
         }
 
-        GuiOverlays.render(poseStack, this.screenWidth, this.screenHeight, t);
+        GuiOverlays.render(graphics, this.screenWidth, this.screenHeight, t);
     }
 }

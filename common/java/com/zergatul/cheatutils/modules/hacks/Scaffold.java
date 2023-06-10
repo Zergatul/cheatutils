@@ -105,7 +105,7 @@ public class Scaffold implements Module {
     }
 
     private boolean canPlaceBlock(BlockState state) {
-        return state.getMaterial().isReplaceable();
+        return state.canBeReplaced();
     }
 
     private void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, ScaffoldConfig config) {

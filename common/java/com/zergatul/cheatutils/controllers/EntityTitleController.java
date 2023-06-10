@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
@@ -175,8 +176,9 @@ public class EntityTitleController {
         List<Integer> enchantmentWidths = new ArrayList<>();
         List<Integer> enchantmentTextWidths = new ArrayList<>();
 
-        event.getMatrixStack().pushPose();
-        event.getMatrixStack().last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
+        PoseStack poseStack = event.getGuiGraphics().pose();
+        poseStack.pushPose();
+        poseStack.last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
 
         for (EntityEntry entry : entities) {
             Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
@@ -204,10 +206,10 @@ public class EntityTitleController {
                 double rx2 = xp + width + horizontalPadding * invScale;
                 double ry1 = yp + (bounds.top() - verticalPadding) * invScale;
                 double ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-                Primitives.fill(event.getMatrixStack(), rx1, ry1, rx2, ry2, Color.BLACK.getRGB() & 0x40000000);
+                Primitives.fill(poseStack, rx1, ry1, rx2, ry2, Color.BLACK.getRGB() & 0x40000000);
 
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-                fontRenderer.drawText(event.getMatrixStack(), text, (float)xp, (float)yp, invScale);
+                fontRenderer.drawText(poseStack, text, (float)xp, (float)yp, invScale);
             }
 
             if (entry.showOwner) {
@@ -230,10 +232,10 @@ public class EntityTitleController {
                         double rx2 = xp + width + horizontalPadding * invScale;
                         double ry1 = yp + (bounds.top() - verticalPadding) * invScale;
                         double ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-                        Primitives.fill(event.getMatrixStack(), rx1, ry1, rx2, ry2, Color.BLACK.getRGB() & 0x40000000);
+                        Primitives.fill(poseStack, rx1, ry1, rx2, ry2, Color.BLACK.getRGB() & 0x40000000);
 
                         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-                        fontRenderer.drawText(event.getMatrixStack(), ownerText, (float)xp, (float)yp, invScale);
+                        fontRenderer.drawText(poseStack, ownerText, (float)xp, (float)yp, invScale);
                     }
                 }
             }
@@ -330,10 +332,10 @@ public class EntityTitleController {
                                     e.color.getGreen() / 255f,
                                     e.color.getBlue() / 255f,
                                     e.color.getAlpha() / 255f);
-                            enchFontRenderer.drawText(event.getMatrixStack(), e.text, (float)(xpl + xCenterOffset), (float)ypl, invScale);
+                            enchFontRenderer.drawText(poseStack, e.text, (float)(xpl + xCenterOffset), (float)ypl, invScale);
 
                             RenderSystem.setShaderColor(0f, 1f, 1f, 1f);
-                            enchFontRenderer.drawText(event.getMatrixStack(), Integer.toString(e.level), (float) (xpl + bound.width() * invScale + xCenterOffset), (float)ypl, invScale);
+                            enchFontRenderer.drawText(poseStack, Integer.toString(e.level), (float) (xpl + bound.width() * invScale + xCenterOffset), (float)ypl, invScale);
                         }
                         xpl += enchantmentWidths.get(i);
                     }
@@ -341,7 +343,7 @@ public class EntityTitleController {
             }
         }
 
-        event.getMatrixStack().popPose();
+        poseStack.popPose();
     }
 
     private String getEntityText(EntityEntry entry) {

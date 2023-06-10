@@ -55,7 +55,7 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
     }
 
     private boolean shouldFallback(Entity entity) {
-        return entity.level.isClientSide &&
+        return entity.level().isClientSide &&
                 Minecraft.getInstance().player == entity &&
                 ConfigStore.instance.getConfig().movementHackConfig.disableSlimePhysics;
     }

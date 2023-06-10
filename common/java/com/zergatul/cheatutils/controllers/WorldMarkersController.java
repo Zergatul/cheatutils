@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
@@ -58,8 +59,9 @@ public class WorldMarkersController {
         double scaledHalfWidth = mc.getWindow().getWidth() * invScale / 2;
         double scaledHalfHeight = mc.getWindow().getHeight() * invScale / 2;
 
-        event.getMatrixStack().pushPose();
-        event.getMatrixStack().last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
+        PoseStack poseStack = event.getGuiGraphics().pose();
+        poseStack.pushPose();
+        poseStack.last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
 
         String dimension = mc.level.dimension().location().toString();
         for (WorldMarkersConfig.Entry entry : config.entries) {
@@ -103,20 +105,20 @@ public class WorldMarkersController {
             double rx2 = xp + width + horizontalPadding * invScale;
             double ry1 = yp + (bounds.top() - verticalPadding) * invScale;
             double ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-            Primitives.fill(event.getMatrixStack(), rx1, ry1, rx2, ry2, inverse & 0x40FFFFFF);
+            Primitives.fill(poseStack, rx1, ry1, rx2, ry2, inverse & 0x40FFFFFF);
 
             ColorRender.setShaderColor(color);
-            fontRenderer.drawText(event.getMatrixStack(), entry.name, (float)xp, (float)yp, invScale);
+            fontRenderer.drawText(poseStack, entry.name, (float)xp, (float)yp, invScale);
 
             // border
             double bw = config.borderWidth * invScale;
-            Primitives.fill(event.getMatrixStack(), rx1 - bw, ry1 - bw, rx2 + bw, ry1, color);
-            Primitives.fill(event.getMatrixStack(), rx1 - bw, ry2, rx2 + bw, ry2 + bw, color);
-            Primitives.fill(event.getMatrixStack(), rx1 - bw, ry1 - bw, rx1, ry2 + bw, color);
-            Primitives.fill(event.getMatrixStack(), rx2, ry1 - bw, rx2 + bw, ry2 + bw, color);
-            Primitives.fill(event.getMatrixStack(), xc - bw / 2, ry2, xc + bw / 2, ry2 + height, color);
+            Primitives.fill(poseStack, rx1 - bw, ry1 - bw, rx2 + bw, ry1, color);
+            Primitives.fill(poseStack, rx1 - bw, ry2, rx2 + bw, ry2 + bw, color);
+            Primitives.fill(poseStack, rx1 - bw, ry1 - bw, rx1, ry2 + bw, color);
+            Primitives.fill(poseStack, rx2, ry1 - bw, rx2 + bw, ry2 + bw, color);
+            Primitives.fill(poseStack, xc - bw / 2, ry2, xc + bw / 2, ry2 + height, color);
         }
 
-        event.getMatrixStack().popPose();
+        poseStack.popPose();
     }
 }

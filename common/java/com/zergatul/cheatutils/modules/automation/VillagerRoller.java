@@ -221,7 +221,7 @@ public class VillagerRoller implements Module {
                             return;
                         }
 
-                        if (!mc.level.getBlockState(pos).getMaterial().isReplaceable()) {
+                        if (!mc.level.getBlockState(pos).canBeReplaced()) {
                             // another block placed at destination
                             return;
                         }

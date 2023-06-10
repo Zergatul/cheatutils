@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
@@ -73,6 +74,7 @@ public class ChunkController {
             serverUnloadedChunks.clear();
             return;
         }
+
         ChunkPos playerPos = mc.player.chunkPosition();
         long renderDistance2 = mc.options.getEffectiveRenderDistance();
         renderDistance2 = renderDistance2 * renderDistance2;
@@ -84,8 +86,7 @@ public class ChunkController {
             if (d2 > renderDistance2) {
                 serverUnloadedChunks.remove(i);
                 i--;
-                cache.drop(chunkPos.x, chunkPos.z);
-                ((ClientPacketListenerAccessor) mc.player.connection.getConnection().getPacketListener()).queueLightUpdate_CU(new ClientboundForgetLevelChunkPacket(chunkPos.x, chunkPos.z));
+                ((ClientPacketListener) mc.player.connection.getConnection().getPacketListener()).handleForgetLevelChunk(new ClientboundForgetLevelChunkPacket(chunkPos.x, chunkPos.z));
             }
         }
     }

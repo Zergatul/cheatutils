@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils.common.events;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
+import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Matrix4f;
 
-public record RenderGuiEvent(PoseStack matrixStack, RenderWorldLastEvent renderWorldLastEvent) {
+public record RenderGuiEvent(GuiGraphics graphics, RenderWorldLastEvent renderWorldLastEvent) {
 
-    public PoseStack getMatrixStack() {
-        return matrixStack;
+    public GuiGraphics getGuiGraphics() {
+        return graphics;
     }
 
     public float getTickDelta() {

@@ -36,7 +36,7 @@ public class EndCityChunks {
             return;
         }
 
-        if (mc.player.level.dimension() != Level.END) {
+        if (mc.player.level().dimension() != Level.END) {
             return;
         }
 

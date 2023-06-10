@@ -1,11 +1,12 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ContainerSummaryController {
 
@@ -48,7 +50,7 @@ public class ContainerSummaryController {
             String id1 = Registries.ITEMS.getKey(i1.item).toString();
             String id2 = Registries.ITEMS.getKey(i2.item).toString();
             return id1.compareTo(id2);
-        }).toList();
+        }).collect(Collectors.toList());
     }
 
     public List<ItemsColumn> split(List<ItemDrawable> items) {
@@ -121,30 +123,28 @@ public class ContainerSummaryController {
             }
         }
 
-        public int draw(PoseStack poseStack, Font font, ItemRenderer itemRenderer, LocalPlayer player, int x, int y) {
+        public int draw(GuiGraphics graphics, Font font, ItemRenderer itemRenderer, LocalPlayer player, int x, int y) {
             int fy = y + HEIGHT - font.lineHeight - 2;
 
             if (stacksCount > 0) {
                 if (stacksCount > 1) {
-                    font.draw(poseStack, stacksCount + "x", x, fy, 16777215);
+                    graphics.drawString(font, stacksCount + "x", x, fy, 16777215);
                     x += font.width(stacksCount + "x");
                 }
 
-                var stack = new ItemStack(item, stackSize);
-                itemRenderer.renderAndDecorateItem(poseStack, player, stack, x, y, 123);
-                itemRenderer.renderGuiItemDecorations(poseStack, font, stack, x, y, null);
+                ItemStack stack = new ItemStack(item, stackSize);
+                ItemRenderHelper.renderItem(graphics, stack, x, y);
                 x += 16 + ITEM_PADDING;
 
                 if (remCount > 0) {
-                    font.draw(poseStack, "+", x, fy, 16777215);
+                    graphics.drawString(font, "+", x, fy, 16777215);
                     x += font.width("+");
                 }
             }
 
             if (remCount > 0) {
                 var stack = new ItemStack(item, remCount);
-                itemRenderer.renderAndDecorateItem(poseStack, player, stack, x, y, 123);
-                itemRenderer.renderGuiItemDecorations(poseStack, font, stack, x, y, null);
+                ItemRenderHelper.renderItem(graphics, stack, x, y);
                 //x += 16 + ITEM_PADDING;
             }
 
@@ -174,22 +174,22 @@ public class ContainerSummaryController {
             }
         }
 
-        public int draw(PoseStack poseStack, Font font, ItemRenderer itemRenderer, LocalPlayer player, int x, int y) {
+        public int draw(GuiGraphics graphics, Font font, ItemRenderer itemRenderer, LocalPlayer player, int x, int y) {
             int yo = y;
             int fullWidth = width + H_PADDING * 2;
 
-            Primitives.fill(poseStack, x, y, x + fullWidth, y + ItemDrawable.HEIGHT * list.size(), -1873784752);
-            for (ItemDrawable drawable: list) {
-                y += drawable.draw(poseStack, font, itemRenderer, player, x + (width - drawable.width) / 2 + H_PADDING, y + 2);
+            Primitives.fill(graphics.pose(), x, y, x + fullWidth, y + ItemDrawable.HEIGHT * list.size(), -1873784752);
+            for (ItemDrawable drawable : list) {
+                y += drawable.draw(graphics, font, itemRenderer, player, x + (width - drawable.width) / 2 + H_PADDING, y + 2);
             }
 
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShaderTexture(0, CONTAINER_TEXTURE);
-            Primitives.drawTexture(poseStack.last().pose(), x, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
-            Primitives.drawTexture(poseStack.last().pose(), x + fullWidth, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
+            Primitives.drawTexture(graphics.pose().last().pose(), x, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
+            Primitives.drawTexture(graphics.pose().last().pose(), x + fullWidth, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
             for (int i = 0; i <= list.size(); i++) {
-                Primitives.drawTexture(poseStack.last().pose(), x, yo + ItemDrawable.HEIGHT * i, fullWidth, 1, 124, 3, 3, 1, 1, 256, 256);
+                Primitives.drawTexture(graphics.pose().last().pose(), x, yo + ItemDrawable.HEIGHT * i, fullWidth, 1, 124, 3, 3, 1, 1, 256, 256);
             }
 
             return fullWidth;

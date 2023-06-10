@@ -53,7 +53,7 @@ public class ScriptedBlockPlacerController {
         Vec3 eyePos = mc.player.getEyePosition(1);
         for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
             BlockState state = mc.level.getBlockState(pos);
-            if (!state.getMaterial().isReplaceable()) {
+            if (!state.canBeReplaced()) {
                 continue;
             }
 

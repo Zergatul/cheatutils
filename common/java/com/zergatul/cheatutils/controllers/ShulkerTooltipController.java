@@ -7,9 +7,10 @@ import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.AbstractContainerScreenAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.ScreenAccessor;
+import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -65,8 +66,9 @@ public class ShulkerTooltipController {
 
         event.cancel();
 
-        event.getPoseStack().pushPose();
-        event.getPoseStack().translate(0, 0, TranslateZ);
+        PoseStack poseStack = event.getGraphics().pose();
+        poseStack.pushPose();
+        poseStack.translate(0, 0, TranslateZ);
         RenderSystem.applyModelViewMatrix();
 
         int x, y;
@@ -74,37 +76,39 @@ public class ShulkerTooltipController {
         y = event.getY() - 4;
         if (Screen.hasControlDown()) {
             locked = true;
-            lockedPose = event.getPoseStack().last().pose();
+            lockedPose = poseStack.last().pose();
             lockedStack = event.getItemStack();
             lockedX = x;
             lockedY = y;
         }
 
-        renderShulkerInventory(event.getPoseStack(), event.getItemStack(), event.getPoseStack().last().pose(), x, y);
+        renderShulkerInventory(event.getGraphics(), event.getItemStack(), poseStack.last().pose(), x, y);
 
-        event.getPoseStack().popPose();
+        poseStack.popPose();
         RenderSystem.applyModelViewMatrix();
     }
 
     private void onContainerRenderLabels(ContainerRenderLabelsEvent event) {
         if (locked) {
             if (Screen.hasControlDown()) {
-                event.getPoseStack().pushPose();
-                event.getPoseStack().setIdentity();
-                event.getPoseStack().mulPoseMatrix(lockedPose);
+                PoseStack poseStack = event.getGuiGraphics().pose();
+
+                poseStack.pushPose();
+                poseStack.setIdentity();
+                poseStack.mulPoseMatrix(lockedPose);
                 RenderSystem.applyModelViewMatrix();
 
                 int x = lockedX;
                 int y = lockedY;
 
-                PoseStack.Pose pose = event.getPoseStack().last();
-                renderShulkerInventory(event.getPoseStack(), lockedStack, pose.pose(), x, y);
+                PoseStack.Pose pose = poseStack.last();
+                renderShulkerInventory(event.getGuiGraphics(), lockedStack, pose.pose(), x, y);
 
                 int mx = event.getMouseX();
                 int my = event.getMouseY();
-                renderTooltip(event.getPoseStack(), x, y, mx, my);
+                renderTooltip(event.getGuiGraphics(), x, y, mx, my);
 
-                event.getPoseStack().popPose();
+                poseStack.popPose();
                 RenderSystem.applyModelViewMatrix();
             } else {
                 clearLocked();
@@ -120,7 +124,7 @@ public class ShulkerTooltipController {
         return y - Minecraft.getInstance().getWindow().getGuiScaledHeight() / 2 + ((AbstractContainerScreenAccessor) screen).getHeight_CU() / 2;
     }
 
-    private void renderShulkerInventory(PoseStack poseStack, ItemStack itemStack, Matrix4f matrix, int x, int y) {
+    private void renderShulkerInventory(GuiGraphics graphics, ItemStack itemStack, Matrix4f matrix, int x, int y) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, CONTAINER_TEXTURE);
@@ -135,13 +139,12 @@ public class ShulkerTooltipController {
             int slotX = i % 9;
             int slotY = i / 9;
             if (!slot.isEmpty()) {
-                renderSlot(poseStack, slot, x + 8 + 18 * slotX, y + 10 + 18 * slotY);
+                renderSlot(graphics, slot, x + 8 + 18 * slotX, y + 10 + 18 * slotY);
             }
         }
     }
 
-    private void renderTooltip(PoseStack poseStack, int x, int y, int mouseX, int mouseY) {
-        Screen screen = Minecraft.getInstance().screen;
+    private void renderTooltip(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
         CompoundTag compound = lockedStack.getTagElement("BlockEntityTag");
         if (compound != null) {
             if (compound.contains("Items", 9)) {
@@ -155,7 +158,7 @@ public class ShulkerTooltipController {
                         if (x + 8 + 18 * slotX <= mouseX && mouseX < x + 8 + 18 * slotX + 16) {
                             if (y + 10 + 18 * slotY <= mouseY && mouseY < y + 10 + 18 * slotY + 16) {
                                 allowTooltip = true;
-                                ((ScreenAccessor) screen).renderTooltip_CU(poseStack, slot, mouseX, mouseY);
+                                graphics.renderTooltip(Minecraft.getInstance().font, slot, mouseX, mouseY);
                             }
                         }
                     }
@@ -176,11 +179,9 @@ public class ShulkerTooltipController {
         BufferUploader.drawWithShader(bufferbuilder.end());
     }
 
-    private void renderSlot(PoseStack poseStack, ItemStack itemStack, int x, int y) {
-        ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
+    private void renderSlot(GuiGraphics graphics, ItemStack itemStack, int x, int y) {
         RenderSystem.enableDepthTest();
-        itemRenderer.renderAndDecorateItem(poseStack, itemStack, x, y, 1); // check last parameters
-        itemRenderer.renderGuiItemDecorations(poseStack, Minecraft.getInstance().font, itemStack, x, y, null);
+        ItemRenderHelper.renderItem(graphics, itemStack, x, y);
     }
 
     private void clearLocked() {

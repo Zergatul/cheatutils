@@ -100,7 +100,7 @@ public class PlayerApi {
             return false;
         }
 
-        return mc.player.isOnGround();
+        return mc.player.onGround();
     }
 
     @ApiVisibility(ApiType.ACTION)

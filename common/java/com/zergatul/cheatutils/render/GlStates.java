@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.zergatul.cheatutils.mixins.common.accessors.GuiAccessor;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 public class GlStates {
 
     public static void setupOverlayRenderState(boolean blend, boolean depthTest) {
-        setupOverlayRenderState(blend, depthTest, Gui.GUI_ICONS_LOCATION);
+        setupOverlayRenderState(blend, depthTest, GuiAccessor.getGuiIconsLocation_CU());
     }
 
     public static void setupOverlayRenderState(boolean blend, boolean depthTest, @Nullable ResourceLocation texture) {

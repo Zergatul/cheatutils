@@ -43,7 +43,7 @@ public class AutoCriticals {
 
                     @Override
                     public void onAttack() {
-                        if (ConfigStore.instance.getConfig().autoCriticalsConfig.onlyOnGround && !mc.player.isOnGround()) {
+                        if (ConfigStore.instance.getConfig().autoCriticalsConfig.onlyOnGround && !mc.player.onGround()) {
                             return;
                         }
 

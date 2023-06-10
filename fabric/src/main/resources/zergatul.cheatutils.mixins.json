@@ -8,6 +8,7 @@
     "common.accessors.ClientPacketListenerAccessor",
     "common.accessors.ConnectionAccessor",
     "common.accessors.CraftingScreenAccessor",
+    "common.accessors.GuiAccessor",
     "common.accessors.HolderReferenceAccessor",
     "common.accessors.InputConstantsKeyAccessor",
     "common.accessors.ItemRendererAccessor",
@@ -36,6 +37,7 @@
     "common.MixinFogRenderer",
     "common.MixinGameRenderer",
     "common.MixinGui",
+    "common.MixinGuiGraphics",
     "common.MixinKeyBindingListKeyEntry",
     "common.MixinLevelChunk",
     "common.MixinLevelRenderer",
@@ -50,7 +52,6 @@
     "common.MixinPlayerRenderer",
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSlimeBlock",
-    "common.MixinScreen",
     "common.MixinSoundManager",
     "common.MixinUser",
 

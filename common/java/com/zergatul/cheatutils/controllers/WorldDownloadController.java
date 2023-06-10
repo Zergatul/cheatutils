@@ -218,7 +218,7 @@ public class WorldDownloadController {
         compoundtag.putInt("zPos", chunkpos.z);
         compoundtag.putLong("LastUpdate", level.getGameTime());
         compoundtag.putLong("InhabitedTime", chunk.getInhabitedTime());
-        compoundtag.putString("Status", chunk.getStatus().getName());
+        compoundtag.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(chunk.getStatus()).toString());
 
         LevelChunkSection[] alevelchunksection = chunk.getSections();
         ListTag listtag = new ListTag();
@@ -275,7 +275,6 @@ public class WorldDownloadController {
             ListTag listtag2 = new ListTag();
             listtag2.addAll(protochunk.getEntities());
             compoundtag.put("entities", listtag2);
-            compoundtag.put("Lights", ChunkSerializer.packOffsets(protochunk.getPackedLights()));
             CompoundTag compoundtag4 = new CompoundTag();
 
             for(GenerationStep.Carving generationstep$carving : GenerationStep.Carving.values()) {

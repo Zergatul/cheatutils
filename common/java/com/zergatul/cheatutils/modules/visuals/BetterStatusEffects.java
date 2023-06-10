@@ -7,7 +7,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.Primitives;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
@@ -27,7 +27,7 @@ public class BetterStatusEffects implements Module {
 
     }
 
-    public boolean render(PoseStack poseStack, int screenWidth, int y) {
+    public boolean render(GuiGraphics graphics, int screenWidth, int y) {
         if (mc.player == null) {
             return false;
         }
@@ -49,17 +49,15 @@ public class BetterStatusEffects implements Module {
         for (int i = 0; i < sorted.size(); i++) {
             MobEffectInstance effectInstance = sorted.get(i);
 
-            RenderSystem.setShaderTexture(0, AbstractContainerScreen.INVENTORY_LOCATION);
             if (effectInstance.isAmbient()) {
-                GuiComponent.blit(poseStack, left, y, 199, 165, 166, 24, 24, 256, 256);
+                graphics.blit(AbstractContainerScreen.INVENTORY_LOCATION, left, y, 199, 165, 166, 24, 24, 256, 256);
             } else {
-                GuiComponent.blit(poseStack, left, y, 199, 141, 166, 24, 24, 256, 256);
+                graphics.blit(AbstractContainerScreen.INVENTORY_LOCATION, left, y, 199, 141, 166, 24, 24, 256, 256);
             }
 
             TextureAtlasSprite textureatlassprite = manager.get(effectInstance.getEffect());
-            RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-            GuiComponent.blit(poseStack, left + 3, y + 3, 200, 18, 18, textureatlassprite);
+            graphics.blit(left + 3, y + 3, 200, 18, 18, textureatlassprite);
 
             String duration = MobEffectUtil.formatDuration(effectInstance, 1).getString();
             if (duration.startsWith("00")) {
@@ -71,8 +69,8 @@ public class BetterStatusEffects implements Module {
             int width = mc.font.width(duration);
             int textLeft = left + (24 - width) / 2;
             int textTop = y + 25;
-            Primitives.fill(poseStack, textLeft, textTop, textLeft + width, textTop + mc.font.lineHeight, -1873784752);
-            mc.font.draw(poseStack, duration, textLeft, textTop, 16777215);
+            Primitives.fill(graphics.pose(), textLeft, textTop, textLeft + width, textTop + mc.font.lineHeight, -1873784752);
+            graphics.drawString(mc.font, duration, textLeft, textTop, 16777215);
 
             left += 25;
         }

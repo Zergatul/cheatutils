@@ -14,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BlockBehaviour.BlockStateBase.class)
 public abstract class MixinBlockBehaviourBlockStateBase {
 
-    @Inject(at = @At("RETURN"), method = "Lnet/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase;getDestroyProgress(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F", cancellable = true)
+    @Inject(at = @At("RETURN"), method = "getDestroyProgress(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F", cancellable = true)
     private void onGetDestroyProgress(Player player, BlockGetter level, BlockPos pos, CallbackInfoReturnable<Float> info) {
-        if (player.level.isClientSide()) {
+        if (player.level().isClientSide()) {
             FastBreakConfig config = ConfigStore.instance.getConfig().fastBreakConfig;
             if (config.enabled) {
                 float oldValue = info.getReturnValue();

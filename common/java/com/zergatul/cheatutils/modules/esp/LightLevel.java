@@ -73,7 +73,7 @@ public class LightLevel implements Module {
             textures[i] = new ResourceLocation(ModMain.MODID, "textures/light-level-" + i + ".png");
         }
 
-        RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer());
+        RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC));
 
         Events.RenderWorldLast.add(this::render);
         Events.ScannerChunkLoaded.add(this::onChunkLoaded);
@@ -323,7 +323,7 @@ public class LightLevel implements Module {
         if (canSpawnOn(chunk.getBlockState(pos), pos)) {
             BlockPos posAbove = pos.above();
             BlockState stateAbove = chunk.getBlockState(posAbove);
-            if (stateAbove.getMaterial().isSolid()) {
+            if (stateAbove.isSolid()) {
                 return;
             }
             if (!stateAbove.getFluidState().isEmpty()) {
@@ -334,7 +334,7 @@ public class LightLevel implements Module {
             }
 
             BlockState stateAbove2 = chunk.getBlockState(posAbove.above());
-            if (stateAbove2.getMaterial().isSolid()) {
+            if (stateAbove2.isSolid()) {
                 return;
             }
 
@@ -359,6 +359,6 @@ public class LightLevel implements Module {
             return false;
         }
 
-        return state.getMaterial().isSolid() && state.isCollisionShapeFullBlock(mc.level, pos);
+        return state.isSolid() && state.isCollisionShapeFullBlock(mc.level, pos);
     }
 }

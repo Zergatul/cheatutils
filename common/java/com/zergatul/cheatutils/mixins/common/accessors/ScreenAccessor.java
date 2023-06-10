@@ -13,7 +13,4 @@ public interface ScreenAccessor {
 
     @Accessor("font")
     Font getFont_CU();
-
-    @Invoker("renderTooltip")
-    void renderTooltip_CU(PoseStack poseStack, ItemStack itemStack, int mouseX, int mouseY);
 }

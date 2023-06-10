@@ -47,7 +47,8 @@ public abstract class MixinClientPacketListener {
                 packet.showDeathScreen(),
                 packet.isDebug(),
                 packet.isFlat(),
-                packet.lastDeathLocation());
+                packet.lastDeathLocation(),
+                packet.portalCooldown());
     }
 
     @ModifyVariable(

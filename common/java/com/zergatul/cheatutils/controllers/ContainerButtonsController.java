@@ -172,15 +172,11 @@ public class ContainerButtonsController {
                                         if (itemStack1.isEmpty() && itemStack2.isEmpty()) {
                                             continue;
                                         }
-                                        if (!itemStack1.is(itemStack2.getItem())) {
+                                        if (!ItemStack.isSameItemSameTags(itemStack1, itemStack2)) {
                                             sameItems = false;
                                             break;
                                         }
                                         if (itemStack1.getCount() != itemStack2.getCount()) {
-                                            sameItems = false;
-                                            break;
-                                        }
-                                        if (!ItemStack.tagMatches(itemStack1, itemStack2)) {
                                             sameItems = false;
                                             break;
                                         }

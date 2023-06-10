@@ -19,7 +19,7 @@ public abstract class MixinPig {
         PigHackConfig config = ConfigStore.instance.getConfig().pigHackConfig;
         if (config.enabled && config.allowRideWithoutCarrot) {
             var pig = (Pig) (Object) this;
-            if (pig.level.isClientSide) {
+            if (pig.level().isClientSide) {
                 if (pig.isSaddled()) {
                     Entity entity = pig.getFirstPassenger();
                     if (entity instanceof Player player) {
@@ -30,12 +30,12 @@ public abstract class MixinPig {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "getRiddenSpeed(Lnet/minecraft/world/entity/LivingEntity;)F", cancellable = true)
-    private void onGetRiddenSpeed(LivingEntity entity, CallbackInfoReturnable<Float> info) {
+    @Inject(at = @At("HEAD"), method = "getRiddenSpeed(Lnet/minecraft/world/entity/player/Player;)F", cancellable = true)
+    private void onGetRiddenSpeed(Player player, CallbackInfoReturnable<Float> info) {
         PigHackConfig config = ConfigStore.instance.getConfig().pigHackConfig;
         if (config.enabled && config.overrideSteeringSpeed) {
             var pig = (Pig) (Object) this;
-            if (pig.level.isClientSide) {
+            if (pig.level().isClientSide) {
                 info.setReturnValue(config.steeringSpeed);
                 info.cancel();
             }

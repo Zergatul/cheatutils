@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.chunkoverlays.AbstractChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
@@ -87,13 +88,14 @@ public class ChunkOverlayController {
         float zc = (float) mc.gameRenderer.getMainCamera().getPosition().z;
         float yRot = mc.gameRenderer.getMainCamera().getYRot();
 
-        event.getMatrixStack().pushPose();
-        event.getMatrixStack().setIdentity();
-        event.getMatrixStack().translate(1d * mc.getWindow().getGuiScaledWidth() / 2, 1d * mc.getWindow().getGuiScaledHeight() / 2, TranslateZ);
+        PoseStack poseStack = event.getGuiGraphics().pose();
+        poseStack.pushPose();
+        poseStack.setIdentity();
+        poseStack.translate(1d * mc.getWindow().getGuiScaledWidth() / 2, 1d * mc.getWindow().getGuiScaledHeight() / 2, TranslateZ);
 
         Quaternionf quaternion = new Quaternionf(0, 0, 0, 1);
         quaternion.rotationYXZ(-(float)Math.PI, -(float)Math.PI, -yRot * ((float)Math.PI / 180F));
-        event.getMatrixStack().mulPose(quaternion);
+        poseStack.mulPose(quaternion);
         RenderSystem.applyModelViewMatrix();
 
         //RenderSystem.enableDepthTest();
@@ -130,7 +132,7 @@ public class ChunkOverlayController {
                 float y = (segment.pos.z * 16 * SegmentSize - zc) * multiplier;
 
                 Primitives.drawTexture(
-                        event.getMatrixStack().last().pose(),
+                        poseStack.last().pose(),
                         x, y, scale, scale, z,
                         0, 0, 16 * SegmentSize, 16 * SegmentSize,
                         16 * SegmentSize, 16 * SegmentSize);
@@ -138,10 +140,10 @@ public class ChunkOverlayController {
         }
 
         for (AbstractChunkOverlay overlay: overlays) {
-            overlay.onPostDrawSegments(dimension, event.getMatrixStack(), xp, zp, xc, zc, multiplier);
+            overlay.onPostDrawSegments(dimension, poseStack, xp, zp, xc, zc, multiplier);
         }
 
-        event.getMatrixStack().popPose();
+        poseStack.popPose();
         RenderSystem.applyModelViewMatrix();
     }
 

@@ -16,22 +16,22 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     }
 
     @Override
-    public double getReachDistance() {
+    public double getBlockReach() {
         ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
         if (config.overrideReachDistance) {
             return config.reachDistance;
         } else {
-            return super.getReachDistance();
+            return super.getBlockReach();
         }
     }
 
     @Override
-    public double getAttackRange() {
+    public double getEntityReach() {
         ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
         if (config.overrideAttackRange) {
             return config.attackRange;
         } else {
-            return super.getAttackRange();
+            return super.getEntityReach();
         }
     }
 }

@@ -602,12 +602,12 @@ public class SchematicaController {
         }
 
         private boolean isMissing(BlockState chunkState, BlockState finalState) {
-            return chunkState.getMaterial().isReplaceable() && !finalState.isAir();
+            return chunkState.canBeReplaced() && !finalState.isAir();
         }
 
         private boolean isWrong(BlockState chunkState, BlockState finalState, boolean replaceableAsAir) {
             if (replaceableAsAir) {
-                return !chunkState.getMaterial().isReplaceable() && chunkState != finalState;
+                return !chunkState.canBeReplaced() && chunkState != finalState;
             } else {
                 return !chunkState.isAir() && chunkState != finalState;
             }

@@ -79,7 +79,7 @@ public abstract class MixinBoat extends Entity {
 
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/vehicle/Boat;controlBoat()V")
     private void onControlBoat(CallbackInfo info) {
-        if (!level.isClientSide()) {
+        if (!level().isClientSide()) {
             return;
         }
 
@@ -94,7 +94,7 @@ public abstract class MixinBoat extends Entity {
 
     @Override
     public void move(MoverType type, Vec3 speed) {
-        if (!level.isClientSide()) {
+        if (!level().isClientSide()) {
             super.move(type, speed);
             return;
         }

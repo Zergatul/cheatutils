@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
@@ -68,9 +69,10 @@ public class StatusOverlay implements Module {
         vAlign = VerticalAlign.BOTTOM;
         script.run();
 
-        event.getMatrixStack().pushPose();
-        event.getMatrixStack().setIdentity();
-        event.getMatrixStack().translate(0, 0, TranslateZ);
+        PoseStack poseStack = event.getGuiGraphics().pose();
+        poseStack.pushPose();
+        poseStack.setIdentity();
+        poseStack.translate(0, 0, TranslateZ);
         RenderSystem.applyModelViewMatrix();
 
         RenderSystem.disableDepthTest();
@@ -91,12 +93,12 @@ public class StatusOverlay implements Module {
                 int width = mc.font.width(text);
                 int x = getLeft(align.hAlign, mc.getWindow().getGuiScaledWidth(), width);
                 int y = getTop(align.vAlign, mc.getWindow().getGuiScaledHeight(), mc.font.lineHeight, i, list.size());
-                Primitives.fill(event.getMatrixStack(), x, y, x + width, y + mc.font.lineHeight, -1873784752);
-                mc.font.draw(event.getMatrixStack(), text, x, y, 16777215);
+                Primitives.fill(poseStack, x, y, x + width, y + mc.font.lineHeight, -1873784752);
+                event.getGuiGraphics().drawString(mc.font, text, x, y, 16777215);
             }
         }
 
-        event.getMatrixStack().popPose();
+        poseStack.popPose();
         RenderSystem.applyModelViewMatrix();
     }
 

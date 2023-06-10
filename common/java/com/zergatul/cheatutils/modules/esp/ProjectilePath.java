@@ -158,7 +158,7 @@ public class ProjectilePath {
         Vec3 movement = new Vec3(speedX, speedY, speedZ).normalize().scale(entry.getSpeed());
 
         Vec3 playerSpeed = mc.player.getDeltaMovement();
-        if (mc.player.isOnGround()) {
+        if (mc.player.onGround()) {
             playerSpeed = playerSpeed.subtract(0, playerSpeed.y, 0);
         }
         movement = movement.add(playerSpeed);
