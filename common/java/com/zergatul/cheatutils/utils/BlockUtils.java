@@ -18,6 +18,10 @@ public class BlockUtils {
     private static final Minecraft mc = Minecraft.getInstance();
 
     public static PlaceBlockPlan getPlacingPlan(BlockPos pos, boolean attachToAir) {
+        return getPlacingPlan(pos, attachToAir, BlockPlacingMethod.ANY);
+    }
+
+    public static PlaceBlockPlan getPlacingPlan(BlockPos pos, boolean attachToAir, BlockPlacingMethod method) {
         if (mc.level == null) {
             return null;
         }
@@ -38,54 +42,34 @@ public class BlockUtils {
             BlockPos neighbourPos = pos.relative(direction);
             BlockState neighbourState = mc.level.getBlockState(neighbourPos);
             if (!neighbourState.canBeReplaced()) {
-                return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos);
+                Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, direction.getOpposite(), false);
+                if (target != null) {
+                    return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos, target);
+                }
             }
         }
 
         if (attachToAir) {
             pos = pos.relative(Direction.DOWN);
-            return new PlaceBlockPlan(pos.immutable(), Direction.DOWN, pos.relative(Direction.UP));
+            Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, Direction.UP, true);
+            if (target != null) {
+                return new PlaceBlockPlan(pos.immutable(), Direction.DOWN, pos.relative(Direction.UP), target);
+            }
         }
 
         return null;
     }
 
     public static void applyPlacingPlan(PlaceBlockPlan plan, boolean useShift) {
-        placeBlock(plan.destination, plan.direction, plan.neighbour, useShift);
+        placeBlock(plan.destination, plan.direction, plan.neighbour, plan.target, useShift);
     }
 
-    public static boolean placeBlock(BlockPos pos) {
-        if (mc.level == null) {
-            return false;
-        }
-
-        BlockState blockState = mc.level.getBlockState(pos);
-        if (!blockState.canBeReplaced()) {
-            return false;
-        }
-
-        for (Direction direction : Direction.values()) {
-            BlockPos other = pos.relative(direction);
-            BlockState state = mc.level.getBlockState(other);
-            if (!state.getShape(mc.level, other).isEmpty()) {
-                placeBlock(pos, direction.getOpposite(), other, true);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, boolean useShift) {
+    private static void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target, boolean useShift) {
         if (mc.player == null) {
             return;
         }
 
-        Vec3 location = new Vec3(
-                destination.getX() + 0.5f + direction.getOpposite().getStepX() * 0.5,
-                destination.getY() + 0.5f + direction.getOpposite().getStepY() * 0.5,
-                destination.getZ() + 0.5f + direction.getOpposite().getStepZ() * 0.5);
-        BlockHitResult hit = new BlockHitResult(location, direction, neighbour, false);
+        BlockHitResult hit = new BlockHitResult(target, direction, neighbour, false);
 
         boolean emulateShift = useShift && !mc.player.isShiftKeyDown();
 
@@ -106,5 +90,13 @@ public class BlockUtils {
         }
     }
 
-    public record PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour) {}
+    public record PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target) {
+
+        public PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour) {
+            this(destination, direction, neighbour, new Vec3(
+                    destination.getX() + 0.5f + direction.getOpposite().getStepX() * 0.5,
+                    destination.getY() + 0.5f + direction.getOpposite().getStepY() * 0.5,
+                    destination.getZ() + 0.5f + direction.getOpposite().getStepZ() * 0.5));
+        }
+    }
 }

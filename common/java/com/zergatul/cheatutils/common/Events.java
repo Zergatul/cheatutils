@@ -22,6 +22,7 @@ public class Events {
     public static final ParameterizedEventHandler<BlockUpdateEvent> ScannerBlockUpdated = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<RenderWorldLayerEvent> RenderSolidLayer = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLast = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderGuiOverlayEvent> PreRenderGuiOverlay = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<RenderGuiEvent> PreRenderGui = new ParameterizedEventHandler<>();

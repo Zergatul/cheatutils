@@ -1,5 +1,4 @@
 package com.zergatul.cheatutils.configs;
 
-public class FullBrightConfig {
-    public boolean enabled;
+public class FullBrightConfig extends ModuleConfig {
 }

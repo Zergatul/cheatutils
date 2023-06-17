@@ -15,8 +15,8 @@ public class SchematicaConfig extends BlockPlacerConfig implements ValidatableCo
     public boolean showWrongBlockCubes;
     public double wrongBlockCubesMaxDistance;
     public boolean replaceableAsAir;
+    public boolean airAlwaysValid;
     public boolean autoBuild;
-
 
     public SchematicaConfig() {
         super();

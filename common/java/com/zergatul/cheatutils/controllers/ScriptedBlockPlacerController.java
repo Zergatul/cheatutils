@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ScriptedBlockPlacerConfig;
+import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.SlotSelector;
@@ -23,6 +24,7 @@ public class ScriptedBlockPlacerController {
     private final SlotSelector slotSelector = new SlotSelector();
     private Runnable script;
     private String blockId;
+    private BlockPlacingMethod method;
 
     private ScriptedBlockPlacerController() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
@@ -32,8 +34,9 @@ public class ScriptedBlockPlacerController {
         this.script = script;
     }
 
-    public void setBlock(String blockId) {
+    public void setBlock(String blockId, BlockPlacingMethod method) {
         this.blockId = blockId;
+        this.method = method;
     }
 
     private void onClientTickEnd() {
@@ -76,7 +79,7 @@ public class ScriptedBlockPlacerController {
                 continue;
             }
 
-            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir);
+            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
             if (plan != null) {
                 mc.player.getInventory().selected = slot;
                 BlockUtils.applyPlacingPlan(plan, config.useShift);

@@ -103,6 +103,14 @@ public class PlayerApi {
         return mc.player.onGround();
     }
 
+    public boolean isPassenger() {
+        if (mc.player == null) {
+            return false;
+        }
+
+        return mc.player.isPassenger();
+    }
+
     @ApiVisibility(ApiType.ACTION)
     public void lookAt(double x, double y, double z) {
         if (mc.player == null) {

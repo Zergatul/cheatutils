@@ -76,6 +76,14 @@
                         <span>Treat replaceable blocks as air (e.g. snow, water, grass). Requires rescan.</span>
                     </label>
                 </div>
+                <div class="input-section">
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                               v-model="config.airAlwaysValid"
+                               @change="update()">
+                        <span>Air blocks in schematica are always valid. Requires rescan.</span>
+                    </label>
+                </div>
                 <div class="input-section input-section-flex">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"

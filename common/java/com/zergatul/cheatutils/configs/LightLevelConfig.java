@@ -2,9 +2,8 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class LightLevelConfig implements ValidatableConfig {
+public class LightLevelConfig extends ModuleConfig implements ValidatableConfig {
 
-    public boolean enabled;
     public boolean showLocations;
     public boolean showTracers;
     public boolean showLightLevelValue;

@@ -16,6 +16,7 @@ public abstract class ModuleApi<T extends ModuleConfig> {
         var config = getConfig();
         if (!config.enabled) {
             config.enabled = true;
+            onEnableChanged();
             ConfigStore.instance.requestWrite();
         }
     }
@@ -25,6 +26,7 @@ public abstract class ModuleApi<T extends ModuleConfig> {
         var config = getConfig();
         if (config.enabled) {
             config.enabled = false;
+            onEnableChanged();
             ConfigStore.instance.requestWrite();
         }
     }
@@ -34,6 +36,7 @@ public abstract class ModuleApi<T extends ModuleConfig> {
         var config = getConfig();
         if (config.enabled != value) {
             config.enabled = value;
+            onEnableChanged();
             ConfigStore.instance.requestWrite();
         }
     }
@@ -42,7 +45,12 @@ public abstract class ModuleApi<T extends ModuleConfig> {
     public void toggle() {
         var config = getConfig();
         config.enabled = !config.enabled;
+        onEnableChanged();
         ConfigStore.instance.requestWrite();
+    }
+
+    protected void onEnableChanged() {
+
     }
 
     protected abstract T getConfig();
