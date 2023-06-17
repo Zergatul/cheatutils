@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
@@ -62,6 +63,16 @@ public abstract class MixinLevelRenderer {
             CallbackInfo info
     ) {
         Events.RenderWorldLast.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
+    }
+
+    @Inject(
+            method = "renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderType;clearRenderState()V")
+    )
+    private void onRenderChunkLayer(RenderType type, PoseStack poseStack, double p_172996_, double p_172997_, double p_172998_, Matrix4f projectionMatrix, CallbackInfo info) {
+        if (type == RenderType.solid()) {
+            Events.RenderSolidLayer.trigger(new RenderWorldLayerEvent(poseStack, projectionMatrix, Minecraft.getInstance().gameRenderer.getMainCamera()));
+        }
     }
 
     @Inject(

@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.VoxelShapeUtils;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -161,7 +162,7 @@ public class AutoBucket implements Module {
             return;
         }
 
-        ItemStack stack = findItemStackToUse(config);
+        ItemStack stack = findItemStackToUse(mc.level, config);
         if (stack == null) {
             return;
         }
@@ -228,11 +229,11 @@ public class AutoBucket implements Module {
         }
     }
 
-    private ItemStack findItemStackToUse(AutoBucketConfig config) {
+    private ItemStack findItemStackToUse(ClientLevel level, AutoBucketConfig config) {
         // search for 0 fall damage items
         // check hotbar
         Inventory inventory = mc.player.getInventory();
-        if (config.useWaterBucket) {
+        if (config.useWaterBucket && !level.dimensionType().ultraWarm()) {
             for (int i = 0; i < 9; i++) {
                 if (inventory.getItem(i).getItem() == Items.WATER_BUCKET) {
                     inventory.selected = i;

@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.controllers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.render.Primitives;
@@ -22,6 +23,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -50,6 +52,7 @@ public class SchematicaController {
         Events.ScannerChunkLoaded.add(this::onChunkLoaded);
         Events.ScannerBlockUpdated.add(this::onBlockUpdated);
         Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.RenderSolidLayer.add(this::onRenderSolidLayer);
         Events.RenderWorldLast.add(this::onRender);
     }
 
@@ -117,7 +120,7 @@ public class SchematicaController {
         }
     }
 
-    private synchronized void onRender(RenderWorldLastEvent event) {
+    private synchronized void onRenderSolidLayer(RenderWorldLayerEvent event) {
         SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
         if (!config.enabled) {
             return;
@@ -129,53 +132,11 @@ public class SchematicaController {
 
         Vec3 view = event.getCamera().getPosition();
 
-        if (config.showMissingBlockTracers) {
-            Vec3 tracerCenter = event.getTracerCenter();
-            double tracerX = tracerCenter.x;
-            double tracerY = tracerCenter.y;
-            double tracerZ = tracerCenter.z;
-
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
-
-            for (Entry entry : entries) {
-                entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
-                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                });
-            }
-
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
-        }
-
-        if (config.showMissingBlockCubes) {
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
-
-            for (Entry entry : entries) {
-                entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
-                    double x1 = pos.getX() + 0.25 - view.x;
-                    double y1 = pos.getY() + 0.25 - view.y;
-                    double z1 = pos.getZ() + 0.25 - view.z;
-                    double x2 = x1 + 0.5;
-                    double y2 = y1 + 0.5;
-                    double z2 = z1 + 0.5;
-                    Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
-                });
-            }
-
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
-        }
-
         if (config.showMissingBlockGhosts) {
-            RenderSystem.enableDepthTest();
+            /*RenderSystem.enableDepthTest();
             RenderSystem.depthMask(true);
             RenderSystem.enableCull();
-            RenderSystem.enableBlend();
+            RenderSystem.enableBlend();*/
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 1f);
 
             Map<BlockPos, BlockState> ghosts = new HashMap<>();
@@ -240,6 +201,63 @@ public class SchematicaController {
                     }
                 }
             }
+
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }
+
+    private synchronized void onRender(RenderWorldLastEvent event) {
+        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
+        if (!config.enabled) {
+            return;
+        }
+
+        if (mc.level == null) {
+            return;
+        }
+
+        Vec3 view = event.getCamera().getPosition();
+
+        if (config.showMissingBlockTracers) {
+            Vec3 tracerCenter = event.getTracerCenter();
+            double tracerX = tracerCenter.x;
+            double tracerY = tracerCenter.y;
+            double tracerZ = tracerCenter.z;
+
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+
+            for (Entry entry : entries) {
+                entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
+                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
+                            .color(1f, 1f, 1f, 1f).endVertex();
+                });
+            }
+
+            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+        }
+
+        if (config.showMissingBlockCubes) {
+            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+
+            for (Entry entry : entries) {
+                entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
+                    double x1 = pos.getX() + 0.25 - view.x;
+                    double y1 = pos.getY() + 0.25 - view.y;
+                    double z1 = pos.getZ() + 0.25 - view.z;
+                    double x2 = x1 + 0.5;
+                    double y2 = y1 + 0.5;
+                    double z2 = z1 + 0.5;
+                    Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
+                });
+            }
+
+            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
         }
 
         if (config.showWrongBlockTracers) {
@@ -412,6 +430,26 @@ public class SchematicaController {
             }
         }
 
+        public void forEachSection(Vec3 view, double distance, Consumer<ChunkSection> consumer) {
+            double chunkDistance2 = (distance + 23) * (distance + 23);
+            for (Chunk chunk : chunks.values()) {
+                if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
+                    continue;
+                }
+
+                for (ChunkSection section : chunk.sections) {
+                    if (section == null) {
+                        continue;
+                    }
+                    if (section.getDistanceSqrTo(view) > chunkDistance2) {
+                        continue;
+                    }
+
+                    consumer.accept(section);
+                }
+            }
+        }
+
         public BlockState getBlockState(int x, int y, int z) {
             long chunkIndex = blockToChunkIndex(x, z);
             Chunk chunk = chunks.get(chunkIndex);
@@ -521,6 +559,7 @@ public class SchematicaController {
         private final PalettedContainer<BlockState> states;
         private final List<BlockPos> missing = new ArrayList<>();
         private final List<BlockPos> wrong = new ArrayList<>();
+        private boolean needRecompile = true;
 
         public ChunkSection(int x, int y, int z) {
             minX = x;
@@ -544,7 +583,7 @@ public class SchematicaController {
             missing.clear();
             wrong.clear();
 
-            boolean replaceableAsAir = ConfigStore.instance.getConfig().schematicaConfig.replaceableAsAir;
+            SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int x = 0; x < 16; x++) {
                 int worldX = minX | x;
@@ -572,29 +611,32 @@ public class SchematicaController {
                         if (isMissing(chunkState, finalState)) {
                             missing.add(new BlockPos(worldX, worldY, worldZ));
                         } else {
-                            if (isWrong(chunkState, finalState, replaceableAsAir)) {
+                            if (isWrong(chunkState, finalState, config)) {
                                 wrong.add(new BlockPos(worldX, worldY, worldZ));
                             }
                         }
                     }
                 }
             }
+
+            needRecompile = true;
         }
 
         public void onBlockUpdated(BlockUpdateEvent event) {
             BlockPos pos = event.pos();
             missing.removeIf(p -> p.equals(pos));
             wrong.removeIf(p -> p.equals(pos));
-            boolean replaceableAsAir = ConfigStore.instance.getConfig().schematicaConfig.replaceableAsAir;
             BlockState chunkState = event.state();
             BlockState finalState = states.get(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F);
             if (isMissing(chunkState, finalState)) {
                 missing.add(pos.immutable());
             } else {
-                if (isWrong(chunkState, finalState, replaceableAsAir)) {
+                if (isWrong(chunkState, finalState, ConfigStore.instance.getConfig().schematicaConfig)) {
                     wrong.add(pos.immutable());
                 }
             }
+
+            needRecompile = true;
         }
 
         public void setBlockState(int x, int y, int z, BlockState state) {
@@ -605,12 +647,36 @@ public class SchematicaController {
             return chunkState.getMaterial().isReplaceable() && !finalState.isAir();
         }
 
-        private boolean isWrong(BlockState chunkState, BlockState finalState, boolean replaceableAsAir) {
-            if (replaceableAsAir) {
+        private boolean isWrong(BlockState chunkState, BlockState finalState, SchematicaConfig config) {
+            if (config.airAlwaysValid && finalState.isAir()) {
+                return false;
+            } else if (config.replaceableAsAir) {
                 return !chunkState.getMaterial().isReplaceable() && chunkState != finalState;
             } else {
                 return !chunkState.isAir() && chunkState != finalState;
             }
+        }
+
+        private boolean contains(BlockPos pos) {
+            if (pos.getX() < minX) {
+                return false;
+            }
+            if (pos.getX() >= minX + 16) {
+                return false;
+            }
+            if (pos.getY() < minY) {
+                return false;
+            }
+            if (pos.getY() >= minY + 16) {
+                return false;
+            }
+            if (pos.getZ() < minZ) {
+                return false;
+            }
+            if (pos.getZ() >= minZ + 16) {
+                return false;
+            }
+            return true;
         }
     }
 }

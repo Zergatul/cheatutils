@@ -19,6 +19,7 @@ public class Root {
     public static BlocksApi blocks = new BlocksApi();
     public static EntitiesApi entities = new EntitiesApi();
     public static FreeCamApi freeCam = new FreeCamApi();
+    public static LightLevelApi lightLevel = new LightLevelApi();
 
     // hacks
     public static AutoCriticalsApi autoCriticals = new AutoCriticalsApi();
@@ -38,6 +39,7 @@ public class Root {
     public static ExplorationMiniMapApi explorationMiniMap = new ExplorationMiniMapApi();
     public static ShulkerTooltipApi shulkerTooltip = new ShulkerTooltipApi();
     public static ZoomApi zoom = new ZoomApi();
+    public static FullBrightApi fullBright = new FullBrightApi();
 
     // scripting
     public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
