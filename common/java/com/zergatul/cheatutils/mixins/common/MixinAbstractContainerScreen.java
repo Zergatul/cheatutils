@@ -28,7 +28,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,10 +46,6 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     @Shadow
     @Final
     protected T menu;
-
-    @Shadow
-    @Nullable
-    protected Slot hoveredSlot;
 
     protected MixinAbstractContainerScreen(Component component) {
         super(component);
@@ -169,16 +164,5 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             method = "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
     private void onRenderLabels(GuiGraphics graphics, int x, int y, float partialTicks, CallbackInfo info) {
         Events.ContainerRenderLabels.trigger(new ContainerRenderLabelsEvent(graphics, (AbstractContainerScreen<?>) (Object) this, x, y));
-    }
-
-    @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;II)V"),
-            method = "renderTooltip(Lnet/minecraft/client/gui/GuiGraphics;II)V",
-            cancellable = true)
-    private void onBeforeRenderTooltip(GuiGraphics graphics, int x, int y, CallbackInfo info) {
-        ItemStack itemStack = this.hoveredSlot.getItem();
-        if (Events.PreRenderTooltip.trigger(new PreRenderTooltipEvent(graphics, itemStack, x, y))) {
-            info.cancel();
-        }
     }
 }

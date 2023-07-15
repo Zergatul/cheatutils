@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.NonNullList;
@@ -42,6 +43,9 @@ public class ContainerButtonsController {
             return false;
         }
         if (screen instanceof InventoryScreen) {
+            return false;
+        }
+        if (screen instanceof CreativeModeInventoryScreen) {
             return false;
         }
         return true;

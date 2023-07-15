@@ -25,43 +25,59 @@ public interface ScriptingLanguageConstants {
   /** RegularExpression Id. */
   int INT = 11;
   /** RegularExpression Id. */
-  int NULL = 12;
+  int NEW = 12;
   /** RegularExpression Id. */
-  int STRING = 13;
+  int NULL = 13;
   /** RegularExpression Id. */
-  int TRUE = 14;
+  int STRING = 14;
   /** RegularExpression Id. */
-  int INTEGER_LITERAL = 15;
+  int TRUE = 15;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 16;
+  int INTEGER_LITERAL = 16;
   /** RegularExpression Id. */
-  int HEX_LITERAL = 17;
+  int DECIMAL_LITERAL = 17;
   /** RegularExpression Id. */
-  int FLOATING_POINT_LITERAL = 18;
+  int HEX_LITERAL = 18;
   /** RegularExpression Id. */
-  int EXPONENT = 19;
+  int FLOATING_POINT_LITERAL = 19;
   /** RegularExpression Id. */
-  int STRING_LITERAL = 20;
+  int EXPONENT = 20;
   /** RegularExpression Id. */
-  int IF = 21;
+  int STRING_LITERAL = 21;
   /** RegularExpression Id. */
-  int ELSE = 22;
+  int BREAK = 22;
   /** RegularExpression Id. */
-  int IDENTIFIER = 23;
+  int CONTINUE = 23;
   /** RegularExpression Id. */
-  int LETTER = 24;
+  int ELSE = 24;
   /** RegularExpression Id. */
-  int DIGIT = 25;
+  int FOR = 25;
   /** RegularExpression Id. */
-  int LPAREN = 26;
+  int FOREACH = 26;
   /** RegularExpression Id. */
-  int RPAREN = 27;
+  int IF = 27;
   /** RegularExpression Id. */
-  int SEMICOLON = 28;
+  int IN = 28;
   /** RegularExpression Id. */
-  int COMMA = 29;
+  int IDENTIFIER = 29;
   /** RegularExpression Id. */
-  int DOT = 30;
+  int LETTER = 30;
+  /** RegularExpression Id. */
+  int DIGIT = 31;
+  /** RegularExpression Id. */
+  int LPAREN = 32;
+  /** RegularExpression Id. */
+  int RPAREN = 33;
+  /** RegularExpression Id. */
+  int LBRACKET = 34;
+  /** RegularExpression Id. */
+  int RBRACKET = 35;
+  /** RegularExpression Id. */
+  int SEMICOLON = 36;
+  /** RegularExpression Id. */
+  int COMMA = 37;
+  /** RegularExpression Id. */
+  int DOT = 38;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -80,6 +96,7 @@ public interface ScriptingLanguageConstants {
     "\"false\"",
     "\"float\"",
     "\"int\"",
+    "\"new\"",
     "\"null\"",
     "\"string\"",
     "\"true\"",
@@ -89,13 +106,20 @@ public interface ScriptingLanguageConstants {
     "<FLOATING_POINT_LITERAL>",
     "<EXPONENT>",
     "<STRING_LITERAL>",
-    "\"if\"",
+    "\"break\"",
+    "\"continue\"",
     "\"else\"",
+    "\"for\"",
+    "\"foreach\"",
+    "\"if\"",
+    "\"in\"",
     "<IDENTIFIER>",
     "<LETTER>",
     "<DIGIT>",
     "\"(\"",
     "\")\"",
+    "\"[\"",
+    "\"]\"",
     "\";\"",
     "\",\"",
     "\".\"",
@@ -104,8 +128,8 @@ public interface ScriptingLanguageConstants {
     "\"=\"",
     "\"?\"",
     "\":\"",
-    "\"||\"",
-    "\"&&\"",
+    "\"++\"",
+    "\"--\"",
     "\"+\"",
     "\"-\"",
     "\"*\"",
@@ -119,6 +143,8 @@ public interface ScriptingLanguageConstants {
     "\"<\"",
     "\">=\"",
     "\"<=\"",
+    "\"&&\"",
+    "\"||\"",
     "\"!\"",
     "\"~\"",
   };

@@ -147,6 +147,9 @@ import { addComponent } from '/components/Loader.js'
     loadModule('ExecConfig', ['exec']);
     loadModule('VillagerRollerConfig', ['villager', 'roller']);
     loadModule('AutoHotbarConfig', ['auto', 'hotbar']);
+    loadModule('InvMoveConfig', ['inventory', 'move', 'keys']);
+    loadModule('AreaMineConfig', ['area', 'mine']);
+    loadModule('ServerPluginsConfig', ['server', 'plugins']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

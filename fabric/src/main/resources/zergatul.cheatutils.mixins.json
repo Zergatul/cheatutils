@@ -9,6 +9,7 @@
   "mixinPriority": 2000,
   "client": [
     "common.accessors.AbstractContainerScreenAccessor",
+    "common.accessors.ClientLevelAccessor",
     "common.accessors.ClientPacketListenerAccessor",
     "common.accessors.ConnectionAccessor",
     "common.accessors.CraftingScreenAccessor",
@@ -59,8 +60,11 @@
     "common.MixinSoundManager",
     "common.MixinUser",
 
+    "fabric.MixinAbstractContainerScreen",
     "fabric.MixinGameRenderer",
     "fabric.MixinGui",
+    "fabric.MixinGuiGraphics",
+    "fabric.MixinKeyboardHandler",
     "fabric.MixinMultiPlayerGameMode",
     "fabric.MixinPlayerTabOverlay",
     "fabric.MixinScreen"

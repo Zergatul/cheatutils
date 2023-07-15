@@ -5,8 +5,8 @@ javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatu
 */
 
 /*
-.\jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\ScriptingLanguage.jj
-.\javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.3-forge\src\main\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
+.\jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\ScriptingLanguage.jj
+.\javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
 */
 
 PARSER_BEGIN(ScriptingLanguage)
@@ -39,6 +39,7 @@ TOKEN :
 | < FALSE: "false" >
 | < FLOAT: "float" >
 | < INT: "int" >
+| < NEW: "new" >
 | < NULL: "null" >
 | < STRING: "string" >
 | < TRUE: "true" >
@@ -81,8 +82,13 @@ TOKEN :
 
 TOKEN :
 {
-  < IF: "if" >
+  < BREAK: "break" >
+| < CONTINUE: "continue" >
 | < ELSE: "else">
+| < FOR: "for" >
+| < FOREACH: "foreach" >
+| < IF: "if" >
+| < IN: "in" >
 }
 
 TOKEN :
@@ -98,6 +104,8 @@ TOKEN :
 {
   < LPAREN: "(" >
 | < RPAREN: ")" >
+| < LBRACKET: "[" >
+| < RBRACKET: "]" >
 | < SEMICOLON: ";" >
 | < COMMA: "," >
 | < DOT: "." >
@@ -117,13 +125,19 @@ void Statement() :
 |
   EmptyStatement()
 |
-  LOOKAHEAD(2) StatementExpression() ";"
-|
   LocalVariableDeclaration() ";"
 |
-  LOOKAHEAD(2) AssignStatement() ";"
+  StatementExpression() ";"
 |
   IfStatement()
+|
+  ForStatement()
+|
+  ForEachStatement()
+|
+  BreakStatement()
+|
+  ContinueStatement()
 }
 
 void Block() :
@@ -144,12 +158,6 @@ void EmptyStatement() :
   ";"
 }
 
-void AssignStatement() :
-{}
-{
-  Name() AssignmentOperator() Expression()
-}
-
 void AssignmentOperator() :
 {}
 {
@@ -159,7 +167,12 @@ void AssignmentOperator() :
 void StatementExpression() :
 {}
 {
+  PreIncrementExpression()
+|
+  PreDecrementExpression()
+|
   PrimaryExpression()
+  [ Increment() | Decrement() | AssignmentOperator() Expression() ]
 }
 
 void LocalVariableDeclaration() :
@@ -192,6 +205,51 @@ void IfStatement() :
   "if" "(" Expression() ")" Statement() [ LOOKAHEAD(1) "else" Statement() ]
 }
 
+void ForStatement() :
+{}
+{
+  "for" "(" [ ForInit() ] ";" [ Expression() ] ";" [ ForUpdate() ] ")" Statement()
+}
+
+void ForEachStatement() :
+{}
+{
+  "foreach" "(" LocalVariableDeclaration() "in" Expression() ")" Statement()
+}
+
+void ForInit() :
+{}
+{
+  LOOKAHEAD( Type() VariableDeclarator() )
+  LocalVariableDeclaration()
+|
+  StatementExpressionList()
+}
+
+void ForUpdate() :
+{}
+{
+  StatementExpressionList()
+}
+
+void StatementExpressionList() :
+{}
+{
+  StatementExpression() ( "," StatementExpression() )*
+}
+
+void BreakStatement():
+{}
+{
+  "break" ";"
+}
+
+void ContinueStatement():
+{}
+{
+  "continue" ";"
+}
+
 void Expression() :
 {}
 {
@@ -207,13 +265,13 @@ void ConditionalExpression() :
 void ConditionalOrExpression() :
 {}
 {
-  ConditionalAndExpression() ( "||" ConditionalAndExpression() )*
+  ConditionalAndExpression() ( Or() ConditionalAndExpression() )*
 }
 
 void ConditionalAndExpression() :
 {}
 {
-  EqualityExpression() ( "&&" EqualityExpression() )*
+  EqualityExpression() ( And() EqualityExpression() )*
 }
 
 void EqualityExpression() :
@@ -231,7 +289,7 @@ void RelationalExpression() :
 void AdditiveExpression() :
 {}
 {
-  MultiplicativeExpression() ( ( Plus() | Minus() ) MultiplicativeExpression() )*
+  MultiplicativeExpression() ( LOOKAHEAD(2) ( Plus() | Minus() ) MultiplicativeExpression() )*
 }
 
 void MultiplicativeExpression() :
@@ -245,7 +303,23 @@ void UnaryExpression() :
 {
   ( Plus() | Minus() ) UnaryExpression()
 |
+  PreIncrementExpression()
+|
+  PreDecrementExpression()
+|
   UnaryExpressionNotPlusMinus()
+}
+
+void PreIncrementExpression():
+{}
+{
+  "++" PrimaryExpression()
+}
+
+void PreDecrementExpression():
+{}
+{
+  "--" PrimaryExpression()
 }
 
 void UnaryExpressionNotPlusMinus() :
@@ -259,22 +333,32 @@ void UnaryExpressionNotPlusMinus() :
 void PrimaryExpression() :
 {}
 {
-  PrimaryPrefix() [ PrimarySuffix() ]
+  PrimaryPrefix() ( LOOKAHEAD(2) PrimarySuffix() )*
 }
 
-void PrimaryPrefix() :
+void PrimaryPrefix():
 {}
 {
   Literal()
 |
-  Name()
-|
   "(" Expression() ")"
+|
+  AllocationExpression()
+|
+  Name()
 }
 
-void PrimarySuffix() :
+void AllocationExpression():
 {}
 {
+  "new" Type() "[" Expression() "]"
+}
+
+void PrimarySuffix():
+{}
+{
+  "[" Expression() "]"
+|
   Arguments()
 }
 
@@ -305,6 +389,18 @@ void Identifier() :
   {
     jjtThis.jjtSetValue(token.image);
   }
+}
+
+void Increment() :
+{}
+{
+  "++"
+}
+
+void Decrement() :
+{}
+{
+  "--"
 }
 
 void Plus() :
@@ -385,6 +481,18 @@ void LessEquals() :
   "<="
 }
 
+void And() :
+{}
+{
+  "&&"
+}
+
+void Or() :
+{}
+{
+  "||"
+}
+
 void Not() :
 {}
 {
@@ -397,10 +505,22 @@ void Tilde() :
   "~"
 }
 
+void LeftBracket() :
+{}
+{
+  <LBRACKET>
+}
+
+void RightBracket() :
+{}
+{
+  <RBRACKET>
+}
+
 void Type() :
 {}
 {
-  PrimitiveType()
+  PrimitiveType() ( LOOKAHEAD(2) LeftBracket() RightBracket() )*
 }
 
 void PrimitiveType() :

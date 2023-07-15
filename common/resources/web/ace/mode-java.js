@@ -71,7 +71,7 @@ var JavaScriptHighlightRules = function(options) {
             "this|arguments|prototype|window|document"                                 , // Pseudo
         "keyword":
             "const|yield|import|get|set|async|await|" +
-            "break|case|catch|continue|default|delete|do|else|finally|for|function|" +
+            "break|case|catch|continue|default|delete|do|else|finally|for|foreach|function|" +
             "if|in|of|instanceof|new|return|switch|throw|try|typeof|let|var|while|with|debugger|" +
             "__parent__|__count__|escape|unescape|with|__proto__|" +
             "class|enum|extends|super|export|implements|private|public|interface|package|protected|static",
@@ -799,7 +799,7 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
 var JavaHighlightRules = function() {
     var keywords = (
-    "abstract|continue|for|new|switch|" +
+    "abstract|continue|for|foreach|in|new|switch|" +
     "assert|default|goto|package|synchronized|" +
     "boolean|do|if|private|this|" +
     "break|double|implements|protected|throw|" +

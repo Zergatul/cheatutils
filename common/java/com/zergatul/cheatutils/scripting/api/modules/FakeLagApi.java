@@ -6,6 +6,29 @@ import com.zergatul.cheatutils.scripting.api.ApiType;
 
 public class FakeLagApi {
 
+    @ApiVisibility(ApiType.UPDATE)
+    public void enable() {
+        if (!isEnabled()) {
+            toggle();
+        }
+    }
+
+    @ApiVisibility(ApiType.UPDATE)
+    public void disable() {
+        if (isEnabled()) {
+            toggle();
+        }
+    }
+
+    @ApiVisibility(ApiType.UPDATE)
+    public void setEnabled(boolean value) {
+        if (value) {
+            enable();
+        } else {
+            disable();
+        }
+    }
+
     public boolean isEnabled() {
         return FakeLag.instance.isEnabled();
     }

@@ -34,6 +34,7 @@ public class Root {
     public static ScaffoldApi scaffold = new ScaffoldApi();
     public static TeleportApi teleport = new TeleportApi();
     public static ElytraHackApi elytraFly = new ElytraHackApi();
+    public static ServerPluginsApi serverPlugins = new ServerPluginsApi();
 
     // visuals
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();

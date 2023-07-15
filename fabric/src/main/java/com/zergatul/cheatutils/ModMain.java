@@ -78,6 +78,9 @@ public class ModMain implements ClientModInitializer {
 		register(AutoAttack.instance);
 		register(Exec.instance);
 		register(VillagerRoller.instance);
+		register(AutoHotbar.instance);
+		register(AreaMine.instance);
+		register(ServerPlugins.instance);
 
 		Events.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
 	}

@@ -10,6 +10,7 @@
   "mixinPriority": 2000,
   "client": [
     "common.accessors.AbstractContainerScreenAccessor",
+    "common.accessors.ClientLevelAccessor",
     "common.accessors.ClientPacketListenerAccessor",
     "common.accessors.ConnectionAccessor",
     "common.accessors.CraftingScreenAccessor",
@@ -60,8 +61,13 @@
     "common.MixinSoundManager",
     "common.MixinUser",
 
+    "forge.accessors.GuiGraphicsAccessor",
+    "forge.MixinAbstractContainerScreen",
     "forge.MixinC2SModListReply",
+    "forge.MixinKeyboardHandler",
+    "forge.MixinKeyMapping",
     "forge.MixinLightTexture",
-    "forge.MixinLocalPlayer"
+    "forge.MixinLocalPlayer",
+    "forge.MixinMultiPlayerGameMode"
   ]
 }

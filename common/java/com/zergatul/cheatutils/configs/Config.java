@@ -63,6 +63,9 @@ public class Config {
     public ExecConfig execConfig = new ExecConfig();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
     public AutoHotbarConfig autoHotbarConfig = new AutoHotbarConfig();
+    public InvMoveConfig invMoveConfig = new InvMoveConfig();
+    public AreaMineConfig areaMineConfig = new AreaMineConfig();
+    public ServerPluginsConfig serverPluginsConfig = new ServerPluginsConfig();
 
     public Config() {
         esp = true;
