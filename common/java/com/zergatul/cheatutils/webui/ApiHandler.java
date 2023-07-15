@@ -766,6 +766,42 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().autoHotbarConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("inv-move", InvMoveConfig.class) {
+            @Override
+            protected InvMoveConfig getConfig() {
+                return ConfigStore.instance.getConfig().invMoveConfig;
+            }
+
+            @Override
+            protected void setConfig(InvMoveConfig config) {
+                ConfigStore.instance.getConfig().invMoveConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("area-mine", AreaMineConfig.class) {
+            @Override
+            protected AreaMineConfig getConfig() {
+                return ConfigStore.instance.getConfig().areaMineConfig;
+            }
+
+            @Override
+            protected void setConfig(AreaMineConfig config) {
+                ConfigStore.instance.getConfig().areaMineConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("server-plugins", ServerPluginsConfig.class) {
+            @Override
+            protected ServerPluginsConfig getConfig() {
+                return ConfigStore.instance.getConfig().serverPluginsConfig;
+            }
+
+            @Override
+            protected void setConfig(ServerPluginsConfig config) {
+                ConfigStore.instance.getConfig().serverPluginsConfig = config;
+            }
+        });
     }
 
     @Override

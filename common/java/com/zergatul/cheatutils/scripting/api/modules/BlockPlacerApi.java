@@ -7,6 +7,10 @@ import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 
 public class BlockPlacerApi {
 
+    public void placeOne() {
+        ScriptedBlockPlacerController.instance.placeOne();
+    }
+
     @ApiVisibility(ApiType.BLOCK_PLACER)
     public void setBlockId(String blockId) {
         ScriptedBlockPlacerController.instance.setBlock(blockId, BlockPlacingMethod.ANY);

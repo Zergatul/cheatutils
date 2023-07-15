@@ -1,0 +1,30 @@
+Assert.isTrue("const [1]", true);
+Assert.isFalse("const [2]", false);
+
+Assert.isFalse("not [1]", !true);
+Assert.isTrue("not [2]", !false);
+
+Assert.isTrue("equals [1]", true == true);
+Assert.isTrue("equals [2]", false == false);
+Assert.isFalse("equals [3]", true == false);
+Assert.isFalse("equals [4]", false == true);
+
+Assert.isFalse("not equals [1]", true != true);
+Assert.isFalse("not equals [2]", false != false);
+Assert.isTrue("not equals [3]", true != false);
+Assert.isTrue("not equals [4]", false != true);
+
+Assert.isTrue("and [1]", true && true);
+Assert.isFalse("and [2]", false && true);
+Assert.isFalse("and [3]", true && false);
+Assert.isFalse("and [4]", false && false);
+
+Assert.isTrue("or [1]", true || true);
+Assert.isTrue("or [2]", false || true);
+Assert.isTrue("or [3]", true || false);
+Assert.isFalse("or [4]", false || false);
+
+Assert.isTrue(">= [1]", true >= true);
+Assert.isTrue(">= [2]", true >= false);
+Assert.isTrue(">= [3]", false >= false);
+Assert.isFalse(">= [4]", false >= true);

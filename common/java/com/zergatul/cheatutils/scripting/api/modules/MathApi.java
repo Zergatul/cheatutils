@@ -45,6 +45,10 @@ public class MathApi {
         return Math.abs(value);
     }
 
+    public double sqrt(double value) {
+        return Math.sqrt(value);
+    }
+
     public static class RadiansApi {
 
         public double sin(double value) {
@@ -53,6 +57,26 @@ public class MathApi {
 
         public double cos(double value) {
             return Math.cos(value);
+        }
+
+        public double tan(double value) {
+            return Math.tan(value);
+        }
+
+        public double asin(double value) {
+            return Math.asin(value);
+        }
+
+        public double acos(double value) {
+            return Math.asin(value);
+        }
+
+        public double atan(double value) {
+            return Math.atan(value);
+        }
+
+        public double atan2(double y, double x) {
+            return Math.atan2(y, x);
         }
 
         public double toDegrees(double value) {
@@ -68,6 +92,26 @@ public class MathApi {
 
         public double cos(double value) {
             return Math.cos(Math.toRadians(value));
+        }
+
+        public double tan(double value) {
+            return Math.tan(Math.toRadians(value));
+        }
+
+        public double asin(double value) {
+            return Math.toDegrees(Math.asin(value));
+        }
+
+        public double acos(double value) {
+            return Math.toDegrees(Math.asin(value));
+        }
+
+        public double atan(double value) {
+            return Math.toDegrees(Math.atan(value));
+        }
+
+        public double atan2(double y, double x) {
+            return Math.toDegrees(Math.atan2(y, x));
         }
 
         public double toRadians(double value) {

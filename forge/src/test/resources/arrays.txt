@@ -1,0 +1,22 @@
+/*int[] data1;
+Assert.isTrue("new arr [1]", data1[0] == 0);
+Assert.isTrue("new arr [2]", data1[-100] == 0);
+Assert.isTrue("new arr [3]", data1[100] == 0);
+
+int[] data2 = new int[10];
+Assert.isTrue("new arr init [1]", data2[0] == 0);
+Assert.isTrue("new arr init [2]", data2[-100] == 0);
+Assert.isTrue("new arr init [3]", data2[100] == 0);*/
+
+int[] data3 = new int[5];
+data3[0] = 1;
+data3[1] = 2;
+data3[2] = 3;
+data3[3] = 4;
+data3[4] = 5;
+Assert.isTrue("array store [1]", data3[0] == 1);
+Assert.isTrue("array store [2]", data3[1] == 2);
+Assert.isTrue("array store [3]", data3[2] == 3);
+Assert.isTrue("array store [4]", data3[3] == 4);
+Assert.isTrue("array store [5]", data3[4] == 5);
+Assert.isTrue("array length", data3.length == 5);

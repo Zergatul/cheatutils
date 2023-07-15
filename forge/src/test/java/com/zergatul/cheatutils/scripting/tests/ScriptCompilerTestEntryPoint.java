@@ -14,13 +14,21 @@ import java.util.List;
 
 public class ScriptCompilerTestEntryPoint {
     public static void main(String[] args) {
+        testFile("booleans.txt");
         testFile("test-script.txt");
         testFile("variable-script.txt");
         testFile("casts.txt");
         testFile("parameters.txt");
+        testFile("arrays.txt");
+        testFile("for-loop.txt");
+        testFile("foreach-loop.txt");
+        testFile("strings.txt");
     }
 
     private static void testFile(String name) {
+        System.out.println(name);
+        TestRoot.Assert.clear();
+
         var compiler = new ScriptingLanguageCompiler(TestRoot.class, new ApiType[0]);
         try {
             ClassLoader classLoader = ScriptCompilerTestEntryPoint.class.getClassLoader();
@@ -31,6 +39,7 @@ public class ScriptCompilerTestEntryPoint {
             program.run();
         } catch (ParseException | ScriptCompileException | IOException e) {
             e.printStackTrace();
+            return;
         } catch (Throwable e) {
             System.out.println("Generic exception!");
             e.printStackTrace();
@@ -45,6 +54,8 @@ public class ScriptCompilerTestEntryPoint {
                 System.out.println(x);
             }
         }
+
+        System.out.println("");
     }
 
     public static class TestRoot {

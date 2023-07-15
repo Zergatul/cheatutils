@@ -50,10 +50,10 @@ public class BlockUtils {
         }
 
         if (attachToAir) {
-            pos = pos.relative(Direction.DOWN);
+            // replaceClicked from BlockPlaceContext
             Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, Direction.UP, true);
             if (target != null) {
-                return new PlaceBlockPlan(pos.immutable(), Direction.DOWN, pos.relative(Direction.UP), target);
+                return new PlaceBlockPlan(pos.immutable(), Direction.UP, pos.immutable(), target);
             }
         }
 

@@ -8,58 +8,73 @@ public interface ScriptingLanguageTreeConstants
   public int JJTBLOCK = 2;
   public int JJTBLOCKSTATEMENT = 3;
   public int JJTEMPTYSTATEMENT = 4;
-  public int JJTASSIGNSTATEMENT = 5;
-  public int JJTASSIGNMENTOPERATOR = 6;
-  public int JJTSTATEMENTEXPRESSION = 7;
-  public int JJTLOCALVARIABLEDECLARATION = 8;
-  public int JJTVARIABLEDECLARATOR = 9;
-  public int JJTVARIABLEDECLARATORID = 10;
-  public int JJTVARIABLEINITIALIZER = 11;
-  public int JJTIFSTATEMENT = 12;
-  public int JJTEXPRESSION = 13;
-  public int JJTCONDITIONALEXPRESSION = 14;
-  public int JJTCONDITIONALOREXPRESSION = 15;
-  public int JJTCONDITIONALANDEXPRESSION = 16;
-  public int JJTEQUALITYEXPRESSION = 17;
-  public int JJTRELATIONALEXPRESSION = 18;
-  public int JJTADDITIVEEXPRESSION = 19;
-  public int JJTMULTIPLICATIVEEXPRESSION = 20;
-  public int JJTUNARYEXPRESSION = 21;
-  public int JJTUNARYEXPRESSIONNOTPLUSMINUS = 22;
-  public int JJTPRIMARYEXPRESSION = 23;
-  public int JJTPRIMARYPREFIX = 24;
-  public int JJTPRIMARYSUFFIX = 25;
-  public int JJTARGUMENTS = 26;
-  public int JJTARGUMENTLIST = 27;
-  public int JJTNAME = 28;
-  public int JJTIDENTIFIER = 29;
-  public int JJTPLUS = 30;
-  public int JJTMINUS = 31;
-  public int JJTMULT = 32;
-  public int JJTDIV = 33;
-  public int JJTMOD = 34;
-  public int JJTFLOORDIV = 35;
-  public int JJTFLOORMOD = 36;
-  public int JJTEQUALITY = 37;
-  public int JJTINEQUALITY = 38;
-  public int JJTGREATERTHAN = 39;
-  public int JJTLESSTHAN = 40;
-  public int JJTGREATEREQUALS = 41;
-  public int JJTLESSEQUALS = 42;
-  public int JJTNOT = 43;
-  public int JJTTILDE = 44;
-  public int JJTTYPE = 45;
-  public int JJTPRIMITIVETYPE = 46;
-  public int JJTBOOLEANTYPE = 47;
-  public int JJTINTTYPE = 48;
-  public int JJTFLOATTYPE = 49;
-  public int JJTSTRINGTYPE = 50;
-  public int JJTLITERAL = 51;
-  public int JJTINTEGERLITERAL = 52;
-  public int JJTFLOATINGPOINTLITERAL = 53;
-  public int JJTSTRINGLITERAL = 54;
-  public int JJTBOOLEANLITERAL = 55;
-  public int JJTNULLLITERAL = 56;
+  public int JJTASSIGNMENTOPERATOR = 5;
+  public int JJTSTATEMENTEXPRESSION = 6;
+  public int JJTLOCALVARIABLEDECLARATION = 7;
+  public int JJTVARIABLEDECLARATOR = 8;
+  public int JJTVARIABLEDECLARATORID = 9;
+  public int JJTVARIABLEINITIALIZER = 10;
+  public int JJTIFSTATEMENT = 11;
+  public int JJTFORSTATEMENT = 12;
+  public int JJTFOREACHSTATEMENT = 13;
+  public int JJTFORINIT = 14;
+  public int JJTFORUPDATE = 15;
+  public int JJTSTATEMENTEXPRESSIONLIST = 16;
+  public int JJTBREAKSTATEMENT = 17;
+  public int JJTCONTINUESTATEMENT = 18;
+  public int JJTEXPRESSION = 19;
+  public int JJTCONDITIONALEXPRESSION = 20;
+  public int JJTCONDITIONALOREXPRESSION = 21;
+  public int JJTCONDITIONALANDEXPRESSION = 22;
+  public int JJTEQUALITYEXPRESSION = 23;
+  public int JJTRELATIONALEXPRESSION = 24;
+  public int JJTADDITIVEEXPRESSION = 25;
+  public int JJTMULTIPLICATIVEEXPRESSION = 26;
+  public int JJTUNARYEXPRESSION = 27;
+  public int JJTPREINCREMENTEXPRESSION = 28;
+  public int JJTPREDECREMENTEXPRESSION = 29;
+  public int JJTUNARYEXPRESSIONNOTPLUSMINUS = 30;
+  public int JJTPRIMARYEXPRESSION = 31;
+  public int JJTPRIMARYPREFIX = 32;
+  public int JJTALLOCATIONEXPRESSION = 33;
+  public int JJTPRIMARYSUFFIX = 34;
+  public int JJTARGUMENTS = 35;
+  public int JJTARGUMENTLIST = 36;
+  public int JJTNAME = 37;
+  public int JJTIDENTIFIER = 38;
+  public int JJTINCREMENT = 39;
+  public int JJTDECREMENT = 40;
+  public int JJTPLUS = 41;
+  public int JJTMINUS = 42;
+  public int JJTMULT = 43;
+  public int JJTDIV = 44;
+  public int JJTMOD = 45;
+  public int JJTFLOORDIV = 46;
+  public int JJTFLOORMOD = 47;
+  public int JJTEQUALITY = 48;
+  public int JJTINEQUALITY = 49;
+  public int JJTGREATERTHAN = 50;
+  public int JJTLESSTHAN = 51;
+  public int JJTGREATEREQUALS = 52;
+  public int JJTLESSEQUALS = 53;
+  public int JJTAND = 54;
+  public int JJTOR = 55;
+  public int JJTNOT = 56;
+  public int JJTTILDE = 57;
+  public int JJTLEFTBRACKET = 58;
+  public int JJTRIGHTBRACKET = 59;
+  public int JJTTYPE = 60;
+  public int JJTPRIMITIVETYPE = 61;
+  public int JJTBOOLEANTYPE = 62;
+  public int JJTINTTYPE = 63;
+  public int JJTFLOATTYPE = 64;
+  public int JJTSTRINGTYPE = 65;
+  public int JJTLITERAL = 66;
+  public int JJTINTEGERLITERAL = 67;
+  public int JJTFLOATINGPOINTLITERAL = 68;
+  public int JJTSTRINGLITERAL = 69;
+  public int JJTBOOLEANLITERAL = 70;
+  public int JJTNULLLITERAL = 71;
 
 
   public String[] jjtNodeName = {
@@ -68,7 +83,6 @@ public interface ScriptingLanguageTreeConstants
     "Block",
     "BlockStatement",
     "EmptyStatement",
-    "AssignStatement",
     "AssignmentOperator",
     "StatementExpression",
     "LocalVariableDeclaration",
@@ -76,6 +90,13 @@ public interface ScriptingLanguageTreeConstants
     "VariableDeclaratorId",
     "VariableInitializer",
     "IfStatement",
+    "ForStatement",
+    "ForEachStatement",
+    "ForInit",
+    "ForUpdate",
+    "StatementExpressionList",
+    "BreakStatement",
+    "ContinueStatement",
     "Expression",
     "ConditionalExpression",
     "ConditionalOrExpression",
@@ -85,14 +106,19 @@ public interface ScriptingLanguageTreeConstants
     "AdditiveExpression",
     "MultiplicativeExpression",
     "UnaryExpression",
+    "PreIncrementExpression",
+    "PreDecrementExpression",
     "UnaryExpressionNotPlusMinus",
     "PrimaryExpression",
     "PrimaryPrefix",
+    "AllocationExpression",
     "PrimarySuffix",
     "Arguments",
     "ArgumentList",
     "Name",
     "Identifier",
+    "Increment",
+    "Decrement",
     "Plus",
     "Minus",
     "Mult",
@@ -106,8 +132,12 @@ public interface ScriptingLanguageTreeConstants
     "LessThan",
     "GreaterEquals",
     "LessEquals",
+    "And",
+    "Or",
     "Not",
     "Tilde",
+    "LeftBracket",
+    "RightBracket",
     "Type",
     "PrimitiveType",
     "BooleanType",
@@ -122,4 +152,4 @@ public interface ScriptingLanguageTreeConstants
     "NullLiteral",
   };
 }
-/* JavaCC - OriginalChecksum=bc5583b2fb7aeacd2351e7e7db0d9449 (do not edit this line) */
+/* JavaCC - OriginalChecksum=0cbd4340241b8f6018b61171aabd389a (do not edit this line) */

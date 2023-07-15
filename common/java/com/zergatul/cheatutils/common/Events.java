@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.common;
 
 import com.zergatul.cheatutils.common.events.*;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -39,4 +40,5 @@ public class Events {
     public static final ParameterizedEventHandler<SetupFogEvent> SetupFog = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<SendChatEvent> SendChat = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<Entity> EntityInteract = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<BlockPos> BeforeInstaMine = new ParameterizedEventHandler<>();
 }

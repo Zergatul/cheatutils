@@ -60,16 +60,31 @@
                                 <div class="input-description">Using shift may cause your character to randomly crouch for a fraction of a second</div>
                             </td>
                         </tr>
+                        <tr>
+                            <td colspan="2">
+                                <label class="switch-label">
+                                    <input type="checkbox" class="switch"
+                                           v-model="config.attachToAir"
+                                           @change="update()">
+                                    <span>Attach to Air</span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <label class="switch-label">
+                                    <input type="checkbox" class="switch"
+                                           v-model="config.debugMode"
+                                           @change="update()">
+                                    <span>Debug Mode</span>
+                                </label>
+                            </td>
+                            <td>
+                                <div class="input-description">Shows block place plans, doesn't actually place blocks. Use <b>blockPlacer.placeOne();</b> hotkey to place one block.</div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
-                <div class="input-section">
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch"
-                               v-model="config.attachToAir"
-                               @change="update()">
-                        <span>Attach to Air</span>
-                    </label>
-                </div>
             </fieldset>
 
             <fieldset>

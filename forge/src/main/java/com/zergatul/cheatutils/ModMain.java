@@ -97,6 +97,8 @@ public class ModMain {
         register(Exec.instance);
         register(VillagerRoller.instance);
         register(AutoHotbar.instance);
+        register(AreaMine.instance);
+        register(ServerPlugins.instance);
     }
 
     private void register(Module module) {

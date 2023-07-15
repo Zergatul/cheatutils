@@ -143,6 +143,9 @@ public class ConfigStore {
         LightLevel.instance.onChanged();
         config.blocks.apply();
 
+        // clazz==null can occur after removing mod with custom entities
+        config.entities.configs = config.entities.configs.removeIf(c -> c.clazz == null);
+
         // TODO: use reflection to automatically find ValidatableConfig's?
         config.killAuraConfig.validate();
         config.movementHackConfig.validate();
@@ -163,6 +166,7 @@ public class ConfigStore {
         config.autoAttackConfig.validate();
         config.projectilePathConfig.validate();
         config.chatUtilitiesConfig.validate();
+        config.areaMineConfig.validate();
 
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);

@@ -274,9 +274,25 @@
                     <tr>
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'inv-move'" :class="{ faded: !filtered.InvMove }">Inv Move</button>
+                        </td>
                         <td>
                             <button @click="current = 'fake-weather'" :class="{ faded: !filtered.FakeWeather }">Fake Weather</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'area-mine'" :class="{ faded: !filtered.AreaMine }">Area Mine</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'server-plugins'" :class="{ faded: !filtered.ServerPlugins }">Server Plugins</button>
                         </td>
                     </tr>
                 </tbody>
@@ -612,6 +628,21 @@
             v-if="current == 'auto-hotbar'"
             @back="backToMain()">
         </auto-hotbar-config>
+
+        <inv-move-config
+            v-if="current == 'inv-move'"
+            @back="backToMain()">
+        </inv-move-config>
+
+        <area-mine-config
+            v-if="current == 'area-mine'"
+            @back="backToMain()">
+        </area-mine-config>
+
+        <server-plugins-config
+            v-if="current == 'server-plugins'"
+            @back="backToMain()">
+        </server-plugins-config>
 
     </div>
 

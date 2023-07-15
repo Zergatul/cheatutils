@@ -1,5 +1,3 @@
-Assert.clear();
-
 boolean b;
 Assert.isTrue("boolean init", b == false);
 

@@ -104,6 +104,10 @@ public class ScriptsDocsApi extends ApiBase {
     }
 
     private String formatClass(Class<?> clazz) {
+        if (clazz.isArray()) {
+            return formatClass(clazz.getComponentType()) + "[]";
+        }
+
         String name = clazz == String.class ? "string" : (clazz == double.class ? "float" : clazz.getName());
         return "<span class=\"class\">" + name + "</span>";
     }

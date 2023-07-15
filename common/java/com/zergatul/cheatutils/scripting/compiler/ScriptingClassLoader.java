@@ -1,11 +1,9 @@
 package com.zergatul.cheatutils.scripting.compiler;
 
-import com.zergatul.cheatutils.ModMain;
-
 public class ScriptingClassLoader extends ClassLoader {
 
     public ScriptingClassLoader() {
-        super(ModMain.class.getClassLoader());
+        super(ScriptingClassLoader.class.getClassLoader());
     }
 
     public Class defineClass(String name, byte[] code) {
