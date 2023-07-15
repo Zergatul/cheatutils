@@ -42,6 +42,9 @@ public abstract class MixinMinecraft {
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
+        if (player == null) {
+            return;
+        }
         for (EntityTracerConfig config : ConfigStore.instance.getConfig().entities.configs) {
             if (config.enabled && config.isValidEntity(entity) && config.glow && entity.distanceToSqr(player) < config.getGlowMaxDistanceSqr()) {
                 info.setReturnValue(true);
