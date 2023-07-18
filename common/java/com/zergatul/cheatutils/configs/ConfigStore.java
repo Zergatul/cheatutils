@@ -167,6 +167,7 @@ public class ConfigStore {
         config.projectilePathConfig.validate();
         config.chatUtilitiesConfig.validate();
         config.areaMineConfig.validate();
+        config.hitboxSizeConfig.validate();
 
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);

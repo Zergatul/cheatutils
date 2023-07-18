@@ -802,6 +802,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().serverPluginsConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("hitbox-size", HitboxSizeConfig.class) {
+            @Override
+            protected HitboxSizeConfig getConfig() {
+                return ConfigStore.instance.getConfig().hitboxSizeConfig;
+            }
+
+            @Override
+            protected void setConfig(HitboxSizeConfig config) {
+                ConfigStore.instance.getConfig().hitboxSizeConfig = config;
+            }
+        });
     }
 
     @Override

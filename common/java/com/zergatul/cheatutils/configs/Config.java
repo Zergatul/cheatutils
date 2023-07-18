@@ -66,6 +66,7 @@ public class Config {
     public InvMoveConfig invMoveConfig = new InvMoveConfig();
     public AreaMineConfig areaMineConfig = new AreaMineConfig();
     public ServerPluginsConfig serverPluginsConfig = new ServerPluginsConfig();
+    public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
 
     public Config() {
         esp = true;

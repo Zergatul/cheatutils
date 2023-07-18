@@ -35,6 +35,7 @@ public class Root {
     public static TeleportApi teleport = new TeleportApi();
     public static ElytraHackApi elytraFly = new ElytraHackApi();
     public static ServerPluginsApi serverPlugins = new ServerPluginsApi();
+    public static HitboxSizeApi hitboxSize = new HitboxSizeApi();
 
     // visuals
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();

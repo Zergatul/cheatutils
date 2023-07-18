@@ -295,6 +295,13 @@
                             <button @click="current = 'server-plugins'" :class="{ faded: !filtered.ServerPlugins }">Server Plugins</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'hitbox-size'" :class="{ faded: !filtered.HitboxSize }">HitBox Size</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -643,6 +650,11 @@
             v-if="current == 'server-plugins'"
             @back="backToMain()">
         </server-plugins-config>
+
+        <hitbox-size-config
+            v-if="current == 'hitbox-size'"
+            @back="backToMain()">
+        </hitbox-size-config>
 
     </div>
 

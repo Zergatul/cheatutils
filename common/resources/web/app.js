@@ -150,6 +150,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('InvMoveConfig', ['inventory', 'move', 'keys']);
     loadModule('AreaMineConfig', ['area', 'mine']);
     loadModule('ServerPluginsConfig', ['server', 'plugins']);
+    loadModule('HitboxSizeConfig', ['hitbox', 'size']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');
