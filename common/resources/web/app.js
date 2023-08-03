@@ -151,6 +151,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('AreaMineConfig', ['area', 'mine']);
     loadModule('ServerPluginsConfig', ['server', 'plugins']);
     loadModule('HitboxSizeConfig', ['hitbox', 'size']);
+    loadModule('BedrockBreakerConfig', ['bedrock', 'breaker']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

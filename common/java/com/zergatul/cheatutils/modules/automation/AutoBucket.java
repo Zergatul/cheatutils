@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.AutoBucketConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.BlockUtils;
+import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.VoxelShapeUtils;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
@@ -77,7 +78,7 @@ public class AutoBucket implements Module {
                     double d2 = mc.player.getPosition(1).distanceToSqr(blockCenter);
                     if (d2 < config.reachDistance * config.reachDistance) {
                         // try to pickup water
-                        RotationUtils.Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), blockCenter);
+                        Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), blockCenter);
                         float oldXRot = mc.player.getXRot();
                         float oldYRot = mc.player.getYRot();
                         mc.player.setXRot(rotation.xRot());
@@ -183,7 +184,7 @@ public class AutoBucket implements Module {
                     collisionPos.getX() + 0.5,
                     collisionPos.getY() + 1,
                     collisionPos.getZ() + 0.5);
-            RotationUtils.Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), lookAt);
+            Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), lookAt);
             //logger.info("Rotate x=" + rotation.xRot() + " y=" + rotation.yRot());
             float oldXRot = mc.player.getXRot();
             float oldYRot = mc.player.getYRot();

@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,29 +23,33 @@ public class BlockUtils {
     }
 
     public static PlaceBlockPlan getPlacingPlan(BlockPos pos, boolean attachToAir, BlockPlacingMethod method) {
+        return getPlacingPlan(pos, attachToAir, method, Blocks.STONE.defaultBlockState());
+    }
+
+    public static PlaceBlockPlan getPlacingPlan(BlockPos pos, boolean attachToAir, BlockPlacingMethod method, BlockState finalState) {
         if (mc.level == null) {
             return null;
         }
 
-        BlockState state = mc.level.getBlockState(pos);
-        if (!state.canBeReplaced()) {
+        BlockState currentState = mc.level.getBlockState(pos);
+        if (!currentState.canBeReplaced()) {
             return null;
         }
 
         if (mc.player != null) {
             CollisionContext collisioncontext = CollisionContext.of(mc.player);
-            if (!mc.level.isUnobstructed(Blocks.STONE.defaultBlockState(), pos, collisioncontext)) {
+            if (!mc.level.isUnobstructed(finalState, pos, collisioncontext)) {
                 return null;
             }
         }
 
-        for (Direction direction : Direction.values()) {
+        for (Direction direction : method.getAllowedDirections()) {
             BlockPos neighbourPos = pos.relative(direction);
             BlockState neighbourState = mc.level.getBlockState(neighbourPos);
             if (!neighbourState.canBeReplaced()) {
                 Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, direction.getOpposite(), false);
                 if (target != null) {
-                    return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos, target);
+                    return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos, target, method.getRotation());
                 }
             }
         }
@@ -53,7 +58,7 @@ public class BlockUtils {
             // replaceClicked from BlockPlaceContext
             Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, Direction.UP, true);
             if (target != null) {
-                return new PlaceBlockPlan(pos.immutable(), Direction.UP, pos.immutable(), target);
+                return new PlaceBlockPlan(pos.immutable(), Direction.UP, pos.immutable(), target, method.getRotation());
             }
         }
 
@@ -61,10 +66,10 @@ public class BlockUtils {
     }
 
     public static void applyPlacingPlan(PlaceBlockPlan plan, boolean useShift) {
-        placeBlock(plan.destination, plan.direction, plan.neighbour, plan.target, useShift);
+        placeBlock(plan.destination, plan.direction, plan.neighbour, plan.target, plan.rotation, useShift);
     }
 
-    private static void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target, boolean useShift) {
+    private static void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation, boolean useShift) {
         if (mc.player == null) {
             return;
         }
@@ -75,6 +80,12 @@ public class BlockUtils {
 
         if (emulateShift) {
             NetworkPacketsController.instance.sendPacket(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY));
+        }
+
+        if (rotation != null) {
+            // send correct rotation to server
+            //NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Rot(rotation.yRot(), rotation.xRot(), mc.player.onGround()));
+            mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(rotation.yRot(), rotation.xRot(), mc.player.onGround()));
         }
 
         InteractionHand hand = InteractionHand.MAIN_HAND;
@@ -90,13 +101,14 @@ public class BlockUtils {
         }
     }
 
-    public record PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target) {
+    public record PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation) {
 
         public PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour) {
             this(destination, direction, neighbour, new Vec3(
                     destination.getX() + 0.5f + direction.getOpposite().getStepX() * 0.5,
                     destination.getY() + 0.5f + direction.getOpposite().getStepY() * 0.5,
-                    destination.getZ() + 0.5f + direction.getOpposite().getStepZ() * 0.5));
+                    destination.getZ() + 0.5f + direction.getOpposite().getStepZ() * 0.5),
+                    null);
         }
     }
 }

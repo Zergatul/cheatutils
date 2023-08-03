@@ -302,6 +302,13 @@
                             <button @click="current = 'hitbox-size'" :class="{ faded: !filtered.HitboxSize }">HitBox Size</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'bedrock-breaker'" :class="{ faded: !filtered.BedrockBreaker }">Bedrock Breaker (BETA)</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -655,6 +662,11 @@
             v-if="current == 'hitbox-size'"
             @back="backToMain()">
         </hitbox-size-config>
+
+        <bedrock-breaker-config
+            v-if="current == 'bedrock-breaker'"
+            @back="backToMain()">
+        </bedrock-breaker-config>
 
     </div>
 

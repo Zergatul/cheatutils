@@ -1,0 +1,31 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main">
+        <h2 class="module-header">Bedrock Breaker (BETA)</h2>
+        <div class="description">
+            Breaks bedrock with single button click.
+        </div>
+        <div class="module-sections">
+            <div class="description">
+                Conditions:
+                <ul>
+                    <li>Netherite Pickaxe Efficiency 5 on hotbar</li>
+                    <li>Some amount of pistons on hotbar</li>
+                    <li>Some amount of redstone torches on hotbar</li>
+                    <li>Haste 2 effect from beacon (you should be able to instamine pistons)</li>
+                </ul>
+                How to use:
+                <ul>
+                    <li>Add <b>bedrockBreaker.process();</b> to keybinding</li>
+                    <li>Target bedrock block</li>
+                    <li>Ensure there are 2 empty blocks above bedrock</li>
+                    <li>Ensure there is 1 block on the side of bedrock. Redstone torch will be placed on top of this block.</li>
+                    <li>Press hotkey</li>
+                    <li>If something goes wrong you should see system message</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

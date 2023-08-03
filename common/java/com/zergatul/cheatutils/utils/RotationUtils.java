@@ -13,6 +13,4 @@ public class RotationUtils {
         xRot = Mth.clamp(xRot, -90, 90);
         return new Rotation(xRot, yRot);
     }
-
-    public record Rotation(float xRot, float yRot) {}
 }

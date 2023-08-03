@@ -99,6 +99,7 @@ public class ModMain {
         register(AutoHotbar.instance);
         register(AreaMine.instance);
         register(ServerPlugins.instance);
+        register(BedrockBreaker.instance);
     }
 
     private void register(Module module) {

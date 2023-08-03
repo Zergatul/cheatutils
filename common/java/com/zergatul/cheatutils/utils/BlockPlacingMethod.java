@@ -7,13 +7,35 @@ import net.minecraft.world.phys.Vec3;
 public enum BlockPlacingMethod {
     ANY,
     BOTTOM_SLAB,
-    TOP_SLAB;
+    TOP_SLAB,
+    FACING_TOP,
+    FACING_BOTTOM,
+    FACING_EAST,
+    FACING_WEST,
+    FACING_SOUTH,
+    FACING_NORTH,
+    FROM_TOP;
 
     public Vec3 getTarget(Vec3 playerPos, BlockPos blockPos, Direction direction, boolean airPlace) {
         return switch (this) {
             case BOTTOM_SLAB -> getBottomSlabTarget(playerPos, blockPos, direction, airPlace);
             case TOP_SLAB -> getTopSlabTarget(playerPos, blockPos, direction, airPlace);
             default -> getTargetDefault(playerPos, blockPos, direction);
+        };
+    }
+
+    public Rotation getRotation() {
+        return switch (this) {
+            case FACING_TOP -> new Rotation(90, 0);
+            case FACING_BOTTOM -> new Rotation(-90, 0);
+            default -> null;
+        };
+    }
+
+    public Direction[] getAllowedDirections() {
+        return switch (this) {
+            case FROM_TOP -> new Direction[] { Direction.DOWN };
+            default -> Direction.values();
         };
     }
 

@@ -6,7 +6,7 @@
   "injectors": {
     "defaultRequire": 0
   },
-  "mixinPriority": 2000,
+  "mixinPriority": 500,
   "client": [
     "common.accessors.AbstractContainerScreenAccessor",
     "common.accessors.ClientLevelAccessor",
