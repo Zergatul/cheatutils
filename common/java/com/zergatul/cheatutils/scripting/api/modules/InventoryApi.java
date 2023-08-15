@@ -21,19 +21,57 @@ public class InventoryApi {
     private final static Minecraft mc = Minecraft.getInstance();
 
     public String getHeadItemId() {
-        return getItemBySlot(EquipmentSlot.HEAD);
+        return getItemIdBySlot(EquipmentSlot.HEAD);
     }
 
     public String getChestItemId() {
-        return getItemBySlot(EquipmentSlot.CHEST);
+        return getItemIdBySlot(EquipmentSlot.CHEST);
     }
 
     public String getLegsItemId() {
-        return getItemBySlot(EquipmentSlot.LEGS);
+        return getItemIdBySlot(EquipmentSlot.LEGS);
     }
 
     public String getFeetItemId() {
-        return getItemBySlot(EquipmentSlot.FEET);
+        return getItemIdBySlot(EquipmentSlot.FEET);
+    }
+
+    public String getMainHandItemId() {
+        return getItemIdBySlot(EquipmentSlot.MAINHAND);
+    }
+
+    public String getOffHandItemId() {
+        return getItemIdBySlot(EquipmentSlot.OFFHAND);
+    }
+
+    @HelpText("Returns value from (0..1]")
+    public double getHeadItemDurability() {
+        return getItemDurabilityBySlot(EquipmentSlot.HEAD);
+    }
+
+    @HelpText("Returns value from (0..1]")
+    public double getChestItemDurability() {
+        return getItemDurabilityBySlot(EquipmentSlot.CHEST);
+    }
+
+    @HelpText("Returns value from (0..1]")
+    public double getLegsItemDurability() {
+        return getItemDurabilityBySlot(EquipmentSlot.LEGS);
+    }
+
+    @HelpText("Returns value from (0..1]")
+    public double getFeetItemDurability() {
+        return getItemDurabilityBySlot(EquipmentSlot.FEET);
+    }
+
+    @HelpText("Returns value from (0..1]")
+    public double getMainHandItemDurability() {
+        return getItemDurabilityBySlot(EquipmentSlot.MAINHAND);
+    }
+
+    @HelpText("Returns value from (0..1]")
+    public double getOffHandItemDurability() {
+        return getItemDurabilityBySlot(EquipmentSlot.OFFHAND);
     }
 
     @ApiVisibility(ApiType.ACTION)
@@ -91,7 +129,7 @@ public class InventoryApi {
         return count;
     }
 
-    private String getItemBySlot(EquipmentSlot slot) {
+    private String getItemIdBySlot(EquipmentSlot slot) {
         if (mc.player == null) {
             return "";
         }
@@ -102,6 +140,27 @@ public class InventoryApi {
         }
 
         return Registries.ITEMS.getKey(itemStack.getItem()).toString();
+    }
+
+    public double getItemDurabilityBySlot(EquipmentSlot slot) {
+        if (mc.player == null) {
+            return 1;
+        }
+
+        ItemStack itemStack = mc.player.getItemBySlot(slot);
+        if (itemStack.isEmpty()) {
+            return 1;
+        }
+
+        if (!itemStack.isDamaged()) {
+            return 1;
+        }
+
+        if (itemStack.getMaxDamage() == 0) {
+            return 1;
+        }
+
+        return 1d - 1d * itemStack.getDamageValue() / itemStack.getMaxDamage();
     }
 
     private int find(String itemId) {
