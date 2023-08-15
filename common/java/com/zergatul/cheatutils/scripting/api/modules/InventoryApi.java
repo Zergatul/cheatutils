@@ -142,7 +142,7 @@ public class InventoryApi {
         return Registries.ITEMS.getKey(itemStack.getItem()).toString();
     }
 
-    public double getItemDurabilityBySlot(EquipmentSlot slot) {
+    private double getItemDurabilityBySlot(EquipmentSlot slot) {
         if (mc.player == null) {
             return 1;
         }
