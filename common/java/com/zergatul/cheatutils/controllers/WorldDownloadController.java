@@ -166,6 +166,10 @@ public class WorldDownloadController {
     }
 
     private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+        if (!isActive()) {
+            return;
+        }
+
         if (args.packet instanceof ClientboundLevelChunkWithLightPacket packet) {
             processChunkPacket(packet.getX(), packet.getZ(), packet.getChunkData());
         }
