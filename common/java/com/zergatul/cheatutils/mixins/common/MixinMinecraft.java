@@ -98,7 +98,7 @@ public abstract class MixinMinecraft {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetData()V", shift = At.Shift.AFTER),
-            method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V")
+            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;)V")
     private void onPlayerLoggingOut(Screen screen, CallbackInfo info) {
         Events.ClientPlayerLoggingOut.trigger();
     }
@@ -112,7 +112,7 @@ public abstract class MixinMinecraft {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;updateScreenAndTick(Lnet/minecraft/client/gui/screens/Screen;)V", shift = At.Shift.AFTER),
-            method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V")
+            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;)V")
     private void onClearLevel(Screen screen, CallbackInfo info) {
         if (this.level != null) {
             Events.WorldUnload.trigger();

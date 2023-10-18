@@ -36,6 +36,7 @@
     "common.MixinClientChunkCache",
     "common.MixinClientLevel",
     "common.MixinClientPacketListener",
+    "common.MixinClientCommonPacketListenerImpl",
     "common.MixinDeathScreen",
     "common.MixinDebugScreenOverlay",
     "common.MixinEntity",
@@ -65,11 +66,11 @@
 
     "forge.accessors.GuiGraphicsAccessor",
     "forge.MixinAbstractContainerScreen",
-    "forge.MixinC2SModListReply",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
     "forge.MixinLightTexture",
     "forge.MixinLocalPlayer",
+    "forge.MixinModVersions",
     "forge.MixinMultiPlayerGameMode"
   ]
 }

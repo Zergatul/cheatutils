@@ -2,13 +2,12 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import com.google.common.collect.Ordering;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.mixins.common.accessors.GuiAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.Primitives;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -50,9 +49,9 @@ public class BetterStatusEffects implements Module {
             MobEffectInstance effectInstance = sorted.get(i);
 
             if (effectInstance.isAmbient()) {
-                graphics.blit(AbstractContainerScreen.INVENTORY_LOCATION, left, y, 199, 165, 166, 24, 24, 256, 256);
+                graphics.blitSprite(GuiAccessor.getEffectBackgroundAmbientSprite(), left, y, 24, 24);
             } else {
-                graphics.blit(AbstractContainerScreen.INVENTORY_LOCATION, left, y, 199, 141, 166, 24, 24, 256, 256);
+                graphics.blitSprite(GuiAccessor.getEffectBackgroundSprite(), left, y, 24, 24);
             }
 
             TextureAtlasSprite textureatlassprite = manager.get(effectInstance.getEffect());

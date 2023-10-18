@@ -8,8 +8,13 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(Gui.class)
 public interface GuiAccessor {
 
-    @Accessor("GUI_ICONS_LOCATION")
-    static ResourceLocation getGuiIconsLocation_CU() {
+    @Accessor("EFFECT_BACKGROUND_AMBIENT_SPRITE")
+    static ResourceLocation getEffectBackgroundAmbientSprite() {
+        throw new AssertionError();
+    }
+
+    @Accessor("EFFECT_BACKGROUND_SPRITE")
+    static ResourceLocation getEffectBackgroundSprite() {
         throw new AssertionError();
     }
 }

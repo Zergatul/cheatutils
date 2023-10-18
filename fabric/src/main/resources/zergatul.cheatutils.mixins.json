@@ -35,6 +35,7 @@
     "common.MixinClientChunkCache",
     "common.MixinClientPacketListener",
     "common.MixinClientLevel",
+    "common.MixinClientCommonPacketListenerImpl",
     "common.MixinDeathScreen",
     "common.MixinDebugScreenOverlay",
     "common.MixinEntity",

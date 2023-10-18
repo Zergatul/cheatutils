@@ -33,7 +33,7 @@ public class Events {
     public static final SimpleEventHandler WorldUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
     public static final ParameterizedEventHandler<GatherTooltipComponentsEvent> GatherTooltipComponents = new ParameterizedEventHandler<>();
-    public static final ParameterizedEventHandler<AbstractClientPlayer> PlayerAdded = new ParameterizedEventHandler<>();
+    //public static final ParameterizedEventHandler<AbstractClientPlayer> PlayerAdded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<GetFieldOfViewEvent> GetFieldOfView = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderTooltipEvent> PreRenderTooltip = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<ContainerRenderLabelsEvent> ContainerRenderLabels = new ParameterizedEventHandler<>();

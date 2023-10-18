@@ -70,7 +70,7 @@ public class ChunkController {
         }
         ClientChunkCache cache = mc.level.getChunkSource();
         if (mc.player == null) {
-            serverUnloadedChunks.forEach(p -> cache.drop(p.x, p.z));
+            serverUnloadedChunks.forEach(cache::drop);
             serverUnloadedChunks.clear();
             return;
         }
@@ -86,7 +86,7 @@ public class ChunkController {
             if (d2 > renderDistance2) {
                 serverUnloadedChunks.remove(i);
                 i--;
-                ((ClientPacketListener) mc.player.connection.getConnection().getPacketListener()).handleForgetLevelChunk(new ClientboundForgetLevelChunkPacket(chunkPos.x, chunkPos.z));
+                ((ClientPacketListener) mc.player.connection.getConnection().getPacketListener()).handleForgetLevelChunk(new ClientboundForgetLevelChunkPacket(chunkPos));
             }
         }
     }
@@ -188,7 +188,7 @@ public class ChunkController {
     private synchronized boolean processForgetLevelChunkPacket(ClientboundForgetLevelChunkPacket packet) {
         ChunksConfig config = ConfigStore.instance.getConfig().chunksConfig;
         if (config.dontUnloadChunks) {
-            serverUnloadedChunks.add(new ChunkPos(packet.getX(), packet.getZ()));
+            serverUnloadedChunks.add(packet.pos());
             return true;
         } else {
             return false;

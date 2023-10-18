@@ -196,7 +196,7 @@ public class MainApi {
     }
 
     public boolean isDebugScreenEnabled() {
-        return mc.options.renderDebug;
+        return mc.gui.getDebugOverlay().showDebugScreen();
     }
 
     @HelpText("Allowed values: \"left\", \"center\", \"right\".")

@@ -1,10 +1,12 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.mojang.brigadier.ParseResults;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
 import com.zergatul.cheatutils.helpers.MixinClientPacketListenerHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -23,6 +25,8 @@ public abstract class MixinClientPacketListener {
 
     @Shadow public abstract Connection getConnection();
 
+    @Shadow protected abstract ParseResults<SharedSuggestionProvider> parseCommand(String p_249982_);
+
     @ModifyVariable(
             at = @At("HEAD"),
             method = "handleLogin(Lnet/minecraft/network/protocol/game/ClientboundLoginPacket;)V",
@@ -33,22 +37,14 @@ public abstract class MixinClientPacketListener {
         return new ClientboundLoginPacket(
                 packet.playerId(),
                 packet.hardcore(),
-                packet.gameType(),
-                packet.previousGameType(),
                 packet.levels(),
-                packet.registryHolder(),
-                packet.dimensionType(),
-                packet.dimension(),
-                packet.seed(),
                 packet.maxPlayers(),
                 mc.options.renderDistance().get(),
                 mc.options.simulationDistance().get(),
                 packet.reducedDebugInfo(),
                 packet.showDeathScreen(),
-                packet.isDebug(),
-                packet.isFlat(),
-                packet.lastDeathLocation(),
-                packet.portalCooldown());
+                packet.doLimitedCrafting(),
+                packet.commonPlayerSpawnInfo());
     }
 
     @ModifyVariable(
@@ -59,21 +55,6 @@ public abstract class MixinClientPacketListener {
     private ClientboundSetChunkCacheRadiusPacket onModifySetChunkCacheRadiusPacket(ClientboundSetChunkCacheRadiusPacket packet) {
         Minecraft mc = Minecraft.getInstance();
         return new ClientboundSetChunkCacheRadiusPacket(mc.options.renderDistance().get());
-    }
-
-    @ModifyArg(
-            method = "handleDisconnect(Lnet/minecraft/network/protocol/game/ClientboundDisconnectPacket;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;disconnect(Lnet/minecraft/network/chat/Component;)V"),
-            index = 0)
-    private Component onDisconnect(Component component) {
-        if (MixinClientPacketListenerHelper.appendDisconnectMessage == null) {
-            return component;
-        }
-
-        MutableComponent replacement = MutableComponent.create(component.getContents());
-        String message = MixinClientPacketListenerHelper.appendDisconnectMessage;
-        MixinClientPacketListenerHelper.appendDisconnectMessage = null;
-        return replacement.append("\n").append(message);
     }
 
     @Inject(

@@ -6,6 +6,7 @@ import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,8 +35,8 @@ public abstract class MixinClientChunkCache {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientChunkCache$Storage;replace(ILnet/minecraft/world/level/chunk/LevelChunk;Lnet/minecraft/world/level/chunk/LevelChunk;)Lnet/minecraft/world/level/chunk/LevelChunk;"),
-            method = "drop(II)V")
-    private void onChunkUnloaded(int x, int z, CallbackInfo info) {
+            method = "drop(Lnet/minecraft/world/level/ChunkPos;)V")
+    private void onChunkUnloaded(ChunkPos chunkPos, CallbackInfo info) {
         Events.ChunkUnloaded.trigger();
     }
 }

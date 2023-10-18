@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.collections.ImmutableList;
@@ -59,12 +60,11 @@ public class EntityTitleController {
                 @Override
                 public Optional<String> load(UUID uuid) {
                     CompletableFuture.runAsync(() -> {
-                        GameProfile playerProfile = new GameProfile(uuid, null);
-                        playerProfile = Minecraft.getInstance().getMinecraftSessionService().fillProfileProperties(playerProfile, false);
-                        if (playerProfile.getName() == null) {
+                        ProfileResult result = Minecraft.getInstance().getMinecraftSessionService().fetchProfile(uuid, false);
+                        if (result == null) {
                             usernameCache.put(uuid, Optional.of(uuid.toString()));
                         } else {
-                            usernameCache.put(uuid, Optional.of(playerProfile.getName()));
+                            usernameCache.put(uuid, Optional.of(result.profile().getName()));
                         }
                     });
                     return Optional.of("loading...");
@@ -307,7 +307,8 @@ public class EntityTitleController {
                     yc -= height;
                     double yp = yc + scaledHalfHeight;
 
-                    GlStates.setupOverlayRenderState(true, false);
+                    // why it was required?
+                    //GlStates.setupOverlayRenderState(true, false);
 
                     double xpl = xp;
                     for (int i = 0; i < items.size(); i++) {

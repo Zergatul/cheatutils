@@ -1,19 +1,11 @@
 package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.zergatul.cheatutils.mixins.common.accessors.GuiAccessor;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
 
 public class GlStates {
 
     public static void setupOverlayRenderState(boolean blend, boolean depthTest) {
-        setupOverlayRenderState(blend, depthTest, GuiAccessor.getGuiIconsLocation_CU());
-    }
-
-    public static void setupOverlayRenderState(boolean blend, boolean depthTest, @Nullable ResourceLocation texture) {
         if (blend) {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
@@ -21,15 +13,10 @@ public class GlStates {
             RenderSystem.disableBlend();
         }
 
-        if (depthTest) {
+        if (depthTest)
             RenderSystem.enableDepthTest();
-        } else {
+        else
             RenderSystem.disableDepthTest();
-        }
-
-        if (texture != null) {
-            RenderSystem.setShaderTexture(0, texture);
-        }
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);

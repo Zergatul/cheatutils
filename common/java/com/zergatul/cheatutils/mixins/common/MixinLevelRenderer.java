@@ -66,7 +66,7 @@ public abstract class MixinLevelRenderer {
     }
 
     @Inject(
-            method = "renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
+            method = "renderSectionLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderType;clearRenderState()V")
     )
     private void onRenderChunkLayer(RenderType type, PoseStack poseStack, double p_172996_, double p_172997_, double p_172998_, Matrix4f projectionMatrix, CallbackInfo info) {
