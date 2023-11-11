@@ -40,6 +40,10 @@ public class KeysApi {
             KeyMapping.set(getKey(), state);
         }
 
+        public boolean isDown() {
+            return mapping.isDown();
+        }
+
         private InputConstants.Key getKey() {
             return ((KeyMappingAccessor) mapping).getKey_CU();
         }

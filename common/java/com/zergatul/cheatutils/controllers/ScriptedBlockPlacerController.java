@@ -10,6 +10,8 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ScriptedBlockPlacerConfig;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.BlockUtils;
@@ -112,48 +114,42 @@ public class ScriptedBlockPlacerController {
     private void onRenderWorldLast(RenderWorldLastEvent event) {
         ScriptedBlockPlacerConfig config = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
         if (config.enabled && config.debugMode && debugPlan != null) {
-            Vec3 view = event.getCamera().getPosition();
-
             // draw neighbour block
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(1f, 1.0f, 1f, 1f);
+            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+            renderer.begin(event, false);
 
-            double x1 = debugPlan.neighbour().getX() - view.x;
-            double y1 = debugPlan.neighbour().getY() - view.y;
-            double z1 = debugPlan.neighbour().getZ() - view.z;
+            double x1 = debugPlan.neighbour().getX();
+            double y1 = debugPlan.neighbour().getY();
+            double z1 = debugPlan.neighbour().getZ();
             double x2 = x1 + 1;
             double y2 = y1 + 1;
             double z2 = z1 + 1;
-            Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            renderer.cuboid(x1, y1, z1, x2, y2, z2, 1f, 1f, 1f, 1f);
+            renderer.end();
 
             // draw target block
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            renderer.begin(event, false);
             RenderSystem.setShaderColor(0.7f, 1f, 0.7f, 1f);
 
-            x1 = debugPlan.destination().getX() + 0.05 - view.x;
-            y1 = debugPlan.destination().getY() + 0.05 - view.y;
-            z1 = debugPlan.destination().getZ() + 0.05 - view.z;
+            x1 = debugPlan.destination().getX() + 0.05;
+            y1 = debugPlan.destination().getY() + 0.05;
+            z1 = debugPlan.destination().getZ() + 0.05;
             x2 = x1 + 0.9;
             y2 = y1 + 0.9;
             z2 = z1 + 0.9;
-            Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            renderer.cuboid(x1, y1, z1, x2, y2, z2, 1f, 1f, 1f, 1f);
+            renderer.end();
 
             // draw target point
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            renderer.begin(event, false);
             RenderSystem.setShaderColor(1f, 1f, 0.7f, 1f);
 
             for (Direction direction : Direction.values()) {
                 Vec3 p1 = debugPlan.target().relative(direction, 0.1);
                 Vec3 p2 = debugPlan.target().relative(direction, -0.1);
-                bufferBuilder.vertex(p1.x - view.x, p1.y - view.y, p1.z - view.z)
-                        .color(1f, 1f, 1f, 1f).endVertex();
-                bufferBuilder.vertex(p2.x - view.x, p2.y - view.y, p2.z - view.z)
-                        .color(1f, 1f, 1f, 1f).endVertex();
+                renderer.line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, 1f, 1f, 1f, 1f);
             }
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            renderer.end();
 
             // reset color
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);

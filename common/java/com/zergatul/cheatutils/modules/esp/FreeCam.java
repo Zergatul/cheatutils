@@ -18,6 +18,7 @@ import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
+import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -139,7 +140,7 @@ public class FreeCam implements Module {
         cameraLock = false;
         eyeLock = false;
         oldCameraType = mc.options.getCameraType();
-        playerInput = mc.player.input;
+        playerInput = new KeyboardInput(mc.options); //mc.player.input; // changed for baritone compat
         mc.player.input = freecamInput = new Input();
         mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         if (oldCameraType.isFirstPerson() != mc.options.getCameraType().isFirstPerson()) {

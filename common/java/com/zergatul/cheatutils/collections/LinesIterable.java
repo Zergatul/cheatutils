@@ -1,11 +1,12 @@
 package com.zergatul.cheatutils.collections;
 
+import com.mojang.datafixers.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class LinesIterable<T> implements Iterable<T> {
+public class LinesIterable<T> implements Iterable<Pair<T, T>> {
 
     private final List<T> list;
 
@@ -15,15 +16,14 @@ public class LinesIterable<T> implements Iterable<T> {
 
     @NotNull
     @Override
-    public Iterator<T> iterator() {
+    public Iterator<Pair<T, T>> iterator() {
         return new LinesIterator<>(list);
     }
 
-    private static class LinesIterator<T> implements Iterator<T> {
+    private static class LinesIterator<T> implements Iterator<Pair<T, T>> {
 
         private final List<T> list;
         private int index;
-        private boolean duplicate;
 
         private LinesIterator(List<T> list) {
             this.list = list;
@@ -31,26 +31,14 @@ public class LinesIterable<T> implements Iterable<T> {
 
         @Override
         public boolean hasNext() {
-            if (index == 0) {
-                return list.size() >= 2;
-            } else {
-                return index < list.size();
-            }
+            return index < list.size() - 1;
         }
 
         @Override
-        public T next() {
-            if (index == 0 || index == list.size() - 1) {
-                return list.get(index++);
-            } else {
-                if (duplicate) {
-                    duplicate = false;
-                    return list.get(index++);
-                } else {
-                    duplicate = true;
-                    return list.get(index);
-                }
-            }
+        public Pair<T, T> next() {
+            T element1 = list.get(index++);
+            T element2 = list.get(index);
+            return new Pair<>(element1, element2);
         }
     }
 }

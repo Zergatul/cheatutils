@@ -12,6 +12,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
@@ -69,27 +71,25 @@ public class AreaMine implements Module {
             return;
         }
 
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+        renderer.begin(event, false);
 
-        Vec3 view = event.getCamera().getPosition();
         int time = (int) (System.currentTimeMillis() % 2000);
         if (time > 1000) {
             time = 2000 - time;
         }
         double brad = 0.2 + 0.2 * time / 1000;
         forEachInstaminable(event.getPlayerPos(), blockPos, config, pos -> {
-            double x1 = pos.getX() + 0.5 - brad - view.x;
-            double x2 = pos.getX() + 0.5 + brad - view.x;
-            double y1 = pos.getY() + 0.5 - brad - view.y;
-            double y2 = pos.getY() + 0.5 + brad - view.y;
-            double z1 = pos.getZ() + 0.5 - brad - view.z;
-            double z2 = pos.getZ() + 0.5 + brad - view.z;
-            Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
+            double x1 = pos.getX() + 0.5 - brad;
+            double x2 = pos.getX() + 0.5 + brad;
+            double y1 = pos.getY() + 0.5 - brad;
+            double y2 = pos.getY() + 0.5 + brad;
+            double z1 = pos.getZ() + 0.5 - brad;
+            double z2 = pos.getZ() + 0.5 + brad;
+            renderer.cuboid(x1, y1, z1, x2, y2, z2, 1f, 1f, 1f, 1f);
         });
 
-        Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+        renderer.end();
     }
 
     private void onBeforeInstaMine(BlockPos origin) {

@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
 import com.zergatul.cheatutils.modules.visuals.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
+import com.zergatul.cheatutils.wrappers.FabricEvents;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +29,8 @@ public class ModMain implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		FabricEvents.setup();
+
 		ConfigHttpServer.instance.start();
 		ConfigStore.instance.read();
 
