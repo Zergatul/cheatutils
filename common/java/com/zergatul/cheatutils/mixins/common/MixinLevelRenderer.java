@@ -48,22 +48,7 @@ public abstract class MixinLevelRenderer {
         }
     }
 
-    @Inject(
-            method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
-            at = @At("TAIL"))
-    private void onRender(
-            PoseStack matrices,
-            float partialTicks,
-            long limitTime,
-            boolean renderBlockOutline,
-            Camera camera,
-            GameRenderer gameRenderer,
-            LightTexture lightmapTextureManager,
-            Matrix4f projectionMatrix,
-            CallbackInfo info
-    ) {
-        Events.RenderWorldLast.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
-    }
+
 
     @Inject(
             method = "renderSectionLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",

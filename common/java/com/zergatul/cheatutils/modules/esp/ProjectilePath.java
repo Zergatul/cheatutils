@@ -3,10 +3,14 @@ package com.zergatul.cheatutils.modules.esp;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.collections.LinesIterable;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ProjectilePathConfig;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.DebugLinesLineRenderer;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.utils.SharedVertexBuffer;
@@ -96,28 +100,30 @@ public class ProjectilePath {
 
             // rendering
 
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            LineRenderer renderer = new DebugLinesLineRenderer();
+            renderer.begin(event, true);
 
-            Vec3 view = event.getCamera().getPosition();
             for (List<TraceRecord> list : traces.values()) {
                 if (list.size() < 2) {
                     continue;
                 }
 
-                for (TraceRecord record : new LinesIterable<>(list)) {
-                    long remain = record.time + config.tracesDuration * 1000000000L - time;
-                    float alpha = Math.min(1f, remain / 1e9f / config.fadeDuration);
-                    bufferBuilder.vertex(
-                            record.position.x - view.x,
-                            record.position.y - view.y,
-                            record.position.z - view.z)
-                            .color(0.5f, 1f, 0.5f, alpha).endVertex();
+                for (Pair<TraceRecord, TraceRecord> pair : new LinesIterable<>(list)) {
+                    TraceRecord r1 = pair.getFirst();
+                    TraceRecord r2 = pair.getSecond();
+                    long remain1 = r1.time + config.tracesDuration * 1000000000L - time;
+                    float alpha1 = Math.min(1f, remain1 / 1e9f / config.fadeDuration);
+                    long remain2 = r2.time + config.tracesDuration * 1000000000L - time;
+                    float alpha2 = Math.min(1f, remain2 / 1e9f / config.fadeDuration);
+                    renderer.line(
+                            r1.position.x, r1.position.y, r1.position.z,
+                            0.5f, 1f, 0.5f, alpha1,
+                            r2.position.x, r2.position.y, r2.position.z,
+                            0.5f, 1f, 0.5f, alpha2);
                 }
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            renderer.end();
         }
 
         ThrowableItemEntry entry = null;
@@ -136,7 +142,6 @@ public class ProjectilePath {
             return;
         }
 
-        Vec3 view = event.getCamera().getPosition();
         Vec3 playerPos = event.getPlayerPos();
         float partialTick = event.getTickDelta();
 
@@ -178,56 +183,39 @@ public class ProjectilePath {
         /*Vec3 vec = mc.player.getDeltaMovement();
         movement = movement.add(vec.x, mc.player.isOnGround() ? 0.0D : vec.y, vec.z);*/
 
-        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+        renderer.begin(event, true);
 
-        List<Vec3> mainPath = calculatePath(entry, from, movement, shift, view);
-        drawPath(mainPath, buffer, Color.WHITE.getRGB());
+        List<Vec3> mainPath = calculatePath(entry, from, movement, shift);
+        drawPath(mainPath, renderer);
 
         /*for (Vec3 devSpeed : deviations) {
             List<Vec3> devPath = calculatePath(entry, from, devSpeed, shift, view);
             drawPath(devPath, buffer, Color.LIGHT_GRAY.getRGB());
         }*/
 
-        SharedVertexBuffer.instance.bind();
-        SharedVertexBuffer.instance.upload(buffer.end());
-
-        RenderSystem.disableCull();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableDepthTest();
-        GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-        SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
-        VertexBuffer.unbind();
-
-        RenderSystem.disableBlend();
-        RenderSystem.enableCull();
+        renderer.end();
     }
 
     private ProjectilePathConfig getConfig() {
         return ConfigStore.instance.getConfig().projectilePathConfig;
     }
 
-    private List<Vec3> calculatePath(ThrowableItemEntry entry, Vec3 from, Vec3 speed, Vec3 shift, Vec3 view) {
+    private List<Vec3> calculatePath(ThrowableItemEntry entry, Vec3 from, Vec3 speed, Vec3 shift) {
         List<Vec3> list = new ArrayList<>(100);
         for (int i = 0; i < 100; i++) {
-            list.add(from.add(shift.scale(getShiftFactor(i))).subtract(view));
+            list.add(from.add(shift.scale(getShiftFactor(i))));
             from = from.add(speed);
             speed = speed.scale(entry.getResistance()).add(0, -entry.getGravity(), 0);
         }
         return list;
     }
 
-    private void drawPath(List<Vec3> path, BufferBuilder buffer, int color) {
-        for (int i = 0; i < path.size(); i++) {
-            Vec3 point = path.get(i);
-            if (i < path.size() - 1) {
-                buffer.vertex(point.x, point.y, point.z).color(color).endVertex();
-            }
-            if (i > 0) {
-                buffer.vertex(point.x, point.y, point.z).color(color).endVertex();
-            }
+    private void drawPath(List<Vec3> path, LineRenderer renderer) {
+        for (int i = 0; i < path.size() - 1; i++) {
+            Vec3 point1 = path.get(i);
+            Vec3 point2 = path.get(i + 1);
+            renderer.line(point1.x, point1.y, point1.z, point2.x, point2.y, point2.z, 1f, 1f, 1f, 1f);
         }
     }
 
