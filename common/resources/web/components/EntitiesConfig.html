@@ -139,7 +139,7 @@
                         <input type="checkbox" class="switch"
                             v-model="selectedConfig.drawTracers"
                             @change="update(selectedConfig)">
-                        <span>Tracers</span>
+                        <span>Tracer</span>
                     </label>
                 </legend>
                 <div style="display: flex;">
@@ -165,8 +165,12 @@
                         <input type="checkbox" class="switch"
                             v-model="selectedConfig.glow"
                             @change="update(selectedConfig)">
-                        <span>Glow (doesn't work with OptiFine shaders)</span>
+                        <span>Outline</span>
                     </label>
+                    <select v-model="selectedConfig.outlineMethod" @change="update(selectedConfig)">
+                        <option value="0">Minecraft Built-In Glow Effect</option>
+                        <option value="1">Mod Outline Effect</option>
+                    </select>
                 </legend>
                 <div style="display: flex;">
                     <div class="color-picker-container">
@@ -191,7 +195,7 @@
                         <input type="checkbox" class="switch"
                             v-model="selectedConfig.drawOutline"
                             @change="update(selectedConfig)">
-                        <span>Outline</span>
+                        <span>Collision Box</span>
                     </label>
                 </legend>
                 <div style="display: flex;">
@@ -208,6 +212,26 @@
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.
                         </div>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="selectedConfig.drawOverlay"
+                            @change="update(selectedConfig)">
+                        <span>Overlay</span>
+                    </label>
+                </legend>
+                <div style="display: flex;">
+                    <div class="color-picker-container">
+                        <color-picker
+                            v-model="selectedConfig.overlayColor"
+                            @update:model-value="update(selectedConfig)" />
+                    </div>
+                    <div class="group-setting esp-additional">
+                        
                     </div>
                 </div>
             </fieldset>

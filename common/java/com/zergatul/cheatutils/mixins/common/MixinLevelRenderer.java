@@ -2,10 +2,10 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.entities.FakePlayer;
+import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -20,7 +20,9 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(LevelRenderer.class)
 public abstract class MixinLevelRenderer {
@@ -47,8 +49,6 @@ public abstract class MixinLevelRenderer {
             return isSpectator;
         }
     }
-
-
 
     @Inject(
             method = "renderSectionLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
@@ -99,5 +99,15 @@ public abstract class MixinLevelRenderer {
         if (ConfigStore.instance.getConfig().noWeatherConfig.enabled) {
             info.cancel();
         }
+    }
+
+    @Inject(at = @At("HEAD"), method = "renderEntity")
+    private void onBeforeRenderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo info) {
+        MixinLevelRendererHelper.current = entity;
+    }
+
+    @Inject(at = @At("TAIL"), method = "renderEntity")
+    private void onAfterRenderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo info) {
+        MixinLevelRendererHelper.current = null;
     }
 }

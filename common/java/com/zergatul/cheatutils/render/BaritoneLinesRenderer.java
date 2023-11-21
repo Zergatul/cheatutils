@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
-public class BaritoneLinesRenderer extends LineRenderer {
+public class BaritoneLinesRenderer extends LineRendererBase {
 
     @Override
     public void begin(Vec3 view, PoseStack.Pose pose, Matrix4f projectionMatrix, boolean depthTest) {

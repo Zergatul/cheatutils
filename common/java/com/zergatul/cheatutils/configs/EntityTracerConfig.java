@@ -10,6 +10,9 @@ public class EntityTracerConfig extends TracerConfigBase {
     public boolean glow;
     public Color glowColor;
     public Double glowMaxDistance;
+    public int outlineMethod;
+    public boolean drawOverlay;
+    public Color overlayColor;
 
     // Entity Title
     public boolean drawTitles;
@@ -35,12 +38,27 @@ public class EntityTracerConfig extends TracerConfigBase {
         glow = jsonConfig.glow;
         glowColor = jsonConfig.glowColor;
         glowMaxDistance = jsonConfig.glowMaxDistance;
+        outlineMethod = jsonConfig.outlineMethod;
+        drawOverlay = jsonConfig.drawOverlay;
+        overlayColor = jsonConfig.overlayColor;
 
         drawTitles = jsonConfig.drawTitles;
         showDefaultNames = jsonConfig.showDefaultNames;
         showHp = jsonConfig.showHp;
         showEquippedItems = jsonConfig.showEquippedItems;
         showOwner = jsonConfig.showOwner;
+    }
+
+    public boolean useMinecraftOutline() {
+        return this.enabled && this.glow && this.outlineMethod == 0;
+    }
+
+    public boolean useModOutline() {
+        return this.glow && this.outlineMethod == 1;
+    }
+
+    public boolean shouldDrawOverlay() {
+        return this.enabled && this.drawOverlay;
     }
 
     public static EntityTracerConfig createDefault(Class clazz) {
@@ -54,6 +72,8 @@ public class EntityTracerConfig extends TracerConfigBase {
         config.maxDistance = DefaultMaxDistance;
         config.glow = true;
         config.glowColor = Color.WHITE;
+        config.drawOverlay = false;
+        config.overlayColor = new Color(0x80FFFFFF, true);
         return config;
     }
 }

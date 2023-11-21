@@ -8,7 +8,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
-public class DebugLinesLineRenderer extends LineRenderer {
+public class DebugLinesLineRenderer extends LineRendererBase {
 
     @Override
     public void begin(Vec3 view, PoseStack.Pose pose, Matrix4f projectionMatrix, boolean depthTest) {

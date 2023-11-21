@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.zergatul.cheatutils.utils.ResourceHelper;
 import com.zergatul.cheatutils.wrappers.ModEnvironment;
 
 import java.io.*;
@@ -21,9 +22,7 @@ public class StaticFilesHandler implements HttpHandler {
         }
 
         byte[] bytes;
-        InputStream stream = ModEnvironment.isProduction ?
-                loadFromResource("web" + filename) :
-                loadFromFile("web" + filename);
+        InputStream stream = ResourceHelper.get("web" + filename);
         try (stream) {
             if (stream == null) {
                 exchange.sendResponseHeaders(404, 0);
@@ -47,20 +46,5 @@ public class StaticFilesHandler implements HttpHandler {
         os.write(bytes);
         os.close();
         exchange.close();
-    }
-
-    private static InputStream loadFromResource(String filename) {
-        ClassLoader classLoader = StaticFilesHandler.class.getClassLoader();
-        return classLoader.getResourceAsStream(filename);
-    }
-
-    private static InputStream loadFromFile(String filename) {
-        try {
-            Path path = Paths.get(System.getProperty("user.dir"), "../src/main/resources", filename);
-            return new FileInputStream(path.toString());
-        }
-        catch (IOException e) {
-            return null;
-        }
     }
 }

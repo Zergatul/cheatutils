@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.configs.PerformanceConfig;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
+import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -41,18 +41,9 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
-        if (!ConfigStore.instance.getConfig().esp) {
-            return;
-        }
-        if (player == null) {
-            return;
-        }
-        for (EntityTracerConfig config : ConfigStore.instance.getConfig().entities.configs) {
-            if (config.enabled && config.isValidEntity(entity) && config.glow && entity.distanceToSqr(player) < config.getGlowMaxDistanceSqr()) {
-                info.setReturnValue(true);
-                info.cancel();
-                return;
-            }
+        if (EntityEsp.instance.shouldEntityGlow(entity)) {
+            info.setReturnValue(true);
+            info.cancel();
         }
     }
 
@@ -135,5 +126,10 @@ public abstract class MixinMinecraft {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 6))
     private Screen onTickScreenPassEvents(Minecraft mc) {
         return InvMove.instance.overrideGetScreen(mc);
+    }
+
+    @Inject(at = @At(value = "TAIL"), method = "resizeDisplay()V")
+    private void onResize(CallbackInfo info) {
+        Events.WindowResize.trigger();
     }
 }

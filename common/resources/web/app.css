@@ -251,6 +251,13 @@ input[type=text] {
     font-size: 16px;
 }
 
+input[type=number] {
+    border-width: 1px;
+    border-style: solid;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
 input.search {
     width: 300px;
 }
@@ -463,59 +470,84 @@ div.color-box {
     padding: 8px;
 }
 
+/* ColorPicker + */
+
 .color-picker {
     display: flex;
 }
 
 .color-picker > div.c2 {
-    width: 200px;
+    /*width: 200px;*/
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
     margin-left: 16px;
+    gap: 8px;
+}
+
+.color-picker > div.c2 > div.c3 {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+}
+
+.color-picker div.slider {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.color-picker div.slider > div {
+    text-align: center;
+    width: 12px;
+}
+
+.color-picker div.slider input[type=range] {
+    width: 120px;
+}
+
+.color-picker div.slider input[type=number] {
+    box-sizing: border-box;
+    width: 50px;
+    text-align: right;
 }
 
 .color-picker .color-picker-box {
+    box-sizing: border-box;
     border: 2px solid black;
-    display: inline-block;
-    height: 80px;
-    width: 100px;
+    display: flex;
+    height: 32px;
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.slidercontainer {
+.color-picker .color-picker-box div {
     box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.color-picker div.c4 {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     width: 100%;
 }
 
-.slider {
-    box-sizing: border-box;
-    appearance: none;
-    width: 100%;
-    height: 25px;
-    background: #d3d3d3;
-    outline: none;
-    opacity: 0.7;
-    transition: opacity .2s;
+.color-picker input[type=text] {
+    width: 80px;
 }
 
-.slider:hover {
-    opacity: 1;
-}
-
-.slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 25px;
-    height: 25px;
-    background: #333aa3;
-    cursor: pointer;
-}
-  
-.slider::-moz-range-thumb {
-    width: 25px;
-    height: 25px;
-    background: #333aa3;
-    cursor: pointer;
-}
+/* ColorPicker - */
 
 .group-setting {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -781,12 +813,12 @@ table.inputs-table {
         border-color: #333AA3;
     }
 
-    input[type=text] {
+    input[type=text], input[type=number] {
         background-color: #FFFFFF;
         border-color: #000000;
     }
 
-    input[type=text]:focus {
+    input[type=text]:focus, input[type=number]:focus {
         background-color: #FFFFFF;
         outline: 2px solid rgb(0, 145, 255);
     }
@@ -886,12 +918,12 @@ table.inputs-table {
         color: #BBBBBB;
     }
 
-    input[type=text] {
+    input[type=text], input[type=number] {
         background-color: #BBBBBB;
         border-color: #646464;
     }
 
-    input[type=text]:focus {
+    input[type=text]:focus, input[type=number]:focus {
         background-color: #DDDDDD;
         outline: 2px solid white;
     }

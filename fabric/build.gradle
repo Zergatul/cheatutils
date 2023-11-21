@@ -79,3 +79,7 @@ publishing {
 tasks.withType(JavaCompile).configureEach {
 	it.options.compilerArgs.add("-parameters")
 }
+
+loom {
+	accessWidenerPath = file("src/main/resources/cheatutils.accesswidener")
+}

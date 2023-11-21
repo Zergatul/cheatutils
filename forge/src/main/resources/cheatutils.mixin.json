@@ -12,6 +12,8 @@
     "common.accessors.AbstractContainerScreenAccessor",
     "common.accessors.ClientLevelAccessor",
     "common.accessors.ClientPacketListenerAccessor",
+    "common.accessors.CompositeRenderTypeAccessor",
+    "common.accessors.CompositeStateAccessor",
     "common.accessors.ConnectionAccessor",
     "common.accessors.CraftingScreenAccessor",
     "common.accessors.GuiAccessor",
@@ -24,6 +26,7 @@
     "common.accessors.MultiPlayerGameModeAccessor",
     "common.accessors.ProjectileAccessor",
     "common.accessors.ScreenAccessor",
+    "common.accessors.TextureStateShardAccessor",
     "common.accessors.WalkAnimationStateAccessor",
 
     "common.MixinAbstractContainerScreen",

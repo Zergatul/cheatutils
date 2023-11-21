@@ -7,13 +7,11 @@ import com.zergatul.cheatutils.forge.ArmorGuiOverlay;
 import com.zergatul.cheatutils.forge.BetterStatusEffectsGuiOverlay;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.*;
-import com.zergatul.cheatutils.modules.esp.EndCityChunks;
-import com.zergatul.cheatutils.modules.esp.FreeCam;
-import com.zergatul.cheatutils.modules.esp.LightLevel;
-import com.zergatul.cheatutils.modules.esp.ProjectilePath;
+import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.Exec;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.modules.visuals.AdvancedTooltips;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 import com.zergatul.cheatutils.modules.visuals.Fog;
@@ -65,7 +63,7 @@ public class ModMain {
         register(AutoCraft.instance);
         register(WorldScannerController.instance);
         register(BlockEspController.instance);
-        register(EntityEspController.instance);
+        register(EntityEsp.instance);
         register(ProjectilePath.instance);
         register(EndCityChunks.instance);
         register(GameTickScriptingController.instance);
@@ -100,6 +98,7 @@ public class ModMain {
         register(AreaMine.instance);
         register(ServerPlugins.instance);
         register(BedrockBreaker.instance);
+        register(RenderUtilities.instance);
     }
 
     private void register(Module module) {

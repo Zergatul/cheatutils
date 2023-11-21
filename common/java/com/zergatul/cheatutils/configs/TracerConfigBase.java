@@ -34,6 +34,10 @@ public class TracerConfigBase {
         }
     }
 
+    public double getOverlayMaxDistanceSqr() {
+        return maxDistance * maxDistance;
+    }
+
     protected void copyFromJsonTracerConfigBase(TracerConfigBase jsonConfig) {
 
         enabled = jsonConfig.enabled;
