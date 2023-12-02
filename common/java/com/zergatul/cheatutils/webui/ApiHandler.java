@@ -828,6 +828,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = config.enabled;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("bedrock-breaker", BedrockBreakerConfig.class) {
+            @Override
+            protected BedrockBreakerConfig getConfig() {
+                return ConfigStore.instance.getConfig().bedrockBreakerConfig;
+            }
+
+            @Override
+            protected void setConfig(BedrockBreakerConfig config) {
+                ConfigStore.instance.getConfig().bedrockBreakerConfig = config;
+            }
+        });
     }
 
     @Override

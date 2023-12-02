@@ -2,19 +2,25 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.configs.BedrockBreakerConfig;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.api.Root;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.BlockUtils;
+import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
@@ -23,9 +29,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class BedrockBreaker implements Module {
 
@@ -33,9 +41,10 @@ public class BedrockBreaker implements Module {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final Direction[] horizontal = new Direction[] { Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH };
+    private final Queue<BlockPos> queue = new ArrayDeque<>();
     private BlockPos bedrockPos;
     private BlockPos torchPos;
-    private State state;
+    private State state = State.INIT;
     private int tickCount;
 
     private BedrockBreaker() {
@@ -66,9 +75,38 @@ public class BedrockBreaker implements Module {
             return;
         }
 
-        bedrockPos = pos;
-        state = State.START;
-        tickCount = 0;
+        if (state == State.INIT) {
+            start(pos);
+        } else {
+            queue.add(pos.immutable());
+        }
+    }
+
+    public void processNearby() {
+        if (mc.player == null) {
+            return;
+        }
+        if (mc.level == null) {
+            return;
+        }
+
+        //Predicate<BlockPos> condition = pos -> Math.abs(pos.getX()) <= 100 && Math.abs(pos.getZ()) <= 100;
+        Predicate<BlockPos> condition = pos -> true;
+
+        Vec3 eyePos = mc.player.getEyePosition(1);
+        List<BlockPos> positions = NearbyBlockEnumerator.getPositions(eyePos, 4);
+        Map<Integer, List<BlockPos>> map = positions.stream().collect(Collectors.groupingBy(Vec3i::getY));
+        for (int y : map.keySet().stream().sorted(Comparator.reverseOrder()).toList()) {
+            List<BlockPos> layer = map.get(y);
+            if (layer.stream().anyMatch(p -> condition.test(p) && mc.level.getBlockState(p).is(Blocks.BEDROCK))) {
+                for (BlockPos pos : layer) {
+                    if (condition.test(pos) && mc.level.getBlockState(pos).is(Blocks.BEDROCK)) {
+                        queue.add(pos);
+                    }
+                }
+                break;
+            }
+        }
     }
 
     private void onClientTickEnd() {
@@ -78,6 +116,13 @@ public class BedrockBreaker implements Module {
         if (mc.level == null) {
             return;
         }
+
+        if (state == State.INIT) {
+            if (!queue.isEmpty()) {
+                start(queue.remove());
+            }
+        }
+
         if (bedrockPos == null) {
             return;
         }
@@ -221,7 +266,38 @@ public class BedrockBreaker implements Module {
                             Direction.DOWN,
                             getSequenceNumber()));
 
+                    BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
+                    if (config.replace) {
+                        Item item = Registries.ITEMS.getValue(new ResourceLocation(config.replaceBlockId));
+                        if (item == null) {
+                            reset(config.replaceBlockId + " is not valid block ID");
+                            return;
+                        }
+
+                        int replaceBlockSlot = findItem(item);
+                        if (replaceBlockSlot < 0) {
+                            reset("Cannot select replacement block");
+                            return;
+                        }
+
+                        BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(bedrockPos, false, BlockPlacingMethod.FROM_HORIZONTAL);
+                        if (plan == null) {
+                            reset("Cannot place replacement block");
+                            return;
+                        }
+
+                        mc.player.connection.send(new ServerboundSetCarriedItemPacket(replaceBlockSlot));
+                        mc.player.connection.send(new ServerboundUseItemOnPacket(
+                                InteractionHand.MAIN_HAND,
+                                new BlockHitResult(plan.target(), plan.direction(), plan.neighbour(), false),
+                                getSequenceNumber()));
+                    }
+
                     reset(null);
+
+                    if (!queue.isEmpty()) {
+                        start(queue.remove());
+                    }
                 } else {
                     if (tickCount > 20) {
                         reset("Wait for bedrock break timeout");
@@ -258,9 +334,23 @@ public class BedrockBreaker implements Module {
                 .toArray(Direction[]::new);
     }
 
+    private void start(BlockPos pos) {
+        if (mc.level == null) {
+            return;
+        }
+
+        if (!mc.level.getBlockState(pos).is(Blocks.BEDROCK)) {
+            return;
+        }
+
+        bedrockPos = pos;
+        state = State.START;
+        tickCount = 0;
+    }
+
     private void reset(String message) {
         bedrockPos = null;
-        state = State.START;
+        state = State.INIT;
         tickCount = 0;
 
         if (mc.player != null) {
@@ -273,6 +363,7 @@ public class BedrockBreaker implements Module {
     }
 
     private enum State {
+        INIT,
         START,
         WAIT_PISTON_EXTEND,
         WAIT_BEDROCK_BREAK

@@ -68,6 +68,7 @@ public class Config {
     public ServerPluginsConfig serverPluginsConfig = new ServerPluginsConfig();
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
     public EventsScriptingConfig eventsScriptingConfig = new EventsScriptingConfig();
+    public BedrockBreakerConfig bedrockBreakerConfig = new BedrockBreakerConfig();
 
     public Config() {
         esp = true;

@@ -7,4 +7,8 @@ public class BedrockBreakerApi {
     public void process() {
         BedrockBreaker.instance.process();
     }
+
+    public void processNearby() {
+        BedrockBreaker.instance.processNearby();
+    }
 }
