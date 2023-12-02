@@ -801,6 +801,10 @@ table.inputs-table {
         color: #000000;
     }
 
+    button.active {
+        background-color: #C6FFBA;
+    }
+
     button:hover:not(:disabled) {
         background-color: #BBBFFF;
     }
@@ -902,6 +906,10 @@ table.inputs-table {
         background-color: #4C5052;
         border-color: #5E6060;
         color: #BBBBBB;
+    }
+
+    button.active {
+        background-color: #3F523C;
     }
 
     button:hover:not(:disabled) {

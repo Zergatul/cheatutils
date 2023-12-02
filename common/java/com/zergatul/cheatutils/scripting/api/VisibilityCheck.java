@@ -12,6 +12,7 @@ public class VisibilityCheck {
             case "block-placer" -> new ApiType[] { ApiType.CURRENT_BLOCK, ApiType.BLOCK_PLACER };
             case "auto-disconnect" -> new ApiType[] { ApiType.ACTION, ApiType.DISCONNECT };
             case "villager-roller" -> new ApiType[] { ApiType.VILLAGER_ROLLER, ApiType.LOGGING };
+            case "events" -> new ApiType[] { ApiType.ACTION, ApiType.UPDATE, ApiType.EVENTS, ApiType.DISCONNECT };
             default -> null;
         };
     }

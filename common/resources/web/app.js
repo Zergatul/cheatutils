@@ -11,6 +11,7 @@ import { addComponent } from '/components/Loader.js'
                 newname: null,
                 current: 'main',
                 filtered: {},
+                statuses: {},
                 search: ''
             };
         },
@@ -68,6 +69,9 @@ import { addComponent } from '/components/Loader.js'
                     self.name = response.data;
                     document.title = self.name;
                     self.newname = self.name;
+                });
+                axios.get('/api/modules-status').then(response => {
+                    this.statuses = response.data;
                 });
             }
         }
@@ -152,6 +156,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('ServerPluginsConfig', ['server', 'plugins']);
     loadModule('HitboxSizeConfig', ['hitbox', 'size']);
     loadModule('BedrockBreakerConfig', ['bedrock', 'breaker']);
+    loadModule('EventsScriptingConfig', ['events', 'tick', 'scripting']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

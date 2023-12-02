@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.AutoDisconnect;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
+import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
@@ -250,6 +251,15 @@ public class ConfigStore {
             try {
                 Runnable script = ScriptController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
                 VillagerRoller.instance.setScript(script);
+            } catch (ParseException | ScriptCompileException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (config.eventsScriptingConfig.code != null) {
+            try {
+                Runnable script = ScriptController.instance.compileEvents(config.eventsScriptingConfig.code);
+                EventsScripting.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
                 e.printStackTrace();
             }

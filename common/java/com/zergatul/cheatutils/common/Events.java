@@ -10,6 +10,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 public class Events {
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler BeforeHandleKeyBindings = new SimpleEventHandler();
+    public static final SimpleEventHandler ClientTickBeforeHandleKeybindings = new SimpleEventHandler();
     public static final SimpleEventHandler AfterHandleKeyBindings = new SimpleEventHandler();
     public static final ParameterizedEventHandler<Connection> ClientPlayerLoggingIn = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientPlayerLoggingOut = new SimpleEventHandler();
@@ -33,7 +34,8 @@ public class Events {
     public static final SimpleEventHandler WorldUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
     public static final ParameterizedEventHandler<GatherTooltipComponentsEvent> GatherTooltipComponents = new ParameterizedEventHandler<>();
-    //public static final ParameterizedEventHandler<AbstractClientPlayer> PlayerAdded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<GetFieldOfViewEvent> GetFieldOfView = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderTooltipEvent> PreRenderTooltip = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<ContainerRenderLabelsEvent> ContainerRenderLabels = new ParameterizedEventHandler<>();

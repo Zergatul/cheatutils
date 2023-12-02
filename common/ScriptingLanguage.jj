@@ -5,8 +5,8 @@ javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatu
 */
 
 /*
-.\jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\ScriptingLanguage.jj
-.\javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
+.\jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.20\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.20\common\ScriptingLanguage.jj
+.\javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.20\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.20\common\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
 */
 
 PARSER_BEGIN(ScriptingLanguage)
@@ -253,7 +253,15 @@ void ContinueStatement():
 void Expression() :
 {}
 {
+  LOOKAHEAD(2) LambdaExpression()
+|
   ConditionalExpression()
+}
+
+void LambdaExpression() :
+{}
+{
+  "(" ")" "=>" Block()
 }
 
 void ConditionalExpression() :

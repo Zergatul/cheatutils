@@ -6,8 +6,8 @@ javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatu
 */
 
 /*
-.\jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\ScriptingLanguage.jj
-.\javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
+.\jjtree.bat -STATIC:false -MULTI:true -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.20\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.20\common\ScriptingLanguage.jj
+.\javacc.bat -STATIC:false -OUTPUT_DIRECTORY:C:\Users\Zergatul\source\repos\cheatutils-1.20\common\java\com\zergatul\cheatutils\scripting\generated C:\Users\Zergatul\source\repos\cheatutils-1.19.4\common\java\com\zergatul\cheatutils\scripting\generated\ScriptingLanguage.jj.jj
 */
 
 PARSER_BEGIN(ScriptingLanguage)
@@ -706,7 +706,41 @@ void Expression() :
 {/*@bgen(jjtree) Expression */
   try {
 /*@egen*/
+  LOOKAHEAD(2) LambdaExpression()
+|
   ConditionalExpression()/*@bgen(jjtree)*/
+  } catch (Throwable jjte000) {
+    if (jjtc000) {
+      jjtree.clearNodeScope(jjtn000);
+      jjtc000 = false;
+    } else {
+      jjtree.popNode();
+    }
+    if (jjte000 instanceof RuntimeException) {
+      throw (RuntimeException)jjte000;
+    }
+    if (jjte000 instanceof ParseException) {
+      throw (ParseException)jjte000;
+    }
+    throw (Error)jjte000;
+  } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+  }
+/*@egen*/
+}
+
+void LambdaExpression() :
+{/*@bgen(jjtree) LambdaExpression */
+  ASTLambdaExpression jjtn000 = new ASTLambdaExpression(JJTLAMBDAEXPRESSION);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) LambdaExpression */
+  try {
+/*@egen*/
+  "(" ")" "=>" Block()/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);

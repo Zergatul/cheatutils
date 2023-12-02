@@ -1,5 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-public class GameTickScriptingConfig extends ModuleConfig {
+public class EventsScriptingConfig extends ModuleConfig {
     public String code;
 }

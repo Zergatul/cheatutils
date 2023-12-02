@@ -37,6 +37,7 @@ public class Root {
     public static ServerPluginsApi serverPlugins = new ServerPluginsApi();
     public static HitboxSizeApi hitboxSize = new HitboxSizeApi();
     public static BedrockBreakerApi bedrockBreaker = new BedrockBreakerApi();
+    public static AreaMineApi areaMine = new AreaMineApi();
 
     // visuals
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();
@@ -47,6 +48,7 @@ public class Root {
 
     // scripting
     public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
+    public static EventsApi events = new EventsApi();
 
     // utility
     public static LockInputsApi lockInputs = new LockInputsApi();
@@ -68,4 +70,5 @@ public class Root {
     // specific
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();
     public static BlockPlacerApi blockPlacer = new BlockPlacerApi();
+    public static CurrentPlayerApi currentPlayer = new CurrentPlayerApi();
 }

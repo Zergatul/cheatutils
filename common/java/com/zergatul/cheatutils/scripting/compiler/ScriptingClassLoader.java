@@ -6,7 +6,7 @@ public class ScriptingClassLoader extends ClassLoader {
         super(ScriptingClassLoader.class.getClassLoader());
     }
 
-    public Class defineClass(String name, byte[] code) {
+    public Class<?> defineClass(String name, byte[] code) {
         return defineClass(name, code, 0, code.length);
     }
 }

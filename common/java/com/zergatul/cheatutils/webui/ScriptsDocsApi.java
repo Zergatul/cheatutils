@@ -108,7 +108,17 @@ public class ScriptsDocsApi extends ApiBase {
             return formatClass(clazz.getComponentType()) + "[]";
         }
 
-        String name = clazz == String.class ? "string" : (clazz == double.class ? "float" : clazz.getName());
+        String name;
+        if (clazz == Runnable.class) {
+            name = "Action";
+        } else if (clazz == String.class) {
+            name = "string";
+        } else if (clazz == double.class) {
+            name = "float";
+        } else {
+            name = clazz.getName();
+        }
+
         return "<span class=\"class\">" + name + "</span>";
     }
 
