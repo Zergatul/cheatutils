@@ -104,7 +104,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('ElytraTunnelConfig', ['elytra', 'tunnel']);
     loadModule('FreeCamConfig', ['freecam', 'camera']);
     loadModule('LockInputsConfig', ['lock', 'inputs']);
-    loadModule('MovementHackConfig', ['movement', 'hack']);
+    loadModule('MovementHackConfig', ['movement', 'hack', 'anti knockback', 'speed', 'highjump']);
     loadModule('ScaffoldConfig', ['scaffold']);
     loadModule('AdvancedTooltipsConfig', ['advanced', 'tooltips']);
     loadModule('FogConfig', ['fog']);
@@ -148,7 +148,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('VillagerRollerConfig', ['villager', 'roller']);
     loadModule('AutoHotbarConfig', ['auto', 'hotbar']);
     loadModule('InvMoveConfig', ['inventory', 'move', 'keys']);
-    loadModule('AreaMineConfig', ['area', 'mine']);
+    loadModule('AreaMineConfig', ['area', 'mine', 'nuker']);
     loadModule('ServerPluginsConfig', ['server', 'plugins']);
     loadModule('HitboxSizeConfig', ['hitbox', 'size']);
     loadModule('BedrockBreakerConfig', ['bedrock', 'breaker']);
