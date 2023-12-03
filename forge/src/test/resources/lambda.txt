@@ -1,0 +1,5 @@
+events.markUnchecked();
+events.onTick(() => {
+    events.check();
+});
+Assert.isTrue("Simple lambda", events.isChecked());

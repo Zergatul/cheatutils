@@ -2,8 +2,8 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <div class="module-main">
-        <h2 class="module-header">Bedrock Breaker (BETA)</h2>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Bedrock Breaker</h2>
         <div class="description">
             Breaks bedrock with single button click.
         </div>
@@ -25,6 +25,22 @@
                     <li>Press hotkey</li>
                     <li>If something goes wrong you should see system message</li>
                 </ul>
+                In this way you can break 1 bedrock by targeting it and pressing hotkey.<br>
+                Or you can use <b>bedrockBreaker.processNearby();</b> method to automatically break all nearby bedrock blocks at the highest Y level.
+            </div>
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.replace"
+                        @change="update()">
+                    <span>Replace bedrock with another block (to prevent items falling into the void)</span>
+                </label>
+            </div>
+            <div>
+                <div class="input-section">
+                    <span class="field-description">Replace block ID:</span>
+                    <input type="text" v-model="config.replaceBlockId" @change="update()">
+                </div>
             </div>
         </div>
     </div>

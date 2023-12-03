@@ -126,6 +126,7 @@ public interface ScriptingLanguageConstants {
     "\"{\"",
     "\"}\"",
     "\"=\"",
+    "\"=>\"",
     "\"?\"",
     "\":\"",
     "\"++\"",

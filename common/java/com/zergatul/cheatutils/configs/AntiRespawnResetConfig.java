@@ -1,5 +1,3 @@
 package com.zergatul.cheatutils.configs;
 
-public class AntiRespawnResetConfig {
-    public boolean enabled;
-}
+public class AntiRespawnResetConfig extends ModuleConfig {}

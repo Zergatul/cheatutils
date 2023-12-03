@@ -840,6 +840,14 @@ table.inputs-table {
         color: #ddd;
     }
 
+    button.active {
+        color: #61a2ff;
+    }
+
+    button:hover:not(:disabled) {
+        color: #ddd;
+    }
+
     .button-highlight {
         box-shadow: 0 0 8px 4px #64ad55;
     }
@@ -946,6 +954,10 @@ table.inputs-table {
 
     button {
         color: #BBBBBB;
+    }
+
+    button.active {
+        color: #2f81f7;
     }
 
     .button-highlight {
@@ -1057,4 +1069,5 @@ table.inputs-table {
     background-color: #2F81F7;
     color: #fff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
 }

@@ -12,18 +12,7 @@ public class AutoDisconnect implements Module {
 
     private AutoDisconnect() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
-        //Events.PlayerAdded.add(this::onPlayerAdded);
     }
-
-    /*private void onPlayerAdded(AbstractClientPlayer player) {
-        if (ConfigStore.instance.getConfig().autoDisconnectConfig.enabled) {
-            if (player instanceof RemotePlayer) {
-                Component component = MutableComponent.create(new LiteralContents("AutoDisconnect module: " + player.getName().getString()));
-                var packet = new ClientboundDisconnectPacket(component);
-                Minecraft.getInstance().player.connection.handleDisconnect(packet);
-            }
-        }
-    }*/
 
     public void setScript(Runnable script) {
         this.script = script;

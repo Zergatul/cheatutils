@@ -82,6 +82,19 @@ public abstract class MixinMinecraft {
         Events.ClientTickStart.trigger();
     }
 
+    @Inject(
+            method = "tick()V",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/client/Minecraft;overlay:Lnet/minecraft/client/gui/screens/Overlay;",
+                    shift = At.Shift.BEFORE,
+                    by = 1))
+    private void onBeforeHandleKeybindingsTick(CallbackInfo info) {
+        if (this.player != null) {
+            Events.ClientTickBeforeHandleKeybindings.trigger();
+        }
+    }
+
     @Inject(at = @At("TAIL"), method = "tick()V")
     private void onAfterTick(CallbackInfo info) {
         Events.ClientTickEnd.trigger();

@@ -38,6 +38,32 @@ public class ScriptingLanguageCompiler {
     public Runnable compile(String program) throws ParseException, ScriptCompileException {
         program += "\r\n"; // temp fix for error if last token is comment
 
+        InputStream stream = new ByteArrayInputStream(program.getBytes(StandardCharsets.UTF_8));
+        ScriptingLanguage parser = new ScriptingLanguage(stream);
+        ASTInput input = parser.Input();
+        Class<Runnable> dynamic = compileRunnable(visitor -> {
+            compile(input, visitor);
+        });
+
+        Constructor<Runnable> constructor;
+        try {
+            constructor = dynamic.getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new ScriptCompileException("Cannot find constructor for dynamic class.");
+        }
+
+        Runnable instance;
+        try {
+            instance = constructor.newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new ScriptCompileException("Cannot instantiate dynamic class.");
+        }
+
+        return instance;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<Runnable> compileRunnable(CompileConsumer consumer) throws ScriptCompileException {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         String name = "com/zergatul/scripting/dynamic/DynamicClass_" + counter.incrementAndGet();
         writer.visit(V1_5, ACC_PUBLIC, name, null, Type.getInternalName(Object.class), new String[] { Type.getInternalName(Runnable.class) });
@@ -53,9 +79,6 @@ public class ScriptingLanguageCompiler {
         methodVisitor = writer.visitMethod(ACC_PUBLIC, "run", "()V", null, null);
         methodVisitor.visitCode();
 
-        InputStream stream = new ByteArrayInputStream(program.getBytes(StandardCharsets.UTF_8));
-        ScriptingLanguage parser = new ScriptingLanguage(stream);
-
         MethodVisitorWrapper visitor = new MethodVisitorWrapper(methodVisitor);
         visitor.getLoops().push(
                 v -> {
@@ -64,7 +87,7 @@ public class ScriptingLanguageCompiler {
                 v -> {
                     throw new ScriptCompileException("Break statement without loop.");
                 });
-        compile(parser.Input(), visitor);
+        consumer.apply(visitor);
 
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(0, 0);
@@ -72,23 +95,7 @@ public class ScriptingLanguageCompiler {
         writer.visitEnd();
 
         byte[] code = writer.toByteArray();
-        Class<?> dynamic = classLoader.defineClass(name.replace('/', '.'), code);
-
-        Constructor<?> constructor;
-        try {
-            constructor = dynamic.getConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new ScriptCompileException("Cannot find constructor for dynamic class.");
-        }
-
-        Object instance;
-        try {
-            instance = constructor.newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new ScriptCompileException("Cannot instantiate dynamic class.");
-        }
-
-        return (Runnable) instance;
+        return (Class<Runnable>) classLoader.defineClass(name.replace('/', '.'), code);
     }
 
     private void compile(ASTInput input, CompilerMethodVisitor visitor) throws ScriptCompileException {
@@ -694,7 +701,44 @@ public class ScriptingLanguageCompiler {
             return compile(conditionalExpression, visitor);
         }
 
+        if (node instanceof ASTLambdaExpression lambdaExpression) {
+            return compile(lambdaExpression, visitor);
+        }
+
         throw new ScriptCompileException("ASTExpression case not implemented: " + node.getClass().getName() + ".");
+    }
+
+    private SType compile(ASTLambdaExpression lambdaExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {
+        if (lambdaExpression.jjtGetNumChildren() != 1) {
+            throw new ScriptCompileException("ASTLambdaExpression invalid children count.");
+        }
+
+        Node node = lambdaExpression.jjtGetChild(0);
+        if (node instanceof ASTBlock block) {
+            Class<Runnable> dynamic = compileRunnable(v -> {
+                compile(block, v);
+            });
+
+            Constructor<Runnable> constructor;
+            try {
+                constructor = dynamic.getConstructor();
+            } catch (NoSuchMethodException e) {
+                throw new ScriptCompileException("ASTLambdaExpression cannot find dynamic class constructor.");
+            }
+
+            visitor.visitTypeInsn(NEW, Type.getInternalName(dynamic));
+            visitor.visitInsn(DUP);
+            visitor.visitMethodInsn(
+                    INVOKESPECIAL,
+                    Type.getInternalName(dynamic),
+                    "<init>",
+                    Type.getConstructorDescriptor(constructor),
+                    false);
+
+            return SAction.instance;
+        }
+
+        throw new ScriptCompileException("ASTLambdaExpression: ASTBlock expected.");
     }
 
     private SType compile(ASTConditionalExpression conditionalExpression, CompilerMethodVisitor visitor) throws ScriptCompileException {

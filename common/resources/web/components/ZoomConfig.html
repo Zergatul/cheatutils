@@ -9,12 +9,14 @@
         </div>
         <div class="module-sections">
             <div class="description">
-                Use <b>Game Tick Scripting</b> module to assign key bindings. Example script:
+                Use <b>Events Scripting</b> module to assign key bindings. Example script:
                 <pre>
-if (input.isKeyDown("C"))
-    zoom.start(10, 0.2);
-else
-    zoom.stop();
+events.onHandleKeys(() => {
+    if (input.isKeyDown("C"))
+        zoom.start(10, 0.2);
+    else
+        zoom.stop();
+});
                 </pre>
                 Here:<br>
                 10 - final FOV<br>

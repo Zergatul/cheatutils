@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-public class StatusOverlayConfig {
-    public boolean enabled;
+public class StatusOverlayConfig extends ModuleConfig {
     public String code;
 }

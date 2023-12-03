@@ -59,6 +59,8 @@ public class ApiHandler implements HttpHandler {
         apis.add(new FakeWeatherSetRainApi());
         apis.add(new VillagerRollerCodeApi());
         apis.add(new VillagerRollerStatusApi());
+        apis.add(new EventsScriptingCodeApi());
+        apis.add(new ModulesStatusApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -812,6 +814,30 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(HitboxSizeConfig config) {
                 ConfigStore.instance.getConfig().hitboxSizeConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("events-scripting", EventsScriptingConfig.class) {
+            @Override
+            protected EventsScriptingConfig getConfig() {
+                return ConfigStore.instance.getConfig().eventsScriptingConfig;
+            }
+
+            @Override
+            protected void setConfig(EventsScriptingConfig config) {
+                ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = config.enabled;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("bedrock-breaker", BedrockBreakerConfig.class) {
+            @Override
+            protected BedrockBreakerConfig getConfig() {
+                return ConfigStore.instance.getConfig().bedrockBreakerConfig;
+            }
+
+            @Override
+            protected void setConfig(BedrockBreakerConfig config) {
+                ConfigStore.instance.getConfig().bedrockBreakerConfig = config;
             }
         });
     }

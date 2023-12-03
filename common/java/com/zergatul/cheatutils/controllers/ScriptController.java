@@ -32,6 +32,9 @@ public class ScriptController {
     private final ScriptingLanguageCompiler villagerRollerCompiler = new ScriptingLanguageCompiler(
             Root.class,
             VisibilityCheck.getTypes("villager-roller"));
+    private final ScriptingLanguageCompiler eventsCompiler = new ScriptingLanguageCompiler(
+            Root.class,
+            VisibilityCheck.getTypes("events"));
     private List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
     private ScriptController() {
@@ -151,6 +154,10 @@ public class ScriptController {
 
     public Runnable compileVillagerRoller(String code) throws ParseException, ScriptCompileException {
         return villagerRollerCompiler.compile(code);
+    }
+
+    public Runnable compileEvents(String code) throws ParseException, ScriptCompileException {
+        return eventsCompiler.compile(code);
     }
 
     public static class Script {

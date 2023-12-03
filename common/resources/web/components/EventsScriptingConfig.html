@@ -5,7 +5,7 @@
         <button style="width: 200px;" @click="showApiRef()">Show/Hide API Reference</button>
     </div>
     <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Game Tick Scripting</legend>
+        <legend>Events Scripting</legend>
         <div>
             <label class="switch-label">
                 <input type="checkbox" class="switch"
@@ -15,18 +15,7 @@
             </label>
         </div>
         <div>
-            <span class="text">This module may be removed in the future. Move your code to <b>Events Scripting</b> module like this:</span>
-            <pre>
-events.onHandleKeys(() => {
-    // your code
-});
-            </pre>
-            <span class="text">Or if you want to run something every game tick, not related to handling keys, use this:</span>
-            <pre>
-events.onTickEnd(() => {
-    // your code
-});
-            </pre>
+            <a href="https://github.com/Zergatul/cheatutils/wiki/Events-Scripting" target="_blank">Documentation</a>
         </div>
         <div v-show="!showRefs">
             <div>

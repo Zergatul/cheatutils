@@ -23,58 +23,59 @@ public interface ScriptingLanguageTreeConstants
   public int JJTBREAKSTATEMENT = 17;
   public int JJTCONTINUESTATEMENT = 18;
   public int JJTEXPRESSION = 19;
-  public int JJTCONDITIONALEXPRESSION = 20;
-  public int JJTCONDITIONALOREXPRESSION = 21;
-  public int JJTCONDITIONALANDEXPRESSION = 22;
-  public int JJTEQUALITYEXPRESSION = 23;
-  public int JJTRELATIONALEXPRESSION = 24;
-  public int JJTADDITIVEEXPRESSION = 25;
-  public int JJTMULTIPLICATIVEEXPRESSION = 26;
-  public int JJTUNARYEXPRESSION = 27;
-  public int JJTPREINCREMENTEXPRESSION = 28;
-  public int JJTPREDECREMENTEXPRESSION = 29;
-  public int JJTUNARYEXPRESSIONNOTPLUSMINUS = 30;
-  public int JJTPRIMARYEXPRESSION = 31;
-  public int JJTPRIMARYPREFIX = 32;
-  public int JJTALLOCATIONEXPRESSION = 33;
-  public int JJTPRIMARYSUFFIX = 34;
-  public int JJTARGUMENTS = 35;
-  public int JJTARGUMENTLIST = 36;
-  public int JJTNAME = 37;
-  public int JJTIDENTIFIER = 38;
-  public int JJTINCREMENT = 39;
-  public int JJTDECREMENT = 40;
-  public int JJTPLUS = 41;
-  public int JJTMINUS = 42;
-  public int JJTMULT = 43;
-  public int JJTDIV = 44;
-  public int JJTMOD = 45;
-  public int JJTFLOORDIV = 46;
-  public int JJTFLOORMOD = 47;
-  public int JJTEQUALITY = 48;
-  public int JJTINEQUALITY = 49;
-  public int JJTGREATERTHAN = 50;
-  public int JJTLESSTHAN = 51;
-  public int JJTGREATEREQUALS = 52;
-  public int JJTLESSEQUALS = 53;
-  public int JJTAND = 54;
-  public int JJTOR = 55;
-  public int JJTNOT = 56;
-  public int JJTTILDE = 57;
-  public int JJTLEFTBRACKET = 58;
-  public int JJTRIGHTBRACKET = 59;
-  public int JJTTYPE = 60;
-  public int JJTPRIMITIVETYPE = 61;
-  public int JJTBOOLEANTYPE = 62;
-  public int JJTINTTYPE = 63;
-  public int JJTFLOATTYPE = 64;
-  public int JJTSTRINGTYPE = 65;
-  public int JJTLITERAL = 66;
-  public int JJTINTEGERLITERAL = 67;
-  public int JJTFLOATINGPOINTLITERAL = 68;
-  public int JJTSTRINGLITERAL = 69;
-  public int JJTBOOLEANLITERAL = 70;
-  public int JJTNULLLITERAL = 71;
+  public int JJTLAMBDAEXPRESSION = 20;
+  public int JJTCONDITIONALEXPRESSION = 21;
+  public int JJTCONDITIONALOREXPRESSION = 22;
+  public int JJTCONDITIONALANDEXPRESSION = 23;
+  public int JJTEQUALITYEXPRESSION = 24;
+  public int JJTRELATIONALEXPRESSION = 25;
+  public int JJTADDITIVEEXPRESSION = 26;
+  public int JJTMULTIPLICATIVEEXPRESSION = 27;
+  public int JJTUNARYEXPRESSION = 28;
+  public int JJTPREINCREMENTEXPRESSION = 29;
+  public int JJTPREDECREMENTEXPRESSION = 30;
+  public int JJTUNARYEXPRESSIONNOTPLUSMINUS = 31;
+  public int JJTPRIMARYEXPRESSION = 32;
+  public int JJTPRIMARYPREFIX = 33;
+  public int JJTALLOCATIONEXPRESSION = 34;
+  public int JJTPRIMARYSUFFIX = 35;
+  public int JJTARGUMENTS = 36;
+  public int JJTARGUMENTLIST = 37;
+  public int JJTNAME = 38;
+  public int JJTIDENTIFIER = 39;
+  public int JJTINCREMENT = 40;
+  public int JJTDECREMENT = 41;
+  public int JJTPLUS = 42;
+  public int JJTMINUS = 43;
+  public int JJTMULT = 44;
+  public int JJTDIV = 45;
+  public int JJTMOD = 46;
+  public int JJTFLOORDIV = 47;
+  public int JJTFLOORMOD = 48;
+  public int JJTEQUALITY = 49;
+  public int JJTINEQUALITY = 50;
+  public int JJTGREATERTHAN = 51;
+  public int JJTLESSTHAN = 52;
+  public int JJTGREATEREQUALS = 53;
+  public int JJTLESSEQUALS = 54;
+  public int JJTAND = 55;
+  public int JJTOR = 56;
+  public int JJTNOT = 57;
+  public int JJTTILDE = 58;
+  public int JJTLEFTBRACKET = 59;
+  public int JJTRIGHTBRACKET = 60;
+  public int JJTTYPE = 61;
+  public int JJTPRIMITIVETYPE = 62;
+  public int JJTBOOLEANTYPE = 63;
+  public int JJTINTTYPE = 64;
+  public int JJTFLOATTYPE = 65;
+  public int JJTSTRINGTYPE = 66;
+  public int JJTLITERAL = 67;
+  public int JJTINTEGERLITERAL = 68;
+  public int JJTFLOATINGPOINTLITERAL = 69;
+  public int JJTSTRINGLITERAL = 70;
+  public int JJTBOOLEANLITERAL = 71;
+  public int JJTNULLLITERAL = 72;
 
 
   public String[] jjtNodeName = {
@@ -98,6 +99,7 @@ public interface ScriptingLanguageTreeConstants
     "BreakStatement",
     "ContinueStatement",
     "Expression",
+    "LambdaExpression",
     "ConditionalExpression",
     "ConditionalOrExpression",
     "ConditionalAndExpression",
@@ -152,4 +154,4 @@ public interface ScriptingLanguageTreeConstants
     "NullLiteral",
   };
 }
-/* JavaCC - OriginalChecksum=0cbd4340241b8f6018b61171aabd389a (do not edit this line) */
+/* JavaCC - OriginalChecksum=f2fc04bf56ffee428a1fdb102176bfbc (do not edit this line) */
