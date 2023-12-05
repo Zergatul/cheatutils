@@ -47,6 +47,11 @@ button + button {
     margin-left: 16px;
 }
 
+button + button + button {
+  width: unset !important;
+  min-width: 220px !important;
+}
+
 select {
     display: inline-block;
     box-sizing: border-box;
@@ -888,7 +893,7 @@ table.inputs-table {
     }
 
     div.section-description {
-        color: #ddd;
+        color: #ffe7b8;
     }
 
     div.input-description {
@@ -1001,7 +1006,7 @@ table.inputs-table {
     }
 
     div.section-description {
-        color: #ddd;
+        color: #ffe7b8;
     }
 
     div.input-description {
@@ -1070,4 +1075,12 @@ table.inputs-table {
     color: #fff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
+}
+
+legend .switch-label {
+  align-items: unset !important;
+}
+
+legend .switch-label span {
+  margin-bottom: 4px !important;
 }

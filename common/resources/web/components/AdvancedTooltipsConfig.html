@@ -2,23 +2,29 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Advanced Tooltips</legend>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.beeContainer"
-                    @change="update()">
-                <span>Show additional information in tooltips for Bee Hive and Bee Nest</span>
-            </label>
+    <div class="module-main">
+        <h2 class="module-header">Advanced Tooltips</h2>
+        <div class="description">
+            Show extra tooltip information in the inventory GUI.
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.repairCost"
-                    @change="update()">
-                <span>Repair cost. Can be useful for enchanting.</span>
-            </label>
-        </div>
-    </fieldset>
+        <fieldset style="padding-top: 16px;" v-if="config">
+            <legend>Configuration</legend>
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.beeContainer"
+                        @change="update()">
+                    <span>Show additional information in tooltips for Bee Hive and Bee Nest</span>
+                </label>
+            </div>
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.repairCost"
+                        @change="update()">
+                    <span>Repair cost. Can be useful for enchanting.</span>
+                </label>
+            </div>
+        </fieldset>
+    </div>
 </div>

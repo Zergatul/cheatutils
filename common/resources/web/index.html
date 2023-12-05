@@ -79,7 +79,7 @@
                   <button @click="current = 'area-mine'"          :class="{ faded: !filtered.AreaMine,          active: statuses.AreaMine }">Area Mine</button><br>
                   <button @click="current = 'server-plugins'"     :class="{ faded: !filtered.ServerPlugins,     active: statuses.ServerPlugins }">Server Plugins</button><br>
                   <button @click="current = 'hitbox-size'"        :class="{ faded: !filtered.HitboxSize,        active: statuses.HitboxSize }">HitBox Size</button><br>
-                  <button @click="current = 'bedrock-breaker'"    :class="{ faded: !filtered.BedrockBreaker,    active: statuses.BedrockBreaker }">Bedrock Breaker (BETA)</button>
+                  <button @click="current = 'bedrock-breaker'"    :class="{ faded: !filtered.BedrockBreaker,    active: statuses.BedrockBreaker }">Bedrock Breaker</button>
                 </div>
               </div>
 
@@ -117,6 +117,7 @@
                   <button @click="current = 'scripted-block-placer'" :class="{ faded: !filtered.ScriptedBlockPlacer, active: statuses.ScriptedBlockPlacer }">Block Placer</button><br>
                   <button @click="current = 'villager-roller'"    :class="{ faded: !filtered.VillagerRoller,    active: statuses.VillagerRoller }">Villager Roller</button><br>
                   <button @click="current = 'exec'"               :class="{ faded: !filtered.Exec,              active: statuses.Exec }">Exec</button><br>
+              <button @click="current = 'events-scripting'" :class="{ faded: !filtered.EventsScripting, active: statuses.EventsScripting }">Events Scripting</button><br>
                   <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting, active: statuses.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
                 </div>
               </div>

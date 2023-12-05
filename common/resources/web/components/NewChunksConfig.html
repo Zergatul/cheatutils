@@ -2,8 +2,8 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>New Chunks</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">New Chunks</h2>
         <div class="description">
             Uses liquid flows (water and lava) to determine if chunk is newly generated. Chunk status is displayed on Exploration Mini Map.<br>
             Red squares - old chunks (chunks contains non-source water/lava blocks)<br>
@@ -11,7 +11,8 @@
             Yelllow squares - relatively new chunks (chunk already had non-source water/lava, but new non-source water/lava blocks appeared)<br>
             Chunk without square - there is no water/lava to guess chunk status
         </div>
-        <div>
+
+        <div class="module-sections">
             <label class="switch-label">
                 <input type="checkbox" class="switch"
                     v-model="config.enabled"
@@ -19,5 +20,5 @@
                 <span>Enabled</span>
             </label>
         </div>
-    </fieldset>
+    </div>
 </div>
