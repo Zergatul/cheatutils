@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.mixins.forge;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -30,6 +31,8 @@ public class MixinLevelRenderer {
             Matrix4f projectionMatrix,
             CallbackInfo info
     ) {
+        GlStateTracker.save();
         Events.RenderWorldLast.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
+        GlStateTracker.restore();
     }
 }
