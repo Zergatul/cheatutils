@@ -175,6 +175,31 @@ public class MainApi {
         StatusOverlay.instance.addText(component1.append(" ").append(component2));
     }
 
+    @ApiVisibility(ApiType.OVERLAY)
+    public void addTextAtPosition(int x, int y, String color, String text) {
+        Integer colorInt = ColorUtils.parseColor(color);
+        MutableComponent component = MutableComponent.create(new LiteralContents(text));
+        if (colorInt != null) {
+            component = component.withStyle(Style.EMPTY.withColor(colorInt));
+        }
+        StatusOverlay.instance.addFreeText(x, y, component);
+    }
+
+    @ApiVisibility(ApiType.OVERLAY)
+    public void addTextAtPosition(int x, int y, String color1, String text1, String color2, String text2) {
+        Integer color1Int = ColorUtils.parseColor(color1);
+        Integer color2Int = ColorUtils.parseColor(color2);
+        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
+        if (color1Int != null) {
+            component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
+        }
+        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
+        if (color2Int != null) {
+            component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
+        }
+        StatusOverlay.instance.addFreeText(x, y, component1.append(" ").append(component2));
+    }
+
     public String getCoordinates() {
         return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
     }
