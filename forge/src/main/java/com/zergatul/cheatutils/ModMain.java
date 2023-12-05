@@ -11,6 +11,7 @@ import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.Exec;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.modules.utilities.DelayedRun;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.modules.visuals.AdvancedTooltips;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
@@ -99,6 +100,7 @@ public class ModMain {
         register(ServerPlugins.instance);
         register(BedrockBreaker.instance);
         register(RenderUtilities.instance);
+        register(DelayedRun.instance);
     }
 
     private void register(Module module) {
