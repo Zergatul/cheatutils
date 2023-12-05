@@ -82,6 +82,11 @@ public class InventoryApi {
         });
     }
 
+    @ApiVisibility(ApiType.ACTION)
+    public boolean equipOffHand(String itemId) {
+        return equip(itemId, itemStack -> EquipmentSlot.OFFHAND);
+    }
+
     @HelpText("Allows you to equip any item")
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipHead(String itemId) {

@@ -66,6 +66,7 @@ public class Root {
     public static TimeApi time = new TimeApi();
     public static ConvertApi convert = new ConvertApi();
     public static PacketApi packet = new PacketApi();
+    public static SoundApi sound = new SoundApi();
 
     // specific
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();
