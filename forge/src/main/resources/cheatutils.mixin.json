@@ -63,6 +63,7 @@
     "common.MixinPlayerRenderer",
     "common.MixinProjectileUtil",
     "common.MixinServerboundMovePlayerPacket",
+    "common.MixinSoundBufferLibrary",
     "common.MixinSlimeBlock",
     "common.MixinSoundManager",
     "common.MixinUser",

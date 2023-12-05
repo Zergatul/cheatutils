@@ -71,10 +71,12 @@ public class EventsScripting implements Module {
     }
 
     public void clear() {
-        onHandleKeys.clear();
-        onTickEnd.clear();
-        onPlayerAdded.clear();
-        onPlayerRemoved.clear();
+        RenderSystem.recordRenderCall(() -> {
+            onHandleKeys.clear();
+            onTickEnd.clear();
+            onPlayerAdded.clear();
+            onPlayerRemoved.clear();
+        });
     }
 
     public void addOnHandleKeys(Runnable runnable) {

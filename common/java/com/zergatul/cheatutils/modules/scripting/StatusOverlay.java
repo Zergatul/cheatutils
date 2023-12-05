@@ -24,6 +24,7 @@ public class StatusOverlay implements Module {
     private static final Minecraft mc = Minecraft.getInstance();
     private Runnable script;
     private Map<Align, List<MutableComponent>> texts = new HashMap<>();
+    private List<FreeText> freeTexts = new ArrayList<>();
     private HorizontalAlign hAlign;
     private VerticalAlign vAlign;
 
@@ -41,6 +42,10 @@ public class StatusOverlay implements Module {
 
     public void addText(MutableComponent message) {
         texts.get(Align.get(vAlign, hAlign)).add(message);
+    }
+
+    public void addFreeText(int x, int y, MutableComponent message) {
+        freeTexts.add(new FreeText(x, y, message));
     }
 
     public void setHorizontalAlign(HorizontalAlign align) {
@@ -65,6 +70,8 @@ public class StatusOverlay implements Module {
             texts.get(align).clear();
         }
 
+        freeTexts.clear();
+
         hAlign = HorizontalAlign.RIGHT;
         vAlign = VerticalAlign.BOTTOM;
         script.run();
@@ -85,7 +92,7 @@ public class StatusOverlay implements Module {
 
         for (Align align: Align.values()) {
             List<MutableComponent> list = texts.get(align);
-            if (list.size() == 0) {
+            if (list.isEmpty()) {
                 continue;
             }
             for (int i = 0; i < list.size(); i++) {
@@ -96,6 +103,12 @@ public class StatusOverlay implements Module {
                 Primitives.fill(poseStack, x, y, x + width, y + mc.font.lineHeight, -1873784752);
                 event.getGuiGraphics().drawString(mc.font, text, x, y, 16777215);
             }
+        }
+
+        for (FreeText text: freeTexts) {
+            int width = mc.font.width(text.component);
+            Primitives.fill(poseStack, text.x, text.y, text.x + width, text.y + mc.font.lineHeight, -1873784752);
+            event.getGuiGraphics().drawString(mc.font, text.component, text.x, text.y, 16777215);
         }
 
         poseStack.popPose();
@@ -169,4 +182,6 @@ public class StatusOverlay implements Module {
             };
         }
     }
+
+    private record FreeText(int x, int y, MutableComponent component) {}
 }

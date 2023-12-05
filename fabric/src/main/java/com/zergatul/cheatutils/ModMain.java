@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
+import com.zergatul.cheatutils.modules.utilities.DelayedRun;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.modules.visuals.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
@@ -86,6 +87,7 @@ public class ModMain implements ClientModInitializer {
         register(AreaMine.instance);
         register(ServerPlugins.instance);
         register(RenderUtilities.instance);
+        register(DelayedRun.instance);
 
         Events.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
     }
