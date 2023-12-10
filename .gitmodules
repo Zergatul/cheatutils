@@ -1,0 +1,3 @@
+[submodule "common/java-scripting-language"]
+	path = common/java-scripting-language
+	url = https://github.com/Zergatul/java-scripting-language.git

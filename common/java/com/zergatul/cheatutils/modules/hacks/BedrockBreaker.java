@@ -7,7 +7,7 @@ import com.zergatul.cheatutils.configs.BedrockBreakerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.scripting.api.Root;
+import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;

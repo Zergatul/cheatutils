@@ -1,0 +1,14 @@
+package com.zergatul.cheatutils.scripting.modules;
+
+import com.zergatul.cheatutils.modules.hacks.BedrockBreaker;
+
+public class BedrockBreakerApi {
+
+    public void process() {
+        BedrockBreaker.instance.process();
+    }
+
+    public void processNearby() {
+        BedrockBreaker.instance.processNearby();
+    }
+}

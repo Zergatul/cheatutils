@@ -1,2 +1,0 @@
-string s1 = "123456789";
-Assert.isTrue("length [1]", s1.length == 9);

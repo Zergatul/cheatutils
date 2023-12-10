@@ -3,11 +3,11 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.configs.ScriptsConfig;
-import com.zergatul.cheatutils.scripting.api.Root;
-import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
-import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
-import com.zergatul.cheatutils.scripting.compiler.ScriptingLanguageCompiler;
-import com.zergatul.cheatutils.scripting.generated.ParseException;
+import com.zergatul.cheatutils.scripting.CompilerFactory;
+import com.zergatul.cheatutils.scripting.VisibilityCheck;
+import com.zergatul.scripting.compiler.ScriptCompileException;
+import com.zergatul.scripting.compiler.ScriptingLanguageCompiler;
+import com.zergatul.scripting.generated.ParseException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,24 +17,18 @@ public class ScriptController {
 
     public static final ScriptController instance = new ScriptController();
 
-    private final ScriptingLanguageCompiler handleKeybindingsCompiler = new ScriptingLanguageCompiler(
-            Root.class,
-            VisibilityCheck.getTypes("handle-keybindings"));
-    private final ScriptingLanguageCompiler overlayCompiler = new ScriptingLanguageCompiler(
-            Root.class,
-            VisibilityCheck.getTypes("overlay"));
-    private final ScriptingLanguageCompiler blockPlacerCompiler = new ScriptingLanguageCompiler(
-            Root.class,
-            VisibilityCheck.getTypes("block-placer"));
-    private final ScriptingLanguageCompiler autoDisconnectCompiler = new ScriptingLanguageCompiler(
-            Root.class,
-            VisibilityCheck.getTypes("auto-disconnect"));
-    private final ScriptingLanguageCompiler villagerRollerCompiler = new ScriptingLanguageCompiler(
-            Root.class,
-            VisibilityCheck.getTypes("villager-roller"));
-    private final ScriptingLanguageCompiler eventsCompiler = new ScriptingLanguageCompiler(
-            Root.class,
-            VisibilityCheck.getTypes("events"));
+    private final ScriptingLanguageCompiler handleKeybindingsCompiler =
+            CompilerFactory.create(VisibilityCheck.getTypes("handle-keybindings"));
+    private final ScriptingLanguageCompiler overlayCompiler =
+            CompilerFactory.create(VisibilityCheck.getTypes("overlay"));
+    private final ScriptingLanguageCompiler blockPlacerCompiler =
+            CompilerFactory.create(VisibilityCheck.getTypes("block-placer"));
+    private final ScriptingLanguageCompiler autoDisconnectCompiler =
+            CompilerFactory.create(VisibilityCheck.getTypes("auto-disconnect"));
+    private final ScriptingLanguageCompiler villagerRollerCompiler =
+            CompilerFactory.create(VisibilityCheck.getTypes("villager-roller"));
+    private final ScriptingLanguageCompiler eventsCompiler =
+            CompilerFactory.create(VisibilityCheck.getTypes("events"));
     private List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
     private ScriptController() {

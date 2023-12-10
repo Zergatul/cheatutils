@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.scripting.api.ApiType;
-import com.zergatul.cheatutils.scripting.api.HelpText;
-import com.zergatul.cheatutils.scripting.api.Root;
-import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
+import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.HelpText;
+import com.zergatul.cheatutils.scripting.Root;
+import com.zergatul.cheatutils.scripting.VisibilityCheck;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpException;
 

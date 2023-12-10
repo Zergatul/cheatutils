@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.scripting.api.Root;
+import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.utils.IntList;
 import com.zergatul.cheatutils.utils.JavaRandom;
 import net.minecraft.util.RandomSource;
