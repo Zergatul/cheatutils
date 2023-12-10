@@ -51,16 +51,6 @@ public abstract class MixinLevelRenderer {
     }
 
     @Inject(
-            method = "renderSectionLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderType;clearRenderState()V")
-    )
-    private void onRenderChunkLayer(RenderType type, PoseStack poseStack, double p_172996_, double p_172997_, double p_172998_, Matrix4f projectionMatrix, CallbackInfo info) {
-        if (type == RenderType.solid()) {
-            Events.RenderSolidLayer.trigger(new RenderWorldLayerEvent(poseStack, projectionMatrix, Minecraft.getInstance().gameRenderer.getMainCamera()));
-        }
-    }
-
-    @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V", ordinal = 0),
             method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V")
     private void onAfterRenderEntities(

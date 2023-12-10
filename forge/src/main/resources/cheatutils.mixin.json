@@ -52,6 +52,7 @@
     "common.MixinKeyBindingListKeyEntry",
     "common.MixinLevelChunk",
     "common.MixinLevelRenderer",
+    "common.MixinLevelRenderer2",
     "common.MixinLivingEntity",
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
