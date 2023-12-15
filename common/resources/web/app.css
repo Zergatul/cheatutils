@@ -77,6 +77,17 @@ ul.list-base > li + li {
     border-top-style: solid;
 }
 
+ul.blocks-list > li > div.c0 {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    width: 20px;
+}
+
+ul.blocks-list > li > div.c0 > div {
+    cursor: pointer;
+}
+
 ul.blocks-list > li > div.c1,
 ul.entities-list > li > div.c1 {
     flex: 2;
@@ -122,6 +133,12 @@ ul.entities-list > li > div.c6 {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+ul.add-block-list > li > div.c0 {
+    display: flex;
+    align-items: center;
+    width: 32px;
 }
 
 ul.add-block-list > li > div.c1,
@@ -365,13 +382,13 @@ input[type=checkbox]:not(.switch) {
 }
 
 input[type=checkbox]:not(.switch):after {
-    width: 5px;
-    height: 9px;
+    width: 6px;
+    height: 11px;
     border: 2px solid var(--active-inner);
     border-top: 0;
     border-left: 0;
-    left: 7px;
-    top: 4px;
+    left: 9px;
+    top: 5px;
     transform: rotate(var(--r, 20deg));
     box-sizing: border-box;
 }
@@ -414,12 +431,14 @@ input[type=radio]:checked {
 
 /* checkbox end */
 
-div.edit-block-header {
-    display: flex;
-    flex-direction: column;
-    padding: 8px;
+table.edit-block-header {
+    margin: 8px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 16px;
+}
+
+table.edit-block-header div.btn {
+    cursor: pointer;
 }
 
 div.edit-block-settings {
@@ -871,6 +890,8 @@ table.inputs-table {
     input[type=radio] {
         --active: #333AA3;
         --background: #FFFFFF;
+        --disabled: #F6F8FF;
+        --disabled-inner: #E1E6F9;
     }
 
     ul.refs .method {
@@ -980,6 +1001,8 @@ table.inputs-table {
     input[type=radio] {
         --active: #15162B;
         --background: #717171;
+        --disabled: #F6F8FF;
+        --disabled-inner: #8DAFEF;
     }
 
     ul.refs .method {

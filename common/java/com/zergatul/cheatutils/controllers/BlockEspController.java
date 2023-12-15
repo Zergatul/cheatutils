@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.BlockTracerConfig;
+import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.TracerConfigBase;
+import com.zergatul.cheatutils.configs.EspConfigBase;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.BlockOverlayRenderer;
 import com.zergatul.cheatutils.render.LineRenderer;
@@ -44,12 +44,12 @@ public class BlockEspController {
         BlockOverlayRenderer overlayRenderer = RenderUtilities.instance.getBlockOverlayRenderer();
 
         List<BlockPos> overlayList = new ArrayList<>();
-        for (BlockTracerConfig config: ConfigStore.instance.getConfig().blocks.configs) {
+        for (BlockEspConfig config: ConfigStore.instance.getConfig().blocks.getBlockConfigs()) {
             if (!config.enabled) {
                 continue;
             }
 
-            Set<BlockPos> set = BlockFinderController.instance.blocks.get(config.block);
+            Set<BlockPos> set = BlockFinderController.instance.blocks.get(config);
             if (set == null) {
                 continue;
             }
@@ -98,7 +98,7 @@ public class BlockEspController {
         renderer.end();
     }
 
-    private void renderBlockBounding(LineRenderer renderer, BlockPos pos, BlockTracerConfig config) {
+    private void renderBlockBounding(LineRenderer renderer, BlockPos pos, BlockEspConfig config) {
         int x1 = pos.getX();
         int y1 = pos.getY();
         int z1 = pos.getZ();
@@ -165,7 +165,7 @@ public class BlockEspController {
                 x1, y1, z2);
     }
 
-    private void drawTracer(LineRenderer renderer, double tx, double ty, double tz, double x, double y, double z, TracerConfigBase config) {
+    private void drawTracer(LineRenderer renderer, double tx, double ty, double tz, double x, double y, double z, EspConfigBase config) {
         float r = config.tracerColor.getRed() / 255f;
         float g = config.tracerColor.getGreen() / 255f;
         float b = config.tracerColor.getBlue() / 255f;

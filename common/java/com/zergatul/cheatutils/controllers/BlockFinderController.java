@@ -2,7 +2,8 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.BlockTracerConfig;
+import com.zergatul.cheatutils.configs.BlockEspConfig;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
 import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
@@ -25,7 +26,7 @@ public class BlockFinderController {
     public static final BlockFinderController instance = new BlockFinderController();
 
     // all modification to blocks are done in eventLoop thread
-    public final Map<Block, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
+    public final Map<BlockEspConfig, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
 
     private final Logger logger = LogManager.getLogger(BlockFinderController.class);
     private final Object loopWaitEvent = new Object();
@@ -77,7 +78,7 @@ public class BlockFinderController {
                         }
                     }
                     counter.startLoad();
-                    while (queue.size() > 0) {
+                    while (!queue.isEmpty()) {
                         Runnable process = queue.remove();
                         process.run();
                         Thread.yield();
@@ -104,21 +105,21 @@ public class BlockFinderController {
 
     public void clear() {
         addToQueue(() -> {
-            for (Block block: blocks.keySet()) {
-                blocks.put(block, ConcurrentHashMap.newKeySet());
+            for (BlockEspConfig config: blocks.keySet()) {
+                blocks.put(config, ConcurrentHashMap.newKeySet());
             }
         });
     }
 
-    public void addConfig(BlockTracerConfig config) {
+    public void addConfig(BlockEspConfig config) {
         addToQueue(() -> {
-            blocks.put(config.block, ConcurrentHashMap.newKeySet());
-            scan(config.block);
+            blocks.put(config, ConcurrentHashMap.newKeySet());
+            scan(config);
         });
     }
 
-    public void removeConfig(BlockTracerConfig config) {
-        addToQueue(() -> blocks.remove(config.block));
+    public void removeConfig(BlockEspConfig config) {
+        addToQueue(() -> blocks.remove(config));
     }
 
     public void removeAllConfigs() {
@@ -144,6 +145,7 @@ public class BlockFinderController {
 
     private void scanChunk(LevelChunk chunk) {
         addToQueue(() -> {
+            Map<Block, BlockEspConfig> map = ConfigStore.instance.getConfig().blocks.getMap();
             LevelChunkMixinInterface mixinChunk = (LevelChunkMixinInterface) chunk;
             int minY = mixinChunk.getDimension().getMinY();
             int xc = chunk.getPos().x << 4;
@@ -157,7 +159,7 @@ public class BlockFinderController {
                     for (int y = minY; y <= height; y++) {
                         pos.setY(y);
                         BlockState state = chunk.getBlockState(pos);
-                        checkBlock(state, pos);
+                        checkBlock(state, pos, map);
                     }
                 }
             }
@@ -179,18 +181,18 @@ public class BlockFinderController {
             for (Set<BlockPos> set: blocks.values()) {
                 set.remove(event.pos());
             }
-            checkBlock(event.state(), event.pos());
+            checkBlock(event.state(), event.pos(), ConfigStore.instance.getConfig().blocks.getMap());
         });
     }
 
-    private void scan(Block block) {
+    private void scan(BlockEspConfig config) {
         for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
-            scanChunkForBlock(pair.getFirst(), pair.getSecond(), block);
+            scanChunkForBlock(pair.getFirst(), pair.getSecond(), config);
         }
     }
 
-    private void scanChunkForBlock(Dimension dimension, ChunkAccess chunk, Block block) {
-        Set<BlockPos> set = blocks.get(block);
+    private void scanChunkForBlock(Dimension dimension, ChunkAccess chunk, BlockEspConfig config) {
+        Set<BlockPos> set = blocks.get(config);
         int minY = dimension.getMinY();
         int xc = chunk.getPos().x << 4;
         int zc = chunk.getPos().z << 4;
@@ -203,22 +205,28 @@ public class BlockFinderController {
                 for (int y = minY; y <= height; y++) {
                     pos.setY(y);
                     BlockState state = chunk.getBlockState(pos);
-                    if (state.getBlock() == block) {
-                        set.add(pos.immutable());
+                    Block block = state.getBlock();
+                    for (int i = 0; i < config.blocks.size(); i++) {
+                        if (block == config.blocks.get(i)) {
+                            set.add(pos.immutable());
+                        }
                     }
                 }
             }
         }
     }
 
-    private void checkBlock(BlockState state, BlockPos pos) {
+    private void checkBlock(BlockState state, BlockPos pos, Map<Block, BlockEspConfig> map) {
         if (state.isAir()) {
             return;
         }
 
-        Set<BlockPos> set = blocks.get(state.getBlock());
-        if (set != null) {
-            set.add(pos.immutable());
+        BlockEspConfig config = map.get(state.getBlock());
+        if (config != null) {
+            Set<BlockPos> set = blocks.get(config);
+            if (set != null) {
+                set.add(pos.immutable());
+            }
         }
     }
 

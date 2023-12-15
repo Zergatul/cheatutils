@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.configs.EntityEspConfig;
 import org.apache.http.HttpException;
 
 public class EntityConfigMoveApi extends ApiBase {
@@ -25,7 +25,7 @@ public class EntityConfigMoveApi extends ApiBase {
             return gson.toJson(new Response(false, "Invalid direction"));
         }
 
-        ImmutableList<EntityTracerConfig> list = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
         int index = list.indexOf(c -> c.clazz == request.clazz);
         if (index < 0) {
             return gson.toJson(new Response(false, "Cannot find class in list"));
@@ -49,7 +49,7 @@ public class EntityConfigMoveApi extends ApiBase {
         return gson.toJson(new Response(true, null));
     }
 
-    public record Request(String direction, Class clazz) {}
+    public record Request(String direction, Class<?> clazz) {}
 
     public record Response(boolean ok, String message) {}
 }

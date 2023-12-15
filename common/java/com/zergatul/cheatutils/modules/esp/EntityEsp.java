@@ -6,8 +6,8 @@ import com.zergatul.cheatutils.collections.FloatList;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
-import com.zergatul.cheatutils.configs.TracerConfigBase;
+import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.configs.EspConfigBase;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.TextureStateShardAccessor;
@@ -36,8 +36,8 @@ public class EntityEsp implements Module {
     public static final EntityEsp instance = new EntityEsp();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Map<EntityTracerConfig, List<BufferedVerticesEntry>> overlayBufferedVertices = new HashMap<>();
-    private final Map<EntityTracerConfig, List<BufferedVerticesEntry>> outlineBufferedVertices = new HashMap<>();
+    private final Map<EntityEspConfig, List<BufferedVerticesEntry>> overlayBufferedVertices = new HashMap<>();
+    private final Map<EntityEspConfig, List<BufferedVerticesEntry>> outlineBufferedVertices = new HashMap<>();
 
     private EntityEsp() {
         Events.RenderWorldLast.add(this::render);
@@ -45,7 +45,7 @@ public class EntityEsp implements Module {
 
     public MultiBufferSource onRenderEntityModifyBufferSource(Entity entity, MultiBufferSource bufferSource) {
         if (mc.player != null && ConfigStore.instance.getConfig().esp) {
-            for (EntityTracerConfig config : ConfigStore.instance.getConfig().entities.configs) {
+            for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
                 if (!config.enabled) {
                     continue;
                 }
@@ -72,7 +72,7 @@ public class EntityEsp implements Module {
         if (mc.player == null) {
             return false;
         }
-        for (EntityTracerConfig config : ConfigStore.instance.getConfig().entities.configs) {
+        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
             if (config.useMinecraftOutline() && config.isValidEntity(entity) && entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr()) {
                 return true;
             }
@@ -84,7 +84,7 @@ public class EntityEsp implements Module {
         if (!ConfigStore.instance.getConfig().esp) {
             return null;
         }
-        for (EntityTracerConfig config : ConfigStore.instance.getConfig().entities.configs) {
+        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
             if (config.useMinecraftOutline() && config.isValidEntity(entity)) {
                 return config.glowColor.getRGB();
             }
@@ -112,7 +112,7 @@ public class EntityEsp implements Module {
         LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
         renderer.begin(event, false);
 
-        ImmutableList<EntityTracerConfig> list = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
         for (Entity entity : mc.player.clientLevel.entitiesForRendering()) {
             if (entity instanceof LocalPlayer) {
                 continue;
@@ -127,7 +127,7 @@ public class EntityEsp implements Module {
             double dz = entity.getZ() - playerZ;
             double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-            EntityTracerConfig config = list.stream().filter(c ->
+            EntityEspConfig config = list.stream().filter(c ->
                     c.enabled &&
                     c.drawOutline &&
                     c.isValidEntity(entity) &&
@@ -238,7 +238,7 @@ public class EntityEsp implements Module {
     private RawLinesRenderer rawLines;
     private boolean drawWireframe;
 
-    private static void renderEntityBounding(LineRenderer renderer, float partialTicks, Entity entity, EntityTracerConfig config) {
+    private static void renderEntityBounding(LineRenderer renderer, float partialTicks, Entity entity, EntityEspConfig config) {
         Vec3 pos = entity.getPosition(partialTicks);
         AABB box = entity.getDimensions(entity.getPose()).makeBoundingBox(pos);
 
@@ -253,7 +253,7 @@ public class EntityEsp implements Module {
                 r, g, b, a);
     }
 
-    private static void drawTracer(LineRenderer renderer, double tx, double ty, double tz, Vec3 pos, TracerConfigBase config) {
+    private static void drawTracer(LineRenderer renderer, double tx, double ty, double tz, Vec3 pos, EspConfigBase config) {
         float r = config.tracerColor.getRed() / 255f;
         float g = config.tracerColor.getGreen() / 255f;
         float b = config.tracerColor.getBlue() / 255f;
@@ -264,7 +264,7 @@ public class EntityEsp implements Module {
 
     private void drawOverlays(RenderWorldLastEvent event) {
         EntityOverlayRenderer renderer = RenderUtilities.instance.getEntityOverlayRenderer();
-        for (EntityTracerConfig config: overlayBufferedVertices.keySet()) {
+        for (EntityEspConfig config: overlayBufferedVertices.keySet()) {
             renderer.begin();
 
             List<BufferedVerticesEntry> entries = overlayBufferedVertices.get(config);
@@ -320,7 +320,7 @@ public class EntityEsp implements Module {
 
     private void drawOutlines(RenderWorldLastEvent event) {
         EntityOutlineRenderer renderer = RenderUtilities.instance.getEntityOutlineRenderer();
-        for (EntityTracerConfig config: outlineBufferedVertices.keySet()) {
+        for (EntityEspConfig config: outlineBufferedVertices.keySet()) {
             renderer.begin();
 
             List<BufferedVerticesEntry> entries = outlineBufferedVertices.get(config);
@@ -376,12 +376,12 @@ public class EntityEsp implements Module {
 
     public static class MultiBufferSourceWrapper implements MultiBufferSource {
 
-        private final EntityTracerConfig config;
+        private final EntityEspConfig config;
         private final MultiBufferSource source;
         private final boolean overlay;
         private final boolean outline;
 
-        public MultiBufferSourceWrapper(EntityTracerConfig config, MultiBufferSource source, boolean overlay, boolean outline) {
+        public MultiBufferSourceWrapper(EntityEspConfig config, MultiBufferSource source, boolean overlay, boolean outline) {
             this.config = config;
             this.source = source;
             this.overlay = overlay;
@@ -414,7 +414,7 @@ public class EntityEsp implements Module {
         private FloatList outlineList;
 
         public VertexConsumerWrapper(
-                EntityTracerConfig config,
+                EntityEspConfig config,
                 ResourceLocation texture,
                 VertexConsumer consumer,
                 boolean overlay,

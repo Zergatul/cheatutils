@@ -18,6 +18,11 @@ public class ImmutableList<E> implements Iterable<E> {
         this(collection.toArray());
     }
 
+    @SafeVarargs
+    public static <E> ImmutableList<E> from(E... items) {
+        return new ImmutableList<>(items);
+    }
+
     private ImmutableList(Object[] array) {
         this.array = array;
     }
@@ -37,6 +42,24 @@ public class ImmutableList<E> implements Iterable<E> {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ImmutableList<?> other) {
+            int size = this.size();
+            if (size != other.size()) {
+                return false;
+            }
+            for (int i = 0; i < size; i++) {
+                if (!Objects.equals(this.array[i], other.array[i])) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @SuppressWarnings("unchecked")

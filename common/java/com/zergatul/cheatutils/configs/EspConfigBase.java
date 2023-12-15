@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import java.awt.*;
 
-public class TracerConfigBase {
+public class EspConfigBase {
 
     protected static final double DefaultMaxDistance = 1000;
 
@@ -38,7 +38,7 @@ public class TracerConfigBase {
         return maxDistance * maxDistance;
     }
 
-    protected void copyFromJsonTracerConfigBase(TracerConfigBase jsonConfig) {
+    protected void copyFromJsonTracerConfigBase(EspConfigBase jsonConfig) {
 
         enabled = jsonConfig.enabled;
 

@@ -44,16 +44,20 @@ function createComponent(template) {
     let args = {
         template: template,
         created() {
-            let self = this;
-            blockInfoPromise.then(function (info) {
-                self.blocksList = info.blocksList;
-                self.blocksMap = info.blocksMap;
+            blockInfoPromise.then(info => {
+                this.blocksList = info.blocksList;
+                this.blocksMap = info.blocksMap;
             });
-            axios.get('/api/blocks').then(function (response) {
-                self.blocksConfigList = response.data;
-                self.blocksConfigMap = {};
-                self.blocksConfigList.forEach(c => self.blocksConfigMap[c.block] = c);
-                self.$nextTick(function () {
+            axios.get('/api/blocks').then(response => {
+                this.blocksConfigList = response.data;
+
+                this.blocksConfigMap = {};
+                this.blocksConfigList.forEach(c => {
+                    c.blocks.forEach(b => {
+                        this.blocksConfigMap[b] = c;
+                    });
+                });
+                this.$nextTick(() => {
                     onBlocksConfigRendered();
                 });
             });
@@ -66,12 +70,23 @@ function createComponent(template) {
                 blocksMap: null,
                 blocksConfigList: null,
                 blocksConfigMap: null,
-                selectedConfig: null
+                selectedConfig: null,
+                blockListFiltered: null
             };
         },
         methods: {
+            editGroup() {
+                this.state = 'edit-group';
+                this.filterBlockList();
+            },
+            backToEdit() {
+                this.state = 'edit';
+            },
             backToList() {
                 this.state = 'list';
+                this.blocksConfigList.forEach(config => {
+                    config.expanded = false;
+                })
                 this.$nextTick(function () {
                     onBlocksConfigRendered();
                 });
@@ -106,13 +121,13 @@ function createComponent(template) {
                 this.state = 'edit';
                 if (this.blocksConfigMap[id]) {
                     this.selectedConfig = this.blocksConfigMap[id];
+                    this.selectedConfig.expanded = false;
                 } else {
                     this.selectedConfig = null;
-                    let self = this;
-                    axios.post('/api/blocks', { block: id }).then(function (response) {
-                        self.selectedConfig = response.data;
-                        self.blocksConfigList.push(self.selectedConfig);
-                        self.blocksConfigMap[id] = self.selectedConfig;
+                    axios.post('/api/blocks-add', id).then(response => {
+                        this.selectedConfig = response.data;
+                        this.blocksConfigList.push(this.selectedConfig);
+                        this.blocksConfigMap[id] = this.selectedConfig;
                     });
                 }
             },
@@ -151,12 +166,35 @@ function createComponent(template) {
                 if (config.outlineMaxDistance == '') {
                     config.outlineMaxDistance = null;
                 }
-                axios.put('/api/blocks/' + encodeURIComponent(config.block), config);
+                axios.post('/api/blocks', config);
+            },
+            groupEditShouldShowCheckbox(block) {
+                return this.blocksConfigMap[block.id] == null || this.blocksConfigMap[block.id] == this.selectedConfig;
+            },
+            groupEditGetCheckboxSelected(block) {
+                return this.blocksConfigMap[block.id] == this.selectedConfig;
+            },
+            groupEditSetCheckboxSelected(block, event) {
+                if (event.target.checked) {
+                    if (!this.selectedConfig.blocks.some(id => id == block.id)) {
+                        this.selectedConfig.blocks.push(block.id);
+                        this.blocksConfigMap[block.id] = this.selectedConfig;
+                        this.update(this.selectedConfig);
+                    }
+                } else {
+                    this.selectedConfig.blocks = this.selectedConfig.blocks.filter(id => id != block.id);
+                    delete this.blocksConfigMap[block.id];
+                    this.update(this.selectedConfig);
+                }
+            },
+            groupEditIsCheckboxDisabled(block) {
+                return this.selectedConfig.blocks.length == 1 && this.groupEditGetCheckboxSelected(block);
             }
         }
     };
     addComponent(args, 'ColorBox');
     addComponent(args, 'ColorPicker');
+    addComponent(args, 'BlockRenderer');
     return args;
 }
 

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.utils.EntityUtils;
@@ -77,7 +77,7 @@ public class EntitiesApi {
         return count;
     }
 
-    private EntityTracerConfig getConfig(String className) {
+    private EntityEspConfig getConfig(String className) {
         var list = ConfigStore.instance.getConfig().entities.configs;
         return list.stream()
                 .filter(c -> c.clazz.getName().equals(ClassRemapper.toObf(className)))

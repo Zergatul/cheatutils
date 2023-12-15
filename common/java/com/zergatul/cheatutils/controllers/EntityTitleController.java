@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.controllers;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -12,11 +11,10 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTitleConfig;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.GlyphFontRenderer;
 import com.zergatul.cheatutils.font.TextBounds;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
-import com.zergatul.cheatutils.render.GlStates;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -108,7 +106,7 @@ public class EntityTitleController {
             return;
         }
 
-        ImmutableList<EntityTracerConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
 
         Vec3 view = event.getCamera().getPosition();
         for (Entity entity : mc.level.entitiesForRendering()) {
@@ -124,7 +122,7 @@ public class EntityTitleController {
             boolean showHp = false;
             boolean showEquippedItems = false;
             boolean showOwner = false;
-            for (EntityTracerConfig entityConfig : entityConfigs) {
+            for (EntityEspConfig entityConfig : entityConfigs) {
                 if (!entityConfig.enabled || !entityConfig.drawTitles) {
                     continue;
                 }

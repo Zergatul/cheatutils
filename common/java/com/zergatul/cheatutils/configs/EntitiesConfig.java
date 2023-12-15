@@ -4,13 +4,13 @@ import com.zergatul.cheatutils.collections.ImmutableList;
 
 public class EntitiesConfig {
 
-    public ImmutableList<EntityTracerConfig> configs = new ImmutableList<>();
+    public ImmutableList<EntityEspConfig> configs = new ImmutableList<>();
 
-    public void add(EntityTracerConfig config) {
+    public void add(EntityEspConfig config) {
         configs = configs.add(config);
     }
 
-    public void remove(EntityTracerConfig config) {
+    public void remove(EntityEspConfig config) {
         configs = configs.remove(config);
     }
 }

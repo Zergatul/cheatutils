@@ -162,18 +162,18 @@ public class EntityUtils {
 
     public static class EntityInfo {
 
-        public Class clazz;
+        public Class<?> clazz;
         public boolean isInterface;
         public String simpleName;
-        public List<Class> baseClasses;
-        public List<Class> interfaces;
+        public List<Class<?>> baseClasses;
+        public List<Class<?>> interfaces;
         public String id;
 
-        public EntityInfo(Class clazz) throws Exception {
+        public EntityInfo(Class<?> clazz) throws Exception {
             this(clazz, null);
         }
 
-        public EntityInfo(Class clazz, String id) throws Exception {
+        public EntityInfo(Class<?> clazz, String id) throws Exception {
             if (clazz.isInterface()) {
                 this.clazz = clazz;
                 simpleName = getSimpleName(clazz);
@@ -213,7 +213,7 @@ public class EntityUtils {
             }
         }
 
-        private String getSimpleName(Class clazz) {
+        private String getSimpleName(Class<?> clazz) {
             String rawName = ClassRemapper.fromObf(clazz.getName());
             int index = rawName.lastIndexOf('.');
             if (index < 0) {

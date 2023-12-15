@@ -55,7 +55,7 @@ public class GenerateEntityMappingApi extends ApiBase {
         while (matcher.find()) {
             String obf = matcher.group("obf").replace('/', '.');
             String norm = matcher.group("norm").replace('/', '.');
-            Class clazz;
+            Class<?> clazz;
             try {
                 clazz = Class.forName(norm, false, Minecraft.class.getClassLoader());
             } catch (Throwable e) {

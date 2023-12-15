@@ -125,18 +125,24 @@ function createComponent(template) {
             };
 
             self.setColorRgb = (r, g, b, a) => {
+                let oldValue = self.color;
                 self.color = Color.rgbToInt32(r, g, b, a);
                 updateColorElements();
                 refreshInputs(r, g, b, ...Color.rgbToHsv(r, g, b), a);
-                self.$emit('update:modelValue', self.color);
+                if (self.color != oldValue) {
+                    self.$emit('update:modelValue', self.color);
+                }
             };
 
             self.setColorHsv = (h, s, v, a) => {
+                let oldValue = self.color;
                 let [r, g, b] = Color.hsvToRgb(h, s, v);
                 self.color = Color.rgbToInt32(r, g, b, a);
                 updateColorElements();
                 refreshInputs(r, g, b, h, s, v, a);
-                self.$emit('update:modelValue', self.color);
+                if (self.color != oldValue) {
+                    self.$emit('update:modelValue', self.color);
+                }
             };
 
             canvas.addEventListener('click', function (event) {

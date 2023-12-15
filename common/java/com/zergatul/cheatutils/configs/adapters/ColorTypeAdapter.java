@@ -12,7 +12,7 @@ public class ColorTypeAdapter extends TypeAdapter<Color> {
     @Override
     public void write(JsonWriter out, Color value) throws IOException {
         if (value == null) {
-            out.nullValue();
+            out.value(0);
         } else {
             out.value(value.getRGB());
         }
@@ -22,8 +22,7 @@ public class ColorTypeAdapter extends TypeAdapter<Color> {
     public Color read(JsonReader in) throws IOException {
         JsonToken token = in.peek();
         if (token == JsonToken.NULL) {
-            in.nextNull();
-            return null;
+            return Color.BLACK;
         } else {
             return new Color(in.nextInt(), true);
         }

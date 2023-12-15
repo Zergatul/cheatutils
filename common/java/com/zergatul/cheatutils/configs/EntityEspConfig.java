@@ -4,9 +4,9 @@ import net.minecraft.world.entity.Entity;
 
 import java.awt.*;
 
-public class EntityTracerConfig extends TracerConfigBase {
+public class EntityEspConfig extends EspConfigBase {
 
-    public Class clazz;
+    public Class<?> clazz;
     public boolean glow;
     public Color glowColor;
     public Double glowMaxDistance;
@@ -33,7 +33,7 @@ public class EntityTracerConfig extends TracerConfigBase {
         }
     }
 
-    public void copyFrom(EntityTracerConfig jsonConfig) {
+    public void copyFrom(EntityEspConfig jsonConfig) {
         copyFromJsonTracerConfigBase(jsonConfig);
         glow = jsonConfig.glow;
         glowColor = jsonConfig.glowColor;
@@ -61,8 +61,8 @@ public class EntityTracerConfig extends TracerConfigBase {
         return this.enabled && this.drawOverlay;
     }
 
-    public static EntityTracerConfig createDefault(Class clazz) {
-        EntityTracerConfig config = new EntityTracerConfig();
+    public static EntityEspConfig createDefault(Class<?> clazz) {
+        EntityEspConfig config = new EntityEspConfig();
         config.clazz = clazz;
         config.enabled = false;
         config.drawTracers = true;

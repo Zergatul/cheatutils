@@ -1,26 +1,28 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.collections.ImmutableList;
 import net.minecraft.world.level.block.Block;
 
 import java.awt.*;
 
-public class BlockTracerConfig extends TracerConfigBase {
+public class BlockEspConfig extends EspConfigBase {
 
-    public Block block;
+    // array is sorted by block id during json deserialization
+    public ImmutableList<Block> blocks;
 
     public boolean drawOverlay;
     public Color overlayColor;
 
-    public void copyFrom(BlockTracerConfig jsonConfig) {
+    public void copyFrom(BlockEspConfig jsonConfig) {
         copyFromJsonTracerConfigBase(jsonConfig);
 
         drawOverlay = jsonConfig.drawOverlay;
         overlayColor = jsonConfig.overlayColor;
     }
 
-    public static BlockTracerConfig createDefault(Block block) {
-        BlockTracerConfig config = new BlockTracerConfig();
-        config.block = block;
+    public static BlockEspConfig createDefault(ImmutableList<Block> blocks) {
+        BlockEspConfig config = new BlockEspConfig();
+        config.blocks = blocks;
         config.enabled = false;
 
         config.drawTracers = true;

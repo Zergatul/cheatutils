@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
@@ -34,8 +33,8 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
+            .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
-            .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
             .setPrettyPrinting()
@@ -63,7 +62,9 @@ public class ConfigStore {
             Config readCfg = null;
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(file));
-                readCfg = gson.fromJson(reader, Config.class);
+                JsonElement element = JsonParser.parseReader(reader);
+                migration(element);
+                readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
                 logger.warn("Cannot read config");
@@ -170,6 +171,8 @@ public class ConfigStore {
         config.areaMineConfig.validate();
         config.hitboxSizeConfig.validate();
 
+        config.blocks.refreshMap();
+
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
@@ -262,6 +265,47 @@ public class ConfigStore {
                 EventsScripting.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private void migration(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject root = element.getAsJsonObject();
+        if (!root.has("blocks")) {
+            return;
+        }
+
+        element = root.get("blocks");
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject blocks = element.getAsJsonObject();
+        if (!blocks.has("configs")) {
+            return;
+        }
+
+        element = blocks.get("configs");
+        if (!element.isJsonArray()) {
+            return;
+        }
+
+        JsonArray configs = element.getAsJsonArray();
+        for (JsonElement item: configs) {
+            if (!item.isJsonObject()) {
+                continue;
+            }
+
+            JsonObject config = item.getAsJsonObject();
+            if (config.has("block")) {
+                JsonArray array = new JsonArray();
+                array.add(config.get("block"));
+                config.add("blocks", array);
+                config.remove("block");
             }
         }
     }
