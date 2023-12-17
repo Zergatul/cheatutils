@@ -1,5 +1,6 @@
+import { ref, reactive, nextTick, onUnmounted } from '/vue.esm-browser.js'
 import { addComponent } from '/components/Loader.js'
-import { createBlockModel } from './BlockModel.js'
+import { createBlockRenderer, removeBlockRenderer } from './BlockRenderer.js'
 
 let blockInfoPromise = axios.get('/api/block-info').then(function (response) {
     let blocksList = response.data;
@@ -11,155 +12,106 @@ let blockInfoPromise = axios.get('/api/block-info').then(function (response) {
     }
 });
 
-let observer = new IntersectionObserver(function (entries, opts) {
-    entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-            observer.unobserve(entry.target);
-            let id = entry.target.getAttribute('data-id');
-            createBlockModel(id).then(function (div) {
-                entry.target.querySelector('div.c1').appendChild(div);
-            });
-        }
-    });
-  }, {
-    root: document.querySelector('ul.blocks-list'),
-    threshold: .5
-});
-
-function onBlocksConfigRendered() {
-    let list = document.querySelector('ul.blocks-list').children;
-    for (let i = 0; i < list.length; i++) {
-        observer.observe(list[i]);
-    }
-}
-
-function onAddBlockConfigRendered() {
-    let list = document.querySelector('ul.add-block-list').children;
-    for (let i = 0; i < list.length; i++) {
-        observer.observe(list[i]);
-    }
-}
-
 function createComponent(template) {
     let args = {
         template: template,
-        created() {
-            blockInfoPromise.then(info => {
-                this.blocksList = info.blocksList;
-                this.blocksMap = info.blocksMap;
-            });
-            axios.get('/api/blocks').then(response => {
-                this.blocksConfigList = response.data;
+        setup() {
+            const state = ref('list');
+            const search = ref('');
+            const blocksList = ref(null);
+            const blocksMap = ref(null);
+            const blocksConfigList = ref(null);
+            const blocksConfigMap = ref(null);
+            const selectedConfig = ref(null);
+            const blockListFiltered = ref(null);
 
-                this.blocksConfigMap = {};
-                this.blocksConfigList.forEach(c => {
-                    c.blocks.forEach(b => {
-                        this.blocksConfigMap[b] = c;
-                    });
-                });
-                this.$nextTick(() => {
-                    onBlocksConfigRendered();
-                });
-            });
-        },
-        data() {
-            return {
-                state: 'list',
-                search: '',
-                blocksList: null,
-                blocksMap: null,
-                blocksConfigList: null,
-                blocksConfigMap: null,
-                selectedConfig: null,
-                blockListFiltered: null
-            };
-        },
-        methods: {
-            editGroup() {
-                this.state = 'edit-group';
-                this.filterBlockList();
-            },
-            backToEdit() {
-                this.state = 'edit';
-            },
-            backToList() {
-                this.state = 'list';
-                this.blocksConfigList.forEach(config => {
+            const backToList = () => {
+                state.value = 'list';
+                blocksConfigList.value.forEach(config => {
                     config.expanded = false;
-                })
-                this.$nextTick(function () {
-                    onBlocksConfigRendered();
                 });
-            },
-            filterBlockList() {
-                let search = this.search.toLocaleLowerCase();
-                this.blockListFiltered = this.blocksList.filter(function (block) {
+
+                nextTick(() => setupObserver());
+            };
+
+            const backToEdit = () => {
+                state.value = 'edit';
+            };
+
+            const filterBlockList = () => {
+                let searchLower = search.value.toLocaleLowerCase();
+                blockListFiltered.value = blocksList.value.filter(block => {
                     if (block.name != null) {
                         let name = block.name.toLocaleLowerCase();
-                        if (name.indexOf(search) >= 0) {
+                        if (name.indexOf(searchLower) >= 0) {
                             return true;
                         }
                     }
                     if (block.id != null) {
                         let id = block.id.toLocaleLowerCase();
-                        if (id.indexOf(search) >= 0) {
+                        if (id.indexOf(searchLower) >= 0) {
                             return true;
                         }
                     }
                     return false;
                 });
-                this.$nextTick(function () {
-                    onAddBlockConfigRendered();
-                });
-            },
-            openAdd() {
-                this.state = 'add';
-                this.search = '';
-                this.filterBlockList();
-            },
-            openEdit(id) {
-                this.state = 'edit';
-                if (this.blocksConfigMap[id]) {
-                    this.selectedConfig = this.blocksConfigMap[id];
-                    this.selectedConfig.expanded = false;
+
+                nextTick(() => setupObserver());
+            };
+
+            const openAdd = () => {
+                state.value = 'add';
+                search.value = '';
+                filterBlockList();
+            };
+
+            const openEdit = id => {
+                state.value = 'edit';
+                if (blocksConfigMap.value[id]) {
+                    selectedConfig.value = blocksConfigMap.value[id];
+                    selectedConfig.value.expanded = false;
                 } else {
-                    this.selectedConfig = null;
+                    selectedConfig.value = null;
                     axios.post('/api/blocks-add', id).then(response => {
-                        this.selectedConfig = response.data;
-                        this.blocksConfigList.push(this.selectedConfig);
-                        this.blocksConfigMap[id] = this.selectedConfig;
+                        selectedConfig.value = response.data;
+                        blocksConfigList.value.push(selectedConfig.value);
+                        blocksConfigMap.value[id] = selectedConfig.value;
                     });
                 }
-            },
-            remove() {
-                if (this.selectedConfig) {
-                    var self = this;
-                    axios.delete('/api/blocks/' + encodeURIComponent(this.selectedConfig.block)).then(function (response) {
-                        let id = self.selectedConfig.block;
-                        let index = self.blocksConfigList.indexOf(self.selectedConfig);
+            };
+
+            const editGroup = () => {
+                state.value = 'edit-group';
+                filterBlockList();
+            };
+
+            const remove = () => {
+                if (selectedConfig.value) {
+                    axios.delete('/api/blocks/' + encodeURIComponent(selectedConfig.value.block)).then(response => {
+                        let id = selectedConfig.value.block;
+                        let index = blocksConfigList.value.indexOf(selectedConfig.value);
                         if (index >= 0) {
-                            self.blocksConfigList.splice(index, 1);
+                            blocksConfigList.value.splice(index, 1);
                         }
-                        self.selectedConfig = null;
-                        delete self.blocksConfigMap[id];
-                        self.backToList();
+                        selectedConfig.value = null;
+                        delete blocksConfigMap.value[id];
+                        backToList();
                     });
                 }
-            },
-            removeById(id) {
-                let self = this;
-                axios.delete('/api/blocks/' + encodeURIComponent(id)).then(function (response) {
-                    let index = self.blocksConfigList.findIndex(b => b.block == id);
-                    if (index >= 0) {
-                        self.blocksConfigList.splice(index, 1);
-                    }
-                    delete self.blocksConfigMap[id];
+            };
+
+            const removeById = id => {
+                axios.delete('/api/blocks/' + encodeURIComponent(id)).then(response => {
+                    blocksConfigList.value = blocksConfigList.value.filter(b => !b.blocks.includes(id));
+                    delete blocksConfigMap.value[id];
                 });
-            },
-            restart() {
+            };
+
+            const restart = () => {
                 axios.post('/api/block-esp-restart');
-            },
-            update(config) {
+            };
+
+            const update = config => {
                 if (config.tracerMaxDistance == '') {
                     config.tracerMaxDistance = null;
                 }
@@ -167,34 +119,140 @@ function createComponent(template) {
                     config.outlineMaxDistance = null;
                 }
                 axios.post('/api/blocks', config);
-            },
-            groupEditShouldShowCheckbox(block) {
-                return this.blocksConfigMap[block.id] == null || this.blocksConfigMap[block.id] == this.selectedConfig;
-            },
-            groupEditGetCheckboxSelected(block) {
-                return this.blocksConfigMap[block.id] == this.selectedConfig;
-            },
-            groupEditSetCheckboxSelected(block, event) {
+            };
+
+            const expandGroup = config => {
+                config.expanded = !config.expanded;
+
+                // currentList can't be null here
+                const oldItems = [...currentList.children];
+                nextTick(() => {
+                    for (let item of currentList.children) {
+                        if (!oldItems.includes(item)) {
+                            observer.observe(item);
+                        }
+                    }
+                });
+            };
+
+            const groupEditShouldShowCheckbox = block => {
+                return blocksConfigMap.value[block.id] == null || blocksConfigMap.value[block.id] == selectedConfig.value;
+            };
+
+            const groupEditGetCheckboxSelected = block => {
+                return blocksConfigMap.value[block.id] == selectedConfig.value;
+            };
+
+            const groupEditSetCheckboxSelected = (block, event) => {
                 if (event.target.checked) {
-                    if (!this.selectedConfig.blocks.some(id => id == block.id)) {
-                        this.selectedConfig.blocks.push(block.id);
-                        this.blocksConfigMap[block.id] = this.selectedConfig;
-                        this.update(this.selectedConfig);
+                    if (!selectedConfig.value.blocks.some(id => id == block.id)) {
+                        selectedConfig.value.blocks.push(block.id);
+                        blocksConfigMap.value[block.id] = selectedConfig.value;
+                        update(selectedConfig.value);
                     }
                 } else {
-                    this.selectedConfig.blocks = this.selectedConfig.blocks.filter(id => id != block.id);
-                    delete this.blocksConfigMap[block.id];
-                    this.update(this.selectedConfig);
+                    selectedConfig.value.blocks = selectedConfig.value.blocks.filter(id => id != block.id);
+                    delete blocksConfigMap.value[block.id];
+                    update(selectedConfig.value);
                 }
-            },
-            groupEditIsCheckboxDisabled(block) {
-                return this.selectedConfig.blocks.length == 1 && this.groupEditGetCheckboxSelected(block);
-            }
+            };
+
+            const groupEditIsCheckboxDisabled = block => {
+                return selectedConfig.value.blocks.length == 1 && groupEditGetCheckboxSelected(block);
+            };
+
+            let observer = null;
+            let currentList = null;
+
+            const removeObserver = () => {
+                if (observer != null) {
+                    observer.disconnect();
+                    observer = null;
+                }
+            };
+
+            const setupObserver = () => {
+                removeObserver();
+
+                currentList = document.querySelector('ul.blocks-list, ul.add-block-list');
+                if (currentList == null) {
+                    console.error('Cannot find list to initialize observer');
+                    return;
+                }
+
+                observer = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            let id = entry.target.getAttribute('data-id');
+                            createBlockRenderer(entry.target.querySelector('div.c1 > div'), id);
+                        } else {
+                            removeBlockRenderer(entry.target.querySelector('div.c1 > div'));
+                        }
+                    });
+                  }, {
+                    root: currentList,
+                    threshold: .5
+                });
+
+                for (let item of currentList.children) {
+                    observer.observe(item);
+                }
+            };
+
+            blockInfoPromise.then(info => {
+                blocksList.value = info.blocksList;
+                blocksMap.value = info.blocksMap;
+            });
+
+            axios.get('/api/blocks').then(response => {
+                blocksConfigList.value = response.data;
+
+                blocksConfigMap.value = {};
+                blocksConfigList.value.forEach(c => {
+                    c.blocks.forEach(b => {
+                        blocksConfigMap.value[b] = c;
+                    });
+                });
+
+                nextTick(() => setupObserver());
+            });
+
+            onUnmounted(() => {
+                removeObserver();
+            });
+
+            return {
+                state,
+                search,
+                blocksList,
+                blocksMap,
+                blocksConfigList,
+                blocksConfigMap,
+                selectedConfig,
+                blockListFiltered,
+
+                backToList,
+                backToEdit,
+                filterBlockList,
+                openAdd,
+                openEdit,
+                editGroup,
+                remove,
+                removeById,
+                restart,
+                update,
+                expandGroup,
+                groupEditShouldShowCheckbox,
+                groupEditGetCheckboxSelected,
+                groupEditSetCheckboxSelected,
+                groupEditIsCheckboxDisabled
+            };
         }
     };
+
     addComponent(args, 'ColorBox');
     addComponent(args, 'ColorPicker');
-    addComponent(args, 'BlockRenderer');
+
     return args;
 }
 

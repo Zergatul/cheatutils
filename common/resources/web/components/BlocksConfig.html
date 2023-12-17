@@ -9,11 +9,13 @@
             <template v-for="item in blocksConfigList" :key="item.blocks[0]">
                 <li v-bind="{ 'data-id': item.blocks[0] }">
                     <div class="c0">
-                        <div v-if="item.blocks.length > 1" @click="item.expanded = !item.expanded">
+                        <div v-if="item.blocks.length > 1" @click="expandGroup(item)">
                             {{ item.expanded ? '▼' : '▶' }}
                         </div>
                     </div>
-                    <div class="c1"></div>
+                    <div class="c1">
+                        <div></div>
+                    </div>
                     <div class="c2">
                         <div>{{ blocksMap[item.blocks[0]].name }}</div>
                         <div class="smaller">{{ item.blocks[0] }}</div>
@@ -55,7 +57,9 @@
                     <template v-for="(block, index) in item.blocks" :key="block">
                         <li v-bind="{ 'data-id': block }" v-if="index >= 1">
                             <div class="c0"></div>
-                            <div class="c1"></div>
+                            <div class="c1">
+                                <div></div>
+                            </div>
                             <div class="c2">
                                 <div>{{ blocksMap[block].name }}</div>
                                 <div class="smaller">{{ block }}</div>
@@ -71,6 +75,7 @@
             </template>
         </ul>
         <div class="section-description" style="margin-top: 16px;">Use Restart if BlockFinder stopped working.</div>
+        <div class="section-description" style="margin-top: 16px;">Use Ctrl+F5 in your browser if block textures are messed up after switching Minecraft versions or mod loaders.</div>
     </div>
     <div v-if="state == 'add'">
         <div style="padding-bottom: 16px;">
@@ -84,7 +89,9 @@
         </div>
         <ul class="list-base add-block-list">
             <li v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
-                <div class="c1"></div>
+                <div class="c1">
+                    <div></div>
+                </div>
                 <div class="c2">
                     <div>{{ item.name }}</div>
                     <div class="smaller">{{ item.id }}</div>
@@ -237,7 +244,9 @@
                         :checked="groupEditGetCheckboxSelected(item)"
                         @input="event => groupEditSetCheckboxSelected(item, event)">
                 </div>
-                <div class="c1"></div>
+                <div class="c1">
+                    <div></div>
+                </div>
                 <div class="c2">
                     <div>{{ item.name }}</div>
                     <div class="smaller">{{ item.id }}</div>

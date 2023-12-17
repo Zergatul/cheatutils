@@ -154,7 +154,7 @@ public class SchematicaController {
                     neighPos.setY(pos.getY() + direction.getStepY());
                     neighPos.setZ(pos.getZ() + direction.getStepZ());
                     if (!ghosts.containsKey(neighPos)) {
-                        List<BakedQuad> quads = BakedModelWrapper.getQuads(model, direction, random);
+                        List<BakedQuad> quads = BakedModelWrapper.getQuads(model, state, direction, random);
                         if (quads.size() > 0) {
                             BakedQuad quad = quads.get(0);
                             TextureAtlasSprite sprite = quad.getSprite();

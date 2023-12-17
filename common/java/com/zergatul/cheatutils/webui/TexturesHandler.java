@@ -49,7 +49,7 @@ public class TexturesHandler implements HttpHandler {
                         for (int y = 0; y < height; y++) {
                             for (int x = 0; x < width; x++) {
                                 int value = UNSAFE.getInt(address + (y * width + x) * 4);
-                                image.setRGB(x, y, swapBytes(value, 0, 2));
+                                image.setRGB(x, y, swapBytes02(value));
                             }
                         }
 
@@ -92,22 +92,11 @@ public class TexturesHandler implements HttpHandler {
         exchange.close();
     }
 
-    private static int swapBytes(int value, int byteIndex1, int byteIndex2) {
-        // Ensure the byte indices are within the valid range
-        if (byteIndex1 < 0 || byteIndex1 > 3 || byteIndex2 < 0 || byteIndex2 > 3) {
-            throw new IllegalArgumentException("Byte indices must be between 0 and 3 (inclusive).");
-        }
-
-        // Extract the bytes from the integer
-        int byte1 = (value >> (byteIndex1 * 8)) & 0xFF;
-        int byte2 = (value >> (byteIndex2 * 8)) & 0xFF;
-
-        // Create a mask to clear the original bytes in the value
-        int clearMask = ~(0xFF << (byteIndex1 * 8)) & ~(0xFF << (byteIndex2 * 8));
-
-        // Set the swapped bytes in the value
-        int swappedValue = value & clearMask | (byte1 << (byteIndex2 * 8)) | (byte2 << (byteIndex1 * 8));
-
-        return swappedValue;
+    private static int swapBytes02(int value) {
+        int byte0 = value & 0xFF;
+        int byte2 = (value >> 16) & 0xFF;
+        value &= ~((0xFF << 16) | 0xFF);
+        value |= (byte0 << 16) | (byte2);
+        return value;
     }
 }

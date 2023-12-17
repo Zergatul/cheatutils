@@ -93,6 +93,19 @@ ul.entities-list > li > div.c1 {
     flex: 2;
 }
 
+ul.blocks-list > li > div.c1,
+ul.add-block-list > li > div.c1 {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+ul.blocks-list > li > div.c1 > div,
+ul.add-block-list > li > div.c1 > div {
+    width: 36px;
+    height: 36px;
+}
+
 ul.blocks-list > li > div.c2,
 ul.entities-list > li > div.c2 {
     flex: 10;
