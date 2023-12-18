@@ -7,6 +7,7 @@
     "defaultRequire": 0
   },
   "mixinPriority": 500,
+  "plugin": "com.zergatul.cheatutils.compatibility.MixinConfigPlugin",
   "client": [
     "common.accessors.AbstractContainerScreenAccessor",
     "common.accessors.ClientLevelAccessor",
@@ -75,6 +76,9 @@
     "fabric.MixinKeyboardHandler",
     "fabric.MixinMultiPlayerGameMode",
     "fabric.MixinPlayerTabOverlay",
-    "fabric.MixinScreen"
+    "fabric.MixinScreen",
+
+    "fabric.compatibility.sodium.MixinBlockModelApiMemoryVertexConsumer",
+    "fabric.compatibility.sodium.MixinEntityEspVertexConsumerWrapper"
   ]
 }

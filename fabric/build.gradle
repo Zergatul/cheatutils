@@ -57,6 +57,8 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
+
+	exclude("net/caffeinemc/**")
 }
 
 // configure the maven publication

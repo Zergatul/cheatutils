@@ -444,6 +444,12 @@ input[type=radio]:checked {
 
 /* checkbox end */
 
+div.edit-block-header {
+    margin: 8px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
+}
+
 table.edit-block-header {
     margin: 8px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

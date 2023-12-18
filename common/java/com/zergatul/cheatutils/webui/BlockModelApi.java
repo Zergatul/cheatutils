@@ -152,7 +152,7 @@ public class BlockModelApi extends ApiBase {
         }
     }
 
-    private static class MemoryVertexConsumer implements VertexConsumer {
+    public static class MemoryVertexConsumer implements VertexConsumer {
 
         private Vertex current;
         public List<Vertex> vertices = new ArrayList<>();

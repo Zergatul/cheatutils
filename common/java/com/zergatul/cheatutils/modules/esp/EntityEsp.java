@@ -407,7 +407,7 @@ public class EntityEsp implements Module {
         }
     }
 
-    private static class VertexConsumerWrapper implements VertexConsumer {
+    public static class VertexConsumerWrapper implements VertexConsumer {
 
         private final VertexConsumer consumer;
         private FloatList overlayList;
