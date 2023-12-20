@@ -12,6 +12,9 @@ loaderVersion="${loader_version_range}" #mandatory This is typically bumped ever
 license="${mod_license}"
 # A URL to refer people to when problems occur with this mod
 issueTrackerURL="https://github.com/Zergatul/cheatutils/issues" #optional
+# If your mod is purely client-side and has no multiplayer functionality (be it dedicated servers or Open to LAN),
+# set this to true, and Forge will set the correct displayTest for you and skip loading your mod on dedicated servers.
+#clientSideOnly=true #optional - defaults to false if absent
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
 # The modid of the mod
@@ -32,12 +35,7 @@ displayURL="https://www.curseforge.com/minecraft/mc-mods/cheatutils-by-zergatul"
 # A text field displayed in the mod UI
 authors="${mod_authors}" #optional
 # The description text for the mod (multi line!) (#mandatory)
-description='''
-Open http://localhost:5005/ in your browser to access mod settings.
-If you run multiple minecraft instances, use http://localhost:5006/, http://localhost:5007/ and so on.
-You can find tutorial videos on curseforge page: https://www.curseforge.com/minecraft/mc-mods/cheatutils-by-zergatul
-Source code: https://github.com/Zergatul/cheatutils
-'''
+description='''${mod_description}'''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.${mod_id}]] #optional
     # the modid of the dependency

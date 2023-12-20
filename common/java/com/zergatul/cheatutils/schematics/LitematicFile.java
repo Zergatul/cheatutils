@@ -18,7 +18,7 @@ public class LitematicFile implements SchemaFile {
     private final Region[] regions;
 
     public LitematicFile(byte[] data) throws IOException, InvalidFormatException {
-        this(NbtIo.readCompressed(new ByteArrayInputStream(data)));
+        this(NbtIo.readCompressed(new ByteArrayInputStream(data), NbtAccounter.create(104857600L)));
     }
 
     private LitematicFile(CompoundTag compound) throws InvalidFormatException {

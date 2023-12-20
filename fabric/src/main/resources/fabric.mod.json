@@ -23,13 +23,13 @@
     ]
   },
   "mixins": [
-    "zergatul.cheatutils.mixins.json"
+    "cheatutils.mixin.json"
   ],
 
   "depends": {
     "fabricloader": ">=0.14.6",
     "fabric": "*",
-    "minecraft": "~1.20.2",
+    "minecraft": "~1.20.4",
     "java": ">=17"
   },
   "suggests": {

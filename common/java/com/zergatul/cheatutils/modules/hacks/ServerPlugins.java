@@ -10,7 +10,7 @@ import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.protocol.game.ClientboundCommandSuggestionsPacket;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
 import org.apache.logging.log4j.LogManager;
@@ -124,7 +124,7 @@ public class ServerPlugins implements Module {
                 plugins = suggestions.getList().stream().map(Suggestion::getText).toArray(String[]::new);
                 if (ConfigStore.instance.getConfig().serverPluginsConfig.autoPrint) {
                     for (String plugin: plugins) {
-                        mc.getChatListener().handleSystemMessage(MutableComponent.create(new LiteralContents(plugin)), false);
+                        mc.getChatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
                     }
                 }
             }
@@ -135,7 +135,7 @@ public class ServerPlugins implements Module {
                 bukkitPlugins = suggestions.getList().stream().map(Suggestion::getText).toArray(String[]::new);
                 if (ConfigStore.instance.getConfig().serverPluginsConfig.autoPrint) {
                     for (String plugin: bukkitPlugins) {
-                        mc.getChatListener().handleSystemMessage(MutableComponent.create(new LiteralContents(plugin)), false);
+                        mc.getChatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
                     }
                 }
             }

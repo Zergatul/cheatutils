@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import net.minecraft.client.gui.screens.controls.KeyBindsList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,7 +26,7 @@ public abstract class MixinKeyBindingListKeyEntry {
                     int index = Integer.parseInt(translatable.getKey().substring(prefix.length()));
                     String name = ConfigStore.instance.getConfig().keyBindingsConfig.bindings[index];
                     if (name != null) {
-                        return MutableComponent.create(new LiteralContents(index + ": " + name));
+                        return MutableComponent.create(new PlainTextContents.LiteralContents(index + ": " + name));
                     }
                 }
             }

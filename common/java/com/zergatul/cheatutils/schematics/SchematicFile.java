@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.schematics;
 
 import com.zergatul.cheatutils.utils.NbtUtils;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,7 +32,7 @@ public class SchematicFile implements SchemaFileEditable {
     private final Map<BlockState, Integer> reversePalette;
 
     public SchematicFile(byte[] data) throws IOException, InvalidFormatException {
-        this(NbtIo.readCompressed(new ByteArrayInputStream(data)));
+        this(NbtIo.readCompressed(new ByteArrayInputStream(data), NbtAccounter.create(104857600L)));
     }
 
     public SchematicFile(int width, int height, int length) {

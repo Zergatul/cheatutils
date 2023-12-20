@@ -15,7 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
@@ -150,7 +150,7 @@ public class MainApi {
     @ApiVisibility(ApiType.OVERLAY)
     public void addText(String color, String text) {
         Integer colorInt = ColorUtils.parseColor(color);
-        MutableComponent component = MutableComponent.create(new LiteralContents(text));
+        MutableComponent component = MutableComponent.create(new PlainTextContents.LiteralContents(text));
         if (colorInt != null) {
             component = component.withStyle(Style.EMPTY.withColor(colorInt));
         }
@@ -161,11 +161,11 @@ public class MainApi {
     public void addText(String color1, String text1, String color2, String text2) {
         Integer color1Int = ColorUtils.parseColor(color1);
         Integer color2Int = ColorUtils.parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
+        MutableComponent component1 = MutableComponent.create(new PlainTextContents.LiteralContents(text1));
         if (color1Int != null) {
             component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
         }
-        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
+        MutableComponent component2 = MutableComponent.create(new PlainTextContents.LiteralContents(text2));
         if (color2Int != null) {
             component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
         }
@@ -175,7 +175,7 @@ public class MainApi {
     @ApiVisibility(ApiType.OVERLAY)
     public void addTextAtPosition(int x, int y, String color, String text) {
         Integer colorInt = ColorUtils.parseColor(color);
-        MutableComponent component = MutableComponent.create(new LiteralContents(text));
+        MutableComponent component = MutableComponent.create(new PlainTextContents.LiteralContents(text));
         if (colorInt != null) {
             component = component.withStyle(Style.EMPTY.withColor(colorInt));
         }
@@ -186,11 +186,11 @@ public class MainApi {
     public void addTextAtPosition(int x, int y, String color1, String text1, String color2, String text2) {
         Integer color1Int = ColorUtils.parseColor(color1);
         Integer color2Int = ColorUtils.parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
+        MutableComponent component1 = MutableComponent.create(new PlainTextContents.LiteralContents(text1));
         if (color1Int != null) {
             component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
         }
-        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
+        MutableComponent component2 = MutableComponent.create(new PlainTextContents.LiteralContents(text2));
         if (color2Int != null) {
             component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
         }
@@ -360,12 +360,12 @@ public class MainApi {
     }
 
     private MutableComponent constructMessage(String text) {
-        return MutableComponent.create(new LiteralContents(text));
+        return MutableComponent.create(new PlainTextContents.LiteralContents(text));
     }
 
     private MutableComponent constructMessage(String color, String text) {
         Integer colorInt = ColorUtils.parseColor(color);
-        MutableComponent component = MutableComponent.create(new LiteralContents(text));
+        MutableComponent component = MutableComponent.create(new PlainTextContents.LiteralContents(text));
         if (colorInt != null) {
             component = component.withStyle(Style.EMPTY.withColor(colorInt));
         }
@@ -375,11 +375,11 @@ public class MainApi {
     private MutableComponent constructMessage(String color1, String text1, String color2, String text2) {
         Integer color1Int = ColorUtils.parseColor(color1);
         Integer color2Int = ColorUtils.parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
+        MutableComponent component1 = MutableComponent.create(new PlainTextContents.LiteralContents(text1));
         if (color1Int != null) {
             component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
         }
-        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
+        MutableComponent component2 = MutableComponent.create(new PlainTextContents.LiteralContents(text2));
         if (color2Int != null) {
             component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
         }

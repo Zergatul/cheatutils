@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -465,6 +466,11 @@ public class EntityUtils {
         @Nullable
         @Override
         public Entity getEntity(int p_46492_) {
+            return null;
+        }
+
+        @Override
+        public TickRateManager tickRateManager() {
             return null;
         }
 

@@ -9,7 +9,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -53,8 +53,8 @@ public class AdvancedTooltips implements Module {
                     }
                 }
 
-                event.list().add(MutableComponent.create(new LiteralContents("Bees count: " + beesCount)).withStyle(ChatFormatting.GRAY));
-                event.list().add(MutableComponent.create(new LiteralContents("Honey level: " + honeyLevel)).withStyle(ChatFormatting.GRAY));
+                event.list().add(MutableComponent.create(new PlainTextContents.LiteralContents("Bees count: " + beesCount)).withStyle(ChatFormatting.GRAY));
+                event.list().add(MutableComponent.create(new PlainTextContents.LiteralContents("Honey level: " + honeyLevel)).withStyle(ChatFormatting.GRAY));
             }
         }
     }
@@ -64,7 +64,7 @@ public class AdvancedTooltips implements Module {
             ItemStack itemStack = event.itemStack();
             int cost = itemStack.getBaseRepairCost();
             if (cost > 0) {
-                event.list().add(MutableComponent.create(new LiteralContents("Repair cost: " + cost)).withStyle(ChatFormatting.GRAY));
+                event.list().add(MutableComponent.create(new PlainTextContents.LiteralContents("Repair cost: " + cost)).withStyle(ChatFormatting.GRAY));
             }
         }
     }

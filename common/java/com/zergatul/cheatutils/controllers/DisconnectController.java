@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.controllers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 
@@ -20,7 +20,7 @@ public class DisconnectController {
         }
 
         if (component == null || component.getString().length() == 0) {
-            component = MutableComponent.create(new LiteralContents(addText));
+            component = MutableComponent.create(new PlainTextContents.LiteralContents(addText));
         } else {
             component = component.copy().append("\n").append(addText);
         }
@@ -36,7 +36,7 @@ public class DisconnectController {
         }
 
         addText = message;
-        ClientboundDisconnectPacket packet = new ClientboundDisconnectPacket(MutableComponent.create(new LiteralContents("")));
+        ClientboundDisconnectPacket packet = new ClientboundDisconnectPacket(MutableComponent.create(new PlainTextContents.LiteralContents("")));
         mc.player.connection.handleDisconnect(packet);
     }
 
