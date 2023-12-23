@@ -89,6 +89,9 @@ public class GameApi {
             Entity target = null;
             double min = Double.MAX_VALUE;
             for (Entity entity : mc.level.entitiesForRendering()) {
+                if (entity == mc.player) {
+                    continue;
+                }
                 if (entity.getType() == type) {
                     double dist = mc.player.distanceToSqr(entity);
                     if (dist < min) {
@@ -115,6 +118,9 @@ public class GameApi {
             Entity target = null;
             double min = Double.MAX_VALUE;
             for (Entity entity : mc.level.entitiesForRendering()) {
+                if (entity == mc.player) {
+                    continue;
+                }
                 if (info.clazz.isAssignableFrom(entity.getClass())) {
                     double dist = mc.player.distanceToSqr(entity);
                     if (dist < min) {

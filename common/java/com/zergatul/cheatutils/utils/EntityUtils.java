@@ -5,6 +5,8 @@ import com.mojang.serialization.Lifecycle;
 import com.zergatul.cheatutils.mixins.common.accessors.HolderReferenceAccessor;
 import com.zergatul.cheatutils.webui.EntityInfoApi;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstapContext;
@@ -87,10 +89,34 @@ public class EntityUtils {
             ex.printStackTrace();
         }
 
+        EntityInfo localPlayerInfo = null;
+        try {
+            localPlayerInfo = new EntityInfo(LocalPlayer.class);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();;
+        }
+
+        EntityInfo remotePlayerInfo = null;
+        try {
+            remotePlayerInfo = new EntityInfo(RemotePlayer.class);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();;
+        }
+
         HashSet<EntityInfo> set = new HashSet<>();
         if (playerInfo != null) {
             finalClasses.add(playerInfo);
             set.add(playerInfo);
+        }
+        if (localPlayerInfo != null) {
+            finalClasses.add(localPlayerInfo);
+            set.add(localPlayerInfo);
+        }
+        if (remotePlayerInfo != null) {
+            finalClasses.add(remotePlayerInfo);
+            set.add(remotePlayerInfo);
         }
 
         Level level = new FakeLevel();
