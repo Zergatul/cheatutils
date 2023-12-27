@@ -4,31 +4,28 @@
         <button style="width: 200px;" @click="save()" v-if="config">Save</button>
         <button style="width: 200px;" @click="showApiRef()">Show/Hide API Reference</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Events Scripting</legend>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.enabled"
-                    @change="update()">
-                <span>Enabled</span>
-            </label>
+    <div class="module-main">
+        <h2 class="module-header">Events Scripting</h2>
+        <div class="description">
+            Create event based scripts, check the <a href="https://github.com/Zergatul/cheatutils/wiki/Events-Scripting" target="_blank" style="color: #0E7DDF !important;">Documentation</a> for more
         </div>
-        <div>
-            <a href="https://github.com/Zergatul/cheatutils/wiki/Events-Scripting" target="_blank">Documentation</a>
-        </div>
-        <div v-show="!showRefs">
-            <div>
-                <span class="text">Code:</span>
+        <fieldset style="padding-top: 16px;" v-if="config">
+            <legend><label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label></legend>
+            <div v-show="!showRefs">
+                <div>
+                    <script-editor v-model="code"></script-editor>
+                </div>
             </div>
-            <div>
-                <script-editor v-model="code"></script-editor>
+            <div v-show="showRefs">
+                <ul class="refs">
+                    <li v-for="item in refs" v-html="item"></li>
+                </ul>
             </div>
-        </div>
-        <div v-show="showRefs">
-            <ul class="refs">
-                <li v-for="item in refs" v-html="item"></li>
-            </ul>
-        </div>
-    </fieldset>
+        </fieldset>
+    </div>
 </div>

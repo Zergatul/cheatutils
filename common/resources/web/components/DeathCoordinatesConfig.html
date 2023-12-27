@@ -2,12 +2,13 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Death Coordinates</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Death Coordinates</h2>
         <div class="description">
             Displays coordinates on death screen.
         </div>
-        <div>
+
+        <div class="module-sections">
             <label class="switch-label">
                 <input type="checkbox" class="switch"
                     v-model="config.enabled"
@@ -15,5 +16,5 @@
                 <span>Enabled</span>
             </label>
         </div>
-    </fieldset>
+    </div>
 </div>
