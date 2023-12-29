@@ -10,7 +10,7 @@ public class OutlineDrawProgram extends Program {
     private final int pixelHeightUniform;
 
     public OutlineDrawProgram() {
-        super("outline-draw", new PositionTextureVertexData());
+        super("outline-draw", new PositionTextureVertexBufferData());
 
         textureUniform = GL30.glGetUniformLocation(id, "BufferTexture");
         if (textureUniform == -1) {
@@ -45,7 +45,7 @@ public class OutlineDrawProgram extends Program {
         GL30.glUniform4f(overlayColorUniform, r, g, b, a);
 
         buffer.VAO.bind();
-        GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, buffer.vertices());
+        buffer.draw(GL30.GL_TRIANGLES);
         buffer.VAO.unbind();
     }
 

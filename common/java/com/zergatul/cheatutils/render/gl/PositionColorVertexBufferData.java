@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.render.gl;
 
 import org.lwjgl.opengl.GL30;
 
-public class PositionColorVertexData extends AbstractVertexData {
+public class PositionColorVertexBufferData extends AbstractVertexBufferData {
 
     @Override
     protected void bindAttributes() {

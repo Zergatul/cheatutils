@@ -10,29 +10,11 @@ public abstract class AbstractVertexData {
     private static final MemoryUtil.MemoryAllocator ALLOCATOR = MemoryUtil.getAllocator(false);
     private static final Unsafe UNSAFE = UnsafeUtil.get();
 
-    public VertexArrayObject VAO;
-    public VertexBufferObject VBO;
+    public final VertexArrayObject VAO = new VertexArrayObject();
 
-    private long address;
-    private int position;
-    private int capacity;
-
-    public AbstractVertexData() {
-        VAO = new VertexArrayObject();
-        VBO = new VertexBufferObject();
-
-        VAO.bind();
-        VBO.bind();
-
-        bindAttributes();
-
-        VBO.unbind();
-        VAO.unbind();
-
-        capacity = 65536;
-        address = ALLOCATOR.malloc(capacity);
-        position = 0;
-    }
+    private int capacity = 65536;
+    private long address = ALLOCATOR.malloc(capacity);
+    private int position = 0;
 
     public void add(float value) {
         if (position == capacity) {
@@ -48,23 +30,24 @@ public abstract class AbstractVertexData {
         position = 0;
     }
 
-    public int vertices() {
-        return position / 4 / valuesPerVertex();
-    }
-
-    public void upload() {
-        VBO.bind();
-        GL30.nglBufferData(GL30.GL_ARRAY_BUFFER, position, address, GL30.GL_DYNAMIC_DRAW);
-        VBO.unbind();
-    }
-
     public void delete() {
         VAO.delete();
-        VBO.delete();
         ALLOCATOR.free(address);
     }
 
-    protected abstract void bindAttributes();
+    public abstract void upload();
 
-    protected abstract int valuesPerVertex();
+    public void draw(int mode) {
+        GL30.glDrawArrays(mode, 0, getVertexCount());
+    }
+
+    protected void uploadBuffer(int target) {
+        GL30.nglBufferData(target, position, address, GL30.GL_DYNAMIC_DRAW);
+    }
+
+    protected int getPosition() {
+        return position;
+    }
+
+    protected abstract int getVertexCount();
 }

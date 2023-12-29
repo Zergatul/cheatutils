@@ -9,7 +9,7 @@ public class EntityOverlayBufferProgram extends Program {
     private final int textureUniform;
 
     public EntityOverlayBufferProgram() {
-        super("entity-overlay-buffer", new PositionTextureVertexData());
+        super("entity-overlay-buffer", new PositionTextureVertexBufferData());
 
         projectionUniform = GL30.glGetUniformLocation(id, "Projection");
         if (projectionUniform == -1) {
@@ -32,7 +32,7 @@ public class EntityOverlayBufferProgram extends Program {
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, textureId);
 
         buffer.VAO.bind();
-        GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, buffer.vertices());
+        buffer.draw(GL30.GL_TRIANGLES);
         buffer.VAO.unbind();
     }
 

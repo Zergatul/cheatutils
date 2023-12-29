@@ -9,7 +9,7 @@ public class EspLinesProgram extends Program {
     private final int projectionUniform;
 
     public EspLinesProgram() {
-        super("esp-lines", new PositionColorVertexData());
+        super("esp-lines", new PositionColorVertexBufferData());
 
         modelViewUniform = GL30.glGetUniformLocation(id, "ModelView");
         if (modelViewUniform == -1) {
@@ -30,7 +30,7 @@ public class EspLinesProgram extends Program {
         GL30.glUniformMatrix4fv(projectionUniform, false, projection.get(new float[16]));
 
         buffer.VAO.bind();
-        GL30.glDrawArrays(GL30.GL_LINES, 0, buffer.vertices());
+        buffer.draw(GL30.GL_LINES);
         buffer.VAO.unbind();
     }
 

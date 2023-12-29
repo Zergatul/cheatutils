@@ -8,7 +8,7 @@ public class RenderUtilities {
     public static final RenderUtilities instance = new RenderUtilities();
 
     private LineRenderer lineRenderer =
-        new FastLineRenderer();
+        new ThickLineRenderer();
         //new DebugLinesLineRenderer();
     private BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();
     private EntityOverlayRenderer entityOverlayRenderer = new EntityOverlayRenderer();

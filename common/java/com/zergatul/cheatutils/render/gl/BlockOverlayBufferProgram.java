@@ -9,7 +9,7 @@ public class BlockOverlayBufferProgram extends Program {
     private final int projectionUniform;
 
     public BlockOverlayBufferProgram() {
-        super("block-overlay-buffer", new PositionVertexData());
+        super("block-overlay-buffer", new PositionVertexBufferData());
 
         modelViewUniform = GL30.glGetUniformLocation(id, "ModelView");
         if (modelViewUniform == -1) {
@@ -30,7 +30,7 @@ public class BlockOverlayBufferProgram extends Program {
         GL30.glUniformMatrix4fv(projectionUniform, false, projection.get(new float[16]));
 
         buffer.VAO.bind();
-        GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, buffer.vertices());
+        buffer.draw(GL30.GL_TRIANGLES);
         buffer.VAO.unbind();
     }
 
