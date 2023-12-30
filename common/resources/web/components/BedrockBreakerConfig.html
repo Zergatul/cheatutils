@@ -31,6 +31,20 @@
             <div>
                 <label class="switch-label">
                     <input type="checkbox" class="switch"
+                        v-model="config.placeSupportBlock"
+                        @change="update()">
+                    <span>If there is no horizontally adjacent blocks to current bedrock, module can place support block automatically.</span>
+                </label>
+            </div>
+            <div>
+                <div class="input-section">
+                    <span class="field-description">Support block ID:</span>
+                    <input type="text" v-model="config.supportBlockId" @change="update()">
+                </div>
+            </div>
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
                         v-model="config.replace"
                         @change="update()">
                     <span>Replace bedrock with another block (to prevent items falling into the void)</span>

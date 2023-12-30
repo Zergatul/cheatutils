@@ -25,6 +25,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -169,9 +170,64 @@ public class BedrockBreaker implements Module {
                     }
                 }
 
+                BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
                 if (torchPos == null) {
-                    reset("Cannot find location to place torch");
-                    return;
+                    if (!config.placeSupportBlock) {
+                        reset("Cannot find location to place torch");
+                        return;
+                    } else {
+                        ResourceLocation supportBlockId = new ResourceLocation(config.supportBlockId);
+                        Block supportBlock = Registries.BLOCKS.getValue(supportBlockId);
+                        int supportBlockSlot = findItem(Registries.ITEMS.getValue(supportBlockId));
+                        if (supportBlockSlot < 0) {
+                            reset("Cannot find support block (" + config.supportBlockId + ") on hotbar");
+                            return;
+                        }
+
+                        BlockPos supportBlockPos = null;
+                        for (Direction direction : sortByDistance(bedrockPos, horizontal)) {
+                            BlockPos pos = bedrockPos.relative(direction);
+                            BlockState state = mc.level.getBlockState(pos);
+                            if (state.canBeReplaced()) {
+                                supportBlockPos = pos;
+                                break;
+                            }
+                        }
+
+                        if (supportBlockPos == null) {
+                            reset("Cannot find location for support block");
+                            return;
+                        }
+
+                        BlockUtils.PlaceBlockPlan supportBlockPlan = BlockUtils.getPlacingPlan(supportBlockPos, false);
+                        if (supportBlockPlan == null) {
+                            reset("Cannot place support block");
+                            return;
+                        }
+
+                        mc.player.connection.send(new ServerboundSetCarriedItemPacket(supportBlockSlot));
+                        mc.player.connection.send(new ServerboundUseItemOnPacket(
+                                InteractionHand.MAIN_HAND,
+                                new BlockHitResult(supportBlockPlan.target(), supportBlockPlan.direction(), supportBlockPlan.neighbour(), false),
+                                getSequenceNumber()));
+
+                        mc.level.setBlock(supportBlockPos, supportBlock.defaultBlockState(), 0);
+
+                        // TODO: separate method?
+                        for (Direction direction : sortByDistance(bedrockPos.above(), horizontal)) {
+                            BlockPos pos = bedrockPos.above().relative(direction);
+                            BlockState state = mc.level.getBlockState(pos);
+                            if (Blocks.REDSTONE_TORCH.canSurvive(Blocks.REDSTONE_TORCH.defaultBlockState(), mc.level, pos) && state.canBeReplaced()) {
+                                torchPos = pos;
+                                break;
+                            }
+                        }
+
+                        if (torchPos == null) {
+                            reset("Cannot find location to place torch after placing support block");
+                            return;
+                        }
+                    }
                 }
 
                 plan = BlockUtils.getPlacingPlan(torchPos, false, BlockPlacingMethod.FROM_TOP, Blocks.REDSTONE_TORCH.defaultBlockState());
