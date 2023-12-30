@@ -810,7 +810,7 @@ var JavaHighlightRules = function() {
     "class|finally|long|strictfp|volatile|" +
     "const|float|native|super|while|" +
     "var|" +
-    "string"
+    "string|function"
     );
 
     var buildinConstants = ("null|Infinity|NaN|undefined");

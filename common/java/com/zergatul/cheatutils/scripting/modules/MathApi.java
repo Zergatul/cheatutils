@@ -49,6 +49,22 @@ public class MathApi {
         return Math.sqrt(value);
     }
 
+    public int max(int v1, int v2) {
+        return Math.max(v1, v2);
+    }
+
+    public int min(int v1, int v2) {
+        return Math.min(v1, v2);
+    }
+
+    public double max(double v1, double v2) {
+        return Math.max(v1, v2);
+    }
+
+    public double min(double v1, double v2) {
+        return Math.min(v1, v2);
+    }
+
     public static class RadiansApi {
 
         public double sin(double value) {
