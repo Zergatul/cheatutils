@@ -62,6 +62,14 @@ public class ServerPlugins implements Module {
         }
     }
 
+    public void reset() {
+        logInNano = 0;
+        state = State.INIT;
+        bukkitState = State.INIT;
+        plugins = null;
+        bukkitPlugins = null;
+    }
+
     private void scanPlugins() {
         if (mc.level == null) {
             return;
@@ -140,14 +148,6 @@ public class ServerPlugins implements Module {
                 }
             }
         }
-    }
-
-    private void reset() {
-        logInNano = 0;
-        state = State.INIT;
-        bukkitState = State.INIT;
-        plugins = null;
-        bukkitPlugins = null;
     }
 
     private enum State {
