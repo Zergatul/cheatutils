@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.render.gl;
 
+import com.zergatul.cheatutils.render.TextureStateTracker;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
 
@@ -30,6 +31,8 @@ public class EntityOverlayBufferProgram extends Program {
         GL30.glUniform1i(textureUniform, 0);
         GL30.glActiveTexture(GL30.GL_TEXTURE0);
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, textureId);
+
+        TextureStateTracker.setTextureMinFilter(textureId, GL30.GL_NEAREST);
 
         buffer.VAO.bind();
         GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, buffer.vertices());

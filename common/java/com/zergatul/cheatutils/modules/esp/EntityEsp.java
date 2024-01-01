@@ -13,11 +13,8 @@ import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.TextureStateShardAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.EntityOutlineRenderer;
-import com.zergatul.cheatutils.render.EntityOverlayRenderer;
-import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.render.RawLinesRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -154,89 +151,11 @@ public class EntityEsp implements Module {
 
         renderer.end();
 
-        /**/
-        /*var rrr = new RawLinesRenderer();
-        rrr.begin();
-        for (EntityTracerConfig config: vertices.keySet()) {
-            List<Float> list1 = vertices.get(config);
-            for (int i = 0; i < list1.size(); i += 12) {
-                float x1 = list1.get(i);
-                float y1 = list1.get(i + 1);
-                float z1 = list1.get(i + 2);
-                float x2 = list1.get(i + 3);
-                float y2 = list1.get(i + 4);
-                float z2 = list1.get(i + 5);
-                float x3 = list1.get(i + 6);
-                float y3 = list1.get(i + 7);
-                float z3 = list1.get(i + 8);
-                float x4 = list1.get(i + 9);
-                float y4 = list1.get(i + 10);
-                float z4 = list1.get(i + 11);
-                rrr.quad(
-                        x1, y1, z1,
-                        x2, y2, z2,
-                        x3, y3, z3,
-                        x4, y4, z4);
-            }
-        }
-        rrr.end(event.getProjectionMatrix());
-        vertices.clear();*/
-
         drawOverlays(event);
         drawOutlines(event);
 
-        /*if (rawLines == null) {
-            rawLines = new RawLinesRenderer();
-        }
-
-        if (drawWireframe) {
-            for (EntityTracerConfig config: bufferedVertices.keySet()) {
-                List<BufferedVerticesEntry> entries = bufferedVertices.get(config);
-                for (BufferedVerticesEntry entry: entries) {
-                    FloatList flist = entry.list;
-                    if (flist.size() == 0) {
-                        continue;
-                    }
-
-                    rawLines.begin();
-
-                    int size = flist.size();
-                    int i = 0;
-                    while (i < size) {
-                        float x1 = flist.get(i++);
-                        float y1 = flist.get(i++);
-                        float z1 = flist.get(i++);
-                        float u1 = flist.get(i++);
-                        float v1 = flist.get(i++);
-                        float x2 = flist.get(i++);
-                        float y2 = flist.get(i++);
-                        float z2 = flist.get(i++);
-                        float u2 = flist.get(i++);
-                        float v2 = flist.get(i++);
-                        float x3 = flist.get(i++);
-                        float y3 = flist.get(i++);
-                        float z3 = flist.get(i++);
-                        float u3 = flist.get(i++);
-                        float v3 = flist.get(i++);
-                        float x4 = flist.get(i++);
-                        float y4 = flist.get(i++);
-                        float z4 = flist.get(i++);
-                        float u4 = flist.get(i++);
-                        float v4 = flist.get(i++);
-                        rawLines.line(x1, y1, z1, x2, y2, z2);
-                        rawLines.line(x2, y2, z2, x3, y3, z3);
-                        rawLines.line(x3, y3, z3, x4, y4, z4);
-                        rawLines.line(x4, y4, z4, x1, y1, z1);
-                    }
-
-                    rawLines.end(event.getProjectionMatrix());
-                }
-            }
-        }*/
+        TextureStateTracker.restore();
     }
-
-    private RawLinesRenderer rawLines;
-    private boolean drawWireframe;
 
     private static void renderEntityBounding(LineRenderer renderer, float partialTicks, Entity entity, EntityEspConfig config) {
         Vec3 pos = entity.getPosition(partialTicks);
