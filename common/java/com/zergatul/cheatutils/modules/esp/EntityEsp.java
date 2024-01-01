@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.zergatul.cheatutils.collections.FloatList;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
@@ -313,7 +314,7 @@ public class EntityEsp implements Module {
 
         @Override
         public VertexConsumer getBuffer(RenderType renderType) {
-            if (!renderType.outline().isEmpty() && renderType.mode() == VertexFormat.Mode.QUADS && renderType.format().hasPosition() && renderType.format().hasUV(0)) {
+            if (isGoodRenderType(renderType)) {
                 if (renderType instanceof CompositeRenderTypeAccessor accessor) {
                     RenderType.CompositeState state = accessor.getState_CU();
                     RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
@@ -327,6 +328,22 @@ public class EntityEsp implements Module {
             }
 
             return source.getBuffer(renderType);
+        }
+
+        private static boolean isGoodRenderType(RenderType renderType) {
+            if (renderType.outline().isEmpty()) {
+                return false;
+            }
+            if (renderType.mode() != VertexFormat.Mode.QUADS) {
+                return false;
+            }
+            if (renderType.format().getElements().stream().noneMatch(e -> e.getUsage() == VertexFormatElement.Usage.POSITION)) {
+                return false;
+            }
+            if (renderType.format().getElements().stream().noneMatch(e -> e.getUsage() == VertexFormatElement.Usage.UV)) {
+                return false;
+            }
+            return true;
         }
     }
 
