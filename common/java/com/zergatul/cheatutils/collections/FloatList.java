@@ -29,6 +29,12 @@ public class FloatList {
         return size;
     }
 
+    public void truncate(int size) {
+        if (size < this.size) {
+            this.size = size;
+        }
+    }
+
     private void increaseCapacity() {
         float[] newArray = new float[array.length * 2];
         System.arraycopy(array, 0, newArray, 0, size);

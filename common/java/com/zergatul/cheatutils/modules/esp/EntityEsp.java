@@ -194,6 +194,10 @@ public class EntityEsp implements Module {
                 }
 
                 int size = list.size();
+                if (size % 20 != 0) {
+                    continue; // invalid buffer, silently skip
+                }
+
                 int i = 0;
                 while (i < size) {
                     float x1 = list.get(i++);
@@ -309,7 +313,7 @@ public class EntityEsp implements Module {
 
         @Override
         public VertexConsumer getBuffer(RenderType renderType) {
-            if (!renderType.outline().isEmpty() && renderType.mode() == VertexFormat.Mode.QUADS) {
+            if (!renderType.outline().isEmpty() && renderType.mode() == VertexFormat.Mode.QUADS && renderType.format().hasPosition() && renderType.format().hasUV(0)) {
                 if (renderType instanceof CompositeRenderTypeAccessor accessor) {
                     RenderType.CompositeState state = accessor.getState_CU();
                     RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
@@ -386,12 +390,14 @@ public class EntityEsp implements Module {
                 outlineList.add((float) y);
                 outlineList.add((float) z);
             }
-            return consumer.vertex(x, y, z);
+            consumer.vertex(x, y, z);
+            return this;
         }
 
         @Override
         public VertexConsumer color(int r, int g, int b, int a) {
-            return consumer.color(r, g, b, a);
+            consumer.color(r, g, b, a);
+            return this;
         }
 
         @Override
@@ -404,22 +410,26 @@ public class EntityEsp implements Module {
                 outlineList.add(x);
                 outlineList.add(y);
             }
-            return consumer.uv(x, y);
+            consumer.uv(x, y);
+            return this;
         }
 
         @Override
         public VertexConsumer overlayCoords(int x, int y) {
-            return consumer.overlayCoords(x, y);
+            consumer.overlayCoords(x, y);
+            return this;
         }
 
         @Override
         public VertexConsumer uv2(int x, int y) {
-            return consumer.uv2(x, y);
+            consumer.uv2(x, y);
+            return this;
         }
 
         @Override
         public VertexConsumer normal(float x, float y, float z) {
-            return consumer.normal(x, y, z);
+            consumer.normal(x, y, z);
+            return this;
         }
 
         @Override
