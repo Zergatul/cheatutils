@@ -18,10 +18,18 @@ public class MathApi {
     }
 
     public int randomInt(int max) {
+        if (max <= 0) {
+            return Integer.MIN_VALUE;
+        }
+
         return random.nextInt(max);
     }
 
     public int randomInt(int min, int max) {
+        if (min <= max) {
+            return Integer.MIN_VALUE;
+        }
+
         return random.nextInt(min, max);
     }
 
