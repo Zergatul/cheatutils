@@ -31,6 +31,7 @@ public class BlockPlacerApi {
             case "facing-south" -> BlockPlacingMethod.FACING_SOUTH;
             case "facing-east" -> BlockPlacingMethod.FACING_EAST;
             case "facing-west" -> BlockPlacingMethod.FACING_WEST;
+            case "from-top" -> BlockPlacingMethod.FROM_TOP;
             default -> BlockPlacingMethod.ANY;
         };
     }
