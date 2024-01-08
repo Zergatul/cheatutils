@@ -17,6 +17,11 @@ public class BlockPlacerApi {
     }
 
     @ApiVisibility(ApiType.BLOCK_PLACER)
+    public void setBlockId(String[] blockIds) {
+        ScriptedBlockPlacerController.instance.setBlock(blockIds, BlockPlacingMethod.ANY);
+    }
+
+    @ApiVisibility(ApiType.BLOCK_PLACER)
     public void setBlockId(String blockId, String method) {
         ScriptedBlockPlacerController.instance.setBlock(blockId, parseMethod(method));
     }

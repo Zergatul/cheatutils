@@ -33,7 +33,7 @@ public class ScriptedBlockPlacerController {
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
     private Runnable script;
-    private String blockId;
+    private String[] blockIds;
     private BlockPlacingMethod method;
     private BlockUtils.PlaceBlockPlan debugPlan;
     private volatile boolean debugStep;
@@ -48,7 +48,11 @@ public class ScriptedBlockPlacerController {
     }
 
     public void setBlock(String blockId, BlockPlacingMethod method) {
-        this.blockId = blockId;
+        setBlock(new String[] { blockId }, method);
+    }
+
+    public void setBlock(String[] blockIds, BlockPlacingMethod method) {
+        this.blockIds = blockIds;
         this.method = method;
     }
 
@@ -77,36 +81,38 @@ public class ScriptedBlockPlacerController {
                 continue;
             }
 
-            blockId = null;
+            blockIds = null;
             CurrentBlockController.instance.set(pos, state);
             script.run();
             CurrentBlockController.instance.clear();
 
-            if (blockId == null) {
+            if (blockIds == null) {
                 continue;
             }
 
-            Block block = Registries.BLOCKS.getValue(new ResourceLocation(blockId));
-            if (block == Blocks.AIR) {
-                continue;
-            }
-
-            int slot = slotSelector.selectBlock(config, block);
-            if (slot < 0) {
-                continue;
-            }
-
-            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
-            if (plan != null) {
-                if (config.debugMode && !debugStep) {
-                    debugPlan = plan;
-                } else {
-                    debugPlan = null;
-                    debugStep = false;
-                    mc.player.getInventory().selected = slot;
-                    BlockUtils.applyPlacingPlan(plan, config.useShift);
+            for (String blockId : blockIds) {
+                Block block = Registries.BLOCKS.getValue(new ResourceLocation(blockId));
+                if (block == Blocks.AIR) {
+                    continue;
                 }
-                return;
+
+                int slot = slotSelector.selectBlock(config, block);
+                if (slot < 0) {
+                    continue;
+                }
+
+                BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
+                if (plan != null) {
+                    if (config.debugMode && !debugStep) {
+                        debugPlan = plan;
+                    } else {
+                        debugPlan = null;
+                        debugStep = false;
+                        mc.player.getInventory().selected = slot;
+                        BlockUtils.applyPlacingPlan(plan, config.useShift);
+                    }
+                    return;
+                }
             }
         }
     }
