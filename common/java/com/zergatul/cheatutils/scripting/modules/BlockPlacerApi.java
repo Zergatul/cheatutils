@@ -26,6 +26,11 @@ public class BlockPlacerApi {
         ScriptedBlockPlacerController.instance.setBlock(blockId, parseMethod(method));
     }
 
+    @ApiVisibility(ApiType.BLOCK_PLACER)
+    public void breakBlock() {
+        ScriptedBlockPlacerController.instance.breakBlock();
+    }
+
     private BlockPlacingMethod parseMethod(String value) {
         return switch (value) {
             case "bottom-slab" -> BlockPlacingMethod.BOTTOM_SLAB;

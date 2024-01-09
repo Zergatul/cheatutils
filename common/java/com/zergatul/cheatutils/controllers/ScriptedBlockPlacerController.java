@@ -16,9 +16,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class ScriptedBlockPlacerController {
@@ -30,6 +33,7 @@ public class ScriptedBlockPlacerController {
     private Runnable script;
     private String[] blockIds;
     private BlockPlacingMethod method;
+    private boolean breakCurrentBlock;
     private BlockUtils.PlaceBlockPlan debugPlan;
     private volatile boolean debugStep;
 
@@ -51,6 +55,10 @@ public class ScriptedBlockPlacerController {
         this.method = method;
     }
 
+    public void breakBlock() {
+        this.breakCurrentBlock = true;
+    }
+
     public void placeOne() {
         debugStep = true;
     }
@@ -61,7 +69,7 @@ public class ScriptedBlockPlacerController {
             return;
         }
 
-        if (mc.player == null || mc.level == null) {
+        if (mc.player == null || mc.level == null || mc.gameMode == null) {
             return;
         }
 
@@ -72,41 +80,47 @@ public class ScriptedBlockPlacerController {
         Vec3 eyePos = mc.player.getEyePosition(1);
         for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
             BlockState state = mc.level.getBlockState(pos);
-            if (!state.canBeReplaced()) {
-                continue;
-            }
 
             blockIds = null;
+            breakCurrentBlock = false;
             CurrentBlockController.instance.set(pos, state);
             script.run();
             CurrentBlockController.instance.clear();
 
-            if (blockIds == null) {
-                continue;
-            }
-
-            for (String blockId : blockIds) {
-                Block block = Registries.BLOCKS.getValue(new ResourceLocation(blockId));
-                if (block == Blocks.AIR) {
-                    continue;
-                }
-
-                int slot = slotSelector.selectBlock(config, block);
-                if (slot < 0) {
-                    continue;
-                }
-
-                BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
-                if (plan != null) {
-                    if (config.debugMode && !debugStep) {
-                        debugPlan = plan;
-                    } else {
-                        debugPlan = null;
-                        debugStep = false;
-                        mc.player.getInventory().selected = slot;
-                        BlockUtils.applyPlacingPlan(plan, config.useShift);
-                    }
+            if (breakCurrentBlock) {
+                /*BlockHitResult blockhitresult = (BlockHitResult)this.hitResult;
+                BlockPos blockpos = blockhitresult.getBlockPos();*/
+                if (!mc.level.isEmptyBlock(pos)) {
+                    mc.gameMode.startDestroyBlock(pos, Direction.UP);
+                    /*if (mc.level.getBlockState(pos).isAir()) {
+                        flag = true;
+                    }*/
                     return;
+                }
+            } else if (blockIds != null) {
+                for (String blockId : blockIds) {
+                    Item item = Registries.ITEMS.getValue(new ResourceLocation(blockId));
+                    if (item == Items.AIR) {
+                        continue;
+                    }
+
+                    int slot = slotSelector.selectItem(config, item);
+                    if (slot < 0) {
+                        continue;
+                    }
+
+                    BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
+                    if (plan != null) {
+                        if (config.debugMode && !debugStep) {
+                            debugPlan = plan;
+                        } else {
+                            debugPlan = null;
+                            debugStep = false;
+                            mc.player.getInventory().selected = slot;
+                            BlockUtils.applyPlacingPlan(plan, config.useShift);
+                        }
+                        return;
+                    }
                 }
             }
         }

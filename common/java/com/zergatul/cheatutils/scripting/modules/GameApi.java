@@ -6,16 +6,21 @@ import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 
 public class GameApi {
 
-    private final Minecraft mc = Minecraft.getInstance();
+    private static final Minecraft mc = Minecraft.getInstance();
 
     public DimensionApi dimension = new DimensionApi();
+    public BlocksApi blocks = new BlocksApi();
     public EntitiesApi entities = new EntitiesApi();
 
     public boolean isSinglePlayer() {
@@ -47,8 +52,6 @@ public class GameApi {
 
     public static class DimensionApi {
 
-        private static final Minecraft mc = Minecraft.getInstance();
-
         public boolean isOverworld() {
             if (mc.level == null) {
                 return false;
@@ -72,8 +75,6 @@ public class GameApi {
     }
 
     public static class EntitiesApi {
-
-        private final Minecraft mc = Minecraft.getInstance();
 
         @HelpText("Returns integer entity id")
         public int findClosestEntityById(String id) {
@@ -170,6 +171,43 @@ public class GameApi {
             }
 
             return entity.getZ();
+        }
+    }
+
+    public static class BlocksApi {
+
+        public String getId(int x, int y, int z) {
+            if (mc.level == null) {
+                return "";
+            }
+
+            Block block = mc.level.getBlockState(new BlockPos(x, y, z)).getBlock();
+            return Registries.BLOCKS.getKey(block).toString();
+        }
+
+        public boolean canBeReplaced(int x, int y, int z) {
+            if (mc.level == null) {
+                return false;
+            }
+
+            return mc.level.getBlockState(new BlockPos(x, y, z)).canBeReplaced();
+        }
+
+        public int getIntegerTag(int x, int y, int z, String tag) {
+            if (mc.level == null) {
+                return Integer.MIN_VALUE;
+            }
+
+            BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
+            Property<?> property = state.getValues().keySet().stream()
+                    .filter(p -> p.getName().equals(tag) && p.getValueClass() == Integer.class)
+                    .findFirst()
+                    .orElse(null);
+            if (property == null) {
+                return Integer.MIN_VALUE;
+            }
+
+            return (Integer) state.getValue(property);
         }
     }
 }
