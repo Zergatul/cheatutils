@@ -75,7 +75,7 @@ public class LightLevel implements Module {
 
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC));
 
-        Events.RenderWorldLast.add(this::render);
+        Events.AfterRenderWorld.add(this::render);
         Events.ScannerChunkLoaded.add(this::onChunkLoaded);
         Events.ScannerChunkUnloaded.add(this::onChunkUnLoaded);
         Events.ScannerBlockUpdated.add(this::onBlockChanged);

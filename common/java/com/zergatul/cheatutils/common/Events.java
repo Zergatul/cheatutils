@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.common;
 
 import com.zergatul.cheatutils.common.events.*;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.world.entity.Entity;
@@ -25,7 +24,7 @@ public class Events {
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLayerEvent> RenderSolidLayer = new ParameterizedEventHandler<>();
-    public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLast = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<RenderWorldLastEvent> AfterRenderWorld = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderGuiOverlayEvent> PreRenderGuiOverlay = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<RenderGuiEvent> PreRenderGui = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderGuiEvent> PostRenderGui = new ParameterizedEventHandler<>();

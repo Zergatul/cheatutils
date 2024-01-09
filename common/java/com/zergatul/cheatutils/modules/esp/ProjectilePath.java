@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.collections.LinesIterable;
 import com.zergatul.cheatutils.common.Events;
@@ -11,22 +9,16 @@ import com.zergatul.cheatutils.configs.ProjectilePathConfig;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.DebugLinesLineRenderer;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.Primitives;
-import com.zergatul.cheatutils.utils.FreeCamPath;
-import com.zergatul.cheatutils.utils.SharedVertexBuffer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.*;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -49,7 +41,7 @@ public class ProjectilePath {
     // TODO: highlight block?
 
     private ProjectilePath() {
-        Events.RenderWorldLast.add(this::render);
+        Events.AfterRenderWorld.add(this::render);
     }
 
     private void render(RenderWorldLastEvent event) {

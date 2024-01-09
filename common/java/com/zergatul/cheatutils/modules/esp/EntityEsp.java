@@ -38,7 +38,7 @@ public class EntityEsp implements Module {
     private final Map<EntityEspConfig, List<BufferedVerticesEntry>> outlineBufferedVertices = new HashMap<>();
 
     private EntityEsp() {
-        Events.RenderWorldLast.add(this::render);
+        Events.AfterRenderWorld.add(this::render);
     }
 
     public MultiBufferSource onRenderEntityModifyBufferSource(Entity entity, MultiBufferSource bufferSource) {

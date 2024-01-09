@@ -23,7 +23,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -53,7 +52,7 @@ public class SchematicaController {
         Events.ScannerBlockUpdated.add(this::onBlockUpdated);
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.RenderSolidLayer.add(this::onRenderSolidLayer);
-        Events.RenderWorldLast.add(this::onRender);
+        Events.AfterRenderWorld.add(this::onRender);
     }
 
     public synchronized void clear() {

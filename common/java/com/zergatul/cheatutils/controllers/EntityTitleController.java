@@ -74,7 +74,7 @@ public class EntityTitleController {
     private GlyphFontRenderer enchFontRenderer;
 
     private EntityTitleController() {
-        Events.RenderWorldLast.add(this::onRenderWorld);
+        Events.AfterRenderWorld.add(this::onRenderWorld);
         Events.PreRenderGui.add(this::onRenderGui);
     }
 

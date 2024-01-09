@@ -1,10 +1,5 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.AreaMineConfig;
@@ -14,7 +9,6 @@ import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
@@ -36,7 +30,7 @@ public class AreaMine implements Module {
     private final Minecraft mc = Minecraft.getInstance();
 
     private AreaMine() {
-        Events.RenderWorldLast.add(this::onRenderWorldLast);
+        Events.AfterRenderWorld.add(this::onRenderWorldLast);
         Events.BeforeInstaMine.add(this::onBeforeInstaMine);
     }
 

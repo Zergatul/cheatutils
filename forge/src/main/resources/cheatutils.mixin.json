@@ -73,7 +73,6 @@
     "forge.MixinAbstractContainerScreen",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
-    "forge.MixinLevelRenderer",
     "forge.MixinLightTexture",
     "forge.MixinLocalPlayer",
     "forge.MixinModVersions",

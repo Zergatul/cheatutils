@@ -2,11 +2,12 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
+import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -20,9 +21,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(LevelRenderer.class)
 public abstract class MixinLevelRenderer {
@@ -64,7 +63,7 @@ public abstract class MixinLevelRenderer {
             Matrix4f projectionMatrix,
             CallbackInfo info
     ) {
-        if (FakePlayer.list.size() == 0) {
+        if (FakePlayer.list.isEmpty()) {
             return;
         }
         LocalPlayer player = this.minecraft.player;
@@ -82,6 +81,23 @@ public abstract class MixinLevelRenderer {
                 this.renderEntity(fake, x, y, z, partialTicks, matrices, source);
             }
         }
+    }
+
+    @Inject(at = @At("RETURN"), method = "renderLevel")
+    private void onRenderLevelEnd(
+            PoseStack matrices,
+            float partialTicks,
+            long limitTime,
+            boolean renderBlockOutline,
+            Camera camera,
+            GameRenderer gameRenderer,
+            LightTexture lightmapTextureManager,
+            Matrix4f projectionMatrix,
+            CallbackInfo info
+    ) {
+        GlStateTracker.save();
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
+        GlStateTracker.restore();
     }
 
     @Inject(at = @At("HEAD"), method = "renderSnowAndRain", cancellable = true)

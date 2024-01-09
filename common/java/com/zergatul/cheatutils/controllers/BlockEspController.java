@@ -20,7 +20,7 @@ public class BlockEspController {
     public static final BlockEspController instance = new BlockEspController();
 
     private BlockEspController() {
-        Events.RenderWorldLast.add(this::render);
+        Events.AfterRenderWorld.add(this::render);
     }
 
     private void render(RenderWorldLastEvent event) {

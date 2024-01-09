@@ -23,7 +23,7 @@ public class EndCityChunks {
     private final Minecraft mc = Minecraft.getInstance();
 
     private EndCityChunks() {
-        Events.RenderWorldLast.add(this::render);
+        Events.AfterRenderWorld.add(this::render);
     }
 
     private void render(RenderWorldLastEvent event) {

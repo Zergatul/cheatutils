@@ -1,10 +1,6 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -12,7 +8,6 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ScriptedBlockPlacerConfig;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
@@ -40,7 +35,7 @@ public class ScriptedBlockPlacerController {
 
     private ScriptedBlockPlacerController() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
-        Events.RenderWorldLast.add(this::onRenderWorldLast);
+        Events.AfterRenderWorld.add(this::onRenderWorldLast);
     }
 
     public void setScript(Runnable script) {
