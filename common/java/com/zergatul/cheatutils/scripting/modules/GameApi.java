@@ -50,6 +50,20 @@ public class GameApi {
         return (int) (mc.level.getDayTime() % 24000);
     }
 
+    public boolean isRaining() {
+        if (mc.level == null) {
+            return false;
+        }
+        return mc.level.isRaining();
+    }
+
+    public boolean isThundering() {
+        if (mc.level == null) {
+            return false;
+        }
+        return mc.level.isThundering();
+    }
+
     public static class DimensionApi {
 
         public boolean isOverworld() {
