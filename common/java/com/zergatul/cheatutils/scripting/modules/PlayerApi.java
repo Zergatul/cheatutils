@@ -7,11 +7,15 @@ import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayerApi {
 
     private final static Minecraft mc = Minecraft.getInstance();
+
+    public TargetApi target = new TargetApi();
 
     public double getX() {
         if (mc.player == null) {
@@ -139,6 +143,41 @@ public class PlayerApi {
             case "self-attack" -> DisconnectController.instance.selfAttack(message);
             case "invalid-chars" -> DisconnectController.instance.invalidChars(message);
             default -> DisconnectController.instance.disconnect(message);
+        }
+    }
+
+    public static class TargetApi {
+
+        public boolean hasBlock() {
+            if (mc.hitResult == null) {
+                return false;
+            }
+
+            return mc.hitResult.getType() == HitResult.Type.BLOCK;
+        }
+
+        public int getBlockX() {
+            if (mc.hitResult instanceof BlockHitResult hitResult) {
+                return hitResult.getBlockPos().getX();
+            } else {
+                return Integer.MIN_VALUE;
+            }
+        }
+
+        public int getBlockY() {
+            if (mc.hitResult instanceof BlockHitResult hitResult) {
+                return hitResult.getBlockPos().getY();
+            } else {
+                return Integer.MIN_VALUE;
+            }
+        }
+
+        public int getBlockZ() {
+            if (mc.hitResult instanceof BlockHitResult hitResult) {
+                return hitResult.getBlockPos().getZ();
+            } else {
+                return Integer.MIN_VALUE;
+            }
         }
     }
 }
