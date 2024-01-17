@@ -9,11 +9,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.function.Predicate;
 
 @Mixin(LocalPlayer.class)
 public abstract class MixinLocalPlayer extends AbstractClientPlayer {
@@ -131,5 +134,17 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     public void move(MoverType type, Vec3 delta) {
         delta = ElytraFly.instance.onBeforeMove(type, delta);
         super.move(type, delta);
+    }
+
+    @Override
+    public void updateFluidHeightAndDoFluidPushing(Predicate<FluidState> shouldUpdate) {
+        MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
+        if (config.disableWaterPush) {
+            Vec3 delta = this.getDeltaMovement();
+            super.updateFluidHeightAndDoFluidPushing(shouldUpdate);
+            this.setDeltaMovement(delta);
+        } else {
+            super.updateFluidHeightAndDoFluidPushing(shouldUpdate);
+        }
     }
 }

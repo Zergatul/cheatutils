@@ -12,6 +12,7 @@ public class MovementHackConfig implements ValidatableConfig {
     public boolean scaleJumpHeight;
     public double jumpHeightFactor;
     public boolean disableSlimePhysics;
+    public boolean disableWaterPush;
 
     public MovementHackConfig() {
         inputVectorFactor = 1;

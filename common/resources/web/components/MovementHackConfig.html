@@ -114,6 +114,20 @@
                     No slow, no bounces.
                 </div>
             </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.disableWaterPush"
+                            @change="update()">
+                        <span>Disable Water Push Physics</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    Water no longer moves your character.
+                </div>
+            </fieldset>
         </div>
     </div>
 </div>
