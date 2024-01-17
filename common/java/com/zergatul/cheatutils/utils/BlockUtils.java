@@ -31,6 +31,15 @@ public class BlockUtils {
             return null;
         }
 
+        if (method == BlockPlacingMethod.ITEM_USE) {
+            return new PlaceBlockPlan(
+                    pos.immutable(),
+                    Direction.UP,
+                    pos.immutable(),
+                    pos.getCenter(),
+                    null);
+        }
+
         BlockState currentState = mc.level.getBlockState(pos);
         if (!currentState.canBeReplaced()) {
             return null;

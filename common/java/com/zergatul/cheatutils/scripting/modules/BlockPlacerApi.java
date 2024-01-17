@@ -11,6 +11,7 @@ public class BlockPlacerApi {
         ScriptedBlockPlacerController.instance.placeOne();
     }
 
+    // TODO: rename to useItem
     @ApiVisibility(ApiType.BLOCK_PLACER)
     public void setBlockId(String blockId) {
         ScriptedBlockPlacerController.instance.setBlock(blockId, BlockPlacingMethod.ANY);
@@ -42,6 +43,7 @@ public class BlockPlacerApi {
             case "facing-east" -> BlockPlacingMethod.FACING_EAST;
             case "facing-west" -> BlockPlacingMethod.FACING_WEST;
             case "from-top" -> BlockPlacingMethod.FROM_TOP;
+            case "item-use" -> BlockPlacingMethod.ITEM_USE;
             default -> BlockPlacingMethod.ANY;
         };
     }
