@@ -35,6 +35,9 @@ public abstract class MixinMinecraft {
     @Shadow
     protected abstract void continueAttack(boolean p_91387_);
 
+    @Shadow
+    public abstract boolean isGameLoadFinished();
+
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
         if (EntityEsp.instance.shouldEntityGlow(entity)) {
@@ -75,7 +78,9 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "tick()V")
     private void onBeforeTick(CallbackInfo info) {
-        Events.ClientTickStart.trigger();
+        if (this.isGameLoadFinished()) {
+            Events.ClientTickStart.trigger();
+        }
     }
 
     @Inject(
@@ -93,7 +98,9 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("TAIL"), method = "tick()V")
     private void onAfterTick(CallbackInfo info) {
-        Events.ClientTickEnd.trigger();
+        if (this.isGameLoadFinished()) {
+            Events.ClientTickEnd.trigger();
+        }
     }
 
     @Inject(
