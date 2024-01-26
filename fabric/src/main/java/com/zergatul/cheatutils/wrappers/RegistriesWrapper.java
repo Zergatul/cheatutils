@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.WrappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -27,6 +28,10 @@ public class RegistriesWrapper {
 
     public static WrappedRegistry<Enchantment> getEnchantments() {
         return new VanillaWrapperRegistry<>(BuiltInRegistries.ENCHANTMENT);
+    }
+
+    public static WrappedRegistry<MobEffect> getMobEffects() {
+        return new VanillaWrapperRegistry<>(BuiltInRegistries.MOB_EFFECT);
     }
 
     private record VanillaWrapperRegistry<T>(Registry<T> registry) implements WrappedRegistry<T> {

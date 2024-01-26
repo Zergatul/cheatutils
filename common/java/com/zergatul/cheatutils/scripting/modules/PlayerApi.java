@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.controllers.DisconnectController;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
@@ -7,7 +8,13 @@ import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -16,6 +23,7 @@ public class PlayerApi {
     private final static Minecraft mc = Minecraft.getInstance();
 
     public TargetApi target = new TargetApi();
+    public EffectsApi effects = new EffectsApi();
 
     public double getX() {
         if (mc.player == null) {
@@ -146,6 +154,36 @@ public class PlayerApi {
         }
     }
 
+    @ApiVisibility(ApiType.ACTION)
+    public boolean attack(int entityId) {
+        if (mc.level == null) {
+            return false;
+        }
+        if (mc.player == null) {
+            return false;
+        }
+        if (mc.gameMode == null) {
+            return false;
+        }
+
+        Entity entity = mc.level.getEntity(entityId);
+        if (entity == null) {
+            return false;
+        }
+
+        mc.gameMode.attack(mc.player, entity);
+        mc.player.swing(InteractionHand.MAIN_HAND);
+        return true;
+    }
+
+    @HelpText("Returns [0..1]. 0 means attack will do full damage.")
+    public double getAttackCooldown() {
+        if (mc.player == null) {
+            return Double.NaN;
+        }
+        return 1d - mc.player.getAttackStrengthScale(0);
+    }
+
     public static class TargetApi {
 
         public boolean hasBlock() {
@@ -178,6 +216,63 @@ public class PlayerApi {
             } else {
                 return Integer.MIN_VALUE;
             }
+        }
+
+        public boolean hasEntity() {
+            if (mc.hitResult == null) {
+                return false;
+            }
+
+            return mc.hitResult.getType() == HitResult.Type.ENTITY;
+        }
+
+        public int getEntityId() {
+            if (mc.hitResult instanceof EntityHitResult hitResult) {
+                return hitResult.getEntity().getId();
+            } else {
+                return Integer.MIN_VALUE;
+            }
+        }
+    }
+
+    public static class EffectsApi {
+
+        @HelpText("If player has no effect, returns 0")
+        public int getLevel(String id) {
+            if (mc.player == null) {
+                return 0;
+            }
+
+            MobEffect effect = Registries.MOB_EFFECTS.getValue(new ResourceLocation(id));
+            if (effect == null) {
+                return Integer.MIN_VALUE;
+            }
+
+            MobEffectInstance instance = mc.player.getActiveEffectsMap().get(effect);
+            if (instance == null) {
+                return 0;
+            }
+
+            return instance.getAmplifier() + 1;
+        }
+
+        @HelpText("If player has no effect, returns 0")
+        public double getDuration(String id) {
+            if (mc.player == null) {
+                return 0;
+            }
+
+            MobEffect effect = Registries.MOB_EFFECTS.getValue(new ResourceLocation(id));
+            if (effect == null) {
+                return -1;
+            }
+
+            MobEffectInstance instance = mc.player.getActiveEffectsMap().get(effect);
+            if (instance == null) {
+                return 0;
+            }
+
+            return instance.getDuration() / 20d;
         }
     }
 }

@@ -6,7 +6,9 @@ import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -14,6 +16,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+
+import java.util.function.Function;
 
 public class GameApi {
 
@@ -149,32 +153,83 @@ public class GameApi {
         }
 
         public double getX(int entityId) {
-            if (mc.level == null) {
-                return Double.NaN;
-            }
-
-            Entity entity = mc.level.getEntity(entityId);
-            if (entity == null) {
-                return Double.NaN;
-            }
-
-            return entity.getX();
+            return getDoubleValue(entityId, Entity::getX);
         }
 
         public double getY(int entityId) {
-            if (mc.level == null) {
-                return Double.NaN;
-            }
-
-            Entity entity = mc.level.getEntity(entityId);
-            if (entity == null) {
-                return Double.NaN;
-            }
-
-            return entity.getY();
+            return getDoubleValue(entityId, Entity::getY);
         }
 
         public double getZ(int entityId) {
+            return getDoubleValue(entityId, Entity::getZ);
+        }
+
+        public double getXRot(int entityId) {
+            return getDoubleValue(entityId, entity -> (double) entity.getXRot());
+        }
+
+        public double getYRot(int entityId) {
+            return getDoubleValue(entityId, entity -> (double) entity.getYRot());
+        }
+
+        public boolean isAlive(int entityId) {
+            return getBooleanValue(entityId, Entity::isAlive);
+        }
+
+        public String getType(int entityId) {
+            return getStringValue(entityId, entity -> {
+                EntityType<?> type = entity.getType();
+                return Registries.ENTITY_TYPES.getKey(type).toString();
+            });
+        }
+
+        public boolean hasCustomName(int entityId) {
+            return getBooleanValue(entityId, Entity::hasCustomName);
+        }
+
+        public String getName(int entityId) {
+            return getStringValue(entityId, entity -> {
+                Component name = entity.getDisplayName();
+                if (name == null) {
+                    return "";
+                } else {
+                    return name.getString();
+                }
+            });
+        }
+
+        public boolean isInstanceOf(int entityId, String className) {
+            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
+            if (info == null) {
+                return false;
+            }
+
+            if (mc.level == null) {
+                return false;
+            }
+
+            Entity entity = mc.level.getEntity(entityId);
+            if (entity == null) {
+                return false;
+            }
+
+            return info.clazz.isAssignableFrom(entity.getClass());
+        }
+
+        private boolean getBooleanValue(int entityId, Function<Entity, Boolean> getter) {
+            if (mc.level == null) {
+                return false;
+            }
+
+            Entity entity = mc.level.getEntity(entityId);
+            if (entity == null) {
+                return false;
+            }
+
+            return getter.apply(entity);
+        }
+
+        private double getDoubleValue(int entityId, Function<Entity, Double> getter) {
             if (mc.level == null) {
                 return Double.NaN;
             }
@@ -184,7 +239,20 @@ public class GameApi {
                 return Double.NaN;
             }
 
-            return entity.getZ();
+            return getter.apply(entity);
+        }
+
+        private String getStringValue(int entityId, Function<Entity, String> getter) {
+            if (mc.level == null) {
+                return "";
+            }
+
+            Entity entity = mc.level.getEntity(entityId);
+            if (entity == null) {
+                return "";
+            }
+
+            return getter.apply(entity);
         }
     }
 

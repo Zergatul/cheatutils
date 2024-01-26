@@ -8,7 +8,9 @@ import com.zergatul.cheatutils.modules.hacks.ElytraFly;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -136,15 +138,17 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         super.move(type, delta);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void updateFluidHeightAndDoFluidPushing(Predicate<FluidState> shouldUpdate) {
+    public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> fluid, double p_204033_) {
         MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
         if (config.disableWaterPush) {
             Vec3 delta = this.getDeltaMovement();
-            super.updateFluidHeightAndDoFluidPushing(shouldUpdate);
+            boolean result = super.updateFluidHeightAndDoFluidPushing(fluid, p_204033_);
             this.setDeltaMovement(delta);
+            return result;
         } else {
-            super.updateFluidHeightAndDoFluidPushing(shouldUpdate);
+            return super.updateFluidHeightAndDoFluidPushing(fluid, p_204033_);
         }
     }
 }
