@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.Exec;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.utilities.DelayedRun;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
@@ -75,7 +76,7 @@ public class ModMain {
         register(TeleportHackController.instance);
         register(WorldMarkersController.instance);
         register(TpsCounterController.instance);
-        register(ScriptedBlockPlacerController.instance);
+        register(BlockAutomation.instance);
 
         //register(FakeLag.instance);
         register(FlyHack.instance);

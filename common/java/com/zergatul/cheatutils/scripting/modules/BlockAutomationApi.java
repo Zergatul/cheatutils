@@ -1,35 +1,44 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.controllers.ScriptedBlockPlacerController;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 
-public class BlockPlacerApi {
+public class BlockAutomationApi {
 
-    public void placeOne() {
-        ScriptedBlockPlacerController.instance.placeOne();
-    }
-
-    // TODO: rename to useItem
-    @ApiVisibility(ApiType.BLOCK_PLACER)
-    public void setBlockId(String blockId) {
-        ScriptedBlockPlacerController.instance.setBlock(blockId, BlockPlacingMethod.ANY);
+    public void useOne() {
+        BlockAutomation.instance.placeOne();
     }
 
     @ApiVisibility(ApiType.BLOCK_PLACER)
-    public void setBlockId(String[] blockIds) {
-        ScriptedBlockPlacerController.instance.setBlock(blockIds, BlockPlacingMethod.ANY);
+    public void useItem(String blockId) {
+        BlockAutomation.instance.useItem(blockId, BlockPlacingMethod.ANY);
     }
 
     @ApiVisibility(ApiType.BLOCK_PLACER)
-    public void setBlockId(String blockId, String method) {
-        ScriptedBlockPlacerController.instance.setBlock(blockId, parseMethod(method));
+    public void useItem(String[] blockIds) {
+        BlockAutomation.instance.useItem(blockIds, BlockPlacingMethod.ANY);
+    }
+
+    @ApiVisibility(ApiType.BLOCK_PLACER)
+    public void useItem(String itemId, String method) {
+        BlockAutomation.instance.useItem(itemId, parseMethod(method));
     }
 
     @ApiVisibility(ApiType.BLOCK_PLACER)
     public void breakBlock() {
-        ScriptedBlockPlacerController.instance.breakBlock();
+        BlockAutomation.instance.breakBlock(null, null);
+    }
+
+    @ApiVisibility(ApiType.BLOCK_PLACER)
+    public void breakBlock(String itemId) {
+        BlockAutomation.instance.breakBlock(itemId, null);
+    }
+
+    @ApiVisibility(ApiType.BLOCK_PLACER)
+    public void breakBlock(String itemId, String enchantmentId) {
+        BlockAutomation.instance.breakBlock(itemId, enchantmentId);
     }
 
     private BlockPlacingMethod parseMethod(String value) {

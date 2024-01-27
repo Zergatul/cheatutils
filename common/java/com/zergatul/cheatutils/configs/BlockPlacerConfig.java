@@ -17,7 +17,7 @@ public abstract class BlockPlacerConfig extends ModuleConfig implements Validata
         autoSelectSlots = new int[] { 9 };
     }
 
-    public void copyTo(ScriptedBlockPlacerConfig other) {
+    public void copyTo(BlockAutomationConfig other) {
         super.copyTo(other);
         other.maxRange = maxRange;
         other.autoSelectSlots = autoSelectSlots;

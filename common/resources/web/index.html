@@ -92,7 +92,7 @@
                             <button @click="current = 'shulker-tooltip'" :class="{ faded: !filtered.ShulkerTooltip, active: statuses.ShulkerTooltip }">Shulker Tooltip</button>
                         </td>
                         <td>
-                            <button @click="current = 'scripted-block-placer'" :class="{ faded: !filtered.ScriptedBlockPlacer, active: statuses.ScriptedBlockPlacer }">Block Placer</button>
+                            <button @click="current = 'block-automation'" :class="{ faded: !filtered.BlockAutomation, active: statuses.BlockAutomation }">Block Automation</button>
                         </td>
                         <td>
                             <button @click="current = 'container-summary'" :class="{ faded: !filtered.ContainerSummary, active: statuses.ContainerSummary }">Container Summary</button>
@@ -595,10 +595,10 @@
             @back="backToMain()">
         </tps-config>
 
-        <scripted-block-placer-config
-            v-if="current == 'scripted-block-placer'"
+        <block-automation-config
+            v-if="current == 'block-automation'"
             @back="backToMain()">
-        </scripted-block-placer-config>
+        </block-automation-config>
 
         <blink-config
             v-if="current == 'blink'"

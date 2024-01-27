@@ -1,11 +1,12 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ScriptedBlockPlacerConfig;
+import com.zergatul.cheatutils.configs.BlockAutomationConfig;
+import com.zergatul.cheatutils.controllers.CurrentBlockController;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
@@ -15,29 +16,31 @@ import com.zergatul.cheatutils.utils.SlotSelector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class ScriptedBlockPlacerController {
+public class BlockAutomation {
 
-    public static final ScriptedBlockPlacerController instance = new ScriptedBlockPlacerController();
+    public static final BlockAutomation instance = new BlockAutomation();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
     private Runnable script;
-    private String[] blockIds;
+    private String[] itemIds;
     private BlockPlacingMethod method;
     private boolean breakCurrentBlock;
+    private String breakItemId;
+    private String breakEnchantmentId;
+    private BlockPos currentDestroyingBlock;
     private BlockUtils.PlaceBlockPlan debugPlan;
     private volatile boolean debugStep;
 
-    private ScriptedBlockPlacerController() {
+    private BlockAutomation() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
     }
@@ -46,25 +49,39 @@ public class ScriptedBlockPlacerController {
         this.script = script;
     }
 
-    public void setBlock(String blockId, BlockPlacingMethod method) {
-        setBlock(new String[] { blockId }, method);
+    public void useItem(String itemId, BlockPlacingMethod method) {
+        useItem(new String[] { itemId }, method);
     }
 
-    public void setBlock(String[] blockIds, BlockPlacingMethod method) {
-        this.blockIds = blockIds;
+    public void useItem(String[] itemIds, BlockPlacingMethod method) {
+        this.itemIds = itemIds;
         this.method = method;
     }
 
-    public void breakBlock() {
+    public void breakBlock(String itemId, String enchantmentId) {
         this.breakCurrentBlock = true;
+        this.breakItemId = itemId;
+        this.breakEnchantmentId = enchantmentId;
     }
 
     public void placeOne() {
         debugStep = true;
     }
 
+    public boolean isBreakingBlock() {
+        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
+        if (!config.enabled) {
+            return false;
+        }
+        if (script == null) {
+            return false;
+        }
+
+        return currentDestroyingBlock != null;
+    }
+
     private void onClientTickEnd() {
-        ScriptedBlockPlacerConfig config = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
         if (!config.enabled) {
             return;
         }
@@ -78,28 +95,46 @@ public class ScriptedBlockPlacerController {
         }
 
         Vec3 eyePos = mc.player.getEyePosition(1);
+
+        if (mc.gameMode.isDestroying()) {
+            if (mc.options.keyAttack.isDown()) {
+                // player destroying block
+            } else {
+                if (currentDestroyingBlock != null) {
+                    // check distance to block
+                    if (currentDestroyingBlock.distToCenterSqr(eyePos) > config.maxRange * config.maxRange) {
+                        mc.gameMode.stopDestroyBlock();
+                    } else {
+                        if (mc.gameMode.continueDestroyBlock(currentDestroyingBlock, Direction.UP)) {
+                            mc.player.swing(InteractionHand.MAIN_HAND);
+                        }
+                    }
+                } else {
+                    mc.gameMode.stopDestroyBlock();
+                }
+            }
+            return;
+        }
+
+        currentDestroyingBlock = null;
+
         for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
             BlockState state = mc.level.getBlockState(pos);
 
-            blockIds = null;
+            itemIds = null;
             breakCurrentBlock = false;
             CurrentBlockController.instance.set(pos, state);
             script.run();
             CurrentBlockController.instance.clear();
 
-            if (breakCurrentBlock) {
-                /*BlockHitResult blockhitresult = (BlockHitResult)this.hitResult;
-                BlockPos blockpos = blockhitresult.getBlockPos();*/
-                if (!mc.level.isEmptyBlock(pos)) {
-                    mc.gameMode.startDestroyBlock(pos, Direction.UP);
-                    /*if (mc.level.getBlockState(pos).isAir()) {
-                        flag = true;
-                    }*/
-                    return;
-                }
-            } else if (blockIds != null) {
-                for (String blockId : blockIds) {
-                    Item item = Registries.ITEMS.getValue(new ResourceLocation(blockId));
+            if (breakCurrentBlock && !mc.level.isEmptyBlock(pos) && selectItemForBlockBreak(config)) {
+                currentDestroyingBlock = pos;
+                mc.gameMode.startDestroyBlock(pos, Direction.UP);
+                mc.player.swing(InteractionHand.MAIN_HAND);
+                return;
+            } else if (itemIds != null) {
+                for (String itemId : itemIds) {
+                    Item item = Registries.ITEMS.getValue(new ResourceLocation(itemId));
                     if (item == Items.AIR) {
                         continue;
                     }
@@ -126,8 +161,46 @@ public class ScriptedBlockPlacerController {
         }
     }
 
+    private boolean selectItemForBlockBreak(BlockAutomationConfig config) {
+        assert mc.player != null;
+
+        if (breakItemId == null) {
+            return true;
+        }
+
+        Item item = Registries.ITEMS.getValue(new ResourceLocation(breakItemId));
+        if (item == Items.AIR) {
+            return false;
+        }
+
+        String enchantmentId =
+                breakEnchantmentId == null ?
+                null :
+                new ResourceLocation(breakEnchantmentId).toString();
+
+        int slot = slotSelector.selectItem(config, item, stack -> {
+            if (enchantmentId == null) {
+                return true;
+            }
+
+            return stack.getEnchantmentTags().stream().anyMatch(tag -> {
+                if (tag instanceof CompoundTag compound) {
+                    return compound.getString("id").equals(enchantmentId);
+                }
+                return false;
+            });
+        });
+
+        if (slot >= 0) {
+            mc.player.getInventory().selected = slot;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private void onRenderWorldLast(RenderWorldLastEvent event) {
-        ScriptedBlockPlacerConfig config = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
         if (config.enabled && config.debugMode && debugPlan != null) {
             // draw neighbour block
             LineRenderer renderer = RenderUtilities.instance.getLineRenderer();

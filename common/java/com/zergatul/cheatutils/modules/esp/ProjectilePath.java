@@ -7,7 +7,6 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ProjectilePathConfig;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.DebugLinesLineRenderer;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
@@ -92,7 +91,7 @@ public class ProjectilePath {
 
             // rendering
 
-            LineRenderer renderer = new DebugLinesLineRenderer();
+            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
             renderer.begin(event, true);
 
             for (List<TraceRecord> list : traces.values()) {

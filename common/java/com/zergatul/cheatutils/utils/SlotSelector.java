@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 public class SlotSelector {
 
@@ -66,6 +67,10 @@ public class SlotSelector {
     }
 
     public int selectItem(BlockPlacerConfig config, Item item) {
+        return selectItem(config, item, stack -> true);
+    }
+
+    public int selectItem(BlockPlacerConfig config, Item item, Predicate<ItemStack> predicate) {
         if (mc.player == null) {
             return -1;
         }
@@ -75,7 +80,7 @@ public class SlotSelector {
         // search on hotbar
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = inventory.getItem(i);
-            if (itemStack.is(item)) {
+            if (itemStack.is(item) && predicate.test(itemStack)) {
                 lastSlotUsage[i] = System.nanoTime();
                 return i;
             }
@@ -88,7 +93,7 @@ public class SlotSelector {
         // search in inventory
         for (int i = 9; i < 36; i++) {
             ItemStack itemStack = inventory.getItem(i);
-            if (itemStack.is(item)) {
+            if (itemStack.is(item) && predicate.test(itemStack)) {
                 long minTime = Long.MAX_VALUE;
                 int minSlot = config.autoSelectSlots[0];
                 for (int slot : config.autoSelectSlots) {

@@ -275,6 +275,14 @@ public class GameApi {
             return mc.level.getBlockState(new BlockPos(x, y, z)).canBeReplaced();
         }
 
+        public boolean isFluidSource(int x, int y, int z) {
+            if (mc.level == null) {
+                return false;
+            }
+
+            return mc.level.getBlockState(new BlockPos(x, y, z)).getFluidState().isSource();
+        }
+
         public int getIntegerTag(int x, int y, int z, String tag) {
             if (mc.level == null) {
                 return Integer.MIN_VALUE;

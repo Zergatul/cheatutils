@@ -5,12 +5,12 @@
         <button style="width: 200px;" @click="showApiRef()">Show/Hide API Reference</button>
     </div>
     <div class="module-main" v-if="config">
-        <h2 class="module-header">Scripted Block Placer</h2>
+        <h2 class="module-header">Block Automation</h2>
         <div class="description">
-            Write script to place blocks in range.<br>
-            Every game tick module runs your script for all blocks in range, which can be replaced (for example, air, water, sea grass). You can get current block information from <b>currentBlock</b> API.
-            If your script calls <b>blockPlacer.setBlockId("block_id");</b> with valid block id, module tries to place block here.
-            Module can only place 1 block per tick.
+            Write script to place blocks, use items on blocks, break blocks in range.<br>
+            Every game tick module runs your script for all blocks in range. You can get current block coordinates from <b>currentBlock</b> API.
+            If your script calls <b>blockAutomation.useItem(...);</b> or <b>blockAutomation.breakBlock(...);</b> module to use item and place block, or break block at current coordinates.
+            Module can only place/break 1 block per tick.
         </div>
 
         <div class="module-sections">
@@ -80,7 +80,7 @@
                                 </label>
                             </td>
                             <td>
-                                <div class="input-description">Shows block place plans, doesn't actually place blocks. Use <b>blockPlacer.placeOne();</b> hotkey to place one block.</div>
+                                <div class="input-description">Shows block place plans, doesn't actually place blocks. Use <b>blockAutomation.useOne();</b> hotkey to place one block.</div>
                             </td>
                         </tr>
                     </tbody>

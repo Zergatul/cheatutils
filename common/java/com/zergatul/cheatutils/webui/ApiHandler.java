@@ -657,15 +657,15 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("scripted-block-placer", ScriptedBlockPlacerConfig.class) {
+        apis.add(new SimpleConfigApi<>("scripted-block-placer", BlockAutomationConfig.class) {
             @Override
-            protected ScriptedBlockPlacerConfig getConfig() {
-                return ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+            protected BlockAutomationConfig getConfig() {
+                return ConfigStore.instance.getConfig().blockAutomationConfig;
             }
 
             @Override
-            protected void setConfig(ScriptedBlockPlacerConfig config) {
-                ScriptedBlockPlacerConfig current = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+            protected void setConfig(BlockAutomationConfig config) {
+                BlockAutomationConfig current = ConfigStore.instance.getConfig().blockAutomationConfig;
                 config.copyTo(current);
             }
         });

@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.modules.automation.AutoDisconnect;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.scripting.compiler.ScriptCompileException;
 import com.zergatul.scripting.generated.ParseException;
@@ -63,7 +64,8 @@ public class ConfigStore {
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 JsonElement element = JsonParser.parseReader(reader);
-                migration(element);
+                migration1(element);
+                migration2(element);
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
@@ -232,10 +234,10 @@ public class ConfigStore {
             }
         }
 
-        if (config.scriptedBlockPlacerConfig.code != null) {
+        if (config.blockAutomationConfig.code != null) {
             try {
-                Runnable script = ScriptController.instance.compileBlockPlacer(config.scriptedBlockPlacerConfig.code);
-                ScriptedBlockPlacerController.instance.setScript(script);
+                Runnable script = ScriptController.instance.compileBlockPlacer(config.blockAutomationConfig.code);
+                BlockAutomation.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
                 e.printStackTrace();
             }
@@ -269,7 +271,7 @@ public class ConfigStore {
         }
     }
 
-    private void migration(JsonElement element) {
+    private void migration1(JsonElement element) {
         if (!element.isJsonObject()) {
             return;
         }
@@ -308,5 +310,20 @@ public class ConfigStore {
                 config.remove("block");
             }
         }
+    }
+
+    private void migration2(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject root = element.getAsJsonObject();
+        if (!root.has("scriptedBlockPlacerConfig")) {
+            return;
+        }
+
+        JsonElement config = root.get("scriptedBlockPlacerConfig");
+        root.remove("scriptedBlockPlacerConfig");
+        root.add("blockAutomationConfig", config);
     }
 }

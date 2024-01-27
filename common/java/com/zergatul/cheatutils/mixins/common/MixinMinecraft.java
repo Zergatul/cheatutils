@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.PerformanceConfig;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
@@ -131,6 +132,10 @@ public abstract class MixinMinecraft {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
     private void onShouldContinueAttack(Minecraft instance, boolean value) {
         if (VillagerRoller.instance.isBreakingBlock()) {
+            return;
+        }
+
+        if (BlockAutomation.instance.isBreakingBlock()) {
             return;
         }
 

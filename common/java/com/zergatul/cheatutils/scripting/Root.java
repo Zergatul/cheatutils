@@ -47,6 +47,7 @@ public class Root {
     public static FullBrightApi fullBright = new FullBrightApi();
 
     // scripting
+    public static BlockAutomationApi blockAutomation = new BlockAutomationApi();
     public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
     public static EventsApi events = new EventsApi();
 
@@ -73,6 +74,5 @@ public class Root {
 
     // specific
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();
-    public static BlockPlacerApi blockPlacer = new BlockPlacerApi();
     public static CurrentPlayerApi currentPlayer = new CurrentPlayerApi();
 }

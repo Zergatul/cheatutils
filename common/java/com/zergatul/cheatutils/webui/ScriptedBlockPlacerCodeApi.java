@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ScriptController;
-import com.zergatul.cheatutils.controllers.ScriptedBlockPlacerController;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import org.apache.http.HttpException;
 
 public class ScriptedBlockPlacerCodeApi extends ApiBase {
@@ -15,9 +15,9 @@ public class ScriptedBlockPlacerCodeApi extends ApiBase {
     @Override
     public String post(String code) throws HttpException {
         if (code == null || code.length() == 0) {
-            ConfigStore.instance.getConfig().scriptedBlockPlacerConfig.code = null;
+            ConfigStore.instance.getConfig().blockAutomationConfig.code = null;
             ConfigStore.instance.requestWrite();
-            ScriptedBlockPlacerController.instance.setScript(null);
+            BlockAutomation.instance.setScript(null);
             return "{ \"ok\": true }";
         }
 
@@ -29,9 +29,9 @@ public class ScriptedBlockPlacerCodeApi extends ApiBase {
             throw new HttpException(e.getMessage());
         }
         if (script != null) {
-            ConfigStore.instance.getConfig().scriptedBlockPlacerConfig.code = code;
+            ConfigStore.instance.getConfig().blockAutomationConfig.code = code;
             ConfigStore.instance.requestWrite();
-            ScriptedBlockPlacerController.instance.setScript(script);
+            BlockAutomation.instance.setScript(script);
         }
         return "{ \"ok\": true }";
     }
