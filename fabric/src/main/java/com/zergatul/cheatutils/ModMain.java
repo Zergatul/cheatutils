@@ -60,7 +60,7 @@ public class ModMain implements ClientModInitializer {
         register(TeleportHackController.instance);
         register(WorldMarkersController.instance);
         register(TpsCounterController.instance);
-        register(ScriptedBlockPlacerController.instance);
+        register(BlockAutomation.instance);
 
         //register(FakeLag.instance);
         register(FlyHack.instance);
