@@ -71,6 +71,17 @@
                             </td>
                         </tr>
                         <tr>
+                            <td>
+                                <span class="field-description">Actions per tick:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="config.actionsPerTick" @change="update()">
+                            </td>
+                            <td>
+                                <div class="input-description"></div>
+                            </td>
+                        </tr>
+                        <tr>
                             <td colspan="2">
                                 <label class="switch-label">
                                     <input type="checkbox" class="switch"

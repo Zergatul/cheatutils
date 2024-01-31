@@ -11,10 +11,12 @@ public abstract class BlockPlacerConfig extends ModuleConfig implements Validata
     public int[] autoSelectSlots;
     public boolean attachToAir;
     public boolean useShift;
+    public double actionsPerTick;
 
     protected BlockPlacerConfig() {
         maxRange = 5;
         autoSelectSlots = new int[] { 9 };
+        actionsPerTick = 1;
     }
 
     public void copyTo(BlockAutomationConfig other) {
@@ -23,6 +25,7 @@ public abstract class BlockPlacerConfig extends ModuleConfig implements Validata
         other.autoSelectSlots = autoSelectSlots;
         other.attachToAir = attachToAir;
         other.useShift = useShift;
+        other.actionsPerTick = actionsPerTick;
     }
 
     @Override

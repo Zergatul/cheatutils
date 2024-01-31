@@ -39,6 +39,7 @@ public class BlockAutomation {
     private BlockPos currentDestroyingBlock;
     private BlockUtils.PlaceBlockPlan debugPlan;
     private volatile boolean debugStep;
+    private double actionTickCounter;
 
     private BlockAutomation() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
@@ -83,81 +84,95 @@ public class BlockAutomation {
     private void onClientTickEnd() {
         BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
         if (!config.enabled) {
+            actionTickCounter = 0;
             return;
         }
 
         if (mc.player == null || mc.level == null || mc.gameMode == null) {
+            actionTickCounter = 0;
             return;
         }
 
         if (script == null) {
+            actionTickCounter = 0;
             return;
         }
 
         Vec3 eyePos = mc.player.getEyePosition(1);
 
-        if (mc.gameMode.isDestroying()) {
-            if (mc.options.keyAttack.isDown()) {
-                // player destroying block
-            } else {
-                if (currentDestroyingBlock != null) {
-                    // check distance to block
-                    if (currentDestroyingBlock.distToCenterSqr(eyePos) > config.maxRange * config.maxRange) {
-                        mc.gameMode.stopDestroyBlock();
-                    } else {
-                        if (mc.gameMode.continueDestroyBlock(currentDestroyingBlock, Direction.UP)) {
-                            mc.player.swing(InteractionHand.MAIN_HAND);
-                        }
-                    }
+        actionTickCounter += config.actionsPerTick;
+
+        actionLoop:
+        while (actionTickCounter >= 1)
+        {
+            actionTickCounter -= 1;
+
+            if (mc.gameMode.isDestroying()) {
+                if (mc.options.keyAttack.isDown()) {
+                    // player destroying block
                 } else {
-                    mc.gameMode.stopDestroyBlock();
-                }
-            }
-            return;
-        }
-
-        currentDestroyingBlock = null;
-
-        for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
-            BlockState state = mc.level.getBlockState(pos);
-
-            itemIds = null;
-            breakCurrentBlock = false;
-            CurrentBlockController.instance.set(pos, state);
-            script.run();
-            CurrentBlockController.instance.clear();
-
-            if (breakCurrentBlock && !mc.level.isEmptyBlock(pos) && selectItemForBlockBreak(config)) {
-                currentDestroyingBlock = pos;
-                mc.gameMode.startDestroyBlock(pos, Direction.UP);
-                mc.player.swing(InteractionHand.MAIN_HAND);
-                return;
-            } else if (itemIds != null) {
-                for (String itemId : itemIds) {
-                    Item item = Registries.ITEMS.getValue(new ResourceLocation(itemId));
-                    if (item == Items.AIR) {
-                        continue;
-                    }
-
-                    int slot = slotSelector.selectItem(config, item);
-                    if (slot < 0) {
-                        continue;
-                    }
-
-                    BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
-                    if (plan != null) {
-                        if (config.debugMode && !debugStep) {
-                            debugPlan = plan;
+                    if (currentDestroyingBlock != null) {
+                        // check distance to block
+                        if (currentDestroyingBlock.distToCenterSqr(eyePos) > config.maxRange * config.maxRange) {
+                            mc.gameMode.stopDestroyBlock();
                         } else {
-                            debugPlan = null;
-                            debugStep = false;
-                            mc.player.getInventory().selected = slot;
-                            BlockUtils.applyPlacingPlan(plan, config.useShift);
+                            if (mc.gameMode.continueDestroyBlock(currentDestroyingBlock, Direction.UP)) {
+                                mc.player.swing(InteractionHand.MAIN_HAND);
+                            }
                         }
-                        return;
+                    } else {
+                        mc.gameMode.stopDestroyBlock();
+                    }
+                }
+                actionTickCounter = 0;
+                return;
+            }
+
+            currentDestroyingBlock = null;
+
+            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
+                BlockState state = mc.level.getBlockState(pos);
+
+                itemIds = null;
+                breakCurrentBlock = false;
+                CurrentBlockController.instance.set(pos, state);
+                script.run();
+                CurrentBlockController.instance.clear();
+
+                if (breakCurrentBlock && !mc.level.isEmptyBlock(pos) && selectItemForBlockBreak(config)) {
+                    currentDestroyingBlock = pos;
+                    mc.gameMode.startDestroyBlock(pos, Direction.UP);
+                    mc.player.swing(InteractionHand.MAIN_HAND);
+                    continue actionLoop;
+                } else if (itemIds != null) {
+                    for (String itemId : itemIds) {
+                        Item item = Registries.ITEMS.getValue(new ResourceLocation(itemId));
+                        if (item == Items.AIR) {
+                            continue;
+                        }
+
+                        int slot = slotSelector.selectItem(config, item);
+                        if (slot < 0) {
+                            continue;
+                        }
+
+                        BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
+                        if (plan != null) {
+                            if (config.debugMode && !debugStep) {
+                                debugPlan = plan;
+                            } else {
+                                debugPlan = null;
+                                debugStep = false;
+                                mc.player.getInventory().selected = slot;
+                                BlockUtils.applyPlacingPlan(plan, config.useShift);
+                            }
+                            continue actionLoop;
+                        }
                     }
                 }
             }
+
+            return;
         }
     }
 
