@@ -52,13 +52,15 @@ public class BlockUtils {
             }
         }
 
-        for (Direction direction : method.getAllowedDirections()) {
-            BlockPos neighbourPos = pos.relative(direction);
-            BlockState neighbourState = mc.level.getBlockState(neighbourPos);
-            if (!neighbourState.canBeReplaced()) {
-                Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, direction.getOpposite(), false);
-                if (target != null) {
-                    return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos, target, method.getRotation());
+        if (method != BlockPlacingMethod.AIR_PLACE) {
+            for (Direction direction : method.getAllowedDirections()) {
+                BlockPos neighbourPos = pos.relative(direction);
+                BlockState neighbourState = mc.level.getBlockState(neighbourPos);
+                if (!neighbourState.canBeReplaced()) {
+                    Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, direction.getOpposite(), false);
+                    if (target != null) {
+                        return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos, target, method.getRotation());
+                    }
                 }
             }
         }

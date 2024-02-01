@@ -53,6 +53,7 @@ public class BlockAutomationApi {
             case "facing-west" -> BlockPlacingMethod.FACING_WEST;
             case "from-top" -> BlockPlacingMethod.FROM_TOP;
             case "item-use" -> BlockPlacingMethod.ITEM_USE;
+            case "air-place" -> BlockPlacingMethod.AIR_PLACE;
             default -> BlockPlacingMethod.ANY;
         };
     }

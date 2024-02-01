@@ -16,7 +16,8 @@ public enum BlockPlacingMethod {
     FACING_NORTH,
     FROM_TOP,
     FROM_HORIZONTAL,
-    ITEM_USE;
+    ITEM_USE,
+    AIR_PLACE;
 
     public Vec3 getTarget(Vec3 playerPos, BlockPos blockPos, Direction direction, boolean airPlace) {
         return switch (this) {

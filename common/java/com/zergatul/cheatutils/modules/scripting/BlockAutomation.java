@@ -101,6 +101,7 @@ public class BlockAutomation {
         Vec3 eyePos = mc.player.getEyePosition(1);
 
         actionTickCounter += config.actionsPerTick;
+        boolean actionPerformed = false;
 
         actionLoop:
         while (actionTickCounter >= 1)
@@ -143,6 +144,7 @@ public class BlockAutomation {
                     currentDestroyingBlock = pos;
                     mc.gameMode.startDestroyBlock(pos, Direction.UP);
                     mc.player.swing(InteractionHand.MAIN_HAND);
+                    actionPerformed = true;
                     continue actionLoop;
                 } else if (itemIds != null) {
                     for (String itemId : itemIds) {
@@ -160,19 +162,26 @@ public class BlockAutomation {
                         if (plan != null) {
                             if (config.debugMode && !debugStep) {
                                 debugPlan = plan;
+                                break actionLoop;
+                                // TODO: test after actions per tick change?
                             } else {
                                 debugPlan = null;
                                 debugStep = false;
                                 mc.player.getInventory().selected = slot;
                                 BlockUtils.applyPlacingPlan(plan, config.useShift);
+                                actionPerformed = true;
+                                continue actionLoop;
                             }
-                            continue actionLoop;
                         }
                     }
                 }
             }
 
-            return;
+            if (!actionPerformed) {
+                actionTickCounter = 0;
+            }
+
+            break;
         }
     }
 
