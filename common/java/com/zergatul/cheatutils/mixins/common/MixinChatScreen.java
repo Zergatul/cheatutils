@@ -16,6 +16,9 @@ public abstract class MixinChatScreen {
     @Shadow
     protected EditBox input;
 
+    @Shadow
+    private int historyPos;
+
     @Redirect(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V", ordinal = 1))
     private void onSendChatMessageCloseChat(Minecraft mc, Screen screen) {
         if (ConfigStore.instance.getConfig().chatUtilitiesConfig.dontCloseChatOnEnter) {
@@ -23,6 +26,7 @@ public abstract class MixinChatScreen {
                 mc.setScreen(screen);
             } else {
                 this.input.setValue("");
+                this.historyPos = Minecraft.getInstance().gui.getChat().getRecentChat().size();
             }
         } else {
             mc.setScreen(screen);
