@@ -321,7 +321,12 @@ public class EntityEsp implements Module {
                     if (shard instanceof RenderStateShard.TextureStateShard textureStateShard) {
                         Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
                         if (texture.isPresent()) {
-                            return new VertexConsumerWrapper(config, texture.get(), source.getBuffer(renderType), overlay, outline);
+                            VertexConsumer inner = source.getBuffer(renderType);
+                            if (inner instanceof VertexConsumerWrapper) {
+                                return inner;
+                            } else {
+                                return new VertexConsumerWrapper(config, texture.get(), source.getBuffer(renderType), overlay, outline);
+                            }
                         }
                     }
                 }
