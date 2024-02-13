@@ -87,14 +87,12 @@ function createComponent(template) {
 
             const remove = () => {
                 if (selectedConfig.value) {
-                    axios.delete('/api/blocks/' + encodeURIComponent(selectedConfig.value.block)).then(response => {
-                        let id = selectedConfig.value.block;
-                        let index = blocksConfigList.value.indexOf(selectedConfig.value);
-                        if (index >= 0) {
-                            blocksConfigList.value.splice(index, 1);
-                        }
+                    axios.delete('/api/blocks/' + encodeURIComponent(selectedConfig.value.blocks[0])).then(response => {
+                        blocksConfigList.value = blocksConfigList.value.filter(c => c != selectedConfig.value);
+                        selectedConfig.value.blocks.forEach(id => {
+                            delete blocksConfigMap.value[id];
+                        })
                         selectedConfig.value = null;
-                        delete blocksConfigMap.value[id];
                         backToList();
                     });
                 }
