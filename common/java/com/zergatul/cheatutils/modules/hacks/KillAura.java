@@ -132,12 +132,17 @@ public class KillAura implements Module {
             }
         }
 
-        if (target != null) {
-            FakeRotationController.instance.setServerRotation(getAttackPoint(target));
+        if (!targets.isEmpty()) {
+            targets.sort(Comparator.comparingDouble(e -> e.distanceToSqr(eyePos)));
         }
 
-        if (targets.size() > 0) {
-            targets.sort(Comparator.comparingDouble(e -> e.distanceToSqr(eyePos)));
+        if (config.autoRotate) {
+            if (target != null) {
+                FakeRotationController.instance.setServerRotation(getAttackPoint(target));
+                // attack will happen in onAfterSendPosition method
+            }
+        } else {
+            executeAttack();
         }
     }
 
@@ -157,6 +162,13 @@ public class KillAura implements Module {
     }
 
     private void onAfterSendPosition() {
+        executeAttack();
+    }
+
+    private void executeAttack() {
+        assert mc.gameMode != null;
+        assert mc.player != null;
+
         if (target != null) {
             LocalPlayer player = mc.player;
             mc.gameMode.attack(player, target);
@@ -165,7 +177,7 @@ public class KillAura implements Module {
 
             lastAttackTick = ticks;
         }
-        if (targets.size() > 0) {
+        if (!targets.isEmpty()) {
             LocalPlayer player = mc.player;
             mc.gameMode.attack(player, targets.get(0));
             for (int i = 1; i < targets.size(); i++) {
@@ -184,6 +196,8 @@ public class KillAura implements Module {
     }
 
     private boolean shouldAttackNow(KillAuraConfig config) {
+        assert mc.player != null;
+
         if (KillAuraConfig.Cooldown.equals(config.delayMode)) {
             return mc.player.getAttackStrengthScale((float) -config.extraTicks) == 1;
         } else {

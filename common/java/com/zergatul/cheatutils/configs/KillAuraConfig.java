@@ -29,12 +29,14 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
     public ImmutableList<PriorityEntry> priorities;
     public ImmutableList<CustomPriorityEntry> customEntries;
     public boolean attackAll;
+    public boolean autoRotate;
 
     public KillAuraConfig() {
         overrideAttackRange = true;
         maxRange = 6;
         delayMode = ConstDelay;
         attackTickInterval = 5;
+        autoRotate = true;
         priorities = new ImmutableList<PriorityEntry>()
                 .add(PredefinedPriorityEntry.fromName("Enemies"))
                 .add(PredefinedPriorityEntry.fromName("Shulker Bullets"))

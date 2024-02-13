@@ -116,6 +116,21 @@
                 </div>
             </fieldset>
 
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="config.autoRotate"
+                            @change="update()">
+                        <span>Auto Rotate</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    Automatically rotates you in the direction of the target each time Kill Aura attacks a target. Has no effect on client side.<br>
+                    When enabled Kill Aura will not work from Boats/Minecarts or other rideable entities.
+                </div>
+            </fieldset>
+
             <fieldset v-if="priorityList">
                 <legend>Priorities</legend>
 
