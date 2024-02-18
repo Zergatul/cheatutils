@@ -71,6 +71,7 @@ public class Root {
     public static WindowApi window = new WindowApi();
     public static FontApi font = new FontApi();
     public static DelayedApi delayed = new DelayedApi();
+    public static CameraApi camera = new CameraApi();
 
     // specific
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();
