@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 
 public class FastBreakConfig extends ModuleConfig implements ValidatableConfig {
     public double factor;
+    public boolean disableDestroyDelay;
 
     public FastBreakConfig() {
         factor = 1.2;

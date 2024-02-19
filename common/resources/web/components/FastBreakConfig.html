@@ -31,6 +31,20 @@
                     1=no change, 1.2=1.2x faster and so on. Maximum theoretical value for vanilla server: 1/0.7=1.428571. It is better to use lower value.
                 </div>
             </fieldset>
+
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                               v-model="config.disableDestroyDelay"
+                               @change="update()">
+                        <span>Disable Destroy Delay</span>
+                    </label>
+                </legend>
+                <div class="section-description">
+                    Minecraft client sets 5 ticks delay after you break the block. This setting disables this delay by setting it to 0.
+                </div>
+            </fieldset>
         </div>
     </div>
 </div>
