@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.controllers.DisconnectController;
+import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.HelpText;
@@ -122,6 +123,46 @@ public class PlayerApi {
         }
 
         return mc.player.isPassenger();
+    }
+
+    public boolean isDestroyingBlock() {
+        if (mc.gameMode == null) {
+            return false;
+        }
+        MultiPlayerGameModeAccessor mode = (MultiPlayerGameModeAccessor) mc.gameMode;
+        return mode.getIsDestroying_CU();
+    }
+
+    public int getDestroyingBlockX() {
+        if (mc.gameMode == null) {
+            return Integer.MIN_VALUE;
+        }
+        MultiPlayerGameModeAccessor mode = (MultiPlayerGameModeAccessor) mc.gameMode;
+        return mode.getIsDestroying_CU() ? mode.getDestroyBlockPos_CU().getX() : Integer.MIN_VALUE;
+    }
+
+    public int getDestroyingBlockY() {
+        if (mc.gameMode == null) {
+            return Integer.MIN_VALUE;
+        }
+        MultiPlayerGameModeAccessor mode = (MultiPlayerGameModeAccessor) mc.gameMode;
+        return mode.getIsDestroying_CU() ? mode.getDestroyBlockPos_CU().getY() : Integer.MIN_VALUE;
+    }
+
+    public int getDestroyingBlockZ() {
+        if (mc.gameMode == null) {
+            return Integer.MIN_VALUE;
+        }
+        MultiPlayerGameModeAccessor mode = (MultiPlayerGameModeAccessor) mc.gameMode;
+        return mode.getIsDestroying_CU() ? mode.getDestroyBlockPos_CU().getZ() : Integer.MIN_VALUE;
+    }
+
+    public double getDestroyingBlockProgress() {
+        if (mc.gameMode == null) {
+            return Integer.MIN_VALUE;
+        }
+        MultiPlayerGameModeAccessor mode = (MultiPlayerGameModeAccessor) mc.gameMode;
+        return mode.getIsDestroying_CU() ? mode.getDestroyProgress_CU() : Double.NaN;
     }
 
     @ApiVisibility(ApiType.ACTION)
