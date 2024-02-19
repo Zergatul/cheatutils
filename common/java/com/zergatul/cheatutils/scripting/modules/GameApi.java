@@ -12,6 +12,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -216,6 +219,28 @@ public class GameApi {
             return info.clazz.isAssignableFrom(entity.getClass());
         }
 
+        public double getHorseMovementSpeed(int entityId) {
+            return getDoubleValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    AttributeInstance attribute = living.getAttribute(Attributes.MOVEMENT_SPEED);
+                    return attribute != null ? attribute.getValue() * 42.16 : Double.NaN;
+                } else {
+                    return Double.NaN;
+                }
+            });
+        }
+
+        public double getHorseJumpHeight(int entityId) {
+            return getDoubleValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    AttributeInstance attribute = living.getAttribute(Attributes.JUMP_STRENGTH);
+                    return attribute != null ? jumpStrengthToHeight(attribute.getValue()) : Double.NaN;
+                } else {
+                    return Double.NaN;
+                }
+            });
+        }
+
         private boolean getBooleanValue(int entityId, Function<Entity, Boolean> getter) {
             if (mc.level == null) {
                 return false;
@@ -253,6 +278,12 @@ public class GameApi {
             }
 
             return getter.apply(entity);
+        }
+
+        private static double jumpStrengthToHeight(double s) {
+            // based on cubic interpolation from minecraft wiki data
+            // {0.4, 1.1093}, {0.5, 1.6248}, {0.6, 2.2216}, {0.7, 2.8933}, {0.8, 3.6339}, {0.9, 4.4379}, {1.0, 5.29997}
+            return -0.964722 * s * s * s + 5.48621 * s * s + 0.808726 * s - 0.0303267;
         }
     }
 
