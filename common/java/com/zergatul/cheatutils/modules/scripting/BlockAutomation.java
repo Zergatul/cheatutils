@@ -143,7 +143,9 @@ public class BlockAutomation {
                 if (breakCurrentBlock && !mc.level.isEmptyBlock(pos) && selectItemForBlockBreak(config)) {
                     currentDestroyingBlock = pos;
                     mc.gameMode.startDestroyBlock(pos, Direction.UP);
-                    mc.player.swing(InteractionHand.MAIN_HAND);
+                    if (mc.gameMode.continueDestroyBlock(currentDestroyingBlock, Direction.UP)) {
+                        mc.player.swing(InteractionHand.MAIN_HAND);
+                    }
                     actionPerformed = true;
                     continue actionLoop;
                 } else if (itemIds != null) {
