@@ -31,7 +31,10 @@ function createComponent(template) {
                 entitiesConfigList: null,
                 entitiesConfigMap: null,
                 selectedConfig: null,
-                entityListFiltered: null
+                entityListFiltered: null,
+                code: null,
+                refs: null,
+                showRefs: false
             };
         },
         methods: {
@@ -139,15 +142,20 @@ function createComponent(template) {
             },
             openEdit(clazz) {
                 this.state = 'edit';
+                let setupCode = () => {
+                    this.code = this.selectedConfig.code || '';
+                    this.showRefs = false;
+                };
                 if (this.entitiesConfigMap[clazz]) {
                     this.selectedConfig = this.entitiesConfigMap[clazz];
+                    setupCode();
                 } else {
                     this.selectedConfig = null;
-                    let self = this;
-                    axios.post('/api/entities', { clazz: clazz }).then(function (response) {
-                        self.selectedConfig = response.data;
-                        self.entitiesConfigList.push(self.selectedConfig);
-                        self.entitiesConfigMap[clazz] = self.selectedConfig;
+                    axios.post('/api/entities', { clazz: clazz }).then(response => {
+                        this.selectedConfig = response.data;
+                        this.entitiesConfigList.push(this.selectedConfig);
+                        this.entitiesConfigMap[clazz] = this.selectedConfig;
+                        setupCode();
                     });
                 }
             },
@@ -187,11 +195,37 @@ function createComponent(template) {
                     config.outlineMaxDistance = null;
                 }
                 axios.put('/api/entities/' + config.clazz, config);
+            },
+            showApiRef() {
+                if (this.showRefs) {
+                    this.showRefs = false;
+                } else {
+                    if (this.refs) {
+                        this.showRefs = true;
+                    } else {
+                        let self = this;
+                        axios.get('/api/scripts-doc/entity-esp').then(response => {
+                            self.showRefs = true;
+                            self.refs = response.data;
+                        });
+                    }
+                }
+            },
+            saveCode() {
+                axios.post('/api/entity-esp-code', {
+                    clazz: this.selectedConfig.clazz,
+                    code: this.code
+                }).then(() => {
+                    alert('Saved');
+                }, error => {
+                    alert(error.response.data);
+                });
             }
         }
     };
     addComponent(args, 'ColorBox');
     addComponent(args, 'ColorPicker');
+    addComponent(args, 'ScriptEditor');
     return args;
 }
 

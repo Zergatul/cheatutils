@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.configs.adapters.GsonSkip;
 import net.minecraft.world.entity.Entity;
 
 import java.awt.*;
@@ -20,6 +21,12 @@ public class EntityEspConfig extends EspConfigBase {
     public boolean showHp;
     public boolean showEquippedItems;
     public boolean showOwner;
+
+    public boolean scriptEnabled;
+    public String code;
+
+    @GsonSkip
+    public Runnable script;
 
     public boolean isValidEntity(Entity entity) {
         return clazz.isInstance(entity);
@@ -47,6 +54,8 @@ public class EntityEspConfig extends EspConfigBase {
         showHp = jsonConfig.showHp;
         showEquippedItems = jsonConfig.showEquippedItems;
         showOwner = jsonConfig.showOwner;
+
+        scriptEnabled = jsonConfig.scriptEnabled;
     }
 
     public boolean useMinecraftOutline() {

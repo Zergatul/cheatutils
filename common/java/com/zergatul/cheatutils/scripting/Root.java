@@ -76,4 +76,5 @@ public class Root {
     // specific
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();
     public static CurrentPlayerApi currentPlayer = new CurrentPlayerApi();
+    public static CurrentEntityEspApi currentEntityEsp = new CurrentEntityEspApi();
 }

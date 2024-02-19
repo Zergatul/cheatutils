@@ -282,6 +282,47 @@
                     </div>
                 </div>
             </fieldset>
+            <fieldset>
+                <legend>
+                    <label class="switch-label">
+                        <input type="checkbox" class="switch"
+                            v-model="selectedConfig.scriptEnabled"
+                            @change="update(selectedConfig)">
+                        <span>Custom Script</span>
+                    </label>
+                </legend>
+                <template v-if="selectedConfig.scriptEnabled">
+                    <div class="section-description">
+                        Write script to add custom behavior to current Entity ESP config.<br>
+                        You can change below on per entity basis:<br>
+                        <ul>
+                            <li>Disable Tracer/Outline/Overlay/Collision Box</li>
+                            <li>Change text displayed in the title</li>
+                        </ul>
+                        Use <b>currentEntityEsp</b> API to interact with current entity.<br>
+                        Use <b>game.entities</b> API to get information about entity by its id.<br>
+                        Warning! This script will be run for every frame rendered, and for every entity matching class or interface.<br>
+                        Make sure to not execute complex code here, since it can hurt your FPS.
+                    </div>
+                    <div style="padding-top: 8px;">
+                        <button style="width: 200px;" @click="saveCode()">Save</button>
+                        <button style="width: 200px;" @click="showApiRef()">Show/Hide API Reference</button>
+                    </div>
+                    <div v-show="!showRefs">
+                        <div>
+                            <span class="text">Code:</span>
+                        </div>
+                        <div>
+                            <script-editor v-model="code"></script-editor>
+                        </div>
+                    </div>
+                    <div v-show="showRefs">
+                        <ul class="refs">
+                            <li v-for="item in refs" v-html="item"></li>
+                        </ul>
+                    </div>
+                </template>
+            </fieldset>
         </div>
     </div>
 </div>

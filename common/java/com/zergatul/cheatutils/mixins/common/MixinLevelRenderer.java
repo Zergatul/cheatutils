@@ -83,6 +83,21 @@ public abstract class MixinLevelRenderer {
         }
     }
 
+    @Inject(at = @At("HEAD"), method = "renderLevel")
+    private void onRenderLevelBegin(
+            PoseStack matrices,
+            float partialTicks,
+            long limitTime,
+            boolean renderBlockOutline,
+            Camera camera,
+            GameRenderer gameRenderer,
+            LightTexture lightmapTextureManager,
+            Matrix4f projectionMatrix,
+            CallbackInfo info
+    ) {
+        Events.BeforeRenderWorld.trigger();
+    }
+
     @Inject(at = @At("RETURN"), method = "renderLevel")
     private void onRenderLevelEnd(
             PoseStack matrices,

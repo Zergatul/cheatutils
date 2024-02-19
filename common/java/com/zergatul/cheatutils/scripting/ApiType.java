@@ -20,5 +20,7 @@ public enum ApiType {
 
     LOGGING,
 
-    EVENTS
+    EVENTS,
+
+    CURRENT_ENTITY_ESP
 }

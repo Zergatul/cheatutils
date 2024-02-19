@@ -16,6 +16,7 @@ public class VisibilityCheck {
             case "auto-disconnect" -> new ApiType[] { ApiType.ACTION, ApiType.DISCONNECT };
             case "villager-roller" -> new ApiType[] { ApiType.VILLAGER_ROLLER, ApiType.LOGGING };
             case "events" -> new ApiType[] { ApiType.ACTION, ApiType.UPDATE, ApiType.EVENTS, ApiType.DISCONNECT };
+            case "entity-esp" -> new ApiType[] { ApiType.CURRENT_ENTITY_ESP };
             default -> null;
         };
     }

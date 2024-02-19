@@ -29,7 +29,11 @@ public class ScriptController {
             CompilerFactory.create(VisibilityCheck.getTypes("villager-roller"));
     private final ScriptingLanguageCompiler eventsCompiler =
             CompilerFactory.create(VisibilityCheck.getTypes("events"));
-    private List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
+
+    private final ScriptingLanguageCompiler entityEspCompiler =
+            CompilerFactory.create(VisibilityCheck.getTypes("entity-esp"));
+
+    private final List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
     private ScriptController() {
 
@@ -152,6 +156,10 @@ public class ScriptController {
 
     public Runnable compileEvents(String code) throws ParseException, ScriptCompileException {
         return eventsCompiler.compile(code);
+    }
+
+    public Runnable compileEntityEsp(String code) throws ParseException, ScriptCompileException {
+        return entityEspCompiler.compile(code);
     }
 
     public static class Script {

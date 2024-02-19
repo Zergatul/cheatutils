@@ -269,6 +269,22 @@ public class ConfigStore {
                 e.printStackTrace();
             }
         }
+
+        if (config.entities != null && config.entities.configs != null) {
+            for (EntityEspConfig config : config.entities.configs) {
+                if (config.code != null && config.code.isBlank()) {
+                    config.code = null;
+                }
+
+                if (config.code != null) {
+                    try {
+                        config.script = ScriptController.instance.compileEntityEsp(config.code);
+                    } catch (ParseException | ScriptCompileException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     private void migration1(JsonElement element) {

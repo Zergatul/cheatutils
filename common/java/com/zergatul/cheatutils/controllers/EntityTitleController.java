@@ -15,6 +15,7 @@ import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.GlyphFontRenderer;
 import com.zergatul.cheatutils.font.TextBounds;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
+import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -122,6 +123,7 @@ public class EntityTitleController {
             boolean showHp = false;
             boolean showEquippedItems = false;
             boolean showOwner = false;
+            String title = null;
             for (EntityEspConfig entityConfig : entityConfigs) {
                 if (!entityConfig.enabled || !entityConfig.drawTitles) {
                     continue;
@@ -136,6 +138,10 @@ public class EntityTitleController {
                     showHp |= entityConfig.showHp;
                     showEquippedItems |= entityConfig.showEquippedItems;
                     showOwner |= entityConfig.showOwner;
+
+                    if (title == null) {
+                        title = EntityEsp.instance.getTitleOverride(entityConfig, entity);
+                    }
                 }
             }
 
@@ -148,7 +154,8 @@ public class EntityTitleController {
                         showDefaultNames,
                         showHp,
                         showEquippedItems,
-                        showOwner));
+                        showOwner,
+                        title));
             }
         }
 
@@ -346,6 +353,10 @@ public class EntityTitleController {
     }
 
     private String getEntityText(EntityEntry entry) {
+        if (entry.title != null) {
+            return entry.title;
+        }
+
         String result;
         if (entry.showDefaultNames) {
             result = entry.entity.getDisplayName().getString();
@@ -356,7 +367,7 @@ public class EntityTitleController {
         if (entry.showHp && entry.entity instanceof LivingEntity living) {
             result += "♥" + (int)living.getHealth();
         }
-        return result.length() == 0 ? null : result;
+        return result.isEmpty() ? null : result;
         /*String tags = String.join(";", entity.getTags());
         if (entity instanceof LivingEntity living) {
             for (AttributeInstance attr: living.getAttributes().getSyncableAttributes()) {
@@ -410,7 +421,8 @@ public class EntityTitleController {
             boolean showDefaultNames,
             boolean showHp,
             boolean showEquippedItems,
-            boolean showOwner) {}
+            boolean showOwner,
+            String title) {}
 
     private static class EnchantmentEntry {
 

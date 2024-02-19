@@ -16,6 +16,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.scripting.wrappers.CurrentEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -28,6 +29,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class EntityEsp implements Module {
 
@@ -36,8 +38,10 @@ public class EntityEsp implements Module {
     private final Minecraft mc = Minecraft.getInstance();
     private final Map<EntityEspConfig, List<BufferedVerticesEntry>> overlayBufferedVertices = new HashMap<>();
     private final Map<EntityEspConfig, List<BufferedVerticesEntry>> outlineBufferedVertices = new HashMap<>();
+    private final List<EntityScriptResult> scriptResults = new ArrayList<>();
 
     private EntityEsp() {
+        Events.BeforeRenderWorld.add(this::onBeforeRender);
         Events.AfterRenderWorld.add(this::render);
     }
 
@@ -52,8 +56,14 @@ public class EntityEsp implements Module {
                     continue;
                 }
 
-                boolean drawOverlay = config.drawOverlay && entity.distanceToSqr(mc.player) < config.getOverlayMaxDistanceSqr();
-                boolean drawOutline = config.useModOutline() && entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr();
+                boolean drawOverlay =
+                        config.drawOverlay &&
+                        entity.distanceToSqr(mc.player) < config.getOverlayMaxDistanceSqr() &&
+                        !isOverlayDisabledFromScript(config, entity);
+                boolean drawOutline =
+                        config.useModOutline() &&
+                        entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr() &&
+                        !isOutlineDisabledFromScript(config, entity);
                 if (drawOverlay || drawOutline) {
                     return new EntityEsp.MultiBufferSourceWrapper(config, bufferSource, drawOverlay, drawOutline);
                 }
@@ -72,7 +82,7 @@ public class EntityEsp implements Module {
         }
         for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
             if (config.useMinecraftOutline() && config.isValidEntity(entity) && entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr()) {
-                return true;
+                return !isOutlineDisabledFromScript(config, entity);
             }
         }
         return false;
@@ -90,7 +100,27 @@ public class EntityEsp implements Module {
         return null;
     }
 
+    public String getTitleOverride(EntityEspConfig config, Entity entity) {
+        if (!config.scriptEnabled || config.script == null) {
+            return null;
+        }
+
+        for (EntityScriptResult result : scriptResults) {
+            if (result.config == config && result.id == entity.getId()) {
+                return result.title;
+            }
+        }
+
+        return executeScript(config, entity).title;
+    }
+
+    private void onBeforeRender() {
+        scriptResults.clear();
+    }
+
     private void render(RenderWorldLastEvent event) {
+        assert mc.player != null;
+
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
@@ -131,7 +161,7 @@ public class EntityEsp implements Module {
                     c.isValidEntity(entity) &&
                     distanceSqr < c.getOutlineMaxDistanceSqr()).findFirst().orElse(null);
 
-            if (config != null) {
+            if (config != null && !isCollisionBoxDisabledFromScript(config, entity)) {
                 renderEntityBounding(renderer, partialTicks, entity, config);
             }
 
@@ -141,7 +171,7 @@ public class EntityEsp implements Module {
                             c.clazz.isInstance(entity) &&
                             distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
-            if (config != null) {
+            if (config != null && !isTracerDisabledFromScript(config, entity)) {
                 drawTracer(
                         renderer,
                         tracerX, tracerY, tracerZ,
@@ -296,6 +326,57 @@ public class EntityEsp implements Module {
         }
 
         outlineBufferedVertices.clear();
+    }
+
+    private boolean isCollisionBoxDisabledFromScript(EntityEspConfig config, Entity entity) {
+        return getBooleanFromScript(config, entity, result -> result.collisionBoxDisabled);
+    }
+
+    private boolean isTracerDisabledFromScript(EntityEspConfig config, Entity entity) {
+        return getBooleanFromScript(config, entity, result -> result.tracerDisabled);
+    }
+
+    private boolean isOverlayDisabledFromScript(EntityEspConfig config, Entity entity) {
+        return getBooleanFromScript(config, entity, result -> result.overlayDisabled);
+    }
+
+    private boolean isOutlineDisabledFromScript(EntityEspConfig config, Entity entity) {
+        return getBooleanFromScript(config, entity, result -> result.outlineDisabled);
+    }
+
+    private boolean getBooleanFromScript(EntityEspConfig config, Entity entity, Predicate<EntityScriptResult> predicate) {
+        if (!config.scriptEnabled || config.script == null) {
+            return false;
+        }
+
+        for (EntityScriptResult result : scriptResults) {
+            if (result.config == config && result.id == entity.getId()) {
+                return predicate.test(result);
+            }
+        }
+
+        return predicate.test(executeScript(config, entity));
+    }
+
+    private EntityScriptResult executeScript(EntityEspConfig config, Entity entity) {
+        assert config.script != null;
+
+        EntityScriptResult result = new EntityScriptResult();
+        result.id = entity.getId();
+        result.config = config;
+        scriptResults.add(result);
+
+        CurrentEntity.id = entity.getId();
+        CurrentEntity.entityEspResult = result;
+        CurrentEntity.entityEspResult.id = entity.getId();
+        CurrentEntity.entityEspResult.config = config;
+
+        config.script.run();
+
+        CurrentEntity.id = Integer.MIN_VALUE;
+        CurrentEntity.entityEspResult = null;
+
+        return result;
     }
 
     public static class MultiBufferSourceWrapper implements MultiBufferSource {
@@ -471,4 +552,14 @@ public class EntityEsp implements Module {
     }
 
     private record BufferedVerticesEntry(ResourceLocation texture, FloatList list) {}
+
+    public static class EntityScriptResult {
+        public int id;
+        public EntityEspConfig config;
+        public boolean tracerDisabled;
+        public boolean outlineDisabled;
+        public boolean overlayDisabled;
+        public boolean collisionBoxDisabled;
+        public String title;
+    }
 }
