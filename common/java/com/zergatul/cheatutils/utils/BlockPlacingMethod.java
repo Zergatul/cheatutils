@@ -29,8 +29,12 @@ public enum BlockPlacingMethod {
 
     public Rotation getRotation() {
         return switch (this) {
-            case FACING_TOP -> new Rotation(90, 0);
-            case FACING_BOTTOM -> new Rotation(-90, 0);
+            case FACING_TOP -> new Rotation(90, Float.NaN);
+            case FACING_BOTTOM -> new Rotation(-90, Float.NaN);
+            case FACING_EAST -> new Rotation(Float.NaN, 90);
+            case FACING_WEST -> new Rotation(Float.NaN, -90);
+            case FACING_SOUTH -> new Rotation(Float.NaN, 180);
+            case FACING_NORTH -> new Rotation(Float.NaN, 0);
             default -> null;
         };
     }

@@ -96,7 +96,19 @@ public class BlockUtils {
         if (rotation != null) {
             // send correct rotation to server
             //NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Rot(rotation.yRot(), rotation.xRot(), mc.player.onGround()));
-            mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(rotation.yRot(), rotation.xRot(), mc.player.onGround()));
+            float xRot = Float.isNaN(rotation.xRot()) ? mc.player.getXRot() : rotation.xRot();
+            float yRot = Float.isNaN(rotation.yRot()) ? mc.player.getYRot() : rotation.yRot();
+            mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(yRot, xRot, mc.player.onGround()));
+
+            // server uses yHeadRot, and it happens on the next tick
+            // this is temp hack!
+            if (!Float.isNaN(rotation.yRot())) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
         InteractionHand hand = InteractionHand.MAIN_HAND;
