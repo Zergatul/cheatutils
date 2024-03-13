@@ -89,6 +89,7 @@ function createComponent(template) {
                 let self = this;
                 self.getFile().then(file => {
                     file.placing = self.placing;
+                    file.palette = self.schematic.paletteMap;
                     axios.post('/api/schematica-place', file);
                 });
             },
