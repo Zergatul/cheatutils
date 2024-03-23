@@ -8,6 +8,7 @@ public class FreeCamConfig implements ValidatableConfig {
     public double slowdownFactor;
     public boolean renderHands;
     public boolean target;
+    public boolean spectatorFlight;
 
     public FreeCamConfig() {
         acceleration = 50;

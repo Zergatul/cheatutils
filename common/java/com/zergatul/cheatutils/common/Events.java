@@ -30,7 +30,7 @@ public class Events {
     public static final ParameterizedEventHandler<RenderGuiEvent> PreRenderGui = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderGuiEvent> PostRenderGui = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<MouseScrollEvent> MouseScroll = new CancelableEventHandler<>();
-    public static final SimpleEventHandler RenderTickStart = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<Float> RenderTickStart = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler WorldUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
     public static final ParameterizedEventHandler<GatherTooltipComponentsEvent> GatherTooltipComponents = new ParameterizedEventHandler<>();

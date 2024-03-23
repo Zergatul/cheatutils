@@ -80,6 +80,26 @@
                 </div>
             </fieldset>
 
+            <fieldset>
+                <legend>
+                    Flight Method
+                </legend>
+                <div class="input-section">
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="method" v-model="config.spectatorFlight" v-bind:value="false" @change="update()">
+                            <span class="text">Default</span>
+                        </label>
+                    </div>
+                    <div style="padding: 2px; display: flex;">
+                        <label>
+                            <input type="radio" name="method" v-model="config.spectatorFlight" v-bind:value="true" @change="update()">
+                            <span class="text">Creative</span>
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+
             <fieldset v-if="path">
                 <legend>Path</legend>
                 <div>

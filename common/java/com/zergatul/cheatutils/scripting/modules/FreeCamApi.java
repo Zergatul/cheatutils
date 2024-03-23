@@ -88,6 +88,21 @@ public class FreeCamApi {
     }
 
     @ApiVisibility(ApiType.UPDATE)
+    public void toggleCameraLock() {
+        FreeCam.instance.toggleCameraLock();
+    }
+
+    @ApiVisibility(ApiType.UPDATE)
+    public void toggleEyeLock() {
+        FreeCam.instance.toggleEyeLock();
+    }
+
+    @ApiVisibility(ApiType.UPDATE)
+    public void toggleFollowCam() {
+        FreeCam.instance.toggleFollowCamera();
+    }
+
+    @ApiVisibility(ApiType.UPDATE)
     public void startPath() {
         FreeCam.instance.startPath();
     }
