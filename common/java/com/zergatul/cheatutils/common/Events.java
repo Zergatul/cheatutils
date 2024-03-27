@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.common;
 import com.zergatul.cheatutils.common.events.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.chunk.LevelChunk;
 
@@ -44,4 +45,5 @@ public class Events {
     public static final ParameterizedEventHandler<Entity> EntityInteract = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockPos> BeforeInstaMine = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler WindowResize = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<Component> ChatMessageAdded = new ParameterizedEventHandler<>();
 }

@@ -1,14 +1,18 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ChatUtilitiesConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.TimeWrappedComponent;
+import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.Style;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChatComponent.class)
 public abstract class MixinChatComponent {
@@ -47,5 +51,10 @@ public abstract class MixinChatComponent {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", ordinal = 0))
     private Component onModifyMessageComponent(Component component) {
         return new TimeWrappedComponent(component);
+    }
+
+    @Inject(at = @At("HEAD"), method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V")
+    private void onAddMessage(Component component, MessageSignature signature, int time, GuiMessageTag tag, boolean b, CallbackInfo ci) {
+        Events.ChatMessageAdded.trigger(component);
     }
 }

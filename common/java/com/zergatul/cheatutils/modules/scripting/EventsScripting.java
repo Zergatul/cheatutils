@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
@@ -21,7 +22,9 @@ public class EventsScripting implements Module {
     private final List<Runnable> onTickEnd = new ArrayList<>();
     private final List<Runnable> onPlayerAdded = new ArrayList<>();
     private final List<Runnable> onPlayerRemoved = new ArrayList<>();
+    private final List<Runnable> onChatMessage = new ArrayList<>();
     private Entity currentEntity;
+    private Component currentChatMessage;
 
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
@@ -57,10 +60,23 @@ public class EventsScripting implements Module {
                 }
             }
         });
+
+        Events.ChatMessageAdded.add(component -> {
+            if (canTrigger()) {
+                currentChatMessage = component;
+                for (Runnable handler : onChatMessage) {
+                    handler.run();
+                }
+            }
+        });
     }
 
     public Entity getCurrentEntity() {
         return currentEntity;
+    }
+
+    public Component getCurrentChatMessage() {
+        return currentChatMessage;
     }
 
     public void setScript(Runnable runnable) {
@@ -76,6 +92,7 @@ public class EventsScripting implements Module {
             onTickEnd.clear();
             onPlayerAdded.clear();
             onPlayerRemoved.clear();
+            onChatMessage.clear();
         });
     }
 
@@ -93,6 +110,10 @@ public class EventsScripting implements Module {
 
     public void addOnPlayerRemoved(Runnable runnable) {
         onPlayerRemoved.add(runnable);
+    }
+
+    public void addOnChatMessage(Runnable runnable) {
+        onChatMessage.add(runnable);
     }
 
     private boolean canTrigger() {

@@ -24,4 +24,9 @@ public class EventsApi {
     public void onPlayerRemoved(Runnable action) {
         EventsScripting.instance.addOnPlayerRemoved(action);
     }
+
+    @HelpText("Trigger when new message appears on chat. Message may come from the server, from cheatutils, or from another mod. Use currentChatMessage API to get information about current message.")
+    public void onChatMessage(Runnable action) {
+        EventsScripting.instance.addOnChatMessage(action);
+    }
 }

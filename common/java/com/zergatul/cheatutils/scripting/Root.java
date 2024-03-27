@@ -63,6 +63,7 @@ public class Root {
     public static InventoryApi inventory = new InventoryApi();
     public static VariablesApi variables = new VariablesApi();
     public static MathApi math = new MathApi();
+    public static StringsApi strings = new StringsApi();
     public static ColorApi color = new ColorApi();
     public static TimeApi time = new TimeApi();
     public static ConvertApi convert = new ConvertApi();
@@ -77,4 +78,5 @@ public class Root {
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();
     public static CurrentPlayerApi currentPlayer = new CurrentPlayerApi();
     public static CurrentEntityEspApi currentEntityEsp = new CurrentEntityEspApi();
+    public static CurrentChatMessageApi currentChatMessage = new CurrentChatMessageApi();
 }
