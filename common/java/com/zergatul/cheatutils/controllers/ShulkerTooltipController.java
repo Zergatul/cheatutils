@@ -73,6 +73,11 @@ public class ShulkerTooltipController {
         int x, y;
         x = event.getX() - ImageWidth - 16;
         y = event.getY() - 4;
+        if (x < 0) {
+            // show to the right
+            x = event.getX() + 16;
+        }
+
         if (Screen.hasControlDown()) {
             locked = true;
             lockedPose = poseStack.last().pose();
