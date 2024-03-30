@@ -73,6 +73,7 @@ public class Root {
     public static FontApi font = new FontApi();
     public static DelayedApi delayed = new DelayedApi();
     public static CameraApi camera = new CameraApi();
+    public static ClipboardApi clipboard = new ClipboardApi();
 
     // specific
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();
