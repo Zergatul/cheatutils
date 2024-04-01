@@ -150,8 +150,8 @@ public class BlockAutomation {
                     continue actionLoop;
                 } else if (itemIds != null) {
                     for (String itemId : itemIds) {
-                        Item item = Registries.ITEMS.getValue(new ResourceLocation(itemId));
-                        if (item == Items.AIR) {
+                        Item item = Registries.ITEMS.safeParse(itemId);
+                        if (item == null || item == Items.AIR) {
                             continue;
                         }
 
