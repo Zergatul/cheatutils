@@ -21,7 +21,7 @@ public class ResourceHelper {
 
     private static InputStream loadFromFile(String filename) {
         try {
-            Path path = Paths.get(System.getProperty("user.dir"), "../src/main/resources", filename);
+            Path path = Paths.get(System.getProperty("user.dir"), "../../common/resources", filename);
             return new FileInputStream(path.toString());
         }
         catch (IOException e) {

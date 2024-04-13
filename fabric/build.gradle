@@ -39,6 +39,18 @@ dependencies {
     // modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir '../common/java'
+            srcDir '../java-scripting-language/src/main/java'
+        }
+        resources {
+            srcDir '../common/resources'
+        }
+    }
+}
+
 processResources {
     inputs.property "version", project.version
 
