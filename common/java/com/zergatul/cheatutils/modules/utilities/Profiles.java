@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.utilities;
 
 import com.google.gson.*;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ConfigWriterQueue;
 import com.zergatul.cheatutils.modules.Module;
@@ -113,7 +114,8 @@ public class Profiles implements Module {
 
         current = name;
         requestWrite();
-        ConfigStore.instance.createNew(getProfileFile(name));
+
+        executeInRenderThread(() -> ConfigStore.instance.createNew(getProfileFile(name)));
     }
 
     public void createCopy(String name) {
@@ -123,7 +125,8 @@ public class Profiles implements Module {
 
         current = name;
         requestWrite();
-        ConfigStore.instance.switchFile(getProfileFile(name));
+
+        executeInRenderThread(() -> ConfigStore.instance.switchFile(getProfileFile(name)));
     }
 
     public void change(String name) {
@@ -133,7 +136,8 @@ public class Profiles implements Module {
 
         current = name;
         requestWrite();
-        ConfigStore.instance.read(getProfileFile(name));
+
+        executeInRenderThread(() -> ConfigStore.instance.read(getProfileFile(name)));
     }
 
     public void delete(String name) {
@@ -154,7 +158,16 @@ public class Profiles implements Module {
 
         current = "";
         requestWrite();
-        ConfigStore.instance.read(getProfileFile(name));
+
+        executeInRenderThread(() -> ConfigStore.instance.read(getProfileFile("")));
+    }
+
+    private void executeInRenderThread(Runnable runnable) {
+        if (RenderSystem.isOnRenderThread()) {
+            runnable.run();
+        } else {
+            RenderSystem.recordRenderCall(runnable::run);
+        }
     }
 
     private void requestWrite() {

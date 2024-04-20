@@ -858,7 +858,7 @@ public class ApiHandler implements HttpHandler {
             api = apis.stream().filter(a -> a.getRoute().equals(parts[2])).findFirst();
         }
 
-        if (!api.isPresent()) {
+        if (api.isEmpty()) {
             exchange.sendResponseHeaders(404, 0);
             exchange.close();
             return;
@@ -893,10 +893,10 @@ public class ApiHandler implements HttpHandler {
             exchange.close();
         }
         catch (HttpException e) {
-            sendMessage(exchange, 503, e.getMessage());
+            sendException(exchange, 503, e);
         }
         catch (Throwable e) {
-            sendMessage(exchange, 500, e.getMessage());
+            sendException(exchange, 500, e);
         }
     }
 
@@ -966,8 +966,18 @@ public class ApiHandler implements HttpHandler {
 
     }
 
-    private void sendMessage(HttpExchange exchange, int code, String message) throws IOException {
-        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+    private void sendException(HttpExchange exchange, int code, Throwable throwable) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        builder.append(throwable.getMessage()).append("\n");
+        builder.append("**********").append("\n");
+
+        for (StackTraceElement element : throwable.getStackTrace())
+            builder.append("\tat ").append(element).append("\n");
+
+        // inner exceptions?
+
+        byte[] bytes = builder.toString().getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "text/plain");
         exchange.sendResponseHeaders(code, bytes.length);
         OutputStream stream = exchange.getResponseBody();
         stream.write(bytes);

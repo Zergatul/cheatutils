@@ -85,6 +85,7 @@ public class ConfigStore {
     public synchronized void createNew(File file) {
         currentFile = file;
         config = new Config();
+        onConfigLoaded();
         requestWrite();
     }
 
