@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.scripting.modules.*;
 
+@SuppressWarnings("unused")
 public class Root {
 
     public static MainApi main = new MainApi();
@@ -54,6 +55,7 @@ public class Root {
     // utility
     public static LockInputsApi lockInputs = new LockInputsApi();
     public static TpsApi tps = new TpsApi();
+    public static ProfilesApi profiles = new ProfilesApi();
 
     // others
     public static GameApi game = new GameApi();
@@ -80,4 +82,5 @@ public class Root {
     public static CurrentPlayerApi currentPlayer = new CurrentPlayerApi();
     public static CurrentEntityEspApi currentEntityEsp = new CurrentEntityEspApi();
     public static CurrentChatMessageApi currentChatMessage = new CurrentChatMessageApi();
+    public static CurrentServerApi currentServer = new CurrentServerApi();
 }

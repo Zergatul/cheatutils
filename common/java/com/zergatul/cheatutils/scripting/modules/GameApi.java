@@ -38,6 +38,7 @@ public class GameApi {
         return SharedConstants.getCurrentVersion().getName();
     }
 
+    @HelpText("Returns name of your Minecraft profile")
     public String getUserName() {
         return mc.getUser().getName();
     }

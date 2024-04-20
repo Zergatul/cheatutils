@@ -206,6 +206,10 @@
                         <td>
                             <button @click="current = 'status-effects'" :class="{ faded: !filtered.StatusEffects, active: statuses.StatusEffects }">Status Effects</button>
                         </td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'profiles'" :class="{ faded: !filtered.Profiles, active: statuses.Profiles }">Profiles</button>
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -674,6 +678,11 @@
             v-if="current == 'events-scripting'"
             @back="backToMain()">
         </events-scripting-config>
+
+        <profiles-config
+            v-if="current == 'profiles'"
+            @back="backToMain()">
+        </profiles-config>
 
     </div>
 

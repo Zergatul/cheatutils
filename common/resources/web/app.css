@@ -27,6 +27,10 @@ button {
     height: 32px;
 }
 
+button:disabled {
+    cursor: not-allowed;
+}
+
 button + button {
     margin-left: 16px;
 }
@@ -37,6 +41,21 @@ select {
     border-width: 4px;
     border-style: solid;
     border-radius: 10px;
+}
+
+kbd {
+    border-radius: 3px;
+    border-width: 1px;
+    border-style: solid;
+    display: inline-block;
+    font-size: 1em;
+    font-weight: 700;
+    padding: 2px 4px;
+    white-space: nowrap;
+}
+
+kbd + kbd {
+    margin-left: 4px;
 }
 
 a {
@@ -839,6 +858,12 @@ table.inputs-table {
         color: #000000;
     }
 
+    button:disabled {
+        border-color:#7073A0;
+        background-color: #AAAAAA;
+        color: #666666;
+    }
+
     button.active {
         background-color: #C6FFBA;
     }
@@ -853,6 +878,12 @@ table.inputs-table {
 
     select {
         border-color: #333AA3;
+    }
+
+    kbd {
+        background-color: #EEEEEE;
+        border-color: #B4B4B4;
+        color: #333333;
     }
 
     input[type=text], input[type=number] {
@@ -948,6 +979,12 @@ table.inputs-table {
         color: #BBBBBB;
     }
 
+    button:disabled {
+        background-color: #515151;
+        border-color: #7C7F7F;
+        color: #888888;
+    }
+
     button.active {
         background-color: #3F523C;
     }
@@ -964,6 +1001,12 @@ table.inputs-table {
         background-color: #4C5052;
         border-color: #5E6060;
         color: #BBBBBB;
+    }
+
+    kbd {
+        background-color: #1C1D1E;
+        border-color: #4B4B4B;
+        color: #CCCCCC;
     }
 
     input[type=text], input[type=number] {

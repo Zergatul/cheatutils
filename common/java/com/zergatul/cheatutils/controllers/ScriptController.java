@@ -29,7 +29,6 @@ public class ScriptController {
             CompilerFactory.create(VisibilityCheck.getTypes("villager-roller"));
     private final ScriptingLanguageCompiler eventsCompiler =
             CompilerFactory.create(VisibilityCheck.getTypes("events"));
-
     private final ScriptingLanguageCompiler entityEspCompiler =
             CompilerFactory.create(VisibilityCheck.getTypes("entity-esp"));
 
@@ -65,6 +64,10 @@ public class ScriptController {
             scripts.add(script);
             ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
         }
+    }
+
+    public void clear() {
+        scripts.clear();
     }
 
     public void update(String oldName, String newName, String code) throws IllegalArgumentException, ScriptCompileException, ParseException {

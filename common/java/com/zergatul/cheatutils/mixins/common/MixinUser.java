@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(User.class)
 public abstract class MixinUser {
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/User;getName()Ljava/lang/String;", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "getName()Ljava/lang/String;", cancellable = true)
     private void onGetName(CallbackInfoReturnable<String> info) {
         var config = ConfigStore.instance.getConfig().userNameConfig;
-        if (config.enabled && config.name != null && config.name.length() > 0) {
+        if (config.enabled && config.name != null && !config.name.isEmpty()) {
             info.setReturnValue(config.name);
         }
     }

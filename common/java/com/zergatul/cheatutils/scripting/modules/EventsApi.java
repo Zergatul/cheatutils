@@ -29,4 +29,9 @@ public class EventsApi {
     public void onChatMessage(Runnable action) {
         EventsScripting.instance.addOnChatMessage(action);
     }
+
+    @HelpText("Trigger when you join any server. Use currentServer API to get more information.")
+    public void onJoinServer(Runnable action) {
+        EventsScripting.instance.addOnJoinServer(action);
+    }
 }

@@ -13,7 +13,6 @@ import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.scripting.compiler.ScriptCompileException;
 import com.zergatul.scripting.generated.ParseException;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,8 +25,7 @@ public class ConfigStore {
 
     public static final ConfigStore instance = new ConfigStore();
 
-    private static final String FILE = "zergatulcheatutils.json";
-    private static long WRITE_FILE_DELAY = 15 * 1000000000L;
+    private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
 
     public final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
@@ -43,22 +41,18 @@ public class ConfigStore {
 
     private Config config;
     private final Logger logger = LogManager.getLogger(ConfigStore.class);
-    private final Thread thread;
-    private final Object writeEvent = new Object();
-    private volatile long lastWriteRequest = 0;
+    private File currentFile;
 
     private ConfigStore() {
         config = new Config();
-        thread = new Thread(this::delayedWriteThreadFunc);
-        thread.start();
     }
 
     public Config getConfig() {
         return config;
     }
 
-    public void read() {
-        File file = getFile();
+    public synchronized void read(File file) {
+        Config newConfig = new Config();
         if (file.exists()) {
             Config readCfg = null;
             try {
@@ -69,78 +63,46 @@ public class ConfigStore {
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
-                logger.warn("Cannot read config");
-                e.printStackTrace();
+                logger.error("Cannot read config");
+                logger.error(e);
             }
 
             if (readCfg != null) {
-                config = readCfg;
+                newConfig = readCfg;
             }
         }
 
+        currentFile = file;
+        config = newConfig;
         onConfigLoaded();
     }
 
+    public synchronized void switchFile(File file) {
+        currentFile = file;
+        requestWrite();
+    }
+
+    public synchronized void createNew(File file) {
+        currentFile = file;
+        config = new Config();
+        requestWrite();
+    }
+
     public void requestWrite() {
-        lastWriteRequest = System.nanoTime();
-        synchronized (writeEvent) {
-            writeEvent.notify();
-        }
-    }
-
-    public void onClose() {
-        thread.interrupt();
-    }
-
-    private void delayedWriteThreadFunc() {
-        boolean writeQeued = false;
-        try {
-            while (true) {
-                writeQeued = false;
-                synchronized (writeEvent) {
-                    writeEvent.wait();
-                }
-                writeQeued = true;
-                long lastValue = lastWriteRequest;
-                Thread.sleep(WRITE_FILE_DELAY / 1000000);
-                while (lastWriteRequest != lastValue) {
-                    lastValue = lastWriteRequest;
-                    long waitNs = lastWriteRequest + WRITE_FILE_DELAY - System.nanoTime();
-                    Thread.sleep(waitNs / 1000000);
-                }
-                write();
-            }
-        }
-        catch (InterruptedException e) {
-            if (writeQeued) {
-                write();
-            }
-        }
-    }
-
-    private void write() {
-        logger.debug("Saving config to file");
-        File file = getFile();
-        try {
-            synchronized (this) {
+        File file = this.currentFile;
+        Config config = this.config;
+        ConfigWriterQueue.instance.queue(file, WRITE_FILE_DELAY, () -> {
+            logger.debug("Saving config to file " + file.getName());
+            try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(file));
                 gson.toJson(config, writer);
                 writer.close();
             }
-        }
-        catch (Exception e) {
-            logger.warn("Cannot write config");
-            e.printStackTrace();
-        }
-    }
-
-    private File getFile() {
-        File configDir = new File(Minecraft.getInstance().gameDirectory, "config");
-        if (!configDir.exists()) {
-            configDir.mkdirs();
-        }
-
-        return new File(configDir.getPath(), FILE);
+            catch (Exception e) {
+                logger.error("Cannot write config");
+                logger.error(e);
+            }
+        });
     }
 
     private void onConfigLoaded() {
@@ -179,7 +141,8 @@ public class ConfigStore {
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
 
-        if (config.scriptsConfig.scripts.size() == 0) {
+        ScriptController.instance.clear();
+        if (config.scriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
                 ScriptController.instance.add(toggleEspName, "main.toggleEsp();", false);
@@ -271,14 +234,14 @@ public class ConfigStore {
         }
 
         if (config.entities != null && config.entities.configs != null) {
-            for (EntityEspConfig config : config.entities.configs) {
-                if (config.code != null && config.code.isBlank()) {
-                    config.code = null;
+            for (EntityEspConfig entityConfig : config.entities.configs) {
+                if (entityConfig.code != null && entityConfig.code.isBlank()) {
+                    entityConfig.code = null;
                 }
 
-                if (config.code != null) {
+                if (entityConfig.code != null) {
                     try {
-                        config.script = ScriptController.instance.compileEntityEsp(config.code);
+                        entityConfig.script = ScriptController.instance.compileEntityEsp(entityConfig.code);
                     } catch (ParseException | ScriptCompileException e) {
                         e.printStackTrace();
                     }

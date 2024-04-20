@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 
@@ -23,8 +24,10 @@ public class EventsScripting implements Module {
     private final List<Runnable> onPlayerAdded = new ArrayList<>();
     private final List<Runnable> onPlayerRemoved = new ArrayList<>();
     private final List<Runnable> onChatMessage = new ArrayList<>();
+    private final List<Runnable> onJoinServer = new ArrayList<>();
     private Entity currentEntity;
     private Component currentChatMessage;
+    private Connection currentConnection;
 
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
@@ -69,6 +72,16 @@ public class EventsScripting implements Module {
                 }
             }
         });
+
+        Events.ClientPlayerLoggingIn.add(connection -> {
+            if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
+                currentConnection = connection;
+                for (Runnable handler : onJoinServer) {
+                    handler.run();
+                }
+                currentConnection = null;
+            }
+        });
     }
 
     public Entity getCurrentEntity() {
@@ -77,6 +90,10 @@ public class EventsScripting implements Module {
 
     public Component getCurrentChatMessage() {
         return currentChatMessage;
+    }
+
+    public Connection getCurrentConnection() {
+        return currentConnection;
     }
 
     public void setScript(Runnable runnable) {
@@ -93,6 +110,7 @@ public class EventsScripting implements Module {
             onPlayerAdded.clear();
             onPlayerRemoved.clear();
             onChatMessage.clear();
+            onJoinServer.clear();
         });
     }
 
@@ -114,6 +132,10 @@ public class EventsScripting implements Module {
 
     public void addOnChatMessage(Runnable runnable) {
         onChatMessage.add(runnable);
+    }
+
+    public void addOnJoinServer(Runnable runnable) {
+        onJoinServer.add(runnable);
     }
 
     private boolean canTrigger() {

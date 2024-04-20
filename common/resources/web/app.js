@@ -157,6 +157,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('HitboxSizeConfig', ['hitbox', 'size']);
     loadModule('BedrockBreakerConfig', ['bedrock', 'breaker']);
     loadModule('EventsScriptingConfig', ['events', 'tick', 'scripting']);
+    loadModule('ProfilesConfig', ['profiles']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

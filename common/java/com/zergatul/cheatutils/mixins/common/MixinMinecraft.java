@@ -49,7 +49,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "close()V")
     private void onClose(CallbackInfo info) {
-        ConfigStore.instance.onClose();
+        Events.Close.trigger();
     }
 
     @Inject(at = @At("HEAD"), method = "handleKeybinds()V")

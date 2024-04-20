@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.forge.ArmorGuiOverlay;
 import com.zergatul.cheatutils.forge.BetterStatusEffectsGuiOverlay;
@@ -13,6 +12,7 @@ import com.zergatul.cheatutils.modules.scripting.Exec;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.utilities.DelayedRun;
+import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.modules.visuals.AdvancedTooltips;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
@@ -134,7 +134,7 @@ public class ModMain {
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
         ConfigHttpServer.instance.start();
-        ConfigStore.instance.read();
+        Profiles.instance.init();
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {
