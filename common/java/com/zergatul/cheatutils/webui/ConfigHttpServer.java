@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpServer;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,24 +14,36 @@ public class ConfigHttpServer {
     public static ConfigHttpServer instance = new ConfigHttpServer();
 
     private final Logger logger = LogManager.getLogger(ConfigHttpServer.class);
+    private int basePort;
     private HttpServer server;
-    private String uri;
 
     private ConfigHttpServer() {
-
+        basePort = 5005;
     }
 
-    public void start() {
+    public synchronized void onConfigUpdated() {
+        int port = ConfigStore.instance.getConfig().coreConfig.port;
+        if (basePort != port) {
+            basePort = port;
+
+            if (server != null) {
+                server.stop(1);
+                start();
+            }
+        }
+    }
+
+    public synchronized void start() {
         int port = 0;
-        for (int i = 5005; i < 5100; i++) {
-            if (isAvailable(i)) {
-                port = i;
+        for (int i = 0; i < 100; i++) {
+            if (isAvailable(basePort + i)) {
+                port = basePort + i;
                 break;
             }
         }
 
         if (port == 0) {
-            logger.debug("Cannot start http server");
+            logger.error("Cannot find free port for HTTP server. BasePort={}.", basePort);
             return;
         }
 
@@ -38,7 +51,8 @@ public class ConfigHttpServer {
             server = HttpServer.create(new InetSocketAddress(port), 0);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Cannot start HttpServer on port {}.", port);
+            logger.error(e);
             return;
         }
 
@@ -50,17 +64,10 @@ public class ConfigHttpServer {
         server.setExecutor(null);
         server.start();
 
-        uri = "http://localhost:" + port + "/";
-
-        logger.debug("Http server started");
+        logger.info("HTTP server started at port {}", port);
     }
 
-    public String getUrl() {
-        return uri;
-    }
-
-    public static boolean isAvailable(int port) {
-
+    private static boolean isAvailable(int port) {
         ServerSocket socket = null;
         try {
             socket = new ServerSocket(port);

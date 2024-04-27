@@ -55,7 +55,7 @@
                             <button @click="current = 'scripts'" :class="{ faded: !filtered.Scripts, active: statuses.Scripts }">Key Bindings</button>
                         </td>
                         <td>
-                            <button @click="current = 'lock-inputs'" :class="{ faded: !filtered.LockInputs, active: statuses.LockInputs }">Lock Inputs</button>
+                            <button @click="current = 'core'" :class="{ faded: !filtered.Core, active: statuses.Core }">Core Config</button>
                         </td>
                     </tr>
                     <tr>
@@ -75,7 +75,7 @@
                             <button @click="current = 'status-overlay'" :class="{ faded: !filtered.StatusOverlay, active: statuses.StatusOverlay }">Status Overlay</button>
                         </td>
                         <td>
-                            <button @click="current = 'user-name'" :class="{ faded: !filtered.UserName, active: statuses.UserName }">User Name</button>
+                            <button @click="current = 'profiles'" :class="{ faded: !filtered.Profiles, active: statuses.Profiles }">Profiles</button>
                         </td>
                     </tr>
                     <tr>
@@ -95,7 +95,7 @@
                             <button @click="current = 'block-automation'" :class="{ faded: !filtered.BlockAutomation, active: statuses.BlockAutomation }">Block Automation</button>
                         </td>
                         <td>
-                            <button @click="current = 'container-summary'" :class="{ faded: !filtered.ContainerSummary, active: statuses.ContainerSummary }">Container Summary</button>
+                            <button @click="current = 'user-name'" :class="{ faded: !filtered.UserName, active: statuses.UserName }">User Name</button>
                         </td>
                     </tr>
                     <tr>
@@ -115,7 +115,7 @@
                             <button @click="current = 'exec'" :class="{ faded: !filtered.Exec, active: statuses.Exec }">Exec</button>
                         </td>
                         <td>
-                            <button @click="current = 'chat-utilities'" :class="{ faded: !filtered.ChatUtilities, active: statuses.ChatUtilities }">Chat</button>
+                            <button @click="current = 'container-summary'" :class="{ faded: !filtered.ContainerSummary, active: statuses.ContainerSummary }">Container Summary</button>
                         </td>
                     </tr>
                     <tr>
@@ -136,6 +136,7 @@
                             <button @click="current = 'villager-roller'" :class="{ faded: !filtered.VillagerRoller, active: statuses.VillagerRoller }">Villager Roller</button>
                         </td>
                         <td>
+                            <button @click="current = 'chat-utilities'" :class="{ faded: !filtered.ChatUtilities, active: statuses.ChatUtilities }">Chat</button>
                             <button @click="current = 'coordinate-leak-protection'" :class="{ faded: !filtered.CoordinateLeakProtection, active: statuses.CoordinateLeakProtection }" style="display: none;">CLP</button>
                         </td>
                     </tr>
@@ -154,6 +155,9 @@
                         </td>
                         <td>
                             <button @click="current = 'events-scripting'" :class="{ faded: !filtered.EventsScripting, active: statuses.EventsScripting }">Events Scripting</button>
+                        </td>
+                        <td>
+                            <button @click="current = 'lock-inputs'" :class="{ faded: !filtered.LockInputs, active: statuses.LockInputs }">Lock Inputs</button>
                         </td>
                     </tr>
                     <tr>
@@ -208,7 +212,7 @@
                         </td>
                         <td></td>
                         <td>
-                            <button @click="current = 'profiles'" :class="{ faded: !filtered.Profiles, active: statuses.Profiles }">Profiles</button>
+                            
                         </td>
                     </tr>
                     <tr>
@@ -683,6 +687,11 @@
             v-if="current == 'profiles'"
             @back="backToMain()">
         </profiles-config>
+
+        <core-config
+            v-if="current == 'core'"
+            @back="backToMain()">
+        </core-config>
 
     </div>
 

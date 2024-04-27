@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class ApiHandler implements HttpHandler {
 
@@ -842,6 +844,21 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(BedrockBreakerConfig config) {
                 ConfigStore.instance.getConfig().bedrockBreakerConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("core", CoreConfig.class) {
+            @Override
+            protected CoreConfig getConfig() {
+                return ConfigStore.instance.getConfig().coreConfig;
+            }
+
+            @Override
+            protected void setConfig(CoreConfig config) {
+                ConfigStore.instance.getConfig().coreConfig = config;
+                CompletableFuture.delayedExecutor(250, TimeUnit.MILLISECONDS).execute(() -> {
+                    ConfigHttpServer.instance.onConfigUpdated();
+                });
             }
         });
     }

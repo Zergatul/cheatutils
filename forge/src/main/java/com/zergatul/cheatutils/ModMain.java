@@ -133,8 +133,8 @@ public class ModMain {
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
-        ConfigHttpServer.instance.start();
         Profiles.instance.init();
+        ConfigHttpServer.instance.start();
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {

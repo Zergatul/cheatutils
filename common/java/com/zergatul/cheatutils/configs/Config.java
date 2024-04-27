@@ -69,6 +69,7 @@ public class Config {
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
     public EventsScriptingConfig eventsScriptingConfig = new EventsScriptingConfig();
     public BedrockBreakerConfig bedrockBreakerConfig = new BedrockBreakerConfig();
+    public CoreConfig coreConfig = new CoreConfig();
 
     public Config() {
         esp = true;

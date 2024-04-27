@@ -11,6 +11,7 @@ import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.scripting.compiler.ScriptCompileException;
 import com.zergatul.scripting.generated.ParseException;
 import net.minecraft.world.level.block.state.BlockState;
@@ -135,9 +136,11 @@ public class ConfigStore {
         config.chatUtilitiesConfig.validate();
         config.areaMineConfig.validate();
         config.hitboxSizeConfig.validate();
+        config.coreConfig.validate();
 
         config.blocks.refreshMap();
 
+        ConfigHttpServer.instance.onConfigUpdated();
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);

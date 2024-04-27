@@ -158,6 +158,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('BedrockBreakerConfig', ['bedrock', 'breaker']);
     loadModule('EventsScriptingConfig', ['events', 'tick', 'scripting']);
     loadModule('ProfilesConfig', ['profiles']);
+    loadModule('CoreConfig', ['core', 'port']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');
