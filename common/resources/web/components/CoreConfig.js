@@ -15,6 +15,11 @@ function createComponent(template) {
             update() {
                 axios.post('/api/core', this.config).then(response => {
                     this.config = response.data;
+                    if (location.port != this.config.port) {
+                        setTimeout(() => {
+                            location.assign(location.protocol + '//' + location.hostname + ':' + this.config.port + '/');
+                        }, 500);
+                    }
                 });
             }
         }
