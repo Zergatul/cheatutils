@@ -6,16 +6,19 @@ import com.zergatul.cheatutils.collections.LinesIterable;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ProjectilePathConfig;
+import com.zergatul.cheatutils.mixins.common.accessors.CrossbowItemAccessor;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -456,7 +459,12 @@ public class ProjectilePath {
                 return 0;
             }
 
-            return CrossbowItem.containsChargedProjectile(itemStack, Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
+            ChargedProjectiles projectiles = itemStack.get(DataComponents.CHARGED_PROJECTILES);
+            if (projectiles == null || projectiles.isEmpty()) {
+                return 0;
+            }
+
+            return CrossbowItemAccessor.getShootingPower_CU(projectiles);
         }
     }
 

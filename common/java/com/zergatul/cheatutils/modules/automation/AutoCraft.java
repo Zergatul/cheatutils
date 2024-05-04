@@ -58,7 +58,7 @@ public class AutoCraft {
                 case START:
                     RecipeHolder<CraftingRecipe> holder = findRecipe(config);
                     if (holder != null) {
-                        boolean shift = holder.value().getResultItem(mc.level.registryAccess()).getItem().getMaxStackSize() > 1;
+                        boolean shift = holder.value().getResultItem(mc.level.registryAccess()).getItem().getDefaultMaxStackSize() > 1;
                         mc.gameMode.handlePlaceRecipe(craftingScreen.getMenu().containerId, holder, shift);
                         state = State.RECIPE_CLICKED;
                     }

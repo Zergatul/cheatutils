@@ -24,9 +24,4 @@ public abstract class MixinClientboundDisconnectPacket {
     private void onInit(Component component, CallbackInfo info) {
         this.reason = DisconnectController.instance.appendMessage(this.reason);
     }
-
-    @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/network/FriendlyByteBuf;)V")
-    private void onInit(FriendlyByteBuf buf, CallbackInfo info) {
-        this.reason = DisconnectController.instance.appendMessage(this.reason);
-    }
 }

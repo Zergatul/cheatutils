@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BedrockBreakerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.mixins.common.accessors.BlockBehaviourAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.Root;
@@ -184,7 +185,7 @@ public class BedrockBreaker implements Module {
         for (Direction direction : sortByDistance(bedrockPos.above(), horizontal)) {
             BlockPos pos = bedrockPos.above().relative(direction);
             BlockState state = mc.level.getBlockState(pos);
-            if (Blocks.REDSTONE_TORCH.canSurvive(Blocks.REDSTONE_TORCH.defaultBlockState(), mc.level, pos) && state.canBeReplaced()) {
+            if (((BlockBehaviourAccessor) Blocks.REDSTONE_TORCH).canSurvive_CU(Blocks.REDSTONE_TORCH.defaultBlockState(), mc.level, pos) && state.canBeReplaced()) {
                 torchPos = pos;
                 break;
             }

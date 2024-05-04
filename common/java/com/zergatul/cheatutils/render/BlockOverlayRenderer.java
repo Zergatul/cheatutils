@@ -178,7 +178,7 @@ public class BlockOverlayRenderer {
         FrameBuffers.get1().bind();
         GL30.glClearColor(0, 0, 0, 0);
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
-        bufferProgram.draw(event.getPoseMatrix(), event.getProjectionMatrix());
+        bufferProgram.draw(event.getMvp());
 
         // restore settings
         GL30.glDisable(GL30.GL_BLEND);

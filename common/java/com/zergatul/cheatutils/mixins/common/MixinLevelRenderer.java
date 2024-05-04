@@ -38,7 +38,7 @@ public abstract class MixinLevelRenderer {
     protected abstract void renderEntity(Entity p_109518_, double p_109519_, double p_109520_, double p_109521_, float p_109522_, PoseStack p_109523_, MultiBufferSource p_109524_);
 
     @ModifyArg(
-            method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+            method = "renderLevel",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;setupRender(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;ZZ)V"),
             index = 3)
     private boolean onCallSetupRender(boolean isSpectator) {
@@ -51,16 +51,16 @@ public abstract class MixinLevelRenderer {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V", ordinal = 0),
-            method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V")
+            method = "renderLevel")
     private void onAfterRenderEntities(
-            PoseStack matrices,
             float partialTicks,
             long limitTime,
             boolean renderBlockOutline,
             Camera camera,
             GameRenderer gameRenderer,
-            LightTexture lightmapTextureManager,
-            Matrix4f projectionMatrix,
+            LightTexture lightTexture,
+            Matrix4f pose,
+            Matrix4f projection,
             CallbackInfo info
     ) {
         if (FakePlayer.list.isEmpty()) {
@@ -78,21 +78,23 @@ public abstract class MixinLevelRenderer {
         double z = view.z;
         for (FakePlayer fake : FakePlayer.list) {
             if (fake.distanceToSqr(player) > 1) {
-                this.renderEntity(fake, x, y, z, partialTicks, matrices, source);
+                // is new PoseStack good for compatibility?
+                // capture local var?
+                this.renderEntity(fake, x, y, z, partialTicks, new PoseStack(), source);
             }
         }
     }
 
     @Inject(at = @At("HEAD"), method = "renderLevel")
     private void onRenderLevelBegin(
-            PoseStack matrices,
             float partialTicks,
             long limitTime,
             boolean renderBlockOutline,
             Camera camera,
             GameRenderer gameRenderer,
-            LightTexture lightmapTextureManager,
-            Matrix4f projectionMatrix,
+            LightTexture lightTexture,
+            Matrix4f pose,
+            Matrix4f projection,
             CallbackInfo info
     ) {
         Events.BeforeRenderWorld.trigger();
@@ -100,18 +102,18 @@ public abstract class MixinLevelRenderer {
 
     @Inject(at = @At("RETURN"), method = "renderLevel")
     private void onRenderLevelEnd(
-            PoseStack matrices,
             float partialTicks,
             long limitTime,
             boolean renderBlockOutline,
             Camera camera,
             GameRenderer gameRenderer,
-            LightTexture lightmapTextureManager,
-            Matrix4f projectionMatrix,
+            LightTexture lightTexture,
+            Matrix4f pose,
+            Matrix4f projection,
             CallbackInfo info
     ) {
         GlStateTracker.save();
-        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(pose, projection, partialTicks));
         GlStateTracker.restore();
     }
 

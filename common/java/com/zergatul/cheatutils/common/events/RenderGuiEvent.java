@@ -15,11 +15,11 @@ public record RenderGuiEvent(GuiGraphics graphics, RenderWorldLastEvent renderWo
     }
 
     public Matrix4f getWorldPoseMatrix() {
-        return renderWorldLastEvent.getPoseMatrix();
+        return renderWorldLastEvent.getPose();
     }
 
     public Matrix4f getWorldProjectionMatrix() {
-        return renderWorldLastEvent.getProjectionMatrix();
+        return renderWorldLastEvent.getProjection();
     }
 
     public Camera getCamera() {

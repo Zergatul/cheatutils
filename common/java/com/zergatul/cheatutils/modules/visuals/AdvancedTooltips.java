@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.AdvancedTooltipsConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.MutableComponent;
@@ -13,6 +14,11 @@ import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+
+import java.util.List;
 
 public class AdvancedTooltips implements Module {
 
@@ -34,22 +40,18 @@ public class AdvancedTooltips implements Module {
             Item item = itemStack.getItem();
             if (item == Items.BEE_NEST || item == Items.BEEHIVE) {
                 int beesCount = 0;
-                String honeyLevel = "";
-                CompoundTag root = itemStack.getTag();
-                if (root == null) {
-                    return;
+                int honeyLevel = 0;
+
+                List<BeehiveBlockEntity.Occupant> bees = itemStack.get(DataComponents.BEES);
+                if (bees != null) {
+                    beesCount = bees.size();
                 }
-                if (root.contains("BlockEntityTag")) {
-                    CompoundTag blockEntityTag = root.getCompound("BlockEntityTag");
-                    if (blockEntityTag.contains("Bees")) {
-                        ListTag bees = (ListTag) blockEntityTag.get("Bees");
-                        beesCount = bees.size();
-                    }
-                }
-                if (root.contains("BlockStateTag")) {
-                    CompoundTag blockStateTag = root.getCompound("BlockStateTag");
-                    if (blockStateTag.contains("honey_level")) {
-                        honeyLevel = blockStateTag.getString("honey_level");
+
+                BlockItemStateProperties properties = itemStack.get(DataComponents.BLOCK_STATE);
+                if (properties != null) {
+                    Integer value = properties.get(BlockStateProperties.LEVEL_HONEY);
+                    if (value != null) {
+                        honeyLevel = value;
                     }
                 }
 
@@ -62,7 +64,7 @@ public class AdvancedTooltips implements Module {
     private void handleRepairCost(AdvancedTooltipsConfig config, GatherTooltipComponentsEvent event) {
         if (config.repairCost) {
             ItemStack itemStack = event.itemStack();
-            int cost = itemStack.getBaseRepairCost();
+            int cost = itemStack.getOrDefault(DataComponents.REPAIR_COST, 0);
             if (cost > 0) {
                 event.list().add(MutableComponent.create(new PlainTextContents.LiteralContents("Repair cost: " + cost)).withStyle(ChatFormatting.GRAY));
             }

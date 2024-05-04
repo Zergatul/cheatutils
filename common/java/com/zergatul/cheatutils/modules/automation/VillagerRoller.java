@@ -12,22 +12,19 @@ import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.locale.Language;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.block.Blocks;
@@ -284,41 +281,38 @@ public class VillagerRoller implements Module {
                         continue;
                     }
 
-                    ListTag list = EnchantedBookItem.getEnchantments(offer.getResult());
-                    if (list.size() == 0) {
+                    ItemEnchantments enchantments = offer.getResult().get(DataComponents.STORED_ENCHANTMENTS);
+                    if (enchantments == null || enchantments.isEmpty()) {
                         stop("EnchantedBook with 0 enchantments");
                         return;
                     }
 
-                    CompoundTag tag = list.getCompound(0);
-                    ResourceLocation id = EnchantmentHelper.getEnchantmentId(tag);
-                    Enchantment enchantment = Registries.ENCHANTMENTS.getValue(id);
-                    if (id != null && enchantment != null) {
-                        this.enchantmentId = id.toString();
-                        this.enchantmentName = Language.getInstance().getOrDefault(enchantment.getDescriptionId());
-                        this.level = EnchantmentHelper.getEnchantmentLevel(tag);
-                        this.price = offer.getBaseCostA().getCount();
+                    Enchantment enchantment = enchantments.keySet().stream().findFirst().get().value();
+                    this.enchantmentId = Registries.ENCHANTMENTS.getKey(enchantment).toString();
+                    this.enchantmentName = Language.getInstance().getOrDefault(enchantment.getDescriptionId());
+                    this.level = enchantments.getLevel(enchantment);
+                    this.price = offer.getBaseCostA().getCount();
 
-                        this.maxLevel = enchantment.getMaxLevel();
-                        this.curse = enchantment.isCurse();
-                        this.minPrice = 2 + this.level * 3;
-                        this.maxPrice = 6 + this.level * 13;
-                        if (enchantment.isTreasureOnly()) {
-                            this.minPrice *= 2;
-                            this.maxPrice *= 2;
-                        }
-                        this.minPrice = Math.min(this.minPrice, 64);
-                        this.maxPrice = Math.min(this.maxPrice, 64);
-
-                        Runnable script = this.script;
-                        if (script != null) {
-                            script.run();
-                        }
-
-                        if (!active) {
-                            return;
-                        }
+                    this.maxLevel = enchantment.getMaxLevel();
+                    this.curse = enchantment.isCurse();
+                    this.minPrice = 2 + this.level * 3;
+                    this.maxPrice = 6 + this.level * 13;
+                    if (enchantment.isTreasureOnly()) {
+                        this.minPrice *= 2;
+                        this.maxPrice *= 2;
                     }
+                    this.minPrice = Math.min(this.minPrice, 64);
+                    this.maxPrice = Math.min(this.maxPrice, 64);
+
+                    Runnable script = this.script;
+                    if (script != null) {
+                        script.run();
+                    }
+
+                    if (!active) {
+                        return;
+                    }
+
                     state = State.START_BREAKING_LECTERN;
                 }
 

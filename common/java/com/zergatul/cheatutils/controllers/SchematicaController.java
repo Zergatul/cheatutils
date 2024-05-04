@@ -194,7 +194,7 @@ public class SchematicaController {
 
                             SharedVertexBuffer.instance.bind();
                             SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionTexShader());
+                            SharedVertexBuffer.instance.drawWithShader(event.pose(), event.getProjection(), GameRenderer.getPositionTexShader());
                             VertexBuffer.unbind();
                         }
                     }
@@ -236,7 +236,7 @@ public class SchematicaController {
                 });
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            Primitives.renderLines(bufferBuilder, event.getPose(), event.getProjection());
         }
 
         if (config.showMissingBlockCubes) {
@@ -256,7 +256,7 @@ public class SchematicaController {
                 });
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            Primitives.renderLines(bufferBuilder, event.getPose(), event.getProjection());
         }
 
         if (config.showWrongBlockTracers) {
@@ -278,7 +278,7 @@ public class SchematicaController {
                 });
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            Primitives.renderLines(bufferBuilder, event.getPose(), event.getProjection());
         }
 
         if (config.showWrongBlockCubes) {
@@ -298,7 +298,7 @@ public class SchematicaController {
                 });
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            Primitives.renderLines(bufferBuilder, event.getPose(), event.getProjection());
         }
 
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);

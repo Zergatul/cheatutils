@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,23 +27,21 @@ public class BetterStatusEffects implements Module {
 
     }
 
-    public boolean render(GuiGraphics graphics, int screenWidth, int y) {
-        if (mc.player == null) {
-            return false;
-        }
-
+    public void render(GuiGraphics graphics, Player player, int y) {
         if (!ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
-            return false;
+            return;
         }
 
-        Collection<MobEffectInstance> collection = mc.player.getActiveEffects();
+        Collection<MobEffectInstance> collection = player.getActiveEffects();
         if (collection.isEmpty()) {
-            return false;
+            return;
         }
+
+        mc.getProfiler().push("equip");
 
         MobEffectTextureManager manager = mc.getMobEffectTextures();
 
-        int left = (screenWidth - collection.size() * 25) / 2;
+        int left = (graphics.guiWidth() - collection.size() * 25) / 2;
 
         List<MobEffectInstance> sorted = Ordering.natural().sortedCopy(collection);
         for (int i = 0; i < sorted.size(); i++) {
@@ -74,6 +73,6 @@ public class BetterStatusEffects implements Module {
             left += 25;
         }
 
-        return true;
+        mc.getProfiler().pop();
     }
 }

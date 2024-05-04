@@ -22,7 +22,7 @@ public class MixinMouseHandler {
     @Final
     private Minecraft minecraft;
 
-    @Redirect(method = "turnPlayer()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"))
+    @Redirect(method = "turnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"))
     private void onLocalPlayerTurn(LocalPlayer player, double yRot, double xRot) {
         if (Zoom.instance.isActive()) {
             xRot *= Zoom.instance.getFovFactor();

@@ -99,7 +99,7 @@ public class ShulkerTooltipController {
 
                 poseStack.pushPose();
                 poseStack.setIdentity();
-                poseStack.mulPoseMatrix(lockedPose);
+                poseStack.mulPose(lockedPose);
                 RenderSystem.applyModelViewMatrix();
 
                 int x = lockedX;
@@ -149,22 +149,16 @@ public class ShulkerTooltipController {
     }
 
     private void renderTooltip(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
-        CompoundTag compound = lockedStack.getTagElement("BlockEntityTag");
-        if (compound != null) {
-            if (compound.contains("Items", 9)) {
-                var list = NonNullList.withSize(27, ItemStack.EMPTY);
-                ContainerHelper.loadAllItems(compound, list);
-                for (int i = 0; i < list.size(); i++) {
-                    ItemStack slot = list.get(i);
-                    int slotX = i % 9;
-                    int slotY = i / 9;
-                    if (!slot.isEmpty()) {
-                        if (x + 8 + 18 * slotX <= mouseX && mouseX < x + 8 + 18 * slotX + 16) {
-                            if (y + 10 + 18 * slotY <= mouseY && mouseY < y + 10 + 18 * slotY + 16) {
-                                allowTooltip = true;
-                                graphics.renderTooltip(Minecraft.getInstance().font, slot, mouseX, mouseY);
-                            }
-                        }
+        NonNullList<ItemStack> content = ItemUtils.getShulkerContent(lockedStack);
+        for (int i = 0; i < content.size(); i++) {
+            ItemStack slot = content.get(i);
+            int slotX = i % 9;
+            int slotY = i / 9;
+            if (!slot.isEmpty()) {
+                if (x + 8 + 18 * slotX <= mouseX && mouseX < x + 8 + 18 * slotX + 16) {
+                    if (y + 10 + 18 * slotY <= mouseY && mouseY < y + 10 + 18 * slotY + 16) {
+                        allowTooltip = true;
+                        graphics.renderTooltip(Minecraft.getInstance().font, slot, mouseX, mouseY);
                     }
                 }
             }

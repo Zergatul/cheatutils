@@ -5,29 +5,22 @@ import org.lwjgl.opengl.GL30;
 
 public class BlockOverlayBufferProgram extends Program {
 
-    private final int modelViewUniform;
-    private final int projectionUniform;
+    private final int mvpUniform;
 
     public BlockOverlayBufferProgram() {
         super("block-overlay-buffer", new PositionVertexData());
 
-        modelViewUniform = GL30.glGetUniformLocation(id, "ModelView");
-        if (modelViewUniform == -1) {
-            throw new IllegalStateException("Cannot find uniform");
-        }
-
-        projectionUniform = GL30.glGetUniformLocation(id, "Projection");
-        if (projectionUniform == -1) {
+        mvpUniform = GL30.glGetUniformLocation(id, "MVP");
+        if (mvpUniform == -1) {
             throw new IllegalStateException("Cannot find uniform");
         }
     }
 
-    public void draw(Matrix4f modelView, Matrix4f projection) {
+    public void draw(Matrix4f mvp) {
         buffer.upload();
 
         GL30.glUseProgram(id);
-        GL30.glUniformMatrix4fv(modelViewUniform, false, modelView.get(new float[16]));
-        GL30.glUniformMatrix4fv(projectionUniform, false, projection.get(new float[16]));
+        GL30.glUniformMatrix4fv(mvpUniform, false, mvp.get(new float[16]));
 
         buffer.VAO.bind();
         GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, buffer.vertices());

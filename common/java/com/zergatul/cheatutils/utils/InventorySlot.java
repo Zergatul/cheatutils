@@ -42,7 +42,7 @@ public class InventorySlot {
                 case CHEST -> 6;
                 case LEGS -> 7;
                 case FEET -> 8;
-                case MAINHAND -> -1; // ?
+                case MAINHAND, BODY -> -1; // ?
                 case OFFHAND -> 45;
             };
         }
@@ -57,7 +57,7 @@ public class InventorySlot {
                 case CHEST -> 38;
                 case LEGS -> 37;
                 case FEET -> 36;
-                case MAINHAND -> -1; // ?
+                case MAINHAND, BODY -> -1; // ?
                 case OFFHAND -> 40;
             };
         }

@@ -15,9 +15,8 @@ public abstract class MixinKeyBindingListKeyEntry {
 
     @ModifyArg(
             method = "render(Lnet/minecraft/client/gui/GuiGraphics;IIIIIIIZF)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", ordinal = 0),
-            index = 1
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I", ordinal = 0),
+            index = 1)
     private Component onRenderKeyName(Component component) {
         if (component instanceof MutableComponent mutable) {
             if (mutable.getContents() instanceof TranslatableContents translatable) {

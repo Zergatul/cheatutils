@@ -89,8 +89,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     @ModifyArg(
             method = "aiStep()V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"),
-            index = 0
-    )
+            index = 0)
     private boolean onAiStepInputTick(boolean isMovingSlowly) {
         var config = ConfigStore.instance.getConfig().movementHackConfig;
         if (config.disableCrouchingSlowdown) {
@@ -149,6 +148,26 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
             return result;
         } else {
             return super.updateFluidHeightAndDoFluidPushing(fluid, p_204033_);
+        }
+    }
+
+    @Override
+    public double blockInteractionRange() {
+        ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
+        if (config.overrideReachDistance) {
+            return config.reachDistance;
+        } else {
+            return super.blockInteractionRange();
+        }
+    }
+
+    @Override
+    public double entityInteractionRange() {
+        ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
+        if (config.overrideAttackRange) {
+            return config.attackRange;
+        } else {
+            return super.entityInteractionRange();
         }
     }
 }

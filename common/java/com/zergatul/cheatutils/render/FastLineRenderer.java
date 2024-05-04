@@ -53,7 +53,7 @@ public class FastLineRenderer implements LineRenderer {
         }
 
         // draw with shader program
-        program.draw(event.getPoseMatrix(), event.getProjectionMatrix());
+        program.draw(event.getMvp());
 
         // reset settings
         GL30.glDisable(GL30.GL_BLEND);

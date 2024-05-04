@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.common.events;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -12,19 +11,20 @@ public class RenderWorldLastEvent {
 
     public static RenderWorldLastEvent last;
 
-    private final PoseStack matrixStack;
-    private final Matrix4f poseMatrix;
+    private final Matrix4f pose;
+    private final Matrix4f projection;
+    private final Matrix4f mvp;
     private final float tickDelta;
-    private final Matrix4f projectionMatrix;
     private final Vec3 tracerCenter;
     private final Vec3 playerPos;
     private final Camera camera;
 
-    public RenderWorldLastEvent(PoseStack matrixStack, float tickDelta, Matrix4f projectionMatrix) {
-        this.matrixStack = matrixStack;
-        this.poseMatrix = new Matrix4f(matrixStack.last().pose());
+    public RenderWorldLastEvent(Matrix4f pose, Matrix4f projection, float tickDelta) {
+        this.pose = new Matrix4f(pose);
+        this.projection = new Matrix4f(projection);
         this.tickDelta = tickDelta;
-        this.projectionMatrix = new Matrix4f(projectionMatrix);
+
+        this.mvp = new Matrix4f(projection).mul(pose);
 
         Minecraft mc = Minecraft.getInstance();
         camera = mc.gameRenderer.getMainCamera();
@@ -72,20 +72,20 @@ public class RenderWorldLastEvent {
         last = this;
     }
 
-    public PoseStack getMatrixStack() {
-        return matrixStack;
-    }
-
     public float getTickDelta() {
         return tickDelta;
     }
 
-    public Matrix4f getPoseMatrix() {
-        return poseMatrix;
+    public Matrix4f getPose() {
+        return pose;
     }
 
-    public Matrix4f getProjectionMatrix() {
-        return projectionMatrix;
+    public Matrix4f getProjection() {
+        return projection;
+    }
+
+    public Matrix4f getMvp() {
+        return mvp;
     }
 
     public Vec3 getTracerCenter() {

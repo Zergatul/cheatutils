@@ -177,7 +177,7 @@
                             <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting, active: statuses.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
                         </td>
                         <td>
-                            <button @click="current = 'world-download'" :class="{ faded: !filtered.WorldDownload, active: statuses.WorldDownload }">World Download</button>
+                            <button @click="current = 'world-download'" :class="{ faded: !filtered.WorldDownload, active: statuses.WorldDownload }"><s>World Download</s></button>
                         </td>
                     </tr>
                     <tr>
@@ -285,7 +285,7 @@
                         <td></td>
                         <td></td>
                         <td>
-                            <button @click="current = 'inv-move'" :class="{ faded: !filtered.InvMove, active: statuses.InvMove }">Inv Move</button>
+                            <button @click="current = 'inv-move'" :class="{ faded: !filtered.InvMove, active: statuses.InvMove }"><s>Inv Move</s></button>
                         </td>
                         <td>
                             <button @click="current = 'fake-weather'" :class="{ faded: !filtered.FakeWeather, active: statuses.FakeWeather }">Fake Weather</button>

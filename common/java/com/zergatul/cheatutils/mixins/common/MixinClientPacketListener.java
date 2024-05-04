@@ -44,7 +44,8 @@ public abstract class MixinClientPacketListener {
                 packet.reducedDebugInfo(),
                 packet.showDeathScreen(),
                 packet.doLimitedCrafting(),
-                packet.commonPlayerSpawnInfo());
+                packet.commonPlayerSpawnInfo(),
+                packet.enforcesSecureChat());
     }
 
     @ModifyVariable(

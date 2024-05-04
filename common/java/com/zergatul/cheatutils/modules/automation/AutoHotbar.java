@@ -81,7 +81,7 @@ public class AutoHotbar implements Module {
                 continue;
             }
 
-            if (ItemStack.isSameItemSameTags(itemStack, search)) {
+            if (ItemStack.isSameItemSameComponents(itemStack, search)) {
                 return i;
             }
         }

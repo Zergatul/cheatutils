@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -18,16 +19,10 @@ public class ArmorOverlay {
 
     }
 
-    public boolean render(GuiGraphics graphics, int left, int top) {
-        if (mc.player == null) {
-            return false;
-        }
+    public void render(GuiGraphics graphics, Player player, int left, int top) {
+        mc.getProfiler().push("equip");
 
-        if (!ConfigStore.instance.getConfig().armorOverlayConfig.enabled) {
-            return false;
-        }
-
-        List<ItemStack> armor = mc.player.getInventory().armor;
+        List<ItemStack> armor = player.getInventory().armor;
         ItemRenderHelper.renderItem(graphics, armor.get(3), left, top);
         left += 16;
         ItemRenderHelper.renderItem(graphics, armor.get(2), left, top);
@@ -36,6 +31,6 @@ public class ArmorOverlay {
         left += 16;
         ItemRenderHelper.renderItem(graphics, armor.get(0), left, top);
 
-        return true;
+        mc.getProfiler().pop();
     }
 }

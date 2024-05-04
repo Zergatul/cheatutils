@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EnchantmentTableBlock;
+import net.minecraft.world.level.block.EnchantingTableBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -181,8 +181,8 @@ public abstract class MixinEnchantmentScreen extends AbstractContainerScreen<Enc
         }
 
         float enchantPowerBonus = 0;
-        for (BlockPos delta : EnchantmentTableBlock.BOOKSHELF_OFFSETS) {
-            if (EnchantmentTableBlock.isValidBookShelf(mc.level, pos, delta)) {
+        for (BlockPos delta : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
+            if (EnchantingTableBlock.isValidBookShelf(mc.level, pos, delta)) {
                 //enchantPowerBonus += mc.level.getBlockState(pos.offset(delta)).getEnchantPowerBonus(mc.level, pos.offset(delta));
                 throw new IllegalStateException("disabled");
             }

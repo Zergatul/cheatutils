@@ -22,6 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4fStack;
 
 public class ItemRenderHelper {
 
@@ -51,10 +52,10 @@ public class ItemRenderHelper {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        PoseStack posestack = RenderSystem.getModelViewStack();
-        posestack.pushPose();
+        Matrix4fStack posestack = RenderSystem.getModelViewStack();
+        posestack.pushMatrix();
         posestack.translate(0.0F, 0.0F, (float)(50 + (bakedmodel.isGui3d() ? 10 : 0)));
-        posestack.translate(x, y, 100.0F);
+        posestack.translate((float) x, (float) y, 100.0F);
         posestack.translate(8.0F, 8.0F, 0.0F);
         posestack.scale(1.0F, -1.0F, 1.0F);
         posestack.scale(16.0F, 16.0F, 16.0F);
@@ -73,7 +74,7 @@ public class ItemRenderHelper {
             Lighting.setupFor3DItems();
         }
 
-        posestack.popPose();
+        posestack.popMatrix();
         RenderSystem.applyModelViewMatrix();
 
         // copy from

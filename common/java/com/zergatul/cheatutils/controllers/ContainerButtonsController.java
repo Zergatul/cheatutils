@@ -176,7 +176,7 @@ public class ContainerButtonsController {
                                         if (itemStack1.isEmpty() && itemStack2.isEmpty()) {
                                             continue;
                                         }
-                                        if (!ItemStack.isSameItemSameTags(itemStack1, itemStack2)) {
+                                        if (!ItemStack.isSameItemSameComponents(itemStack1, itemStack2)) {
                                             sameItems = false;
                                             break;
                                         }

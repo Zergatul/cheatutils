@@ -2,8 +2,6 @@ package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.forge.ArmorGuiOverlay;
-import com.zergatul.cheatutils.forge.BetterStatusEffectsGuiOverlay;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
@@ -20,7 +18,6 @@ import com.zergatul.cheatutils.modules.visuals.Fog;
 import com.zergatul.cheatutils.modules.visuals.Zoom;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.cheatutils.wrappers.ForgeEvents;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -47,7 +44,6 @@ public class ModMain {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onLoadComplete);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterKeyMappings);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterGuiOverlay);
 
         register(KeyBindingsController.instance);
         register(ChunkController.instance);
@@ -115,18 +111,6 @@ public class ModMain {
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(new ForgeEvents());
-
-        //MinecraftForge.EVENT_BUS.register(TestController.instance);
-
-        //MinecraftForge.EVENT_BUS.register(AutoDropController.instance);
-        //MinecraftForge.EVENT_BUS.register(LavaCastBuilderController.instance);
-
-        // commands
-        /*MinecraftForge.EVENT_BUS.register(GetSpeedCommand.instance);
-        MinecraftForge.EVENT_BUS.register(WaitNextTickCommand.instance);
-        MinecraftForge.EVENT_BUS.register(GetPositionCommand.instance);
-        MinecraftForge.EVENT_BUS.register(WaitWorldLoadCommand.instance);
-        MinecraftForge.EVENT_BUS.register(MoveToCommand.instance);*/
     }
 
     private void onClientSetup(final FMLClientSetupEvent event) {
@@ -140,33 +124,4 @@ public class ModMain {
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {
         Events.RegisterKeyBindings.trigger(event::register);
     }
-
-    private void onRegisterGuiOverlay(final RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll("armor", new ArmorGuiOverlay());
-        event.registerAboveAll("betterstatus", new BetterStatusEffectsGuiOverlay());
-    }
-
-    /*private static void multiply(String smallPath, String bigPath) {
-        try {
-            var input = new FileInputStream(smallPath);
-            byte[] data = IOUtils.toByteArray(input);
-            input.close();
-
-            var small = new SchematicFile(data);
-            var big = new SchematicFile(small.getWidth() * 2, small.getHeight() * 2, small.getLength() * 2);
-            big.setPaletteEntry(49, Blocks.OBSIDIAN);
-            small.copyTo(big, 0, 0, 0);
-            small.copyTo(big, small.getWidth(), 0, 0);
-            small.copyTo(big, 0, 0, small.getLength());
-            small.copyTo(big, small.getWidth(), 0, small.getLength());
-            small.copyTo(big, small.getWidth() / 2, small.getHeight(), small.getLength() / 2);
-
-            var output = new FileOutputStream(bigPath);
-            big.write(output);
-            output.close();
-        }
-        catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }*/
 }

@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.mojang.blaze3d.audio.OggAudioStream;
 import com.mojang.blaze3d.audio.SoundBuffer;
 import com.zergatul.cheatutils.sound.SoundLibrary;
+import net.minecraft.client.sounds.JOrbisAudioStream;
 import net.minecraft.client.sounds.SoundBufferLibrary;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,8 +39,8 @@ public abstract class MixinSoundBufferLibrary {
 
             File file = new File(filename);
             try (
-                InputStream stream = new FileInputStream(file);
-                OggAudioStream audioStream = new OggAudioStream(stream);
+                    InputStream stream = new FileInputStream(file);
+                    JOrbisAudioStream audioStream = new JOrbisAudioStream(stream);
             ) {
                 ByteBuffer byteBuffer = audioStream.readAll();
                 SoundBuffer soundBuffer = new SoundBuffer(byteBuffer, audioStream.getFormat());
@@ -49,7 +49,6 @@ public abstract class MixinSoundBufferLibrary {
                 info.setReturnValue(future);
             } catch (IOException e) {
                 SoundLibrary.setLastError(e.getMessage());
-                return;
             }
         }
     }

@@ -6,10 +6,10 @@ import net.minecraft.world.entity.Entity;
 public class AttackRange {
 
     public static double get() {
-        return Minecraft.getInstance().player.getEntityReach();
+        return Minecraft.getInstance().player.entityInteractionRange();
     }
 
     public static boolean canHit(Entity entity) {
-        return Minecraft.getInstance().player.canReach(entity, 0);
+        return true;
     }
 }

@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.BlockAutomationConfig;
 import com.zergatul.cheatutils.controllers.CurrentBlockController;
+import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
@@ -21,6 +22,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -83,7 +86,8 @@ public class BlockAutomation {
 
     private void onClientTickEnd() {
         BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
-        if (!config.enabled) {
+        // Block Automation code stops breaking lectern after first tick for Villager Roller
+        if (!config.enabled || VillagerRoller.instance.isActive()) {
             actionTickCounter = 0;
             return;
         }
@@ -199,22 +203,13 @@ public class BlockAutomation {
             return false;
         }
 
-        String enchantmentId =
+        Enchantment enchantment =
                 breakEnchantmentId == null ?
                 null :
-                new ResourceLocation(breakEnchantmentId).toString();
+                Registries.ENCHANTMENTS.getValue(new ResourceLocation(breakEnchantmentId));
 
         int slot = slotSelector.selectItem(config, item, stack -> {
-            if (enchantmentId == null) {
-                return true;
-            }
-
-            return stack.getEnchantmentTags().stream().anyMatch(tag -> {
-                if (tag instanceof CompoundTag compound) {
-                    return compound.getString("id").equals(enchantmentId);
-                }
-                return false;
-            });
+            return enchantment == null || stack.getEnchantments().getLevel(enchantment) > 0;
         });
 
         if (slot >= 0) {

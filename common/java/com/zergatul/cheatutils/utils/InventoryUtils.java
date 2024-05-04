@@ -159,7 +159,7 @@ public class InventoryUtils {
             return;
         }
 
-        if (!destItemStack.isEmpty() && !ItemStack.isSameItemSameTags(sourceItemStack, destItemStack)) {
+        if (!destItemStack.isEmpty() && !ItemStack.isSameItemSameComponents(sourceItemStack, destItemStack)) {
             return;
         }
 

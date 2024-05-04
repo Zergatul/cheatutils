@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -106,13 +107,13 @@ public abstract class MixinMinecraft {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetData()V", shift = At.Shift.AFTER),
-            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;)V")
-    private void onPlayerLoggingOut(Screen screen, CallbackInfo info) {
+            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V")
+    private void onPlayerLoggingOut(Screen screen, boolean b, CallbackInfo info) {
         Events.ClientPlayerLoggingOut.trigger();
     }
 
-    @Inject(at = @At("HEAD"), method = "setLevel(Lnet/minecraft/client/multiplayer/ClientLevel;)V")
-    private void onSetLevel(ClientLevel level, CallbackInfo info) {
+    @Inject(at = @At("HEAD"), method = "setLevel")
+    private void onSetLevel(ClientLevel level, ReceivingLevelScreen.Reason reason, CallbackInfo info) {
         if (this.level != null) {
             Events.WorldUnload.trigger();
         }
@@ -120,8 +121,8 @@ public abstract class MixinMinecraft {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;updateScreenAndTick(Lnet/minecraft/client/gui/screens/Screen;)V", shift = At.Shift.AFTER),
-            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;)V")
-    private void onClearLevel(Screen screen, CallbackInfo info) {
+            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V")
+    private void onClearLevel(Screen screen, boolean b, CallbackInfo info) {
         if (this.level != null) {
             Events.WorldUnload.trigger();
         }

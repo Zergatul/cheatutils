@@ -6,31 +6,28 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 public abstract class LineRendererBase implements LineRenderer {
 
     protected BufferBuilder buffer;
     protected Vec3 view;
-    protected Matrix4f modelViewMatrix;
-    protected Matrix3f normalMatrix;
-    protected Matrix4f projectionMatrix;
+    protected Matrix4f pose;
+    protected Matrix4f projection;
     protected boolean depthTest;
 
     public void begin(RenderWorldLastEvent event, boolean depthTest) {
-        begin(event.getCamera().getPosition(), event.getMatrixStack().last(), event.getProjectionMatrix(), depthTest);
+        begin(event.getCamera().getPosition(), event.getPose(), event.getProjection(), depthTest);
     }
 
-    public void begin(Vec3 view, PoseStack.Pose pose, Matrix4f projectionMatrix, boolean depthTest) {
+    public void begin(Vec3 view, Matrix4f pose, Matrix4f projection, boolean depthTest) {
         if (buffer != null) {
             throw new IllegalStateException("Rendered is already active");
         }
 
         this.view = view;
-        this.normalMatrix = pose.normal();
-        this.modelViewMatrix = pose.pose();
-        this.projectionMatrix = projectionMatrix;
+        this.pose = pose;
+        this.projection = projection;
         this.depthTest = depthTest;
         buffer = Tesselator.getInstance().getBuilder();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
@@ -73,9 +70,8 @@ public abstract class LineRendererBase implements LineRenderer {
 
     public void end() {
         this.view = null;
-        this.normalMatrix = null;
-        this.modelViewMatrix = null;
-        this.projectionMatrix = null;
+        this.pose = null;
+        this.projection = null;
         this.buffer = null;
     }
 

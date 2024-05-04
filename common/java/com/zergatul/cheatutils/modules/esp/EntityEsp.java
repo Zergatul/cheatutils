@@ -27,6 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -259,7 +260,7 @@ public class EntityEsp implements Module {
                 }
 
                 AbstractTexture texture = mc.getTextureManager().getTexture(entry.texture);
-                renderer.renderBuffer(event.getProjectionMatrix(), texture.getId());
+                renderer.renderBuffer(event.getMvp(), texture.getId());
             }
 
             renderer.end(
@@ -315,7 +316,7 @@ public class EntityEsp implements Module {
                 }
 
                 AbstractTexture texture = mc.getTextureManager().getTexture(entry.texture);
-                renderer.renderBuffer(event.getProjectionMatrix(), texture.getId());
+                renderer.renderBuffer(event.getMvp(), texture.getId());
             }
 
             renderer.end(

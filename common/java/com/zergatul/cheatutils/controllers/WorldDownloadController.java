@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.chunk.storage.ChunkSerializer;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
@@ -176,7 +177,7 @@ public class WorldDownloadController {
     }
 
     private void processChunkPacket(int x, int z, ClientboundLevelChunkPacketData packet) {
-        queue.add(() -> {
+        /*queue.add(() -> {
             ClientLevel level = mc.level;
             if (level == null) {
                 return;
@@ -194,6 +195,7 @@ public class WorldDownloadController {
                 storage = storages.get(levelDimension);
             } else {
                 storage = new ChunkStorage(
+                        new RegionStorageInfo(level.getLevelId(), p_214836_.dimension(), "chunk"),
                         access.getDimensionPath(levelDimension).resolve("region"),
                         null, // data fixer
                         true); // sync
@@ -209,11 +211,11 @@ public class WorldDownloadController {
         });
         synchronized (loopWaitEvent) {
             loopWaitEvent.notify();
-        }
+        }*/
     }
 
     // copied from ChunkSerializer.write
-    private CompoundTag write(ClientLevel level, ChunkAccess chunk) {
+    /*private CompoundTag write(ClientLevel level, ChunkAccess chunk) {
         ChunkPos chunkpos = chunk.getPos();
         CompoundTag compoundtag = new CompoundTag();
         compoundtag.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
@@ -298,7 +300,7 @@ public class WorldDownloadController {
             } catch (Exception exception) {
                 logger.error("A capability provider has thrown an exception trying to write state. It will not persist. Report this to the mod author", exception);
             }
-        }*/
+        }*//*
 
         saveTicks(level, compoundtag, chunk.getTicksForSerialization());
         compoundtag.put("PostProcessing", ChunkSerializer.packOffsets(chunk.getPostProcessing()));
@@ -313,7 +315,7 @@ public class WorldDownloadController {
         compoundtag.put("Heightmaps", compoundtag2);
         compoundtag.put("structures", packStructureData());
         return compoundtag;
-    }
+    }*/
 
     private Codec<PalettedContainerRO<Holder<Biome>>> makeBiomeCodec(Registry<Biome> p_188261_) {
         return PalettedContainer.codecRO(p_188261_.asHolderIdMap(), p_188261_.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, p_188261_.getHolderOrThrow(Biomes.PLAINS));

@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BlockStateMapping {
 
@@ -16,7 +17,7 @@ public class BlockStateMapping {
 
     public final BlockState state;
     public final String blockId;
-    public final ImmutableMap<Property<?>, Comparable<?>> tags;
+    public final Map<Property<?>, Comparable<?>> tags;
 
     public BlockStateMapping(BlockState state) {
         this.state = state;

@@ -16,6 +16,7 @@ import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.List;
 import java.util.Random;
 
 public class ServerPlugins implements Module {
@@ -126,10 +127,10 @@ public class ServerPlugins implements Module {
 
     private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
         if (args.packet instanceof ClientboundCommandSuggestionsPacket packet) {
-            if (state == State.SENT_PACKET && suggestionId == packet.getId()) {
+            if (state == State.SENT_PACKET && suggestionId == packet.id()) {
                 state = State.RECEIVED_PACKET;
-                Suggestions suggestions = packet.getSuggestions();
-                plugins = suggestions.getList().stream().map(Suggestion::getText).toArray(String[]::new);
+                List<ClientboundCommandSuggestionsPacket.Entry> suggestions = packet.suggestions();
+                plugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
                 if (ConfigStore.instance.getConfig().serverPluginsConfig.autoPrint) {
                     for (String plugin: plugins) {
                         mc.getChatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
@@ -137,10 +138,10 @@ public class ServerPlugins implements Module {
                 }
             }
 
-            if (bukkitState == State.SENT_PACKET && bukkitSuggestionId == packet.getId()) {
+            if (bukkitState == State.SENT_PACKET && bukkitSuggestionId == packet.id()) {
                 bukkitState = State.RECEIVED_PACKET;
-                Suggestions suggestions = packet.getSuggestions();
-                bukkitPlugins = suggestions.getList().stream().map(Suggestion::getText).toArray(String[]::new);
+                List<ClientboundCommandSuggestionsPacket.Entry> suggestions = packet.suggestions();
+                bukkitPlugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
                 if (ConfigStore.instance.getConfig().serverPluginsConfig.autoPrint) {
                     for (String plugin: bukkitPlugins) {
                         mc.getChatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);

@@ -18,43 +18,57 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinChatComponent {
 
     @ModifyConstant(
-            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V",
+            method = "addMessageToQueue",
             constant = @Constant(intValue = 100))
-    private int onModifyMaxChatHistory(int size) {
+    private int addMessageToQueueModifyMaxChatHistory(int size) {
         ChatUtilitiesConfig config = ConfigStore.instance.getConfig().chatUtilitiesConfig;
         return config.overrideMessageLimit ? config.messageLimit : size;
     }
 
-    @ModifyArg(
-            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ComponentRenderUtils;wrapComponents(Lnet/minecraft/network/chat/FormattedText;ILnet/minecraft/client/gui/Font;)Ljava/util/List;", ordinal = 0))
-    private FormattedText onModifyWrapComponents(FormattedText text) {
+    @ModifyConstant(
+            method = "addMessageToDisplayQueue",
+            constant = @Constant(intValue = 100))
+    private int addMessageToDisplayQueueModifyMaxChatHistory(int size) {
         ChatUtilitiesConfig config = ConfigStore.instance.getConfig().chatUtilitiesConfig;
-        if (config.showTime) {
-            if (text instanceof TimeWrappedComponent component) {
-                text = Component.literal("") // to keep Style.EMPTY for chat message
-                        .append(Component.literal(component.getTime().format(config.getFormatter())).withStyle(Style.EMPTY.withColor(0xFF808080)))
-                        .append(Component.literal(" "))
-                        .append(component.unwrap());
-            }
-        } else {
-            if (text instanceof TimeWrappedComponent component) {
-                text = component.unwrap();
-            }
-        }
-
-        return text;
+        return config.overrideMessageLimit ? config.messageLimit : size;
     }
 
-    @ModifyArg(
+    @ModifyVariable(
             method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", ordinal = 0))
+            at = @At("HEAD"),
+            ordinal = 0,
+            argsOnly = true)
     private Component onModifyMessageComponent(Component component) {
         return new TimeWrappedComponent(component);
     }
 
-    @Inject(at = @At("HEAD"), method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V")
-    private void onAddMessage(Component component, MessageSignature signature, int time, GuiMessageTag tag, boolean b, CallbackInfo ci) {
-        Events.ChatMessageAdded.trigger(component);
+    @ModifyArg(
+            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/GuiMessage;<init>(ILnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V"))
+    private Component onModifyWrapComponents(Component component) {
+        ChatUtilitiesConfig config = ConfigStore.instance.getConfig().chatUtilitiesConfig;
+        if (config.showTime) {
+            if (component instanceof TimeWrappedComponent wrapped) {
+                component = Component.literal("") // to keep Style.EMPTY for chat message
+                        .append(Component.literal(wrapped.getTime().format(config.getFormatter())).withStyle(Style.EMPTY.withColor(0xFF808080)))
+                        .append(Component.literal(" "))
+                        .append(wrapped.unwrap());
+            }
+        } else {
+            if (component instanceof TimeWrappedComponent wrapped) {
+                component = wrapped.unwrap();
+            }
+        }
+
+        return component;
+    }
+
+    @Inject(at = @At("HEAD"), method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V")
+    private void onAddMessage(Component component, MessageSignature signature, GuiMessageTag tag, CallbackInfo info) {
+        if (component instanceof TimeWrappedComponent wrapped) {
+            Events.ChatMessageAdded.trigger(wrapped.unwrap());
+        } else {
+            Events.ChatMessageAdded.trigger(component);
+        }
     }
 }

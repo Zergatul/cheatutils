@@ -11,8 +11,8 @@ import org.lwjgl.opengl.GL11;
 public class DebugLinesLineRenderer extends LineRendererBase {
 
     @Override
-    public void begin(Vec3 view, PoseStack.Pose pose, Matrix4f projectionMatrix, boolean depthTest) {
-        super.begin(view, pose, projectionMatrix, depthTest);
+    public void begin(Vec3 view, Matrix4f pose, Matrix4f projection, boolean depthTest) {
+        super.begin(view, pose, projection, depthTest);
 
         buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
     }
@@ -41,7 +41,7 @@ public class DebugLinesLineRenderer extends LineRendererBase {
         }
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
-        SharedVertexBuffer.instance.drawWithShader(this.modelViewMatrix, this.projectionMatrix, GameRenderer.getPositionColorShader());
+        SharedVertexBuffer.instance.drawWithShader(this.pose, this.projection, GameRenderer.getPositionColorShader());
         VertexBuffer.unbind();
 
         RenderSystem.enableCull();

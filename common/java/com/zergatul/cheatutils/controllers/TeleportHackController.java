@@ -99,7 +99,7 @@ public class TeleportHackController {
             }
 
             // move target
-            double mult = dimensions.width * 0.1;
+            double mult = dimensions.width() * 0.1;
             target = target.add(direction.x * mult, direction.y * mult, direction.z * mult);
         }
 

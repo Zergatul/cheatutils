@@ -5,8 +5,10 @@ import com.zergatul.cheatutils.configs.AutoEatConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.helpers.MixinMultiPlayerGameModeHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 
 public class AutoEat {
@@ -29,7 +31,8 @@ public class AutoEat {
         AutoEatConfig config = ConfigStore.instance.getConfig().autoEatConfig;
         if (config.enabled && (!config.isHungerLimitEnabled || mc.player.getFoodData().getFoodLevel() <= config.hungerLimit)) {
             ItemStack itemStack = mc.player.getInventory().offhand.get(0);
-            if (itemStack.isEdible() && mc.player.getFoodData().needsFood()) {
+            FoodProperties food = itemStack.get(DataComponents.FOOD);
+            if (food != null && mc.player.getFoodData().needsFood()) {
                 startEating();
             } else {
                 stopEating();

@@ -3,13 +3,12 @@ package com.zergatul.cheatutils.utils;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
 import com.zergatul.cheatutils.mixins.common.accessors.HolderReferenceAccessor;
-import com.zergatul.cheatutils.webui.EntityInfoApi;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.DimensionTypes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -22,9 +21,12 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.WolfVariant;
+import net.minecraft.world.entity.animal.WolfVariants;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -37,6 +39,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
@@ -53,7 +56,7 @@ import java.util.stream.Stream;
 
 public class EntityUtils {
 
-    private static Logger logger = LogManager.getLogger(EntityInfoApi.class);
+    private static final Logger logger = LogManager.getLogger(EntityUtils.class);
 
     private static List<EntityInfo> classes;
     private static Map<String, EntityInfo> classMap;
@@ -77,7 +80,7 @@ public class EntityUtils {
             return;
         }
 
-        EntityType playerEntityType = com.zergatul.cheatutils.common.Registries.ENTITY_TYPES.getValue(new ResourceLocation("minecraft:player"));
+        EntityType<?> playerEntityType = com.zergatul.cheatutils.common.Registries.ENTITY_TYPES.getValue(new ResourceLocation("minecraft:player"));
 
         List<EntityInfo> finalClasses = new ArrayList<>();
 
@@ -86,7 +89,7 @@ public class EntityUtils {
             playerInfo = new EntityInfo(Player.class, "minecraft:player");
         }
         catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Cannot create Player EntityInfo.", ex);
         }
 
         EntityInfo localPlayerInfo = null;
@@ -94,7 +97,7 @@ public class EntityUtils {
             localPlayerInfo = new EntityInfo(LocalPlayer.class);
         }
         catch (Exception ex) {
-            ex.printStackTrace();;
+            logger.error("Cannot create LocalPlayer EntityInfo.", ex);
         }
 
         EntityInfo remotePlayerInfo = null;
@@ -102,7 +105,7 @@ public class EntityUtils {
             remotePlayerInfo = new EntityInfo(RemotePlayer.class);
         }
         catch (Exception ex) {
-            ex.printStackTrace();;
+            logger.error("Cannot create RemotePlayer EntityInfo.", ex);
         }
 
         HashSet<EntityInfo> set = new HashSet<>();
@@ -135,9 +138,7 @@ public class EntityUtils {
                 }
             }
             catch (Throwable throwable) {
-                logger.warn("Create entity by EntityType failed");
-                logger.warn(et.toString());
-                throwable.printStackTrace();
+                logger.warn("Create entity by EntityType failed: " + et.toString(), throwable);
                 return null;
             }
         }).filter(Objects::nonNull).forEach(finalClasses::add);
@@ -154,7 +155,7 @@ public class EntityUtils {
                     set.add(baseInfo);
                 }
                 catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.warn("Cannot create EntityInfo for base class " + clazz.getName(), ex);
                     continue;
                 }
                 clazz = clazz.getSuperclass();
@@ -168,7 +169,7 @@ public class EntityUtils {
                 classes.add(new EntityInfo(iface));
             }
             catch (Exception ex) {
-                ex.printStackTrace();
+                logger.warn("Cannot create EntityInfo for interface " + iface.getName(), ex);
             }
         }
 
@@ -331,8 +332,8 @@ public class EntityUtils {
                 }
 
                 @Override
-                public Lifecycle lifecycle(DamageType p_123012_) {
-                    return null;
+                public Optional<RegistrationInfo> registrationInfo(ResourceKey<DamageType> p_333179_) {
+                    return Optional.empty();
                 }
 
                 @Override
@@ -382,6 +383,11 @@ public class EntityUtils {
 
                 @Override
                 public Optional<Holder.Reference<DamageType>> getHolder(int p_206051_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public Optional<Holder.Reference<DamageType>> getHolder(ResourceLocation p_329586_) {
                     return Optional.empty();
                 }
 
@@ -502,18 +508,18 @@ public class EntityUtils {
 
         @Nullable
         @Override
-        public MapItemSavedData getMapData(String p_46650_) {
+        public MapItemSavedData getMapData(MapId p_335212_) {
             return null;
         }
 
         @Override
-        public void setMapData(String p_151533_, MapItemSavedData p_151534_) {
+        public void setMapData(MapId p_332598_, MapItemSavedData p_151534_) {
 
         }
 
         @Override
-        public int getFreeMapId() {
-            return 0;
+        public MapId getFreeMapId() {
+            return new MapId(0);
         }
 
         @Override
@@ -557,12 +563,30 @@ public class EntityUtils {
         }
 
         @Override
-        public void gameEvent(GameEvent p_220404_, Vec3 p_220405_, GameEvent.Context p_220406_) {
+        public void gameEvent(Holder<GameEvent> p_330236_, Vec3 p_220405_, GameEvent.Context p_220406_) {
 
         }
 
         @Override
         public RegistryAccess registryAccess() {
+            return new RegistryAccess() {
+                @Override
+                public <E> Optional<Registry<E>> registry(ResourceKey<? extends Registry<? extends E>> key) {
+                    if (key.equals(Registries.WOLF_VARIANT)) {
+                        return Optional.of((Registry<E>) new FakeWolfVariantRegistry());
+                    }
+                    return Optional.empty();
+                }
+
+                @Override
+                public Stream<RegistryEntry<?>> registries() {
+                    return null;
+                }
+            };
+        }
+
+        @Override
+        public PotionBrewing potionBrewing() {
             return null;
         }
 
@@ -588,40 +612,9 @@ public class EntityUtils {
     }
 
     private static class FakeWritableLevelData implements WritableLevelData {
-
         @Override
-        public void setXSpawn(int p_78651_) {
-
-        }
-
-        @Override
-        public void setYSpawn(int p_78652_) {
-
-        }
-
-        @Override
-        public void setZSpawn(int p_78653_) {
-
-        }
-
-        @Override
-        public void setSpawnAngle(float p_78648_) {
-
-        }
-
-        @Override
-        public int getXSpawn() {
-            return 0;
-        }
-
-        @Override
-        public int getYSpawn() {
-            return 0;
-        }
-
-        @Override
-        public int getZSpawn() {
-            return 0;
+        public BlockPos getSpawnPos() {
+            return null;
         }
 
         @Override
@@ -673,9 +666,14 @@ public class EntityUtils {
         public boolean isDifficultyLocked() {
             return false;
         }
+
+        @Override
+        public void setSpawn(BlockPos p_78649_, float p_78650_) {
+
+        }
     }
 
-    private static class FakeBootstrapContext implements BootstapContext<DimensionType> {
+    private static class FakeBootstrapContext implements BootstrapContext<DimensionType> {
 
         public DimensionType overworld;
 
@@ -689,6 +687,182 @@ public class EntityUtils {
 
         @Override
         public <S> HolderGetter<S> lookup(ResourceKey<? extends Registry<? extends S>> p_256410_) {
+            return null;
+        }
+    }
+
+    private static class FakeWolfVariantRegistry implements Registry<WolfVariant> {
+
+        @Override
+        public ResourceKey<? extends Registry<WolfVariant>> key() {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public ResourceLocation getKey(WolfVariant p_123006_) {
+            return null;
+        }
+
+        @Override
+        public Optional<ResourceKey<WolfVariant>> getResourceKey(WolfVariant p_123008_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public int getId(@Nullable WolfVariant p_122977_) {
+            return 0;
+        }
+
+        @Nullable
+        @Override
+        public WolfVariant byId(int p_122651_) {
+            return null;
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Nullable
+        @Override
+        public WolfVariant get(@Nullable ResourceKey<WolfVariant> p_122980_) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public WolfVariant get(@Nullable ResourceLocation p_123002_) {
+            return null;
+        }
+
+        @Override
+        public Optional<RegistrationInfo> registrationInfo(ResourceKey<WolfVariant> p_333179_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Lifecycle registryLifecycle() {
+            return null;
+        }
+
+        @Override
+        public Set<ResourceLocation> keySet() {
+            return null;
+        }
+
+        @Override
+        public Set<Map.Entry<ResourceKey<WolfVariant>, WolfVariant>> entrySet() {
+            return null;
+        }
+
+        @Override
+        public Set<ResourceKey<WolfVariant>> registryKeySet() {
+            return null;
+        }
+
+        @Override
+        public Optional<Holder.Reference<WolfVariant>> getRandom(RandomSource p_235781_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public boolean containsKey(ResourceLocation p_123011_) {
+            return false;
+        }
+
+        @Override
+        public boolean containsKey(ResourceKey<WolfVariant> p_175475_) {
+            return false;
+        }
+
+        @Override
+        public Registry<WolfVariant> freeze() {
+            return null;
+        }
+
+        @Override
+        public Holder.Reference<WolfVariant> createIntrusiveHolder(WolfVariant p_206068_) {
+            return null;
+        }
+
+        @Override
+        public Optional<Holder.Reference<WolfVariant>> getHolder(int p_206051_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Holder.Reference<WolfVariant>> getHolder(ResourceLocation location) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Holder.Reference<WolfVariant>> getHolder(ResourceKey<WolfVariant> key) {
+            if (key.equals(WolfVariants.PALE)) {
+                return Optional.of(Holder.Reference.createStandAlone(new HolderOwner<WolfVariant>() {
+                    @Override
+                    public boolean canSerializeIn(HolderOwner<WolfVariant> owner) {
+                        return false;
+                    }
+                }, WolfVariants.PALE));
+            }
+            return Optional.empty();
+        }
+
+        @Override
+        public Holder<WolfVariant> wrapAsHolder(WolfVariant p_263382_) {
+            return null;
+        }
+
+        @Override
+        public Stream<Holder.Reference<WolfVariant>> holders() {
+            return null;
+        }
+
+        @Override
+        public Optional<HolderSet.Named<WolfVariant>> getTag(TagKey<WolfVariant> p_206052_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public HolderSet.Named<WolfVariant> getOrCreateTag(TagKey<WolfVariant> p_206045_) {
+            return null;
+        }
+
+        @Override
+        public Stream<Pair<TagKey<WolfVariant>, HolderSet.Named<WolfVariant>>> getTags() {
+            return null;
+        }
+
+        @Override
+        public Stream<TagKey<WolfVariant>> getTagNames() {
+            return null;
+        }
+
+        @Override
+        public void resetTags() {
+
+        }
+
+        @Override
+        public void bindTags(Map<TagKey<WolfVariant>, List<Holder<WolfVariant>>> p_205997_) {
+
+        }
+
+        @Override
+        public HolderOwner<WolfVariant> holderOwner() {
+            return null;
+        }
+
+        @Override
+        public HolderLookup.RegistryLookup<WolfVariant> asLookup() {
+            return null;
+        }
+
+        @NotNull
+        @Override
+        public Iterator<WolfVariant> iterator() {
             return null;
         }
     }

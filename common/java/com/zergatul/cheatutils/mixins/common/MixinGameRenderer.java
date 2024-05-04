@@ -29,7 +29,7 @@ public abstract class MixinGameRenderer {
     }
 
     @Redirect(
-            method = "renderItemInHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/Camera;F)V",
+            method = "renderItemInHand",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z", ordinal = 0))
     private boolean onRenderItemInHandIsFirstPerson(CameraType cameraType) {
         return FreeCam.instance.onRenderItemInHandIsFirstPerson(cameraType);

@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.utils.IntList;
 import com.zergatul.cheatutils.utils.JavaRandom;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -424,7 +425,7 @@ public class EnchantmentScreenController {
 
     private List<EnchantmentInstance> getEnchantmentList(RandomSource random, int seed, ItemStack itemStack, int index, int cost) {
         random.setSeed(seed + index);
-        List<EnchantmentInstance> list = EnchantmentHelper.selectEnchantment(random, itemStack, cost, false);
+        List<EnchantmentInstance> list = EnchantmentHelper.selectEnchantment(Minecraft.getInstance().level.enabledFeatures(), random, itemStack, cost, false);
         if (itemStack.is(Items.BOOK) && list.size() > 1) {
             list.remove(random.nextInt(list.size()));
         }

@@ -21,6 +21,7 @@ public class FakePlayer extends RemotePlayer {
     private final ItemStack legs;
     private final ItemStack chest;
     private final ItemStack head;
+    private final ItemStack body;
 
     public FakePlayer(LocalPlayer player) {
         super((ClientLevel) player.level(), player.getGameProfile());
@@ -66,6 +67,7 @@ public class FakePlayer extends RemotePlayer {
         this.chest = player.getItemBySlot(EquipmentSlot.CHEST).copy();
         this.legs = player.getItemBySlot(EquipmentSlot.LEGS).copy();
         this.feet = player.getItemBySlot(EquipmentSlot.FEET).copy();
+        this.body = player.getItemBySlot(EquipmentSlot.BODY).copy();
 
         this.entityData.set(DATA_SHARED_FLAGS_ID, player.getEntityData().get(DATA_SHARED_FLAGS_ID));
         this.entityData.set(DATA_POSE, player.getEntityData().get(DATA_POSE));
@@ -80,6 +82,7 @@ public class FakePlayer extends RemotePlayer {
             case CHEST -> chest;
             case LEGS -> legs;
             case FEET -> feet;
+            case BODY -> body;
         };
     }
 

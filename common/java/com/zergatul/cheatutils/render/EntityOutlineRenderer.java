@@ -73,8 +73,8 @@ public class EntityOutlineRenderer {
         bufferProgram.buffer.add(v3);
     }
 
-    public void renderBuffer(Matrix4f projection, int textureId) {
-        bufferProgram.draw(projection, textureId);
+    public void renderBuffer(Matrix4f mvp, int textureId) {
+        bufferProgram.draw(mvp, textureId);
         bufferProgram.buffer.clear();
     }
 

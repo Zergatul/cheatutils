@@ -7,12 +7,10 @@ public class RenderUtilities {
 
     public static final RenderUtilities instance = new RenderUtilities();
 
-    private LineRenderer lineRenderer =
-        new FastLineRenderer();
-        //new DebugLinesLineRenderer();
-    private BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();
-    private EntityOverlayRenderer entityOverlayRenderer = new EntityOverlayRenderer();
-    private EntityOutlineRenderer entityOutlineRenderer = new EntityOutlineRenderer();
+    private final LineRenderer lineRenderer = new FastLineRenderer();
+    private final BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();
+    private final EntityOverlayRenderer entityOverlayRenderer = new EntityOverlayRenderer();
+    private final EntityOutlineRenderer entityOutlineRenderer = new EntityOutlineRenderer();
 
     private RenderUtilities() {
         Events.WindowResize.add(this::onWindowResize);

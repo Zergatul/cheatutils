@@ -22,6 +22,7 @@ import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +38,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector4f;
 
@@ -386,17 +388,16 @@ public class EntityTitleController {
             return List.of();
         }
 
-        List<EnchantmentEntry> enchantments = new ArrayList<>();
-        ListTag list = itemStack.getEnchantmentTags();
-        for(int i = 0; i < list.size(); ++i) {
-            CompoundTag compound = list.getCompound(i);
-            ResourceLocation id = EnchantmentHelper.getEnchantmentId(compound);
-            int level = EnchantmentHelper.getEnchantmentLevel(compound);
-            enchantments.add(new EnchantmentEntry(id, level));
+        List<EnchantmentEntry> result = new ArrayList<>();
+        ItemEnchantments enchantments = itemStack.getEnchantments();
+        for (Holder<Enchantment> enchantment : enchantments.keySet()) {
+            ResourceLocation id = Registries.ENCHANTMENTS.getKey(enchantment.value());
+            int level = enchantments.getLevel(enchantment.get());
+            result.add(new EnchantmentEntry(id, level));
         }
 
-        enchantments.sort(Comparator.comparingInt(e -> e.priority));
-        return enchantments;
+        result.sort(Comparator.comparingInt(e -> e.priority));
+        return result;
     }
 
     private UUID getOwner(Entity entity) {
@@ -427,14 +428,14 @@ public class EntityTitleController {
     private static class EnchantmentEntry {
 
         private static final Map<Enchantment, EnchantmentDisplayEntry> displayMap = Map.ofEntries(
-                Map.entry(Enchantments.ALL_DAMAGE_PROTECTION, new EnchantmentDisplayEntry("Pr")),
+                Map.entry(Enchantments.PROTECTION, new EnchantmentDisplayEntry("Pr")),
                 Map.entry(Enchantments.FIRE_PROTECTION, new EnchantmentDisplayEntry("FP")),
                 Map.entry(Enchantments.BLAST_PROTECTION, new EnchantmentDisplayEntry("BP")),
                 Map.entry(Enchantments.PROJECTILE_PROTECTION, new EnchantmentDisplayEntry("PP")),
 
                 Map.entry(Enchantments.THORNS, new EnchantmentDisplayEntry("Th")),
 
-                Map.entry(Enchantments.FALL_PROTECTION, new EnchantmentDisplayEntry("Fe")),
+                Map.entry(Enchantments.FEATHER_FALLING, new EnchantmentDisplayEntry("Fe")),
                 Map.entry(Enchantments.RESPIRATION, new EnchantmentDisplayEntry("Re")),
                 Map.entry(Enchantments.AQUA_AFFINITY, new EnchantmentDisplayEntry("Aq")),
                 Map.entry(Enchantments.DEPTH_STRIDER, new EnchantmentDisplayEntry("De")),
@@ -447,19 +448,19 @@ public class EntityTitleController {
                 Map.entry(Enchantments.BANE_OF_ARTHROPODS, new EnchantmentDisplayEntry("Ar")),
                 Map.entry(Enchantments.FIRE_ASPECT, new EnchantmentDisplayEntry("Fi")),
                 Map.entry(Enchantments.KNOCKBACK, new EnchantmentDisplayEntry("Kn")),
-                Map.entry(Enchantments.MOB_LOOTING, new EnchantmentDisplayEntry("Lo")),
+                Map.entry(Enchantments.LOOTING, new EnchantmentDisplayEntry("Lo")),
                 Map.entry(Enchantments.SWEEPING_EDGE, new EnchantmentDisplayEntry("Sw")),
 
                 Map.entry(Enchantments.SILK_TOUCH, new EnchantmentDisplayEntry("Si")),
-                Map.entry(Enchantments.BLOCK_FORTUNE, new EnchantmentDisplayEntry("Fo")),
-                Map.entry(Enchantments.BLOCK_EFFICIENCY, new EnchantmentDisplayEntry("Ef")),
+                Map.entry(Enchantments.FORTUNE, new EnchantmentDisplayEntry("Fo")),
+                Map.entry(Enchantments.EFFICIENCY, new EnchantmentDisplayEntry("Ef")),
 
-                Map.entry(Enchantments.POWER_ARROWS, new EnchantmentDisplayEntry("Po")),
-                Map.entry(Enchantments.PUNCH_ARROWS, new EnchantmentDisplayEntry("Pu")),
-                Map.entry(Enchantments.INFINITY_ARROWS, new EnchantmentDisplayEntry("In")),
-                Map.entry(Enchantments.FLAMING_ARROWS, new EnchantmentDisplayEntry("Fl")),
-                Map.entry(Enchantments.FISHING_LUCK, new EnchantmentDisplayEntry("Lc")),
-                Map.entry(Enchantments.FISHING_SPEED, new EnchantmentDisplayEntry("Lr")),
+                Map.entry(Enchantments.POWER, new EnchantmentDisplayEntry("Po")),
+                Map.entry(Enchantments.PUNCH, new EnchantmentDisplayEntry("Pu")),
+                Map.entry(Enchantments.INFINITY, new EnchantmentDisplayEntry("In")),
+                Map.entry(Enchantments.FLAME, new EnchantmentDisplayEntry("Fl")),
+                Map.entry(Enchantments.LUCK_OF_THE_SEA, new EnchantmentDisplayEntry("Lc")),
+                Map.entry(Enchantments.LURE, new EnchantmentDisplayEntry("Lr")),
                 Map.entry(Enchantments.LOYALTY, new EnchantmentDisplayEntry("Lo")),
                 Map.entry(Enchantments.IMPALING, new EnchantmentDisplayEntry("Im")),
                 Map.entry(Enchantments.RIPTIDE, new EnchantmentDisplayEntry("Ri")),

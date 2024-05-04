@@ -73,7 +73,7 @@ public class EndCityChunks {
         RenderSystem.enableBlend();
         RenderSystem.disableCull();
 
-        SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+        SharedVertexBuffer.instance.drawWithShader(event.getPose(), event.getProjection(), GameRenderer.getPositionColorShader());
         VertexBuffer.unbind();
 
         RenderSystem.disableBlend();

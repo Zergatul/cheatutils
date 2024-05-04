@@ -362,7 +362,7 @@ public class FreeCam implements Module {
                     .color(1, 1, 1, 1f).endVertex();
         }
 
-        Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+        Primitives.renderLines(bufferBuilder, event.getPose(), event.getProjection());
     }
 
     public void startPath() {

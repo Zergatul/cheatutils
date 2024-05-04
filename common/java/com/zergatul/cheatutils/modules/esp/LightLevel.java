@@ -171,7 +171,7 @@ public class LightLevel implements Module {
 
                 vertexBuffer.bind();
                 vertexBuffer.upload(bufferBuilder.end());
-                vertexBuffer.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionTexShader());
+                vertexBuffer.drawWithShader(event.getPose(), event.getProjection(), GameRenderer.getPositionTexShader());
                 VertexBuffer.unbind();
             }
         }
@@ -215,7 +215,7 @@ public class LightLevel implements Module {
 
         vertexBuffer.bind();
         vertexBuffer.upload(buffer.end());
-        vertexBuffer.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionColorShader());
+        vertexBuffer.drawWithShader(event.getPose(), event.getProjection(), GameRenderer.getPositionColorShader());
         VertexBuffer.unbind();
 
         RenderSystem.disableBlend();
