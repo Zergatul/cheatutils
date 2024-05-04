@@ -392,7 +392,7 @@ public class EntityTitleController {
         ItemEnchantments enchantments = itemStack.getEnchantments();
         for (Holder<Enchantment> enchantment : enchantments.keySet()) {
             ResourceLocation id = Registries.ENCHANTMENTS.getKey(enchantment.value());
-            int level = enchantments.getLevel(enchantment.get());
+            int level = enchantments.getLevel(enchantment.value());
             result.add(new EnchantmentEntry(id, level));
         }
 
