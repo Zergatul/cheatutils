@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
+import com.zergatul.cheatutils.controllers.ChunkController;
 import com.zergatul.cheatutils.helpers.MixinClientPacketListenerHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -90,24 +91,8 @@ public abstract class MixinClientPacketListener {
         }
     }
 
-
-    /*@ModifyVariable(
-            at = @At("HEAD"),
-            method = "sendChat(Ljava/lang/String;)V",
-            argsOnly = true,
-            ordinal = 0)
-    private String onSendChat(String message) {
-        if (message.startsWith("/")) {
-            return message;
-        }
-
-        String s = "";
-        Random rnd = new Random();
-        for (int i = 0; i < message.length(); i++) {
-            s += "&" + Integer.toHexString(rnd.nextInt(6,16));
-            s += message.substring(i, i + 1);
-        }
-
-        return s;
-    }*/
+    @Inject(method = "handleSetChunkCacheRadius", at = @At("TAIL"))
+    private void onSetChunkCacheRadius(ClientboundSetChunkCacheRadiusPacket packet, CallbackInfo info) {
+        ChunkController.instance.syncChunks();
+    }
 }

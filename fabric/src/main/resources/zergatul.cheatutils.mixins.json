@@ -32,7 +32,6 @@
     "common.MixinChatComponent",
     "common.MixinChatScreen",
     "common.MixinClientboundDisconnectPacket",
-    "common.MixinClientChunkCache",
     "common.MixinClientPacketListener",
     "common.MixinClientLevel",
     "common.MixinDeathScreen",

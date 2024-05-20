@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.wrappers;
 
 import com.mojang.datafixers.util.Either;
+import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -10,6 +11,7 @@ import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.List;
 
 import static com.zergatul.cheatutils.common.Events.*;
 
+@SuppressWarnings("unused")
 public class ForgeEvents {
 
     @SubscribeEvent
@@ -47,5 +50,19 @@ public class ForgeEvents {
         List<Component> list = new ArrayList<>();
         GatherTooltipComponents.trigger(new GatherTooltipComponentsEvent(event.getItemStack(), list));
         list.forEach(c -> event.getTooltipElements().add(Either.left(c)));
+    }
+
+    @SubscribeEvent
+    public void onChunkLoad(ChunkEvent.Load event) {
+        if (event.getLevel().isClientSide()) {
+            Events.ChunkLoaded.trigger();
+        }
+    }
+
+    @SubscribeEvent
+    public void onChunkLoad(ChunkEvent.Unload event) {
+        if (event.getLevel().isClientSide()) {
+            ChunkUnloaded.trigger();
+        }
     }
 }
