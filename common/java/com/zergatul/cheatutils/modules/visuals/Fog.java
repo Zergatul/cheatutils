@@ -16,7 +16,7 @@ public class Fog implements Module {
 
     public void onSetupFog(SetupFogEvent event) {
         FogConfig config = ConfigStore.instance.getConfig().fogConfig;
-        if (config.disableFog && FogConfig.METHOD_MODIFY_FOG_DISTANCES.equals(config.method)) {
+        if (config.enabled && FogConfig.METHOD_MODIFY_FOG_DISTANCES.equals(config.method)) {
             event.setFogStart(10000);
             event.setFogEnd(1000000);
         }

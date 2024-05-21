@@ -61,6 +61,7 @@ public class ConfigStore {
                 JsonElement element = JsonParser.parseReader(reader);
                 migration1(element);
                 migration2(element);
+                migration3(element);
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
@@ -308,5 +309,27 @@ public class ConfigStore {
         JsonElement config = root.get("scriptedBlockPlacerConfig");
         root.remove("scriptedBlockPlacerConfig");
         root.add("blockAutomationConfig", config);
+    }
+
+    private void migration3(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject root = element.getAsJsonObject();
+        if (!root.has("fogConfig")) {
+            return;
+        }
+
+        JsonElement config = root.get("fogConfig");
+        if (!config.isJsonObject()) {
+            return;
+        }
+
+        JsonObject fog = config.getAsJsonObject();
+        if (fog.has("disableFog")) {
+            JsonElement value = fog.remove("disableFog");
+            fog.add("enabled", value);
+        }
     }
 }

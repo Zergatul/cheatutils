@@ -3,7 +3,7 @@
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
     <div class="module-main" v-if="config">
-        <h2 class="module-header">Fog</h2>
+        <h2 class="module-header">No Fog</h2>
         <div class="description">
             Disable all fogs (water, lava, powder snow).
         </div>
@@ -12,9 +12,9 @@
             <div>
                 <label class="switch-label">
                     <input type="checkbox" class="switch"
-                        v-model="config.disableFog"
+                        v-model="config.enabled"
                         @change="update()">
-                    <span>Disable</span>
+                    <span>Enabled</span>
                 </label>
             </div>
             <fieldset>
