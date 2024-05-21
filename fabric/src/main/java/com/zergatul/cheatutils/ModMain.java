@@ -30,8 +30,10 @@ public class ModMain implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ConfigHttpServer.instance.start();
+        FabricEvents.setup();
+
         Profiles.instance.init();
+        ConfigHttpServer.instance.start();
 
         register(KeyBindingsController.instance);
         register(ChunkController.instance);

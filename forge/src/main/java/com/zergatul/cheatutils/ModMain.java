@@ -17,7 +17,6 @@ import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 import com.zergatul.cheatutils.modules.visuals.Fog;
 import com.zergatul.cheatutils.modules.visuals.Zoom;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
-import com.zergatul.cheatutils.wrappers.ForgeEvents;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
