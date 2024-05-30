@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.controllers.CoordinatesLeakProtectionController;
+import com.zergatul.cheatutils.controllers.WorldDownloadController;
 import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -55,8 +56,9 @@ public abstract class MixinLevelChunk implements LevelChunkMixinInterface {
         unloaded = true;
     }
 
-    @Inject(at = @At("TAIL"), method = "replaceWithPacketData(Lnet/minecraft/network/FriendlyByteBuf;Lnet/minecraft/nbt/CompoundTag;Ljava/util/function/Consumer;)V")
-    private void onAfterReplaceWithPacketData(FriendlyByteBuf p_187972_, CompoundTag p_187973_, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> p_187974_, CallbackInfo ci) {
+    @Inject(at = @At("TAIL"), method = "replaceWithPacketData")
+    private void onAfterReplaceWithPacketData(FriendlyByteBuf buf, CompoundTag compound, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> consumer, CallbackInfo info) {
         CoordinatesLeakProtectionController.instance.processChunk((LevelChunk) (Object) this);
+        WorldDownloadController.instance.onChunkFilledFromPacket((LevelChunk) (Object) this);
     }
 }
