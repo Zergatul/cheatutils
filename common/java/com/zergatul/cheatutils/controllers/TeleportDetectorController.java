@@ -23,8 +23,7 @@ public class TeleportDetectorController {
                 dimension = mc.level.dimension();
             } else {
                 if (mc.level.dimension() != dimension) {
-                    ChunkController.instance.clear();
-                    BlockFinderController.instance.clear();
+                    clearChunks();
                     dimension = mc.level.dimension();
                     Events.DimensionChange.trigger();
                 }
@@ -34,5 +33,11 @@ public class TeleportDetectorController {
 
     private void onPlayerLoggingOut() {
         dimension = null;
+        clearChunks();
+    }
+
+    private void clearChunks() {
+        ChunkController.instance.clear();
+        BlockFinderController.instance.clear();
     }
 }
