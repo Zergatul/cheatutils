@@ -37,7 +37,6 @@ public class TeleportDetectorController {
     }
 
     private void clearChunks() {
-        ChunkController.instance.clear();
         BlockFinderController.instance.clear();
     }
 }

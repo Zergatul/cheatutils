@@ -6,7 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ChunkController;
+import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.SharedVertexBuffer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -44,7 +44,7 @@ public class EndCityChunks {
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
+        for (Pair<Dimension, LevelChunk> pair: BlockEventsProcessor.instance.getLoadedChunks()) {
             LevelChunk chunk = pair.getSecond();
             int sx = Math.floorMod(chunk.getPos().x, 20);
             int sz = Math.floorMod(chunk.getPos().z, 20);

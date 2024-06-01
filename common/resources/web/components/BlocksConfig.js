@@ -105,10 +105,6 @@ function createComponent(template) {
                 });
             };
 
-            const restart = () => {
-                axios.post('/api/block-esp-restart');
-            };
-
             const update = config => {
                 if (config.tracerMaxDistance == '') {
                     config.tracerMaxDistance = null;

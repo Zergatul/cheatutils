@@ -11,7 +11,10 @@
   "client": [
     "common.accessors.AbstractContainerScreenAccessor",
     "common.accessors.BlockBehaviourAccessor",
+    "common.accessors.ChunkAccessAccessor",
     "common.accessors.ChunkSerializerAccessor",
+    "common.accessors.ClientChunkCacheAccessor",
+    "common.accessors.ClientChunkCacheStorageAccessor",
     "common.accessors.ClientLevelAccessor",
     "common.accessors.ClientPacketListenerAccessor",
     "common.accessors.CompositeRenderTypeAccessor",
@@ -19,6 +22,7 @@
     "common.accessors.CraftingScreenAccessor",
     "common.accessors.CrossbowItemAccessor",
     "common.accessors.GuiAccessor",
+    "common.accessors.HeightmapAccessor",
     "common.accessors.HolderReferenceAccessor",
     "common.accessors.InputConstantsKeyAccessor",
     "common.accessors.ItemRendererAccessor",

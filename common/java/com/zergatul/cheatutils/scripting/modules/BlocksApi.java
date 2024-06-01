@@ -53,10 +53,6 @@ public class BlocksApi {
         }
     }
 
-    public void restartBlockFinder() {
-        BlockFinderController.instance.restart();
-    }
-
     private BlockEspConfig getConfig(String blockId) {
         ResourceLocation location = new ResourceLocation(blockId);
         Block block = Registries.BLOCKS.getValue(location);

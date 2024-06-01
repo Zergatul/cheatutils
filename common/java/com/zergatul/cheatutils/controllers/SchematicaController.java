@@ -62,7 +62,7 @@ public class SchematicaController {
     public synchronized void place(SchemaFile file, PlacingSettings placing) {
         Entry entry = new Entry(file, placing);
         entries.add(entry);
-        ChunkController.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));
+        BlockEventsProcessor.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));
     }
 
     private synchronized void onClientTickEnd() {

@@ -7,7 +7,7 @@ import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
-import com.zergatul.cheatutils.controllers.ChunkController;
+import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
@@ -109,7 +109,7 @@ public class LightLevel implements Module {
         if (active != value) {
             active = value;
             if (active) {
-                for (Pair<Dimension, LevelChunk> pair : ChunkController.instance.getLoadedChunks()) {
+                for (Pair<Dimension, LevelChunk> pair : BlockEventsProcessor.instance.getLoadedChunks()) {
                     onChunkLoaded(pair.getSecond());
                 }
             } else {

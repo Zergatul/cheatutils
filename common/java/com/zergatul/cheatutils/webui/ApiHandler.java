@@ -47,7 +47,6 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ItemInfoApi());
         apis.add(new StatusOverlayApi());
         apis.add(new ClassNameApi());
-        apis.add(new BlockEspRestartApi());
         apis.add(new GameTickScriptingCodeApi());
         apis.add(new SchematicaUploadApi());
         apis.add(new SchematicaPlaceApi());

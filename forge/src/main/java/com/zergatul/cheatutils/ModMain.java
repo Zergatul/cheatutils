@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.*;
@@ -45,10 +47,12 @@ public class ModMain {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterKeyMappings);
 
         register(KeyBindingsController.instance);
-        register(ChunkController.instance);
+        register(BlockEventsProcessor.instance);
         register(NetworkPacketsController.instance);
         register(TeleportDetectorController.instance);
         register(SpeedCounterController.instance);
+        register(BlockFinderController.instance);
+        register(PreRenderGuiExecutor.instance);
 
         register(AutoTotem.instance);
         register(KillAura.instance);
@@ -97,6 +101,8 @@ public class ModMain {
         register(BedrockBreaker.instance);
         register(RenderUtilities.instance);
         register(DelayedRun.instance);
+
+        register(TickEndExecutor.instance);
     }
 
     private void register(Module module) {

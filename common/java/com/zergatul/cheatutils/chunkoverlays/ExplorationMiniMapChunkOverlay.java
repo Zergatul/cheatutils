@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
+import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.core.BlockPos;
@@ -93,11 +94,12 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     }
 
     @Override
-    protected boolean drawChunk(Dimension dimension, Map<AbstractChunkOverlay.SegmentPos, AbstractChunkOverlay.Segment> segments, LevelChunk chunk) {
-        if (chunk.getStatus() != ChunkStatus.FULL) {
+    protected boolean drawChunk(Map<AbstractChunkOverlay.SegmentPos, AbstractChunkOverlay.Segment> segments, SnapshotChunk chunk) {
+        /*if (chunk.getStatus() != ChunkStatus.FULL) {
             return false;
-        }
+        }*/
 
+        Dimension dimension = chunk.getDimension();
         ChunkPos chunkPos = chunk.getPos();
         SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
 
@@ -161,7 +163,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         return "ExplorationMiniMapScanThread";
     }
 
-    private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk, Integer scanFromY) {
+    private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, SnapshotChunk chunk, Integer scanFromY) {
         if (dimension.hasCeiling() || scanFromY != null) {
             for (int y1 = scanFromY != null ? scanFromY : dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {
                 BlockPos pos = new BlockPos(dx, y1, dz);
