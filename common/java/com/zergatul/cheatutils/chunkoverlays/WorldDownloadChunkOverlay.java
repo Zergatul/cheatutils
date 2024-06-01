@@ -1,15 +1,11 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.controllers.WorldDownloadController;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
@@ -33,7 +29,7 @@ public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
     }
 
     public void notifyChunkSaved(Dimension dimension, int x, int z) {
-        addToRenderQueue(new RenderThreadQueueItem(() -> {
+        PreRenderGuiExecutor.instance.execute(() -> {
             ChunkPos chunkPos = new ChunkPos(x, z);
             SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
             Map<SegmentPos, Segment> segments = getSegmentsMap(dimension);
@@ -58,33 +54,6 @@ public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
             }
 
             segment.onChange();
-        }));
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "WorldDownloadThread";
-    }
-
-    @Override
-    protected boolean drawChunk(Dimension dimension, Map<SegmentPos, Segment> segments, LevelChunk chunk) {
-        return true;
-    }
-
-    @Override
-    protected void processBlockChange(Dimension dimension, ChunkPos chunkPos, Segment segment, BlockPos pos, BlockState state) {
-
-    }
-
-    private NativeImage loadImage(String filename) {
-        ClassLoader classLoader = NewChunksOverlay.class.getClassLoader();
-        InputStream stream = classLoader.getResourceAsStream(filename);
-        try {
-            return NativeImage.read(stream);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        });
     }
 }

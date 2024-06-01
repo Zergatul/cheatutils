@@ -26,11 +26,16 @@ version = mod_version
 group = mod_group_id
 
 // Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
+}
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     copyIdeResources = true
     reobf = false
     runs {
@@ -61,6 +66,7 @@ sourceSets {
         java {
             srcDir '../common/java'
             srcDir '../java-scripting-language/src/main/java'
+            srcDir '../mixin-plugin/common/java'
         }
         resources {
             srcDir '../common/resources'
@@ -98,7 +104,7 @@ dependencies {
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
-    // Hack fix for now, force jopt-simple to be exactly 5.0.4 because Mojang ships that version, but some transtive dependencies request 6.0+ 
+    // Hack fix for now, force jopt-simple to be exactly 5.0.4 because Mojang ships that version, but some transtive dependencies request 6.0+
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 }
 
@@ -123,7 +129,7 @@ tasks.named('processResources', ProcessResources).configure {
 
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
-    archiveFileName = "zergatul.$mod_id-$mod_version-forge-${minecraft_version}.jar"
+    archiveFileName = "$mod_id-$mod_version-forge-${minecraft_version}.jar"
 
     manifest {
         attributes([

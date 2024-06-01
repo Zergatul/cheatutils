@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
@@ -9,7 +10,11 @@ import java.util.List;
 
 public class NearbyBlockEnumerator {
 
+    private static final Minecraft mc = Minecraft.getInstance();
+
     public static List<BlockPos> getPositions(Vec3 source, double maxRange) {
+        assert mc.level != null;
+
         double maxRangeSqr = maxRange * maxRange;
         int delta = (int) Math.ceil(maxRange) + 1;
 
@@ -18,8 +23,8 @@ public class NearbyBlockEnumerator {
         int zc = (int) Math.round(source.z);
         int x1 = xc - delta;
         int x2 = xc + delta;
-        int y1 = yc - delta;
-        int y2 = yc + delta;
+        int y1 = Math.max(yc - delta, mc.level.getMinBuildHeight());
+        int y2 = Math.min(yc + delta, mc.level.getMaxBuildHeight());
         int z1 = zc - delta;
         int z2 = zc + delta;
 

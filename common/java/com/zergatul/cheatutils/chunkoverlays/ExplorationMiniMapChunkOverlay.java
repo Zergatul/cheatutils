@@ -3,16 +3,18 @@ package com.zergatul.cheatutils.chunkoverlays;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
+import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.Dimension;
+import com.zergatul.cheatutils.utils.LevelChunkUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.MapColor;
 
@@ -93,34 +95,26 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     }
 
     @Override
-    protected boolean drawChunk(Dimension dimension, Map<AbstractChunkOverlay.SegmentPos, AbstractChunkOverlay.Segment> segments, LevelChunk chunk) {
-        if (chunk.getStatus() != ChunkStatus.FULL) {
-            return false;
-        }
-
+    protected void drawChunk(Dimension dimension, LevelChunk chunk, Map<SegmentPos, Segment> segments) {
         ChunkPos chunkPos = chunk.getPos();
         SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
 
-        addToRenderQueue(new RenderThreadQueueItem(() -> {
-            if (!segments.containsKey(segmentPos)) {
-                segments.put(segmentPos, new Segment(segmentPos, segmentSize));
+        if (!segments.containsKey(segmentPos)) {
+            segments.put(segmentPos, new Segment(segmentPos, segmentSize));
+        }
+
+        Segment segment = segments.get(segmentPos);
+        int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
+        int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+
+        Integer scanFromY = getConfig().scanFromY;
+        for (int dx = 0; dx < 16; dx++) {
+            for (int dz = 0; dz < 16; dz++) {
+                drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
             }
-        }, () -> {
-            Segment segment = segments.get(segmentPos);
-            int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-            int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+        }
 
-            Integer scanFromY = getConfig().scanFromY;
-            for (int dx = 0; dx < 16; dx++) {
-                for (int dz = 0; dz < 16; dz++) {
-                    drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
-                }
-            }
-
-            addToRenderQueue(new RenderThreadQueueItem(segment::onChange));
-        }));
-
-        return true;
+        PreRenderGuiExecutor.instance.execute(segment::onChange);
     }
 
     @Override
@@ -132,7 +126,8 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         if (dimension.isNether()) {
             int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
             int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
-            boolean updated = drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, mc.level.getChunk(chunkPos.x, chunkPos.z), getConfig().scanFromY);
+            LevelChunk chunk = mc.level.getChunk(chunkPos.x, chunkPos.z);
+            boolean updated = drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, chunk, getConfig().scanFromY);
             if (updated && !segment.updated) {
                 segment.updated = true;
                 segment.updateTime = System.nanoTime();
@@ -156,23 +151,16 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         }
     }
 
-    @Override
-    protected String getThreadName() {
-        return "ExplorationMiniMapScanThread";
-    }
-
     private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk, Integer scanFromY) {
         if (dimension.hasCeiling() || scanFromY != null) {
             for (int y1 = scanFromY != null ? scanFromY : dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {
-                BlockPos pos = new BlockPos(dx, y1, dz);
-                BlockState state = chunk.getBlockState(pos);
+                BlockState state = LevelChunkUtils.getBlockState(chunk, dx, y1, dz);
                 if (state.isAir()) {
                     // first non-air block below
                     for (int y2 = y1 - 1; y2 >= dimension.getMinY(); y2--) {
-                        pos = new BlockPos(dx, y2, dz);
-                        state = chunk.getBlockState(pos);
+                        state = LevelChunkUtils.getBlockState(chunk, dx, y2, dz);
                         if (!state.isAir()) {
-                            MapColor materialColor = state.getMapColor(mc.level, pos);
+                            MapColor materialColor = state.getBlock().defaultMapColor();
                             if (materialColor == MapColor.NONE) {
                                 continue;
                             }
@@ -192,9 +180,8 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
         int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, dx, dz);
         for (int y = height; y >= dimension.getMinY(); y--) {
-            BlockPos pos = new BlockPos(dx, y, dz);
-            BlockState state = chunk.getBlockState(pos);
-            MapColor materialColor = state.getMapColor(mc.level, pos);
+            BlockState state = LevelChunkUtils.getBlockState(chunk, dx, y, dz);
+            MapColor materialColor = state.getBlock().defaultMapColor();
             if (materialColor != MapColor.NONE) {
                 int color = convert(materialColor.col);
                 if (segment.image.getPixelRGBA(xf + dx, yf + dz) != color) {

@@ -16,6 +16,7 @@ import net.minecraft.world.entity.Entity;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -112,10 +113,21 @@ public abstract class MixinMinecraft {
         Events.ClientPlayerLoggingOut.trigger();
     }
 
+    @Unique
+    private boolean triggerDimensionChange_CU;
+
     @Inject(at = @At("HEAD"), method = "setLevel")
-    private void onSetLevel(ClientLevel level, ReceivingLevelScreen.Reason reason, CallbackInfo info) {
+    private void onBeforeSetLevel(ClientLevel level, ReceivingLevelScreen.Reason reason, CallbackInfo info) {
         if (this.level != null) {
-            Events.WorldUnload.trigger();
+            Events.LevelUnload.trigger();
+            triggerDimensionChange_CU = true;
+        }
+    }
+
+    @Inject(at = @At("TAIL"), method = "setLevel")
+    private void onAfterSetLevel(ClientLevel level, ReceivingLevelScreen.Reason reason, CallbackInfo info) {
+        if (triggerDimensionChange_CU) {
+            Events.DimensionChange.trigger();
         }
     }
 
@@ -124,7 +136,7 @@ public abstract class MixinMinecraft {
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V")
     private void onClearLevel(Screen screen, boolean b, CallbackInfo info) {
         if (this.level != null) {
-            Events.WorldUnload.trigger();
+            Events.LevelUnload.trigger();
         }
     }
 

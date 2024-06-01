@@ -45,7 +45,7 @@ public class AutoBucket implements Module {
 
     private AutoBucket() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
-        Events.ScannerBlockUpdated.add(this::onBlockUpdated);
+        Events.RawBlockUpdated.add(this::onBlockUpdated);
     }
 
     private void onClientTickEnd() {

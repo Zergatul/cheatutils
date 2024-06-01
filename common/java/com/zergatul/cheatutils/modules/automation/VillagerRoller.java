@@ -56,7 +56,7 @@ public class VillagerRoller implements Module {
 
     private VillagerRoller() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
-        Events.ScannerBlockUpdated.add(this::onBlockChanged);
+        Events.RawBlockUpdated.add(this::onBlockChanged);
         Events.EntityInteract.add(this::onEntityInteract);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);

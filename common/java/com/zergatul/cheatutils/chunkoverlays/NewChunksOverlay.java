@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 
@@ -31,9 +31,6 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
         oldChunkImage = loadImage("textures/newchunks/old.png");
         newChunkImage = loadImage("textures/newchunks/new.png");
         semiNewChunkImage = loadImage("textures/newchunks/seminew.png");
-
-        // TODO: check better way
-        //new LevelChunk(mc.level, new ChunkPos(0,0)).replaceWithPacketData();
     }
 
     @Override
@@ -47,11 +44,7 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
     }
 
     @Override
-    protected boolean drawChunk(Dimension dimension, Map<SegmentPos, Segment> segments, LevelChunk chunk) {
-        if (chunk.getStatus() != ChunkStatus.FULL) {
-            return false;
-        }
-
+    protected void drawChunk(Dimension dimension, LevelChunk chunk, Map<SegmentPos, Segment> segments) {
         ChunkPos chunkPos = chunk.getPos();
         Map<ChunkPos, ChunkEntry> chunks = dimensions.computeIfAbsent(dimension, k -> new ConcurrentHashMap<>());
         ChunkEntry entry = chunks.computeIfAbsent(chunkPos, p -> new ChunkEntry());
@@ -73,21 +66,15 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
         }
 
         SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
+        if (!segments.containsKey(segmentPos)) {
+            segments.put(segmentPos, new Segment(segmentPos, segmentSize));
+        }
 
-        addToRenderQueue(new RenderThreadQueueItem(() -> {
-            if (!segments.containsKey(segmentPos)) {
-                segments.put(segmentPos, new Segment(segmentPos, segmentSize));
-            }
-        }, () -> {
-            Segment segment = segments.get(segmentPos);
-            int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-            int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
-            redrawChunk(entry, segment, xf, yf);
-
-            addToRenderQueue(new RenderThreadQueueItem(segment::onChange));
-        }));
-
-        return true;
+        Segment segment = segments.get(segmentPos);
+        int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
+        int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+        redrawChunk(entry, segment, xf, yf);
+        segment.onChange();
     }
 
     @Override
@@ -113,11 +100,6 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
             segment.updateTime = System.nanoTime();
             addUpdatedSegment(segment);
         }
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "NewChunksScanThread";
     }
 
     private void redrawChunk(ChunkEntry chunk, Segment segment, int xf, int yf) {
@@ -159,21 +141,9 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
         return !fluidState.isEmpty() && !fluidState.isSource();
     }
 
-    private NativeImage loadImage(String filename) {
-        ClassLoader classLoader = NewChunksOverlay.class.getClassLoader();
-        InputStream stream = classLoader.getResourceAsStream(filename);
-        try {
-            return NativeImage.read(stream);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     private static class ChunkEntry {
-        private Set<Integer> existingFlows = new HashSet<>();
-        private Set<Integer> newFlows = new HashSet<>();
+        private final Set<Integer> existingFlows = new HashSet<>();
+        private final Set<Integer> newFlows = new HashSet<>();
 
         public void addExistingFlow(int x, int y, int z) {
             int value = combine(x, y, z);

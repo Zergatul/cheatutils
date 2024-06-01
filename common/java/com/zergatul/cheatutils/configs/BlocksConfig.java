@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.GsonSkip;
-import com.zergatul.cheatutils.controllers.BlockFinderController;
+import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import net.minecraft.world.level.block.Block;
 
 import java.util.HashMap;
@@ -13,7 +13,7 @@ public class BlocksConfig {
     private ImmutableList<BlockEspConfig> configs = new ImmutableList<>();
 
     @GsonSkip
-    private Map<Block, BlockEspConfig> map;
+    private volatile Map<Block, BlockEspConfig> map;
 
     public ImmutableList<BlockEspConfig> getBlockConfigs() {
         return configs;
@@ -24,9 +24,9 @@ public class BlocksConfig {
     }
 
     public void apply() {
-        BlockFinderController.instance.removeAllConfigs();
+        BlockFinder.instance.removeAllConfigs();
         for (BlockEspConfig config: configs) {
-            BlockFinderController.instance.addConfig(config);
+            BlockFinder.instance.addConfig(config);
         }
     }
 
@@ -46,12 +46,12 @@ public class BlocksConfig {
 
     public void add(BlockEspConfig config) {
         updateBlockConfigs(configs.add(config));
-        BlockFinderController.instance.addConfig(config);
+        BlockFinder.instance.addConfig(config);
     }
 
     public void remove(BlockEspConfig config) {
         updateBlockConfigs(configs.remove(config));
-        BlockFinderController.instance.removeConfig(config);
+        BlockFinder.instance.removeConfig(config);
     }
 
     public void updateBlockConfigs(ImmutableList<BlockEspConfig> configs) {

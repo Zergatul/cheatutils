@@ -1,16 +1,14 @@
-package com.zergatul.cheatutils.utils;
+package com.zergatul.cheatutils.concurrent;
 
 import java.util.LinkedList;
 
-public class ThreadLoadCounter {
+public class BusyCounter {
 
-    private static final int KEEP_SECONDS = 5;
+    private static final int KEEP_SECONDS = 1;
 
-    private volatile boolean isWaiting;
     private final LinkedList<Entry> entries;
 
-    public ThreadLoadCounter() {
-        isWaiting = true;
+    public BusyCounter() {
         entries = new LinkedList<>();
     }
 
@@ -62,14 +60,14 @@ public class ThreadLoadCounter {
     }
 
     private void updateLast(long now) {
-        if (entries.size() > 0) {
+        if (!entries.isEmpty()) {
             entries.getLast().end = now;
         }
     }
 
     private void clearOldEntries() {
         long now = System.nanoTime();
-        while (entries.size() > 0) {
+        while (!entries.isEmpty()) {
             Entry first = entries.getFirst();
             if (now - first.end > KEEP_SECONDS * 1000000000L) {
                 entries.removeFirst();

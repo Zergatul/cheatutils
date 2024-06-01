@@ -3,6 +3,7 @@ package com.zergatul.cheatutils;
 import com.mojang.datafixers.util.Either;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,14 +26,14 @@ public class ForgeEvents {
     @SubscribeEvent
     public void onChunkLoad(ChunkEvent.Load event) {
         if (event.getLevel().isClientSide()) {
-            ChunkLoaded.trigger();
+            RawChunkLoaded.trigger((LevelChunk) event.getChunk());
         }
     }
 
     @SubscribeEvent
     public void onChunkUnload(ChunkEvent.Unload event) {
         if (event.getLevel().isClientSide()) {
-            ChunkUnloaded.trigger();
+            RawChunkUnloaded.trigger((LevelChunk) event.getChunk());
         }
     }
 }

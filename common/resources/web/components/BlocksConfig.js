@@ -105,8 +105,8 @@ function createComponent(template) {
                 });
             };
 
-            const restart = () => {
-                axios.post('/api/block-esp-restart');
+            const rescan = () => {
+                axios.post('/api/rescan-chunks');
             };
 
             const update = config => {
@@ -237,7 +237,7 @@ function createComponent(template) {
                 editGroup,
                 remove,
                 removeById,
-                restart,
+                rescan,
                 update,
                 expandGroup,
                 groupEditShouldShowCheckbox,

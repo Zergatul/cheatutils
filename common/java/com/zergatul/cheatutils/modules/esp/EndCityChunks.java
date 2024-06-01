@@ -2,12 +2,10 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ChunkController;
-import com.zergatul.cheatutils.utils.Dimension;
+import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.utils.SharedVertexBuffer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
@@ -15,6 +13,8 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class EndCityChunks {
 
@@ -44,8 +44,13 @@ public class EndCityChunks {
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
-            LevelChunk chunk = pair.getSecond();
+        AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
+        for (int i = 0; i < chunks.length(); i++) {
+            LevelChunk chunk = chunks.get(i);
+            if (chunk == null) {
+                continue;
+            }
+
             int sx = Math.floorMod(chunk.getPos().x, 20);
             int sz = Math.floorMod(chunk.getPos().z, 20);
             boolean isEndCityChunk = 0 <= sx && sx <= 8 && 0 <= sz && sz <= 8;
