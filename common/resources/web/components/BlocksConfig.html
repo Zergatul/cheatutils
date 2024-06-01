@@ -3,6 +3,7 @@
         <div>
             <button style="width: 200px;" @click="$emit('back')">Back</button>
             <button style="width: 200px;" @click="openAdd()">Add Block</button>
+            <button style="width: 200px;" @click="rescan()">Rescan Chunks</button>
         </div>
         <ul class="list-base blocks-list">
             <template v-for="item in blocksConfigList" :key="item.blocks[0]">
@@ -73,6 +74,7 @@
                 </template>
             </template>
         </ul>
+        <div class="section-description" style="margin-top: 16px;">You can try Rescan if something is wrong with block ESP.</div>
         <div class="section-description" style="margin-top: 16px;">Use Ctrl+F5 in your browser if block textures are messed up after switching Minecraft versions or mod loaders.</div>
     </div>
     <div v-if="state == 'add'">

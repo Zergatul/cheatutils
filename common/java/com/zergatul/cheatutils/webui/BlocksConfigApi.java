@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.BlocksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.BlockFinderController;
+import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import org.apache.http.HttpException;
@@ -59,8 +59,8 @@ public class BlocksConfigApi extends ApiBase {
                 config.copyFrom(jsonConfig);
                 blocksConfig.refreshMap();
                 // re-adding causes rescan
-                BlockFinderController.instance.removeConfig(config);
-                BlockFinderController.instance.addConfig(config);
+                BlockFinder.instance.removeConfig(config);
+                BlockFinder.instance.addConfig(config);
             } else {
                 config = BlockEspConfig.createDefault(jsonConfig.blocks);
                 blocksConfig.add(config);

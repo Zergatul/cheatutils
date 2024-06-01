@@ -18,7 +18,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
@@ -47,7 +46,7 @@ public class ChunkOverlayController {
         register(new NewChunksOverlay(SegmentSize, UpdateDelay));
         register(new WorldDownloadChunkOverlay(SegmentSize, UpdateDelay));
 
-        Events.ScannerChunkLoaded.add(this::onChunkLoaded);
+        Events.ChunkLoaded.add(this::onChunkLoaded);
         Events.ScannerBlockUpdated.add(this::onBlockChanged);
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.PostRenderGui.add(this::render);
@@ -187,23 +186,22 @@ public class ChunkOverlayController {
         overlays.add(overlay);
     }
 
-    private void onChunkLoaded(LevelChunk chunk) {
-        Dimension dimension = ((LevelChunkMixinInterface) chunk).getDimension();
+    private void onChunkLoaded(SnapshotChunk chunk) {
         for (AbstractChunkOverlay overlay: overlays) {
-            overlay.onChunkLoaded(dimension, chunk);
+            overlay.onChunkLoaded(chunk);
         }
     }
 
     private void onBlockChanged(BlockUpdateEvent event) {
         Dimension dimension = ((LevelChunkMixinInterface) event.chunk()).getDimension();
-        for (AbstractChunkOverlay overlay: overlays) {
+        for (AbstractChunkOverlay overlay : overlays) {
             overlay.onBlockChanged(dimension, event.pos(), event.state());
         }
     }
 
     private void onClientTickEnd() {
         for (AbstractChunkOverlay overlay: overlays) {
-            overlay.onClientTickEnd();
+            //overlay.onClientTickEnd();
         }
     }
 

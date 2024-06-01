@@ -105,6 +105,10 @@ function createComponent(template) {
                 });
             };
 
+            const rescan = () => {
+                axios.post('/api/block-esp-rescan');
+            };
+
             const update = config => {
                 if (config.tracerMaxDistance == '') {
                     config.tracerMaxDistance = null;
@@ -233,7 +237,7 @@ function createComponent(template) {
                 editGroup,
                 remove,
                 removeById,
-                restart,
+                rescan,
                 update,
                 expandGroup,
                 groupEditShouldShowCheckbox,

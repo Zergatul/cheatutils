@@ -8,7 +8,7 @@ import java.awt.*;
 public class BlockEspConfig extends EspConfigBase {
 
     // array is sorted by block id during json deserialization
-    public ImmutableList<Block> blocks;
+    public volatile ImmutableList<Block> blocks;
 
     public boolean drawOverlay;
     public Color overlayColor;

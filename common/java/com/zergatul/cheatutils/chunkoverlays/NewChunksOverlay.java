@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
@@ -47,12 +48,8 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
     }
 
     @Override
-    protected boolean drawChunk(Dimension dimension, Map<SegmentPos, Segment> segments, LevelChunk chunk) {
-        if (chunk.getStatus() != ChunkStatus.FULL) {
-            return false;
-        }
-
-        ChunkPos chunkPos = chunk.getPos();
+    protected void drawChunk(Map<SegmentPos, Segment> segments, SnapshotChunk chunk) {
+        /*ChunkPos chunkPos = chunk.getPos();
         Map<ChunkPos, ChunkEntry> chunks = dimensions.computeIfAbsent(dimension, k -> new ConcurrentHashMap<>());
         ChunkEntry entry = chunks.computeIfAbsent(chunkPos, p -> new ChunkEntry());
 
@@ -85,9 +82,7 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
             redrawChunk(entry, segment, xf, yf);
 
             addToRenderQueue(new RenderThreadQueueItem(segment::onChange));
-        }));
-
-        return true;
+        }));*/
     }
 
     @Override
@@ -113,11 +108,6 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
             segment.updateTime = System.nanoTime();
             addUpdatedSegment(segment);
         }
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "NewChunksScanThread";
     }
 
     private void redrawChunk(ChunkEntry chunk, Segment segment, int xf, int yf) {

@@ -51,7 +51,7 @@ public class ModMain {
         register(NetworkPacketsController.instance);
         register(TeleportDetectorController.instance);
         register(SpeedCounterController.instance);
-        register(BlockFinderController.instance);
+        register(BlockFinder.instance);
         register(PreRenderGuiExecutor.instance);
 
         register(AutoTotem.instance);
@@ -63,7 +63,7 @@ public class ModMain {
         register(LockInputsController.instance);
         register(AutoCraft.instance);
         register(WorldScannerController.instance);
-        register(BlockEspController.instance);
+        register(BlockEsp.instance);
         register(EntityEsp.instance);
         register(ProjectilePath.instance);
         register(EndCityChunks.instance);

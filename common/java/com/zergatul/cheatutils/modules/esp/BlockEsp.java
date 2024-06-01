@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BlockEspController {
+public class BlockEsp {
 
-    public static final BlockEspController instance = new BlockEspController();
+    public static final BlockEsp instance = new BlockEsp();
 
-    private BlockEspController() {
+    private BlockEsp() {
         Events.AfterRenderWorld.add(this::render);
     }
 
@@ -49,7 +49,7 @@ public class BlockEspController {
                 continue;
             }
 
-            Set<BlockPos> set = BlockFinderController.instance.blocks.get(config);
+            Set<BlockPos> set = BlockFinder.instance.blocks.get(config);
             if (set == null) {
                 continue;
             }

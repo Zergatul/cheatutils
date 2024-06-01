@@ -76,9 +76,9 @@ public class LightLevel implements Module {
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC));
 
         Events.AfterRenderWorld.add(this::render);
-        Events.ScannerChunkLoaded.add(this::onChunkLoaded);
+        /*Events.ScannerChunkLoaded.add(this::onChunkLoaded);
         Events.ScannerChunkUnloaded.add(this::onChunkUnLoaded);
-        Events.ScannerBlockUpdated.add(this::onBlockChanged);
+        Events.ScannerBlockUpdated.add(this::onBlockChanged);*/
 
         eventLoop = new Thread(() -> {
             try {
@@ -105,7 +105,7 @@ public class LightLevel implements Module {
     }
 
     public void onChanged() {
-        boolean value = ConfigStore.instance.getConfig().lightLevelConfig.enabled;
+        /*boolean value = ConfigStore.instance.getConfig().lightLevelConfig.enabled;
         if (active != value) {
             active = value;
             if (active) {
@@ -115,7 +115,7 @@ public class LightLevel implements Module {
             } else {
                 queue.clear();
             }
-        }
+        }*/
     }
 
     private void render(RenderWorldLastEvent event) {

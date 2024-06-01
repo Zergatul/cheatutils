@@ -94,11 +94,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     }
 
     @Override
-    protected boolean drawChunk(Map<AbstractChunkOverlay.SegmentPos, AbstractChunkOverlay.Segment> segments, SnapshotChunk chunk) {
-        /*if (chunk.getStatus() != ChunkStatus.FULL) {
-            return false;
-        }*/
-
+    protected void drawChunk(Map<AbstractChunkOverlay.SegmentPos, AbstractChunkOverlay.Segment> segments, SnapshotChunk chunk) {
         Dimension dimension = chunk.getDimension();
         ChunkPos chunkPos = chunk.getPos();
         SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
@@ -121,8 +117,6 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
             addToRenderQueue(new RenderThreadQueueItem(segment::onChange));
         }));
-
-        return true;
     }
 
     @Override
@@ -131,7 +125,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             return;
         }
 
-        if (dimension.isNether()) {
+        /*if (dimension.isNether()) {
             int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
             int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
             boolean updated = drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, mc.level.getChunk(chunkPos.x, chunkPos.z), getConfig().scanFromY);
@@ -148,33 +142,26 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             if (pos.getY() >= height) {
                 int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
                 int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
-                boolean updated = drawPixel(dimension, xf, yf, dx, dz, segment, chunk, getConfig().scanFromY);
+                boolean updated = drawPixel(dimension, xf, yf, dx, dz, segment, SnapshotChunk.from(chunk), getConfig().scanFromY);
                 if (updated && !segment.updated) {
                     segment.updated = true;
                     segment.updateTime = System.nanoTime();
                     addUpdatedSegment(segment);
                 }
             }
-        }
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "ExplorationMiniMapScanThread";
+        }*/
     }
 
     private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, SnapshotChunk chunk, Integer scanFromY) {
         if (dimension.hasCeiling() || scanFromY != null) {
             for (int y1 = scanFromY != null ? scanFromY : dimension.getMinY() + dimension.getLogicalHeight() - 1; y1 >= dimension.getMinY(); y1--) {
-                BlockPos pos = new BlockPos(dx, y1, dz);
-                BlockState state = chunk.getBlockState(pos);
+                BlockState state = chunk.getBlockState(dx, y1, dz);
                 if (state.isAir()) {
                     // first non-air block below
                     for (int y2 = y1 - 1; y2 >= dimension.getMinY(); y2--) {
-                        pos = new BlockPos(dx, y2, dz);
-                        state = chunk.getBlockState(pos);
+                        state = chunk.getBlockState(dx, y2, dz);
                         if (!state.isAir()) {
-                            MapColor materialColor = state.getMapColor(mc.level, pos);
+                            MapColor materialColor = state.getBlock().defaultMapColor();
                             if (materialColor == MapColor.NONE) {
                                 continue;
                             }
@@ -192,11 +179,10 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             }
         }
 
-        int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, dx, dz);
+        int height = chunk.getHeight(dx, dz);
         for (int y = height; y >= dimension.getMinY(); y--) {
-            BlockPos pos = new BlockPos(dx, y, dz);
-            BlockState state = chunk.getBlockState(pos);
-            MapColor materialColor = state.getMapColor(mc.level, pos);
+            BlockState state = chunk.getBlockState(dx, y, dz);
+            MapColor materialColor = state.getBlock().defaultMapColor();
             if (materialColor != MapColor.NONE) {
                 int color = convert(materialColor.col);
                 if (segment.image.getPixelRGBA(xf + dx, yf + dz) != color) {

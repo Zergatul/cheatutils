@@ -23,8 +23,8 @@ public class WorldScannerController {
     private Queue<InterruptibleRunnable> queue = new ConcurrentLinkedQueue<>();
 
     private WorldScannerController() {
-        Events.SmartChunkLoaded.add(this::onChunkLoaded);
-        Events.SmartChunkUnloaded.add(this::onChunkUnLoaded);
+        //Events.SmartChunkLoaded.add(this::onChunkLoaded);
+        //Events.SmartChunkUnloaded.add(this::onChunkUnLoaded);
         Events.BlockUpdated.add(this::onBlockChanged);
 
         restartBackgroundThread();
@@ -85,16 +85,16 @@ public class WorldScannerController {
 
     private void processChunkLoad(LevelChunk chunk) throws InterruptedException {
         waitForChunk(chunk, () -> addToQueue(() -> processChunkLoad(chunk)));
-        Events.ScannerChunkLoaded.trigger(chunk);
+        //Events.ScannerChunkLoaded.trigger(chunk);
     }
 
     private void processChunkUnload(LevelChunk chunk) {
-        Events.ScannerChunkUnloaded.trigger(chunk);
+        //Events.ScannerChunkUnloaded.trigger(chunk);
     }
 
     private void processBlockChanged(BlockUpdateEvent event) throws InterruptedException {
         waitForChunk(event.chunk(), () -> addToQueue(() -> processBlockChanged(event)));
-        Events.ScannerBlockUpdated.trigger(event);
+        //Events.ScannerBlockUpdated.trigger(event);
     }
 
     private void waitForChunk(LevelChunk chunk, Runnable whenNotFull) throws InterruptedException {

@@ -25,40 +25,40 @@ public class BlockEventsProcessor {
     private BlockEventsProcessor() {
         Events.RawChunkLoaded.add(this::onChunkLoaded);
         Events.RawChunkUnloaded.add(this::onChunkUnloaded);
+        Events.RawBlockUpdated.add(this::onBlockUpdated);
     }
 
     public ProfilerSingleThreadExecutor getExecutor() {
         return executor;
     }
 
-    public void onBlockUpdated(BlockPos pos, BlockState state) {
-        final BlockPos immutable = pos.immutable();
-        executor.execute(() -> Events.BlockUpdated.trigger(new BlockUpdateEvent(null, immutable, state)));
+    public AtomicReferenceArray<LevelChunk> getRawChunks() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
+            return new AtomicReferenceArray<>(0);
+        } else {
+            ClientChunkCache.Storage storage = ((ClientChunkCacheAccessor) mc.level.getChunkSource()).getStorage_CU();
+            return ((ClientChunkCacheStorageAccessor) (Object) storage).getChunks_CU();
+        }
     }
 
     public CompletableFuture<SnapshotChunk[]> getChunks() {
         return CompletableFuture.supplyAsync(() -> {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.level == null) {
-                return new SnapshotChunk[0];
-            } else {
-                ClientChunkCache.Storage storage = ((ClientChunkCacheAccessor) mc.level.getChunkSource()).getStorage_CU();
-                AtomicReferenceArray<LevelChunk> chunks = ((ClientChunkCacheStorageAccessor) (Object) storage).getChunks_CU();
-                int count = 0;
-                for (int i = 0; i < chunks.length(); i++) {
-                    if (chunks.get(i) != null) {
-                        count++;
-                    }
+            AtomicReferenceArray<LevelChunk> chunks = getRawChunks();
+            int count = 0;
+            for (int i = 0; i < chunks.length(); i++) {
+                if (chunks.get(i) != null) {
+                    count++;
                 }
-                SnapshotChunk[] snapshots = new SnapshotChunk[count];
-                for (int i = 0, j = 0; i < chunks.length(); i++) {
-                    LevelChunk chunk = chunks.get(i);
-                    if (chunk != null) {
-                        snapshots[j++] = SnapshotChunk.from(chunk);
-                    }
-                }
-                return snapshots;
             }
+            SnapshotChunk[] snapshots = new SnapshotChunk[count];
+            for (int i = 0, j = 0; i < chunks.length(); i++) {
+                LevelChunk chunk = chunks.get(i);
+                if (chunk != null) {
+                    snapshots[j++] = SnapshotChunk.from(chunk);
+                }
+            }
+            return snapshots;
         }, TickEndExecutor.instance);
     }
 
@@ -70,5 +70,9 @@ public class BlockEventsProcessor {
     private void onChunkUnloaded(LevelChunk chunk) {
         final ChunkPos pos = chunk.getPos();
         executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
+    }
+
+    public void onBlockUpdated(final BlockUpdateEvent event) {
+        executor.execute(() -> Events.BlockUpdated.trigger(event));
     }
 }

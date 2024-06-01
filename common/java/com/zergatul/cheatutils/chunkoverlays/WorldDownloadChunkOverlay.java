@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.controllers.WorldDownloadController;
 import net.minecraft.core.BlockPos;
@@ -59,21 +60,6 @@ public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
 
             segment.onChange();
         }));
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "WorldDownloadThread";
-    }
-
-    @Override
-    protected boolean drawChunk(Dimension dimension, Map<SegmentPos, Segment> segments, LevelChunk chunk) {
-        return true;
-    }
-
-    @Override
-    protected void processBlockChange(Dimension dimension, ChunkPos chunkPos, Segment segment, BlockPos pos, BlockState state) {
-
     }
 
     private NativeImage loadImage(String filename) {

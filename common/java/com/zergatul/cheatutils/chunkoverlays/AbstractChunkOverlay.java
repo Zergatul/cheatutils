@@ -59,9 +59,7 @@ public abstract class AbstractChunkOverlay {
         }
 
         Map<SegmentPos, Segment> segments = getSegmentsMap(chunk.getDimension());
-        if (!drawChunk(segments, chunk)) {
-            //onChunkLoaded(dimension, chunk); // TODO: need delay
-        }
+        drawChunk(segments, chunk);
     }
 
     public final void onBlockChanged(Dimension dimension, BlockPos pos, BlockState state) {
@@ -81,7 +79,7 @@ public abstract class AbstractChunkOverlay {
     public final void onPreRender() {
         textureUploaded.clear();
         long now = System.nanoTime();
-        for (Segment segment: updatedSegments) {
+        for (Segment segment : updatedSegments) {
             if (now - segment.updateTime > updateDelay) {
                 segment.onChange();
                 segment.updated = false;
@@ -90,7 +88,7 @@ public abstract class AbstractChunkOverlay {
             }
         }
 
-        for (Segment segment: textureUploaded) {
+        for (Segment segment : textureUploaded) {
             updatedSegments.remove(segment);
         }
     }
@@ -111,9 +109,9 @@ public abstract class AbstractChunkOverlay {
         return dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
     }
 
-    protected abstract boolean drawChunk(Map<SegmentPos, Segment> segments, SnapshotChunk chunk);
+    protected void drawChunk(Map<SegmentPos, Segment> segments, SnapshotChunk chunk) {}
 
-    protected abstract void processBlockChange(Dimension dimension, ChunkPos chunkPos, Segment segment, BlockPos pos, BlockState state);
+    protected void processBlockChange(Dimension dimension, ChunkPos chunkPos, Segment segment, BlockPos pos, BlockState state) {}
 
     protected final void addToRenderQueue(RenderThreadQueueItem item) {
         if (item.continuation != null) {
@@ -159,10 +157,9 @@ public abstract class AbstractChunkOverlay {
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
-            } else if (!(obj instanceof Segment)) {
+            } else if (!(obj instanceof Segment segment)) {
                 return false;
             } else {
-                Segment segment = (Segment) obj;
                 return this.pos.equals(segment.pos);
             }
         }

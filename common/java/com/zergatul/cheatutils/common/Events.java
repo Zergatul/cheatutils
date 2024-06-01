@@ -18,6 +18,7 @@ public class Events {
     public static final SimpleEventHandler ClientPlayerLoggingOut = new SimpleEventHandler();
     public static final ParameterizedEventHandler<LevelChunk> RawChunkLoaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<LevelChunk> RawChunkUnloaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<BlockUpdateEvent> RawBlockUpdated = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<SnapshotChunk> ChunkLoaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<ChunkPos> ChunkUnloaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockUpdateEvent> BlockUpdated = new ParameterizedEventHandler<>();

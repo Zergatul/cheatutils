@@ -1,9 +1,12 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.esp;
 
+import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
+import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
+import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
@@ -12,14 +15,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BlockFinderController {
+public class BlockFinder {
 
-    public static final BlockFinderController instance = new BlockFinderController();
+    public static final BlockFinder instance = new BlockFinder();
 
-    // all modification to blocks are done in BlockEvents thread
     public final Map<BlockEspConfig, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
 
-    private BlockFinderController() {
+    private BlockFinder() {
         Events.ChunkLoaded.add(this::onChunkLoaded);
         Events.ChunkUnloaded.add(this::onChunkUnloaded);
         Events.BlockUpdated.add(this::onBlockUpdated);
@@ -35,22 +37,18 @@ public class BlockFinderController {
     }
 
     public void addConfig(BlockEspConfig config) {
-        run(() -> {
+        BlockEventsProcessor.instance.getExecutor().execute(() -> {
             blocks.put(config, ConcurrentHashMap.newKeySet());
             scan(config);
         });
     }
 
     public void removeConfig(BlockEspConfig config) {
-        run(() -> blocks.remove(config));
+        blocks.remove(config);
     }
 
     public void removeAllConfigs() {
-        run(blocks::clear);
-    }
-
-    private void run(Runnable runnable) {
-        BlockEventsProcessor.instance.getExecutor().execute(runnable);
+        blocks.clear();
     }
 
     private void onChunkLoaded(SnapshotChunk chunk) {
@@ -98,6 +96,7 @@ public class BlockFinderController {
 
     private void scanChunkForBlock(SnapshotChunk chunk, BlockEspConfig config) {
         Set<BlockPos> set = blocks.get(config);
+        ImmutableList<Block> blockTypes = config.blocks;
         int minY = chunk.getMinY();
         int xc = chunk.getPos().x << 4;
         int zc = chunk.getPos().z << 4;
@@ -109,8 +108,8 @@ public class BlockFinderController {
                 for (int y = minY; y <= height; y++) {
                     BlockState state = chunk.getBlockState(x, y, z);
                     Block block = state.getBlock();
-                    for (int i = 0; i < config.blocks.size(); i++) {
-                        if (block == config.blocks.get(i)) {
+                    for (int i = 0; i < blockTypes.size(); i++) {
+                        if (block == blockTypes.get(i)) {
                             set.add(new BlockPos(xw, y, zw));
                         }
                     }

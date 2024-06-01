@@ -48,8 +48,8 @@ public class SchematicaController {
     private final SlotSelector slotSelector = new SlotSelector();
 
     private SchematicaController() {
-        Events.ScannerChunkLoaded.add(this::onChunkLoaded);
-        Events.ScannerBlockUpdated.add(this::onBlockUpdated);
+        //Events.ScannerChunkLoaded.add(this::onChunkLoaded);
+        //Events.ScannerBlockUpdated.add(this::onBlockUpdated);
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.RenderSolidLayer.add(this::onRenderSolidLayer);
         Events.AfterRenderWorld.add(this::onRender);
@@ -60,9 +60,9 @@ public class SchematicaController {
     }
 
     public synchronized void place(SchemaFile file, PlacingSettings placing) {
-        Entry entry = new Entry(file, placing);
+        /*Entry entry = new Entry(file, placing);
         entries.add(entry);
-        BlockEventsProcessor.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));
+        BlockEventsProcessor.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));*/
     }
 
     private synchronized void onClientTickEnd() {
