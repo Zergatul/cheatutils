@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.render.Primitives;
@@ -35,6 +36,7 @@ import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -48,8 +50,8 @@ public class SchematicaController {
     private final SlotSelector slotSelector = new SlotSelector();
 
     private SchematicaController() {
-        //Events.ScannerChunkLoaded.add(this::onChunkLoaded);
-        //Events.ScannerBlockUpdated.add(this::onBlockUpdated);
+        Events.RawChunkUnloaded.add(this::onChunkLoaded);
+        Events.RawBlockUpdated.add(this::onBlockUpdated);
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.RenderSolidLayer.add(this::onRenderSolidLayer);
         Events.AfterRenderWorld.add(this::onRender);
@@ -60,9 +62,18 @@ public class SchematicaController {
     }
 
     public synchronized void place(SchemaFile file, PlacingSettings placing) {
-        /*Entry entry = new Entry(file, placing);
-        entries.add(entry);
-        BlockEventsProcessor.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));*/
+        TickEndExecutor.instance.execute(() -> {
+            final Entry entry = new Entry(file, placing);
+            entries.add(entry);
+
+            AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
+            for (int i = 0; i < chunks.length(); i++) {
+                LevelChunk chunk = chunks.get(i);
+                if (chunk != null) {
+                    entry.onChunkLoaded(chunk);
+                }
+            }
+        });
     }
 
     private synchronized void onClientTickEnd() {

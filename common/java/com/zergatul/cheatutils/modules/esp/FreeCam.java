@@ -68,7 +68,7 @@ public class FreeCam implements Module {
         Events.ClientTickStart.add(this::onClientTickStart);
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
-        Events.WorldUnload.add(this::onWorldUnload);
+        Events.LevelUnload.add(this::onWorldUnload);
     }
 
     public boolean isActive() {

@@ -2,14 +2,10 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.chunkoverlays.AbstractChunkOverlay;
-import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
-import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
-import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
+import com.zergatul.cheatutils.chunkoverlays.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.Dimension;
-import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.MouseScrollEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -18,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
@@ -46,9 +43,8 @@ public class ChunkOverlayController {
         register(new NewChunksOverlay(SegmentSize, UpdateDelay));
         register(new WorldDownloadChunkOverlay(SegmentSize, UpdateDelay));
 
-        Events.ChunkLoaded.add(this::onChunkLoaded);
-        Events.ScannerBlockUpdated.add(this::onBlockChanged);
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.RawChunkLoaded.add(this::onChunkLoaded);
+        Events.RawBlockUpdated.add(this::onBlockChanged);
         Events.PostRenderGui.add(this::render);
         Events.PreRenderGuiOverlay.add(this::onPreRenderGameOverlay);
         Events.MouseScroll.add(this::onMouseScroll);
@@ -60,7 +56,7 @@ public class ChunkOverlayController {
     }
 
     private void render(RenderGuiEvent event) {
-        if (!isSomeOverlayEnabled()) {
+        if (noOverlaysEnabled()) {
             return;
         }
 
@@ -114,7 +110,7 @@ public class ChunkOverlayController {
 
         for (AbstractChunkOverlay overlay: overlays) {
             int z = overlay.getTranslateZ();
-            for (AbstractChunkOverlay.Segment segment: overlay.getSegments(dimension)) {
+            for (Segment segment: overlay.getSegments(dimension)) {
                 if (segment.texture == null) {
                     continue;
                 }
@@ -148,7 +144,7 @@ public class ChunkOverlayController {
 
     private void onPreRenderGameOverlay(PreRenderGuiOverlayEvent event) {
         if (event.getGuiOverlayType() == PreRenderGuiOverlayEvent.GuiOverlayType.PLAYER_LIST) {
-            if (!isSomeOverlayEnabled()) {
+            if (noOverlaysEnabled()) {
                 return;
             }
             if (Screen.hasAltDown()) {
@@ -159,7 +155,7 @@ public class ChunkOverlayController {
     }
 
     private void onMouseScroll(MouseScrollEvent event) {
-        if (!isSomeOverlayEnabled()) {
+        if (noOverlaysEnabled()) {
             return;
         }
 
@@ -186,26 +182,22 @@ public class ChunkOverlayController {
         overlays.add(overlay);
     }
 
-    private void onChunkLoaded(SnapshotChunk chunk) {
-        for (AbstractChunkOverlay overlay: overlays) {
+    private void onChunkLoaded(LevelChunk chunk) {
+        for (AbstractChunkOverlay overlay : overlays) {
             overlay.onChunkLoaded(chunk);
         }
     }
 
     private void onBlockChanged(BlockUpdateEvent event) {
-        Dimension dimension = ((LevelChunkMixinInterface) event.chunk()).getDimension();
+        assert mc.level != null;
+
+        Dimension dimension = Dimension.get(mc.level);
         for (AbstractChunkOverlay overlay : overlays) {
             overlay.onBlockChanged(dimension, event.pos(), event.state());
         }
     }
 
-    private void onClientTickEnd() {
-        for (AbstractChunkOverlay overlay: overlays) {
-            //overlay.onClientTickEnd();
-        }
-    }
-
-    private boolean isSomeOverlayEnabled() {
-        return overlays.stream().anyMatch(AbstractChunkOverlay::isEnabled);
+    private boolean noOverlaysEnabled() {
+        return overlays.stream().noneMatch(AbstractChunkOverlay::isEnabled);
     }
 }

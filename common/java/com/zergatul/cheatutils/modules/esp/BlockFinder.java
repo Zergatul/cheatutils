@@ -27,15 +27,6 @@ public class BlockFinder {
         Events.BlockUpdated.add(this::onBlockUpdated);
     }
 
-    public void clear() {
-        // TODO: check if necessary
-        /*addToQueue(() -> {
-            for (BlockEspConfig config: blocks.keySet()) {
-                blocks.put(config, ConcurrentHashMap.newKeySet());
-            }
-        });*/
-    }
-
     public void addConfig(BlockEspConfig config) {
         BlockEventsProcessor.instance.getExecutor().execute(() -> {
             blocks.put(config, ConcurrentHashMap.newKeySet());

@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -12,8 +13,8 @@ public class NetworkPacketsController {
 
     private final List<Consumer<ServerPacketArgs>> serverPacketHandlers = new ArrayList<>();
     private final List<Consumer<ClientPacketArgs>> clientPacketHandlers = new ArrayList<>();
-    private Connection connection;
-    private boolean handlersStopped;
+    private volatile Connection connection;
+    private volatile boolean handlersStopped;
 
     private NetworkPacketsController() {}
 
@@ -49,12 +50,18 @@ public class NetworkPacketsController {
         handlersStopped = false;
     }
 
-    public void setConnection(Connection connection) {
+    public void onConnect(Connection connection) {
         this.connection = connection;
     }
 
-    public boolean triggerReceive(Packet<?> packet) {
-        if (!handlersStopped) {
+    public void onDisconnect(Connection connection) {
+        if (this.connection == connection) {
+            this.connection = null;
+        }
+    }
+
+    public boolean triggerReceive(Connection connection, Packet<?> packet) {
+        if (!handlersStopped && connection == this.connection) {
             ServerPacketArgs args = new ServerPacketArgs();
             args.packet = packet;
 
@@ -70,8 +77,8 @@ public class NetworkPacketsController {
         return false;
     }
 
-    public boolean triggerSend(Packet<?> packet) {
-        if (!handlersStopped) {
+    public boolean triggerSend(Connection connection, Packet<?> packet) {
+        if (!handlersStopped && connection == this.connection) {
             ClientPacketArgs args = new ClientPacketArgs();
             args.packet = packet;
 

@@ -36,7 +36,7 @@ import java.util.List;
 public class ModMain {
 
     public static final String MODID = "cheatutils";
-    private static final Logger logger = LogManager.getLogger(ModMain.class);
+    public static final Logger LOGGER = LogManager.getLogger(ModMain.class);
 
     private final List<Module> modules = new ArrayList<>();
 
@@ -49,7 +49,6 @@ public class ModMain {
         register(KeyBindingsController.instance);
         register(BlockEventsProcessor.instance);
         register(NetworkPacketsController.instance);
-        register(TeleportDetectorController.instance);
         register(SpeedCounterController.instance);
         register(BlockFinder.instance);
         register(PreRenderGuiExecutor.instance);
@@ -62,7 +61,6 @@ public class ModMain {
 
         register(LockInputsController.instance);
         register(AutoCraft.instance);
-        register(WorldScannerController.instance);
         register(BlockEsp.instance);
         register(EntityEsp.instance);
         register(ProjectilePath.instance);
@@ -107,11 +105,10 @@ public class ModMain {
 
     private void register(Module module) {
         modules.add(module);
-        logger.info("Registered: {}", module.getClass().getName());
     }
 
     private void register(Object instance) {
-        logger.info("Registered: {}", instance.getClass().getName());
+        //logger.info("Registered: {}", instance.getClass().getName());
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {

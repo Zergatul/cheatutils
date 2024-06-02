@@ -8,6 +8,7 @@ import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,32 +21,37 @@ public abstract class MixinConnection {
     @Shadow
     private Channel channel;
 
-    @Inject(at = @At("RETURN"), method = "<init>")
-    private void onCreate(PacketFlow flow, CallbackInfo info) {
-        NetworkPacketsController.instance.setConnection((Connection) (Object) this);
-    }
+    @Shadow
+    @Final
+    private PacketFlow receiving;
 
     @Inject(at = @At("RETURN"), method = "disconnect")
     private void onDisconnect(Component component, CallbackInfo info) {
-        NetworkPacketsController.instance.setConnection(null);
+        if (this.receiving == PacketFlow.CLIENTBOUND) {
+            NetworkPacketsController.instance.onDisconnect((Connection) (Object) this);
+        }
     }
 
     @Inject(at = @At("HEAD"), method = "doSendPacket", cancellable = true)
     private void onPacketSend(Packet<?> packet, PacketSendListener listener, boolean flush, CallbackInfo info) {
-        boolean skip = NetworkPacketsController.instance.triggerSend(packet);
-        if (skip) {
-            if (flush) {
-                this.channel.flush();
+        if (this.receiving == PacketFlow.CLIENTBOUND) {
+            boolean skip = NetworkPacketsController.instance.triggerSend((Connection) (Object) this, packet);
+            if (skip) {
+                if (flush) {
+                    this.channel.flush();
+                }
+                info.cancel();
             }
-            info.cancel();
         }
     }
 
     @Inject(at = @At("HEAD"), method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", cancellable = true)
     private void onPacketReceive(ChannelHandlerContext context, Packet<?> packet, CallbackInfo info) {
-        boolean skip = NetworkPacketsController.instance.triggerReceive(packet);
-        if (skip) {
-            info.cancel();
+        if (this.receiving == PacketFlow.CLIENTBOUND) {
+            boolean skip = NetworkPacketsController.instance.triggerReceive((Connection) (Object) this, packet);
+            if (skip) {
+                info.cancel();
+            }
         }
     }
 }

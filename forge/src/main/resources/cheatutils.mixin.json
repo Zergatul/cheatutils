@@ -42,6 +42,7 @@
     "common.MixinChatComponent",
     "common.MixinChatScreen",
     "common.MixinClientboundDisconnectPacket",
+    "common.MixinClientHandshakePacketListenerImpl",
     "common.MixinClientLevel",
     "common.MixinClientPacketListener",
     "common.MixinClientCommonPacketListenerImpl",

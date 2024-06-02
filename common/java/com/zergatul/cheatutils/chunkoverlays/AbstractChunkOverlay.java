@@ -2,20 +2,22 @@ package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
-import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public abstract class AbstractChunkOverlay {
 
@@ -35,45 +37,45 @@ public abstract class AbstractChunkOverlay {
     public final void onEnabledChanged() {
         TickEndExecutor.instance.execute(() -> {
             if (isEnabled()) {
-                BlockEventsProcessor.instance.getChunks().thenAcceptAsync(chunks -> {
-                    for (SnapshotChunk chunk : chunks) {
-                        onChunkLoaded(chunk);
+                AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
+                for (int i = 0; i < chunks.length(); i++) {
+                    LevelChunk chunk = chunks.get(i);
+                    if (chunk == null) {
+                        continue;
                     }
-                }, PreRenderGuiExecutor.instance);
+                    onChunkLoaded(chunk);
+                }
             } else {
-                PreRenderGuiExecutor.instance.execute(() -> {
-                    for (Map<SegmentPos, Segment> segments: dimensions.values()) {
-                        for (Segment segment: segments.values()) {
-                            segment.close();
-                        }
-                        segments.clear();
+                for (Map<SegmentPos, Segment> segments : dimensions.values()) {
+                    for (Segment segment: segments.values()) {
+                        segment.close();
                     }
-                });
+                    segments.clear();
+                }
             }
         });
     }
 
-    public final void onChunkLoaded(SnapshotChunk chunk) {
+    public final void onChunkLoaded(LevelChunk chunk) {
         if (!isEnabled()) {
             return;
         }
 
-        Map<SegmentPos, Segment> segments = getSegmentsMap(chunk.getDimension());
-        drawChunk(segments, chunk);
+        Dimension dimension = Dimension.get((ClientLevel) chunk.getLevel());
+        Map<SegmentPos, Segment> segments = getSegmentsMap(dimension);
+        drawChunk(dimension, chunk, segments);
     }
 
     public final void onBlockChanged(Dimension dimension, BlockPos pos, BlockState state) {
-        TickEndExecutor.instance.execute(() -> {
-            if (!isEnabled()) {
-                return;
-            }
+        if (!isEnabled()) {
+            return;
+        }
 
-            var chunkPos = new ChunkPos(pos);
-            var segmentPos = new SegmentPos(chunkPos, segmentSize);
-            Map<SegmentPos, Segment> segments = dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
-            Segment segment = segments.get(segmentPos);
-            processBlockChange(dimension, chunkPos, segment, pos, state);
-        });
+        var chunkPos = new ChunkPos(pos);
+        var segmentPos = new SegmentPos(chunkPos, segmentSize);
+        Map<SegmentPos, Segment> segments = getSegmentsMap(dimension);
+        Segment segment = segments.get(segmentPos);
+        processBlockChange(dimension, chunkPos, segment, pos, state);
     }
 
     public final void onPreRender() {
@@ -106,102 +108,29 @@ public abstract class AbstractChunkOverlay {
     }
 
     protected final Map<SegmentPos, Segment> getSegmentsMap(Dimension dimension) {
-        return dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
+        return dimensions.computeIfAbsent(dimension, d -> new ConcurrentHashMap<>());
     }
 
-    protected void drawChunk(Map<SegmentPos, Segment> segments, SnapshotChunk chunk) {}
+    protected void drawChunk(Dimension dimension, LevelChunk chunk, Map<SegmentPos, Segment> segments) {}
 
     protected void processBlockChange(Dimension dimension, ChunkPos chunkPos, Segment segment, BlockPos pos, BlockState state) {}
-
-    protected final void addToRenderQueue(RenderThreadQueueItem item) {
-        if (item.continuation != null) {
-            CompletableFuture
-                    .runAsync(item.runnable, PreRenderGuiExecutor.instance)
-                    .thenRunAsync(item.continuation, BlockEventsProcessor.instance.getExecutor());
-        } else {
-            PreRenderGuiExecutor.instance.execute(item.runnable);
-        }
-    }
 
     protected final void addUpdatedSegment(Segment segment) {
         updatedSegments.add(segment);
     }
 
-    public static class Segment {
-        public final SegmentPos pos;
-        public final NativeImage image;
-        public final DynamicTexture texture;
-        public boolean updated;
-        public long updateTime;
-
-        public Segment(SegmentPos pos, int segmentSize) {
-            this.pos = pos;
-            this.image = new NativeImage(segmentSize * 16, segmentSize * 16, true);
-            this.texture = new DynamicTexture(image);
-        }
-
-        public void onChange() {
-            texture.upload();
-        }
-
-        public void close() {
-            texture.close();
-        }
-
-        @Override
-        public int hashCode() {
-            return pos.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            } else if (!(obj instanceof Segment segment)) {
-                return false;
-            } else {
-                return this.pos.equals(segment.pos);
+    protected NativeImage loadImage(String filename) {
+        ClassLoader classLoader = NewChunksOverlay.class.getClassLoader();
+        InputStream stream = classLoader.getResourceAsStream(filename);
+        try {
+            if (stream == null) {
+                throw new IllegalStateException("Stream is null.");
             }
+            return NativeImage.read(stream);
         }
-    }
-
-    public static class SegmentPos {
-        public int x;
-        public int z;
-
-        public SegmentPos(ChunkPos pos, int segmentSize) {
-            this.x = Math.floorDiv(pos.x, segmentSize);
-            this.z = Math.floorDiv(pos.z, segmentSize);
-        }
-
-        @Override
-        public int hashCode() {
-            return java.util.Objects.hash(x, z);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            } else if (!(obj instanceof SegmentPos pos)) {
-                return false;
-            } else {
-                return this.x == pos.x && this.z == pos.z;
-            }
-        }
-    }
-
-    protected static class RenderThreadQueueItem {
-        public Runnable runnable;
-        public Runnable continuation;
-
-        public RenderThreadQueueItem(Runnable runnable) {
-            this.runnable = runnable;
-        }
-
-        public RenderThreadQueueItem(Runnable runnable, Runnable continuation) {
-            this.runnable = runnable;
-            this.continuation = continuation;
+        catch (IOException e) {
+            ModMain.LOGGER.error(String.format("Cannot load image %s", filename), e);
+            return null;
         }
     }
 }
