@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -20,7 +21,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
@@ -41,13 +41,6 @@ public abstract class MixinGui {
 
     @Shadow
     protected abstract int getVehicleMaxHearts(LivingEntity p_93023_);
-
-    @Redirect(
-            method = "renderCrosshair",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
-    private boolean onRenderCrosshairIsFirstPerson(CameraType cameraType) {
-        return FreeCam.instance.onRenderCrosshairIsFirstPerson(cameraType);
-    }
 
     @Inject(at = @At("HEAD"), method = "renderEffects", cancellable = true)
     private void onRenderEffects(GuiGraphics graphics, float param1, CallbackInfo info) {
