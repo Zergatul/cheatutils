@@ -19,7 +19,6 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.KeyboardInput;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -184,7 +183,7 @@ public class FreeCam implements Module {
         oldCameraType = null;
     }
 
-    public void onPlayerTurn(LocalPlayer player, double yRot, double xRot) {
+    public boolean onPlayerTurn(double yRot, double xRot) {
         if (active && !cameraLock) {
             if (!eyeLock && !moveAlongPath) {
                 this.xRot += (float) xRot * 0.15F;
@@ -192,21 +191,18 @@ public class FreeCam implements Module {
                 this.xRot = Mth.clamp(this.xRot, -90, 90);
                 calculateVectors();
             }
+            return false;
         } else {
-            if (ConfigStore.instance.getConfig().lockInputsConfig.mouseInputDisabled) {
-                return;
-            }
-
-            player.turn(yRot, xRot);
+            return !ConfigStore.instance.getConfig().lockInputsConfig.mouseInputDisabled;
         }
     }
 
-    public boolean onRenderCrosshairIsFirstPerson(CameraType cameraType) {
+    public boolean onRenderCrosshairIsFirstPerson(boolean isFirstPerson) {
         FreeCamConfig config = getConfig();
-        if (active && !cameraLock && !eyeLock && config.target) {
-            return true;
+        if (active) {
+            return !cameraLock && !eyeLock && config.target;
         } else {
-            return cameraType.isFirstPerson();
+            return isFirstPerson;
         }
     }
 

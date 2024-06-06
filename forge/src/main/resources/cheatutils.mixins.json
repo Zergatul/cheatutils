@@ -2,7 +2,7 @@
   "required": false,
   "minVersion": "0.8.2",
   "package": "com.zergatul.cheatutils.mixins",
-  "refmap": "cheatutils.mixin-refmap.json",
+  "refmap": "cheatutils.mixins-refmap.json",
   "compatibilityLevel": "JAVA_17",
   "injectors": {
     "defaultRequire": 0
@@ -43,6 +43,7 @@
     "common.MixinFogRenderer",
     "common.MixinGameRenderer",
     "common.MixinGui",
+    "common.MixinGuiFreeCam",
     "common.MixinGuiGraphics",
     "common.MixinKeyBindingListKeyEntry",
     "common.MixinLevelChunk",
@@ -51,6 +52,8 @@
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
     "common.MixinMouseHandler",
+    "common.MixinMouseHandlerFreeCam",
+    "common.MixinMouseHandlerZoom",
     "common.MixinMultiPlayerGameMode",
     "common.MixinOptions",
     "common.MixinParticleEngine",
