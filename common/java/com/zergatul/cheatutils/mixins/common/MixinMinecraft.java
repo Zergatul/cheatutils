@@ -20,17 +20,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import javax.annotation.Nullable;
-
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft {
 
     @Shadow
-    @Nullable
     public LocalPlayer player;
 
     @Shadow
-    @Nullable
     public ClientLevel level;
 
     @Shadow

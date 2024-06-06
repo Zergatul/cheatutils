@@ -23,6 +23,7 @@ public class MixinMouseHandler {
 
     @Inject(method = "turnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/tutorial/Tutorial;onMouse(DD)V", shift = At.Shift.AFTER))
     private void onLocalPlayerTurn(CallbackInfo info, @Local(index = 11) LocalDoubleRef yRotRef, @Local(index = 13) LocalDoubleRef xRotRef) {
+        // 5 7
         if (Zoom.instance.isActive()) {
             double xRot = xRotRef.get();
             double yRot = yRotRef.get();
