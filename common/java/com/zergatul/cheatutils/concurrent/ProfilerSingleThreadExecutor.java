@@ -1,9 +1,13 @@
 package com.zergatul.cheatutils.concurrent;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.concurrent.*;
 
 public class ProfilerSingleThreadExecutor extends ThreadPoolExecutor {
 
+    private final Logger logger = LogManager.getLogger(ProfilerSingleThreadExecutor.class);
     private final BusyCounter counter = new BusyCounter();
     private int successful;
     private int failed;
@@ -48,6 +52,7 @@ public class ProfilerSingleThreadExecutor extends ThreadPoolExecutor {
     protected void afterExecute(Runnable runnable, Throwable throwable) {
         if (throwable != null) {
             failed++;
+            logger.error("ProfilerSingleThreadExecutor exception", throwable);
         } else {
             successful++;
         }

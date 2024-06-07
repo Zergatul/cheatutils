@@ -63,8 +63,8 @@ public class BlockFinder {
             int xw = xc | x;
             for (int z = 0; z < 16; z++) {
                 int zw = zc | z;
-                int height = chunk.getHeight(x, z);
-                for (int y = minY; y <= height; y++) {
+                int height = minY + chunk.getHeight(x, z);
+                for (int y = minY; y < height; y++) {
                     BlockState state = chunk.getBlockState(x, y, z);
                     checkBlock(xw, y, zw, state, map);
                 }
@@ -106,8 +106,8 @@ public class BlockFinder {
             int xw = xc | x;
             for (int z = 0; z < 16; z++) {
                 int zw = zc | z;
-                int height = chunk.getHeight(x, z);
-                for (int y = minY; y <= height; y++) {
+                int height = chunk.getHeight(x, z) + minY;
+                for (int y = minY; y < height; y++) {
                     BlockState state = chunk.getBlockState(x, y, z);
                     Block block = state.getBlock();
                     for (int i = 0; i < blockTypes.size(); i++) {
