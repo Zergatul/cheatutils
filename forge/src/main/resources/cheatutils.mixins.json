@@ -2,7 +2,7 @@
   "required": false,
   "minVersion": "0.8.2",
   "package": "com.zergatul.cheatutils.mixins",
-  "refmap": "cheatutils.mixin-refmap.json",
+  "refmap": "cheatutils.mixins-refmap.json",
   "compatibilityLevel": "JAVA_17",
   "injectors": {
     "defaultRequire": 0
