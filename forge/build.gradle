@@ -1,3 +1,5 @@
+import java.nio.file.Paths
+
 buildscript {
     repositories {
         // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
@@ -26,7 +28,11 @@ version = mod_version
 group = mod_group_id
 
 // Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
+}
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
@@ -129,7 +135,7 @@ tasks.named('processResources', ProcessResources).configure {
 
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
-    archiveFileName = "zergatul.$mod_id-$mod_version-forge-${minecraft_version}.jar"
+    archivesBaseName = "temp1"
 
     manifest {
         attributes([
@@ -142,6 +148,10 @@ tasks.named('jar', Jar).configure {
                 "MixinConfigs"            : "cheatutils.mixin.json"
         ])
     }
+}
+
+jarJar {
+    archivesBaseName = "temp2"
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -161,3 +171,15 @@ sourceSets.each {
     it.output.resourcesDir = dir
     it.java.destinationDirectory = dir
 }
+
+/*tasks.build.doLast {
+    def jarFile = file(jar.archiveFile)
+    def jarJarFile = file(jarFile.path.replace('.jar', '-all.jar'))
+    def finalFile = Paths.get(jarJarFile.parent, "$mod_id-$mod_version-forge-${minecraft_version}.jar").toFile()
+
+    jarFile.delete()
+    if (finalFile.exists()) {
+        finalFile.delete()
+    }
+    jarJarFile.renameTo(finalFile)
+}*/
