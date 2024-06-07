@@ -32,6 +32,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
@@ -259,11 +260,14 @@ public class EntityUtils {
                     new FakeWritableLevelData(),
                     Level.OVERWORLD,
                     new RegistryAccess() {
+
+                        @SuppressWarnings("unchecked")
                         @Override
-                        public <E> Optional<Registry<E>> registry(ResourceKey<? extends Registry<? extends E>> p_123085_) {
-                            if (p_123085_.equals(Registries.DAMAGE_TYPE)) {
-                                var x = (Registry<E>) createDamageTypeRegistry();
-                                return Optional.of(x);
+                        public <E> Optional<Registry<E>> registry(ResourceKey<? extends Registry<? extends E>> key) {
+                            if (key.equals(Registries.DAMAGE_TYPE)) {
+                                return Optional.of((Registry<E>) createDamageTypeRegistry());
+                            } else if (key.equals(Registries.BANNER_PATTERN)) {
+                                return Optional.of((Registry<E>) createBannerPatternRegistry()); // for lithium
                             } else {
                                 return Optional.empty();
                             }
@@ -465,6 +469,175 @@ public class EntityUtils {
                 @NotNull
                 @Override
                 public Iterator<DamageType> iterator() {
+                    return null;
+                }
+            };
+        }
+
+        private static Registry<BannerPattern> createBannerPatternRegistry() {
+            return new Registry<BannerPattern>() {
+                @Override
+                public ResourceKey<? extends Registry<BannerPattern>> key() {
+                    return null;
+                }
+
+                @Nullable
+                @Override
+                public ResourceLocation getKey(BannerPattern p_123006_) {
+                    return null;
+                }
+
+                @Override
+                public Optional<ResourceKey<BannerPattern>> getResourceKey(BannerPattern p_123008_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public int getId(@Nullable BannerPattern p_122977_) {
+                    return 0;
+                }
+
+                @Nullable
+                @Override
+                public BannerPattern get(@Nullable ResourceKey<BannerPattern> p_122980_) {
+                    return null;
+                }
+
+                @Nullable
+                @Override
+                public BannerPattern get(@Nullable ResourceLocation p_123002_) {
+                    return null;
+                }
+
+                @Override
+                public Optional<RegistrationInfo> registrationInfo(ResourceKey<BannerPattern> p_333179_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public Lifecycle registryLifecycle() {
+                    return null;
+                }
+
+                @Override
+                public Set<ResourceLocation> keySet() {
+                    return Set.of();
+                }
+
+                @Override
+                public Set<Map.Entry<ResourceKey<BannerPattern>, BannerPattern>> entrySet() {
+                    return Set.of();
+                }
+
+                @Override
+                public Set<ResourceKey<BannerPattern>> registryKeySet() {
+                    return Set.of();
+                }
+
+                @Override
+                public Optional<Holder.Reference<BannerPattern>> getRandom(RandomSource p_235781_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public boolean containsKey(ResourceLocation p_123011_) {
+                    return false;
+                }
+
+                @Override
+                public boolean containsKey(ResourceKey<BannerPattern> p_175475_) {
+                    return false;
+                }
+
+                @Override
+                public Registry<BannerPattern> freeze() {
+                    return null;
+                }
+
+                @Override
+                public Holder.Reference<BannerPattern> createIntrusiveHolder(BannerPattern p_206068_) {
+                    return null;
+                }
+
+                @Override
+                public Optional<Holder.Reference<BannerPattern>> getHolder(int p_206051_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public Optional<Holder.Reference<BannerPattern>> getHolder(ResourceLocation p_329586_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public Optional<Holder.Reference<BannerPattern>> getHolder(ResourceKey<BannerPattern> p_206050_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public Holder<BannerPattern> wrapAsHolder(BannerPattern p_263382_) {
+                    return null;
+                }
+
+                @Override
+                public Stream<Holder.Reference<BannerPattern>> holders() {
+                    return Stream.empty();
+                }
+
+                @Override
+                public Optional<HolderSet.Named<BannerPattern>> getTag(TagKey<BannerPattern> p_206052_) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public HolderSet.Named<BannerPattern> getOrCreateTag(TagKey<BannerPattern> p_206045_) {
+                    return null;
+                }
+
+                @Override
+                public Stream<Pair<TagKey<BannerPattern>, HolderSet.Named<BannerPattern>>> getTags() {
+                    return Stream.empty();
+                }
+
+                @Override
+                public Stream<TagKey<BannerPattern>> getTagNames() {
+                    return Stream.empty();
+                }
+
+                @Override
+                public void resetTags() {
+
+                }
+
+                @Override
+                public void bindTags(Map<TagKey<BannerPattern>, List<Holder<BannerPattern>>> p_205997_) {
+
+                }
+
+                @Override
+                public HolderOwner<BannerPattern> holderOwner() {
+                    return null;
+                }
+
+                @Override
+                public HolderLookup.RegistryLookup<BannerPattern> asLookup() {
+                    return null;
+                }
+
+                @Nullable
+                @Override
+                public BannerPattern byId(int p_122651_) {
+                    return null;
+                }
+
+                @Override
+                public int size() {
+                    return 0;
+                }
+
+                @NotNull
+                @Override
+                public Iterator<BannerPattern> iterator() {
                     return null;
                 }
             };
