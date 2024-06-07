@@ -37,7 +37,7 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
-            arg "-mixin.config=cheatutils.mixin.json"
+            arg "-mixin.config=cheatutils.mixins.json"
 
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.
@@ -95,7 +95,7 @@ dependencies {
 }
 
 mixin {
-    add sourceSets.main, "cheatutils.mixin-refmap.json"
+    add sourceSets.main, "cheatutils.mixins-refmap.json"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -131,7 +131,7 @@ jar {
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
                 "Implementation-Vendor"   : mod_authors,
-                "MixinConfigs" : "cheatutils.mixin.json"
+                "MixinConfigs"            : "cheatutils.mixins.json"
         ])
     }
 }
