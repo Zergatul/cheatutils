@@ -53,6 +53,7 @@
     "common.MixinMinecraft",
     "common.MixinMouseHandler",
     "common.MixinMouseHandlerFreeCam",
+    "common.MixinMouseHandlerZoom",
     "common.MixinMultiPlayerGameMode",
     "common.MixinOptions",
     "common.MixinParticleEngine",
