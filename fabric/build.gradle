@@ -1,4 +1,5 @@
 import java.nio.file.Paths
+import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
     id 'fabric-loom' version '1.6-SNAPSHOT'
@@ -37,6 +38,8 @@ dependencies {
     // These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
 
     // modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
+
+    annotationProcessor files('../mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
 }
 
 sourceSets {
@@ -44,6 +47,7 @@ sourceSets {
         java {
             srcDir '../common/java'
             srcDir '../java-scripting-language/src/main/java'
+            srcDir '../mixin-plugin/common/java'
         }
         resources {
             srcDir '../common/resources'
@@ -70,7 +74,7 @@ java {
     withSourcesJar()
 
     sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
@@ -83,6 +87,26 @@ jar {
 
 tasks.withType(JavaCompile).configureEach {
     it.options.compilerArgs.add("-parameters")
+}
+
+tasks.register('buildAnnotationProcessor', {
+    doFirst {
+        def annotationProcessorJar = file('../mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
+        if (!annotationProcessorJar.exists()) {
+            println 'Annotation processor JAR not found. Building annotation processor...'
+            def buildResult = exec {
+                def gradlew = Os.isFamily(Os.FAMILY_WINDOWS) ? 'gradlew.bat' : 'gradlew'
+                commandLine "../mixin-plugin/annotation-processor/$gradlew", '-p', '../mixin-plugin/annotation-processor', 'build'
+            }
+            if (buildResult.exitValue != 0) {
+                throw new GradleException('Failed to build the annotation processor project.')
+            }
+        }
+    }
+})
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn('buildAnnotationProcessor')
 }
 
 tasks.build.doLast {

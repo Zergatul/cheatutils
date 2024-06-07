@@ -42,6 +42,17 @@ public class BlockFinder {
         blocks.clear();
     }
 
+    public void rescan() {
+        BlockEventsProcessor.instance.getChunks().thenAcceptAsync(chunks -> {
+            for (Set<BlockPos> set : blocks.values()) {
+                set.clear();
+            }
+            for (SnapshotChunk chunk : chunks) {
+                onChunkLoaded(chunk);
+            }
+        }, BlockEventsProcessor.instance.getExecutor());
+    }
+
     private void onChunkLoaded(SnapshotChunk chunk) {
         // need to call unload?
         Map<Block, BlockEspConfig> map = ConfigStore.instance.getConfig().blocks.getMap();

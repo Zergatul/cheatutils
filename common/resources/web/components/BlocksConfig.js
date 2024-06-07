@@ -106,7 +106,7 @@ function createComponent(template) {
             };
 
             const rescan = () => {
-                axios.post('/api/block-esp-rescan');
+                axios.post('/api/rescan-chunks');
             };
 
             const update = config => {

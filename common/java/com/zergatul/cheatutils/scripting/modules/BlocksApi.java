@@ -33,6 +33,11 @@ public class BlocksApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @ApiVisibility(ApiType.UPDATE)
+    public void rescan() {
+        BlockFinder.instance.rescan();
+    }
+
     public int getCount(String blockId) {
         ResourceLocation location = new ResourceLocation(blockId);
         Block block = Registries.BLOCKS.getValue(location);
