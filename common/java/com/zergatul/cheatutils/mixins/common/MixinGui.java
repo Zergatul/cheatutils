@@ -1,15 +1,12 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 import com.zergatul.cheatutils.modules.visuals.BetterStatusEffects;
-import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;

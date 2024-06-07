@@ -1,3 +1,6 @@
 [submodule "java-scripting-language"]
 	path = java-scripting-language
 	url = https://github.com/Zergatul/java-scripting-language.git
+[submodule "mixin-plugin"]
+	path = mixin-plugin
+	url = https://github.com/Zergatul/mixins.git
