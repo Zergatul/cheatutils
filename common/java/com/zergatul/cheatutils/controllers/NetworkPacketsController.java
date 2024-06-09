@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.ModMain;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 
@@ -38,7 +39,11 @@ public class NetworkPacketsController {
 
     public void receivePacket(Packet<?> packet) {
         if (connection != null) {
-            connection.send(packet);
+            try {
+                connection.channelRead(null, packet);
+            } catch (Exception e) {
+                ModMain.LOGGER.error("Cannot receive packet", e);
+            }
         }
     }
 
