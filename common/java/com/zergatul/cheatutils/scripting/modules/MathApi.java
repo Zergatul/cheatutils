@@ -26,7 +26,7 @@ public class MathApi {
     }
 
     public int randomInt(int min, int max) {
-        if (min <= max) {
+        if (min >= max) {
             return Integer.MIN_VALUE;
         }
 
