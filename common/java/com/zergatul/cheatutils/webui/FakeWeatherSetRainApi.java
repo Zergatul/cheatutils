@@ -17,7 +17,7 @@ public class FakeWeatherSetRainApi extends ApiBase {
         return "{ \"ok\": true }";
     }
 
-    public class Request {
+    public static class Request {
         public float value;
     }
 }

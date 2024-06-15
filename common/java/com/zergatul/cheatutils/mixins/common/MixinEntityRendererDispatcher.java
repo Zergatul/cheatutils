@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class MixinEntityRendererDispatcher {
 
     @Redirect(
-            method = "renderHitbox(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/entity/Entity;F)V",
+            method = "renderHitbox",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getBoundingBox()Lnet/minecraft/world/phys/AABB;", ordinal = 0))
     private static AABB onGetTargetEntityBoundingBox(Entity target) {
         if (ConfigStore.instance.getConfig().hitboxSizeConfig.enabled) {

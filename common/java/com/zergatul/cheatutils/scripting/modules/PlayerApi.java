@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.controllers.DisconnectController;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
@@ -9,6 +8,9 @@ import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
@@ -280,16 +282,21 @@ public class PlayerApi {
 
         @HelpText("If player has no effect, returns 0")
         public int getLevel(String id) {
+            if (mc.level == null) {
+                return 0;
+            }
             if (mc.player == null) {
                 return 0;
             }
 
-            MobEffect effect = Registries.MOB_EFFECTS.getValue(new ResourceLocation(id));
-            if (effect == null) {
+            HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
+            ResourceLocation location = ResourceLocation.parse(id);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
+            if (holder == null) {
                 return Integer.MIN_VALUE;
             }
 
-            MobEffectInstance instance = mc.player.getActiveEffectsMap().get(effect);
+            MobEffectInstance instance = mc.player.getActiveEffectsMap().get(holder);
             if (instance == null) {
                 return 0;
             }
@@ -299,16 +306,21 @@ public class PlayerApi {
 
         @HelpText("If player has no effect, returns 0")
         public double getDuration(String id) {
+            if (mc.level == null) {
+                return 0;
+            }
             if (mc.player == null) {
                 return 0;
             }
 
-            MobEffect effect = Registries.MOB_EFFECTS.getValue(new ResourceLocation(id));
-            if (effect == null) {
+            HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
+            ResourceLocation location = ResourceLocation.parse(id);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
+            if (holder == null) {
                 return -1;
             }
 
-            MobEffectInstance instance = mc.player.getActiveEffectsMap().get(effect);
+            MobEffectInstance instance = mc.player.getActiveEffectsMap().get(holder);
             if (instance == null) {
                 return 0;
             }

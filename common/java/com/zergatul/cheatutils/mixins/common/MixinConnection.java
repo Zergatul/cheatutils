@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -25,8 +26,8 @@ public abstract class MixinConnection {
     @Final
     private PacketFlow receiving;
 
-    @Inject(at = @At("RETURN"), method = "disconnect")
-    private void onDisconnect(Component component, CallbackInfo info) {
+    @Inject(at = @At("RETURN"), method = "disconnect(Lnet/minecraft/network/DisconnectionDetails;)V")
+    private void onDisconnect(DisconnectionDetails details, CallbackInfo info) {
         if (this.receiving == PacketFlow.CLIENTBOUND) {
             NetworkPacketsController.instance.onDisconnect((Connection) (Object) this);
         }

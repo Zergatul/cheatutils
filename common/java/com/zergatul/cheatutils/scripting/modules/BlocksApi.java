@@ -39,7 +39,7 @@ public class BlocksApi {
     }
 
     public int getCount(String blockId) {
-        ResourceLocation location = new ResourceLocation(blockId);
+        ResourceLocation location = ResourceLocation.parse(blockId);
         Block block = Registries.BLOCKS.getValue(location);
         if (block == null) {
             return Integer.MIN_VALUE;
@@ -59,7 +59,7 @@ public class BlocksApi {
     }
 
     private BlockEspConfig getConfig(String blockId) {
-        ResourceLocation location = new ResourceLocation(blockId);
+        ResourceLocation location = ResourceLocation.parse(blockId);
         Block block = Registries.BLOCKS.getValue(location);
         if (block == null) {
             return null;

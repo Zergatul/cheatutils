@@ -16,6 +16,7 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.CameraType;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.KeyboardInput;
@@ -174,7 +175,7 @@ public class FreeCam implements Module {
             mc.gameRenderer.checkEntityPostEffect(mc.options.getCameraType().isFirstPerson() ? mc.getCameraEntity() : null);
         }
 
-        float frameTime = mc.getFrameTime();
+        float frameTime = mc.getTimer().getGameTimeDeltaPartialTick(true);
         Vec3 pos = entity.getEyePosition(frameTime);
         x = pos.x;
         y = pos.y;
@@ -245,7 +246,7 @@ public class FreeCam implements Module {
         }
     }
 
-    private void onRenderTickStart(float partialTicks) {
+    private void onRenderTickStart(DeltaTracker delta) {
         if (!active) {
             return;
         }
@@ -275,7 +276,7 @@ public class FreeCam implements Module {
         } else if (followCamera) {
             Entity entity = mc.getCameraEntity();
             if (entity != null) {
-                Vec3 pos = entity.getEyePosition(partialTicks);
+                Vec3 pos = entity.getEyePosition(delta.getGameTimeDeltaPartialTick(true));
                 x = pos.x + followDeltaX;
                 y = pos.y + followDeltaY;
                 z = pos.z + followDeltaZ;
@@ -311,7 +312,7 @@ public class FreeCam implements Module {
             z += dz;
         }
 
-        applyEyeLock(partialTicks);
+        applyEyeLock(delta.getGameTimeDeltaPartialTick(true));
     }
 
     private void onClientTickStart() {
@@ -337,8 +338,7 @@ public class FreeCam implements Module {
             return;
         }
 
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
         RenderSystem.setShaderColor(1f, 1.0f, 1f, 1f);
 
         Vec3 view = event.getCamera().getPosition();
@@ -346,16 +346,16 @@ public class FreeCam implements Module {
             FreeCamPath.Entry e1 = path.get(i - 1);
             FreeCamPath.Entry e2 = path.get(i);
 
-            bufferBuilder.vertex(
-                    e1.position().x - view.x,
-                    e1.position().y - view.y,
-                    e1.position().z - view.z)
-                    .color(1, 1, 1, 1f).endVertex();
-            bufferBuilder.vertex(
-                            e2.position().x - view.x,
-                            e2.position().y - view.y,
-                            e2.position().z - view.z)
-                    .color(1, 1, 1, 1f).endVertex();
+            bufferBuilder.addVertex(
+                            (float) (e1.position().x - view.x),
+                            (float) (e1.position().y - view.y),
+                            (float) (e1.position().z - view.z))
+                    .setColor(1, 1, 1, 1f);
+            bufferBuilder.addVertex(
+                            (float) (e2.position().x - view.x),
+                            (float) (e2.position().y - view.y),
+                            (float) (e2.position().z - view.z))
+                    .setColor(1, 1, 1, 1f);
         }
 
         Primitives.renderLines(bufferBuilder, event.getPose(), event.getProjection());

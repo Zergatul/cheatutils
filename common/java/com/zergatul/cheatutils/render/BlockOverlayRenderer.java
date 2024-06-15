@@ -115,7 +115,7 @@ public class BlockOverlayRenderer {
 
         // reset renderer state
         this.event = null;
-        this.view = null;;
+        this.view = null;
 
         // upload vertex data to buffer
         /*GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, VBO);

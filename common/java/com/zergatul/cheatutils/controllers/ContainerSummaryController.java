@@ -156,7 +156,7 @@ public class ContainerSummaryController {
 
         private static final int MAX_ROWS = 10;
         private static final int H_PADDING = 2;
-        private static final ResourceLocation CONTAINER_TEXTURE = new ResourceLocation("textures/gui/container/generic_54.png");
+        private static final ResourceLocation CONTAINER_TEXTURE = ResourceLocation.parse("textures/gui/container/generic_54.png");
 
         public List<ItemDrawable> list;
         public int width;

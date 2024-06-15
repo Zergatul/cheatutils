@@ -36,7 +36,7 @@ public class SchematicaPlaceApi extends ApiBase {
         // replace palette
         for (PaletteEntry entry : request.palette) {
             if (0 < entry.id && entry.id < schema.getPalette().length) {
-                Block block = Registries.BLOCKS.getValue(new ResourceLocation(entry.block));
+                Block block = Registries.BLOCKS.getValue(ResourceLocation.parse(entry.block));
                 if (block != Blocks.AIR) {
                     schema.getPalette()[entry.id] = block.defaultBlockState();
                 }

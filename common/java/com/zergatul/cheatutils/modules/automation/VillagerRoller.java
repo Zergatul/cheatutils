@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
@@ -12,11 +11,14 @@ import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.locale.Language;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
@@ -288,16 +290,21 @@ public class VillagerRoller implements Module {
                     }
 
                     Enchantment enchantment = enchantments.keySet().stream().findFirst().get().value();
-                    this.enchantmentId = Registries.ENCHANTMENTS.getKey(enchantment).toString();
-                    this.enchantmentName = Language.getInstance().getOrDefault(enchantment.getDescriptionId());
-                    this.level = enchantments.getLevel(enchantment);
+                    HolderLookup<Enchantment> lookup = mc.level.holderLookup(Registries.ENCHANTMENT);
+                    Holder.Reference<Enchantment> holder = lookup.listElements().filter(ref -> ref.value() == enchantment).findFirst().get();
+
+                    this.enchantmentId = holder.key().location().toString();
+                    this.enchantmentName = enchantment.description().getString();
+                    this.level = enchantments.getLevel(holder);
                     this.price = offer.getBaseCostA().getCount();
 
                     this.maxLevel = enchantment.getMaxLevel();
-                    this.curse = enchantment.isCurse();
+                    this.curse = holder.is(EnchantmentTags.CURSE);
+
+                    // look at VillagerTrades.EnchantBookForEmeralds.getOffer
                     this.minPrice = 2 + this.level * 3;
                     this.maxPrice = 6 + this.level * 13;
-                    if (enchantment.isTreasureOnly()) {
+                    if (holder.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
                         this.minPrice *= 2;
                         this.maxPrice *= 2;
                     }

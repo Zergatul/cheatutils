@@ -20,9 +20,9 @@ public class ExternalFileSoundInstance implements SoundInstance {
 
     private ExternalFileSoundInstance(String filename) {
         this.filename = filename;
-        this.location = new ResourceLocation("cheatutils", "dynamic/" + (counter++));
+        this.location = ResourceLocation.fromNamespaceAndPath("cheatutils", "dynamic/" + (counter++));
         this.sound = new Sound(
-                location.toString(),
+                location,
                 ConstantFloat.of(1),
                 ConstantFloat.of(1),
                 1,

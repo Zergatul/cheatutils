@@ -220,7 +220,7 @@ public class EnchantmentScreenController {
     }
 
     private int isSeedGood(int seed) {
-        RandomSource mcRandom = RandomSource.create();
+        /*RandomSource mcRandom = RandomSource.create();
         mcRandom.setSeed(seed);
 
         ItemStack itemStack = new ItemStack(Items.DIAMOND_SWORD, 1);
@@ -257,7 +257,7 @@ public class EnchantmentScreenController {
                 }
                 return list.size();
             }
-        }
+        }*/
 
         return 0;
     }
@@ -425,11 +425,12 @@ public class EnchantmentScreenController {
 
     private List<EnchantmentInstance> getEnchantmentList(RandomSource random, int seed, ItemStack itemStack, int index, int cost) {
         random.setSeed(seed + index);
-        List<EnchantmentInstance> list = EnchantmentHelper.selectEnchantment(Minecraft.getInstance().level.enabledFeatures(), random, itemStack, cost, false);
+        /*List<EnchantmentInstance> list = EnchantmentHelper.selectEnchantment(Minecraft.getInstance().level.enabledFeatures(), random, itemStack, cost, false);
         if (itemStack.is(Items.BOOK) && list.size() > 1) {
             list.remove(random.nextInt(list.size()));
         }
-        return list;
+        return list;*/
+        return List.of();
     }
 
     private static class EnchantingState {

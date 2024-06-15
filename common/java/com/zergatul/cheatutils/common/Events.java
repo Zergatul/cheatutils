@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.common;
 
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -31,7 +32,7 @@ public class Events {
     public static final ParameterizedEventHandler<RenderGuiEvent> PreRenderGui = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderGuiEvent> PostRenderGui = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<MouseScrollEvent> MouseScroll = new CancelableEventHandler<>();
-    public static final ParameterizedEventHandler<Float> RenderTickStart = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<DeltaTracker> RenderTickStart = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler LevelUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
     public static final ParameterizedEventHandler<GatherTooltipComponentsEvent> GatherTooltipComponents = new ParameterizedEventHandler<>();

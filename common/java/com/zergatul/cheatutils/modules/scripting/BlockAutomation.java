@@ -17,6 +17,8 @@ import com.zergatul.cheatutils.utils.SlotSelector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -192,24 +194,28 @@ public class BlockAutomation {
     }
 
     private boolean selectItemForBlockBreak(BlockAutomationConfig config) {
+        assert mc.level != null;
         assert mc.player != null;
 
         if (breakItemId == null) {
             return true;
         }
 
-        Item item = Registries.ITEMS.getValue(new ResourceLocation(breakItemId));
+        Item item = Registries.ITEMS.getValue(ResourceLocation.parse(breakItemId));
         if (item == Items.AIR) {
             return false;
         }
 
-        Enchantment enchantment =
-                breakEnchantmentId == null ?
-                null :
-                Registries.ENCHANTMENTS.getValue(new ResourceLocation(breakEnchantmentId));
+        Holder<Enchantment> enchantment = null;
+        if (breakEnchantmentId != null) {
+            HolderLookup<Enchantment> lookup = mc.level.holderLookup(net.minecraft.core.registries.Registries.ENCHANTMENT);
+            ResourceLocation location = ResourceLocation.parse(breakEnchantmentId);
+            enchantment = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().get();
+        }
 
+        final Holder<Enchantment> enchantment2 = enchantment;
         int slot = slotSelector.selectItem(config, item, stack -> {
-            return enchantment == null || stack.getEnchantments().getLevel(enchantment) > 0;
+            return enchantment2 == null || stack.getEnchantments().getLevel(enchantment2) > 0;
         });
 
         if (slot >= 0) {

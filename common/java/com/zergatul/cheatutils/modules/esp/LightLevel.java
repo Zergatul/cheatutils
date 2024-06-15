@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.render.RenderHelper;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -68,7 +69,7 @@ public class LightLevel implements Module {
 
     private LightLevel() {
         for (int i = 0; i < 16; i++) {
-            textures[i] = new ResourceLocation(ModMain.MODID, "textures/light-level-" + i + ".png");
+            textures[i] = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/light-level-" + i + ".png");
         }
 
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC));
@@ -143,17 +144,13 @@ public class LightLevel implements Module {
                 float z1 = (float)(pos.getZ() + 0.05 - view.z);
                 float x2 = x1 + 0.9f;
                 float z2 = z1 + 0.9f;
-                BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                bufferBuilder.vertex(x1, y, z1).uv(u[0], v[0]).endVertex();
-                bufferBuilder.vertex(x1, y, z2).uv(u[1], v[1]).endVertex();
-                bufferBuilder.vertex(x2, y, z2).uv(u[2], v[2]).endVertex();
-                bufferBuilder.vertex(x2, y, z1).uv(u[3], v[3]).endVertex();
+                BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                bufferBuilder.addVertex(x1, y, z1).setUv(u[0], v[0]);
+                bufferBuilder.addVertex(x1, y, z2).setUv(u[1], v[1]);
+                bufferBuilder.addVertex(x2, y, z2).setUv(u[2], v[2]);
+                bufferBuilder.addVertex(x2, y, z1).setUv(u[3], v[3]);
 
-                vertexBuffer.bind();
-                vertexBuffer.upload(bufferBuilder.end());
-                vertexBuffer.drawWithShader(event.getPose(), event.getProjection(), GameRenderer.getPositionTexShader());
-                VertexBuffer.unbind();
+                RenderHelper.drawBuffer(vertexBuffer, bufferBuilder, event.getPose(), event.getProjection(), GameRenderer.getPositionTexShader());
             }
         }
 
@@ -162,14 +159,13 @@ public class LightLevel implements Module {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
 
         for (BlockPos pos: listTracers) {
             double y = pos.getY() + 0.05 - view.y;
             if (config.showTracers) {
-                buffer.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z).color(1f, 1f, 1f, 0.5f).endVertex();
-                buffer.vertex(pos.getX() + 0.5 - view.x, y, pos.getZ() + 0.5 - view.z).color(1f, 1f, 1f, 0.5f).endVertex();
+                buffer.addVertex((float) (tracerX - view.x), (float) (tracerY - view.y), (float) (tracerZ - view.z)).setColor(1f, 1f, 1f, 0.5f);
+                buffer.addVertex((float) (pos.getX() + 0.5 - view.x), (float) y, (float) (pos.getZ() + 0.5 - view.z)).setColor(1f, 1f, 1f, 0.5f);
             }
 
             if (config.showLocations) {
@@ -177,14 +173,14 @@ public class LightLevel implements Module {
                 double z1 = pos.getZ() + 0.05 - view.z;
                 double x2 = x1 + 0.9;
                 double z2 = z1 + 0.9;
-                buffer.vertex(x1, y, z1).color(1f, 1f, 1f, 0.5f).endVertex();
-                buffer.vertex(x1, y, z2).color(1f, 1f, 1f, 0.5f).endVertex();
-                buffer.vertex(x1, y, z2).color(1f, 1f, 1f, 0.5f).endVertex();
-                buffer.vertex(x2, y, z2).color(1f, 1f, 1f, 0.5f).endVertex();
-                buffer.vertex(x2, y, z2).color(1f, 1f, 1f, 0.5f).endVertex();
-                buffer.vertex(x2, y, z1).color(1f, 1f, 1f, 0.5f).endVertex();
-                buffer.vertex(x2, y, z1).color(1f, 1f, 1f, 0.5f).endVertex();
-                buffer.vertex(x1, y, z1).color(1f, 1f, 1f, 0.5f).endVertex();
+                buffer.addVertex((float) x1, (float) y, (float) z1).setColor(1f, 1f, 1f, 0.5f);
+                buffer.addVertex((float) x1, (float) y, (float) z2).setColor(1f, 1f, 1f, 0.5f);
+                buffer.addVertex((float) x1, (float) y, (float) z2).setColor(1f, 1f, 1f, 0.5f);
+                buffer.addVertex((float) x2, (float) y, (float) z2).setColor(1f, 1f, 1f, 0.5f);
+                buffer.addVertex((float) x2, (float) y, (float) z2).setColor(1f, 1f, 1f, 0.5f);
+                buffer.addVertex((float) x2, (float) y, (float) z1).setColor(1f, 1f, 1f, 0.5f);
+                buffer.addVertex((float) x2, (float) y, (float) z1).setColor(1f, 1f, 1f, 0.5f);
+                buffer.addVertex((float) x1, (float) y, (float) z1).setColor(1f, 1f, 1f, 0.5f);
             }
         }
 
@@ -194,10 +190,7 @@ public class LightLevel implements Module {
         RenderSystem.disableDepthTest();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
-        vertexBuffer.bind();
-        vertexBuffer.upload(buffer.end());
-        vertexBuffer.drawWithShader(event.getPose(), event.getProjection(), GameRenderer.getPositionColorShader());
-        VertexBuffer.unbind();
+        RenderHelper.drawBuffer(vertexBuffer, buffer, event.getPose(), event.getProjection(), GameRenderer.getPositionColorShader());
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();

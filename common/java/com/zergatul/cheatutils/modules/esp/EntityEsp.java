@@ -27,7 +27,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -424,10 +423,10 @@ public class EntityEsp implements Module {
             if (renderType.mode() != VertexFormat.Mode.QUADS) {
                 return false;
             }
-            if (renderType.format().getElements().stream().noneMatch(e -> e.getUsage() == VertexFormatElement.Usage.POSITION)) {
+            if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.POSITION)) {
                 return false;
             }
-            if (renderType.format().getElements().stream().noneMatch(e -> e.getUsage() == VertexFormatElement.Usage.UV)) {
+            if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.UV)) {
                 return false;
             }
             return true;
@@ -483,29 +482,29 @@ public class EntityEsp implements Module {
         }
 
         @Override
-        public VertexConsumer vertex(double x, double y, double z) {
+        public VertexConsumer addVertex(float x, float y, float z) {
             if (overlayList != null) {
-                overlayList.add((float) x);
-                overlayList.add((float) y);
-                overlayList.add((float) z);
+                overlayList.add(x);
+                overlayList.add(y);
+                overlayList.add(z);
             }
             if (outlineList != null) {
-                outlineList.add((float) x);
-                outlineList.add((float) y);
-                outlineList.add((float) z);
+                outlineList.add(x);
+                outlineList.add(y);
+                outlineList.add(z);
             }
-            consumer.vertex(x, y, z);
+            consumer.addVertex(x, y, z);
             return this;
         }
 
         @Override
-        public VertexConsumer color(int r, int g, int b, int a) {
-            consumer.color(r, g, b, a);
+        public VertexConsumer setColor(int r, int g, int b, int a) {
+            consumer.setColor(r, g, b, a);
             return this;
         }
 
         @Override
-        public VertexConsumer uv(float x, float y) {
+        public VertexConsumer setUv(float x, float y) {
             if (overlayList != null) {
                 overlayList.add(x);
                 overlayList.add(y);
@@ -514,41 +513,26 @@ public class EntityEsp implements Module {
                 outlineList.add(x);
                 outlineList.add(y);
             }
-            consumer.uv(x, y);
+            consumer.setUv(x, y);
             return this;
         }
 
         @Override
-        public VertexConsumer overlayCoords(int x, int y) {
-            consumer.overlayCoords(x, y);
+        public VertexConsumer setUv1(int x, int y) {
+            consumer.setUv1(x, y);
             return this;
         }
 
         @Override
-        public VertexConsumer uv2(int x, int y) {
-            consumer.uv2(x, y);
+        public VertexConsumer setUv2(int x, int y) {
+            consumer.setUv2(x, y);
             return this;
         }
 
         @Override
-        public VertexConsumer normal(float x, float y, float z) {
-            consumer.normal(x, y, z);
+        public VertexConsumer setNormal(float x, float y, float z) {
+            consumer.setNormal(x, y, z);
             return this;
-        }
-
-        @Override
-        public void endVertex() {
-            consumer.endVertex();
-        }
-
-        @Override
-        public void defaultColor(int r, int g, int b, int a) {
-            consumer.defaultColor(r, g, b, a);
-        }
-
-        @Override
-        public void unsetDefaultColor() {
-            consumer.unsetDefaultColor();
         }
     }
 

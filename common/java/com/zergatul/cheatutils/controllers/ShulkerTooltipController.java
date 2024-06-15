@@ -26,7 +26,7 @@ public class ShulkerTooltipController {
 
     public static ShulkerTooltipController instance = new ShulkerTooltipController();
 
-    private static final ResourceLocation CONTAINER_TEXTURE = new ResourceLocation("textures/gui/container/shulker_box.png");
+    private static final ResourceLocation CONTAINER_TEXTURE = ResourceLocation.parse("textures/gui/container/shulker_box.png");
     private static final int ImageWidth = 176;
     private static final int ImageHeight = 166;
     private static final int TranslateZ = 250;
@@ -168,13 +168,12 @@ public class ShulkerTooltipController {
     private void drawTexture(Matrix4f matrix, int x, int y, int width, int height, int z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.enableDepthTest();
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.vertex(matrix, x, y, z).uv(1F * texX / texSizeX, 1F * texY / texSizeY).endVertex();
-        bufferbuilder.vertex(matrix, x, y + height, z).uv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
-        bufferbuilder.vertex(matrix, x + width, y + height, z).uv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
-        bufferbuilder.vertex(matrix, x + width, y, z).uv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferbuilder.addVertex(matrix, x, y, z).setUv(1F * texX / texSizeX, 1F * texY / texSizeY);
+        bufferbuilder.addVertex(matrix, x, y + height, z).setUv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY);
+        bufferbuilder.addVertex(matrix, x + width, y + height, z).setUv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY);
+        bufferbuilder.addVertex(matrix, x + width, y, z).setUv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY);
+        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
     }
 
     private void renderSlot(GuiGraphics graphics, ItemStack itemStack, int x, int y) {

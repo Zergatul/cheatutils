@@ -6,7 +6,6 @@ import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -104,7 +103,7 @@ public class GameApi {
                 return Integer.MIN_VALUE;
             }
 
-            EntityType<?> type = Registries.ENTITY_TYPES.getValue(new ResourceLocation(id));
+            EntityType<?> type = Registries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
             if (type == null) {
                 return Integer.MIN_VALUE;
             }

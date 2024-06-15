@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 import com.zergatul.cheatutils.modules.visuals.BetterStatusEffects;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -40,21 +41,21 @@ public abstract class MixinGui {
     protected abstract int getVehicleMaxHearts(LivingEntity p_93023_);
 
     @Inject(at = @At("HEAD"), method = "renderEffects", cancellable = true)
-    private void onRenderEffects(GuiGraphics graphics, float param1, CallbackInfo info) {
+    private void onRenderEffects(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
         if (ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
             info.cancel();
         }
     }
 
     @Inject(at = @At("HEAD"), method = "render")
-    private void onBeforeRender(GuiGraphics graphics, float partialTicks, CallbackInfo info) {
+    private void onBeforeRender(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
         if (RenderWorldLastEvent.last != null) {
             Events.PreRenderGui.trigger(new RenderGuiEvent(graphics, RenderWorldLastEvent.last));
         }
     }
 
     @Inject(at = @At("TAIL"), method = "render")
-    private void onAfterRender(GuiGraphics graphics, float partialTicks, CallbackInfo info) {
+    private void onAfterRender(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
         if (RenderWorldLastEvent.last != null) {
             Events.PostRenderGui.trigger(new RenderGuiEvent(graphics, RenderWorldLastEvent.last));
         }
@@ -95,7 +96,7 @@ public abstract class MixinGui {
     }
 
     @Inject(at = @At("HEAD"), method = "renderTabList", cancellable = true)
-    private void onRenderTabList(GuiGraphics graphics, float partialTicks, CallbackInfo info) {
+    private void onRenderTabList(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
         if (Events.PreRenderGuiOverlay.trigger(new PreRenderGuiOverlayEvent(PreRenderGuiOverlayEvent.GuiOverlayType.PLAYER_LIST))) {
             info.cancel();
         }

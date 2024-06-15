@@ -39,7 +39,7 @@ public class BlockModelApi extends ApiBase {
 
     @Override
     public String get(String id) throws HttpException {
-        ResourceLocation loc = new ResourceLocation(id);
+        ResourceLocation loc = ResourceLocation.parse(id);
         Block block = Registries.BLOCKS.getValue(loc);
         if (block == null) {
             throw new MethodNotSupportedException("Cannot find block by id.");
@@ -158,16 +158,17 @@ public class BlockModelApi extends ApiBase {
         public List<Vertex> vertices = new ArrayList<>();
 
         @Override
-        public VertexConsumer vertex(double x, double y, double z) {
+        public VertexConsumer addVertex(float x, float y, float z) {
             current = new Vertex();
-            current.x = (float) x;
-            current.y = (float) y;
-            current.z = (float) z;
+            current.x = x;
+            current.y = y;
+            current.z = z;
+            vertices.add(current);
             return this;
         }
 
         @Override
-        public VertexConsumer color(int r, int g, int b, int a) {
+        public VertexConsumer setColor(int r, int g, int b, int a) {
             current.r = r;
             current.g = g;
             current.b = b;
@@ -176,41 +177,25 @@ public class BlockModelApi extends ApiBase {
         }
 
         @Override
-        public VertexConsumer uv(float u, float v) {
+        public VertexConsumer setUv(float u, float v) {
             current.u = u;
             current.v = v;
             return this;
         }
 
         @Override
-        public VertexConsumer overlayCoords(int x, int y) {
+        public VertexConsumer setUv1(int x, int y) {
             return this;
         }
 
         @Override
-        public VertexConsumer uv2(int u, int v) {
+        public VertexConsumer setUv2(int u, int v) {
             return this;
         }
 
         @Override
-        public VertexConsumer normal(float x, float y, float z) {
+        public VertexConsumer setNormal(float x, float y, float z) {
             return this;
-        }
-
-        @Override
-        public void endVertex() {
-            vertices.add(current);
-            current = null;
-        }
-
-        @Override
-        public void defaultColor(int p_166901_, int p_166902_, int p_166903_, int p_166904_) {
-
-        }
-
-        @Override
-        public void unsetDefaultColor() {
-
         }
     }
 

@@ -5,7 +5,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -24,10 +23,6 @@ public class RegistriesWrapper {
 
     public static WrappedRegistry<EntityType<?>> getEntityTypes() {
         return new ForgeWrappedRegistry<>(ForgeRegistries.ENTITY_TYPES);
-    }
-
-    public static WrappedRegistry<Enchantment> getEnchantments() {
-        return new ForgeWrappedRegistry<>(ForgeRegistries.ENCHANTMENTS);
     }
 
     public static WrappedRegistry<MobEffect> getMobEffects() {

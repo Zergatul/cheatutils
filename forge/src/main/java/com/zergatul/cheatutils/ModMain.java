@@ -42,7 +42,7 @@ public class ModMain {
 
     public ModMain() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
+        //FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onLoadComplete);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onRegisterKeyMappings);
 
@@ -107,15 +107,13 @@ public class ModMain {
         modules.add(module);
     }
 
+    @SuppressWarnings("EmptyMethod")
     private void register(Object instance) {
         //logger.info("Registered: {}", instance.getClass().getName());
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(new ForgeEvents());
-    }
-
-    private void onClientSetup(final FMLClientSetupEvent event) {
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {

@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
+@SuppressWarnings("unused")
 public class EntitiesApi {
 
     public boolean isEnabled(String className) {
@@ -33,7 +34,6 @@ public class EntitiesApi {
         ConfigStore.instance.requestWrite();
     }
 
-    @SuppressWarnings("unchecked")
     public int getCount(String className) {
         EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
         if (info == null) {
@@ -56,7 +56,7 @@ public class EntitiesApi {
     }
 
     public int getCountById(String id) {
-        ResourceLocation location = new ResourceLocation(id);
+        ResourceLocation location = ResourceLocation.parse(id);
         EntityType<?> type = Registries.ENTITY_TYPES.getValue(location);
         if (type == null) {
             return Integer.MIN_VALUE;

@@ -90,6 +90,8 @@ public class AutoCraft {
 
     private RecipeHolder<CraftingRecipe> findRecipe(AutoCraftConfig config) {
         ImmutableList<ItemStack> inventory = new ImmutableList<>(mc.player.getInventory().items.stream().map(ItemStack::copy).toList());
+
+        @SuppressWarnings("unchecked")
         List<RecipeHolder<CraftingRecipe>> holders = mc.player.getRecipeBook().getCollections().stream()
                 .flatMap(c -> c.getRecipes().stream())
                 .filter(r -> r.value() instanceof CraftingRecipe)

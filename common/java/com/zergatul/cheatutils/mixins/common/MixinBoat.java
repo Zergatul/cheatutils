@@ -38,7 +38,7 @@ public abstract class MixinBoat extends Entity {
     }
 
     @ModifyArg(
-            method = "Lnet/minecraft/world/entity/vehicle/Boat;floatBoat()V",
+            method = "floatBoat()V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;setDeltaMovement(DDD)V", ordinal = 0),
             index = 0
     )
@@ -52,7 +52,7 @@ public abstract class MixinBoat extends Entity {
     }
 
     @ModifyArg(
-            method = "Lnet/minecraft/world/entity/vehicle/Boat;floatBoat()V",
+            method = "floatBoat()V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;setDeltaMovement(DDD)V", ordinal = 0),
             index = 2
     )
@@ -77,7 +77,7 @@ public abstract class MixinBoat extends Entity {
         return !config.fly && right;
     }*/
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/world/entity/vehicle/Boat;controlBoat()V")
+    @Inject(at = @At("HEAD"), method = "controlBoat()V")
     private void onControlBoat(CallbackInfo info) {
         if (!level().isClientSide()) {
             return;

@@ -127,6 +127,10 @@ tasks.named('processResources', ProcessResources).configure {
     }
 }
 
+jar {
+    exclude("com/zergatul/cheatutils/utils/EntityMappingGenerator.class")
+}
+
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
     archiveFileName = "$mod_id-$mod_version-forge-${minecraft_version}.jar"

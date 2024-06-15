@@ -76,8 +76,12 @@ public class InventoryApi {
 
     @ApiVisibility(ApiType.ACTION)
     public boolean equip(String itemId) {
+        if (mc.player == null) {
+            return false;
+        }
+
         return equip(itemId, itemStack -> {
-            EquipmentSlot slot = Mob.getEquipmentSlotForItem(itemStack);
+            EquipmentSlot slot = mc.player.getEquipmentSlotForItem(itemStack);
             return slot == EquipmentSlot.MAINHAND ? null : slot;
         });
     }
@@ -116,7 +120,7 @@ public class InventoryApi {
             return 0;
         }
 
-        Item item = Registries.ITEMS.getValue(new ResourceLocation(itemId));
+        Item item = Registries.ITEMS.getValue(ResourceLocation.parse(itemId));
         if (item == null) {
             return -1;
         }
@@ -173,7 +177,7 @@ public class InventoryApi {
             return -1;
         }
 
-        Item item = Registries.ITEMS.getValue(new ResourceLocation(itemId));
+        Item item = Registries.ITEMS.getValue(ResourceLocation.parse(itemId));
         if (item == null) {
             return -1;
         }
@@ -202,7 +206,7 @@ public class InventoryApi {
             return false;
         }
 
-        Item item = Registries.ITEMS.getValue(new ResourceLocation(itemId));
+        Item item = Registries.ITEMS.getValue(ResourceLocation.parse(itemId));
         if (item == null) {
             return false;
         }

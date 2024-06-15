@@ -83,6 +83,7 @@ jar {
     }
 
     exclude("net/caffeinemc/**")
+    exclude("com/zergatul/cheatutils/utils/EntityMappingGenerator.class")
 }
 
 tasks.withType(JavaCompile).configureEach {

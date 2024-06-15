@@ -28,11 +28,11 @@ public class HitboxSizeConfig extends ModuleConfig implements ValidatableConfig 
 
     @Override
     public void validate() {
-        if (!Objects.equals(widthMode, MODE_ABSOLUTE) && !Objects.equals(widthMode, MODE_ABSOLUTE)) {
+        if (!Objects.equals(widthMode, MODE_PERCENT) && !Objects.equals(widthMode, MODE_ABSOLUTE)) {
             widthMode = MODE_PERCENT;
         }
 
-        if (!Objects.equals(heightMode, MODE_ABSOLUTE) && !Objects.equals(heightMode, MODE_ABSOLUTE)) {
+        if (!Objects.equals(heightMode, MODE_PERCENT) && !Objects.equals(heightMode, MODE_ABSOLUTE)) {
             heightMode = MODE_PERCENT;
         }
 

@@ -26,7 +26,7 @@ public class ItemTypeAdapter extends TypeAdapter<Item> {
         if (value == null) {
             return null;
         } else {
-            return Registries.ITEMS.getValue(new ResourceLocation(value));
+            return Registries.ITEMS.getValue(ResourceLocation.parse(value));
         }
     }
 }

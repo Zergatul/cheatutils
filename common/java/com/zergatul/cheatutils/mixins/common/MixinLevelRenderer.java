@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
@@ -53,8 +54,7 @@ public abstract class MixinLevelRenderer {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V", ordinal = 0),
             method = "renderLevel")
     private void onAfterRenderEntities(
-            float partialTicks,
-            long limitTime,
+            DeltaTracker delta,
             boolean renderBlockOutline,
             Camera camera,
             GameRenderer gameRenderer,
@@ -80,15 +80,14 @@ public abstract class MixinLevelRenderer {
             if (fake.distanceToSqr(player) > 1) {
                 // is new PoseStack good for compatibility?
                 // capture local var?
-                this.renderEntity(fake, x, y, z, partialTicks, new PoseStack(), source);
+                this.renderEntity(fake, x, y, z, delta.getGameTimeDeltaPartialTick(true), new PoseStack(), source);
             }
         }
     }
 
     @Inject(at = @At("HEAD"), method = "renderLevel")
     private void onRenderLevelBegin(
-            float partialTicks,
-            long limitTime,
+            DeltaTracker delta,
             boolean renderBlockOutline,
             Camera camera,
             GameRenderer gameRenderer,
@@ -102,8 +101,7 @@ public abstract class MixinLevelRenderer {
 
     @Inject(at = @At("RETURN"), method = "renderLevel")
     private void onRenderLevelEnd(
-            float partialTicks,
-            long limitTime,
+            DeltaTracker delta,
             boolean renderBlockOutline,
             Camera camera,
             GameRenderer gameRenderer,
@@ -113,7 +111,7 @@ public abstract class MixinLevelRenderer {
             CallbackInfo info
     ) {
         GlStateTracker.save();
-        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(pose, projection, partialTicks));
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(pose, projection, delta));
         GlStateTracker.restore();
     }
 

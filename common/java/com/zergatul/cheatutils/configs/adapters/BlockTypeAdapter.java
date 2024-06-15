@@ -26,7 +26,7 @@ public class BlockTypeAdapter extends TypeAdapter<Block> {
         if (value == null) {
             return null;
         } else {
-            return Registries.BLOCKS.getValue(new ResourceLocation(value));
+            return Registries.BLOCKS.getValue(ResourceLocation.parse(value));
         }
     }
 }

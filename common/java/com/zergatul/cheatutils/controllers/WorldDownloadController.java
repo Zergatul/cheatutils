@@ -175,7 +175,7 @@ public class WorldDownloadController {
         compoundtag.putInt("zPos", chunkpos.z);
         compoundtag.putLong("LastUpdate", level.getGameTime());
         compoundtag.putLong("InhabitedTime", chunk.getInhabitedTime());
-        compoundtag.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(chunk.getStatus()).toString());
+        compoundtag.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(chunk.getPersistedStatus()).toString());
         BlendingData blendingdata = chunk.getBlendingData();
         if (blendingdata != null) {
             BlendingData.CODEC
@@ -277,7 +277,7 @@ public class WorldDownloadController {
         CompoundTag compoundtag2 = new CompoundTag();
 
         for (Map.Entry<Heightmap.Types, Heightmap> entry : chunk.getHeightmaps()) {
-            if (chunk.getStatus().heightmapsAfter().contains(entry.getKey())) {
+            if (chunk.getPersistedStatus().heightmapsAfter().contains(entry.getKey())) {
                 compoundtag2.put(entry.getKey().getSerializationKey(), new LongArrayTag(entry.getValue().getRawData()));
             }
         }

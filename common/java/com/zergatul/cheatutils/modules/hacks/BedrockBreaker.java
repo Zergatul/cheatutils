@@ -195,12 +195,11 @@ public class BedrockBreaker implements Module {
         if (torchPos == null) {
             if (!config.placeSupportBlock) {
                 reset("Cannot find location to place torch");
-                return;
             } else {
                 state = State.PLACE_SUPPORT_BLOCK;
                 handlePlaceSupportBlock();
-                return;
             }
+            return;
         }
 
         BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(torchPos, false, BlockPlacingMethod.FROM_TOP, Blocks.REDSTONE_TORCH.defaultBlockState());
@@ -224,7 +223,7 @@ public class BedrockBreaker implements Module {
         assert mc.level != null;
 
         BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
-        ResourceLocation supportBlockId = new ResourceLocation(config.supportBlockId);
+        ResourceLocation supportBlockId = ResourceLocation.parse(config.supportBlockId);
         int supportBlockSlot = findItem(Registries.ITEMS.getValue(supportBlockId));
         if (supportBlockSlot < 0) {
             reset("Cannot find support block (" + config.supportBlockId + ") on hotbar");
@@ -267,7 +266,7 @@ public class BedrockBreaker implements Module {
         }
 
         BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
-        ResourceLocation supportBlockId = new ResourceLocation(config.supportBlockId);
+        ResourceLocation supportBlockId = ResourceLocation.parse(config.supportBlockId);
         Block supportBlock = Registries.BLOCKS.getValue(supportBlockId);
         if (mc.level.getBlockState(supportBlockPos).getBlock() == supportBlock) {
             state = State.PLACE_TORCH;
@@ -364,7 +363,7 @@ public class BedrockBreaker implements Module {
 
             BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
             if (config.replace) {
-                Item item = Registries.ITEMS.getValue(new ResourceLocation(config.replaceBlockId));
+                Item item = Registries.ITEMS.getValue(ResourceLocation.parse(config.replaceBlockId));
                 if (item == null) {
                     reset(config.replaceBlockId + " is not valid block ID");
                     return;

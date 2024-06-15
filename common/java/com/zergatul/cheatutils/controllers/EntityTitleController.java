@@ -281,7 +281,7 @@ public class EntityTitleController {
                     enchantmentTextWidths.clear();
                     enchantmentBounds.clear();
                     for (ItemStack item : items) {
-                        List<EnchantmentEntry> entries = getEnchantments(item);
+                        List<EnchantmentEntry> entries = getEnchantments(entry.entity, item);
                         enchantments.add(entries);
 
                         TextBounds[] bounds = new TextBounds[entries.size()];
@@ -320,7 +320,7 @@ public class EntityTitleController {
                     double xpl = xp;
                     for (int i = 0; i < items.size(); i++) {
                         double xCenterOffset = enchantmentTextWidths.get(i) > 16 ? (enchantmentTextWidths.get(i) - 16) / 2d : 0;
-                        ItemRenderHelper.renderItem(livingEntity, items.get(i), xpl + xCenterOffset, yp, 0);
+                        ItemRenderHelper.renderItem(livingEntity, items.get(i), xpl + xCenterOffset, yp, 0, event.getTickDelta());
                         xpl += enchantmentWidths.get(i);
                     }
 
@@ -383,16 +383,16 @@ public class EntityTitleController {
         return tags;*/
     }
 
-    private List<EnchantmentEntry> getEnchantments(ItemStack itemStack) {
+    private List<EnchantmentEntry> getEnchantments(Entity entity, ItemStack itemStack) {
         if (!itemStack.isEnchanted()) {
             return List.of();
         }
 
         List<EnchantmentEntry> result = new ArrayList<>();
         ItemEnchantments enchantments = itemStack.getEnchantments();
-        for (Holder<Enchantment> enchantment : enchantments.keySet()) {
-            ResourceLocation id = Registries.ENCHANTMENTS.getKey(enchantment.value());
-            int level = enchantments.getLevel(enchantment.value());
+        for (Holder<Enchantment> holder : enchantments.keySet()) {
+            ResourceLocation id = holder.unwrapKey().get().location();
+            int level = enchantments.getLevel(holder);
             result.add(new EnchantmentEntry(id, level));
         }
 
@@ -427,53 +427,56 @@ public class EntityTitleController {
 
     private static class EnchantmentEntry {
 
-        private static final Map<Enchantment, EnchantmentDisplayEntry> displayMap = Map.ofEntries(
-                Map.entry(Enchantments.PROTECTION, new EnchantmentDisplayEntry("Pr")),
-                Map.entry(Enchantments.FIRE_PROTECTION, new EnchantmentDisplayEntry("FP")),
-                Map.entry(Enchantments.BLAST_PROTECTION, new EnchantmentDisplayEntry("BP")),
-                Map.entry(Enchantments.PROJECTILE_PROTECTION, new EnchantmentDisplayEntry("PP")),
+        private static final Map<ResourceLocation, EnchantmentDisplayEntry> displayMap = Map.ofEntries(
+                Map.entry(Enchantments.PROTECTION.location(), new EnchantmentDisplayEntry("Pr")),
+                Map.entry(Enchantments.FIRE_PROTECTION.location(), new EnchantmentDisplayEntry("FP")),
+                Map.entry(Enchantments.BLAST_PROTECTION.location(), new EnchantmentDisplayEntry("BP")),
+                Map.entry(Enchantments.PROJECTILE_PROTECTION.location(), new EnchantmentDisplayEntry("PP")),
 
-                Map.entry(Enchantments.THORNS, new EnchantmentDisplayEntry("Th")),
+                Map.entry(Enchantments.THORNS.location(), new EnchantmentDisplayEntry("Th")),
 
-                Map.entry(Enchantments.FEATHER_FALLING, new EnchantmentDisplayEntry("Fe")),
-                Map.entry(Enchantments.RESPIRATION, new EnchantmentDisplayEntry("Re")),
-                Map.entry(Enchantments.AQUA_AFFINITY, new EnchantmentDisplayEntry("Aq")),
-                Map.entry(Enchantments.DEPTH_STRIDER, new EnchantmentDisplayEntry("De")),
-                Map.entry(Enchantments.FROST_WALKER, new EnchantmentDisplayEntry("Fr")),
-                Map.entry(Enchantments.SOUL_SPEED, new EnchantmentDisplayEntry("So")),
-                Map.entry(Enchantments.SWIFT_SNEAK, new EnchantmentDisplayEntry("Sn")),
+                Map.entry(Enchantments.FEATHER_FALLING.location(), new EnchantmentDisplayEntry("Fe")),
+                Map.entry(Enchantments.RESPIRATION.location(), new EnchantmentDisplayEntry("Re")),
+                Map.entry(Enchantments.AQUA_AFFINITY.location(), new EnchantmentDisplayEntry("Aq")),
+                Map.entry(Enchantments.DEPTH_STRIDER.location(), new EnchantmentDisplayEntry("De")),
+                Map.entry(Enchantments.FROST_WALKER.location(), new EnchantmentDisplayEntry("Fr")),
+                Map.entry(Enchantments.SOUL_SPEED.location(), new EnchantmentDisplayEntry("So")),
+                Map.entry(Enchantments.SWIFT_SNEAK.location(), new EnchantmentDisplayEntry("Sn")),
 
-                Map.entry(Enchantments.SHARPNESS, new EnchantmentDisplayEntry("Sh")),
-                Map.entry(Enchantments.SMITE, new EnchantmentDisplayEntry("Sm")),
-                Map.entry(Enchantments.BANE_OF_ARTHROPODS, new EnchantmentDisplayEntry("Ar")),
-                Map.entry(Enchantments.FIRE_ASPECT, new EnchantmentDisplayEntry("Fi")),
-                Map.entry(Enchantments.KNOCKBACK, new EnchantmentDisplayEntry("Kn")),
-                Map.entry(Enchantments.LOOTING, new EnchantmentDisplayEntry("Lo")),
-                Map.entry(Enchantments.SWEEPING_EDGE, new EnchantmentDisplayEntry("Sw")),
+                Map.entry(Enchantments.SHARPNESS.location(), new EnchantmentDisplayEntry("Sh")),
+                Map.entry(Enchantments.SMITE.location(), new EnchantmentDisplayEntry("Sm")),
+                Map.entry(Enchantments.BANE_OF_ARTHROPODS.location(), new EnchantmentDisplayEntry("Ar")),
+                Map.entry(Enchantments.FIRE_ASPECT.location(), new EnchantmentDisplayEntry("Fi")),
+                Map.entry(Enchantments.KNOCKBACK.location(), new EnchantmentDisplayEntry("Kn")),
+                Map.entry(Enchantments.LOOTING.location(), new EnchantmentDisplayEntry("Lo")),
+                Map.entry(Enchantments.SWEEPING_EDGE.location(), new EnchantmentDisplayEntry("Sw")),
+                Map.entry(Enchantments.DENSITY.location(), new EnchantmentDisplayEntry("Dn")),
+                Map.entry(Enchantments.BREACH.location(), new EnchantmentDisplayEntry("Br")),
+                Map.entry(Enchantments.WIND_BURST.location(), new EnchantmentDisplayEntry("Wi")),
 
-                Map.entry(Enchantments.SILK_TOUCH, new EnchantmentDisplayEntry("Si")),
-                Map.entry(Enchantments.FORTUNE, new EnchantmentDisplayEntry("Fo")),
-                Map.entry(Enchantments.EFFICIENCY, new EnchantmentDisplayEntry("Ef")),
+                Map.entry(Enchantments.SILK_TOUCH.location(), new EnchantmentDisplayEntry("Si")),
+                Map.entry(Enchantments.FORTUNE.location(), new EnchantmentDisplayEntry("Fo")),
+                Map.entry(Enchantments.EFFICIENCY.location(), new EnchantmentDisplayEntry("Ef")),
 
-                Map.entry(Enchantments.POWER, new EnchantmentDisplayEntry("Po")),
-                Map.entry(Enchantments.PUNCH, new EnchantmentDisplayEntry("Pu")),
-                Map.entry(Enchantments.INFINITY, new EnchantmentDisplayEntry("In")),
-                Map.entry(Enchantments.FLAME, new EnchantmentDisplayEntry("Fl")),
-                Map.entry(Enchantments.LUCK_OF_THE_SEA, new EnchantmentDisplayEntry("Lc")),
-                Map.entry(Enchantments.LURE, new EnchantmentDisplayEntry("Lr")),
-                Map.entry(Enchantments.LOYALTY, new EnchantmentDisplayEntry("Lo")),
-                Map.entry(Enchantments.IMPALING, new EnchantmentDisplayEntry("Im")),
-                Map.entry(Enchantments.RIPTIDE, new EnchantmentDisplayEntry("Ri")),
-                Map.entry(Enchantments.CHANNELING, new EnchantmentDisplayEntry("Ch")),
-                Map.entry(Enchantments.MULTISHOT, new EnchantmentDisplayEntry("Mu")),
-                Map.entry(Enchantments.QUICK_CHARGE, new EnchantmentDisplayEntry("Qu")),
-                Map.entry(Enchantments.PIERCING, new EnchantmentDisplayEntry("Pi")),
+                Map.entry(Enchantments.POWER.location(), new EnchantmentDisplayEntry("Po")),
+                Map.entry(Enchantments.PUNCH.location(), new EnchantmentDisplayEntry("Pu")),
+                Map.entry(Enchantments.INFINITY.location(), new EnchantmentDisplayEntry("In")),
+                Map.entry(Enchantments.FLAME.location(), new EnchantmentDisplayEntry("Fl")),
+                Map.entry(Enchantments.LUCK_OF_THE_SEA.location(), new EnchantmentDisplayEntry("Lc")),
+                Map.entry(Enchantments.LURE.location(), new EnchantmentDisplayEntry("Lr")),
+                Map.entry(Enchantments.LOYALTY.location(), new EnchantmentDisplayEntry("Lo")),
+                Map.entry(Enchantments.IMPALING.location(), new EnchantmentDisplayEntry("Im")),
+                Map.entry(Enchantments.RIPTIDE.location(), new EnchantmentDisplayEntry("Ri")),
+                Map.entry(Enchantments.CHANNELING.location(), new EnchantmentDisplayEntry("Ch")),
+                Map.entry(Enchantments.MULTISHOT.location(), new EnchantmentDisplayEntry("Mu")),
+                Map.entry(Enchantments.QUICK_CHARGE.location(), new EnchantmentDisplayEntry("Qu")),
+                Map.entry(Enchantments.PIERCING.location(), new EnchantmentDisplayEntry("Pi")),
 
-                Map.entry(Enchantments.UNBREAKING, new EnchantmentDisplayEntry("Un")),
+                Map.entry(Enchantments.UNBREAKING.location(), new EnchantmentDisplayEntry("Un")),
 
-                Map.entry(Enchantments.MENDING, new EnchantmentDisplayEntry("Me")),
-                Map.entry(Enchantments.VANISHING_CURSE, new EnchantmentDisplayEntry("Va", Color.RED)),
-                Map.entry(Enchantments.BINDING_CURSE, new EnchantmentDisplayEntry("Bi", Color.RED)));
+                Map.entry(Enchantments.MENDING.location(), new EnchantmentDisplayEntry("Me")),
+                Map.entry(Enchantments.VANISHING_CURSE.location(), new EnchantmentDisplayEntry("Va", Color.RED)),
+                Map.entry(Enchantments.BINDING_CURSE.location(), new EnchantmentDisplayEntry("Bi", Color.RED)));
 
         public final String text;
         public final int level;
@@ -481,22 +484,15 @@ public class EntityTitleController {
         public final int priority;
 
         public EnchantmentEntry(ResourceLocation id, int level) {
-            Enchantment enchantment = Registries.ENCHANTMENTS.getValue(id);
-            if (enchantment != null) {
-                EnchantmentDisplayEntry entry = displayMap.get(enchantment);
-                if (entry != null) {
-                    text = entry.text;
-                    color = entry.color;
-                    priority = entry.priority;
-                } else {
-                    text = id.toString();
-                    color = Color.YELLOW;
-                    priority = 100;
-                }
+            EnchantmentDisplayEntry entry = displayMap.get(id);
+            if (entry != null) {
+                text = entry.text;
+                color = entry.color;
+                priority = entry.priority;
             } else {
-                text = id.toString() + level;
+                text = id.toString();
                 color = Color.YELLOW;
-                priority = 200;
+                priority = 100;
             }
             this.level = level;
         }

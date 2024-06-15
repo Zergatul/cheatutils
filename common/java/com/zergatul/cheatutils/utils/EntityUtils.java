@@ -23,6 +23,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.animal.WolfVariants;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
@@ -81,7 +82,7 @@ public class EntityUtils {
             return;
         }
 
-        EntityType<?> playerEntityType = com.zergatul.cheatutils.common.Registries.ENTITY_TYPES.getValue(new ResourceLocation("minecraft:player"));
+        EntityType<?> playerEntityType = com.zergatul.cheatutils.common.Registries.ENTITY_TYPES.getValue(ResourceLocation.parse("minecraft:player"));
 
         List<EntityInfo> finalClasses = new ArrayList<>();
 
@@ -346,6 +347,11 @@ public class EntityUtils {
                 }
 
                 @Override
+                public Optional<Holder.Reference<DamageType>> getAny() {
+                    return Optional.empty();
+                }
+
+                @Override
                 public Set<ResourceLocation> keySet() {
                     return null;
                 }
@@ -517,6 +523,11 @@ public class EntityUtils {
                 @Override
                 public Lifecycle registryLifecycle() {
                     return null;
+                }
+
+                @Override
+                public Optional<Holder.Reference<BannerPattern>> getAny() {
+                    return Optional.empty();
                 }
 
                 @Override
@@ -748,6 +759,9 @@ public class EntityUtils {
                     if (key.equals(Registries.WOLF_VARIANT)) {
                         return Optional.of((Registry<E>) new FakeWolfVariantRegistry());
                     }
+                    if (key.equals(Registries.PAINTING_VARIANT)) {
+                        return Optional.of((Registry<E>) new FakePaintingVariantRegistry());
+                    }
                     return Optional.empty();
                 }
 
@@ -921,6 +935,11 @@ public class EntityUtils {
         }
 
         @Override
+        public Optional<Holder.Reference<WolfVariant>> getAny() {
+            return Optional.empty();
+        }
+
+        @Override
         public Set<ResourceLocation> keySet() {
             return null;
         }
@@ -1036,6 +1055,184 @@ public class EntityUtils {
         @NotNull
         @Override
         public Iterator<WolfVariant> iterator() {
+            return null;
+        }
+    }
+
+    private static class FakePaintingVariantRegistry implements Registry<PaintingVariant> {
+
+        @Override
+        public ResourceKey<? extends Registry<PaintingVariant>> key() {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public ResourceLocation getKey(PaintingVariant p_123006_) {
+            return null;
+        }
+
+        @Override
+        public Optional<ResourceKey<PaintingVariant>> getResourceKey(PaintingVariant p_123008_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public int getId(@Nullable PaintingVariant p_122977_) {
+            return 0;
+        }
+
+        @Nullable
+        @Override
+        public PaintingVariant byId(int p_122651_) {
+            return null;
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Nullable
+        @Override
+        public PaintingVariant get(@Nullable ResourceKey<PaintingVariant> p_122980_) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public PaintingVariant get(@Nullable ResourceLocation p_123002_) {
+            return null;
+        }
+
+        @Override
+        public Optional<RegistrationInfo> registrationInfo(ResourceKey<PaintingVariant> p_333179_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Lifecycle registryLifecycle() {
+            return null;
+        }
+
+        @Override
+        public Optional<Holder.Reference<PaintingVariant>> getAny() {
+            return Optional.of(Holder.Reference.createStandAlone(new HolderOwner<PaintingVariant>() {
+                @Override
+                public boolean canSerializeIn(HolderOwner<PaintingVariant> p_255875_) {
+                    return false;
+                }
+            }, ResourceKey.create(Registries.PAINTING_VARIANT, ResourceLocation.withDefaultNamespace("fake"))));
+        }
+
+        @Override
+        public Set<ResourceLocation> keySet() {
+            return Set.of();
+        }
+
+        @Override
+        public Set<Map.Entry<ResourceKey<PaintingVariant>, PaintingVariant>> entrySet() {
+            return Set.of();
+        }
+
+        @Override
+        public Set<ResourceKey<PaintingVariant>> registryKeySet() {
+            return Set.of();
+        }
+
+        @Override
+        public Optional<Holder.Reference<PaintingVariant>> getRandom(RandomSource p_235781_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public boolean containsKey(ResourceLocation p_123011_) {
+            return false;
+        }
+
+        @Override
+        public boolean containsKey(ResourceKey<PaintingVariant> p_175475_) {
+            return false;
+        }
+
+        @Override
+        public Registry<PaintingVariant> freeze() {
+            return null;
+        }
+
+        @Override
+        public Holder.Reference<PaintingVariant> createIntrusiveHolder(PaintingVariant p_206068_) {
+            return null;
+        }
+
+        @Override
+        public Optional<Holder.Reference<PaintingVariant>> getHolder(int p_206051_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Holder.Reference<PaintingVariant>> getHolder(ResourceLocation p_329586_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Holder.Reference<PaintingVariant>> getHolder(ResourceKey<PaintingVariant> p_206050_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Holder<PaintingVariant> wrapAsHolder(PaintingVariant p_263382_) {
+            return null;
+        }
+
+        @Override
+        public Stream<Holder.Reference<PaintingVariant>> holders() {
+            return Stream.empty();
+        }
+
+        @Override
+        public Optional<HolderSet.Named<PaintingVariant>> getTag(TagKey<PaintingVariant> p_206052_) {
+            return Optional.empty();
+        }
+
+        @Override
+        public HolderSet.Named<PaintingVariant> getOrCreateTag(TagKey<PaintingVariant> p_206045_) {
+            return null;
+        }
+
+        @Override
+        public Stream<Pair<TagKey<PaintingVariant>, HolderSet.Named<PaintingVariant>>> getTags() {
+            return Stream.empty();
+        }
+
+        @Override
+        public Stream<TagKey<PaintingVariant>> getTagNames() {
+            return Stream.empty();
+        }
+
+        @Override
+        public void resetTags() {
+
+        }
+
+        @Override
+        public void bindTags(Map<TagKey<PaintingVariant>, List<Holder<PaintingVariant>>> p_205997_) {
+
+        }
+
+        @Override
+        public HolderOwner<PaintingVariant> holderOwner() {
+            return null;
+        }
+
+        @Override
+        public HolderLookup.RegistryLookup<PaintingVariant> asLookup() {
+            return null;
+        }
+
+        @NotNull
+        @Override
+        public Iterator<PaintingVariant> iterator() {
             return null;
         }
     }

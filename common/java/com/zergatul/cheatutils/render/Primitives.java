@@ -12,33 +12,9 @@ public class Primitives {
     public static void drawCube(
             BufferBuilder bufferBuilder,
             double x1, double y1, double z1,
-            double x2, double y2, double z2) {
-        bufferBuilder.vertex(x1, y1, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y1, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y1, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y1, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y1, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y1, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y1, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y1, z1).color(1f, 1f, 1f, 1f).endVertex();
-
-        bufferBuilder.vertex(x1, y2, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y2, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y2, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y2, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y2, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y2, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y2, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y2, z1).color(1f, 1f, 1f, 1f).endVertex();
-
-        bufferBuilder.vertex(x1, y1, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y2, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y1, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x1, y2, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y1, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y2, z2).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y1, z1).color(1f, 1f, 1f, 1f).endVertex();
-        bufferBuilder.vertex(x2, y2, z1).color(1f, 1f, 1f, 1f).endVertex();
+            double x2, double y2, double z2
+    ) {
+        drawCube(bufferBuilder, (float) x1, (float) y1, (float) z1, (float) x2, (float) y2, (float) z2);
     }
 
     public static void renderLines(BufferBuilder bufferBuilder, Matrix4f pose, Matrix4f projection) {
@@ -48,10 +24,7 @@ public class Primitives {
         RenderSystem.disableDepthTest();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
-        SharedVertexBuffer.instance.bind();
-        SharedVertexBuffer.instance.upload(bufferBuilder.end());
-        SharedVertexBuffer.instance.drawWithShader(pose, projection, GameRenderer.getPositionColorShader());
-        VertexBuffer.unbind();
+        RenderHelper.drawBuffer(SharedVertexBuffer.instance, bufferBuilder, pose, projection, GameRenderer.getPositionColorShader());
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
@@ -77,16 +50,15 @@ public class Primitives {
         float f = (float)(color >> 16 & 255) / 255.0F;
         float f1 = (float)(color >> 8 & 255) / 255.0F;
         float f2 = (float)(color & 255) / 255.0F;
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        bufferbuilder.vertex(matrix, (float)x1, (float)y2, 0.0F).color(f, f1, f2, f3).endVertex();
-        bufferbuilder.vertex(matrix, (float)x2, (float)y2, 0.0F).color(f, f1, f2, f3).endVertex();
-        bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(f, f1, f2, f3).endVertex();
-        bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(f, f1, f2, f3).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferbuilder.addVertex(matrix, (float)x1, (float)y2, 0.0F).setColor(f, f1, f2, f3);
+        bufferbuilder.addVertex(matrix, (float)x2, (float)y2, 0.0F).setColor(f, f1, f2, f3);
+        bufferbuilder.addVertex(matrix, (float)x2, (float)y1, 0.0F).setColor(f, f1, f2, f3);
+        bufferbuilder.addVertex(matrix, (float)x1, (float)y1, 0.0F).setColor(f, f1, f2, f3);
+        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
         RenderSystem.disableBlend();
     }
 
@@ -109,40 +81,71 @@ public class Primitives {
         float r = (float)(color >> 16 & 255) / 255.0F;
         float g = (float)(color >> 8 & 255) / 255.0F;
         float b = (float)(color & 255) / 255.0F;
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        bufferbuilder.vertex(matrix, (float)x1, (float)y2, 0.0F).color(r, g, b, a).endVertex();
-        bufferbuilder.vertex(matrix, (float)x2, (float)y2, 0.0F).color(r, g, b, a).endVertex();
-        bufferbuilder.vertex(matrix, (float)x2, (float)y1, 0.0F).color(r, g, b, a).endVertex();
-        bufferbuilder.vertex(matrix, (float)x1, (float)y1, 0.0F).color(r, g, b, a).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferbuilder.addVertex(matrix, (float)x1, (float)y2, 0.0F).setColor(r, g, b, a);
+        bufferbuilder.addVertex(matrix, (float)x2, (float)y2, 0.0F).setColor(r, g, b, a);
+        bufferbuilder.addVertex(matrix, (float)x2, (float)y1, 0.0F).setColor(r, g, b, a);
+        bufferbuilder.addVertex(matrix, (float)x1, (float)y1, 0.0F).setColor(r, g, b, a);
+        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
         RenderSystem.disableBlend();
     }
 
     // copy from
     // Lnet/minecraft/client/renderer/entity/ItemRenderer;fillRect(Lcom/mojang/blaze3d/vertex/BufferBuilder;IIIIIIII)V
-    public static void fillRect(BufferBuilder p_115153_, double p_115154_, double p_115155_, int p_115156_, int p_115157_, int p_115158_, int p_115159_, int p_115160_, int p_115161_) {
+    public static void fillRect(double p_115154_, double p_115155_, int p_115156_, int p_115157_, int p_115158_, int p_115159_, int p_115160_, int p_115161_) {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        p_115153_.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        p_115153_.vertex((double)(p_115154_ + 0), (double)(p_115155_ + 0), 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
-        p_115153_.vertex((double)(p_115154_ + 0), (double)(p_115155_ + p_115157_), 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
-        p_115153_.vertex((double)(p_115154_ + p_115156_), (double)(p_115155_ + p_115157_), 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
-        p_115153_.vertex((double)(p_115154_ + p_115156_), (double)(p_115155_ + 0), 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
-        BufferUploader.drawWithShader(p_115153_.end());
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferbuilder.addVertex((float) (p_115154_ + 0), (float)(p_115155_ + 0), 0.0F).setColor(p_115158_, p_115159_, p_115160_, p_115161_);
+        bufferbuilder.addVertex((float)(p_115154_ + 0), (float)(p_115155_ + p_115157_), 0.0F).setColor(p_115158_, p_115159_, p_115160_, p_115161_);
+        bufferbuilder.addVertex((float)(p_115154_ + p_115156_), (float)(p_115155_ + p_115157_), 0.0F).setColor(p_115158_, p_115159_, p_115160_, p_115161_);
+        bufferbuilder.addVertex((float)(p_115154_ + p_115156_), (float)(p_115155_ + 0), 0.0F).setColor(p_115158_, p_115159_, p_115160_, p_115161_);
+        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
     }
 
     public static void drawTexture(Matrix4f matrix, float x, float y, float width, float height, float z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferBuilder.vertex(matrix, x, y, z).uv(1F * texX / texSizeX, 1F * texY / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x, y + height, z).uv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x + width, y + height, z).uv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY).endVertex();
-        bufferBuilder.vertex(matrix, x + width, y, z).uv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY).endVertex();
-        BufferUploader.drawWithShader(bufferBuilder.end());
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferBuilder.addVertex(matrix, x, y, z).setUv(1F * texX / texSizeX, 1F * texY / texSizeY);
+        bufferBuilder.addVertex(matrix, x, y + height, z).setUv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY);
+        bufferBuilder.addVertex(matrix, x + width, y + height, z).setUv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY);
+        bufferBuilder.addVertex(matrix, x + width, y, z).setUv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY);
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
+    }
+
+    private static void drawCube(
+            BufferBuilder bufferBuilder,
+            float x1, float y1, float z1,
+            float x2, float y2, float z2
+    ) {
+        bufferBuilder.addVertex(x1, y1, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y1, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y1, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y1, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y1, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y1, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y1, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y1, z1).setColor(1f, 1f, 1f, 1f);
+
+        bufferBuilder.addVertex(x1, y2, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y2, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y2, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y2, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y2, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y2, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y2, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y2, z1).setColor(1f, 1f, 1f, 1f);
+
+        bufferBuilder.addVertex(x1, y1, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y2, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y1, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x1, y2, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y1, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y2, z2).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y1, z1).setColor(1f, 1f, 1f, 1f);
+        bufferBuilder.addVertex(x2, y2, z1).setColor(1f, 1f, 1f, 1f);
     }
 }

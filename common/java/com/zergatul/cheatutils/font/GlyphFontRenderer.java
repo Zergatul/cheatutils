@@ -67,30 +67,30 @@ public class GlyphFontRenderer {
             float width = (float)(glyph.getWidth() * invScale);
             float height = (float)(glyph.getHeight() * invScale);
 
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-
-            RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
-            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
             bufferBuilder
-                    .vertex(stack.last().pose(), x, y + height, 0)
-                    .color(1f, 1f, 1f, 1f)
-                    .uv(0, 1).endVertex();
+                    .addVertex(stack.last().pose(), x, y + height, 0)
+                    .setColor(1f, 1f, 1f, 1f)
+                    .setUv(0, 1);
             bufferBuilder
-                    .vertex(stack.last().pose(), x + width, y + height, 0)
-                    .color(1f, 1f, 1f, 1f)
-                    .uv(1, 1).endVertex();
+                    .addVertex(stack.last().pose(), x + width, y + height, 0)
+                    .setColor(1f, 1f, 1f, 1f)
+                    .setUv(1, 1);
             bufferBuilder
-                    .vertex(stack.last().pose(), x + width, y, 0)
-                    .color(1f, 1f, 1f, 1f)
-                    .uv(1, 0).endVertex();
+                    .addVertex(stack.last().pose(), x + width, y, 0)
+                    .setColor(1f, 1f, 1f, 1f)
+                    .setUv(1, 0);
             bufferBuilder
-                    .vertex(stack.last().pose(), x, y, 0)
-                    .color(1f, 1f, 1f, 1f)
-                    .uv(0, 0)
-                    .endVertex();
+                    .addVertex(stack.last().pose(), x, y, 0)
+                    .setColor(1f, 1f, 1f, 1f)
+                    .setUv(0, 0);
 
-            BufferUploader.drawWithShader(bufferBuilder.end());
+            MeshData data = bufferBuilder.build();
+            if (data != null) {
+                BufferUploader.drawWithShader(data);
+            }
 
             x += width;
         }

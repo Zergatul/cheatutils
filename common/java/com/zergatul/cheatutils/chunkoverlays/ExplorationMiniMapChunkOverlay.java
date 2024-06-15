@@ -25,9 +25,9 @@ import java.util.Map;
 
 public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
-    private static final ResourceLocation PlayerPosTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-player.png");
-    private static final ResourceLocation CenterPosTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-center.png");
-    private static final ResourceLocation MarkerTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-marker.png");
+    private static final ResourceLocation PlayerPosTexture = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-player.png");
+    private static final ResourceLocation CenterPosTexture = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-center.png");
+    private static final ResourceLocation MarkerTexture = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-marker.png");
 
     private final Map<Dimension, List<Marker>> markers = new HashMap<>();
 

@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
+import com.zergatul.cheatutils.render.RenderHelper;
 import com.zergatul.cheatutils.utils.SharedVertexBuffer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.Minecraft;
@@ -41,8 +42,7 @@ public class EndCityChunks {
         }
 
         Vec3 view = event.getCamera().getPosition();
-        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
         for (int i = 0; i < chunks.length(); i++) {
@@ -63,23 +63,19 @@ public class EndCityChunks {
                 float g = 1f;
                 float b = 0f;
                 for (float y = 32.1f; y < 100; y += 32) {
-                    bufferBuilder.vertex(x1 - view.x, y - view.y, z1 - view.z).color(r, g, b, 0.1f).endVertex();
-                    bufferBuilder.vertex(x1 - view.x, y - view.y, z2 - view.z).color(r, g, b, 0.1f).endVertex();
-                    bufferBuilder.vertex(x2 - view.x, y - view.y, z2 - view.z).color(r, g, b, 0.1f).endVertex();
-                    bufferBuilder.vertex(x2 - view.x, y - view.y, z1 - view.z).color(r, g, b, 0.1f).endVertex();
+                    bufferBuilder.addVertex((float) (x1 - view.x), (float) (y - view.y), (float) (z1 - view.z)).setColor(r, g, b, 0.1f);
+                    bufferBuilder.addVertex((float) (x1 - view.x), (float) (y - view.y), (float) (z2 - view.z)).setColor(r, g, b, 0.1f);
+                    bufferBuilder.addVertex((float) (x2 - view.x), (float) (y - view.y), (float) (z2 - view.z)).setColor(r, g, b, 0.1f);
+                    bufferBuilder.addVertex((float) (x2 - view.x), (float) (y - view.y), (float) (z1 - view.z)).setColor(r, g, b, 0.1f);
                 }
             }
         }
-
-        SharedVertexBuffer.instance.bind();
-        SharedVertexBuffer.instance.upload(bufferBuilder.end());
 
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.disableCull();
 
-        SharedVertexBuffer.instance.drawWithShader(event.getPose(), event.getProjection(), GameRenderer.getPositionColorShader());
-        VertexBuffer.unbind();
+        RenderHelper.drawBuffer(SharedVertexBuffer.instance, bufferBuilder, event.getPose(), event.getProjection(), GameRenderer.getPositionColorShader());
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();

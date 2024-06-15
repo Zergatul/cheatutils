@@ -11,6 +11,5 @@ public class Registries {
     public static final WrappedRegistry<Block> BLOCKS = RegistriesWrapper.getBlocks();
     public static final WrappedRegistry<Item> ITEMS = RegistriesWrapper.getItems();
     public static final WrappedRegistry<EntityType<?>> ENTITY_TYPES = RegistriesWrapper.getEntityTypes();
-    public static final WrappedRegistry<Enchantment> ENCHANTMENTS = RegistriesWrapper.getEnchantments();
     public static final WrappedRegistry<MobEffect> MOB_EFFECTS = RegistriesWrapper.getMobEffects();
 }

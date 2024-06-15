@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -49,9 +50,9 @@ public abstract class MixinGameRenderer {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "render(FJZ)V")
-    private void onBeforeRender(float partialTicks, long nanoTime, boolean p_109096_, CallbackInfo info) {
-        Events.RenderTickStart.trigger(partialTicks);
+    @Inject(at = @At("HEAD"), method = "render")
+    private void onBeforeRender(DeltaTracker delta, boolean p_109096_, CallbackInfo info) {
+        Events.RenderTickStart.trigger(delta);
     }
 
     @Inject(at = @At("HEAD"), method = "bobHurt(Lcom/mojang/blaze3d/vertex/PoseStack;F)V", cancellable = true)

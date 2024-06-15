@@ -27,7 +27,7 @@ public class TexturesHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String id = exchange.getRequestURI().getPath().substring("/textures/".length());
-        ResourceLocation location = new ResourceLocation(id);
+        ResourceLocation location = ResourceLocation.parse(id);
         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
         AbstractTexture texture = textureManager.getTexture(location);
 

@@ -26,10 +26,6 @@ public class RegistriesWrapper {
         return new VanillaWrapperRegistry<>(BuiltInRegistries.ENTITY_TYPE);
     }
 
-    public static WrappedRegistry<Enchantment> getEnchantments() {
-        return new VanillaWrapperRegistry<>(BuiltInRegistries.ENCHANTMENT);
-    }
-
     public static WrappedRegistry<MobEffect> getMobEffects() {
         return new VanillaWrapperRegistry<>(BuiltInRegistries.MOB_EFFECT);
     }

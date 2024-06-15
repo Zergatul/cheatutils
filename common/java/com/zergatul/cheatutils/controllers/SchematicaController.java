@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.render.Primitives;
+import com.zergatul.cheatutils.render.RenderHelper;
 import com.zergatul.cheatutils.schematics.PlacingConverter;
 import com.zergatul.cheatutils.schematics.PlacingSettings;
 import com.zergatul.cheatutils.schematics.SchemaFile;
@@ -165,48 +166,44 @@ public class SchematicaController {
                     neighPos.setZ(pos.getZ() + direction.getStepZ());
                     if (!ghosts.containsKey(neighPos)) {
                         List<BakedQuad> quads = BakedModelWrapper.getQuads(model, state, direction, random);
-                        if (quads.size() > 0) {
+                        if (!quads.isEmpty()) {
                             BakedQuad quad = quads.get(0);
                             TextureAtlasSprite sprite = quad.getSprite();
-                            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+                            BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
                             RenderSystem.setShaderTexture(0, sprite.atlasLocation());
 
                             FaceInfo face = FaceInfo.fromFacing(direction);
                             FaceInfo.VertexInfo info;
 
                             info = face.getVertexInfo(0);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU0(), sprite.getV0()).endVertex();
+                            bufferBuilder.addVertex(
+                                            (float) ((info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x),
+                                            (float) ((info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y),
+                                            (float) ((info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z))
+                                    .setUv(sprite.getU0(), sprite.getV0());
 
                             info = face.getVertexInfo(1);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU0(), sprite.getV1()).endVertex();
+                            bufferBuilder.addVertex(
+                                            (float) ((info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x),
+                                            (float) ((info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y),
+                                            (float) ((info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z))
+                                    .setUv(sprite.getU0(), sprite.getV1());
 
                             info = face.getVertexInfo(2);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU1(), sprite.getV1()).endVertex();
+                            bufferBuilder.addVertex(
+                                            (float) ((info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x),
+                                            (float) ((info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y),
+                                            (float) ((info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z))
+                                    .setUv(sprite.getU1(), sprite.getV1());
 
                             info = face.getVertexInfo(3);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU1(), sprite.getV0()).endVertex();
+                            bufferBuilder.addVertex(
+                                            (float) ((info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x),
+                                            (float) ((info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y),
+                                            (float) ((info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z))
+                                    .setUv(sprite.getU1(), sprite.getV0());
 
-                            SharedVertexBuffer.instance.bind();
-                            SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                            SharedVertexBuffer.instance.drawWithShader(event.pose(), event.getProjection(), GameRenderer.getPositionTexShader());
-                            VertexBuffer.unbind();
+                            RenderHelper.drawBuffer(SharedVertexBuffer.instance, bufferBuilder, event.pose(), event.getProjection(), GameRenderer.getPositionTexShader());
                         }
                     }
                 }
@@ -234,16 +231,15 @@ public class SchematicaController {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
             RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
 
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
-                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.addVertex((float) (tracerX - view.x), (float) (tracerY - view.y), (float) (tracerZ - view.z))
+                            .setColor(1f, 1f, 1f, 1f);
+                    bufferBuilder.addVertex((float) (pos.getX() + 0.5 - view.x), (float) (pos.getY() + 0.5 - view.y), (float) (pos.getZ() + 0.5 - view.z))
+                            .setColor(1f, 1f, 1f, 1f);
                 });
             }
 
@@ -251,8 +247,7 @@ public class SchematicaController {
         }
 
         if (config.showMissingBlockCubes) {
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
             RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
 
             for (Entry entry : entries) {
@@ -276,16 +271,15 @@ public class SchematicaController {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
-                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
+                    bufferBuilder.addVertex((float) (tracerX - view.x), (float) (tracerY - view.y), (float) (tracerZ - view.z))
+                            .setColor(1f, 1f, 1f, 1f);
+                    bufferBuilder.addVertex((float) (pos.getX() + 0.5 - view.x), (float) (pos.getY() + 0.5 - view.y), (float) (pos.getZ() + 0.5 - view.z))
+                            .setColor(1f, 1f, 1f, 1f);
                 });
             }
 
@@ -293,8 +287,7 @@ public class SchematicaController {
         }
 
         if (config.showWrongBlockCubes) {
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
             RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
 
             for (Entry entry : entries) {

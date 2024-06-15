@@ -17,7 +17,7 @@ public class FakeWeatherSetTimeApi extends ApiBase {
         return "{ \"ok\": true }";
     }
 
-    public class Request {
+    public static class Request {
         public int value;
     }
 }

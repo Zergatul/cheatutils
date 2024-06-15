@@ -61,7 +61,7 @@ public class FastLineRenderer implements LineRenderer {
 
         // reset renderer state
         this.event = null;
-        this.view = null;;
+        this.view = null;
     }
 
     @Override

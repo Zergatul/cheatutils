@@ -74,7 +74,7 @@ public class BlocksConfigApi extends ApiBase {
 
     @Override
     public synchronized String delete(String id) throws MethodNotSupportedException {
-        ResourceLocation loc = new ResourceLocation(id);
+        ResourceLocation loc = ResourceLocation.parse(id);
         Block block = Registries.BLOCKS.getValue(loc);
         if (block == null) {
             throw new MethodNotSupportedException("Cannot find block by id.");
@@ -102,7 +102,7 @@ public class BlocksConfigApi extends ApiBase {
 
         @Override
         public String post(String id) throws HttpException {
-            ResourceLocation loc = new ResourceLocation(id);
+            ResourceLocation loc = ResourceLocation.parse(id);
             Block block = Registries.BLOCKS.getValue(loc);
             if (block == null) {
                 throw new MethodNotSupportedException("Cannot find block by id.");
