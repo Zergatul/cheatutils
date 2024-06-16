@@ -119,7 +119,7 @@ tasks.named('processResources', ProcessResources).configure {
 
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
-    archiveFileName = "zergatul.$mod_id-$mod_version-forge-${minecraft_version}.jar"
+    archiveFileName = "$mod_id-$mod_version-forge-${minecraft_version}.jar"
 
     manifest {
         attributes([
