@@ -24,7 +24,7 @@ public class GenerateEntityMappingApi extends ApiBase {
 
     @Override
     public String get() throws HttpException {
-        String path = "C:\\Users\\Zergatul\\.gradle\\caches\\fabric-loom\\1.19.3\\loom.mappings.1_19_3.layered+hash.2198-v2\\mappings.jar";
+        /*String path = "C:\\Users\\Zergatul\\.gradle\\caches\\fabric-loom\\1.19.3\\loom.mappings.1_19_3.layered+hash.2198-v2\\mappings.jar";
         String mappings = null;
         try {
             ZipFile file = new ZipFile(path);
@@ -67,6 +67,7 @@ public class GenerateEntityMappingApi extends ApiBase {
             }
         }
 
-        return builder.toString();
+        return builder.toString();*/
+        return "";
     }
 }

@@ -22,6 +22,7 @@
     "common.accessors.CompositeStateAccessor",
     "common.accessors.CraftingScreenAccessor",
     "common.accessors.CrossbowItemAccessor",
+    "common.accessors.EntityTypeAccessor",
     "common.accessors.GuiAccessor",
     "common.accessors.HeightmapAccessor",
     "common.accessors.HolderReferenceAccessor",
