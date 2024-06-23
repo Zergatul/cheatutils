@@ -83,7 +83,7 @@ public class KillAura implements Module {
         Vec3 eyePos = player.getEyePosition();
 
         for (Entity entity : world.entitiesForRendering()) {
-            double distance2 = entity.distanceToSqr(eyePos);
+            double distance2 = getEntityInteractionDistance2(mc.player, entity);
             if (distance2 > maxRange2) {
                 continue;
             }
@@ -133,7 +133,7 @@ public class KillAura implements Module {
         }
 
         if (!targets.isEmpty()) {
-            targets.sort(Comparator.comparingDouble(e -> e.distanceToSqr(eyePos)));
+            targets.sort(Comparator.comparingDouble(e -> getEntityInteractionDistance2(mc.player, e)));
         }
 
         if (config.autoRotate) {
@@ -179,7 +179,7 @@ public class KillAura implements Module {
         }
         if (!targets.isEmpty()) {
             LocalPlayer player = mc.player;
-            mc.gameMode.attack(player, targets.get(0));
+            mc.gameMode.attack(player, targets.getFirst());
             for (int i = 1; i < targets.size(); i++) {
                 NetworkPacketsController.instance.sendPacket(ServerboundInteractPacket.createAttackPacket(targets.get(i), player.isShiftKeyDown()));
             }
@@ -203,5 +203,10 @@ public class KillAura implements Module {
         } else {
             return ticks - lastAttackTick >= config.attackTickInterval;
         }
+    }
+
+    // copied from Player.canInteractWithEntity(AABB p_329456_, double p_332906_)
+    private double getEntityInteractionDistance2(LocalPlayer player, Entity entity) {
+        return entity.getBoundingBox().distanceToSqr(player.getEyePosition());
     }
 }
