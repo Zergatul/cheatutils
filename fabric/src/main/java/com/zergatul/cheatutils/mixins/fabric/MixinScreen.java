@@ -17,10 +17,16 @@ import java.util.List;
 @Mixin(Screen.class)
 public abstract class MixinScreen {
 
-    @Inject(at = @At("TAIL"), method = "getTooltipFromItem(Lnet/minecraft/client/Minecraft;Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;")
+    @Inject(at = @At("TAIL"), method = "getTooltipFromItem", cancellable = true)
     private static void onGetTooltipFromItem(Minecraft mc, ItemStack itemStack, CallbackInfoReturnable<List<Component>> info) {
         List<Component> list = new ArrayList<>();
         Events.GatherTooltipComponents.trigger(new GatherTooltipComponentsEvent(itemStack, list));
-        info.getReturnValue().addAll(list);
+        if (!list.isEmpty()) {
+            List<Component> original = info.getReturnValue();
+            List<Component> result = new ArrayList<>(original.size() + list.size());
+            result.addAll(original);
+            result.addAll(list);
+            info.setReturnValue(result);
+        }
     }
 }
