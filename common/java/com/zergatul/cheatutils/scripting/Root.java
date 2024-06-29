@@ -76,6 +76,7 @@ public class Root {
     public static DelayedApi delayed = new DelayedApi();
     public static CameraApi camera = new CameraApi();
     public static ClipboardApi clipboard = new ClipboardApi();
+    public static ContainersApi containers = new ContainersApi();
 
     // specific
     public static CurrentBlockApi currentBlock = new CurrentBlockApi();
@@ -83,4 +84,5 @@ public class Root {
     public static CurrentEntityEspApi currentEntityEsp = new CurrentEntityEspApi();
     public static CurrentChatMessageApi currentChatMessage = new CurrentChatMessageApi();
     public static CurrentServerApi currentServer = new CurrentServerApi();
+    public static CurrentContainerClickApi currentContainerClick = new CurrentContainerClickApi();
 }
