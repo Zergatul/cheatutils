@@ -128,7 +128,7 @@ tasks.named('processResources', ProcessResources).configure {
 }
 
 jar {
-    exclude("com/zergatul/cheatutils/utils/EntityMappingGenerator.class")
+    exclude("com/zergatul/cheatutils/utils/mappings/*")
 }
 
 // Example for how to get properties into the manifest for reading at runtime.

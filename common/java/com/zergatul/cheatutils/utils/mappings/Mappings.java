@@ -1,5 +1,6 @@
-package com.zergatul.cheatutils.utils;
+package com.zergatul.cheatutils.utils.mappings;
 
+import com.zergatul.cheatutils.utils.EntityUtils;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
 
@@ -7,15 +8,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
-import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class EntityMappingGenerator {
+public class Mappings {
 
-    public static String generate() {
+    public static void process(BiConsumer<String, String> consumer) {
         String path = System.getenv("USERPROFILE") + "\\.gradle\\caches\\fabric-loom\\1.21\\loom.mappings.1_21.layered+hash.2198-v2\\mappings.jar";
         String mappings = null;
         try {
@@ -31,34 +32,19 @@ public class EntityMappingGenerator {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            return e.getMessage();
+            throw new RuntimeException("Cannot read mappings.tiny.", e);
         }
 
         if (mappings == null) {
-            return "mappings = null";
+            throw new RuntimeException("mappings = null");
         }
 
-        List<EntityUtils.EntityInfo> classes = EntityUtils.getEntityClasses();
-
-        Pattern pattern = Pattern.compile("^c\\t[a-z$]+\\t(?<obf>[a-zA-Z/_0-9$]+)\\t(?<norm>[a-zA-Z/_0-9$/]+)$", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile("^c\\t[a-z$]+\\t(?<obf>[a-zA-Z/_0-9$]+)\\t(?<norm>[a-zA-Z/_0-9$]+)$", Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(mappings);
-        StringBuilder builder = new StringBuilder();
         while (matcher.find()) {
-            String obf = matcher.group("obf").replace('/', '.');
-            String norm = matcher.group("norm").replace('/', '.');
-            Class<?> clazz;
-            try {
-                clazz = Class.forName(norm, false, Minecraft.class.getClassLoader());
-            } catch (Throwable e) {
-                e.printStackTrace();
-                continue;
-            }
-            if (classes.stream().anyMatch(i -> i.clazz == clazz)) {
-                builder.append('"').append(obf).append(":").append(norm).append('"').append(",\r\n");
-            }
+            String obf = matcher.group("obf");
+            String norm = matcher.group("norm");
+            consumer.accept(obf, norm);
         }
-
-        return builder.toString();
     }
 }

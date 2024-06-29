@@ -12,6 +12,7 @@ public class ClassRemapper {
     private static final Map<String, String> normToObf = new HashMap<>();
 
     private static String[] mappings = new String[] {
+            // entities
             "net.minecraft.class_1265:net.minecraft.world.ContainerListener",
             "net.minecraft.class_1296:net.minecraft.world.entity.AgeableMob",
             "net.minecraft.class_1295:net.minecraft.world.entity.AreaEffectCloud",
@@ -212,7 +213,35 @@ public class ClassRemapper {
             "net.minecraft.class_8514:net.minecraft.world.level.gameevent.vibrations.VibrationSystem",
             "net.minecraft.class_742:net.minecraft.client.player.AbstractClientPlayer",
             "net.minecraft.class_746:net.minecraft.client.player.LocalPlayer",
-            "net.minecraft.class_745:net.minecraft.client.player.RemotePlayer"
+            "net.minecraft.class_745:net.minecraft.client.player.RemotePlayer",
+
+            // menus
+            "net.minecraft.class_1720:net.minecraft.world.inventory.AbstractFurnaceMenu",
+            "net.minecraft.class_1706:net.minecraft.world.inventory.AnvilMenu",
+            "net.minecraft.class_1704:net.minecraft.world.inventory.BeaconMenu",
+            "net.minecraft.class_3705:net.minecraft.world.inventory.BlastFurnaceMenu",
+            "net.minecraft.class_1708:net.minecraft.world.inventory.BrewingStandMenu",
+            "net.minecraft.class_3910:net.minecraft.world.inventory.CartographyTableMenu",
+            "net.minecraft.class_1707:net.minecraft.world.inventory.ChestMenu",
+            "net.minecraft.class_8881:net.minecraft.world.inventory.CrafterMenu",
+            "net.minecraft.class_1714:net.minecraft.world.inventory.CraftingMenu",
+            "net.minecraft.class_1716:net.minecraft.world.inventory.DispenserMenu",
+            "net.minecraft.class_1718:net.minecraft.world.inventory.EnchantmentMenu",
+            "net.minecraft.class_3858:net.minecraft.world.inventory.FurnaceMenu",
+            "net.minecraft.class_3803:net.minecraft.world.inventory.GrindstoneMenu",
+            "net.minecraft.class_1722:net.minecraft.world.inventory.HopperMenu",
+            "net.minecraft.class_1724:net.minecraft.world.inventory.HorseInventoryMenu",
+            "net.minecraft.class_1723:net.minecraft.world.inventory.InventoryMenu",
+            "net.minecraft.class_4861:net.minecraft.world.inventory.ItemCombinerMenu",
+            "net.minecraft.class_3916:net.minecraft.world.inventory.LecternMenu",
+            "net.minecraft.class_1726:net.minecraft.world.inventory.LoomMenu",
+            "net.minecraft.class_1728:net.minecraft.world.inventory.MerchantMenu",
+            "net.minecraft.class_1729:net.minecraft.world.inventory.RecipeBookMenu",
+            "net.minecraft.class_1733:net.minecraft.world.inventory.ShulkerBoxMenu",
+            "net.minecraft.class_4862:net.minecraft.world.inventory.SmithingMenu",
+            "net.minecraft.class_3706:net.minecraft.world.inventory.SmokerMenu",
+            "net.minecraft.class_3971:net.minecraft.world.inventory.StonecutterMenu",
+            "net.minecraft.class_481$class_483:net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen$ItemPickerMenu",
     };
 
     public static boolean isEnabled() {

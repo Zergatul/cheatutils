@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.modules.scripting.Containers;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.HelpText;
+import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -38,7 +39,7 @@ public class ContainersApi {
         if (menu == null) {
             return "";
         }
-        return menu.getClass().getName();
+        return ClassRemapper.fromObf(menu.getClass().getName());
     }
 
     public int getSlotsSize() {
