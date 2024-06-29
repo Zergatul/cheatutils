@@ -28,11 +28,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+@SuppressWarnings("unused")
 public class MainApi {
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -172,6 +175,17 @@ public class MainApi {
         StatusOverlay.instance.addText(component1.append(" ").append(component2));
     }
 
+    @HelpText("Parameters array should have length dividable by 2, and look like this: [color1, text1, color2, text2] and so on. No space will be added in between, unlike with other addText methods.")
+    @ApiVisibility(ApiType.OVERLAY)
+    public void addText(String backgroundColor, String[] parameters) {
+        Integer background = ColorUtils.parseColor(backgroundColor);
+        if (background != null) {
+            StatusOverlay.instance.addText(background, constructMessage(parameters));
+        } else {
+            StatusOverlay.instance.addText(constructMessage(parameters));
+        }
+    }
+
     @ApiVisibility(ApiType.OVERLAY)
     public void addTextAtPosition(int x, int y, String color, String text) {
         Integer colorInt = ColorUtils.parseColor(color);
@@ -195,6 +209,17 @@ public class MainApi {
             component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
         }
         StatusOverlay.instance.addFreeText(x, y, component1.append(" ").append(component2));
+    }
+
+    @HelpText("Parameters array should have length dividable by 2, and look like this: [color1, text1, color2, text2] and so on. No space will be added in between, unlike with other addText methods.")
+    @ApiVisibility(ApiType.OVERLAY)
+    public void addTextAtPosition(int x, int y, String backgroundColor, String[] parameters) {
+        Integer background = ColorUtils.parseColor(backgroundColor);
+        if (background != null) {
+            StatusOverlay.instance.addFreeText(x, y, background, constructMessage(parameters));
+        } else {
+            StatusOverlay.instance.addFreeText(x, y, constructMessage(parameters));
+        }
     }
 
     public String getCoordinates() {
@@ -357,6 +382,18 @@ public class MainApi {
         mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
         mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
         mc.player.swing(InteractionHand.MAIN_HAND);
+    }
+
+    private MutableComponent constructMessage(String[] parameters) {
+        if (parameters.length == 0 || parameters.length % 2 != 0) {
+            return constructMessage("");
+        } else {
+            MutableComponent component = constructMessage("");
+            for (int i = 0; i < parameters.length; i += 2) {
+                component = component.append(constructMessage(parameters[i], parameters[i + 1]));
+            }
+            return component;
+        }
     }
 
     private MutableComponent constructMessage(String text) {
