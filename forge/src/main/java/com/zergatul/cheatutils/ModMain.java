@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
+import com.zergatul.cheatutils.modules.scripting.Containers;
 import com.zergatul.cheatutils.modules.scripting.Exec;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
@@ -98,6 +99,7 @@ public class ModMain {
         register(ServerPlugins.instance);
         register(BedrockBreaker.instance);
         register(RenderUtilities.instance);
+        register(Containers.instance);
         register(DelayedRun.instance);
         register(AntiHunger.instance);
 

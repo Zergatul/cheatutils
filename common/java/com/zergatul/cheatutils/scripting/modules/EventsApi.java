@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.scripting.HelpText;
 
+@SuppressWarnings("unused")
 public class EventsApi {
 
     @HelpText("Triggers every tick, unless you interact with some UI, like chat or crafting table. Best place to work with keys, for example to bind Zoom key.")
@@ -25,13 +26,18 @@ public class EventsApi {
         EventsScripting.instance.addOnPlayerRemoved(action);
     }
 
-    @HelpText("Trigger when new message appears on chat. Message may come from the server, from cheatutils, or from another mod. Use currentChatMessage API to get information about current message.")
+    @HelpText("Triggers when new message appears on chat. Message may come from the server, from cheatutils, or from another mod. Use currentChatMessage API to get information about current message.")
     public void onChatMessage(Runnable action) {
         EventsScripting.instance.addOnChatMessage(action);
     }
 
-    @HelpText("Trigger when you join any server. Use currentServer API to get more information.")
+    @HelpText("Triggers when you join any server. Use currentServer API to get more information.")
     public void onJoinServer(Runnable action) {
         EventsScripting.instance.addOnJoinServer(action);
+    }
+
+    @HelpText("Triggers when you (or automated tool) click on slot in ContainerMenu screen. Use currentContainerClick API to get more information.")
+    public void onContainerMenuSlotClick(Runnable action) {
+        EventsScripting.instance.addOnContainerMenuClick(action);
     }
 }

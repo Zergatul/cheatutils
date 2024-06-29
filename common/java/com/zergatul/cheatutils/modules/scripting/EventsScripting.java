@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.ContainerClickEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
@@ -25,9 +26,11 @@ public class EventsScripting implements Module {
     private final List<Runnable> onPlayerRemoved = new ArrayList<>();
     private final List<Runnable> onChatMessage = new ArrayList<>();
     private final List<Runnable> onJoinServer = new ArrayList<>();
+    private final List<Runnable> onContainerMenuClick = new ArrayList<>();
     private Entity currentEntity;
     private Component currentChatMessage;
     private Connection currentConnection;
+    private ContainerClickEvent currentContainerClickEvent;
 
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
@@ -82,6 +85,16 @@ public class EventsScripting implements Module {
                 currentConnection = null;
             }
         });
+
+        Events.ContainerMenuClick.add(event -> {
+            if (canTrigger()) {
+                currentContainerClickEvent = event;
+                for (Runnable handler : onContainerMenuClick) {
+                    handler.run();
+                }
+                currentContainerClickEvent = null;
+            }
+        });
     }
 
     public Entity getCurrentEntity() {
@@ -94,6 +107,10 @@ public class EventsScripting implements Module {
 
     public Connection getCurrentConnection() {
         return currentConnection;
+    }
+
+    public ContainerClickEvent getCurrentContainerClickEvent() {
+        return currentContainerClickEvent;
     }
 
     public void setScript(Runnable runnable) {
@@ -111,6 +128,7 @@ public class EventsScripting implements Module {
             onPlayerRemoved.clear();
             onChatMessage.clear();
             onJoinServer.clear();
+            onContainerMenuClick.clear();
         });
     }
 
@@ -136,6 +154,10 @@ public class EventsScripting implements Module {
 
     public void addOnJoinServer(Runnable runnable) {
         onJoinServer.add(runnable);
+    }
+
+    public void addOnContainerMenuClick(Runnable runnable) {
+        onContainerMenuClick.add(runnable);
     }
 
     private boolean canTrigger() {

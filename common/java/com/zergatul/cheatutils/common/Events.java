@@ -48,4 +48,5 @@ public class Events {
     public static final SimpleEventHandler WindowResize = new SimpleEventHandler();
     public static final ParameterizedEventHandler<Component> ChatMessageAdded = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler Close = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<ContainerClickEvent> ContainerMenuClick = new ParameterizedEventHandler<>();
 }
