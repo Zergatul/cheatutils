@@ -99,6 +99,7 @@ public class ModMain {
         register(BedrockBreaker.instance);
         register(RenderUtilities.instance);
         register(DelayedRun.instance);
+        register(AntiHunger.instance);
 
         register(TickEndExecutor.instance);
     }

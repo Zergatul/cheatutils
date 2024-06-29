@@ -861,6 +861,18 @@ public class ApiHandler implements HttpHandler {
                 });
             }
         });
+
+        apis.add(new SimpleConfigApi<>("anti-hunger", AntiHungerConfig.class) {
+            @Override
+            protected AntiHungerConfig getConfig() {
+                return ConfigStore.instance.getConfig().antiHungerConfig;
+            }
+
+            @Override
+            protected void setConfig(AntiHungerConfig config) {
+                ConfigStore.instance.getConfig().antiHungerConfig = config;
+            }
+        });
     }
 
     @Override

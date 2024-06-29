@@ -319,6 +319,13 @@
                             <button @click="current = 'bedrock-breaker'" :class="{ faded: !filtered.BedrockBreaker, active: statuses.BedrockBreaker }">Bedrock Breaker</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button @click="current = 'anti-hunger'" :class="{ faded: !filtered.AntiHunger, active: statuses.AntiHunger }">Anti Hunger</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -692,6 +699,11 @@
             v-if="current == 'core'"
             @back="backToMain()">
         </core-config>
+
+        <anti-hunger-config
+            v-if="current == 'anti-hunger'"
+            @back="backToMain()">
+        </anti-hunger-config>
 
     </div>
 

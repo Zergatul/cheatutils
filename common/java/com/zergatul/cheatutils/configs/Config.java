@@ -70,6 +70,7 @@ public class Config {
     public EventsScriptingConfig eventsScriptingConfig = new EventsScriptingConfig();
     public BedrockBreakerConfig bedrockBreakerConfig = new BedrockBreakerConfig();
     public CoreConfig coreConfig = new CoreConfig();
+    public AntiHungerConfig antiHungerConfig = new AntiHungerConfig();
 
     public Config() {
         esp = true;

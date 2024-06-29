@@ -159,6 +159,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('EventsScriptingConfig', ['events', 'tick', 'scripting']);
     loadModule('ProfilesConfig', ['profiles']);
     loadModule('CoreConfig', ['core', 'port']);
+    loadModule('AntiHungerConfig', ['anti', 'hunger']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');
