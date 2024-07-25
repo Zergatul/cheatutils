@@ -11,9 +11,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -241,6 +243,64 @@ public class GameApi {
             });
         }
 
+        public boolean isBaby(int entityId) {
+            return getBooleanValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    return living.isBaby();
+                } else {
+                    return false;
+                }
+            });
+        }
+
+        public String getEquippedHeadItemId(int entityId) {
+            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.HEAD));
+        }
+
+        public String getEquippedChestItemId(int entityId) {
+            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.CHEST));
+        }
+
+        public String getEquippedLegsItemId(int entityId) {
+            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.LEGS));
+        }
+
+        public String getEquippedFeetItemId(int entityId) {
+            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.FEET));
+        }
+
+        public String getEquippedMainHandItemId(int entityId) {
+            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.MAINHAND));
+        }
+
+        public String getEquippedOffHandItemId(int entityId) {
+            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.OFFHAND));
+        }
+
+        public int getHealth(int entityId) {
+            return getIntegerValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    return (int) living.getHealth();
+                } else {
+                    return Integer.MIN_VALUE;
+                }
+            });
+        }
+
+        private Function<Entity, String> getEquippedItemId(EquipmentSlot slot) {
+            return entity -> {
+                if (entity instanceof LivingEntity living) {
+                    ItemStack stack = living.getItemBySlot(slot);
+                    if (stack.isEmpty()) {
+                        return "";
+                    }
+                    return Registries.ITEMS.getKey(stack.getItem()).toString();
+                } else {
+                    return "";
+                }
+            };
+        }
+
         private boolean getBooleanValue(int entityId, Function<Entity, Boolean> getter) {
             if (mc.level == null) {
                 return false;
@@ -249,6 +309,19 @@ public class GameApi {
             Entity entity = mc.level.getEntity(entityId);
             if (entity == null) {
                 return false;
+            }
+
+            return getter.apply(entity);
+        }
+
+        private int getIntegerValue(int entityId, Function<Entity, Integer> getter) {
+            if (mc.level == null) {
+                return Integer.MIN_VALUE;
+            }
+
+            Entity entity = mc.level.getEntity(entityId);
+            if (entity == null) {
+                return Integer.MIN_VALUE;
             }
 
             return getter.apply(entity);
