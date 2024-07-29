@@ -1,4 +1,5 @@
 import { addComponent } from '/components/Loader.js'
+import { formatCodeResponse } from '/components/MonacoEditor.js'
 
 function createComponent(template) {
     let args = {
@@ -53,18 +54,25 @@ function createComponent(template) {
                 });
             },
             save() {
-                let self = this;
                 let handleError = error => {
                     alert(error.response.data);
                 }
                 if (this.mode == 'add') {
-                    axios.post('/api/scripts', this.script).then(function (response) {
-                       self.refresh();
+                    axios.post('/api/scripts', this.script).then(response => {
+                        if (response.data.ok) {
+                            this.refresh();
+                        } else {
+                            alert(formatCodeResponse(response));
+                        }
                     }, handleError);
                 }
                 if (this.mode == 'edit') {
-                    axios.put(`/api/scripts/${encodeURIComponent(this.name)}`, this.script).then(function (response) {
-                        self.refresh();
+                    axios.put(`/api/scripts/${encodeURIComponent(this.name)}`, this.script).then(response => {
+                        if (response.data.ok) {
+                            this.refresh();
+                        } else {
+                            alert(formatCodeResponse(response));
+                        }
                     }, handleError);
                 }
             },
@@ -76,7 +84,7 @@ function createComponent(template) {
                         this.showRefs = true;
                     } else {
                         let self = this;
-                        axios.get('/api/scripts-doc/handle-keybindings').then(response => {
+                        axios.get('/api/scripts-doc/keybindings').then(response => {
                             self.showRefs = true;
                             self.refs = response.data;
                         });

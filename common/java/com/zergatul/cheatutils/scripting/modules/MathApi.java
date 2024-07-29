@@ -41,6 +41,10 @@ public class MathApi {
         return Mth.floor(value);
     }
 
+    public int floorMod(int x, int y) {
+        return Math.floorMod(x, y);
+    }
+
     public int ceil(double value) {
         return Mth.ceil(value);
     }

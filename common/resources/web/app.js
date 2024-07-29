@@ -130,7 +130,6 @@ import { addComponent } from '/components/Loader.js'
     loadModule('ContainerSummaryConfig', ['container', 'summary']);
     loadModule('AutoCraftConfig', ['auto', 'craft']);
     loadModule('ReachConfig', ['reach']);
-    loadModule('GameTickScriptingConfig', ['game', 'tick', 'scripting']);
     loadModule('ZoomConfig', ['zoom']);
     loadModule('SchematicaConfig', ['schematica']);
     loadModule('AutoBucketConfig', ['auto', 'bucket', 'mlg']);

@@ -1,4 +1,5 @@
 import { addComponent } from '/components/Loader.js'
+import { handleCodeSave } from '/components/MonacoEditor.js'
 
 function createComponent(template) {
     let args = {
@@ -39,18 +40,13 @@ function createComponent(template) {
             },
             refresh() {
                 let self = this;
-                return axios.get('/api/scripted-block-placer').then(response => {
+                return axios.get('/api/block-automation').then(response => {
                     self.config = response.data;
                     self.onConfigLoaded();
                 });
             },
             save() {
-                let self = this;
-                axios.post('/api/scripted-block-placer-code', this.code).then(() => {
-                    alert('Saved');
-                }, error => {
-                    alert(error.response.data);
-                });
+                handleCodeSave('/api/block-automation-code', this.code);
             },
             showApiRef() {
                 if (this.showRefs) {
@@ -60,7 +56,7 @@ function createComponent(template) {
                         this.showRefs = true;
                     } else {
                         let self = this;
-                        axios.get('/api/scripts-doc/block-placer').then(response => {
+                        axios.get('/api/scripts-doc/block-automation').then(response => {
                             self.showRefs = true;
                             self.refs = response.data;
                         });
@@ -69,7 +65,7 @@ function createComponent(template) {
             },
             update() {
                 let self = this;
-                axios.post('/api/scripted-block-placer', this.config).then(response => {
+                axios.post('/api/block-automation', this.config).then(response => {
                     self.config = response.data;
                     self.onConfigLoaded();
                 });

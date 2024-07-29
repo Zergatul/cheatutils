@@ -10,7 +10,6 @@ public class Config {
     public LightLevelConfig lightLevelConfig = new LightLevelConfig();
     public KillAuraConfig killAuraConfig = new KillAuraConfig();
     public BoatHackConfig boatHackConfig = new BoatHackConfig();
-    public AutoDisconnectConfig autoDisconnectConfig = new AutoDisconnectConfig();
     public ShulkerTooltipConfig shulkerTooltipConfig = new ShulkerTooltipConfig();
     public ProjectilePathConfig projectilePathConfig = new ProjectilePathConfig();
     public ElytraHackConfig elytraHackConfig = new ElytraHackConfig();
@@ -47,7 +46,6 @@ public class Config {
     public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();
     public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
     public ReachConfig reachConfig = new ReachConfig();
-    public GameTickScriptingConfig gameTickScriptingConfig = new GameTickScriptingConfig();
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();

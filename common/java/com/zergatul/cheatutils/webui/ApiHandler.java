@@ -46,9 +46,8 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
         apis.add(new ItemInfoApi());
-        apis.add(new StatusOverlayApi());
+        apis.add(new StatusOverlayCodeApi());
         apis.add(new ClassNameApi());
-        apis.add(new GameTickScriptingCodeApi());
         apis.add(new SchematicaUploadApi());
         apis.add(new SchematicaPlaceApi());
         apis.add(new WorldDownloadApi());
@@ -56,8 +55,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new FreeCamPathApi());
         apis.add(new DimensionApi());
         apis.add(new CoordinatesApi());
-        apis.add(new ScriptedBlockPlacerCodeApi());
-        apis.add(new AutoDisconnectCodeApi());
+        apis.add(new BlockAutomationCodeApi());
         apis.add(new GenerateMappingApi());
         apis.add(new FakeWeatherSetTimeApi());
         apis.add(new FakeWeatherSetRainApi());
@@ -101,19 +99,6 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ArmorOverlayConfig config) {
                 ConfigStore.instance.getConfig().armorOverlayConfig = config;
-            }
-        });
-
-        apis.add(new SimpleConfigApi<>("auto-disconnect", AutoDisconnectConfig.class) {
-            @Override
-            protected AutoDisconnectConfig getConfig() {
-                return ConfigStore.instance.getConfig().autoDisconnectConfig;
-            }
-
-            @Override
-            protected void setConfig(AutoDisconnectConfig config) {
-                AutoDisconnectConfig current = ConfigStore.instance.getConfig().autoDisconnectConfig;
-                config.copyTo(current);
             }
         });
 
@@ -568,18 +553,6 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("game-tick-scripting", GameTickScriptingConfig.class) {
-            @Override
-            protected GameTickScriptingConfig getConfig() {
-                return ConfigStore.instance.getConfig().gameTickScriptingConfig;
-            }
-
-            @Override
-            protected void setConfig(GameTickScriptingConfig config) {
-                ConfigStore.instance.getConfig().gameTickScriptingConfig.enabled = config.enabled;
-            }
-        });
-
         apis.add(new SimpleConfigApi<>("schematica", SchematicaConfig.class) {
             @Override
             protected SchematicaConfig getConfig() {
@@ -661,7 +634,7 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("scripted-block-placer", BlockAutomationConfig.class) {
+        apis.add(new SimpleConfigApi<>("block-automation", BlockAutomationConfig.class) {
             @Override
             protected BlockAutomationConfig getConfig() {
                 return ConfigStore.instance.getConfig().blockAutomationConfig;
@@ -966,9 +939,9 @@ public class ApiHandler implements HttpHandler {
         }
 
         String body = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
-        api.put(parts[3], body);
+        String response = api.put(parts[3], body);
 
-        byte[] data = "{}".getBytes(StandardCharsets.UTF_8);
+        byte[] data = response.getBytes(StandardCharsets.UTF_8);
         HttpHelper.setJsonContentType(exchange);
         exchange.sendResponseHeaders(200, data.length);
         OutputStream stream = exchange.getResponseBody();

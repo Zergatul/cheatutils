@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.webui;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ScriptController;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
-import org.apache.http.HttpException;
+import com.zergatul.scripting.compiler.CompilationResult;
 
-public class EventsScriptingCodeApi extends ApiBase {
+public class EventsScriptingCodeApi extends CodeApiBase {
 
     @Override
     public String getRoute() {
@@ -13,25 +13,17 @@ public class EventsScriptingCodeApi extends ApiBase {
     }
 
     @Override
-    public String post(String code) throws HttpException {
-        if (code == null || code.isEmpty()) {
-            ConfigStore.instance.getConfig().eventsScriptingConfig.code = null;
-            ConfigStore.instance.requestWrite();
-            EventsScripting.instance.setScript(null);
-            return "{ \"ok\": true }";
-        }
+    protected CompilationResult<Runnable> compile(String code) {
+        return ScriptController.instance.compileEvents(code);
+    }
 
-        Runnable script;
-        try {
-            script = ScriptController.instance.compileEvents(code);
-        } catch (Throwable e) {
-            throw new HttpException(e.getMessage());
-        }
-        if (script != null) {
-            ConfigStore.instance.getConfig().eventsScriptingConfig.code = code;
-            ConfigStore.instance.requestWrite();
-            EventsScripting.instance.setScript(script);
-        }
-        return "{ \"ok\": true }";
+    @Override
+    protected void setCode(String code) {
+        ConfigStore.instance.getConfig().eventsScriptingConfig.code = code;
+    }
+
+    @Override
+    protected void setProgram(Runnable program) {
+        EventsScripting.instance.setScript(program);
     }
 }

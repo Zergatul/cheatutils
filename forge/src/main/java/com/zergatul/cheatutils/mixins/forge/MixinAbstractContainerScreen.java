@@ -24,7 +24,8 @@ public abstract class MixinAbstractContainerScreen {
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;Lnet/minecraft/world/item/ItemStack;II)V"),
             method = "renderTooltip(Lnet/minecraft/client/gui/GuiGraphics;II)V",
-            cancellable = true)
+            cancellable = true,
+            remap = false)
     private void onBeforeRenderTooltip(GuiGraphics graphics, int x, int y, CallbackInfo info) {
         ItemStack itemStack = this.hoveredSlot.getItem();
         if (Events.PreRenderTooltip.trigger(new PreRenderTooltipEvent(graphics, itemStack, x, y))) {

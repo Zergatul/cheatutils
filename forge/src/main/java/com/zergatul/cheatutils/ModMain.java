@@ -66,7 +66,6 @@ public class ModMain {
         register(EntityEsp.instance);
         register(ProjectilePath.instance);
         register(EndCityChunks.instance);
-        register(GameTickScriptingController.instance);
         register(AutoBucket.instance);
         register(WorldDownloadController.instance);
         register(EntityTitleController.instance);
@@ -86,7 +85,6 @@ public class ModMain {
         register(LightLevel.instance);
         register(ElytraFly.instance);
         register(AdvancedTooltips.instance);
-        register(AutoDisconnect.instance);
         register(Zoom.instance);
         register(ShulkerTooltipController.instance);
         register(ArmorOverlay.instance);

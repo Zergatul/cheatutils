@@ -1,4 +1,5 @@
 import { addComponent } from '/components/Loader.js'
+import { handleCodeSave } from '/components/MonacoEditor.js'
 
 function createComponent(template) {
     let args = {
@@ -21,12 +22,7 @@ function createComponent(template) {
                 });
             },
             save() {
-                let self = this;
-                axios.post('/api/status-overlay-code', this.config.code).then(function (response) {
-                    alert('Saved');
-                }, error => {
-                    alert(error.response.data);
-                });
+                handleCodeSave('/api/status-overlay-code', this.config.code);
             },
             showApiRef() {
                 if (this.showRefs) {

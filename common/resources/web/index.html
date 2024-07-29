@@ -173,8 +173,8 @@
                         <td>
                             <button @click="current = 'fog'" :class="{ faded: !filtered.Fog, active: statuses.Fog }">No Fog</button>
                         </td>
-                        <td rowspan="2" style="vertical-align: top;">
-                            <button style="height: 48px;"  @click="current = 'game-tick-scripting'" :class="{ faded: !filtered.GameTickScripting, active: statuses.GameTickScripting }">Game Tick Scripting<br><span style="font-size: 10px;">(Will be reworked in next versions)</span></button>
+                        <td>
+                            <button @click="current = 'tps'" :class="{ faded: !filtered.Tps, active: statuses.Tps }">TPS</button>
                         </td>
                         <td>
                             <button @click="current = 'world-download'" :class="{ faded: !filtered.WorldDownload, active: statuses.WorldDownload }">World Download</button>
@@ -194,7 +194,7 @@
                             <button @click="current = 'chunks'" :class="{ faded: !filtered.Chunks, active: statuses.Chunks }">Chunks</button>
                         </td>
                         <td>
-                            <button @click="current = 'tps'" :class="{ faded: !filtered.Tps, active: statuses.Tps }">TPS</button>
+                            
                         </td>
                     </tr>
                     <tr>
@@ -554,11 +554,6 @@
             v-if="current == 'reach'"
             @back="backToMain()">
         </reach-config>
-
-        <game-tick-scripting-config
-            v-if="current == 'game-tick-scripting'"
-            @back="backToMain()">
-        </game-tick-scripting-config>
 
         <zoom-config
             v-if="current == 'zoom'"

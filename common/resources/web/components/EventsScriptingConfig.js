@@ -1,4 +1,5 @@
 import { addComponent } from '/components/Loader.js'
+import { handleCodeSave } from '/components/MonacoEditor.js'
 
 function createComponent(template) {
     let args = {
@@ -24,12 +25,7 @@ function createComponent(template) {
                 });
             },
             save() {
-                let self = this;
-                axios.post('/api/events-scripting-code', this.code).then(() => {
-                    alert('Saved');
-                }, error => {
-                    alert(error.response.data);
-                });
+                handleCodeSave('/api/events-scripting-code', this.code);
             },
             showApiRef() {
                 if (this.showRefs) {

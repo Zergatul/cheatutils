@@ -178,7 +178,7 @@ public class PlayerApi {
     }
 
     @HelpText("types: \"self-attack\", \"invalid-chars\", anything else - normal disconnect.")
-    @ApiVisibility(ApiType.DISCONNECT)
+    @ApiVisibility(ApiType.ACTION)
     public void disconnect(String type) {
         switch (type) {
             case "self-attack" -> DisconnectController.instance.selfAttack(null);
@@ -188,7 +188,7 @@ public class PlayerApi {
     }
 
     @HelpText("message to be displayed on the disconnect screen")
-    @ApiVisibility(ApiType.DISCONNECT)
+    @ApiVisibility(ApiType.ACTION)
     public void disconnect(String type, String message) {
         switch (type) {
             case "self-attack" -> DisconnectController.instance.selfAttack(message);

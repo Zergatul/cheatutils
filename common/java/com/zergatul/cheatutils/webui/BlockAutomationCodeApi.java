@@ -2,28 +2,28 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ScriptController;
-import com.zergatul.cheatutils.modules.automation.VillagerRoller;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.scripting.compiler.CompilationResult;
 
-public class VillagerRollerCodeApi extends CodeApiBase {
+public class BlockAutomationCodeApi extends CodeApiBase {
 
     @Override
     public String getRoute() {
-        return "villager-roller-code";
+        return "block-automation-code";
     }
 
     @Override
     protected CompilationResult<Runnable> compile(String code) {
-        return ScriptController.instance.compileVillagerRoller(code);
+        return ScriptController.instance.compileBlockAutomation(code);
     }
 
     @Override
     protected void setCode(String code) {
-        ConfigStore.instance.getConfig().villagerRollerConfig.code = code;
+        ConfigStore.instance.getConfig().blockAutomationConfig.code = code;
     }
 
     @Override
     protected void setProgram(Runnable program) {
-        VillagerRoller.instance.setScript(program);
+        BlockAutomation.instance.setScript(program);
     }
 }

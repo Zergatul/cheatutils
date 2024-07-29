@@ -11,32 +11,32 @@ public class BlockAutomationApi {
         BlockAutomation.instance.placeOne();
     }
 
-    @ApiVisibility(ApiType.BLOCK_PLACER)
+    @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useItem(String blockId) {
         BlockAutomation.instance.useItem(blockId, BlockPlacingMethod.ANY);
     }
 
-    @ApiVisibility(ApiType.BLOCK_PLACER)
+    @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useItem(String[] blockIds) {
         BlockAutomation.instance.useItem(blockIds, BlockPlacingMethod.ANY);
     }
 
-    @ApiVisibility(ApiType.BLOCK_PLACER)
+    @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useItem(String itemId, String method) {
         BlockAutomation.instance.useItem(itemId, parseMethod(method));
     }
 
-    @ApiVisibility(ApiType.BLOCK_PLACER)
+    @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock() {
         BlockAutomation.instance.breakBlock(null, null);
     }
 
-    @ApiVisibility(ApiType.BLOCK_PLACER)
+    @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock(String itemId) {
         BlockAutomation.instance.breakBlock(itemId, null);
     }
 
-    @ApiVisibility(ApiType.BLOCK_PLACER)
+    @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock(String itemId, String enchantmentId) {
         BlockAutomation.instance.breakBlock(itemId, enchantmentId);
     }

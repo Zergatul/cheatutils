@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerClickEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.scripting.runtime.Action0;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
@@ -20,13 +21,13 @@ public class EventsScripting implements Module {
     public static final EventsScripting instance = new EventsScripting();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final List<Runnable> onHandleKeys = new ArrayList<>();
-    private final List<Runnable> onTickEnd = new ArrayList<>();
-    private final List<Runnable> onPlayerAdded = new ArrayList<>();
-    private final List<Runnable> onPlayerRemoved = new ArrayList<>();
-    private final List<Runnable> onChatMessage = new ArrayList<>();
-    private final List<Runnable> onJoinServer = new ArrayList<>();
-    private final List<Runnable> onContainerMenuClick = new ArrayList<>();
+    private final List<Action0> onHandleKeys = new ArrayList<>();
+    private final List<Action0> onTickEnd = new ArrayList<>();
+    private final List<Action0> onPlayerAdded = new ArrayList<>();
+    private final List<Action0> onPlayerRemoved = new ArrayList<>();
+    private final List<Action0> onChatMessage = new ArrayList<>();
+    private final List<Action0> onJoinServer = new ArrayList<>();
+    private final List<Action0> onContainerMenuClick = new ArrayList<>();
     private Entity currentEntity;
     private Component currentChatMessage;
     private Connection currentConnection;
@@ -35,16 +36,16 @@ public class EventsScripting implements Module {
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
             if (canTrigger()) {
-                for (Runnable handler : onHandleKeys) {
-                    handler.run();
+                for (Action0 handler : onHandleKeys) {
+                    handler.invoke();
                 }
             }
         });
 
         Events.ClientTickEnd.add(() -> {
             if (canTrigger()) {
-                for (Runnable handler : onTickEnd) {
-                    handler.run();
+                for (Action0 handler : onTickEnd) {
+                    handler.invoke();
                 }
             }
         });
@@ -52,8 +53,8 @@ public class EventsScripting implements Module {
         Events.EntityAdded.add(entity -> {
             if (canTrigger() && entity instanceof RemotePlayer) {
                 currentEntity = entity;
-                for (Runnable handler : onPlayerAdded) {
-                    handler.run();
+                for (Action0 handler : onPlayerAdded) {
+                    handler.invoke();
                 }
             }
         });
@@ -61,8 +62,8 @@ public class EventsScripting implements Module {
         Events.EntityRemoved.add(entity -> {
             if (canTrigger() && entity instanceof RemotePlayer) {
                 currentEntity = entity;
-                for (Runnable handler : onPlayerRemoved) {
-                    handler.run();
+                for (Action0 handler : onPlayerRemoved) {
+                    handler.invoke();
                 }
             }
         });
@@ -70,8 +71,8 @@ public class EventsScripting implements Module {
         Events.ChatMessageAdded.add(component -> {
             if (canTrigger()) {
                 currentChatMessage = component;
-                for (Runnable handler : onChatMessage) {
-                    handler.run();
+                for (Action0 handler : onChatMessage) {
+                    handler.invoke();
                 }
             }
         });
@@ -79,8 +80,8 @@ public class EventsScripting implements Module {
         Events.ClientPlayerLoggingIn.add(connection -> {
             if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
                 currentConnection = connection;
-                for (Runnable handler : onJoinServer) {
-                    handler.run();
+                for (Action0 handler : onJoinServer) {
+                    handler.invoke();
                 }
                 currentConnection = null;
             }
@@ -89,8 +90,8 @@ public class EventsScripting implements Module {
         Events.ContainerMenuClick.add(event -> {
             if (canTrigger()) {
                 currentContainerClickEvent = event;
-                for (Runnable handler : onContainerMenuClick) {
-                    handler.run();
+                for (Action0 handler : onContainerMenuClick) {
+                    handler.invoke();
                 }
                 currentContainerClickEvent = null;
             }
@@ -132,32 +133,32 @@ public class EventsScripting implements Module {
         });
     }
 
-    public void addOnHandleKeys(Runnable runnable) {
-        onHandleKeys.add(runnable);
+    public void addOnHandleKeys(Action0 action) {
+        onHandleKeys.add(action);
     }
 
-    public void addOnTickEnd(Runnable runnable) {
-        onTickEnd.add(runnable);
+    public void addOnTickEnd(Action0 action) {
+        onTickEnd.add(action);
     }
 
-    public void addOnPlayerAdded(Runnable runnable) {
-        onPlayerAdded.add(runnable);
+    public void addOnPlayerAdded(Action0 action) {
+        onPlayerAdded.add(action);
     }
 
-    public void addOnPlayerRemoved(Runnable runnable) {
-        onPlayerRemoved.add(runnable);
+    public void addOnPlayerRemoved(Action0 action) {
+        onPlayerRemoved.add(action);
     }
 
-    public void addOnChatMessage(Runnable runnable) {
-        onChatMessage.add(runnable);
+    public void addOnChatMessage(Action0 action) {
+        onChatMessage.add(action);
     }
 
-    public void addOnJoinServer(Runnable runnable) {
-        onJoinServer.add(runnable);
+    public void addOnJoinServer(Action0 action) {
+        onJoinServer.add(action);
     }
 
-    public void addOnContainerMenuClick(Runnable runnable) {
-        onContainerMenuClick.add(runnable);
+    public void addOnContainerMenuClick(Action0 action) {
+        onContainerMenuClick.add(action);
     }
 
     private boolean canTrigger() {

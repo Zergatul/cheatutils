@@ -12,9 +12,7 @@ public enum ApiType {
 
     CURRENT_BLOCK,
 
-    BLOCK_PLACER,
-
-    DISCONNECT,
+    BLOCK_AUTOMATION,
 
     VILLAGER_ROLLER,
 

@@ -5,8 +5,8 @@ import com.zergatul.cheatutils.common.events.SendChatEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ScriptController;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.scripting.compiler.ScriptCompileException;
-import com.zergatul.scripting.generated.ParseException;
+import com.zergatul.scripting.DiagnosticMessage;
+import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -26,11 +26,17 @@ public class Exec implements Module {
 
         if (event.getMessage().startsWith(".")) {
             try {
-                Runnable code = ScriptController.instance.compileKeys(event.getMessage().substring(1));
-                code.run();
-                systemMessage("OK", 0xFF80FF80);
+                CompilationResult<Runnable> result = ScriptController.instance.compileKeys(event.getMessage().substring(1));
+                if (result.program() != null) {
+                    result.program().run();
+                    systemMessage("OK", 0xFF80FF80);
+                } else {
+                    for (DiagnosticMessage message : result.diagnostics()) {
+                        systemMessage(message.message, 0xFFFF8080);
+                    }
+                }
             }
-            catch (ScriptCompileException | ParseException e) {
+            catch (Throwable e) {
                 systemMessage(e.getMessage(), 0xFFFF8080);
             }
 

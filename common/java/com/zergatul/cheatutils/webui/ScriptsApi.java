@@ -2,9 +2,11 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ScriptController;
+import com.zergatul.scripting.DiagnosticMessage;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpException;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ScriptsApi extends ApiBase {
@@ -37,25 +39,31 @@ public class ScriptsApi extends ApiBase {
     public String put(String id, String body) throws HttpException {
         Script script = gson.fromJson(body, Script.class);
         try {
-            ScriptController.instance.update(id, script.name, script.code);
+            List<DiagnosticMessage> messages = ScriptController.instance.update(id, script.name, script.code);
+            if (!messages.isEmpty()) {
+                return gson.toJson(messages);
+            }
         } catch (Throwable e) {
             throw new HttpException(e.getMessage());
         }
         ConfigStore.instance.requestWrite();
-        return get(script.name);
+        return "{ \"ok\": true }";
     }
 
     @Override
     public String post(String body) throws HttpException {
         Script script = gson.fromJson(body, Script.class);
         try {
-            ScriptController.instance.add(script.name, script.code, false);
+            List<DiagnosticMessage> messages = ScriptController.instance.add(script.name, script.code, false);
+            if (!messages.isEmpty()) {
+                return gson.toJson(messages);
+            }
         }
         catch (Throwable e) {
             throw new HttpException(e.getMessage());
         }
         ConfigStore.instance.requestWrite();
-        return get(script.name);
+        return "{ \"ok\": true }";
     }
 
     @Override

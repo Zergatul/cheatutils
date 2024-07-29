@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.controllers.ScriptController;
+import com.zergatul.scripting.compiler.CompilationResult;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
 
@@ -35,20 +36,22 @@ public class EntityEspCodeApi extends ApiBase {
             return "{ \"ok\": true }";
         }
 
-        Runnable script;
+        CompilationResult<Runnable> result;
         try {
-            script = ScriptController.instance.compileEntityEsp(request.code);
+            result = ScriptController.instance.compileEntityEsp(request.code);
         } catch (Throwable e) {
             throw new HttpException(e.getMessage());
         }
-        if (script != null) {
+        if (result.program() != null) {
             RenderSystem.recordRenderCall(() -> {
                 config.code = request.code;
-                config.script = script;
+                config.script = result.program();
                 ConfigStore.instance.requestWrite();
             });
+            return "{ \"ok\": true }";
+        } else {
+            return gson.toJson(result.diagnostics());
         }
-        return "{ \"ok\": true }";
     }
 
     public record Request(Class<?> clazz, String code) {}
