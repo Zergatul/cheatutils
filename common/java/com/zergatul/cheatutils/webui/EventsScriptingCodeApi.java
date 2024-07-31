@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.controllers.ScriptController;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.scripting.compiler.CompilationResult;
 
-public class EventsScriptingCodeApi extends CodeApiBase {
+public class EventsScriptingCodeApi extends CodeApiBase<Runnable> {
 
     @Override
     public String getRoute() {
@@ -13,7 +13,7 @@ public class EventsScriptingCodeApi extends CodeApiBase {
     }
 
     @Override
-    protected CompilationResult<Runnable> compile(String code) {
+    protected CompilationResult compile(String code) {
         return ScriptController.instance.compileEvents(code);
     }
 

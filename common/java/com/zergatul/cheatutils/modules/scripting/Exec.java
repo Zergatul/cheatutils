@@ -26,12 +26,12 @@ public class Exec implements Module {
 
         if (event.getMessage().startsWith(".")) {
             try {
-                CompilationResult<Runnable> result = ScriptController.instance.compileKeys(event.getMessage().substring(1));
-                if (result.program() != null) {
-                    result.program().run();
+                CompilationResult result = ScriptController.instance.compileKeys(event.getMessage().substring(1));
+                if (result.getProgram() != null) {
+                    result.<Runnable>getProgram().run();
                     systemMessage("OK", 0xFF80FF80);
                 } else {
-                    for (DiagnosticMessage message : result.diagnostics()) {
+                    for (DiagnosticMessage message : result.getDiagnostics()) {
                         systemMessage(message.message, 0xFFFF8080);
                     }
                 }

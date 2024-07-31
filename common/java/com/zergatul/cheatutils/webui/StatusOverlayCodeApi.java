@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.controllers.ScriptController;
 import com.zergatul.scripting.compiler.CompilationResult;
 
-public class StatusOverlayCodeApi extends CodeApiBase {
+public class StatusOverlayCodeApi extends CodeApiBase<Runnable> {
 
     @Override
     public String getRoute() {
@@ -13,7 +13,7 @@ public class StatusOverlayCodeApi extends CodeApiBase {
     }
 
     @Override
-    protected CompilationResult<Runnable> compile(String code) {
+    protected CompilationResult compile(String code) {
         return ScriptController.instance.compileOverlay(code);
     }
 

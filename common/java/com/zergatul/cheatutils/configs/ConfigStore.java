@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.scripting.BlockPosConsumer;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.world.level.block.state.BlockState;
@@ -184,11 +185,11 @@ public class ConfigStore {
 
         if (config.statusOverlayConfig.code != null) {
             try {
-                CompilationResult<Runnable> result = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
-                if (result.program() != null) {
-                    StatusOverlay.instance.setScript(result.program());
+                CompilationResult result = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
+                if (result.getProgram() != null) {
+                    StatusOverlay.instance.setScript(result.getProgram());
                 } else {
-                    result.diagnostics().forEach(m -> logger.error("Status Overlay: {}", m.message));
+                    result.getDiagnostics().forEach(m -> logger.error("Status Overlay: {}", m.message));
                 }
             } catch (Throwable e) {
                 logger.error(e);
@@ -197,11 +198,11 @@ public class ConfigStore {
 
         if (config.blockAutomationConfig.code != null) {
             try {
-                CompilationResult<Runnable> result = ScriptController.instance.compileBlockAutomation(config.blockAutomationConfig.code);
-                if (result.program() != null) {
-                    BlockAutomation.instance.setScript(result.program());
+                CompilationResult result = ScriptController.instance.compileBlockAutomation(config.blockAutomationConfig.code);
+                if (result.getProgram() != null) {
+                    BlockAutomation.instance.setScript(result.getProgram());
                 } else {
-                    result.diagnostics().forEach(m -> logger.error("Block Automation: {}", m.message));
+                    result.getDiagnostics().forEach(m -> logger.error("Block Automation: {}", m.message));
                 }
             } catch (Throwable e) {
                 logger.error(e);
@@ -210,11 +211,11 @@ public class ConfigStore {
 
         if (config.villagerRollerConfig.code != null) {
             try {
-                CompilationResult<Runnable> result = ScriptController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
-                if (result.program() != null) {
-                    VillagerRoller.instance.setScript(result.program());
+                CompilationResult result = ScriptController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
+                if (result.getProgram() != null) {
+                    VillagerRoller.instance.setScript(result.getProgram());
                 } else {
-                    result.diagnostics().forEach(m -> logger.error("Villager Roller: {}", m.message));
+                    result.getDiagnostics().forEach(m -> logger.error("Villager Roller: {}", m.message));
                 }
             } catch (Throwable e) {
                 logger.error(e);
@@ -223,11 +224,11 @@ public class ConfigStore {
 
         if (config.eventsScriptingConfig.code != null) {
             try {
-                CompilationResult<Runnable> result = ScriptController.instance.compileEvents(config.eventsScriptingConfig.code);
-                if (result.program() != null) {
-                    EventsScripting.instance.setScript(result.program());
+                CompilationResult result = ScriptController.instance.compileEvents(config.eventsScriptingConfig.code);
+                if (result.getProgram() != null) {
+                    EventsScripting.instance.setScript(result.getProgram());
                 } else {
-                    result.diagnostics().forEach(m -> logger.error("Events Scripting: {}", m.message));
+                    result.getDiagnostics().forEach(m -> logger.error("Events Scripting: {}", m.message));
                 }
             } catch (Throwable e) {
                 logger.error(e);
@@ -242,11 +243,11 @@ public class ConfigStore {
 
                 if (entityConfig.code != null) {
                     try {
-                        CompilationResult<Runnable> result = ScriptController.instance.compileEntityEsp(entityConfig.code);
-                        if (result.program() != null) {
-                            entityConfig.script = result.program();
+                        CompilationResult result = ScriptController.instance.compileEntityEsp(entityConfig.code);
+                        if (result.getProgram() != null) {
+                            entityConfig.script = result.getProgram();
                         } else {
-                            result.diagnostics().forEach(m -> logger.error("Entity ESP for {}: {}", entityConfig.clazz.getName(), m.message));
+                            result.getDiagnostics().forEach(m -> logger.error("Entity ESP for {}: {}", entityConfig.clazz.getName(), m.message));
                         }
                     } catch (Throwable e) {
                         logger.error(e);

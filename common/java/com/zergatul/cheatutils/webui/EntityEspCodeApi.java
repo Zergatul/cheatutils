@@ -36,21 +36,21 @@ public class EntityEspCodeApi extends ApiBase {
             return "{ \"ok\": true }";
         }
 
-        CompilationResult<Runnable> result;
+        CompilationResult result;
         try {
             result = ScriptController.instance.compileEntityEsp(request.code);
         } catch (Throwable e) {
             throw new HttpException(e.getMessage());
         }
-        if (result.program() != null) {
+        if (result.getProgram() != null) {
             RenderSystem.recordRenderCall(() -> {
                 config.code = request.code;
-                config.script = result.program();
+                config.script = result.getProgram();
                 ConfigStore.instance.requestWrite();
             });
             return "{ \"ok\": true }";
         } else {
-            return gson.toJson(result.diagnostics());
+            return gson.toJson(result.getDiagnostics());
         }
     }
 

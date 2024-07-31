@@ -3,9 +3,10 @@ package com.zergatul.cheatutils.webui;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ScriptController;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
+import com.zergatul.cheatutils.scripting.BlockPosConsumer;
 import com.zergatul.scripting.compiler.CompilationResult;
 
-public class BlockAutomationCodeApi extends CodeApiBase {
+public class BlockAutomationCodeApi extends CodeApiBase<BlockPosConsumer> {
 
     @Override
     public String getRoute() {
@@ -13,7 +14,7 @@ public class BlockAutomationCodeApi extends CodeApiBase {
     }
 
     @Override
-    protected CompilationResult<Runnable> compile(String code) {
+    protected CompilationResult compile(String code) {
         return ScriptController.instance.compileBlockAutomation(code);
     }
 
@@ -23,7 +24,7 @@ public class BlockAutomationCodeApi extends CodeApiBase {
     }
 
     @Override
-    protected void setProgram(Runnable program) {
+    protected void setProgram(BlockPosConsumer program) {
         BlockAutomation.instance.setScript(program);
     }
 }

@@ -35,7 +35,7 @@ public class Integration {
         CompilationParametersResolver resolver = new CompilationParametersResolver() {
             @Override
             public CompilationParameters resolve(String type) {
-                return CompilerFactory.createParameters(VisibilityCheck.getTypes(type));
+                return CompilerFactory.createParameters(type);
             }
         };
 
@@ -71,7 +71,7 @@ public class Integration {
                         Parser parser = new Parser(lexerOutput);
                         ParserOutput parserOutput = parser.parse();
 
-                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type).getContext());
+                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
                         Json.sendResponse(exchange, binderOutput.diagnostics().stream().map(d -> new DiagnosticsResponseItem(d.range, d.message)).toArray());
@@ -93,7 +93,7 @@ public class Integration {
                         Parser parser = new Parser(lexerOutput);
                         ParserOutput parserOutput = parser.parse();
 
-                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type).getContext());
+                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
                         List<BoundNode> chain = new ArrayList<>();
@@ -111,7 +111,7 @@ public class Integration {
                         Parser parser = new Parser(lexerOutput);
                         ParserOutput parserOutput = parser.parse();
 
-                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type).getContext());
+                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
                         BoundNode node = find(binderOutput.unit(), request.line, request.column);
@@ -128,7 +128,7 @@ public class Integration {
                         Parser parser = new Parser(lexerOutput);
                         ParserOutput parserOutput = parser.parse();
 
-                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type).getContext());
+                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
                         Json.sendResponse(exchange, completionProvider.get(binderOutput, request.line, request.column));

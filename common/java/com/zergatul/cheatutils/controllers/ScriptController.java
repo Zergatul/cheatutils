@@ -4,7 +4,6 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.configs.ScriptsConfig;
 import com.zergatul.cheatutils.scripting.CompilerFactory;
-import com.zergatul.cheatutils.scripting.VisibilityCheck;
 import com.zergatul.scripting.DiagnosticMessage;
 import com.zergatul.scripting.compiler.CompilationResult;
 import com.zergatul.scripting.compiler.Compiler;
@@ -17,18 +16,12 @@ public class ScriptController {
 
     public static final ScriptController instance = new ScriptController();
 
-    private final Compiler handleKeybindingsCompiler =
-            CompilerFactory.create(VisibilityCheck.getTypes("keybindings"));
-    private final Compiler overlayCompiler =
-            CompilerFactory.create(VisibilityCheck.getTypes("overlay"));
-    private final Compiler blockAutomationCompiler =
-            CompilerFactory.create(VisibilityCheck.getTypes("block-automation"));
-    private final Compiler villagerRollerCompiler =
-            CompilerFactory.create(VisibilityCheck.getTypes("villager-roller"));
-    private final Compiler eventsCompiler =
-            CompilerFactory.create(VisibilityCheck.getTypes("events"));
-    private final Compiler entityEspCompiler =
-            CompilerFactory.create(VisibilityCheck.getTypes("entity-esp"));
+    private final Compiler handleKeybindingsCompiler = new Compiler(CompilerFactory.createParameters("keybindings"));
+    private final Compiler overlayCompiler = new Compiler(CompilerFactory.createParameters("overlay"));
+    private final Compiler blockAutomationCompiler = new Compiler(CompilerFactory.createParameters("block-automation"));
+    private final Compiler villagerRollerCompiler = new Compiler(CompilerFactory.createParameters("villager-roller"));
+    private final Compiler eventsCompiler = new Compiler(CompilerFactory.createParameters("events"));
+    private final Compiler entityEspCompiler = new Compiler(CompilerFactory.createParameters("entity-esp"));
 
     private final List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
@@ -56,9 +49,9 @@ public class ScriptController {
             ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
         }
 
-        CompilationResult<Runnable> result = handleKeybindingsCompiler.compile(code, Runnable.class);
-        if (result.program() != null) {
-            script.compiled = result.program();
+        CompilationResult result = handleKeybindingsCompiler.compile(code);
+        if (result.getProgram() != null) {
+            script.compiled = result.getProgram();
 
             if (!addIfCompilationFails) {
                 scripts.add(script);
@@ -66,8 +59,8 @@ public class ScriptController {
             }
         }
 
-        if (result.diagnostics() != null) {
-            return result.diagnostics();
+        if (result.getDiagnostics() != null) {
+            return result.getDiagnostics();
         } else {
             return List.of();
         }
@@ -115,15 +108,15 @@ public class ScriptController {
             if (bindingIndex >= 0) {
                 bindings[bindingIndex] = newName;
             }
-            CompilationResult<Runnable> result = handleKeybindingsCompiler.compile(code, Runnable.class);
-            if (result.program() != null) {
-                script.compiled = result.program();
+            CompilationResult result = handleKeybindingsCompiler.compile(code);
+            if (result.getProgram() != null) {
+                script.compiled = result.getProgram();
                 if (bindingIndex >= 0) {
                     KeyBindingsController.instance.assign(bindingIndex, newName);
                 }
                 return List.of();
             } else {
-                return result.diagnostics();
+                return result.getDiagnostics();
             }
         }
 
@@ -152,28 +145,28 @@ public class ScriptController {
         ConfigStore.instance.getConfig().scriptsConfig.scripts.removeIf(s -> s.name.equals(name));
     }
 
-    public CompilationResult<Runnable> compileOverlay(String code) {
-        return overlayCompiler.compile(code, Runnable.class);
+    public CompilationResult compileOverlay(String code) {
+        return overlayCompiler.compile(code);
     }
 
-    public CompilationResult<Runnable> compileKeys(String code) {
-        return handleKeybindingsCompiler.compile(code, Runnable.class);
+    public CompilationResult compileKeys(String code) {
+        return handleKeybindingsCompiler.compile(code);
     }
 
-    public CompilationResult<Runnable> compileBlockAutomation(String code) {
-        return blockAutomationCompiler.compile(code, Runnable.class);
+    public CompilationResult compileBlockAutomation(String code) {
+        return blockAutomationCompiler.compile(code);
     }
 
-    public CompilationResult<Runnable> compileVillagerRoller(String code) {
-        return villagerRollerCompiler.compile(code, Runnable.class);
+    public CompilationResult compileVillagerRoller(String code) {
+        return villagerRollerCompiler.compile(code);
     }
 
-    public CompilationResult<Runnable> compileEvents(String code) {
-        return eventsCompiler.compile(code, Runnable.class);
+    public CompilationResult compileEvents(String code) {
+        return eventsCompiler.compile(code);
     }
 
-    public CompilationResult<Runnable> compileEntityEsp(String code) {
-        return entityEspCompiler.compile(code, Runnable.class);
+    public CompilationResult compileEntityEsp(String code) {
+        return entityEspCompiler.compile(code);
     }
 
     public static class Script {

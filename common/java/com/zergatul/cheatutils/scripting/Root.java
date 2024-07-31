@@ -78,7 +78,6 @@ public class Root {
     public static ContainersApi containers = new ContainersApi();
 
     // specific
-    public static CurrentBlockApi currentBlock = new CurrentBlockApi();
     public static CurrentPlayerApi currentPlayer = new CurrentPlayerApi();
     public static CurrentEntityEspApi currentEntityEsp = new CurrentEntityEspApi();
     public static CurrentChatMessageApi currentChatMessage = new CurrentChatMessageApi();

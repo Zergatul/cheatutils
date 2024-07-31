@@ -6,10 +6,10 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.BlockAutomationConfig;
-import com.zergatul.cheatutils.controllers.CurrentBlockController;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.scripting.BlockPosConsumer;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
@@ -19,14 +19,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class BlockAutomation {
@@ -35,7 +32,7 @@ public class BlockAutomation {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
-    private Runnable script;
+    private BlockPosConsumer script;
     private String[] itemIds;
     private BlockPlacingMethod method;
     private boolean breakCurrentBlock;
@@ -51,7 +48,7 @@ public class BlockAutomation {
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
     }
 
-    public void setScript(Runnable script) {
+    public void setScript(BlockPosConsumer script) {
         this.script = script;
     }
 
@@ -138,13 +135,9 @@ public class BlockAutomation {
             currentDestroyingBlock = null;
 
             for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
-                BlockState state = mc.level.getBlockState(pos);
-
                 itemIds = null;
                 breakCurrentBlock = false;
-                CurrentBlockController.instance.set(pos, state);
-                script.run();
-                CurrentBlockController.instance.clear();
+                script.accept(pos.getX(), pos.getY(), pos.getZ());
 
                 if (breakCurrentBlock && !mc.level.isEmptyBlock(pos) && selectItemForBlockBreak(config)) {
                     currentDestroyingBlock = pos;

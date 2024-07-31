@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.controllers.ScriptController;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.scripting.compiler.CompilationResult;
 
-public class VillagerRollerCodeApi extends CodeApiBase {
+public class VillagerRollerCodeApi extends CodeApiBase<Runnable> {
 
     @Override
     public String getRoute() {
@@ -13,7 +13,7 @@ public class VillagerRollerCodeApi extends CodeApiBase {
     }
 
     @Override
-    protected CompilationResult<Runnable> compile(String code) {
+    protected CompilationResult compile(String code) {
         return ScriptController.instance.compileVillagerRoller(code);
     }
 
