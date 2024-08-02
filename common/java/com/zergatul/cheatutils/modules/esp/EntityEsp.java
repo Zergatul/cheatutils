@@ -16,7 +16,6 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.scripting.wrappers.CurrentEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -362,19 +361,14 @@ public class EntityEsp implements Module {
         assert config.script != null;
 
         EntityScriptResult result = new EntityScriptResult();
+        EntityScriptResult.current = result;
         result.id = entity.getId();
         result.config = config;
         scriptResults.add(result);
 
-        CurrentEntity.id = entity.getId();
-        CurrentEntity.entityEspResult = result;
-        CurrentEntity.entityEspResult.id = entity.getId();
-        CurrentEntity.entityEspResult.config = config;
+        config.script.accept(entity.getId());
 
-        config.script.run();
-
-        CurrentEntity.id = Integer.MIN_VALUE;
-        CurrentEntity.entityEspResult = null;
+        EntityScriptResult.current = null;
 
         return result;
     }
@@ -539,6 +533,9 @@ public class EntityEsp implements Module {
     private record BufferedVerticesEntry(ResourceLocation texture, FloatList list) {}
 
     public static class EntityScriptResult {
+
+        public static EntityScriptResult current;
+
         public int id;
         public EntityEspConfig config;
         public boolean tracerDisabled;

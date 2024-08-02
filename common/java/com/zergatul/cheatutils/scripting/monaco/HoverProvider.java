@@ -54,7 +54,10 @@ public class HoverProvider {
             }
             case NAME_EXPRESSION -> {
                 BoundNameExpressionNode name = (BoundNameExpressionNode) node;
-                if (name.symbol instanceof LocalParameter local) {
+                if (name.symbol instanceof ExternalParameter external) {
+                    String line = description("(external parameter)") + " " + type(external.getType()) + " " + description(external.getName());
+                    yield new HoverResponse(line, range);
+                } else if (name.symbol instanceof LocalParameter local) {
                     String line = description("(parameter)") + " " + type(local.getType()) + " " + description(local.getName());
                     yield new HoverResponse(line, range);
                 } else if (name.symbol instanceof LocalRefParameter local) {
@@ -157,6 +160,12 @@ public class HoverProvider {
             return predefinedType(type.toString());
         } else if (type instanceof SArrayType array) {
             return type(array.getElementsType()) + span(theme.getTokenColor(TokenType.LEFT_SQUARE_BRACKET), "[]");
+        } else if (type instanceof SFuture future) {
+            if (future.getUnderlying() == SVoidType.instance) {
+                return span(theme.getTypeColor(), "Future");
+            } else {
+                return span(theme.getTypeColor(), "Future<") + type(future.getUnderlying()) + span(theme.getTypeColor(), ">");
+            }
         } else if (type instanceof SClassType) {
             Class<?> clazz = type.getJavaClass();
             if (clazz.getName().startsWith("com.zergatul.cheatutils.scripting.modules")) {

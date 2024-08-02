@@ -28,6 +28,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Integration {
 
@@ -44,6 +46,8 @@ public class Integration {
         HoverProvider hoverProvider = new HoverProvider(theme, documentationProvider);
         DefinitionProvider definitionProvider = new DefinitionProvider();
         CompletionProvider completionProvider = new CompletionProvider(documentationProvider);
+
+        Pattern regex = Pattern.compile("Java<com\\.zergatul\\.cheatutils\\.scripting\\.modules\\.(.+)>");
 
         server.createContext(prefix, new HttpHandler() {
             @Override
@@ -74,7 +78,19 @@ public class Integration {
                         Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
-                        Json.sendResponse(exchange, binderOutput.diagnostics().stream().map(d -> new DiagnosticsResponseItem(d.range, d.message)).toArray());
+                        Json.sendResponse(exchange, binderOutput.diagnostics()
+                                .stream()
+                                .map(d -> {
+                                    StringBuilder sb = new StringBuilder();
+                                    Matcher matcher = regex.matcher(d.message);
+                                    while (matcher.find()) {
+                                        matcher.appendReplacement(sb, "");
+                                        sb.append(matcher.group(1));
+                                    }
+                                    matcher.appendTail(sb);
+                                    return new DiagnosticsResponseItem(d.range, sb.toString());
+                                })
+                                .toArray());
                     } else if (path.equals(prefix + "tokens")) {
                         Json.sendResponse(exchange, Arrays.stream(TokenType.values()).map(Enum::name).toArray());
                     } else if (path.equals(prefix + "nodes")) {

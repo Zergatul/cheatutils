@@ -8,9 +8,10 @@
         <h2 class="module-header">Block Automation</h2>
         <div class="description">
             Write script to place blocks, use items on blocks, break blocks in range.<br>
-            Every game tick module runs your script for all blocks in range. You can get current block coordinates from <b>currentBlock</b> API.
-            If your script calls <b>blockAutomation.useItem(...);</b> or <b>blockAutomation.breakBlock(...);</b> module to use item and place block, or break block at current coordinates.
-            Module can only place/break 1 block per tick.
+            Every game tick module runs your script for all blocks in range. You can get current block coordinates from <b>x</b>, <b>y</b>, <b>z</b> variables.<br>
+            If your script calls <b>blockAutomation.useItem(...);</b> or <b>blockAutomation.breakBlock(...);</b> module will use item and place block, or break block at current coordinates.<br>
+            Some items require player to look at correct direction to be used. These kind of items send another packet to the server and are not supported by block automation. Example: filling/emptying bucket or glass bottle.<br>
+            If you are unsure if your item can be used from Block Automation try enter FreeCam and use item while looking at another direction.
         </div>
 
         <div class="module-sections">

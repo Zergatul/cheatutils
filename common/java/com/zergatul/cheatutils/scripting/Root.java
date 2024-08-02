@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.scripting.modules.*;
 @SuppressWarnings("unused")
 public class Root {
 
-    public static MainApi main = new MainApi();
+    public static EspApi esp = new EspApi();
 
     // automation
     public static AutoDropApi autoDrop = new AutoDropApi();
@@ -47,6 +47,7 @@ public class Root {
     public static FullBrightApi fullBright = new FullBrightApi();
 
     // scripting
+    public static OverlayApi overlay = new OverlayApi();
     public static BlockAutomationApi blockAutomation = new BlockAutomationApi();
     public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
     public static EventsApi events = new EventsApi();
@@ -72,10 +73,12 @@ public class Root {
     public static SoundApi sound = new SoundApi();
     public static WindowApi window = new WindowApi();
     public static FontApi font = new FontApi();
+    public static DelayApi delay = new DelayApi();
     public static DelayedApi delayed = new DelayedApi();
     public static CameraApi camera = new CameraApi();
     public static ClipboardApi clipboard = new ClipboardApi();
     public static ContainersApi containers = new ContainersApi();
+    public static UIApi ui = new UIApi();
 
     // specific
     public static CurrentPlayerApi currentPlayer = new CurrentPlayerApi();

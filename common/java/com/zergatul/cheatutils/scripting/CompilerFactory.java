@@ -11,6 +11,7 @@ public class CompilerFactory {
     public static CompilationParameters createParameters(String type) {
         return createParameters(VisibilityCheck.getTypes(type), switch (type) {
             case "block-automation" -> BlockPosConsumer.class;
+            case "entity-esp" -> EntityIdConsumer.class;
             default -> Runnable.class;
         });
     }

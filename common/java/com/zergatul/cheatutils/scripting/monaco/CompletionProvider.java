@@ -126,7 +126,7 @@ public class CompletionProvider {
                 case VARIABLE_DECLARATION -> {
                     BoundVariableDeclarationNode node = (BoundVariableDeclarationNode) completionContext.entry.node;
                     if (node.expression == null) {
-                        if (node.type.getRange().contains(line, column) || node.type.getRange().endsWith(line, column)) {
+                        if (node.type.getRange().containsOrEnds(line, column)) {
                             canStatement = true;
                         }
                     } else {
@@ -134,6 +134,13 @@ public class CompletionProvider {
                         if (node.name.getRange().isBefore(line, column)) {
                             canExpression = true;
                         }
+                    }
+                }
+                case BINARY_EXPRESSION -> {
+                    BoundNode unfinished = getUnfinished(completionContext.entry.node, line, column);
+                    if (unfinished != null) {
+                        CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry, unfinished), line, column);
+                        suggestions.addAll(get(output, ctx, line, column));
                     }
                 }
                 default -> {
@@ -190,6 +197,24 @@ public class CompletionProvider {
             if (node instanceof BoundImplicitCastExpressionNode implicitCast) {
                 return getUnfinished(implicitCast.operand, line, column);
             }
+            if (node instanceof BoundAwaitExpressionNode awaitExpression) {
+                return getUnfinished(awaitExpression.expression, line, column);
+            }
+            if (node instanceof BoundBinaryExpressionNode binary) {
+                if (binary.left.getRange().containsOrEnds(line, column)) {
+                    return getUnfinished(binary.left, line, column);
+                }
+                if (binary.right.getRange().containsOrEnds(line, column)) {
+                    return getUnfinished(binary.right, line, column);
+                }
+            }
+            if (node instanceof BoundMethodInvocationExpressionNode invocation) {
+                if (invocation.arguments.getRange().containsOrEnds(line, column)) {
+                    for (BoundExpressionNode argument : invocation.arguments.arguments) {
+                        return getUnfinished(argument, line, column);
+                    }
+                }
+            }
         }
 
         return null;
@@ -202,12 +227,27 @@ public class CompletionProvider {
                 return new CompletionContext(ContextType.BEFORE_FIRST, line, column);
             }
             if (unit.getRange().isBefore(line, column)) {
-                return new CompletionContext(ContextType.AFTER_LAST, line, column);
+                if (unit.getRange().endsWith(line, column)) {
+                    return getAtLastContext(unit, line, column);
+                } else {
+                    return new CompletionContext(ContextType.AFTER_LAST, line, column);
+                }
             }
             return new CompletionContext(ContextType.NO_CODE, line, column);
         } else {
             return new CompletionContext(entry, line, column);
         }
+    }
+
+    private CompletionContext getAtLastContext(BoundCompilationUnitNode unit, int line, int column) {
+        if (unit.statements.statements.isEmpty()) {
+            return new CompletionContext(ContextType.AFTER_LAST, line, column);
+        }
+
+        SearchEntry root = new SearchEntry(null, unit);
+        SearchEntry child = new SearchEntry(root, unit.statements);
+
+        return new CompletionContext(child, line, column);
     }
 
     private List<Suggestion> getSymbols(BinderOutput output, CompletionContext context) {

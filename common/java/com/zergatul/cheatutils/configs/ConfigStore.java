@@ -149,8 +149,8 @@ public class ConfigStore {
         if (config.scriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                ScriptController.instance.add(toggleEspName, "main.toggleEsp();", false);
-                KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
+                ScriptController.instance.add(toggleEspName, "esp.toggle();", false);
+                //KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
                 KeyBindingsController.instance.assign(0, toggleEspName);
             } catch (Throwable e) {
                 logger.error(e);

@@ -1,10 +1,12 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.scripting.symbols.Function;
 import com.zergatul.scripting.symbols.LocalVariable;
 import com.zergatul.scripting.symbols.StaticVariable;
 import com.zergatul.scripting.type.*;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 public class DocumentationProvider {
@@ -122,10 +124,37 @@ public class DocumentationProvider {
     }
 
     public Suggestion getMethodSuggestion(MethodReference method) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(type(method.getReturn()));
+        sb.append(' ');
+        sb.append(type(method.getOwner()));
+        sb.append('.');
+        sb.append(method.getName());
+        sb.append('(');
+        List<MethodParameter> parameters = method.getParameters();
+        for (int i = 0; i < parameters.size(); i++) {
+            sb.append(type(parameters.get(i).type()));
+            sb.append(' ');
+            sb.append(parameters.get(i).name());
+            if (i < parameters.size() - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append(')');
+
+        String documentation = null;
+        if (method instanceof NativeMethodReference nativeMethod) {
+            Method m = nativeMethod.getUnderlying();
+            if (m.isAnnotationPresent(MethodDescription.class)) {
+                MethodDescription annotation = m.getAnnotation(MethodDescription.class);
+                documentation = annotation.value();
+            }
+        }
+
         return new Suggestion(
                 method.getName(),
-                "...",
-                null,
+                sb.toString(),
+                documentation,
                 method.getName(),
                 CompletionItemKind.METHOD);
     }

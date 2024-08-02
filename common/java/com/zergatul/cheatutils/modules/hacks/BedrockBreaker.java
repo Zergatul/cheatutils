@@ -455,7 +455,7 @@ public class BedrockBreaker implements Module {
         }
 
         if (message != null) {
-            Root.main.systemMessage(message);
+            Root.ui.systemMessage(message);
         }
     }
 

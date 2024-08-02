@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.controllers.DisconnectController;
+import com.zergatul.cheatutils.controllers.SpeedCounterController;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
@@ -8,6 +9,9 @@ import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -16,10 +20,21 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.vehicle.ChestBoat;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class PlayerApi {
 
@@ -27,6 +42,96 @@ public class PlayerApi {
 
     public TargetApi target = new TargetApi();
     public EffectsApi effects = new EffectsApi();
+    public InteractionsApi interactions = new InteractionsApi();
+
+    @ApiVisibility(ApiType.ACTION)
+    public void chat(String text) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.connection.sendChat(text);
+        }
+    }
+
+    @HelpText("for server commands, like /home")
+    @ApiVisibility(ApiType.ACTION)
+    public void command(String text) {
+        if (text != null && text.startsWith("/")) {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (player != null) {
+                player.connection.sendCommand(text.substring(1));
+            }
+        }
+    }
+
+    public String getCoordinatesFormatted() {
+        if (mc.getCameraEntity() != null) {
+            return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
+        } else {
+            return "";
+        }
+    }
+
+    @HelpText("If you are in the Overworld, returns calculated coordinates in the Nether")
+    public String getCalculatedNetherCoordinates() {
+        if (mc.level == null || mc.level.dimension() == Level.NETHER || mc.getCameraEntity() == null) {
+            return "";
+        }
+        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() / 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() / 8);
+    }
+
+    @HelpText("If you are in the Nether, returns calculated coordinates in the Overworld")
+    public String getCalculatedOverworldCoordinates() {
+        if (mc.level == null || mc.level.dimension() == Level.OVERWORLD || mc.getCameraEntity() == null) {
+            return "";
+        }
+        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() * 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() * 8);
+    }
+
+    public String getBlockCoordinatesFormatted() {
+        if (mc.getCameraEntity() == null) {
+            return "";
+        }
+        BlockPos blockPos = mc.getCameraEntity().blockPosition();
+        return String.format(Locale.ROOT, "%d %d %d [%d %d]",
+                blockPos.getX(), blockPos.getY(), blockPos.getZ(),
+                blockPos.getX() & 15, blockPos.getZ() & 15);
+    }
+
+    public String getChunkCoordinatesFormatted() {
+        if (mc.getCameraEntity() == null) {
+            return "";
+        }
+        BlockPos blockPos = mc.getCameraEntity().blockPosition();
+        ChunkPos chunkPos = new ChunkPos(blockPos);
+        return String.format(Locale.ROOT, "%d %d", chunkPos.x, chunkPos.z);
+    }
+
+    public String getDirection() {
+        if (mc.getCameraEntity() == null) {
+            return "";
+        }
+        Direction direction = mc.getCameraEntity().getDirection();
+        return direction.getName();
+    }
+
+    public String getBiome() {
+        if (mc.level == null || mc.getCameraEntity() == null) {
+            return "";
+        }
+        BlockPos blockPos = mc.getCameraEntity().blockPosition();
+        Holder<Biome> holder = mc.level.getBiome(blockPos);
+        return holder.unwrap().map(id -> id.location().toString(), biome -> "[unregistered " + biome + "]");
+    }
+
+    @HelpText("Measured in 0.5 sec window.")
+    public String getHorizontalSpeed() {
+        return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getHorizontalSpeed());
+    }
+
+    @HelpText("Measured in 0.5 sec window.")
+    public String getSpeed() {
+        return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getSpeed());
+    }
 
     public double getX() {
         if (mc.player == null) {
@@ -276,6 +381,45 @@ public class PlayerApi {
                 return Integer.MIN_VALUE;
             }
         }
+
+        public String getBlockCoordinatesFormatted() {
+            if (mc.level == null) {
+                return "";
+            }
+
+            Entity entity = mc.getCameraEntity();
+            if (entity == null) {
+                return "";
+            }
+
+            HitResult result = entity.pick(20.0D, 0.0F, false);
+            if (result.getType() == HitResult.Type.BLOCK) {
+                BlockPos blockPos = ((BlockHitResult) result).getBlockPos();
+                return blockPos.getX() + ", " + blockPos.getY() + ", " + blockPos.getZ();
+            } else {
+                return "";
+            }
+        }
+
+        public String getBlockName() {
+            if (mc.level == null) {
+                return "";
+            }
+
+            Entity entity = mc.getCameraEntity();
+            if (entity == null) {
+                return "";
+            }
+
+            HitResult result = entity.pick(20.0D, 0.0F, false);
+            if (result.getType() == HitResult.Type.BLOCK) {
+                BlockPos blockPos = ((BlockHitResult) result).getBlockPos();
+                BlockState blockState = mc.level.getBlockState(blockPos);
+                return com.zergatul.cheatutils.common.Registries.BLOCKS.getKey(blockState.getBlock()).toString();
+            } else {
+                return "";
+            }
+        }
     }
 
     public static class EffectsApi {
@@ -326,6 +470,67 @@ public class PlayerApi {
             }
 
             return instance.getDuration() / 20d;
+        }
+    }
+
+    public static class InteractionsApi {
+
+        @ApiVisibility(ApiType.ACTION)
+        public void openClosestChestBoat() {
+            assert mc.gameMode != null;
+
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level != null && mc.player != null) {
+                Stream<ChestBoat> boats = StreamSupport
+                        .stream(mc.level.entitiesForRendering().spliterator(), false)
+                        .filter(e -> e instanceof ChestBoat)
+                        .map(e -> (ChestBoat) e);
+                double minDistance = Double.MAX_VALUE;
+                ChestBoat target = null;
+                for (ChestBoat boat: boats.toList()) {
+                    double d2 = mc.player.distanceToSqr(boat);
+                    if (d2 < minDistance) {
+                        minDistance = d2;
+                        target = boat;
+                    }
+                }
+
+                if (target == null) {
+                    return;
+                }
+
+                boolean oldShiftKeyDown = mc.player.input.shiftKeyDown;
+                mc.player.input.shiftKeyDown = true;
+                mc.gameMode.interactAt(mc.player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
+                mc.gameMode.interact(mc.player, target, InteractionHand.MAIN_HAND);
+                mc.player.swing(InteractionHand.MAIN_HAND);
+                mc.player.input.shiftKeyDown = oldShiftKeyDown;
+            }
+        }
+
+        @ApiVisibility(ApiType.ACTION)
+        public void openTradingWithClosestVillager() {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level != null && mc.player != null) {
+                Villager villager = StreamSupport.stream(mc.level.entitiesForRendering().spliterator(), false)
+                        .filter(Villager.class::isInstance)
+                        .map(e -> (Villager) e)
+                        .min(Comparator.comparingDouble(v -> mc.player.distanceToSqr(v)))
+                        .orElse(null);
+                if (villager == null) {
+                    return;
+                }
+                interactWithEntity(mc, villager);
+            }
+        }
+
+        private void interactWithEntity(Minecraft mc, Entity entity) {
+            assert mc.player != null;
+            assert mc.gameMode != null;
+
+            mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
+            mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
+            mc.player.swing(InteractionHand.MAIN_HAND);
         }
     }
 }
