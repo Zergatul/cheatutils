@@ -19,9 +19,15 @@ import java.util.function.Predicate;
 
 public class KillAuraConfig {
 
+    public static final String ConstDelay = "ConstDelay";
+    public static final String Cooldown = "Cooldown";
+
     public boolean active;
-    public float maxRange;
+    public boolean overrideAttackRange;
+    public double maxRange;
+    public String delayMode;
     public int attackTickInterval;
+    public double extraTicks;
     public Double maxHorizontalAngle;
     public Double maxVerticalAngle;
     public ImmutableList<PriorityEntry> priorities;
@@ -29,8 +35,11 @@ public class KillAuraConfig {
 
     public KillAuraConfig() {
         active = false;
+        overrideAttackRange = true;
         maxRange = 6;
+        delayMode = ConstDelay;
         attackTickInterval = 5;
+        extraTicks = 0.0;
         priorities = new ImmutableList<PriorityEntry>()
                 .add(PredefinedPriorityEntry.fromName("Enemies"))
                 .add(PredefinedPriorityEntry.fromName("Shulker Bullets"))
@@ -41,6 +50,7 @@ public class KillAuraConfig {
     public void validate() {
         maxRange = MathUtils.clamp(maxRange, 1, 100);
         attackTickInterval = MathUtils.clamp(attackTickInterval, 1, 100);
+        extraTicks = MathUtils.clamp(extraTicks, -10, 10);
         if (maxHorizontalAngle != null) {
             maxHorizontalAngle = MathUtils.clamp(maxHorizontalAngle, 1, 180);
         }
@@ -77,7 +87,7 @@ public class KillAuraConfig {
         public static final Map<String, PredefinedPriorityEntry> entries = Map.ofEntries(
                 Map.entry(ENEMIES, new PredefinedPriorityEntry(
                         ENEMIES,
-                        "Includes Monsters, Slimes, Magma Cubes, Hoglin. Excludes Neutral Mobs (Enderman, ZombifiedPiglin). Endermen can be targeted only in creepy state.",
+                        "Includes Monsters, Slimes, Magma Cubes, Hoglin. Excludes Neutral Mobs (Enderman, Zombified Piglin). Endermen can be targeted only in creepy state.",
                         entity -> {
                             if (entity instanceof EnderMan) {
                                 return ((EnderMan) entity).isCreepy();

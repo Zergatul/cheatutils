@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KillAuraConfig;
+import com.zergatul.cheatutils.configs.ReachConfig;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -59,23 +60,22 @@ public class KillAuraController {
                 return;
             }
 
-            if (ticks - lastAttackTick < config.attackTickInterval) {
+            if (!shouldAttackNow(config)) {
                 return;
             }
 
             target = null;
-            int targetPriotity = Integer.MAX_VALUE;
+            int targetPriority = Integer.MAX_VALUE;
             double targetDistance2 = Double.MAX_VALUE;
 
-            float maxRange2 = config.maxRange * config.maxRange;
-            for (Entity entity: world.entitiesForRendering()) {
+            float maxRange2 = (float) getRangeSquared(config);
+            for (Entity entity : world.entitiesForRendering()) {
                 double distance2 = player.distanceToSqr(entity);
                 if (distance2 > maxRange2) {
                     continue;
                 }
 
-                if (entity instanceof LivingEntity) {
-                    var living = (LivingEntity) entity;
+                if (entity instanceof LivingEntity living) {
                     if (!living.isAlive()) {
                         continue;
                     }
@@ -109,9 +109,9 @@ public class KillAuraController {
                     }
                 }
 
-                if (priority < targetPriotity || (priority == targetPriotity && distance2 < targetDistance2)) {
+                if (priority < targetPriority || (priority == targetPriority && distance2 < targetDistance2)) {
                     target = entity;
-                    targetPriotity = priority;
+                    targetPriority = priority;
                     targetDistance2 = distance2;
                 }
             }
@@ -128,7 +128,7 @@ public class KillAuraController {
 
     private int getPriority(KillAuraConfig config, Entity entity) {
         int i = 0;
-        for (KillAuraConfig.PriorityEntry entry: config.priorities) {
+        for (KillAuraConfig.PriorityEntry entry : config.priorities) {
             if (entry.enabled && entry.predicate.test(entity)) {
                 return i;
             }
@@ -148,5 +148,21 @@ public class KillAuraController {
         target = null;
 
         lastAttackTick = ticks;
+    }
+
+    private double getRangeSquared(KillAuraConfig config) {
+        ReachConfig reachConfig = ConfigStore.instance.getConfig().reachConfig;
+        double range = config.overrideAttackRange ? config.maxRange : reachConfig.attackRange;
+        return range * range;
+    }
+
+    private boolean shouldAttackNow(KillAuraConfig config) {
+        assert mc.player != null;
+
+        if (KillAuraConfig.Cooldown.equals(config.delayMode)) {
+            return mc.player.getAttackStrengthScale((float) -config.extraTicks) == 1;
+        } else {
+            return ticks - lastAttackTick >= config.attackTickInterval;
+        }
     }
 }
