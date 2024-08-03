@@ -2,35 +2,43 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.utils.MathUtils;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.monster.*;
-import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 public class KillAuraConfig {
 
+    public static final String ConstDelay = "ConstDelay";
+    public static final String Cooldown = "Cooldown";
+
     public boolean active;
-    public float maxRange;
+    public boolean overrideAttackRange;
+    public double maxRange;
+    public String delayMode;
     public int attackTickInterval;
+    public double extraTicks;
     public Double maxHorizontalAngle;
     public Double maxVerticalAngle;
     public ImmutableList<PriorityEntry> priorities;
     public ImmutableList<CustomPriorityEntry> customEntries;
+    public boolean attackAll;
+    public boolean autoRotate;
 
     public KillAuraConfig() {
-        active = false;
+        active = false; // Initialize 'active'
+        overrideAttackRange = true;
         maxRange = 6;
+        delayMode = ConstDelay;
         attackTickInterval = 5;
+        extraTicks = 0.0;
+        autoRotate = true;
         priorities = new ImmutableList<PriorityEntry>()
                 .add(PredefinedPriorityEntry.fromName("Enemies"))
                 .add(PredefinedPriorityEntry.fromName("Shulker Bullets"))
@@ -41,6 +49,7 @@ public class KillAuraConfig {
     public void validate() {
         maxRange = MathUtils.clamp(maxRange, 1, 100);
         attackTickInterval = MathUtils.clamp(attackTickInterval, 1, 100);
+        extraTicks = MathUtils.clamp(extraTicks, -10, 10);
         if (maxHorizontalAngle != null) {
             maxHorizontalAngle = MathUtils.clamp(maxHorizontalAngle, 1, 180);
         }
@@ -77,7 +86,7 @@ public class KillAuraConfig {
         public static final Map<String, PredefinedPriorityEntry> entries = Map.ofEntries(
                 Map.entry(ENEMIES, new PredefinedPriorityEntry(
                         ENEMIES,
-                        "Includes Monsters, Slimes, Magma Cubes, Hoglin. Excludes Neutral Mobs (Enderman, ZombifiedPiglin). Endermen can be targeted only in creepy state.",
+                        "Includes Monsters, Slimes, Magma Cubes, Hoglin. Excludes Neutral Mobs (Enderman, Zombified Piglin). Endermen can be targeted only in creepy state.",
                         entity -> {
                             if (entity instanceof EnderMan) {
                                 return ((EnderMan) entity).isCreepy();
