@@ -48,7 +48,7 @@ public class KillAuraController {
             ticks++;
 
             var config = ConfigStore.instance.getConfig().killAuraConfig;
-            if (!config.active) { // Use 'active' instead of 'enabled'
+            if (!config.active) {
                 target = null;
                 return;
             }
@@ -68,7 +68,7 @@ public class KillAuraController {
             int targetPriority = Integer.MAX_VALUE;
             double targetDistance2 = Double.MAX_VALUE;
 
-            float maxRange2 = (float) getRangeSquared(config); // Cast double to float
+            float maxRange2 = (float) getRangeSquared(config);
             for (Entity entity : world.entitiesForRendering()) {
                 double distance2 = player.distanceToSqr(entity);
                 if (distance2 > maxRange2) {
@@ -160,7 +160,7 @@ public class KillAuraController {
         assert mc.player != null;
 
         if (KillAuraConfig.Cooldown.equals(config.delayMode)) {
-            return mc.player.getAttackStrengthScale((float) config.extraTicks) == 1; // Cast double to float
+            return mc.player.getAttackStrengthScale((float) -config.extraTicks) == 1;
         } else {
             return ticks - lastAttackTick >= config.attackTickInterval;
         }
