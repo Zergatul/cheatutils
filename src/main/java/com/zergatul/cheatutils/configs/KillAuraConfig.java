@@ -1,3 +1,5 @@
+package com.zergatul.cheatutils.configs;
+
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.player.LocalPlayer;
