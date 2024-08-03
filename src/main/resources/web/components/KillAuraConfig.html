@@ -12,7 +12,7 @@
             <div>
                 <label class="switch-label">
                     <input type="checkbox" class="switch"
-                           v-model="config.active"  <!-- Change 'enabled' to 'active' -->
+                           v-model="config.active"
                            @change="update()">
                     <span>Enabled</span>
                 </label>
@@ -99,35 +99,6 @@
                     In degrees. Value 180 means no limit. But it is better to leave field(s) empty for this purpose.<br>
                     For every possible target module calculates how far you need to rotate to attack target. If this angle exceeds specified limit, module will not attack this target.<br>
                     Note: module is not smart enough to attack on edges of hitbox. It always attacks center of entities bounding box. Angle is measured relatively to this point.
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch"
-                               v-model="config.attackAll"
-                               @change="update()">
-                        <span>Attack multiple targets per tick</span>
-                    </label>
-                </legend>
-                <div class="section-description">
-                    Module attacks all targets in range. Only first target (closest) receives full damage.
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch"
-                               v-model="config.autoRotate"
-                               @change="update()">
-                        <span>Auto Rotate</span>
-                    </label>
-                </legend>
-                <div class="section-description">
-                    Automatically rotates you in the direction of the target each time Kill Aura attacks a target. Has no effect on client side.<br>
-                    When enabled Kill Aura will not work from Boats/Minecarts or other rideable entities.
                 </div>
             </fieldset>
 
