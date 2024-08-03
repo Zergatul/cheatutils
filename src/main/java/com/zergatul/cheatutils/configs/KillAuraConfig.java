@@ -36,7 +36,7 @@ public class KillAuraConfig {
     public boolean autoRotate;
 
     public KillAuraConfig() {
-        active = false; // Initialize 'active'
+        active = false;
         overrideAttackRange = true;
         maxRange = 6;
         delayMode = ConstDelay;
