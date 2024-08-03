@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.Minecraft;
@@ -16,6 +17,9 @@ import net.minecraft.world.entity.EntityType;
 @SuppressWarnings("unused")
 public class EntitiesApi {
 
+    @MethodDescription("""
+            Checks if Entity ESP is enabled for specified entity class
+            """)
     public boolean isEnabled(String className) {
         var config = getConfig(className);
         if (config == null) {
@@ -24,6 +28,9 @@ public class EntitiesApi {
         return config.enabled;
     }
 
+    @MethodDescription("""
+            Toggles enabled state for specified entity class
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle(String className) {
         var config = getConfig(className);
@@ -32,49 +39,6 @@ public class EntitiesApi {
         }
         config.enabled = !config.enabled;
         ConfigStore.instance.requestWrite();
-    }
-
-    public int getCount(String className) {
-        EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
-        if (info == null) {
-            return Integer.MIN_VALUE;
-        }
-
-        ClientLevel level = Minecraft.getInstance().level;
-        if (level == null) {
-            return 0;
-        }
-
-        int count = 0;
-        for (Entity entity: level.entitiesForRendering()) {
-            if (info.clazz.isAssignableFrom(entity.getClass())) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    public int getCountById(String id) {
-        ResourceLocation location = ResourceLocation.parse(id);
-        EntityType<?> type = Registries.ENTITY_TYPES.getValue(location);
-        if (type == null) {
-            return Integer.MIN_VALUE;
-        }
-
-        ClientLevel level = Minecraft.getInstance().level;
-        if (level == null) {
-            return 0;
-        }
-
-        int count = 0;
-        for (Entity entity: level.entitiesForRendering()) {
-            if (entity.getType() == type) {
-                count++;
-            }
-        }
-
-        return count;
     }
 
     private EntityEspConfig getConfig(String className) {

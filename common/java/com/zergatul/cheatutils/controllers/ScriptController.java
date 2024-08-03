@@ -3,7 +3,8 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.configs.ScriptsConfig;
-import com.zergatul.cheatutils.scripting.CompilerFactory;
+import com.zergatul.cheatutils.scripting.AsyncRunnable;
+import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.scripting.DiagnosticMessage;
 import com.zergatul.scripting.compiler.CompilationResult;
 import com.zergatul.scripting.compiler.Compiler;
@@ -16,12 +17,12 @@ public class ScriptController {
 
     public static final ScriptController instance = new ScriptController();
 
-    private final Compiler handleKeybindingsCompiler = new Compiler(CompilerFactory.createParameters("keybindings"));
-    private final Compiler overlayCompiler = new Compiler(CompilerFactory.createParameters("overlay"));
-    private final Compiler blockAutomationCompiler = new Compiler(CompilerFactory.createParameters("block-automation"));
-    private final Compiler villagerRollerCompiler = new Compiler(CompilerFactory.createParameters("villager-roller"));
-    private final Compiler eventsCompiler = new Compiler(CompilerFactory.createParameters("events"));
-    private final Compiler entityEspCompiler = new Compiler(CompilerFactory.createParameters("entity-esp"));
+    private final Compiler handleKeybindingsCompiler = new Compiler(ScriptType.KEYBINDING.createParameters());
+    private final Compiler overlayCompiler = new Compiler(ScriptType.OVERLAY.createParameters());
+    private final Compiler blockAutomationCompiler = new Compiler(ScriptType.BLOCK_AUTOMATION.createParameters());
+    private final Compiler villagerRollerCompiler = new Compiler(ScriptType.VILLAGER_ROLLER.createParameters());
+    private final Compiler eventsCompiler = new Compiler(ScriptType.EVENTS.createParameters());
+    private final Compiler entityEspCompiler = new Compiler(ScriptType.ENTITY_ESP.createParameters());
 
     private final List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
@@ -123,7 +124,7 @@ public class ScriptController {
         return List.of();
     }
 
-    public Runnable get(String name) {
+    public AsyncRunnable get(String name) {
         var optional = scripts.stream().filter(s -> s.name.equals(name)).findFirst();
         if (optional.isEmpty()) {
             return null;
@@ -172,6 +173,6 @@ public class ScriptController {
     public static class Script {
         public String name;
         public String code;
-        public Runnable compiled;
+        public AsyncRunnable compiled;
     }
 }

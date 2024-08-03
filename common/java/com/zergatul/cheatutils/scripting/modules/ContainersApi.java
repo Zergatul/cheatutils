@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.modules.scripting.Containers;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.HelpText;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -14,11 +15,16 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.concurrent.CompletableFuture;
+
 @SuppressWarnings("unused")
 public class ContainersApi {
 
     private static final Minecraft mc = Minecraft.getInstance();
 
+    @MethodDescription("""
+            Returns currently opened screen title. Example: "Barrel"
+            """)
     public String getScreenTitle() {
         if (mc.screen == null) {
             return "";
@@ -26,6 +32,9 @@ public class ContainersApi {
         return mc.screen.getTitle().getString();
     }
 
+    @MethodDescription("""
+            Returns currently opened container menu id. Id is auto-incremented by the server each time you open container
+            """)
     public int getMenuId() {
         AbstractContainerMenu menu = getContainerMenu();
         if (menu == null) {
@@ -34,6 +43,9 @@ public class ContainersApi {
         return menu.containerId;
     }
 
+    @MethodDescription("""
+            Returns currently opened container menu class. Example: "net.minecraft.world.inventory.ChestMenu"
+            """)
     public String getMenuClass() {
         AbstractContainerMenu menu = getContainerMenu();
         if (menu == null) {
@@ -42,6 +54,9 @@ public class ContainersApi {
         return ClassRemapper.fromObf(menu.getClass().getName());
     }
 
+    @MethodDescription("""
+            Returns total available slots of currently opened container menu
+            """)
     public int getSlotsSize() {
         AbstractContainerMenu menu = getContainerMenu();
         if (menu == null) {
@@ -50,6 +65,9 @@ public class ContainersApi {
         return menu.slots.size();
     }
 
+    @MethodDescription("""
+            Check if value is valid slot index. Valid slot indexes: 0..(getSlotsSize() - 1)
+            """)
     public boolean isValidSlotIndex(int index) {
         AbstractContainerMenu menu = getContainerMenu();
         if (menu == null) {
@@ -58,11 +76,17 @@ public class ContainersApi {
         return menu.isValidSlotIndex(index);
     }
 
+    @MethodDescription("""
+            Returns true if slot has some item
+            """)
     public boolean hasItemAtSlot(int index) {
         Slot slot = getSlot(index);
         return slot != null && slot.hasItem();
     }
 
+    @MethodDescription("""
+            Returns item id at specified slot
+            """)
     public String getItemIdAtSlot(int index) {
         Slot slot = getSlot(index);
         if (slot == null) {
@@ -72,6 +96,9 @@ public class ContainersApi {
         return Registries.ITEMS.getKey(stack.getItem()).toString();
     }
 
+    @MethodDescription("""
+            Returns item count at specified slot
+            """)
     public int getItemCountAtSlot(int index) {
         Slot slot = getSlot(index);
         if (slot == null) {
@@ -81,7 +108,21 @@ public class ContainersApi {
         return stack.getCount();
     }
 
-    @HelpText("Button: 0=left, 1=right, 2=middle. ClickType values: PICKUP, QUICK_MOVE, SWAP, CLONE, THROW, QUICK_CRAFT, PICKUP_ALL")
+    @MethodDescription("""
+            Emulates click on specified slot.
+            button parameter:
+                0=left
+                1=right
+                2=middle
+            clickType parameter allowed values:
+                "PICKUP"
+                "QUICK_MOVE"
+                "SWAP"
+                "CLONE"
+                "THROW"
+                "QUICK_CRAFT"
+                "PICKUP_ALL"
+            """)
     @ApiVisibility(ApiType.ACTION)
     public boolean click(int slot, int button, String clickType) {
         if (mc.player == null) {
@@ -107,12 +148,19 @@ public class ContainersApi {
         return true;
     }
 
-    public void waitForOpen(Runnable action) {
-        Containers.instance.waitForOpen(action);
+    @MethodDescription("""
+            Waits for container menu screen, example open chest menu
+            """)
+    public CompletableFuture<Void> waitForOpen() {
+        return Containers.instance.waitForOpen();
     }
 
-    public void waitForNewId(Runnable action) {
-        Containers.instance.waitForNewId(action);
+    @MethodDescription("""
+            Waits for container menu id. Can be useful when interactive with custom server menus.
+            If there is no container menu, script will stop here
+            """)
+    public CompletableFuture<Void> waitForNewId() {
+        return Containers.instance.waitForNewId();
     }
 
     private Slot getSlot(int index) {

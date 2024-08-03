@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.controllers.ContainerButtonsController;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
 
+@SuppressWarnings("unused")
 public class ContainerButtonsApi {
 
     public boolean isAutoTakeAllEnabled() {

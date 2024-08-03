@@ -47,7 +47,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
     public void validate() {
         maxRange = MathUtils.clamp(maxRange, 1, 100);
         attackTickInterval = MathUtils.clamp(attackTickInterval, 1, 100);
-        extraTicks = MathUtils.clamp(extraTicks, -10, 10);
+        extraTicks = MathUtils.clamp(extraTicks, -10, 1000);
         if (maxHorizontalAngle != null) {
             maxHorizontalAngle = MathUtils.clamp(maxHorizontalAngle, 1, 180);
         }
@@ -84,7 +84,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
         public static final Map<String, PredefinedPriorityEntry> entries = Map.ofEntries(
                 Map.entry(ENEMIES, new PredefinedPriorityEntry(
                         ENEMIES,
-                        "Includes Monsters, Slimes, Magma Cubes, Hoglin. Excludes Neutral Mobs (Enderman, ZombifiedPiglin). Endermen can be targeted only in creepy state.",
+                        "Includes Monsters, Slimes, Magma Cubes, Hoglin. Excludes Neutral Mobs (Enderman, Zombified Piglin). Endermen can be targeted only in creepy state.",
                         entity -> {
                             if (entity instanceof EnderMan) {
                                 return ((EnderMan) entity).isCreepy();

@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.scripting.ControllableStopException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -9,6 +10,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
 
 public class Containers implements Module {
@@ -23,40 +25,47 @@ public class Containers implements Module {
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
     }
 
-    public void waitForOpen(Runnable action) {
+    public CompletableFuture<Void> waitForOpen() {
         if (getContainerMenu() != null) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
+        CompletableFuture<Void> future = new CompletableFuture<>();
         handlers.add(() -> {
             if (getContainerMenu() != null) {
-                action.run();
+                future.complete(null);
                 return true;
             } else {
                 return false;
             }
         });
+        return future;
     }
 
-    public void waitForNewId(Runnable action) {
+    public CompletableFuture<Void> waitForNewId() {
         AbstractContainerMenu menu = getContainerMenu();
         if (menu == null) {
-            return;
+            return CompletableFuture.failedFuture(new ControllableStopException());
         }
+
+        CompletableFuture<Void> future = new CompletableFuture<>();
 
         int id = menu.containerId;
         handlers.add(() -> {
             AbstractContainerMenu current = getContainerMenu();
             if (current == null) {
+                future.completeExceptionally(new ControllableStopException());
                 return true; // stop processing
             }
             if (current.containerId == id) {
                 return false; // process in the next tick
             } else {
-                action.run();
+                future.complete(null);
                 return true; // stop processing
             }
         });
+
+        return future;
     }
 
     private void onTickEnd() {

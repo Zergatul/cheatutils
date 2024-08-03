@@ -4,9 +4,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.mixins.common.accessors.KeyMappingAccessor;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
+@SuppressWarnings("unused")
 public class KeysApi {
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -30,16 +32,25 @@ public class KeysApi {
             this.mapping = mapping;
         }
 
+        @MethodDescription("""
+                Emulates click
+                """)
         @ApiVisibility(ApiType.ACTION)
         public void click() {
             KeyMapping.click(getKey());
         }
 
+        @MethodDescription("""
+                Use this to hold button for some amount of time
+                """)
         @ApiVisibility(ApiType.ACTION)
         public void setDown(boolean state) {
             KeyMapping.set(getKey(), state);
         }
 
+        @MethodDescription("""
+                Returns true is button is pressed
+                """)
         public boolean isDown() {
             return mapping.isDown();
         }

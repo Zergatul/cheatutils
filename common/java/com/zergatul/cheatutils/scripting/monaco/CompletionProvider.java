@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.monaco;
 
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.*;
+import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilerContext;
 import com.zergatul.scripting.parser.NodeType;
 import com.zergatul.scripting.symbols.*;
@@ -9,6 +10,7 @@ import com.zergatul.scripting.type.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CompletionProvider {
 
@@ -18,13 +20,13 @@ public class CompletionProvider {
         this.documentationProvider = documentationProvider;
     }
 
-    public List<Suggestion> get(BinderOutput output, int line, int column) {
+    public List<Suggestion> get(CompilationParameters parameters, BinderOutput output, int line, int column) {
         BoundCompilationUnitNode unit = output.unit();
         CompletionContext completionContext = getCompletionContext(unit, line, column);
-        return get(output, completionContext, line, column);
+        return get(parameters, output, completionContext, line, column);
     }
 
-    private List<Suggestion> get(BinderOutput output, CompletionContext completionContext, int line, int column) {
+    private List<Suggestion> get(CompilationParameters parameters, BinderOutput output, CompletionContext completionContext, int line, int column) {
         BoundCompilationUnitNode unit = output.unit();
         List<Suggestion> suggestions = new ArrayList<>();
 
@@ -77,7 +79,7 @@ public class CompletionProvider {
                         BoundNode unfinished = getUnfinished(completionContext.prev, line, column);
                         if (unfinished != null) {
                             CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry, unfinished), line, column);
-                            suggestions.addAll(get(output, ctx, line, column));
+                            suggestions.addAll(get(parameters, output, ctx, line, column));
                             break;
                         }
                     }
@@ -89,7 +91,7 @@ public class CompletionProvider {
                         BoundNode unfinished = getUnfinished(completionContext.prev, line, column);
                         if (unfinished != null) {
                             CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry, unfinished), line, column);
-                            suggestions.addAll(get(output, ctx, line, column));
+                            suggestions.addAll(get(parameters, output, ctx, line, column));
                             break;
                         }
                     }
@@ -140,7 +142,7 @@ public class CompletionProvider {
                     BoundNode unfinished = getUnfinished(completionContext.entry.node, line, column);
                     if (unfinished != null) {
                         CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry, unfinished), line, column);
-                        suggestions.addAll(get(output, ctx, line, column));
+                        suggestions.addAll(get(parameters, output, ctx, line, column));
                     }
                 }
                 default -> {
@@ -166,13 +168,16 @@ public class CompletionProvider {
         }
         if (canExpression) {
             suggestions.addAll(getSymbols(output, completionContext));
-            suggestions.add(documentationProvider.getAwaitKeywordSuggestion());
+            if (parameters.isAsync()) {
+                suggestions.add(documentationProvider.getAwaitKeywordSuggestion());
+            }
         }
         if (canStatement) {
             // TODO: break/continue
             suggestions.addAll(documentationProvider.getCommonStatementStartSuggestions());
         }
 
+        suggestions.removeIf(Objects::isNull);
         return suggestions;
     }
 

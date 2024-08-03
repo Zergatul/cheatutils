@@ -12,7 +12,7 @@
             <div class="description">
                 Example 1. Display TPS with 1 decimal:
                 <pre style="margin-left: 40px;">
-main.addText("TPS: " + convert.toString(tps.get(), 1));
+main.addText("TPS: " + tps.get().toStandardString(1));
                 </pre>
                 Example 2. Display TPS in different colors with 2 decimals:
                 <pre style="margin-left: 40px;">
@@ -25,7 +25,7 @@ if (tpsVal > 19.8) {
 } else {
     tpsColor = "#FF006E";
 }
-main.addText("#CDC1FF", "TPS:", tpsColor, convert.toString(tpsVal, 2));
+main.addText("#CDC1FF", "TPS:", tpsColor, tpsVal.toStandardString(2));
                 </pre>
             </div>
         </div>

@@ -1,9 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.scripting.HelpText;
-import com.zergatul.cheatutils.scripting.Root;
-import com.zergatul.cheatutils.scripting.VisibilityCheck;
+import com.zergatul.cheatutils.scripting.*;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpException;
 
@@ -23,11 +20,8 @@ public class ScriptsDocsApi extends ApiBase {
 
     @Override
     public String get(String id) throws HttpException {
-        ApiType[] types = VisibilityCheck.getTypes(id);
-        if (types == null) {
-            return null;
-        }
-        return gson.toJson(generateRootRefs(types));
+        ScriptType type = ScriptType.valueOf(id);
+        return gson.toJson(generateRootRefs(type.getApis()));
     }
 
     private List<String> generateRootRefs(ApiType[] types) {

@@ -15,6 +15,16 @@ document.head.appendChild(link);
 (async () => {
     monaco.languages.register({ id: languageId });
 
+    monaco.languages.setLanguageConfiguration(languageId, {
+        autoClosingPairs: [
+            { open: '{', close: '}' },
+            { open: '[', close: ']' },
+            { open: '(', close: ')' },
+            { open: '"', close: '"' },
+            { open: "'", close: "'" }
+        ]
+    });
+
     const get = async url => {
         const response = await fetch(url);
         return await response.json();
@@ -182,7 +192,8 @@ function createComponent(template) {
             this.editor = monaco.editor.create(element, {
                 value: this.modelValue,
                 language: languageId,
-                'renderWhitespace': "all",
+                'autoClosingBrackets': true,
+                'renderWhitespace': 'all',
                 'semanticHighlighting.enabled': true
             });
             this.editor.onDidBlurEditorWidget(() => {

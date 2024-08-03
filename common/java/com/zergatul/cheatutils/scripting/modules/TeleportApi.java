@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.utils.MathUtils;
 
+@SuppressWarnings("unused")
 public class TeleportApi {
 
     @ApiVisibility(ApiType.ACTION)

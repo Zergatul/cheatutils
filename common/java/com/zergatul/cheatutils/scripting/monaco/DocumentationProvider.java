@@ -124,6 +124,10 @@ public class DocumentationProvider {
     }
 
     public Suggestion getMethodSuggestion(MethodReference method) {
+        if (method instanceof UnknownMethodReference) {
+            return null;
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append(type(method.getReturn()));
         sb.append(' ');
@@ -142,21 +146,23 @@ public class DocumentationProvider {
         }
         sb.append(')');
 
-        String documentation = null;
+        return new Suggestion(
+                method.getName(),
+                sb.toString(),
+                getMethodDocumentation(method),
+                method.getName(),
+                CompletionItemKind.METHOD);
+    }
+
+    public String getMethodDocumentation(MethodReference method) {
         if (method instanceof NativeMethodReference nativeMethod) {
             Method m = nativeMethod.getUnderlying();
             if (m.isAnnotationPresent(MethodDescription.class)) {
                 MethodDescription annotation = m.getAnnotation(MethodDescription.class);
-                documentation = annotation.value();
+                return annotation.value();
             }
         }
-
-        return new Suggestion(
-                method.getName(),
-                sb.toString(),
-                documentation,
-                method.getName(),
-                CompletionItemKind.METHOD);
+        return null;
     }
 
     private String type(SType type) {

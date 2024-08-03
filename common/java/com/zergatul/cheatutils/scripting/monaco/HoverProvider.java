@@ -7,6 +7,7 @@ import com.zergatul.scripting.symbols.*;
 import com.zergatul.scripting.type.*;
 import com.zergatul.scripting.type.operation.BinaryOperation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HoverProvider {
@@ -113,7 +114,14 @@ public class HoverProvider {
                     }
                 }
                 sb.append(description(")"));
-                yield new HoverResponse(sb.toString(), range);
+
+                List<String> lines = new ArrayList<>();
+                lines.add(sb.toString());
+                String documentation = documentationProvider.getMethodDocumentation(methodReference);
+                if (documentation != null) {
+                    lines.add(documentation.replace("\n", "<br>"));
+                }
+                yield new HoverResponse(lines, range);
             }
             case PROPERTY -> {
                 BoundPropertyNode propertyNode = (BoundPropertyNode) node;

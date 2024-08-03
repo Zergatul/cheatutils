@@ -2,10 +2,12 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.scripting.HelpText;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.function.Function;
 
+@SuppressWarnings("unused")
 public class GameApi {
 
     private static final Minecraft mc = Minecraft.getInstance();
@@ -31,19 +34,30 @@ public class GameApi {
     public BlocksApi blocks = new BlocksApi();
     public EntitiesApi entities = new EntitiesApi();
 
+    @MethodDescription("""
+            Returns true is you are in single player world
+            """)
     public boolean isSinglePlayer() {
         return mc.getSingleplayerServer() != null;
     }
 
+    @MethodDescription("""
+            Returns Minecraft version
+            """)
     public String getVersion() {
         return SharedConstants.getCurrentVersion().getName();
     }
 
-    @HelpText("Returns name of your Minecraft profile")
+    @MethodDescription("""
+            Returns name of your Minecraft profile
+            """)
     public String getUserName() {
         return mc.getUser().getName();
     }
 
+    @MethodDescription("""
+            Returns current game tick number
+            """)
     public int getTick() {
         if (mc.level == null) {
             return 0;
@@ -51,7 +65,9 @@ public class GameApi {
         return (int) mc.level.getGameTime();
     }
 
-    @HelpText("In ticks. Cycles from 0 to 24000.")
+    @MethodDescription("""
+            In ticks. Cycles from 0 to 24000.
+            """)
     public int getDayTime() {
         if (mc.level == null) {
             return 0;
@@ -99,7 +115,58 @@ public class GameApi {
 
     public static class EntitiesApi {
 
-        @HelpText("Returns integer entity id")
+        @MethodDescription("""
+                Gets entity count by class name in render distance
+                """)
+        public int getCount(String className) {
+            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
+            if (info == null) {
+                return Integer.MIN_VALUE;
+            }
+
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null) {
+                return 0;
+            }
+
+            int count = 0;
+            for (Entity entity: level.entitiesForRendering()) {
+                if (info.clazz.isAssignableFrom(entity.getClass())) {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        @MethodDescription("""
+                Gets entity count by Minecraft id in render distance
+                """)
+        public int getCountById(String id) {
+            ResourceLocation location = ResourceLocation.parse(id);
+            EntityType<?> type = Registries.ENTITY_TYPES.getValue(location);
+            if (type == null) {
+                return Integer.MIN_VALUE;
+            }
+
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null) {
+                return 0;
+            }
+
+            int count = 0;
+            for (Entity entity: level.entitiesForRendering()) {
+                if (entity.getType() == type) {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        @MethodDescription("""
+                Returns integer entity id
+                """)
         public int findClosestEntityById(String id) {
             if (mc.level == null || mc.player == null) {
                 return Integer.MIN_VALUE;
@@ -128,7 +195,9 @@ public class GameApi {
             return target == null ? Integer.MIN_VALUE : target.getId();
         }
 
-        @HelpText("Returns integer entity id")
+        @MethodDescription("""
+                Returns integer entity id
+                """)
         public int findClosestEntityByClass(String className) {
             if (mc.level == null || mc.player == null) {
                 return Integer.MIN_VALUE;
@@ -181,6 +250,9 @@ public class GameApi {
             return getBooleanValue(entityId, Entity::isAlive);
         }
 
+        @MethodDescription("""
+                Returns Minecraft id of entity, or empty string is entity does not exist
+                """)
         public String getType(int entityId) {
             return getStringValue(entityId, entity -> {
                 EntityType<?> type = entity.getType();
@@ -362,6 +434,9 @@ public class GameApi {
 
     public static class BlocksApi {
 
+        @MethodDescription("""
+                Returns block id at specified coordinates. Example return value: "minecraft:stone"
+                """)
         public String getId(int x, int y, int z) {
             if (mc.level == null) {
                 return "";
@@ -371,6 +446,9 @@ public class GameApi {
             return Registries.BLOCKS.getKey(block).toString();
         }
 
+        @MethodDescription("""
+                Returns true if you can place another block at specified coordinates
+                """)
         public boolean canBeReplaced(int x, int y, int z) {
             if (mc.level == null) {
                 return false;
@@ -379,6 +457,9 @@ public class GameApi {
             return mc.level.getBlockState(new BlockPos(x, y, z)).canBeReplaced();
         }
 
+        @MethodDescription("""
+                Returns true if block is water or lava source
+                """)
         public boolean isFluidSource(int x, int y, int z) {
             if (mc.level == null) {
                 return false;
@@ -387,6 +468,10 @@ public class GameApi {
             return mc.level.getBlockState(new BlockPos(x, y, z)).getFluidState().isSource();
         }
 
+        @MethodDescription("""
+                Returns integer tag of BlockState at specified coordinates.
+                For example you can check tag "age" for "minecraft:wheat" to see when crops are ready to be harvested.
+                """)
         public int getIntegerTag(int x, int y, int z, String tag) {
             if (mc.level == null) {
                 return Integer.MIN_VALUE;

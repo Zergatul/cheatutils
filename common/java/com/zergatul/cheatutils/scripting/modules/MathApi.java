@@ -1,10 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.scripting.HelpText;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import net.minecraft.util.Mth;
 
 import java.util.Random;
 
+@SuppressWarnings("unused")
 public class MathApi {
 
     public final RadiansApi radians = new RadiansApi();
@@ -12,11 +13,16 @@ public class MathApi {
 
     private final Random random = new Random();
 
-    @HelpText("Random number in [0..1) range")
+    @MethodDescription("""
+            Random number in [0..1) range
+            """)
     public double random() {
         return random.nextDouble();
     }
 
+    @MethodDescription("""
+            Random integer number in [0..max) range
+            """)
     public int randomInt(int max) {
         if (max <= 0) {
             return Integer.MIN_VALUE;
@@ -25,6 +31,9 @@ public class MathApi {
         return random.nextInt(max);
     }
 
+    @MethodDescription("""
+            Random number in [min..max) range
+            """)
     public int randomInt(int min, int max) {
         if (min >= max) {
             return Integer.MIN_VALUE;
@@ -39,6 +48,10 @@ public class MathApi {
 
     public int floor(double value) {
         return Mth.floor(value);
+    }
+
+    public int floorDiv(int x, int y) {
+        return Math.floorDiv(x, y);
     }
 
     public int floorMod(int x, int y) {

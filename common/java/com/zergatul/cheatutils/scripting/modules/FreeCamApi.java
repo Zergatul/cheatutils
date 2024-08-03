@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,14 +15,21 @@ import net.minecraft.world.phys.HitResult;
 
 import java.util.Locale;
 
+@SuppressWarnings("unused")
 public class FreeCamApi {
 
     private final Minecraft mc = Minecraft.getInstance();
 
+    @MethodDescription("""
+            Checks if Free Cam is active
+            """)
     public boolean isEnabled() {
         return FreeCam.instance.isActive();
     }
 
+    @MethodDescription("""
+            Returns formatted X/Y/Z coordinates of Free Cam, or empty string if Free Cam is not active
+            """)
     public String getCoordinates() {
         FreeCam fc = FreeCam.instance;
         if (fc.isActive()) {
@@ -31,6 +39,9 @@ public class FreeCamApi {
         }
     }
 
+    @MethodDescription("""
+            Returns Free Cam formatted target block coordinates, or empty string if Free Cam is not active
+            """)
     public String getTargetBlockCoordinates() {
         if (mc.level == null || !FreeCam.instance.isActive()) {
             return "";
@@ -49,6 +60,9 @@ public class FreeCamApi {
         }
     }
 
+    @MethodDescription("""
+            Returns Free Cam target block name, or empty string if Free Cam is not active
+            """)
     public String getTargetBlockName() {
         if (mc.level == null || !FreeCam.instance.isActive()) {
             return "";
@@ -68,40 +82,42 @@ public class FreeCamApi {
         }
     }
 
+    @MethodDescription("""
+            Toggles Free Cam status
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
         FreeCam.instance.toggle();
     }
 
-    @ApiVisibility(ApiType.UPDATE)
-    public void toggleRenderHands() {
-        var config = getConfig();
-        config.renderHands = !config.renderHands;
-        ConfigStore.instance.requestWrite();
-    }
 
-    @ApiVisibility(ApiType.UPDATE)
-    public void setRenderHands(boolean value) {
-        var config = getConfig();
-        config.renderHands = value;
-        ConfigStore.instance.requestWrite();
-    }
-
+    @MethodDescription("""
+            Locks Free Cam in current position and transfers control to your character
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggleCameraLock() {
         FreeCam.instance.toggleCameraLock();
     }
 
+    @MethodDescription("""
+            Locks Free Cam direction to always pointing at your character eyes position
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggleEyeLock() {
         FreeCam.instance.toggleEyeLock();
     }
 
+    @MethodDescription("""
+            Locks Free Cam rotation, transfers control to your character, but Free Cam will be following your character
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggleFollowCam() {
         FreeCam.instance.toggleFollowCamera();
     }
 
+    @MethodDescription("""
+            Activates Free Cam path
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void startPath() {
         FreeCam.instance.startPath();

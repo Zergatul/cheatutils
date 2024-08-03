@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ElytraHackConfig;
 
+@SuppressWarnings("unused")
 public class ElytraHackApi extends ModuleApi<ElytraHackConfig> {
 
     public double getMaxSpeed() {

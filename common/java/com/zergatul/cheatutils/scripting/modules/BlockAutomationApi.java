@@ -3,39 +3,77 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 
+@SuppressWarnings("unused")
 public class BlockAutomationApi {
 
+    @MethodDescription("""
+            For debugging
+            """)
     public void useOne() {
         BlockAutomation.instance.placeOne();
     }
 
+    @MethodDescription("""
+            Uses specified item from your inventory at current coordinates
+            """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
-    public void useItem(String blockId) {
-        BlockAutomation.instance.useItem(blockId, BlockPlacingMethod.ANY);
+    public void useItem(String itemId) {
+        BlockAutomation.instance.useItem(itemId, BlockPlacingMethod.ANY);
     }
 
+    @MethodDescription("""
+            Uses one specified item from your inventory at current coordinates.
+            If first item is missing in your inventory, it will try to use second, and so on.
+            """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
-    public void useItem(String[] blockIds) {
-        BlockAutomation.instance.useItem(blockIds, BlockPlacingMethod.ANY);
+    public void useItem(String[] itemIds) {
+        BlockAutomation.instance.useItem(itemIds, BlockPlacingMethod.ANY);
     }
 
+    @MethodDescription(value = """
+            Uses one specified item from your inventory at current coordinates.
+            "method" parameter specifies custom way to use block. Allowed values:
+                - "bottom-slab"
+                - "top-slab"
+                - "facing-top"    // for blocks like piston
+                - "facing-bottom"
+                - "facing-north"
+                - "facing-south"
+                - "facing-east"
+                - "facing-west"
+                - "from-top"      // for items like seeds
+                - "from-bottom"
+                - "from-horizontal"
+                - "item-use"      // for items like bonemeal
+                - "air-place"
+            """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useItem(String itemId, String method) {
         BlockAutomation.instance.useItem(itemId, parseMethod(method));
     }
 
+    @MethodDescription("""
+            Breaks block with currently equipped item
+            """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock() {
         BlockAutomation.instance.breakBlock(null, null);
     }
 
+    @MethodDescription("""
+            Breaks block with item id you specify
+            """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock(String itemId) {
         BlockAutomation.instance.breakBlock(itemId, null);
     }
 
+    @MethodDescription("""
+            Breaks block with item id and enchantment id you specify
+            """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock(String itemId, String enchantmentId) {
         BlockAutomation.instance.breakBlock(itemId, enchantmentId);

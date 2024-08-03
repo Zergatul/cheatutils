@@ -35,7 +35,7 @@ function createComponent(template) {
                         this.showRefs = true;
                     } else {
                         let self = this;
-                        axios.get('/api/scripts-doc/events').then(response => {
+                        axios.get('/api/scripts-doc/EVENTS').then(response => {
                             self.showRefs = true;
                             self.refs = response.data;
                         });

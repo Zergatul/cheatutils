@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 
+@SuppressWarnings("unused")
 public class VillagerRollerApi {
 
     public boolean isActive() {

@@ -56,7 +56,7 @@ function createComponent(template) {
                         this.showRefs = true;
                     } else {
                         let self = this;
-                        axios.get('/api/scripts-doc/block-automation').then(response => {
+                        axios.get('/api/scripts-doc/BLOCK_AUTOMATION').then(response => {
                             self.showRefs = true;
                             self.refs = response.data;
                         });

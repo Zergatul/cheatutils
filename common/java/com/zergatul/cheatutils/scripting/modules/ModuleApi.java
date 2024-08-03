@@ -14,7 +14,9 @@ public abstract class ModuleApi<T extends ModuleConfig> {
     public boolean isEnabled() {
         return getConfig().enabled;
     }
-
+    @MethodDescription("""
+            Enables module
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void enable() {
         var config = getConfig();
@@ -25,6 +27,9 @@ public abstract class ModuleApi<T extends ModuleConfig> {
         }
     }
 
+    @MethodDescription("""
+            Disables module
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void disable() {
         var config = getConfig();
@@ -35,6 +40,9 @@ public abstract class ModuleApi<T extends ModuleConfig> {
         }
     }
 
+    @MethodDescription("""
+            Sets module enabled status
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void setEnabled(boolean value) {
         var config = getConfig();
@@ -45,6 +53,9 @@ public abstract class ModuleApi<T extends ModuleConfig> {
         }
     }
 
+    @MethodDescription("""
+            Toggles module enabled state
+            """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
         var config = getConfig();

@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.HelpText;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
 import net.minecraft.client.Minecraft;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Function;
 
+@SuppressWarnings("unused")
 public class InventoryApi {
 
     private final static Minecraft mc = Minecraft.getInstance();
@@ -44,36 +46,51 @@ public class InventoryApi {
         return getItemIdBySlot(EquipmentSlot.OFFHAND);
     }
 
-    @HelpText("Returns value from (0..1]")
+    @MethodDescription("""
+            Returns value in range (0..1]
+            """)
     public double getHeadItemDurability() {
         return getItemDurabilityBySlot(EquipmentSlot.HEAD);
     }
 
-    @HelpText("Returns value from (0..1]")
+    @MethodDescription("""
+            Returns value in range (0..1]
+            """)
     public double getChestItemDurability() {
         return getItemDurabilityBySlot(EquipmentSlot.CHEST);
     }
 
-    @HelpText("Returns value from (0..1]")
+    @MethodDescription("""
+            Returns value in range (0..1]
+            """)
     public double getLegsItemDurability() {
         return getItemDurabilityBySlot(EquipmentSlot.LEGS);
     }
 
-    @HelpText("Returns value from (0..1]")
+    @MethodDescription("""
+            Returns value in range (0..1]
+            """)
     public double getFeetItemDurability() {
         return getItemDurabilityBySlot(EquipmentSlot.FEET);
     }
 
-    @HelpText("Returns value from (0..1]")
+    @MethodDescription("""
+            Returns value in range (0..1]
+            """)
     public double getMainHandItemDurability() {
         return getItemDurabilityBySlot(EquipmentSlot.MAINHAND);
     }
 
-    @HelpText("Returns value from (0..1]")
+    @MethodDescription("""
+            Returns value in range (0..1]
+            """)
     public double getOffHandItemDurability() {
         return getItemDurabilityBySlot(EquipmentSlot.OFFHAND);
     }
 
+    @MethodDescription("""
+            Equips item by id to corresponding slot
+            """)
     @ApiVisibility(ApiType.ACTION)
     public boolean equip(String itemId) {
         if (mc.player == null) {
@@ -86,35 +103,49 @@ public class InventoryApi {
         });
     }
 
+    @MethodDescription("""
+            Equips item to offhand
+            """)
     @ApiVisibility(ApiType.ACTION)
     public boolean equipOffHand(String itemId) {
         return equip(itemId, itemStack -> EquipmentSlot.OFFHAND);
     }
 
-    @HelpText("Allows you to equip any item")
+    @MethodDescription("""
+            Allows you to equip any item
+            """)
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipHead(String itemId) {
         return equip(itemId, true, itemStack -> EquipmentSlot.HEAD);
     }
 
-    @HelpText("Allows you to equip any item")
+    @MethodDescription("""
+            Allows you to equip any item
+            """)
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipChest(String itemId) {
         return equip(itemId, true, itemStack -> EquipmentSlot.CHEST);
     }
 
-    @HelpText("Allows you to equip any item")
+    @MethodDescription("""
+            Allows you to equip any item
+            """)
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipLegs(String itemId) {
         return equip(itemId, true, itemStack -> EquipmentSlot.LEGS);
     }
 
-    @HelpText("Allows you to equip any item")
+    @MethodDescription("""
+            Allows you to equip any item
+            """)
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipFeet(String itemId) {
         return equip(itemId, true, itemStack -> EquipmentSlot.FEET);
     }
 
+    @MethodDescription("""
+            Returns total amount of items you have in your inventory
+            """)
     public int getCount(String itemId) {
         if (mc.player == null) {
             return 0;

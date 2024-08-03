@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.common.IKeyBindingRegistry;
+import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
@@ -15,7 +16,7 @@ public class KeyBindingsController {
     public final KeyMapping[] keys;
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Runnable[] actions = new Runnable[KeyBindingsConfig.KeysCount];
+    private final AsyncRunnable[] actions = new AsyncRunnable[KeyBindingsConfig.KeysCount];
 
     private KeyBindingsController() {
         keys = new KeyMapping[KeyBindingsConfig.KeysCount];
@@ -37,7 +38,7 @@ public class KeyBindingsController {
         }
 
         if (0 <= index && index < KeyBindingsConfig.KeysCount) {
-            Runnable compiled = ScriptController.instance.get(name);
+            AsyncRunnable compiled = ScriptController.instance.get(name);
             if (compiled == null) {
                 actions[index] = null;
                 bindings[index] = null;
@@ -55,7 +56,7 @@ public class KeyBindingsController {
 
         for (int i = 0; i < keys.length; i++) {
             KeyMapping key = keys[i];
-            Runnable action = actions[i];
+            AsyncRunnable action = actions[i];
             while (key.consumeClick()) {
                 if (action != null) {
                     action.run();

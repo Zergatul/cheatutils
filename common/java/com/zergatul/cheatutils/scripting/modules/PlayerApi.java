@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.controllers.SpeedCounterController;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.scripting.HelpText;
+import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import net.minecraft.client.Minecraft;
@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+@SuppressWarnings("unused")
 public class PlayerApi {
 
     private final static Minecraft mc = Minecraft.getInstance();
@@ -44,6 +45,9 @@ public class PlayerApi {
     public EffectsApi effects = new EffectsApi();
     public InteractionsApi interactions = new InteractionsApi();
 
+    @MethodDescription("""
+            Sends text to ingame chat. To send commands use player.command(...) method.
+            """)
     @ApiVisibility(ApiType.ACTION)
     public void chat(String text) {
         LocalPlayer player = Minecraft.getInstance().player;
@@ -52,7 +56,9 @@ public class PlayerApi {
         }
     }
 
-    @HelpText("for server commands, like /home")
+    @MethodDescription("""
+            Sends ingame command to the server
+            """)
     @ApiVisibility(ApiType.ACTION)
     public void command(String text) {
         if (text != null && text.startsWith("/")) {
@@ -63,6 +69,9 @@ public class PlayerApi {
         }
     }
 
+    @MethodDescription("""
+            Returns formatted X/Y/Z player coordinates
+            """)
     public String getCoordinatesFormatted() {
         if (mc.getCameraEntity() != null) {
             return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
@@ -71,7 +80,7 @@ public class PlayerApi {
         }
     }
 
-    @HelpText("If you are in the Overworld, returns calculated coordinates in the Nether")
+    @MethodDescription("If you are in the Overworld, returns calculated coordinates in the Nether")
     public String getCalculatedNetherCoordinates() {
         if (mc.level == null || mc.level.dimension() == Level.NETHER || mc.getCameraEntity() == null) {
             return "";
@@ -79,7 +88,7 @@ public class PlayerApi {
         return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() / 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() / 8);
     }
 
-    @HelpText("If you are in the Nether, returns calculated coordinates in the Overworld")
+    @MethodDescription("If you are in the Nether, returns calculated coordinates in the Overworld")
     public String getCalculatedOverworldCoordinates() {
         if (mc.level == null || mc.level.dimension() == Level.OVERWORLD || mc.getCameraEntity() == null) {
             return "";
@@ -123,12 +132,12 @@ public class PlayerApi {
         return holder.unwrap().map(id -> id.location().toString(), biome -> "[unregistered " + biome + "]");
     }
 
-    @HelpText("Measured in 0.5 sec window.")
+    @MethodDescription("Measured in 0.5 sec window.")
     public String getHorizontalSpeed() {
         return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getHorizontalSpeed());
     }
 
-    @HelpText("Measured in 0.5 sec window.")
+    @MethodDescription("Measured in 0.5 sec window.")
     public String getSpeed() {
         return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getSpeed());
     }
@@ -282,7 +291,9 @@ public class PlayerApi {
         mc.player.setYRot(rotation.yRot());
     }
 
-    @HelpText("types: \"self-attack\", \"invalid-chars\", anything else - normal disconnect.")
+    @MethodDescription("""
+            Allowed disconnect types: "self-attack", "invalid-chars". Anything else (for example "") - normal disconnect.
+            """)
     @ApiVisibility(ApiType.ACTION)
     public void disconnect(String type) {
         switch (type) {
@@ -292,7 +303,10 @@ public class PlayerApi {
         }
     }
 
-    @HelpText("message to be displayed on the disconnect screen")
+    @MethodDescription("""
+            Allowed disconnect types: "self-attack", "invalid-chars". Anything else (for example "") - normal disconnect.
+            You can specify custom message to be displayed at the disconnect screen
+            """)
     @ApiVisibility(ApiType.ACTION)
     public void disconnect(String type, String message) {
         switch (type) {
@@ -324,7 +338,7 @@ public class PlayerApi {
         return true;
     }
 
-    @HelpText("Returns [0..1]. 0 means attack will do full damage.")
+    @MethodDescription("Returns [0..1]. 0 means attack will do full damage.")
     public double getAttackCooldown() {
         if (mc.player == null) {
             return Double.NaN;
@@ -424,7 +438,7 @@ public class PlayerApi {
 
     public static class EffectsApi {
 
-        @HelpText("If player has no effect, returns 0")
+        @MethodDescription("If player has no effect, returns 0")
         public int getLevel(String id) {
             if (mc.level == null) {
                 return 0;
@@ -448,7 +462,7 @@ public class PlayerApi {
             return instance.getAmplifier() + 1;
         }
 
-        @HelpText("If player has no effect, returns 0")
+        @MethodDescription("If player has no effect, returns 0")
         public double getDuration(String id) {
             if (mc.level == null) {
                 return 0;

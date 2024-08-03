@@ -5,14 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import com.zergatul.cheatutils.scripting.CompilerFactory;
-import com.zergatul.cheatutils.scripting.VisibilityCheck;
+import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.scripting.TextRange;
 import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.compiler.CompilationParameters;
-import com.zergatul.scripting.compiler.CompilationParametersBuilder;
 import com.zergatul.scripting.lexer.Lexer;
 import com.zergatul.scripting.lexer.LexerInput;
 import com.zergatul.scripting.lexer.LexerOutput;
@@ -23,8 +21,6 @@ import com.zergatul.scripting.parser.ParserOutput;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,12 +30,7 @@ import java.util.regex.Pattern;
 public class Integration {
 
     public void attach(HttpServer server, String prefix) {
-        CompilationParametersResolver resolver = new CompilationParametersResolver() {
-            @Override
-            public CompilationParameters resolve(String type) {
-                return CompilerFactory.createParameters(type);
-            }
-        };
+        CompilationParametersResolver resolver = type -> ScriptType.valueOf(type).createParameters();
 
         Theme theme = new DarkTheme();
         DocumentationProvider documentationProvider = new DocumentationProvider();
@@ -144,10 +135,11 @@ public class Integration {
                         Parser parser = new Parser(lexerOutput);
                         ParserOutput parserOutput = parser.parse();
 
-                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
+                        CompilationParameters parameters = resolver.resolve(request.type);
+                        Binder binder = new Binder(parserOutput, parameters);
                         BinderOutput binderOutput = binder.bind();
 
-                        Json.sendResponse(exchange, completionProvider.get(binderOutput, request.line, request.column));
+                        Json.sendResponse(exchange, completionProvider.get(parameters, binderOutput, request.line, request.column));
                     } else {
                         exchange.sendResponseHeaders(404, 0);
                     }

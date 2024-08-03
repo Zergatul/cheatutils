@@ -204,7 +204,7 @@ function createComponent(template) {
                         this.showRefs = true;
                     } else {
                         let self = this;
-                        axios.get('/api/scripts-doc/entity-esp').then(response => {
+                        axios.get('/api/scripts-doc/ENTITY_ESP').then(response => {
                             self.showRefs = true;
                             self.refs = response.data;
                         });

@@ -68,7 +68,6 @@ public class Root {
     public static StringsApi strings = new StringsApi();
     public static ColorApi color = new ColorApi();
     public static TimeApi time = new TimeApi();
-    public static ConvertApi convert = new ConvertApi();
     public static PacketApi packet = new PacketApi();
     public static SoundApi sound = new SoundApi();
     public static WindowApi window = new WindowApi();
