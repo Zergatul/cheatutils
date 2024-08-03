@@ -32,8 +32,6 @@ public class KillAuraConfig {
     public Double maxVerticalAngle;
     public ImmutableList<PriorityEntry> priorities;
     public ImmutableList<CustomPriorityEntry> customEntries;
-    public boolean attackAll;
-    public boolean autoRotate;
 
     public KillAuraConfig() {
         active = false;
@@ -42,7 +40,6 @@ public class KillAuraConfig {
         delayMode = ConstDelay;
         attackTickInterval = 5;
         extraTicks = 0.0;
-        autoRotate = true;
         priorities = new ImmutableList<PriorityEntry>()
                 .add(PredefinedPriorityEntry.fromName("Enemies"))
                 .add(PredefinedPriorityEntry.fromName("Shulker Bullets"))
