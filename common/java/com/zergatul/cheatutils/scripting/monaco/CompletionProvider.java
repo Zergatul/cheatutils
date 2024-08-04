@@ -191,6 +191,14 @@ public class CompletionProvider {
             if (node instanceof BoundExpressionStatementNode expressionStatement) {
                 return getUnfinished(expressionStatement.expression, line, column);
             }
+
+            if (node instanceof BoundIfStatementNode ifStatement) {
+                if (ifStatement.elseStatement != null) {
+                    return getUnfinished(ifStatement.elseStatement, line, column);
+                } else {
+                    return getUnfinished(ifStatement.thenStatement, line, column);
+                }
+            }
         }
 
         if (node instanceof BoundExpressionNode) {

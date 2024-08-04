@@ -22,8 +22,38 @@ document.head.appendChild(link);
             { open: '(', close: ')' },
             { open: '"', close: '"' },
             { open: "'", close: "'" }
-        ]
-    });
+        ],
+        colorizedBracketPairs: [
+            ['{', '}'],
+            ['[', ']'],
+            ['(', ')']
+        ],
+        onEnterRules: [
+            {
+                /* before:
+                    ... {<Enter>}
+                */
+                /* after:
+                    ... {
+                        <cursor>
+                    }
+                */
+                beforeText: /^\s*.*{\s*$/,
+                afterText: /^\s*}$/,
+                action: {
+                    indentAction: monaco.languages.IndentAction.IndentOutdent
+                }
+            },
+            {
+                // after: if (...)
+                // after: for (...)
+                // after: else
+                beforeText: /^\s*(((else ?)?if|for|foreach|while)\s*\(.*\)\s*|else\s*)$/,
+                action: {
+                    indentAction: monaco.languages.IndentAction.Indent
+                }
+            }
+        ]});
 
     const get = async url => {
         const response = await fetch(url);
