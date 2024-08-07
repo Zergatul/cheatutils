@@ -264,9 +264,26 @@ public class GameApi {
             return getBooleanValue(entityId, Entity::hasCustomName);
         }
 
-        public String getName(int entityId) {
+        @MethodDescription("""
+                Gets display name of an entity
+                """)
+        public String getDisplayName(int entityId) {
             return getStringValue(entityId, entity -> {
                 Component name = entity.getDisplayName();
+                if (name == null) {
+                    return "";
+                } else {
+                    return name.getString();
+                }
+            });
+        }
+
+        @MethodDescription("""
+                Gets name of an entity
+                """)
+        public String getName(int entityId) {
+            return getStringValue(entityId, entity -> {
+                Component name = entity.getName();
                 if (name == null) {
                     return "";
                 } else {

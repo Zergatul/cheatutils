@@ -199,6 +199,12 @@ public class CompletionProvider {
                     return getUnfinished(ifStatement.thenStatement, line, column);
                 }
             }
+
+            if (node instanceof BoundVariableDeclarationNode declaration) {
+                if (declaration.expression != null && declaration.expression.getRange().endsWith(line, column)) {
+                    return getUnfinished(declaration.expression, line, column);
+                }
+            }
         }
 
         if (node instanceof BoundExpressionNode) {

@@ -7,6 +7,7 @@ import com.zergatul.scripting.symbols.*;
 import com.zergatul.scripting.type.*;
 import com.zergatul.scripting.type.operation.BinaryOperation;
 
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -168,6 +169,25 @@ public class HoverProvider {
             return predefinedType(type.toString());
         } else if (type instanceof SArrayType array) {
             return type(array.getElementsType()) + span(theme.getTokenColor(TokenType.LEFT_SQUARE_BRACKET), "[]");
+        } else if (type instanceof SFunctionalInterface func) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(span(theme.getTypeColor(),"Lambda<"));
+            sb.append('(');
+            SType[] types = func.getActualParameters();
+            Parameter[] parameters = func.getInterfaceMethod().getParameters();
+            for (int i = 0; i < types.length; i++) {
+                sb.append(type(types[i]));
+                sb.append(' ');
+                sb.append(parameters[i].getName());
+                if (i != types.length - 1) {
+                    sb.append(", ");
+                }
+            }
+            sb.append(')');
+            sb.append(" => ");
+            sb.append(type(func.getActualReturnType()));
+            sb.append(span(theme.getTypeColor(),">"));
+            return sb.toString();
         } else if (type instanceof SFuture future) {
             if (future.getUnderlying() == SVoidType.instance) {
                 return span(theme.getTypeColor(), "Future");

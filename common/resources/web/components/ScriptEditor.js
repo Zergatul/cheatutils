@@ -53,7 +53,8 @@ document.head.appendChild(link);
                     indentAction: monaco.languages.IndentAction.Indent
                 }
             }
-        ]});
+        ]
+    });
 
     const get = async url => {
         const response = await fetch(url);

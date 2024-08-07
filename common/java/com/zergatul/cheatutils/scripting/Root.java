@@ -80,9 +80,7 @@ public class Root {
     public static UIApi ui = new UIApi();
 
     // specific
-    public static CurrentPlayerApi currentPlayer = new CurrentPlayerApi();
     public static CurrentEntityEspApi currentEntityEsp = new CurrentEntityEspApi();
-    public static CurrentChatMessageApi currentChatMessage = new CurrentChatMessageApi();
     public static CurrentServerApi currentServer = new CurrentServerApi();
     public static CurrentContainerClickApi currentContainerClick = new CurrentContainerClickApi();
 }

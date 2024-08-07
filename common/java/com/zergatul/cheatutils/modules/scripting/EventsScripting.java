@@ -5,13 +5,12 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerClickEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.scripting.runtime.Action0;
+import com.zergatul.cheatutils.scripting.ChatMessageConsumer;
+import com.zergatul.cheatutils.scripting.EntityIdConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,58 +20,54 @@ public class EventsScripting implements Module {
     public static final EventsScripting instance = new EventsScripting();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final List<Action0> onHandleKeys = new ArrayList<>();
-    private final List<Action0> onTickEnd = new ArrayList<>();
-    private final List<Action0> onPlayerAdded = new ArrayList<>();
-    private final List<Action0> onPlayerRemoved = new ArrayList<>();
-    private final List<Action0> onChatMessage = new ArrayList<>();
-    private final List<Action0> onJoinServer = new ArrayList<>();
-    private final List<Action0> onContainerMenuClick = new ArrayList<>();
-    private Entity currentEntity;
-    private Component currentChatMessage;
+    private final List<Runnable> onHandleKeys = new ArrayList<>();
+    private final List<Runnable> onTickEnd = new ArrayList<>();
+    private final List<EntityIdConsumer> onPlayerAdded = new ArrayList<>();
+    private final List<EntityIdConsumer> onPlayerRemoved = new ArrayList<>();
+    private final List<ChatMessageConsumer> onChatMessage = new ArrayList<>();
+    private final List<Runnable> onJoinServer = new ArrayList<>();
+    private final List<Runnable> onContainerMenuClick = new ArrayList<>();
     private Connection currentConnection;
     private ContainerClickEvent currentContainerClickEvent;
 
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
             if (canTrigger()) {
-                for (Action0 handler : onHandleKeys) {
-                    handler.invoke();
+                for (Runnable handler : onHandleKeys) {
+                    handler.run();
                 }
             }
         });
 
         Events.ClientTickEnd.add(() -> {
             if (canTrigger()) {
-                for (Action0 handler : onTickEnd) {
-                    handler.invoke();
+                for (Runnable handler : onTickEnd) {
+                    handler.run();
                 }
             }
         });
 
         Events.EntityAdded.add(entity -> {
             if (canTrigger() && entity instanceof RemotePlayer) {
-                currentEntity = entity;
-                for (Action0 handler : onPlayerAdded) {
-                    handler.invoke();
+                for (EntityIdConsumer consumer : onPlayerAdded) {
+                    consumer.accept(entity.getId());
                 }
             }
         });
 
         Events.EntityRemoved.add(entity -> {
             if (canTrigger() && entity instanceof RemotePlayer) {
-                currentEntity = entity;
-                for (Action0 handler : onPlayerRemoved) {
-                    handler.invoke();
+                for (EntityIdConsumer consumer : onPlayerRemoved) {
+                    consumer.accept(entity.getId());
                 }
             }
         });
 
         Events.ChatMessageAdded.add(component -> {
             if (canTrigger()) {
-                currentChatMessage = component;
-                for (Action0 handler : onChatMessage) {
-                    handler.invoke();
+                String text = component.getString();
+                for (ChatMessageConsumer consumer : onChatMessage) {
+                    consumer.accept( text);
                 }
             }
         });
@@ -80,8 +75,8 @@ public class EventsScripting implements Module {
         Events.ClientPlayerLoggingIn.add(connection -> {
             if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
                 currentConnection = connection;
-                for (Action0 handler : onJoinServer) {
-                    handler.invoke();
+                for (Runnable handler : onJoinServer) {
+                    handler.run();
                 }
                 currentConnection = null;
             }
@@ -90,20 +85,12 @@ public class EventsScripting implements Module {
         Events.ContainerMenuClick.add(event -> {
             if (canTrigger()) {
                 currentContainerClickEvent = event;
-                for (Action0 handler : onContainerMenuClick) {
-                    handler.invoke();
+                for (Runnable handler : onContainerMenuClick) {
+                    handler.run();
                 }
                 currentContainerClickEvent = null;
             }
         });
-    }
-
-    public Entity getCurrentEntity() {
-        return currentEntity;
-    }
-
-    public Component getCurrentChatMessage() {
-        return currentChatMessage;
     }
 
     public Connection getCurrentConnection() {
@@ -133,31 +120,31 @@ public class EventsScripting implements Module {
         });
     }
 
-    public void addOnHandleKeys(Action0 action) {
+    public void addOnHandleKeys(Runnable action) {
         onHandleKeys.add(action);
     }
 
-    public void addOnTickEnd(Action0 action) {
+    public void addOnTickEnd(Runnable action) {
         onTickEnd.add(action);
     }
 
-    public void addOnPlayerAdded(Action0 action) {
-        onPlayerAdded.add(action);
+    public void addOnPlayerAdded(EntityIdConsumer consumer) {
+        onPlayerAdded.add(consumer);
     }
 
-    public void addOnPlayerRemoved(Action0 action) {
-        onPlayerRemoved.add(action);
+    public void addOnPlayerRemoved(EntityIdConsumer consumer) {
+        onPlayerRemoved.add(consumer);
     }
 
-    public void addOnChatMessage(Action0 action) {
-        onChatMessage.add(action);
+    public void addOnChatMessage(ChatMessageConsumer consumer) {
+        onChatMessage.add(consumer);
     }
 
-    public void addOnJoinServer(Action0 action) {
+    public void addOnJoinServer(Runnable action) {
         onJoinServer.add(action);
     }
 
-    public void addOnContainerMenuClick(Action0 action) {
+    public void addOnContainerMenuClick(Runnable action) {
         onContainerMenuClick.add(action);
     }
 

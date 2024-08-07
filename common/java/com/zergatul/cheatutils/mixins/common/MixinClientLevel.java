@@ -28,7 +28,7 @@ public abstract class MixinClientLevel extends Level {
         super(p_270739_, p_270683_, p_270200_, p_270240_, p_270692_, p_270904_, p_270470_, p_270248_, p_270466_);
     }
 
-    @Inject(at = @At("HEAD"), method = "addEntity(Lnet/minecraft/world/entity/Entity;)V")
+    @Inject(at = @At("TAIL"), method = "addEntity(Lnet/minecraft/world/entity/Entity;)V")
     private void onAddEntity(Entity entity, CallbackInfo info) {
         Events.EntityAdded.trigger(entity);
     }
