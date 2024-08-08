@@ -78,9 +78,4 @@ public class Root {
     public static ClipboardApi clipboard = new ClipboardApi();
     public static ContainersApi containers = new ContainersApi();
     public static UIApi ui = new UIApi();
-
-    // specific
-    public static CurrentEntityEspApi currentEntityEsp = new CurrentEntityEspApi();
-    public static CurrentServerApi currentServer = new CurrentServerApi();
-    public static CurrentContainerClickApi currentContainerClick = new CurrentContainerClickApi();
 }

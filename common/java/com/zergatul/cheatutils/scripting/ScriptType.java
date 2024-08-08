@@ -32,7 +32,7 @@ public enum ScriptType {
 
     ENTITY_ESP(
             new ApiType[] { ApiType.CURRENT_ENTITY_ESP },
-            EntityIdConsumer.class);
+            EntityEspConsumer.class);
 
     private final ApiType[] apis;
     private final Class<?> funcInterface;

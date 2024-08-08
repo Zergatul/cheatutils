@@ -2,15 +2,14 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.ContainerClickEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.ChatMessageConsumer;
+import com.zergatul.cheatutils.scripting.ContainerClickConsumer;
 import com.zergatul.cheatutils.scripting.EntityIdConsumer;
+import com.zergatul.cheatutils.scripting.ServerAddressConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +24,8 @@ public class EventsScripting implements Module {
     private final List<EntityIdConsumer> onPlayerAdded = new ArrayList<>();
     private final List<EntityIdConsumer> onPlayerRemoved = new ArrayList<>();
     private final List<ChatMessageConsumer> onChatMessage = new ArrayList<>();
-    private final List<Runnable> onJoinServer = new ArrayList<>();
-    private final List<Runnable> onContainerMenuClick = new ArrayList<>();
-    private Connection currentConnection;
-    private ContainerClickEvent currentContainerClickEvent;
+    private final List<ServerAddressConsumer> onJoinServer = new ArrayList<>();
+    private final List<ContainerClickConsumer> onContainerMenuClick = new ArrayList<>();
 
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
@@ -74,31 +71,20 @@ public class EventsScripting implements Module {
 
         Events.ClientPlayerLoggingIn.add(connection -> {
             if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
-                currentConnection = connection;
-                for (Runnable handler : onJoinServer) {
-                    handler.run();
+                String address = connection == null ? "" : connection.getRemoteAddress().toString();
+                for (ServerAddressConsumer consumer : onJoinServer) {
+                    consumer.accept(address);
                 }
-                currentConnection = null;
             }
         });
 
         Events.ContainerMenuClick.add(event -> {
             if (canTrigger()) {
-                currentContainerClickEvent = event;
-                for (Runnable handler : onContainerMenuClick) {
-                    handler.run();
+                for (ContainerClickConsumer consumer : onContainerMenuClick) {
+                    consumer.accept(event.slot(), event.button(), event.type().toString());
                 }
-                currentContainerClickEvent = null;
             }
         });
-    }
-
-    public Connection getCurrentConnection() {
-        return currentConnection;
-    }
-
-    public ContainerClickEvent getCurrentContainerClickEvent() {
-        return currentContainerClickEvent;
     }
 
     public void setScript(Runnable runnable) {
@@ -140,12 +126,12 @@ public class EventsScripting implements Module {
         onChatMessage.add(consumer);
     }
 
-    public void addOnJoinServer(Runnable action) {
-        onJoinServer.add(action);
+    public void addOnJoinServer(ServerAddressConsumer consumer) {
+        onJoinServer.add(consumer);
     }
 
-    public void addOnContainerMenuClick(Runnable action) {
-        onContainerMenuClick.add(action);
+    public void addOnContainerMenuClick(ContainerClickConsumer consumer) {
+        onContainerMenuClick.add(consumer);
     }
 
     private boolean canTrigger() {

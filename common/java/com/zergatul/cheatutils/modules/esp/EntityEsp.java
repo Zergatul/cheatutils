@@ -16,6 +16,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -366,7 +367,7 @@ public class EntityEsp implements Module {
         result.config = config;
         scriptResults.add(result);
 
-        config.script.accept(entity.getId());
+        config.script.accept(entity.getId(), EntityEspEvent.instance);
 
         EntityScriptResult.current = null;
 

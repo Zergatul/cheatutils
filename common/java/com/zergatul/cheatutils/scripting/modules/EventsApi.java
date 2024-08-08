@@ -1,9 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
-import com.zergatul.cheatutils.scripting.ChatMessageConsumer;
-import com.zergatul.cheatutils.scripting.EntityIdConsumer;
-import com.zergatul.cheatutils.scripting.MethodDescription;
+import com.zergatul.cheatutils.scripting.*;
 
 @SuppressWarnings("unused")
 public class EventsApi {
@@ -59,16 +57,24 @@ public class EventsApi {
     }
 
     @MethodDescription("""
-            Triggers when you join any server. Use currentServer API to get more information.
+            Triggers when you join any server.
+            Example:
+            events.onJoinServer(address => {
+                // ...
+            });
             """)
-    public void onJoinServer(Runnable action) {
-        EventsScripting.instance.addOnJoinServer(action);
+    public void onJoinServer(ServerAddressConsumer consumer) {
+        EventsScripting.instance.addOnJoinServer(consumer);
     }
 
     @MethodDescription("""
-            Triggers when you (or automated tool) click on slot in ContainerMenu screen. Use currentContainerClick API to get more information.
+            Triggers when you (or automated tool) click on slot in ContainerMenu screen.
+            Example:
+            events.onContainerMenuSlotClick((slot, button, type) => {
+                // ...
+            });
             """)
-    public void onContainerMenuSlotClick(Runnable action) {
-        EventsScripting.instance.addOnContainerMenuClick(action);
+    public void onContainerMenuSlotClick(ContainerClickConsumer consumer) {
+        EventsScripting.instance.addOnContainerMenuClick(consumer);
     }
 }
