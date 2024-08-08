@@ -8,7 +8,7 @@ public class ScriptsAssignApi extends ApiBase {
 
     @Override
     public String getRoute() {
-        return "scripts-assign";
+        return "keybinding-scripts-assign";
     }
 
     @Override

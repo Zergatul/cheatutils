@@ -42,7 +42,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new BlockColorApi());
         apis.add(new KillAuraInfoApi());
         apis.add(new ExplorationMiniMapMarkersApi());
-        apis.add(new ScriptsApi());
+        apis.add(new KeyBindingScriptsApi());
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
         apis.add(new ItemInfoApi());

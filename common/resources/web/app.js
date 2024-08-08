@@ -113,7 +113,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('AdvancedTooltipsConfig', ['advanced', 'tooltips']);
     loadModule('FogConfig', ['fog']);
     loadModule('InstantDisconnectConfig', ['instant', 'disconnect']);
-    loadModule('ScriptsConfig', ['key', 'bindings', 'scripting']);
+    loadModule('KeyBindingScriptsConfig', ['key', 'bindings', 'scripting']);
     loadModule('WorldMarkersConfig', ['world', 'markers']);
     loadModule('UserNameConfig', ['user', 'name']);
     loadModule('NewChunksConfig', ['new', 'chunks']);

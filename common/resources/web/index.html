@@ -52,7 +52,7 @@
                             <button @click="current = 'full-bright'" :class="{ faded: !filtered.FullBright, active: statuses.FullBright }">Full Bright</button>
                         </td>
                         <td>
-                            <button @click="current = 'scripts'" :class="{ faded: !filtered.Scripts, active: statuses.Scripts }">Key Bindings</button>
+                            <button @click="current = 'key-binding-scripts'" :class="{ faded: !filtered.KeyBindingScripts, active: statuses.KeyBindingScripts }">Key Bindings</button>
                         </td>
                         <td>
                             <button @click="current = 'core'" :class="{ faded: !filtered.Core, active: statuses.Core }">Core Config</button>
@@ -470,10 +470,10 @@
             @back="backToMain()">
         </instant-disconnect-config>
 
-        <scripts-config
-            v-if="current == 'scripts'"
+        <key-binding-scripts-config
+            v-if="current == 'key-binding-scripts'"
             @back="backToMain()">
-        </scripts-config>
+        </key-binding-scripts-config>
 
         <world-markers-config
             v-if="current == 'world-markers'"

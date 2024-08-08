@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptController;
+import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.scripting.DiagnosticMessage;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpException;
@@ -9,17 +9,17 @@ import org.apache.http.HttpException;
 import java.util.List;
 import java.util.Optional;
 
-public class ScriptsApi extends ApiBase {
+public class KeyBindingScriptsApi extends ApiBase {
 
     @Override
     public String getRoute() {
-        return "scripts";
+        return "keybinding-scripts";
     }
 
     @Override
     public String get() throws HttpException {
         String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
-        return gson.toJson(ScriptController.instance.list().stream().map(s -> {
+        return gson.toJson(ScriptsController.instance.list().stream().map(s -> {
             int index = ArrayUtils.indexOf(bindings, s.name);
             return new Script(s.name, index);
         }).toArray());
@@ -27,7 +27,7 @@ public class ScriptsApi extends ApiBase {
 
     @Override
     public String get(String id) throws HttpException {
-        Optional<ScriptController.Script> optional = ScriptController.instance.list().stream().filter(s -> s.name.equals(id)).findFirst();
+        Optional<ScriptsController.Script> optional = ScriptsController.instance.list().stream().filter(s -> s.name.equals(id)).findFirst();
         if (optional.isEmpty()) {
             return gson.toJson((Object) null);
         } else {
@@ -39,7 +39,7 @@ public class ScriptsApi extends ApiBase {
     public String put(String id, String body) throws HttpException {
         Script script = gson.fromJson(body, Script.class);
         try {
-            List<DiagnosticMessage> messages = ScriptController.instance.update(id, script.name, script.code);
+            List<DiagnosticMessage> messages = ScriptsController.instance.update(id, script.name, script.code);
             if (!messages.isEmpty()) {
                 return gson.toJson(messages);
             }
@@ -54,7 +54,7 @@ public class ScriptsApi extends ApiBase {
     public String post(String body) throws HttpException {
         Script script = gson.fromJson(body, Script.class);
         try {
-            List<DiagnosticMessage> messages = ScriptController.instance.add(script.name, script.code, false);
+            List<DiagnosticMessage> messages = ScriptsController.instance.add(script.name, script.code, false);
             if (!messages.isEmpty()) {
                 return gson.toJson(messages);
             }
@@ -68,7 +68,7 @@ public class ScriptsApi extends ApiBase {
 
     @Override
     public String delete(String id) throws HttpException {
-        ScriptController.instance.remove(id);
+        ScriptsController.instance.remove(id);
         ConfigStore.instance.requestWrite();
         return "true";
     }
@@ -83,7 +83,7 @@ public class ScriptsApi extends ApiBase {
             this.key = key;
         }
 
-        public Script(ScriptController.Script script) {
+        public Script(ScriptsController.Script script) {
             name = script.name;
             code = script.code;
         }

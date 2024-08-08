@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class KeyBindingsConfig implements ValidatableConfig {
 
-    public static final int KeysCount = 20;
+    public static final int KeysCount = 30;
 
     public String[] bindings = new String[KeysCount];
 

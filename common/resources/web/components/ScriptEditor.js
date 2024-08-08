@@ -23,11 +23,11 @@ document.head.appendChild(link);
             { open: '"', close: '"' },
             { open: "'", close: "'" }
         ],
-        colorizedBracketPairs: [
+        /*colorizedBracketPairs: [
             ['{', '}'],
             ['[', ']'],
             ['(', ')']
-        ],
+        ],*/
         onEnterRules: [
             {
                 /* before:

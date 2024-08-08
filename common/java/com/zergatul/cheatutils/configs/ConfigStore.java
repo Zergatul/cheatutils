@@ -10,7 +10,6 @@ import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
-import com.zergatul.cheatutils.scripting.BlockPosConsumer;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.world.level.block.state.BlockState;
@@ -61,6 +60,7 @@ public class ConfigStore {
                 migration1(element);
                 migration2(element);
                 migration3(element);
+                migration4(element);
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
@@ -145,11 +145,11 @@ public class ConfigStore {
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
 
-        ScriptController.instance.clear();
-        if (config.scriptsConfig.scripts.isEmpty()) {
+        ScriptsController.instance.clear();
+        if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                ScriptController.instance.add(toggleEspName, "esp.toggle();", false);
+                ScriptsController.instance.add(toggleEspName, "esp.toggle();", false);
                 //KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
                 KeyBindingsController.instance.assign(0, toggleEspName);
             } catch (Throwable e) {
@@ -158,18 +158,18 @@ public class ConfigStore {
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
+                ScriptsController.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
                 KeyBindingsController.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
                 KeyBindingsController.instance.assign(1, toggleFreeCamName);
             } catch (Throwable e) {
                 logger.error(e);
             }
         } else {
-            ArrayList<ScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.scriptsConfig.scripts);
-            config.scriptsConfig.scripts.clear();
+            ArrayList<KeyBindingScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.keyBindingScriptsConfig.scripts);
+            config.keyBindingScriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    ScriptController.instance.add(s.name, s.code, true);
+                    ScriptsController.instance.add(s.name, s.code, true);
                 } catch (Throwable e) {
                     logger.error(e);
                 }
@@ -185,7 +185,7 @@ public class ConfigStore {
 
         if (config.statusOverlayConfig.code != null) {
             try {
-                CompilationResult result = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
+                CompilationResult result = ScriptsController.instance.compileOverlay(config.statusOverlayConfig.code);
                 if (result.getProgram() != null) {
                     StatusOverlay.instance.setScript(result.getProgram());
                 } else {
@@ -198,7 +198,7 @@ public class ConfigStore {
 
         if (config.blockAutomationConfig.code != null) {
             try {
-                CompilationResult result = ScriptController.instance.compileBlockAutomation(config.blockAutomationConfig.code);
+                CompilationResult result = ScriptsController.instance.compileBlockAutomation(config.blockAutomationConfig.code);
                 if (result.getProgram() != null) {
                     BlockAutomation.instance.setScript(result.getProgram());
                 } else {
@@ -211,7 +211,7 @@ public class ConfigStore {
 
         if (config.villagerRollerConfig.code != null) {
             try {
-                CompilationResult result = ScriptController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
+                CompilationResult result = ScriptsController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
                 if (result.getProgram() != null) {
                     VillagerRoller.instance.setScript(result.getProgram());
                 } else {
@@ -224,7 +224,7 @@ public class ConfigStore {
 
         if (config.eventsScriptingConfig.code != null) {
             try {
-                CompilationResult result = ScriptController.instance.compileEvents(config.eventsScriptingConfig.code);
+                CompilationResult result = ScriptsController.instance.compileEvents(config.eventsScriptingConfig.code);
                 if (result.getProgram() != null) {
                     EventsScripting.instance.setScript(result.getProgram());
                 } else {
@@ -243,7 +243,7 @@ public class ConfigStore {
 
                 if (entityConfig.code != null) {
                     try {
-                        CompilationResult result = ScriptController.instance.compileEntityEsp(entityConfig.code);
+                        CompilationResult result = ScriptsController.instance.compileEntityEsp(entityConfig.code);
                         if (result.getProgram() != null) {
                             entityConfig.script = result.getProgram();
                         } else {
@@ -333,5 +333,24 @@ public class ConfigStore {
             JsonElement value = fog.remove("disableFog");
             fog.add("enabled", value);
         }
+    }
+
+    private void migration4(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject root = element.getAsJsonObject();
+        if (!root.has("scriptsConfig")) {
+            return;
+        }
+
+        JsonElement config = root.get("scriptsConfig");
+        if (!config.isJsonObject()) {
+            return;
+        }
+
+        root.remove("scriptsConfig");
+        root.add("keyBindingScriptsConfig", config);
     }
 }

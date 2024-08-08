@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
-import com.zergatul.cheatutils.controllers.ScriptController;
+import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.scripting.compiler.CompilationResult;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
@@ -38,7 +38,7 @@ public class EntityEspCodeApi extends ApiBase {
 
         CompilationResult result;
         try {
-            result = ScriptController.instance.compileEntityEsp(request.code);
+            result = ScriptsController.instance.compileEntityEsp(request.code);
         } catch (Throwable e) {
             throw new HttpException(e.getMessage());
         }

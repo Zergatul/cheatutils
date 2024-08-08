@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ScriptsConfig {
+public class KeyBindingScriptsConfig {
     public List<ScriptEntry> scripts = Collections.synchronizedList(new ArrayList<>());
 
     public static class ScriptEntry {

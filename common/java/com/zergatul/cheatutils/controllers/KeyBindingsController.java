@@ -38,7 +38,7 @@ public class KeyBindingsController {
         }
 
         if (0 <= index && index < KeyBindingsConfig.KeysCount) {
-            AsyncRunnable compiled = ScriptController.instance.get(name);
+            AsyncRunnable compiled = ScriptsController.instance.get(name);
             if (compiled == null) {
                 actions[index] = null;
                 bindings[index] = null;

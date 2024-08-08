@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
-import com.zergatul.cheatutils.configs.ScriptsConfig;
+import com.zergatul.cheatutils.configs.KeyBindingScriptsConfig;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.scripting.DiagnosticMessage;
@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ScriptController {
+public class ScriptsController {
 
-    public static final ScriptController instance = new ScriptController();
+    public static final ScriptsController instance = new ScriptsController();
 
     private final Compiler handleKeybindingsCompiler = new Compiler(ScriptType.KEYBINDING.createParameters());
     private final Compiler overlayCompiler = new Compiler(ScriptType.OVERLAY.createParameters());
@@ -26,7 +26,7 @@ public class ScriptController {
 
     private final List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
-    private ScriptController() {
+    private ScriptsController() {
 
     }
 
@@ -47,7 +47,7 @@ public class ScriptController {
 
         if (addIfCompilationFails) {
             scripts.add(script);
-            ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
+            ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.add(new KeyBindingScriptsConfig.ScriptEntry(name, code));
         }
 
         CompilationResult result = handleKeybindingsCompiler.compile(code);
@@ -56,7 +56,7 @@ public class ScriptController {
 
             if (!addIfCompilationFails) {
                 scripts.add(script);
-                ConfigStore.instance.getConfig().scriptsConfig.scripts.add(new ScriptsConfig.ScriptEntry(name, code));
+                ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.add(new KeyBindingScriptsConfig.ScriptEntry(name, code));
             }
         }
 
@@ -97,7 +97,7 @@ public class ScriptController {
         }
 
         Script script = scripts.stream().filter(s -> s.name.equals(oldName)).findFirst().orElse(null);
-        ScriptsConfig.ScriptEntry configScript = ConfigStore.instance.getConfig().scriptsConfig.scripts.stream().filter(s -> s.name.equals(oldName)).findFirst().orElse(null);
+        KeyBindingScriptsConfig.ScriptEntry configScript = ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.stream().filter(s -> s.name.equals(oldName)).findFirst().orElse(null);
         if (script != null) {
             script.name = newName;
             script.code = code;
@@ -143,7 +143,7 @@ public class ScriptController {
     public void remove(String name) {
         KeyBindingsController.instance.assign(-1, name);
         scripts.removeIf(s -> s.name.equals(name));
-        ConfigStore.instance.getConfig().scriptsConfig.scripts.removeIf(s -> s.name.equals(name));
+        ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.removeIf(s -> s.name.equals(name));
     }
 
     public CompilationResult compileOverlay(String code) {
