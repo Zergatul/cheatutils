@@ -12,6 +12,27 @@ link.href = 'https://cdn.jsdelivr.net/npm/vscode-codicons@0.0.17/dist/codicon.mi
 link.rel = 'stylesheet';
 document.head.appendChild(link);
 
+let dark = null;
+
+function isDark() {
+    return dark && dark.matches;
+}
+
+function applyTheme() {
+    if (isDark()) {
+        monaco.editor.setTheme('cheatutils-scripting-language-dark');
+    } else {
+        monaco.editor.setTheme('cheatutils-scripting-language-light');
+    }
+}
+
+if (window.matchMedia) {
+    dark = window.matchMedia('(prefers-color-scheme: dark)');
+    dark.addEventListener('change', () => {
+        applyTheme();
+    });
+}
+
 (async () => {
     monaco.languages.register({ id: languageId });
 
@@ -23,6 +44,7 @@ document.head.appendChild(link);
             { open: '"', close: '"' },
             { open: "'", close: "'" }
         ],
+        colorizedBracketPairs: [],
         /*colorizedBracketPairs: [
             ['{', '}'],
             ['[', ']'],
@@ -132,7 +154,8 @@ document.head.appendChild(link);
 
     monaco.languages.registerHoverProvider(languageId, {
         async provideHover(model, position) {
-            const hover = await post('/api/code/hover', {
+            const theme = isDark() ? 'dark' : 'light';
+            const hover = await post(`/api/code/hover/${theme}`, {
                 code: model.getValue(),
                 type: getSettingsByModel(model).type,
                 line: position.lineNumber,
@@ -200,14 +223,21 @@ document.head.appendChild(link);
         }
     });
 
+    monaco.editor.defineTheme('cheatutils-scripting-language-light', {
+        base: 'vs',
+        inherit: true,
+        colors: {},
+        rules: await get('/api/code/token-rules/light')
+    });
+
     monaco.editor.defineTheme('cheatutils-scripting-language-dark', {
         base: 'vs-dark',
         inherit: true,
         colors: {},
-        rules: await get('/api/code/token-rules')
+        rules: await get('/api/code/token-rules/dark')
     });
 
-    monaco.editor.setTheme('cheatutils-scripting-language-dark');
+    applyTheme();
 })();
 
 function createComponent(template) {
@@ -244,15 +274,8 @@ function createComponent(template) {
                     i--;
                 }
             }
-            //themeListeners = themeListeners.filter(l => l != eventHandler);
         },
-        methods: {
-            /*onThemeChanged() {
-                const darkTheme = 'ace/theme/one_dark';
-                const lightTheme = 'ace/theme/github';
-                this.editor.setTheme(isDark() ? darkTheme : lightTheme);
-            }*/
-        },
+        methods: {},
         watch: {
             modelValue(value) {
                 if (this.editor.getModel().getValue() != value) {
@@ -262,66 +285,5 @@ function createComponent(template) {
         }
     };
 }
-
-/* OLD */
-
-/*let dark = null;
-let themeListeners = [];
-
-if (window.matchMedia) {
-    dark = window.matchMedia('(prefers-color-scheme: dark)');
-    dark.addEventListener('change', () => {
-        themeListeners.forEach(callback => callback());
-    });
-}
-
-function isDark() {
-    return dark && dark.matches;
-}
-
-function createComponent(template) {
-    let eventHandler = null;
-    return {
-        template: template,
-        props: ['modelValue'],
-        emits: ['update:modelValue'],
-        mounted() {
-            let self = this;
-            let element = self.$.subTree.el;
-            self.editor = ace.edit(element);
-            self.editor.setSelectionStyle('text');
-            self.editor.setFontSize('16px');
-            self.editor.setShowPrintMargin(false);
-            self.editor.session.setMode('ace/mode/java');
-            if (self.modelValue) {
-                self.editor.setValue(self.modelValue, -1);
-            }
-            self.editor.on('change', () => {
-                self.$emit('update:modelValue', self.editor.getValue());
-            });
-
-            eventHandler = self.onThemeChanged;
-            themeListeners.push(eventHandler);
-            eventHandler();
-        },
-        unmounted() {
-            themeListeners = themeListeners.filter(l => l != eventHandler);
-        },
-        methods: {
-            onThemeChanged() {
-                const darkTheme = 'ace/theme/one_dark';
-                const lightTheme = 'ace/theme/github';
-                this.editor.setTheme(isDark() ? darkTheme : lightTheme);
-            }
-        },
-        watch: {
-            modelValue(value) {
-                if (this.editor.getValue() != value) {
-                    this.editor.setValue(value, -1);
-                }
-            }
-        }
-    };
-}*/
 
 export { createComponent }

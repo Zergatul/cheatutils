@@ -32,9 +32,9 @@ public class Integration {
     public void attach(HttpServer server, String prefix) {
         CompilationParametersResolver resolver = type -> ScriptType.valueOf(type).createParameters();
 
-        Theme theme = new DarkTheme();
+        Theme dark = new DarkTheme();
+        Theme light = new WhiteTheme();
         DocumentationProvider documentationProvider = new DocumentationProvider();
-        HoverProvider hoverProvider = new HoverProvider(theme, documentationProvider);
         DefinitionProvider definitionProvider = new DefinitionProvider();
         CompletionProvider completionProvider = new CompletionProvider(documentationProvider);
 
@@ -86,9 +86,13 @@ public class Integration {
                         Json.sendResponse(exchange, Arrays.stream(TokenType.values()).map(Enum::name).toArray());
                     } else if (path.equals(prefix + "nodes")) {
                         Json.sendResponse(exchange, Arrays.stream(NodeType.values()).map(Enum::name).toArray());
-                    } else if (path.equals(prefix + "token-rules")) {
-                        Json.sendResponse(exchange, Arrays.stream(TokenType.values()).map(type -> new TokenRule(type.name(), theme.getTokenColor(type))).toArray());
-                    } else if (path.equals(prefix + "hover")) {
+                    } else if (path.equals(prefix + "token-rules/light")) {
+                        Json.sendResponse(exchange, Arrays.stream(TokenType.values()).map(type -> new TokenRule(type.name(), light.getTokenColor(type))).toArray());
+                    } else if (path.equals(prefix + "token-rules/dark")) {
+                        Json.sendResponse(exchange, Arrays.stream(TokenType.values()).map(type -> new TokenRule(type.name(), dark.getTokenColor(type))).toArray());
+                    } else if (path.startsWith(prefix + "hover/")) {
+                        String theme = path.substring(path.indexOf("/hover/") + 7);
+
                         Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         HoverRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), HoverRequest.class);
@@ -105,7 +109,8 @@ public class Integration {
 
                         List<BoundNode> chain = new ArrayList<>();
                         findChain(chain, binderOutput.unit(), request.line, request.column);
-                        Json.sendResponse(exchange, hoverProvider.get(chain));
+
+                        Json.sendResponse(exchange, new HoverProvider(theme.equals("light") ? light : dark, documentationProvider).get(chain));
                     } else if (path.equals(prefix + "definition")) {
                         Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
