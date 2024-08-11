@@ -1,0 +1,21 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <div class="module-main">
+        <h2 class="module-header">Debugging</h2>
+        <div class="description">
+            Call <b>debug.write("text");</b> from any script to see logs here.<br>
+            Module keeps either last 100 logs or logs from last second (which is bigger).
+        </div>
+
+        <div>
+            <button style="width: 200px;" @click="toggleAutoScroll()">Auto-Scroll: {{ autoScroll ? 'ON' : 'OFF' }}</button>
+            <button style="width: 200px;" @click="toggleAutoRefresh()">Auto-Refresh: {{ autoRefresh ? 'ON' : 'OFF' }}</button>
+            <button style="width: 250px;" @click="toggleDelay()">Auto-Refresh Delay: {{ getDelay() }}ms</button>
+            <button style="width: 200px;" @click="clear()">Clear</button>
+        </div>
+
+        <div ref="messages" class="debug-messages"></div>
+    </div>
+</div>

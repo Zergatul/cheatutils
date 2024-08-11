@@ -193,7 +193,7 @@
                             <button @click="current = 'chunks'" :class="{ faded: !filtered.Chunks, active: statuses.Chunks }">Chunks</button>
                         </td>
                         <td>
-                            
+                            <button @click="current = 'debugging'" :class="{ faded: !filtered.Debugging, active: statuses.Debugging }">Debug</button>
                         </td>
                     </tr>
                     <tr>
@@ -698,6 +698,11 @@
             v-if="current == 'anti-hunger'"
             @back="backToMain()">
         </anti-hunger-config>
+
+        <debugging-config
+            v-if="current == 'debugging'"
+            @back="backToMain()">
+        </debugging-config>
 
     </div>
 

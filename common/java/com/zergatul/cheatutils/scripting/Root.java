@@ -78,4 +78,5 @@ public class Root {
     public static ClipboardApi clipboard = new ClipboardApi();
     public static ContainersApi containers = new ContainersApi();
     public static UIApi ui = new UIApi();
+    public static DebugApi debug = new DebugApi();
 }

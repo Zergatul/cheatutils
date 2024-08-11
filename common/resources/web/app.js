@@ -159,6 +159,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('ProfilesConfig', ['profiles']);
     loadModule('CoreConfig', ['core', 'port']);
     loadModule('AntiHungerConfig', ['anti', 'hunger']);
+    loadModule('DebuggingConfig', ['script', 'debug']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');
