@@ -209,7 +209,9 @@
                         <td>
                             <button @click="current = 'status-effects'" :class="{ faded: !filtered.StatusEffects, active: statuses.StatusEffects }">Status Effects</button>
                         </td>
-                        <td></td>
+                        <td>
+                            <button @click="current = 'monaco-editor'" :class="{ faded: !filtered.MonacoEditor, active: statuses.MonacoEditor }">Editor Config</button>
+                        </td>
                         <td>
                             
                         </td>
@@ -703,6 +705,11 @@
             v-if="current == 'debugging'"
             @back="backToMain()">
         </debugging-config>
+
+        <monaco-editor-config
+            v-if="current == 'monaco-editor'"
+            @back="backToMain()">
+        </monaco-editor-config>
 
     </div>
 

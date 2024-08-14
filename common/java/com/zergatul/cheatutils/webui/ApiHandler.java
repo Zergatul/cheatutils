@@ -847,6 +847,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().antiHungerConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("monaco-editor-settings", MonacoEditorConfig.class) {
+            @Override
+            protected MonacoEditorConfig getConfig() {
+                return ConfigStore.instance.getConfig().monacoEditor;
+            }
+
+            @Override
+            protected void setConfig(MonacoEditorConfig config) {
+                ConfigStore.instance.getConfig().monacoEditor = config;
+            }
+        });
     }
 
     @Override

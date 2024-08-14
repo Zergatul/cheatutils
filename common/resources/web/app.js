@@ -160,6 +160,7 @@ import { addComponent } from '/components/Loader.js'
     loadModule('CoreConfig', ['core', 'port']);
     loadModule('AntiHungerConfig', ['anti', 'hunger']);
     loadModule('DebuggingConfig', ['script', 'debug']);
+    loadModule('MonacoEditorConfig', ['script', 'editor', 'config', 'monaco']);
 
     let app = Vue.createApp(args);
     app.mount('#vue-app');

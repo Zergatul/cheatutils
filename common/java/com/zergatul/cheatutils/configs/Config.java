@@ -68,6 +68,7 @@ public class Config {
     public BedrockBreakerConfig bedrockBreakerConfig = new BedrockBreakerConfig();
     public CoreConfig coreConfig = new CoreConfig();
     public AntiHungerConfig antiHungerConfig = new AntiHungerConfig();
+    public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
 
     public Config() {
         esp = true;

@@ -1,4 +1,5 @@
 import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.48.0/+esm';
+import * as http from '/http.js';
 
 const languageId = 'cheatutils-scripting-language';
 const map = [];
@@ -33,7 +34,7 @@ if (window.matchMedia) {
     });
 }
 
-(async () => {
+const languageSettingsContructor = (async () => {
     monaco.languages.register({ id: languageId });
 
     monaco.languages.setLanguageConfiguration(languageId, {
@@ -78,20 +79,11 @@ if (window.matchMedia) {
         ]
     });
 
-    const get = async url => {
-        const response = await fetch(url);
-        return await response.json();
-    };
-    const post = async (url, body) => {
-        const response = await fetch(url, { method: 'POST', body: JSON.stringify(body) });
-        return await response.json();
-    };
-
-    const tokens = await get('/api/code/tokens');
-    const nodes = await get('/api/code/nodes');
+    const tokens = await http.get('/api/code/tokens');
+    const nodes = await http.get('/api/code/nodes');
 
     const setDiagnostics = async (model) => {
-        let diagnostics = await post('/api/code/diagnostics', {
+        let diagnostics = await http.post('/api/code/diagnostics', {
             code: model.getValue(),
             type: getSettingsByModel(model).type
         });
@@ -117,7 +109,7 @@ if (window.matchMedia) {
             };
         },
         async provideDocumentSemanticTokens(model, lastResultId, token) {
-            let tokenize = post('/api/code/tokenize', model.getValue());
+            let tokenize = http.post('/api/code/tokenize', model.getValue());
             setDiagnostics(model);
             let lexerOutput = await tokenize;
             let result = [];
@@ -155,7 +147,7 @@ if (window.matchMedia) {
     monaco.languages.registerHoverProvider(languageId, {
         async provideHover(model, position) {
             const theme = isDark() ? 'dark' : 'light';
-            const hover = await post(`/api/code/hover/${theme}`, {
+            const hover = await http.post(`/api/code/hover/${theme}`, {
                 code: model.getValue(),
                 type: getSettingsByModel(model).type,
                 line: position.lineNumber,
@@ -183,7 +175,7 @@ if (window.matchMedia) {
 
     monaco.languages.registerDefinitionProvider(languageId, {
         async provideDefinition(model, position, token) {
-            const range = await post('/api/code/definition', {
+            const range = await http.post('/api/code/definition', {
                 code: model.getValue(),
                 type: getSettingsByModel(model).type,
                 line: position.lineNumber,
@@ -206,7 +198,7 @@ if (window.matchMedia) {
     monaco.languages.registerCompletionItemProvider(languageId, {
         triggerCharacters: ['.'],
         async provideCompletionItems(model, position, context, token) {
-            const suggestions = await post('/api/code/completion', {
+            const suggestions = await http.post('/api/code/completion', {
                 code: model.getValue(),
                 type: getSettingsByModel(model).type,
                 line: position.lineNumber,
@@ -227,14 +219,14 @@ if (window.matchMedia) {
         base: 'vs',
         inherit: true,
         colors: {},
-        rules: await get('/api/code/token-rules/light')
+        rules: await http.get('/api/code/token-rules/light')
     });
 
     monaco.editor.defineTheme('cheatutils-scripting-language-dark', {
         base: 'vs-dark',
         inherit: true,
         colors: {},
-        rules: await get('/api/code/token-rules/dark')
+        rules: await http.get('/api/code/token-rules/dark')
     });
 
     applyTheme();
@@ -248,14 +240,28 @@ function createComponent(template) {
             'type'
         ],
         emits: ['update:modelValue'],
-        mounted() {
+        async mounted() {
+            await languageSettingsContructor;
+
+            let settings = await http.get('/api/monaco-editor-settings');
+            if (settings.json) {
+                try {
+                    settings = JSON.parse(settings.json);
+                } catch {
+                    console.error('Cannot parse monaco settings');
+                    settings = {};
+                }
+            } else {
+                settings = {};
+            }
+
             let element = this.$.subTree.el;
             this.editor = monaco.editor.create(element, {
                 value: this.modelValue,
                 language: languageId,
                 'autoClosingBrackets': true,
-                'renderWhitespace': 'all',
-                'semanticHighlighting.enabled': true
+                'semanticHighlighting.enabled': true,
+                ...settings
             });
             this.editor.onDidBlurEditorWidget(() => {
                 this.$emit('update:modelValue', this.editor.getModel().getValue());
