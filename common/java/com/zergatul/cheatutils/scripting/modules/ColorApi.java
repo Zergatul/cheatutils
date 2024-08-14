@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.MathUtils;

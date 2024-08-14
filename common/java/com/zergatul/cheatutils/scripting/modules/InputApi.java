@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.mixins.common.accessors.InputConstantsKeyAccessor;
-import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;

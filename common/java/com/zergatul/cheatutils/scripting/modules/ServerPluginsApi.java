@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.modules.hacks.ServerPlugins;
-import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.scripting.MethodDescription;
 
 @SuppressWarnings("unused")

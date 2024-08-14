@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
-import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.network.chat.MutableComponent;

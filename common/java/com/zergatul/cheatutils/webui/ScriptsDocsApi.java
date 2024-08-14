@@ -86,15 +86,7 @@ public class ScriptsDocsApi extends ApiBase {
             returnStr = space + "→" + space + formatClass(method.getReturnType());
         }
 
-        String comment = "";
-        if (method.isAnnotationPresent(HelpText.class)) {
-            HelpText helpText = method.getAnnotation(HelpText.class);
-            if (helpText.value() != null && helpText.value().length() > 0) {
-                comment = formatComment("/* " + helpText.value() + " */");
-            }
-        }
-
-        return prefix + ".<span class=\"method\">" + method.getName() + "</span>(" + paramsStr + ")" + returnStr + comment;
+        return prefix + ".<span class=\"method\">" + method.getName() + "</span>(" + paramsStr + ")" + returnStr;
     }
 
     private String formatClass(Class<?> clazz) {

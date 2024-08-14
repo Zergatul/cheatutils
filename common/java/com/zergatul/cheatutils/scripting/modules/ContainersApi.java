@@ -4,7 +4,6 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.modules.scripting.Containers;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
-import com.zergatul.cheatutils.scripting.HelpText;
 import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.Minecraft;
