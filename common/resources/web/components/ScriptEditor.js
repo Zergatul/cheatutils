@@ -45,12 +45,11 @@ const languageSettingsContructor = (async () => {
             { open: '"', close: '"' },
             { open: "'", close: "'" }
         ],
-        colorizedBracketPairs: [],
-        /*colorizedBracketPairs: [
+        colorizedBracketPairs: [
             ['{', '}'],
             ['[', ']'],
             ['(', ')']
-        ],*/
+        ],
         onEnterRules: [
             {
                 /* before:
@@ -212,6 +211,73 @@ const languageSettingsContructor = (async () => {
                     };
                 })
             };
+        }
+    });
+
+    const hex = value => {
+        if (value < 16) {
+            return '0' + value.toString(16).toUpperCase();
+        } else {
+            return value.toString(16).toUpperCase();
+        }
+    }
+
+    monaco.languages.registerColorProvider(languageId, {
+        provideColorPresentations(model, colorInfo) {
+            let color = colorInfo.color;
+            let r = Math.round(color.red * 255);
+            let g = Math.round(color.green * 255);
+            let b = Math.round(color.blue * 255);
+            if (color.alpha == 1) {
+                return [{
+                    label: `"#${hex(r)}${hex(g)}${hex(b)}"`
+                }]
+            } else {
+                let a = Math.round(color.alpha * 255);
+                return [{
+                    label: `"#${hex(r)}${hex(g)}${hex(b)}${hex(a)}"`
+                }];
+            }
+        },
+        async provideDocumentColors(model, token) {
+            let result = [];
+            let lexerOutput = await http.post('/api/code/tokenize', model.getValue());
+            for (let token of lexerOutput.tokens.list) {
+                if (token.range.line1 == token.range.line2 && tokens[token.type] == 'STRING_LITERAL') {
+                    let line = model.getLineContent(token.range.line1);
+                    let value = line.substring(token.range.column1 - 1, token.range.column2 - 1);
+                    if (value.match(/^"#[0-9a-fA-F]{6}"$/)) {
+                        let r = parseInt(value.substring(2, 4), 16) / 255;
+                        let g = parseInt(value.substring(4, 6), 16) / 255;
+                        let b = parseInt(value.substring(6, 8), 16) / 255;
+                        result.push({
+                            color: { red: r, blue: b, green: g, alpha: 1 },
+                            range: {
+                                startLineNumber: token.range.line1,
+                                startColumn: token.range.column1,
+                                endLineNumber: token.range.line2,
+                                endColumn: token.range.column2
+                            }
+                        });
+                    }
+                    if (value.match(/^"#[0-9a-fA-F]{8}"$/)) {
+                        let r = parseInt(value.substring(2, 4), 16) / 255;
+                        let g = parseInt(value.substring(4, 6), 16) / 255;
+                        let b = parseInt(value.substring(6, 8), 16) / 255;
+                        let a = parseInt(value.substring(8, 10), 16) / 255;
+                        result.push({
+                            color: { red: r, blue: b, green: g, alpha: a },
+                            range: {
+                                startLineNumber: token.range.line1,
+                                startColumn: token.range.column1,
+                                endLineNumber: token.range.line2,
+                                endColumn: token.range.column2
+                            }
+                        });
+                    }
+                }
+            }
+            return result;
         }
     });
 
