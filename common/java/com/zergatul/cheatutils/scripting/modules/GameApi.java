@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;

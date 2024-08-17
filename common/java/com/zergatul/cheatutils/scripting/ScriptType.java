@@ -32,7 +32,11 @@ public enum ScriptType {
 
     ENTITY_ESP(
             new ApiType[] { ApiType.CURRENT_ENTITY_ESP },
-            EntityEspConsumer.class);
+            EntityEspConsumer.class),
+
+    KILL_AURA(
+            new ApiType[0],
+            KillAuraFunction.class);
 
     private final ApiType[] apis;
     private final Class<?> funcInterface;

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.scripting.MethodDescription;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 
 @SuppressWarnings("unused")

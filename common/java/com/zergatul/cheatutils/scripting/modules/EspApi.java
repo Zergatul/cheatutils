@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.scripting.MethodDescription;
+import com.zergatul.scripting.MethodDescription;
 
 public class EspApi {
 

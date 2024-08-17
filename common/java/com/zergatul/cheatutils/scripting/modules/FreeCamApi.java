@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.scripting.MethodDescription;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;

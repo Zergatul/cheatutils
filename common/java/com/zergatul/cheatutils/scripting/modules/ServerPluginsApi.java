@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.modules.hacks.ServerPlugins;
-import com.zergatul.cheatutils.scripting.MethodDescription;
+import com.zergatul.scripting.MethodDescription;
 
 @SuppressWarnings("unused")
 public class ServerPluginsApi {

@@ -30,6 +30,8 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
     public ImmutableList<CustomPriorityEntry> customEntries;
     public boolean attackAll;
     public boolean autoRotate;
+    public boolean scriptEnabled;
+    public String code;
 
     public KillAuraConfig() {
         overrideAttackRange = true;
@@ -42,6 +44,22 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
                 .add(PredefinedPriorityEntry.fromName("Shulker Bullets"))
                 .add(PredefinedPriorityEntry.fromName("Fireballs"));
         customEntries = new ImmutableList<>();
+    }
+
+    public void copyTo(KillAuraConfig other) {
+        super.copyTo(other);
+        other.overrideAttackRange = overrideAttackRange;
+        other.maxRange = maxRange;
+        other.delayMode = delayMode;
+        other.attackTickInterval = attackTickInterval;
+        other.extraTicks = extraTicks;
+        other.maxHorizontalAngle = maxHorizontalAngle;
+        other.maxVerticalAngle = maxVerticalAngle;
+        other.priorities = priorities;
+        other.customEntries = customEntries;
+        other.attackAll = attackAll;
+        other.autoRotate = autoRotate;
+        other.scriptEnabled = scriptEnabled;
     }
 
     public void validate() {

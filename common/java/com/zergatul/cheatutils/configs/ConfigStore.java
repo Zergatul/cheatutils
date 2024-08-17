@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
+import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
@@ -253,6 +254,19 @@ public class ConfigStore {
                         logger.error(e);
                     }
                 }
+            }
+        }
+
+        if (config.killAuraConfig.code != null) {
+            try {
+                CompilationResult result = ScriptsController.instance.compileKillAura(config.killAuraConfig.code);
+                if (result.getProgram() != null) {
+                    KillAura.instance.setScript(result.getProgram());
+                } else {
+                    result.getDiagnostics().forEach(m -> logger.error("Kill Aura: {}", m.message));
+                }
+            } catch (Throwable e) {
+                logger.error(e);
             }
         }
     }

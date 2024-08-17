@@ -4,9 +4,9 @@ import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.configs.AutoDropConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 

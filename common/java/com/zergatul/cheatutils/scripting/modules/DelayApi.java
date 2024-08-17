@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.modules.utilities.DelayedRun;
-import com.zergatul.cheatutils.scripting.MethodDescription;
+import com.zergatul.scripting.MethodDescription;
 
 import java.util.concurrent.CompletableFuture;
 

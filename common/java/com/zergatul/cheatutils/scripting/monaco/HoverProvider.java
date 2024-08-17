@@ -10,6 +10,7 @@ import com.zergatul.scripting.type.operation.BinaryOperation;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class HoverProvider {
 
@@ -118,9 +119,9 @@ public class HoverProvider {
 
                 List<String> lines = new ArrayList<>();
                 lines.add(sb.toString());
-                String documentation = documentationProvider.getMethodDocumentation(methodReference);
-                if (documentation != null) {
-                    lines.add(documentation.replace("\n", "<br>"));
+                Optional<String> documentation = documentationProvider.getMethodDocumentation(methodReference);
+                if (documentation.isPresent()) {
+                    lines.add(documentation.get().replace("\n", "<br>"));
                 }
                 yield new HoverResponse(lines, range);
             }

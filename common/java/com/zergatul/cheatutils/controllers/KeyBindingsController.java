@@ -9,6 +9,8 @@ import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
+import java.util.concurrent.CompletableFuture;
+
 public class KeyBindingsController {
 
     public static final KeyBindingsController instance = new KeyBindingsController();
@@ -17,6 +19,7 @@ public class KeyBindingsController {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final AsyncRunnable[] actions = new AsyncRunnable[KeyBindingsConfig.KeysCount];
+    private final CompletableFuture<?>[] futures = new CompletableFuture<?>[KeyBindingsConfig.KeysCount];
 
     private KeyBindingsController() {
         keys = new KeyMapping[KeyBindingsConfig.KeysCount];
@@ -41,9 +44,11 @@ public class KeyBindingsController {
             AsyncRunnable compiled = ScriptsController.instance.get(name);
             if (compiled == null) {
                 actions[index] = null;
+                futures[index] = null;
                 bindings[index] = null;
             } else {
                 actions[index] = compiled;
+                futures[index] = null;
                 bindings[index] = name;
             }
         }
@@ -58,8 +63,8 @@ public class KeyBindingsController {
             KeyMapping key = keys[i];
             AsyncRunnable action = actions[i];
             while (key.consumeClick()) {
-                if (action != null) {
-                    action.run();
+                if (action != null && (futures[i] == null || futures[i].isDone())) {
+                    futures[i] = action.run();
                 }
             }
         }

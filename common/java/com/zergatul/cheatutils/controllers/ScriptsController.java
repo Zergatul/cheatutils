@@ -23,6 +23,7 @@ public class ScriptsController {
     private final Compiler villagerRollerCompiler = new Compiler(ScriptType.VILLAGER_ROLLER.createParameters());
     private final Compiler eventsCompiler = new Compiler(ScriptType.EVENTS.createParameters());
     private final Compiler entityEspCompiler = new Compiler(ScriptType.ENTITY_ESP.createParameters());
+    private final Compiler killAuraCompiler = new Compiler(ScriptType.KILL_AURA.createParameters());
 
     private final List<Script> scripts = Collections.synchronizedList(new ArrayList<>());
 
@@ -168,6 +169,10 @@ public class ScriptsController {
 
     public CompilationResult compileEntityEsp(String code) {
         return entityEspCompiler.compile(code);
+    }
+
+    public CompilationResult compileKillAura(String code) {
+        return killAuraCompiler.compile(code);
     }
 
     public static class Script {

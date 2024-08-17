@@ -66,6 +66,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new EntityEspCodeApi());
         apis.add(new ProfilesApi());
         apis.add(new DebuggingApi());
+        apis.add(new KillAuraCodeApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -149,9 +150,10 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(KillAuraConfig config) {
                 KillAuraConfig oldConfig = ConfigStore.instance.getConfig().killAuraConfig;
-                ConfigStore.instance.getConfig().killAuraConfig = config;
+                boolean justEnabled = !oldConfig.enabled && config.enabled;
+                config.copyTo(oldConfig);
 
-                if (!oldConfig.enabled && config.enabled) {
+                if (justEnabled) {
                     KillAura.instance.onEnabled();
                 }
             }

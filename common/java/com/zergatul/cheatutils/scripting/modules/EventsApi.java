@@ -1,7 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
-import com.zergatul.cheatutils.scripting.*;
+import com.zergatul.cheatutils.scripting.ChatMessageConsumer;
+import com.zergatul.cheatutils.scripting.ContainerClickConsumer;
+import com.zergatul.cheatutils.scripting.EntityIdConsumer;
+import com.zergatul.cheatutils.scripting.ServerAddressConsumer;
+import com.zergatul.scripting.MethodDescription;
 
 @SuppressWarnings("unused")
 public class EventsApi {

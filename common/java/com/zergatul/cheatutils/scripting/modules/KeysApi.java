@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.mixins.common.accessors.KeyMappingAccessor;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
-import com.zergatul.cheatutils.scripting.MethodDescription;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 

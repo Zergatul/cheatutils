@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
-import com.zergatul.cheatutils.scripting.MethodDescription;
 import com.zergatul.scripting.symbols.Function;
 import com.zergatul.scripting.symbols.LocalVariable;
 import com.zergatul.scripting.symbols.StaticVariable;
@@ -8,6 +7,7 @@ import com.zergatul.scripting.type.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 
 public class DocumentationProvider {
 
@@ -149,20 +149,13 @@ public class DocumentationProvider {
         return new Suggestion(
                 method.getName(),
                 sb.toString(),
-                getMethodDocumentation(method),
+                getMethodDocumentation(method).orElse(null),
                 method.getName(),
                 CompletionItemKind.METHOD);
     }
 
-    public String getMethodDocumentation(MethodReference method) {
-        if (method instanceof NativeMethodReference nativeMethod) {
-            Method m = nativeMethod.getUnderlying();
-            if (m.isAnnotationPresent(MethodDescription.class)) {
-                MethodDescription annotation = m.getAnnotation(MethodDescription.class);
-                return annotation.value();
-            }
-        }
-        return null;
+    public Optional<String> getMethodDocumentation(MethodReference method) {
+        return method.getDescription();
     }
 
     private String type(SType type) {

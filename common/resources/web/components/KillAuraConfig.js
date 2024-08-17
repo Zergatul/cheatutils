@@ -1,21 +1,28 @@
+import * as http from '/http.js';
+import { handleCodeSave } from '/components/MonacoEditor.js'
+import { addComponent } from '/components/Loader.js'
+
 function createComponent(template) {
-    return {
+    const args = {
         template: template,
         created() {
-            let self = this;
-            axios.get('/api/kill-aura').then(function (response) {
-                self.config = response.data;
+            http.get('/api/kill-aura').then(response => {
+                this.config = response;
+                this.code = response.code;
             });
             this.loadPriorityList();
         },
         data() {
             return {
+                code: '',
                 config: null,
                 search: null,
                 state: 'list',
                 priorityList: null,
                 priorityListFiltered: null,
-                newCustomEntry: null
+                newCustomEntry: null,
+                refs: null,
+                showRefs: false
             };
         },
         methods: {
@@ -34,27 +41,24 @@ function createComponent(template) {
                     alert('Class Name is required.');
                     return;
                 }
-                let self = this;
-                axios.get('/api/class-name/' + this.newCustomEntry.className).then(() => {
+                http.get('/api/class-name/' + this.newCustomEntry.className).then(() => {
                     this.newCustomEntry.enabled = false;
                     this.config.priorities.push(this.newCustomEntry);
                     this.config.customEntries.push(this.newCustomEntry);
                     this.state = 'list';
 
-                    let self = this;
-                    this.update().then(() => self.loadPriorityList());
+                    this.update().then(() => this.loadPriorityList());
                 }).catch(error => {
                     if (error.response && error.response.status == 404) {
-                        alert(`Class with name "${self.newCustomEntry.className}" doesn't exist.`)
+                        alert(`Class with name "${this.newCustomEntry.className}" doesn't exist.`)
                     }
                 });
             },
             deleteCustomEntry(entry) {
-                let self = this;
                 this.config.customEntries = this.config.customEntries.filter(e => e.name != entry.name);
                 this.update().then(() => {
-                    self.loadPriorityList().then(() => {
-                        self.filterPriorityList();
+                    this.loadPriorityList().then(() => {
+                        this.filterPriorityList();
                     });
                 });
             },
@@ -68,9 +72,8 @@ function createComponent(template) {
                 });
             },
             loadPriorityList() {
-                let self = this;
-                return axios.get('/api/kill-aura-info').then(response => {
-                    self.priorityList = response.data;
+                return http.get('/api/kill-aura-info').then(response => {
+                    this.priorityList = response;
                 });
             },
             moveDown(index) {
@@ -98,25 +101,43 @@ function createComponent(template) {
                 this.config.priorities.splice(index, 1);
                 this.update();
             },
+            saveCode() {
+                handleCodeSave('/api/kill-aura-code', this.code);
+            },
+            showApiRef() {
+                if (this.showRefs) {
+                    this.showRefs = false;
+                } else {
+                    if (this.refs) {
+                        this.showRefs = true;
+                    } else {
+                        http.get('/api/scripts-doc/KILL_AURA').then(response => {
+                            this.showRefs = true;
+                            this.refs = response;
+                        });
+                    }
+                }
+            },
             swapPriorities(index1, index2) {
                 let item = this.config.priorities[index1];
                 this.config.priorities[index1] = this.config.priorities[index2];
                 this.config.priorities[index2] = item;
             },
             update() {
-                let self = this;
                 if (this.config.maxHorizontalAngle == '') {
                     this.config.maxHorizontalAngle = null;
                 }
                 if (this.config.maxVerticalAngle == '') {
                     this.config.maxVerticalAngle = null;
                 }
-                return axios.post('/api/kill-aura', this.config).then(response => {
-                    self.config = response.data;
+                return http.post('/api/kill-aura', this.config).then(response => {
+                    this.config = response;
                 });
             }
         }
-    }
+    };
+    addComponent(args, 'ScriptEditor');
+    return args;
 }
 
 export { createComponent }

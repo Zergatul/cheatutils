@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ModuleConfig;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.scripting.MethodDescription;
+import com.zergatul.scripting.MethodDescription;
 
 public abstract class ModuleApi<T extends ModuleConfig> {
 

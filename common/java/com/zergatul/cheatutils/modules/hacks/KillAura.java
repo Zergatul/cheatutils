@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.controllers.FakeRotationController;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.scripting.KillAuraFunction;
 import com.zergatul.cheatutils.utils.MathUtils;
 import com.zergatul.cheatutils.wrappers.AttackRange;
 import net.minecraft.client.Minecraft;
@@ -32,6 +33,7 @@ public class KillAura implements Module {
     private long lastAttackTick;
     private Entity target;
     private final List<Entity> targets = new ArrayList<>();
+    private KillAuraFunction script;
 
     private KillAura() {
         PlayerMotionController.instance.addOnAfterSendPosition(this::onAfterSendPosition);
@@ -42,6 +44,10 @@ public class KillAura implements Module {
 
     public void onEnabled() {
         lastAttackTick = 0;
+    }
+
+    public void setScript(KillAuraFunction script) {
+        this.script = script;
     }
 
     private void onPlayerLoggingIn(Connection connection) {
@@ -118,6 +124,12 @@ public class KillAura implements Module {
                     if (delta > config.maxVerticalAngle) {
                         continue;
                     }
+                }
+            }
+
+            if (config.scriptEnabled) {
+                if (script != null && !script.shouldAttack(entity.getId())) {
+                    continue;
                 }
             }
 
