@@ -1,5 +1,6 @@
 import { addComponent } from '/components/Loader.js'
 import { handleCodeSave } from '/components/MonacoEditor.js'
+import * as http from '/http.js';
 
 function createComponent(template) {
     let args = {
@@ -17,11 +18,10 @@ function createComponent(template) {
         },
         methods: {
             refresh() {
-                let self = this;
-                axios.get('/api/events-scripting').then(response => {
-                    self.config = response.data;
-                    self.code = self.config.code;
-                    delete self.config.code;
+                http.get('/api/events-scripting').then(response => {
+                    this.config = response;
+                    this.code = this.config.code;
+                    delete this.config.code;
                 });
             },
             save() {
@@ -34,16 +34,15 @@ function createComponent(template) {
                     if (this.refs) {
                         this.showRefs = true;
                     } else {
-                        let self = this;
-                        axios.get('/api/scripts-doc/EVENTS').then(response => {
-                            self.showRefs = true;
-                            self.refs = response.data;
+                        http.get('/api/scripts-doc/EVENTS').then(response => {
+                            this.showRefs = true;
+                            this.refs = response;
                         });
                     }
                 }
             },
             update() {
-                axios.post('/api/events-scripting', this.config);
+                http.post('/api/events-scripting', this.config);
             }
         }
     };

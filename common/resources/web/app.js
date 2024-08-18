@@ -1,4 +1,5 @@
 import * as Vue from '/vue.esm-browser.js';
+import * as http from '/http.js';
 import { addComponent } from '/components/Loader.js'
 
 (function () {
@@ -24,8 +25,7 @@ import { addComponent } from '/components/Loader.js'
         },
         methods: {
             hardSwitch() {
-                var self = this;
-                axios.post('/api/hard-switch', true).then(function (response) {
+                http.post('/api/hard-switch', true).then(response => {
                     alert('ok');
                 });
             },
@@ -64,14 +64,13 @@ import { addComponent } from '/components/Loader.js'
                 }
             },
             refresh() {
-                var self = this;
-                axios.get('/api/user').then(function (response) {
-                    self.name = response.data;
-                    document.title = self.name;
-                    self.newname = self.name;
+                http.getText('/api/user').then(response => {
+                    this.name = response;
+                    document.title = this.name;
+                    this.newname = this.name;
                 });
-                axios.get('/api/modules-status').then(response => {
-                    this.statuses = response.data;
+                http.get('/api/modules-status').then(response => {
+                    this.statuses = response;
                 });
             }
         }
@@ -112,7 +111,6 @@ import { addComponent } from '/components/Loader.js'
     loadModule('ScaffoldConfig', ['scaffold']);
     loadModule('AdvancedTooltipsConfig', ['advanced', 'tooltips']);
     loadModule('FogConfig', ['fog']);
-    loadModule('InstantDisconnectConfig', ['instant', 'disconnect']);
     loadModule('KeyBindingScriptsConfig', ['key', 'bindings', 'scripting']);
     loadModule('WorldMarkersConfig', ['world', 'markers']);
     loadModule('UserNameConfig', ['user', 'name']);

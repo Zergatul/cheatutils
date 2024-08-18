@@ -1,13 +1,13 @@
 import { addComponent } from '/components/Loader.js'
 import { handleCodeSave } from '/components/MonacoEditor.js'
+import * as http from '/http.js';
 
 function createComponent(template) {
     let args = {
         template: template,
         created() {
-            let self = this;
             this.refresh().then(() => {
-                self.code = self.config.code || '';
+                this.code = this.config.code || '';
             });
         },
         data() {
@@ -20,9 +20,8 @@ function createComponent(template) {
         },
         methods: {
             refresh() {
-                let self = this;
-                return axios.get('/api/villager-roller').then(response => {
-                    self.config = response.data;
+                return http.get('/api/villager-roller').then(response => {
+                    this.config = response;
                 });
             },
             save() {
@@ -35,19 +34,18 @@ function createComponent(template) {
                     if (this.refs) {
                         this.showRefs = true;
                     } else {
-                        let self = this;
-                        axios.get('/api/scripts-doc/VILLAGER_ROLLER').then(response => {
-                            self.showRefs = true;
-                            self.refs = response.data;
+                        http.get('/api/scripts-doc/VILLAGER_ROLLER').then(response => {
+                            this.showRefs = true;
+                            this.refs = response;
                         });
                     }
                 }
             },
             start() {
-                axios.post('/api/villager-roller-status', { start: true });
+                http.post('/api/villager-roller-status', { start: true });
             },
             stop() {
-                axios.post('/api/villager-roller-status', { stop: true });
+                http.post('/api/villager-roller-status', { stop: true });
             }
         }
     };

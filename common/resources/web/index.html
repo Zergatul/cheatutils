@@ -5,7 +5,6 @@
     <title>Zergatul Cheat Utils</title>
     <link rel="icon" href="/images/favicon.png">
     <link rel="stylesheet" type="text/css" href="app.css">
-    <script src="axios.js"></script>
 </head>
 <body>
 
@@ -119,7 +118,6 @@
                     </tr>
                     <tr>
                         <td>
-                            <!--<button @click="current = 'instant-disconnect'" :class="{ faded: !filtered.InstantDisconnect, active: statuses.InstantDisconnect }">Instant Disconnect</button>-->
                             <button @click="current = 'auto-drop'" :class="{ faded: !filtered.AutoDrop, active: statuses.AutoDrop }">Auto Drop</button>
                         </td>
                         <td>
@@ -465,11 +463,6 @@
             v-if="current == 'fog'"
             @back="backToMain()">
         </fog-config>
-
-        <instant-disconnect-config
-            v-if="current == 'instant-disconnect'"
-            @back="backToMain()">
-        </instant-disconnect-config>
 
         <key-binding-scripts-config
             v-if="current == 'key-binding-scripts'"

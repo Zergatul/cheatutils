@@ -1,12 +1,13 @@
+import * as http from '/http.js';
+
 function createComponent(template) {
     return {
         template: template,
         created() {
-            let self = this;
-            axios.get('/api/free-cam').then(response => {
-                self.config = response.data;
+            http.get('/api/free-cam').then(response => {
+                this.config = response;
             });
-            self.reloadPath();
+            this.reloadPath();
         },
         data() {
             return {
@@ -17,27 +18,24 @@ function createComponent(template) {
         },
         methods: {
             addPathPoint() {
-                let self = this;
-                axios.post('/api/free-cam-path', self.time).then(response => {
-                    self.reloadPath();
+                http.post('/api/free-cam-path', this.time).then(response => {
+                    this.reloadPath();
                 });
             },
             clearPath() {
-                let self = this;
-                axios.delete('/api/free-cam-path/_').then(response => {
-                    self.reloadPath();
+                http.delete('/api/free-cam-path/_').then(response => {
+                    this.reloadPath();
                 });
             },
             reloadPath() {
-                let self = this;
-                axios.get('/api/free-cam-path').then(response => {
-                    self.path = response.data;
+                http.get('/api/free-cam-path').then(response => {
+                    this.path = response;
                 });
             },
             update() {
                 let self = this;
-                axios.post('/api/free-cam', this.config).then(function (response) {
-                    self.config = response.data;
+                http.post('/api/free-cam', this.config).then(response => {
+                    this.config = response;
                 });
             }
         }

@@ -1,11 +1,12 @@
+import * as http from '/http.js';
+
 function createComponent(template) {
     return {
         template: template,
         created() {
-            let self = this;
-            axios.get('/api/schematica').then(response => {
-                self.config = response.data;
-                self.onConfigLoaded();
+            http.get('/api/schematica').then(response => {
+                this.config = response;
+                this.onConfigLoaded();
             });
         },
         data() {
@@ -22,12 +23,11 @@ function createComponent(template) {
         },
         methods: {
             clear() {
-                axios.delete('/api/schematica-place/_');
+                http.delete('/api/schematica-place/_');
             },
             getFile() {
-                let self = this;
                 return new Promise((resolve) => {
-                    let input = self.$refs.fileInput;
+                    let input = this.$refs.fileInput;
                     if (input.files.length == 0) {
                         resolve(null);
                         return;
@@ -46,27 +46,26 @@ function createComponent(template) {
                 this.slots = this.config.autoSelectSlots.join(',');
             },
             onFileSelected() {
-                let self = this;
-                self.getFile().then(file => {
-                    axios.post('/api/schematica-upload', file).then(response => {
-                        if (response.data.error) {
-                            alert(response.data.error);
+                this.getFile().then(file => {
+                    http.post('/api/schematica-upload', file).then(response => {
+                        if (response.error) {
+                            alert(response.error);
                             return;
                         }
 
-                        self.schematic = response.data;
-                        self.schematic.paletteMap = [];
-                        for (let i = 0; i < self.schematic.palette.length; i++) {
-                            if (self.schematic.summary[i] > 0) {
-                                self.schematic.paletteMap.push({
+                        this.schematic = response;
+                        this.schematic.paletteMap = [];
+                        for (let i = 0; i < this.schematic.palette.length; i++) {
+                            if (this.schematic.summary[i] > 0) {
+                                this.schematic.paletteMap.push({
                                     id: i,
-                                    count: self.schematic.summary[i],
-                                    block: self.schematic.palette[i]
+                                    count: this.schematic.summary[i],
+                                    block: this.schematic.palette[i]
                                 });
                             }
                         }
                     }).catch(error => {
-                        alert(error.message + '\n' + error.response.data);
+                        alert(error.message + '\n' + error.response);
                     });
                 });
             },
@@ -86,18 +85,16 @@ function createComponent(template) {
                 this.update();
             },
             place() {
-                let self = this;
-                self.getFile().then(file => {
-                    file.placing = self.placing;
-                    file.palette = self.schematic.paletteMap;
-                    axios.post('/api/schematica-place', file);
+                this.getFile().then(file => {
+                    file.placing = this.placing;
+                    file.palette = this.schematic.paletteMap;
+                    http.post('/api/schematica-place', file);
                 });
             },
             update() {
-                let self = this;
-                axios.post('/api/schematica', this.config).then(response => {
-                    self.config = response.data;
-                    self.onConfigLoaded();
+                http.post('/api/schematica', this.config).then(response => {
+                    this.config = response;
+                    this.onConfigLoaded();
                 });
             }
         }

@@ -1,13 +1,14 @@
+import * as http from '/http.js';
+
 function createComponent(template) {
     return {
         template: template,
         props: ['modelValue'],
         emits: ['update:modelValue', 'change'],
         created() {
-            let self = this;
-            self.items = self.modelValue;
-            axios.get('/api/item-info').then(response => {
-                self.itemList = response.data.filter(i => i);
+            this.items = this.modelValue;
+            http.get('/api/item-info').then(response => {
+                this.itemList = response.filter(i => i);
             });
         },
         data() {

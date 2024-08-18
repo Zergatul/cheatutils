@@ -1,10 +1,11 @@
+import * as http from '/http.js';
+
 function createComponent(template) {
     return {
         template: template,
         created() {
-            let self = this;
-            axios.get('/api/exploration-mini-map').then(function (response) {
-                self.config = response.data;
+            http.get('/api/exploration-mini-map').then(response => {
+                this.config = response;
             });
         },
         data() {
@@ -15,21 +16,20 @@ function createComponent(template) {
         },
         methods: {
             addMarker() {
-                axios.post('/api/exploration-mini-map-markers', {});
+                http.post('/api/exploration-mini-map-markers', {});
             },
             addMarkers() {
-                axios.put('/api/exploration-mini-map-markers/import', this.markersJson);
+                http.put('/api/exploration-mini-map-markers/import', JSON.parse(this.markersJson));
             },
             clearMarkers() {
-                axios.delete('/api/exploration-mini-map-markers/all', {});
+                http.delete('/api/exploration-mini-map-markers/all', {});
             },
             update() {
-                let self = this;
                 if (this.config.scanFromY == '') {
                     this.config.scanFromY = null;
                 }
-                axios.post('/api/exploration-mini-map', this.config).then(function (response) {
-                    self.config = response.data;
+                http.post('/api/exploration-mini-map', this.config).then(response => {
+                    this.config = response;
                 });
             }
         }

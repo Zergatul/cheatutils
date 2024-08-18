@@ -1,10 +1,22 @@
+async function throwIsFailed(response) {
+    if (!response.ok) {
+        throw {
+            code: response.status,
+            response: await response.text()
+        };
+    }
+}
+
 export async function get(url) {
     let response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Response code = ${response.status}`);
-    }
-
+    throwIsFailed(response);
     return await response.json();
+}
+
+export async function getText(url) {
+    let response = await fetch(url);
+    throwIsFailed(response);
+    return await response.text();
 }
 
 export async function post(url, body) {
@@ -12,9 +24,26 @@ export async function post(url, body) {
         method: 'POST',
         body: JSON.stringify(body)
     });
-    if (!response.ok) {
-        throw new Error(`Response code = ${response.status}`);
-    }
-
+    throwIsFailed(response);
     return await response.json();
 }
+
+export async function put(url, body) {
+    let response = await fetch(url, {
+        method: 'PUT',
+        body: JSON.stringify(body)
+    });
+    throwIsFailed(response);
+    return await response.json();
+}
+
+async function delete$(url, body) {
+    let response = await fetch(url, {
+        method: 'DELETE',
+        body: JSON.stringify(body)
+    });
+    throwIsFailed(response);
+    return await response.json();
+}
+
+export { delete$ as delete }

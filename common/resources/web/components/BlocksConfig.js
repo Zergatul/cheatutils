@@ -1,9 +1,9 @@
-import { ref, reactive, nextTick, onUnmounted } from '/vue.esm-browser.js'
+import { ref, nextTick, onUnmounted } from '/vue.esm-browser.js'
 import { addComponent } from '/components/Loader.js'
 import { createBlockRenderer, removeBlockRenderer } from './BlockRenderer.js'
+import * as http from '/http.js';
 
-let blockInfoPromise = axios.get('/api/block-info').then(function (response) {
-    let blocksList = response.data;
+let blockInfoPromise = http.get('/api/block-info').then(blocksList => {
     let blocksMap = {};
     blocksList.forEach(b => blocksMap[b.id] = b);
     return {
@@ -72,8 +72,8 @@ function createComponent(template) {
                     selectedConfig.value.expanded = false;
                 } else {
                     selectedConfig.value = null;
-                    axios.post('/api/blocks-add', id).then(response => {
-                        selectedConfig.value = response.data;
+                    http.post('/api/blocks-add', id).then(response => {
+                        selectedConfig.value = response;
                         blocksConfigList.value.push(selectedConfig.value);
                         blocksConfigMap.value[id] = selectedConfig.value;
                     });
@@ -87,7 +87,7 @@ function createComponent(template) {
 
             const remove = () => {
                 if (selectedConfig.value) {
-                    axios.delete('/api/blocks/' + encodeURIComponent(selectedConfig.value.blocks[0])).then(response => {
+                    http.delete('/api/blocks/' + encodeURIComponent(selectedConfig.value.blocks[0])).then(() => {
                         blocksConfigList.value = blocksConfigList.value.filter(c => c != selectedConfig.value);
                         selectedConfig.value.blocks.forEach(id => {
                             delete blocksConfigMap.value[id];
@@ -99,14 +99,14 @@ function createComponent(template) {
             };
 
             const removeById = id => {
-                axios.delete('/api/blocks/' + encodeURIComponent(id)).then(response => {
+                http.delete('/api/blocks/' + encodeURIComponent(id)).then(() => {
                     blocksConfigList.value = blocksConfigList.value.filter(b => !b.blocks.includes(id));
                     delete blocksConfigMap.value[id];
                 });
             };
 
             const rescan = () => {
-                axios.post('/api/rescan-chunks');
+                http.post('/api/rescan-chunks');
             };
 
             const update = config => {
@@ -116,7 +116,7 @@ function createComponent(template) {
                 if (config.outlineMaxDistance == '') {
                     config.outlineMaxDistance = null;
                 }
-                axios.post('/api/blocks', config);
+                http.post('/api/blocks', config);
             };
 
             const expandGroup = config => {
@@ -202,8 +202,8 @@ function createComponent(template) {
                 blocksMap.value = info.blocksMap;
             });
 
-            axios.get('/api/blocks').then(response => {
-                blocksConfigList.value = response.data;
+            http.get('/api/blocks').then(response => {
+                blocksConfigList.value = response;
 
                 blocksConfigMap.value = {};
                 blocksConfigList.value.forEach(c => {

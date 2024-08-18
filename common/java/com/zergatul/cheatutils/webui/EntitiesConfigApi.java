@@ -72,6 +72,6 @@ public class EntitiesConfigApi extends ApiBase {
         ConfigStore.instance.getConfig().entities.remove(config);
         ConfigStore.instance.requestWrite();
 
-        return "{ ok: true }";
+        return "{ \"ok\": true }";
     }
 }

@@ -1,5 +1,6 @@
 import { addComponent } from '/components/Loader.js'
 import { handleCodeSave } from '/components/MonacoEditor.js'
+import * as http from '/http.js';
 
 function createComponent(template) {
     let args = {
@@ -16,9 +17,8 @@ function createComponent(template) {
         },
         methods: {
             refresh() {
-                let self = this;
-                axios.get('/api/status-overlay').then(function (response) {
-                    self.config = response.data;
+                http.get('/api/status-overlay').then(response => {
+                    this.config = response;
                 });
             },
             save() {
@@ -31,18 +31,16 @@ function createComponent(template) {
                     if (this.refs) {
                         this.showRefs = true;
                     } else {
-                        let self = this;
-                        axios.get('/api/scripts-doc/OVERLAY').then(response => {
-                            self.showRefs = true;
-                            self.refs = response.data;
+                        http.get('/api/scripts-doc/OVERLAY').then(response => {
+                            this.showRefs = true;
+                            this.refs = response;
                         });
                     }
                 }
             },
             update() {
-                let self = this;
-                axios.post('/api/status-overlay', this.config).then(function (response) {
-                    self.config = response.data;
+                http.post('/api/status-overlay', this.config).then(response => {
+                    this.config = response;
                 });
             }
         }

@@ -1,5 +1,6 @@
 import { addComponent } from '/components/Loader.js'
 import { handleCodeSave } from '/components/MonacoEditor.js'
+import * as http from '/http.js';
 
 function createComponent(template) {
     let args = {
@@ -39,10 +40,9 @@ function createComponent(template) {
                 this.update();
             },
             refresh() {
-                let self = this;
-                return axios.get('/api/block-automation').then(response => {
-                    self.config = response.data;
-                    self.onConfigLoaded();
+                return http.get('/api/block-automation').then(response => {
+                    this.config = response;
+                    this.onConfigLoaded();
                 });
             },
             save() {
@@ -55,19 +55,17 @@ function createComponent(template) {
                     if (this.refs) {
                         this.showRefs = true;
                     } else {
-                        let self = this;
-                        axios.get('/api/scripts-doc/BLOCK_AUTOMATION').then(response => {
-                            self.showRefs = true;
-                            self.refs = response.data;
+                        http.get('/api/scripts-doc/BLOCK_AUTOMATION').then(response => {
+                            this.showRefs = true;
+                            this.refs = response;
                         });
                     }
                 }
             },
             update() {
-                let self = this;
-                axios.post('/api/block-automation', this.config).then(response => {
-                    self.config = response.data;
-                    self.onConfigLoaded();
+                http.post('/api/block-automation', this.config).then(response => {
+                    this.config = response;
+                    this.onConfigLoaded();
                 });
             }
         }

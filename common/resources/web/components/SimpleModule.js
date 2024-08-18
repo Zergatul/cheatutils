@@ -1,11 +1,10 @@
-import { addComponent } from '/components/Loader.js'
 import * as http from '/http.js';
 
-function createComponent(template) {
-    let args = {
+function createSimpleComponent(url, template) {
+    return {
         template: template,
         created() {
-            http.get('/api/auto-drop').then(response => {
+            http.get(url).then(response => {
                 this.config = response;
             });
         },
@@ -15,15 +14,13 @@ function createComponent(template) {
             };
         },
         methods: {
-            onChange() {
-                http.post('/api/auto-drop', this.config).then(response => {
+            update() {
+                http.post(url, this.config).then(response => {
                     this.config = response;
                 });
             }
         }
     };
-    addComponent(args, 'ItemsList');
-    return args;
 }
 
-export { createComponent }
+export { createSimpleComponent }

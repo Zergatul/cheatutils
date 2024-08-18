@@ -1,13 +1,13 @@
 import { addComponent } from '/components/Loader.js'
+import * as http from '/http.js';
 
 function createComponent(template) {
     let args = {
         template: template,
         created() {
-            let self = this;
-            self.resetMarker();
-            axios.get('/api/world-markers').then(response => {
-                self.config = response.data;
+            this.resetMarker();
+            http.get('/api/world-markers').then(response => {
+                this.config = response;
             });
         },
         data() {
@@ -18,38 +18,34 @@ function createComponent(template) {
         },
         methods: {
             addMarker() {
-                let self = this;
-                self.marker.color = self.marker.color || 0;
-                self.config.entries.push(self.marker);
-                axios.post('/api/world-markers', self.config).then(response => {
-                    self.marker = {};
-                    self.config = response.data;
+                this.marker.color = this.marker.color || 0;
+                this.config.entries.push(this.marker);
+                http.post('/api/world-markers', this.config).then(response => {
+                    this.marker = {};
+                    this.config = response;
                 }, function (error) {
-                    alert(error.response.data);
+                    alert(error.response);
                 });
             },
             fillCoords() {
-                let self = this;
-                axios.get('/api/coordinates').then(response => {
-                    if (response.data) {
-                        self.marker.x = response.data.x.toFixed(3);
-                        self.marker.y = response.data.y.toFixed(3);
-                        self.marker.z = response.data.z.toFixed(3);
+                http.get('/api/coordinates').then(response => {
+                    if (response) {
+                        this.marker.x = response.x.toFixed(3);
+                        this.marker.y = response.y.toFixed(3);
+                        this.marker.z = response.z.toFixed(3);
                     }
                 })
             },
             fillDimension() {
-                let self = this;
-                axios.get('/api/dimension').then(response => {
-                    if (response.data) {
-                        self.marker.dimension = response.data;
+                http.get('/api/dimension').then(response => {
+                    if (response) {
+                        this.marker.dimension = response;
                     }
                 });
             },
             remove(index) {
-                let self = this;
-                self.config.entries.splice(index, 1);
-                self.update();
+                this.config.entries.splice(index, 1);
+                this.update();
             },
             resetMarker() {
                 this.marker = {
@@ -62,9 +58,8 @@ function createComponent(template) {
                 };
             },
             update() {
-                let self = this;
-                axios.post('/api/world-markers', self.config).then(response => {
-                    self.config = response.data;
+                http.post('/api/world-markers', this.config).then(response => {
+                    this.config = response;
                 });
             }
         }

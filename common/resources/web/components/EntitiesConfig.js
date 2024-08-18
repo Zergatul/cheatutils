@@ -1,10 +1,10 @@
 import { addComponent } from '/components/Loader.js'
+import { formatCodeResponse } from '/components/MonacoEditor.js'
+import * as http from '/http.js';
 
-let entityInfoPromise = axios.get('/api/entity-info').then(function (response) {
-    let entitiesList = response.data;
+let entityInfoPromise = http.get('/api/entity-info').then(entitiesList => {
     let entitiesMap = {};
     entitiesList.forEach(e => entitiesMap[e.clazz] = e);
-
     return {
         entitiesList: entitiesList,
         entitiesMap: entitiesMap
@@ -15,12 +15,11 @@ function createComponent(template) {
     let args = {
         template: template,
         created() {
-            let self = this;
-            entityInfoPromise.then(function (info) {
-                self.entitiesList = info.entitiesList;
-                self.entitiesMap = info.entitiesMap;
+            entityInfoPromise.then(info => {
+                this.entitiesList = info.entitiesList;
+                this.entitiesMap = info.entitiesMap;
             });
-            self.loadEntityConfigs();
+            this.loadEntityConfigs();
         },
         data() {
             return {
@@ -100,38 +99,34 @@ function createComponent(template) {
                 this.entityListFiltered = entries.sort((e1, e2) => e2.priority - e1.priority).map(e => e.info);
             },
             loadEntityConfigs() {
-                let self = this;
-                axios.get('/api/entities').then(function (response) {
-                    self.entitiesConfigList = response.data;
-                    self.entitiesConfigMap = {};
-                    self.entitiesConfigList.forEach(c => self.entitiesConfigMap[c.clazz] = c);
+                http.get('/api/entities').then(response => {
+                    this.entitiesConfigList = response;
+                    this.entitiesConfigMap = {};
+                    this.entitiesConfigList.forEach(c => this.entitiesConfigMap[c.clazz] = c);
                 });
             },
             moveDown(config) {
-                let self = this;
-                axios.post('/api/entities-move', {
+                http.post('/api/entities-move', {
                     direction: 'down',
                     clazz: config.clazz
                 }).then(response => {
-                    response = response.data;
+                    response = response;
                     if (!response.ok) {
                         alert(response.message);
                     } else {
-                        self.loadEntityConfigs();
+                        this.loadEntityConfigs();
                     }
                 });
             },
             moveUp(config) {
-                let self = this;
-                axios.post('/api/entities-move', {
+                http.post('/api/entities-move', {
                     direction: 'up',
                     clazz: config.clazz
                 }).then(response => {
-                    response = response.data;
                     if (!response.ok) {
                         alert(response.message);
                     } else {
-                        self.loadEntityConfigs();
+                        this.loadEntityConfigs();
                     }
                 });
             },
@@ -151,8 +146,8 @@ function createComponent(template) {
                     setupCode();
                 } else {
                     this.selectedConfig = null;
-                    axios.post('/api/entities', { clazz: clazz }).then(response => {
-                        this.selectedConfig = response.data;
+                    http.post('/api/entities', { clazz: clazz }).then(response => {
+                        this.selectedConfig = response;
                         this.entitiesConfigList.push(this.selectedConfig);
                         this.entitiesConfigMap[clazz] = this.selectedConfig;
                         setupCode();
@@ -161,27 +156,25 @@ function createComponent(template) {
             },
             remove() {
                 if (this.selectedConfig) {
-                    let self = this;
-                    axios.delete('/api/entities/' + this.selectedConfig.clazz).then(function (response) {
-                        let clazz = self.selectedConfig.clazz;
-                        let index = self.entitiesConfigList.indexOf(self.selectedConfig);
+                    http.delete('/api/entities/' + this.selectedConfig.clazz).then(() => {
+                        let clazz = this.selectedConfig.clazz;
+                        let index = this.entitiesConfigList.indexOf(this.selectedConfig);
                         if (index >= 0) {
-                            self.entitiesConfigList.splice(index, 1);
+                            this.entitiesConfigList.splice(index, 1);
                         }
-                        self.selectedConfig = null;
-                        delete self.entitiesConfigMap[clazz];
-                        self.backToList();
+                        this.selectedConfig = null;
+                        delete this.entitiesConfigMap[clazz];
+                        this.backToList();
                     });
                 }
             },
             removeByClass(clazz) {
-                let self = this;
-                axios.delete('/api/entities/' + clazz).then(function (response) {
-                    let index = self.entitiesConfigList.findIndex(e => e.clazz == clazz);
+                http.delete('/api/entities/' + clazz).then(() => {
+                    let index = this.entitiesConfigList.findIndex(e => e.clazz == clazz);
                     if (index >= 0) {
-                        self.entitiesConfigList.splice(index, 1);
+                        this.entitiesConfigList.splice(index, 1);
                     }
-                    delete self.entitiesConfigMap[clazz];
+                    delete this.entitiesConfigMap[clazz];
                 });
             },
             update(config) {
@@ -194,7 +187,7 @@ function createComponent(template) {
                 if (config.outlineMaxDistance == '') {
                     config.outlineMaxDistance = null;
                 }
-                axios.put('/api/entities/' + config.clazz, config);
+                http.put('/api/entities/' + config.clazz, config);
             },
             showApiRef() {
                 if (this.showRefs) {
@@ -203,22 +196,25 @@ function createComponent(template) {
                     if (this.refs) {
                         this.showRefs = true;
                     } else {
-                        let self = this;
-                        axios.get('/api/scripts-doc/ENTITY_ESP').then(response => {
-                            self.showRefs = true;
-                            self.refs = response.data;
+                        http.get('/api/scripts-doc/ENTITY_ESP').then(response => {
+                            this.showRefs = true;
+                            this.refs = response;
                         });
                     }
                 }
             },
             saveCode() {
-                axios.post('/api/entity-esp-code', {
+                http.post('/api/entity-esp-code', {
                     clazz: this.selectedConfig.clazz,
                     code: this.code
-                }).then(() => {
-                    alert('Saved');
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Saved');
+                    } else {
+                        alert(formatCodeResponse(response));
+                    }
                 }, error => {
-                    alert(error.response.data);
+                    alert(error.response);
                 });
             }
         }

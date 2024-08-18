@@ -1,10 +1,11 @@
+import * as http from '/http.js';
+
 function createComponent(template) {
     return {
         template: template,
         created() {
-            let self = this;
-            axios.get('/api/fake-weather').then(function (response) {
-                self.config = response.data;
+            http.get('/api/fake-weather').then(response => {
+                this.config = response;
             });
         },
         data() {
@@ -16,15 +17,14 @@ function createComponent(template) {
         },
         methods: {
             setDayTime() {
-                axios.post('/api/fake-weather-set-time', { value: this.dayTime });
+                http.post('/api/fake-weather-set-time', { value: this.dayTime });
             },
             setRainLevel() {
-                axios.post('/api/fake-weather-set-rain', { value: this.rainLevel });
+                http.post('/api/fake-weather-set-rain', { value: this.rainLevel });
             },
             update() {
-                let self = this;
-                axios.post('/api/fake-weather', this.config).then(function (response) {
-                    self.config = response.data;
+                http.post('/api/fake-weather', this.config).then(response => {
+                    this.config = response;
                 });
             }
         }

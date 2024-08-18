@@ -1,12 +1,12 @@
 import { addComponent } from '/components/Loader.js'
+import * as http from '/http.js';
 
 function createComponent(template) {
     let args = {
         template: template,
         created() {
-            let self = this;
-            axios.get('/api/container-buttons').then(function (response) {
-                self.config = response.data;
+            http.get('/api/container-buttons').then(response => {
+                this.config = response;
             });
         },
         data() {
@@ -16,9 +16,8 @@ function createComponent(template) {
         },
         methods: {
             update() {
-                let self = this;
-                axios.post('/api/container-buttons', this.config).then(function (response) {
-                    self.config = response.data;
+                http.post('/api/container-buttons', this.config).then(response => {
+                    this.config = response;
                 });
             }
         }

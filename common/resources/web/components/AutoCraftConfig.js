@@ -1,14 +1,15 @@
+import * as http from '/http.js';
+
 function createComponent(template) {
     return {
         template: template,
         created() {
-            let self = this;
-            axios.get('/api/auto-craft').then(response => {
-                self.config = response.data;
-                self.state = 'list'
+            http.get('/api/auto-craft').then(response => {
+                this.config = response;
+                this.state = 'list'
             });
-            axios.get('/api/item-info').then(response => {
-                self.itemList = response.data.filter(i => i);
+            http.get('/api/item-info').then(response => {
+                this.itemList = response.filter(i => i);
             });
         },
         data() {
@@ -46,9 +47,8 @@ function createComponent(template) {
                 this.update();
             },
             update() {
-                let self = this;
-                return axios.post('/api/auto-craft', this.config).then(response => {
-                    self.config = response.data;
+                return http.post('/api/auto-craft', this.config).then(response => {
+                    this.config = response;
                 });
             }
         }

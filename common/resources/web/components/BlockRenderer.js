@@ -1,4 +1,5 @@
 import * as mat4 from '../gl-matrix/mat4.js';
+import * as http from '/http.js';
 
 const vertexShaderSource = `
     attribute vec4 aPosition;
@@ -97,12 +98,12 @@ class BlockRendererCanvas {
 
         this.disposeBuffer();
 
-        axios.get('/api/block-model/' + encodeURIComponent(id)).then(response => {
+        http.get('/api/block-model/' + encodeURIComponent(id)).then(response => {
             if (this.id != id) {
                 return;
             }
 
-            if (response.data.length == 0) {
+            if (response.length == 0) {
                 this.canDraw = false;
                 return;
             }
@@ -136,7 +137,7 @@ class BlockRendererCanvas {
                 addVertex(quad.vertices[3]);
             };
 
-            response.data.forEach(quad => addQuad(quad));
+            response.forEach(quad => addQuad(quad));
 
             buffer = new Float32Array(buffer);
             this.bufLength = buffer.length / 9;
@@ -157,8 +158,8 @@ class BlockRendererCanvas {
             gl.enableVertexAttribArray(colorAttributeLocation);
             gl.vertexAttribPointer(colorAttributeLocation, 4, gl.FLOAT, false, 36, 20);
 
-            let textureUrl = response.data[0].location;
-            if (!response.data.every(quad => quad.location == textureUrl)) {
+            let textureUrl = response[0].location;
+            if (!response.every(quad => quad.location == textureUrl)) {
                 throw 'Not all quads use the same texture';
             }
 

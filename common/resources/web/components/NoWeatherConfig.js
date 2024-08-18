@@ -1,26 +1,8 @@
+
+import { createSimpleComponent } from './SimpleModule.js';
+
 function createComponent(template) {
-    return {
-        template: template,
-        created() {
-            let self = this;
-            axios.get('/api/no-weather').then(function (response) {
-                self.config = response.data;
-            });
-        },
-        data() {
-            return {
-                config: null
-            };
-        },
-        methods: {
-            update() {
-                let self = this;
-                axios.post('/api/no-weather', this.config).then(function (response) {
-                    self.config = response.data;
-                });
-            }
-        }
-    }
+    return createSimpleComponent('/api/no-weather', template);
 }
 
 export { createComponent }

@@ -1,4 +1,5 @@
 import * as Vue from '/vue.esm-browser.js';
+import * as http from '/http.js';
 
 function addComponent(args, name) {
     if (!args.components) {
@@ -6,10 +7,9 @@ function addComponent(args, name) {
     }
     args.components[name] = Vue.defineAsyncComponent(function () {
         return new Promise(function (resolve, reject) {
-            axios.get(`/components/${name}.html`).then(function (response) {
-                let template = response.data;
+            http.getText(`/components/${name}.html`).then(response => {
                 import(`/components/${name}.js`).then(function (module) {
-                    resolve(module.createComponent(template));
+                    resolve(module.createComponent(response));
                 }, reject);
             }, reject);
         });

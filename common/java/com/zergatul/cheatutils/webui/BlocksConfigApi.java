@@ -90,7 +90,7 @@ public class BlocksConfigApi extends ApiBase {
 
         ConfigStore.instance.requestWrite();
 
-        return "{ ok: true }";
+        return "{ \"ok\": true }";
     }
 
     public static class Add extends ApiBase {
@@ -101,7 +101,8 @@ public class BlocksConfigApi extends ApiBase {
         }
 
         @Override
-        public String post(String id) throws HttpException {
+        public String post(String body) throws HttpException {
+            String id = gson.fromJson(body, String.class);
             ResourceLocation loc = ResourceLocation.parse(id);
             Block block = Registries.BLOCKS.getValue(loc);
             if (block == null) {

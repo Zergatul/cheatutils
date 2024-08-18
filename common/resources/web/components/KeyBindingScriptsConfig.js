@@ -1,5 +1,6 @@
 import { addComponent } from '/components/Loader.js'
 import { formatCodeResponse } from '/components/MonacoEditor.js'
+import * as http from '/http.js';
 
 function createComponent(template) {
     let args = {
@@ -23,9 +24,8 @@ function createComponent(template) {
                 this.script = {};
             },
             assign(script) {
-                let self = this;
-                axios.put(`/api/keybinding-scripts-assign/${encodeURIComponent(script.name)}`, script.key).then(function (response) {
-                    self.list.forEach(s => {
+                http.put(`/api/keybinding-scripts-assign/${encodeURIComponent(script.name)}`, script.key).then(response => {
+                    this.list.forEach(s => {
                         if (s != script && s.key == script.key) {
                             s.key = -1;
                         }
@@ -33,33 +33,30 @@ function createComponent(template) {
                 });
             },
             edit(name) {
-                let self = this;
-                axios.get(`/api/keybinding-scripts/${encodeURIComponent(name)}`).then(function (response) {
-                    self.mode = 'edit';
-                    self.name = name;
-                    self.script = response.data;
+                http.get(`/api/keybinding-scripts/${encodeURIComponent(name)}`).then(response => {
+                    this.mode = 'edit';
+                    this.name = name;
+                    this.script = response;
                 });
             },
             refresh() {
-                let self = this;
-                axios.get('/api/keybinding-scripts').then(function (response) {
-                    self.mode = 'list';
-                    self.list = response.data;
+                http.get('/api/keybinding-scripts').then(response => {
+                    this.mode = 'list';
+                    this.list = response;
                 });
             },
             remove(name) {
-                let self = this;
-                axios.delete(`/api/keybinding-scripts/${encodeURIComponent(name)}`).then(function (response) {
-                    self.refresh();
+                http.delete(`/api/keybinding-scripts/${encodeURIComponent(name)}`).then(response => {
+                    this.refresh();
                 });
             },
             save() {
                 let handleError = error => {
-                    alert(error.response.data);
+                    alert(error.response);
                 }
                 if (this.mode == 'add') {
-                    axios.post('/api/keybinding-scripts', this.script).then(response => {
-                        if (response.data.ok) {
+                    http.post('/api/keybinding-scripts', this.script).then(response => {
+                        if (response.ok) {
                             this.refresh();
                         } else {
                             alert(formatCodeResponse(response));
@@ -67,8 +64,8 @@ function createComponent(template) {
                     }, handleError);
                 }
                 if (this.mode == 'edit') {
-                    axios.put(`/api/keybinding-scripts/${encodeURIComponent(this.name)}`, this.script).then(response => {
-                        if (response.data.ok) {
+                    http.put(`/api/keybinding-scripts/${encodeURIComponent(this.name)}`, this.script).then(response => {
+                        if (response.ok) {
                             this.refresh();
                         } else {
                             alert(formatCodeResponse(response));
@@ -83,10 +80,9 @@ function createComponent(template) {
                     if (this.refs) {
                         this.showRefs = true;
                     } else {
-                        let self = this;
-                        axios.get('/api/scripts-doc/KEYBINDING').then(response => {
-                            self.showRefs = true;
-                            self.refs = response.data;
+                        http.get('/api/scripts-doc/KEYBINDING').then(response => {
+                            this.showRefs = true;
+                            this.refs = response;
                         });
                     }
                 }
