@@ -4,6 +4,7 @@ import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.*;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilerContext;
+import com.zergatul.scripting.compiler.VisibilityChecker;
 import com.zergatul.scripting.parser.NodeType;
 import com.zergatul.scripting.symbols.*;
 import com.zergatul.scripting.type.*;
@@ -85,6 +86,24 @@ public class CompletionProvider {
                     }
                     canStatement = true;
                 }
+                case IF_STATEMENT -> {
+                    if (completionContext.prev != null) {
+                        BoundNode unfinished = getUnfinished(completionContext.prev, line, column);
+                        if (unfinished != null) {
+                            CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry, unfinished), line, column);
+                            suggestions.addAll(get(parameters, output, ctx, line, column));
+                        }
+                    }
+                }
+                case RETURN_STATEMENT -> {
+                    if (completionContext.prev != null) {
+                        BoundNode unfinished = getUnfinished(completionContext.prev, line, column);
+                        if (unfinished != null) {
+                            CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry, unfinished), line, column);
+                            suggestions.addAll(get(parameters, output, ctx, line, column));
+                        }
+                    }
+                }
                 case ARGUMENTS_LIST -> {
                     // check if we are at the end of unfinished statement
                     if (completionContext.prev != null) {
@@ -112,6 +131,18 @@ public class CompletionProvider {
                             .forEach(p -> suggestions.add(documentationProvider.getPropertySuggestion(p)));
                     type.getInstanceMethods().stream()
                             .filter(m -> m.getName().toLowerCase().startsWith(partial.toLowerCase()))
+                            .filter(m -> {
+                                if (m instanceof NativeMethodReference nativeRef) {
+                                    VisibilityChecker checker = parameters.getChecker();
+                                    if (checker != null) {
+                                        return checker.isVisible(nativeRef.getUnderlying());
+                                    } else {
+                                        return true;
+                                    }
+                                } else {
+                                    return true;
+                                }
+                            })
                             .forEach(m -> suggestions.add(documentationProvider.getMethodSuggestion(m)));
                 }
                 case METHOD_INVOCATION_EXPRESSION -> {
@@ -203,6 +234,12 @@ public class CompletionProvider {
             if (node instanceof BoundVariableDeclarationNode declaration) {
                 if (declaration.expression != null && declaration.expression.getRange().endsWith(line, column)) {
                     return getUnfinished(declaration.expression, line, column);
+                }
+            }
+
+            if (node instanceof BoundReturnStatementNode returnStatement) {
+                if (returnStatement.expression != null && returnStatement.expression.getRange().endsWith(line, column)) {
+                    return getUnfinished(returnStatement.expression, line, column);
                 }
             }
         }
