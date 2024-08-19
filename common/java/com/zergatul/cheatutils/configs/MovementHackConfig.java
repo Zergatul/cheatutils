@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class MovementHackConfig implements ValidatableConfig {
+public class MovementHackConfig implements ValidatableConfig, ModuleStateProvider {
     public boolean disableSlowdownOnUseItem;
     public boolean scaleInputVector;
     public double inputVectorFactor;
@@ -22,5 +22,10 @@ public class MovementHackConfig implements ValidatableConfig {
     public void validate() {
         inputVectorFactor = MathUtils.clamp(inputVectorFactor, 0.01, 1000);
         jumpHeightFactor = MathUtils.clamp(jumpHeightFactor, 0.01, 1000);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return disableSlowdownOnUseItem || scaleInputVector || disableCrouchingSlowdown || antiKnockback || antiPush || scaleJumpHeight || disableSlimePhysics || disableWaterPush;
     }
 }

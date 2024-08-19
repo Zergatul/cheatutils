@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfig;
+import com.zergatul.cheatutils.configs.ModuleStateProvider;
 import org.apache.http.HttpException;
 
 import java.lang.reflect.Field;
@@ -23,10 +23,10 @@ public class ModulesStatusApi extends ApiBase {
         Map<String, Boolean> map = new HashMap<>();
         for (Field field : Config.class.getDeclaredFields()) {
             Class<?> fieldType = field.getType();
-            if (ModuleConfig.class.isAssignableFrom(fieldType)) {
-                ModuleConfig moduleConfig;
+            if (ModuleStateProvider.class.isAssignableFrom(fieldType)) {
+                ModuleStateProvider moduleConfig;
                 try {
-                    moduleConfig = (ModuleConfig) field.get(config);
+                    moduleConfig = (ModuleStateProvider) field.get(config);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                     continue;
@@ -37,7 +37,7 @@ public class ModulesStatusApi extends ApiBase {
                     key = key.substring(0, key.length() - 6);
                 }
 
-                map.put(key, moduleConfig.enabled);
+                map.put(key, moduleConfig.isEnabled());
             }
         }
 

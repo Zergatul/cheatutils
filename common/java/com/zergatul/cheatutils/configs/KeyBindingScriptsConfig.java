@@ -4,8 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class KeyBindingScriptsConfig {
+public class KeyBindingScriptsConfig implements ModuleStateProvider {
+
     public List<ScriptEntry> scripts = Collections.synchronizedList(new ArrayList<>());
+
+    @Override
+    public boolean isEnabled() {
+        return !scripts.isEmpty();
+    }
 
     public static class ScriptEntry {
         public String name;

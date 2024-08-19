@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ReachConfig implements ValidatableConfig {
+public class ReachConfig implements ValidatableConfig, ModuleStateProvider {
 
     public boolean overrideReachDistance;
     public double reachDistance;
@@ -18,5 +18,10 @@ public class ReachConfig implements ValidatableConfig {
     public void validate() {
         reachDistance = MathUtils.clamp(reachDistance, 0, 100);
         attackRange = MathUtils.clamp(attackRange, 0, 100);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return overrideAttackRange || overrideReachDistance;
     }
 }

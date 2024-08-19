@@ -1,4 +1,3 @@
 package com.zergatul.cheatutils.configs;
 
-public class InvMoveConfig extends ModuleConfig {
-}
+public class InvMoveConfig extends ModuleConfig {}

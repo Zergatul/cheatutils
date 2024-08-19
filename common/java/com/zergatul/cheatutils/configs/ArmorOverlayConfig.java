@@ -1,4 +1,3 @@
 package com.zergatul.cheatutils.configs;
 
-public class ArmorOverlayConfig extends ModuleConfig {
-}
+public class ArmorOverlayConfig extends ModuleConfig {}

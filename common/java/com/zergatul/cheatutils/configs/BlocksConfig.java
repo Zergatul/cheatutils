@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.Block;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BlocksConfig {
+public class BlocksConfig implements ModuleStateProvider {
 
     private ImmutableList<BlockEspConfig> configs = new ImmutableList<>();
 
@@ -21,6 +21,11 @@ public class BlocksConfig {
 
     public Map<Block, BlockEspConfig> getMap() {
         return map;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return configs.stream().anyMatch(c -> c.enabled);
     }
 
     public void apply() {

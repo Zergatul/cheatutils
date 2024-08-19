@@ -1,4 +1,3 @@
 package com.zergatul.cheatutils.configs;
 
-public class FakeWeatherConfig extends ModuleConfig {
-}
+public class FakeWeatherConfig extends ModuleConfig {}
