@@ -65,7 +65,6 @@ public class Root {
     public static InventoryApi inventory = new InventoryApi();
     public static VariablesApi variables = new VariablesApi();
     public static MathApi math = new MathApi();
-    public static StringsApi strings = new StringsApi();
     public static ColorApi color = new ColorApi();
     public static TimeApi time = new TimeApi();
     public static PacketApi packet = new PacketApi();

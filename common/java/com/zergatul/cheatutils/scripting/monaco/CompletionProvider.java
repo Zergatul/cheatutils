@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
+import com.zergatul.scripting.InterfaceHelper;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.*;
 import com.zergatul.scripting.compiler.CompilationParameters;
@@ -9,6 +10,7 @@ import com.zergatul.scripting.parser.NodeType;
 import com.zergatul.scripting.symbols.*;
 import com.zergatul.scripting.type.*;
 
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -198,7 +200,7 @@ public class CompletionProvider {
             }
         }
         if (canExpression) {
-            suggestions.addAll(getSymbols(output, completionContext));
+            suggestions.addAll(getSymbols(parameters, output, completionContext));
             if (parameters.isAsync()) {
                 suggestions.add(documentationProvider.getAwaitKeywordSuggestion());
             }
@@ -306,7 +308,7 @@ public class CompletionProvider {
         return new CompletionContext(child, line, column);
     }
 
-    private List<Suggestion> getSymbols(BinderOutput output, CompletionContext context) {
+    private List<Suggestion> getSymbols(CompilationParameters parameters, BinderOutput output, CompletionContext context) {
         List<Suggestion> list = new ArrayList<>();
 
         if (context.entry == null) {
@@ -333,6 +335,10 @@ public class CompletionProvider {
                         } else if (context.prev.getNodeType() == NodeType.FUNCTIONS_LIST) {
                             addStaticVariables(list, output.unit().variables);
                             addFunctions(list, output.unit().functions);
+
+                            for (Parameter parameter : InterfaceHelper.getFuncInterfaceMethod(parameters.getFunctionalInterface()).getParameters()) {
+                                list.add(documentationProvider.getLocalVariableSuggestion(parameter.getName(), SType.fromJavaType(parameter.getType())));
+                            }
                         }
                     }
                 }

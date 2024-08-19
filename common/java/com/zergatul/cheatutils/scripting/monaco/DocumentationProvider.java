@@ -79,11 +79,15 @@ public class DocumentationProvider {
     }
 
     public Suggestion getLocalVariableSuggestion(LocalVariable variable) {
+        return getLocalVariableSuggestion(variable.getName(), variable.getType());
+    }
+
+    public Suggestion getLocalVariableSuggestion(String name, SType type) {
         return new Suggestion(
-                variable.getName(),
-                variable.getType().toString(),
+                name,
+                type(type),
                 null,
-                variable.getName(),
+                name,
                 CompletionItemKind.VARIABLE);
     }
 

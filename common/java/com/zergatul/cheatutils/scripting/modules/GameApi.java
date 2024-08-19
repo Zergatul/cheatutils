@@ -8,6 +8,9 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NumericTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -369,6 +372,23 @@ public class GameApi {
             return getIntegerValue(entityId, entity -> {
                 if (entity instanceof LivingEntity living) {
                     return (int) living.getHealth();
+                } else {
+                    return Integer.MIN_VALUE;
+                }
+            });
+        }
+
+        public int getIntTag(int entityId, String tag) {
+            return getIntegerValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    CompoundTag compound = new CompoundTag();
+                    living.addAdditionalSaveData(compound);
+                    Tag item = compound.get(tag);
+                    if (item instanceof NumericTag numeric) {
+                        return numeric.getAsInt();
+                    } else {
+                        return Integer.MIN_VALUE;
+                    }
                 } else {
                     return Integer.MIN_VALUE;
                 }

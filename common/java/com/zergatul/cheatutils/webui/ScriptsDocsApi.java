@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.scripting.*;
+import com.zergatul.scripting.InterfaceHelper;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpException;
 
@@ -9,6 +10,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public class ScriptsDocsApi extends ApiBase {
@@ -21,7 +23,11 @@ public class ScriptsDocsApi extends ApiBase {
     @Override
     public String get(String id) throws HttpException {
         ScriptType type = ScriptType.valueOf(id);
-        return gson.toJson(generateRootRefs(type.getApis()));
+        List<String> refs = new ArrayList<>();
+        refs.add(formatFuncMethod(InterfaceHelper.getFuncInterfaceMethod(type.createParameters().getFunctionalInterface())));
+        refs.add("**********");
+        refs.addAll(generateRootRefs(type.getApis()));
+        return gson.toJson(refs);
     }
 
     private List<String> generateRootRefs(ApiType[] types) {
@@ -95,17 +101,34 @@ public class ScriptsDocsApi extends ApiBase {
         }
 
         String name;
-        if (clazz == Runnable.class) {
-            name = "Action";
+        boolean shouldWrap = true;
+        if (clazz == void.class) {
+            name = "void";
         } else if (clazz == String.class) {
             name = "string";
         } else if (clazz == double.class) {
             name = "float";
+        } else if (clazz == CompletableFuture.class) {
+            name = "Future";
+        } else if (InterfaceHelper.isFuncInterface(clazz)) {
+            Method method = InterfaceHelper.getFuncInterfaceMethod(clazz);
+            name = "Lambda<" + formatFuncMethod(method) + ">";
+            shouldWrap = false;
+        } else if (clazz.getName().startsWith("com.zergatul.cheatutils.scripting.modules.")) {
+            name = clazz.getName().substring("com.zergatul.cheatutils.scripting.modules.".length());
         } else {
             name = clazz.getName();
         }
 
-        return "<span class=\"class\">" + name + "</span>";
+        return shouldWrap ? "<span class=\"class\">" + name + "</span>" : name;
+    }
+
+    private String formatFuncMethod(Method method) {
+        final String space = "&nbsp;";
+        String parameters = String.join("," + space, Arrays.stream(method.getParameters()).map(p -> {
+            return formatClass(p.getType()) + space + p.getName();
+        }).toList());
+        return "(" + parameters + ")" + space + "=>" + space + formatClass(method.getReturnType());
     }
 
     private String formatComment(String text) {
