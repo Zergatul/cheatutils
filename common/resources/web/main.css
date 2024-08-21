@@ -1,0 +1,94 @@
+body {
+    --color1: #122741;
+    --color2: #F8FAEB;
+    --color3: #246673;
+    --color4: #ABB5AC;
+    --color5: #B79246;
+    --color6: #919992;
+    --color7: #317F35;
+    --font: "New Amsterdam", sans-serif;
+    background-color: var(--color5);
+    box-sizing: border-box;
+    font-family: var(--font);
+    font-size: 16pt;
+    margin: 0;
+}
+
+div.main {
+    min-height: 100vh;
+}
+
+div.main-header {
+    background-color: var(--color1);
+    display: flex;
+    font-style: Roboto;
+    height: 4em;
+}
+
+div.main-header > div {
+    align-items: center;
+    display: flex;
+    flex: 1;
+}
+
+div.main-header > div.title {
+    color: var(--color2);
+    font-size: 2em;
+    padding-left: 1.5em;
+}
+
+div.main-header > div.search {
+    justify-content: right;
+    padding-right: 1.5em;
+}
+
+div.main-header > div.search > input {
+    border: 0;
+    border-radius: 0.6em;
+    font-family: var(--font);
+    font-size: 1.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    width: 20em;
+}
+
+div.modules {
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+    margin-top: 1em;
+}
+
+div.module-group {
+    background-color: var(--color3);
+    border-radius: 2em;
+    display: flex;
+    justify-content: center;
+    width: 8em;
+    padding: 1em;
+    flex-direction: column;
+    justify-content: start;
+    gap: 0.15em;
+}
+
+div.module-group-header {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+div.module-group > button {
+    background-color: var(--color4);
+    border-width: 0;
+    border-radius: 0.5em;
+    color: var(--color2);
+    font-family: var(--font);
+    font-size: 1em;
+}
+
+div.module-group > button.active {
+    color: var(--color7);
+}
+
+div.module-group > button:hover {
+    background-color: var(--color6);
+}

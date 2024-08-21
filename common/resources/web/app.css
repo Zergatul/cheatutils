@@ -16,7 +16,7 @@ table.main-table > tbody > tr > td > button {
     width: 100%;
 }
 
-button {
+/*button {
     box-sizing: border-box;
     border-radius: 10px;
     border-width: 4px;
@@ -25,15 +25,15 @@ button {
     font-weight: bold;
     font-size: 14px;
     height: 32px;
-}
+}*/
 
 button:disabled {
     cursor: not-allowed;
 }
 
-button + button {
+/*button + button {
     margin-left: 16px;
-}
+}*/
 
 select {
     display: inline-block;
