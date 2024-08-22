@@ -16,4 +16,16 @@ function addComponent(args, name) {
     });
 };
 
-export { addComponent }
+function getComponent(name) {
+    return Vue.defineAsyncComponent(() => {
+        return new Promise((resolve, reject) => {
+            http.getText(`/components/${name}.html`).then(response => {
+                import(`/components/${name}.js`).then(module => {
+                    resolve(module.createComponent(response));
+                }, reject);
+            }, reject);
+        });
+    });
+}
+
+export { addComponent, getComponent }

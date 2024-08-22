@@ -1,0 +1,74 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Automatically uses water bucket when you fall.<br>
+        Module only searches water bucket on your hotbar.<br>
+        Don't rely solely on this module, since you can die just because of bad ping.<br>
+        Don't fall on waterloggable blocks like leaves, since your water cannot be placed on top of such blocks.<br>
+        Module doesn't check if you already are falling into water.<br>
+        There was plans to add other items like cobweb or slime block.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+
+        <fieldset>
+            <legend>
+                Speed Threshold
+            </legend>
+            <div class="input-section">
+                <input type="text" v-model="config.speedThreshold" @change="update()">
+                <div class="section-description">
+                    Module tries to use water bucket only if your speed (blocks/sec) if greater than specified value.
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Items to Use
+            </legend>
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.useWaterBucket"
+                        @change="update()">
+                    <span>Water Bucket</span>
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.autoPickUp"
+                        @change="update()">
+                    <span>Auto Pick Up Water</span>
+                </label>
+            </legend>
+            <div class="section-description">
+                Automatically picks up water once you land.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Reach Distance
+            </legend>
+            <div class="input-section">
+                <input type="text" v-model="config.reachDistance" @change="update()">
+            </div>
+            <div class="section-description">
+                Module tries to place water if distance to target block less than this distance.
+                Default Minecraft reach distance is 4.5 and it is not recommended to increase it, since even vanilla server will just reject water place actions on longer distances.
+            </div>
+        </fieldset>
+    </div>
+</div>

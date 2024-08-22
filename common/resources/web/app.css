@@ -1,6 +1,97 @@
-button.faded {
-    opacity: 0.2;
+body {
+    --color1: #122741;
+    --color2: #F8FAEB;
+    --color3: #246673;
+    --color4: #ABB5AC;
+    --color5: #B79246;
+    --color6: #919992;
+    --color7: #317F35;
+    --color8: #000000;
+    --font: "New Amsterdam", sans-serif;
+    --font2: "Roboto", sans-serif;
+    background-color: var(--color5);
+    box-sizing: border-box;
+    font-family: var(--font);
+    font-size: 16pt;
+    margin: 0;
 }
+
+div#vue-app {
+    min-height: 100vh;
+    text-align: center;
+}
+
+div.main-header {
+    background-color: var(--color1);
+    display: flex;
+    font-style: Roboto;
+    height: 4em;
+}
+
+div.main-header > div {
+    align-items: center;
+    display: flex;
+    flex: 1;
+}
+
+div.main-header > div.title {
+    color: var(--color2);
+    font-size: 2em;
+    padding-left: 1.5em;
+}
+
+div.main-header > div.search {
+    justify-content: right;
+    padding-right: 1.5em;
+}
+
+div.main-header > div.search > input {
+    border: 0;
+    border-radius: 0.6em;
+    font-family: var(--font);
+    font-size: 1.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    width: 20em;
+}
+
+a, a:visited {
+    color: var(--color2);
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+div.module-main {
+    background-color: var(--color4);
+    border-radius: 1em;
+    display: inline-flex;
+    justify-content: center;
+    padding: 1em;
+    flex-direction: column;
+    justify-content: start;
+    gap: 0.15em;
+    text-align: left;
+    margin-top: 1em;
+}
+
+div.description {
+    color: var(--color1);
+    font-family: var(--font2);
+    font-size: 0.8em;
+    margin-bottom: 1em;
+    max-width: 60em;
+}
+
+div.section-description {
+    color: var(--color1);
+    font-family: var(--font2);
+    font-size: 0.8em;
+}
+
+/****************************************************************************/
+
 
 table.main-table > thead > tr > th {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -56,11 +147,6 @@ kbd {
 
 kbd + kbd {
     margin-left: 4px;
-}
-
-a {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
 }
 
 ul.list-base {
@@ -262,17 +348,9 @@ label.switch-label > span {
     margin: 4px 8px 8px 8px;
 }
 
-div.description {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
-    margin-bottom: 12px;
-    max-width: 1000px;
-}
 
-div.section-description {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
-}
+
+
 
 span.field-description {
     display: inline-block;
@@ -311,9 +389,6 @@ input.search {
     width: 300px;
 }
 
-div.module-main {
-    padding-top: 16px;
-}
 
 h2.module-header {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -845,21 +920,6 @@ div.debug-messages {
 }
 
 @media (prefers-color-scheme: light) {
-    body {
-        background-color: #FFFFFF;
-        color: #000000;
-    }
-
-    a, a:visited {
-        color: #2F81F7;
-        text-decoration: none;
-    }
-
-    a:hover {
-        color: #2F81F7;
-        text-decoration: underline;
-    }
-
     button {
         border-color:#333AA3;
         background-color: #FFFFFF;
@@ -924,10 +984,6 @@ div.debug-messages {
         color: #008000;
     }
 
-    div.section-description {
-        color: #92711f;
-    }
-
     div.input-description {
         color: #92711f;
     }
@@ -970,21 +1026,6 @@ div.debug-messages {
 }
 
 @media (prefers-color-scheme: dark) {
-    body {
-        background-color: #3C3F41;
-        color: #BBBBBB;
-    }
-
-    a, a:visited {
-        color: #40A0C6;
-        text-decoration: none;
-    }
-
-    a:hover {
-        color: #40A0C6;
-        text-decoration: underline;
-    }
-
     button {
         background-color: #4C5052;
         border-color: #5E6060;
@@ -1049,10 +1090,6 @@ div.debug-messages {
 
     div.entity-info-id {
         color: #6DFF6D;
-    }
-
-    div.section-description {
-        color: #FFC66D;
     }
 
     div.input-description {

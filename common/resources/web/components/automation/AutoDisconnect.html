@@ -1,0 +1,22 @@
+<div class="module-main">
+    <div class="description">
+        Write script to automatically disconnect you based on some conditions.
+    </div>
+
+    <div class="module-sections">
+        <div class="description">
+            Use <b>Events Scripting</b> module to check for conditions every game tick. Use <b>player.disconnect(...);</b> for disconnect. Example:
+            <pre>
+events.onTickEnd(() => {
+    if (player.getHealth() &lt; 10) {
+        player.disconnect("", "Low HP");
+    }
+    
+    if (player.getFood() &lt; 8) {
+        player.disconnect("", "Low food");
+    }
+});
+            </pre>
+        </div>
+    </div>
+</div>
