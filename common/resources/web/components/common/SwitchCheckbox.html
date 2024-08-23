@@ -1,0 +1,7 @@
+<div class="switch">
+    <div class="checkbox">
+        <input type="checkbox" :id="name" :checked="isChecked" @change="onChange">
+        <label class="checkbox" :for="name"></label>
+    </div>
+    <label v-if="hasSlot" :for="name"><slot></slot></label>
+</div>

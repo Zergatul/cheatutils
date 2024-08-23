@@ -1,0 +1,24 @@
+fieldset.item-list {
+    display: flex;
+    flex-direction: column;
+}
+
+fieldset.item-list button {
+    width: 6em;
+}
+
+fieldset.item-list > div {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+fieldset.item-list ul {
+    flex-basis: 15em;
+    flex-grow: 1;
+}
+
+fieldset.item-list div.search {
+    display: flex;
+    gap: 1em;
+}

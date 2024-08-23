@@ -1,0 +1,65 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Show additional buttons for containers UI (chects, barrels, ender chests and so on).
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.showTakeAll" @change="update()">Show "Take All" button</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Takes everything from container.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.showSmartPut" @change="update()">Show "Smart Put" button</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                "Smart Put" moves items from your inventory to container. It moves only the same items that are already inside container. For example, if you have wood and planks in chest, it will move only wood and planks from your inventory to the chest.
+            </div>
+            <div>
+                <switch-checkbox v-model="config.checkShulkerContent" @change="update()">Check Shulker Content</switch-checkbox>
+            </div>
+            <div class="section-description">
+                Only move shulkers with the same content.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.showDropAll" @change="update()">Show "Drop All" button</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                "Drop All" drops everything in container on the ground.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.useFilter" @change="update()">Use Filter</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Add items you want to take with "Take All" or "Drop All" buttons.
+            </div>
+            <item-list v-model="config.items" @change="update()"></item-list>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Automation
+            </legend>
+            <div>
+                <switch-checkbox v-model="config.autoTakeAll" @change="update()">Apply "Take All" on container open</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.autoDropAll" @change="update()">Apply "Drop All" on container open</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.autoClose" @change="update()">Auto close containers</switch-checkbox>
+            </div>
+        </fieldset>
+    </div>
+</div>

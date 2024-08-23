@@ -7,6 +7,9 @@ import { modules } from '/modules.js'
 const main = getComponent('Main');
 
 const App = defineComponent({
+    components: {
+        SwitchCheckbox: getComponent('common/SwitchCheckbox')
+    },
     setup() {
         const routes = {};
         for (let module of modules.all) {
@@ -53,18 +56,18 @@ const App = defineComponent({
             });
         };
 
-        const onNavigation = value => {
-            navigation.value = value;
+        const isMain = () => {
+            return view.value == main;
         };
 
         const onEvent = event => {
-            if (event.type == 'navigation') {
-                onNavigation(event.value);
+            if (event.type == 'focus-filter') {
+                setTimeout(() => {
+                    if (searchInput.value != null) {
+                        searchInput.value.focus();
+                    }
+                }, 100);
             }
-        };
-
-        const isMain = () => {
-            return view.value == main;
         };
 
         onMounted(() => {
@@ -72,11 +75,6 @@ const App = defineComponent({
             http.getText('/api/user').then(response => {
                 document.title = response;
             });
-            setTimeout(() => {
-                if (searchInput.value != null) {
-                    searchInput.value.focus();
-                }
-            }, 100);
         });
 
         onUnmounted(() => {

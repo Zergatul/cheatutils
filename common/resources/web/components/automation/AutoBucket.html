@@ -10,12 +10,7 @@
 
     <div class="module-sections">
         <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.enabled"
-                    @change="update()">
-                <span>Enabled</span>
-            </label>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
         </div>
 
         <fieldset>
@@ -35,23 +30,13 @@
                 Items to Use
             </legend>
             <div>
-                <label class="switch-label">
-                    <input type="checkbox" class="switch"
-                        v-model="config.useWaterBucket"
-                        @change="update()">
-                    <span>Water Bucket</span>
-                </label>
+                <switch-checkbox v-model="config.useWaterBucket" @change="update()">Water Bucket</switch-checkbox>
             </div>
         </fieldset>
 
         <fieldset>
             <legend>
-                <label class="switch-label">
-                    <input type="checkbox" class="switch"
-                        v-model="config.autoPickUp"
-                        @change="update()">
-                    <span>Auto Pick Up Water</span>
-                </label>
+                <switch-checkbox v-model="config.autoPickUp" @change="update()">Auto Pick Up Water</switch-checkbox>
             </legend>
             <div class="section-description">
                 Automatically picks up water once you land.

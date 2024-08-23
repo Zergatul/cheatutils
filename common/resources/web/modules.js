@@ -35,24 +35,28 @@ module({
     group: 'automation',
     name: 'Auto Fish',
     component: 'AutoFish',
+    path: 'auto-fish',
     tags: ['auto', 'fish', 'fishing']
 });
 module({
     group: 'automation',
     name: 'Auto Totem',
     component: 'AutoTotem',
+    path: 'auto-totem',
     tags: ['auto', 'totem']
 });
 module({
     group: 'automation',
     name: 'Auto Drop',
     component: 'AutoDrop',
+    path: 'auto-drop',
     tags: ['auto', 'drop', 'inventory']
 });
 module({
     group: 'automation',
     name: 'Container Buttons',
     component: 'ContainerButtons',
+    path: 'container-buttons',
     tags: ['container', 'buttons']
 });
 module({

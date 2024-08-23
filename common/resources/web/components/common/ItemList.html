@@ -1,0 +1,31 @@
+<fieldset class="item-list">
+    <legend>Item List</legend>
+
+    <div v-if="state == 'list'">
+        <div>
+            <button @click="openAdd()">Add Item</button>
+        </div>
+        <ul class="list-base margin-vertical">
+            <li v-for="item in items">
+                <button @click="remove(item)">Remove</button>
+                <div>{{ item }}</div>
+            </li>
+        </ul>
+    </div>
+
+    <div v-if="state == 'add'">
+        <div class="search">
+            <button @click="backToList()">Back</button>
+            <div>Filter:</div>
+            <input type="text" class="search"
+                v-model="search"
+                @input="filterItemList()">
+        </div>
+        <ul class="list-base margin-vertical">
+            <li v-for="item in itemListFiltered">
+                <button @click="add(item)">Add</button>
+                <div>{{ item }}</div>
+            </li>
+        </ul>
+    </div>
+</fieldset>

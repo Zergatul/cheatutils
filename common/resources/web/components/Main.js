@@ -53,6 +53,9 @@ export function createComponent(template) {
                 http.get('/api/modules-status').then(response => {
                     statuses.value = response;
                 });
+                events.trigger({
+                    type: 'focus-filter'
+                });
             });
             onUnmounted(() => {
                 events.unsubscribe(onEvent);

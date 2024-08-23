@@ -1,11 +1,11 @@
-import { addComponent } from '/components/Loader.js'
+import { components } from '/components.js'
 import * as http from '/http.js';
 
-function createComponent(template) {
-    let args = {
+export function createComponent(template) {
+    const args = {
         template: template,
         created() {
-            http.get('/api/auto-drop').then(response => {
+            http.get('/api/container-buttons').then(response => {
                 this.config = response;
             });
         },
@@ -15,15 +15,14 @@ function createComponent(template) {
             };
         },
         methods: {
-            onChange() {
-                http.post('/api/auto-drop', this.config).then(response => {
+            update() {
+                http.post('/api/container-buttons', this.config).then(response => {
                     this.config = response;
                 });
             }
         }
     };
-    addComponent(args, 'ItemsList');
+    components.add(args, 'SwitchCheckbox');
+    components.add(args, 'ItemList');
     return args;
 }
-
-export { createComponent }

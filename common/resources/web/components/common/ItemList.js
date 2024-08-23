@@ -1,7 +1,8 @@
+import { withCss } from '/components/Loader.js';
 import * as http from '/http.js';
 
-function createComponent(template) {
-    return {
+export function createComponent(template) {
+    const args = {
         template: template,
         props: ['modelValue'],
         emits: ['update:modelValue', 'change'],
@@ -58,6 +59,6 @@ function createComponent(template) {
             }
         }
     };
-}
 
-export { createComponent }
+    return withCss(import.meta.url, args);
+}
