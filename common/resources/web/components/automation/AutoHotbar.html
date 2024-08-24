@@ -1,0 +1,42 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Automatically refills configured slots on hotbar from inventory if number of items fall below 50% of stack size.<br>
+        Can be useful for AFK farms.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+        <fieldset>
+            <legend>Slots</legend>
+            <div>
+                <switch-checkbox v-model="config.refillSlot1" @change="update()">Slot 1</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.refillSlot2" @change="update()">Slot 2</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.refillSlot3" @change="update()">Slot 3</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.refillSlot4" @change="update()">Slot 4</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.refillSlot5" @change="update()">Slot 5</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.refillSlot6" @change="update()">Slot 6</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.refillSlot7" @change="update()">Slot 7</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.refillSlot8" @change="update()">Slot 8</switch-checkbox>
+            </div>
+            <div>
+                <switch-checkbox v-model="config.refillSlot9" @change="update()">Slot 9</switch-checkbox>
+            </div>
+        </fieldset>
+    </div>
+</div>

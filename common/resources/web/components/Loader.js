@@ -39,8 +39,20 @@ export function withCss(url, args) {
             link.href = url.replace(/\.js$/, '.css');
             link.rel = 'stylesheet';
             link.id = linkId;
-            link.onload = () => resolve(args);
-            link.onerror = reject;
+            const onLoad = () => {
+                clearEvents();
+                resolve(args);
+            };
+            const onError = () => {
+                clearEvents();
+                reject(`Cannot load ${link.href}`);
+            };
+            const clearEvents = () => {
+                link.removeEventListener('load', onLoad);
+                link.removeEventListener('error', onError);
+            };
+            link.addEventListener('load', onLoad);
+            link.addEventListener('error', onError);
             document.head.appendChild(link);
         });
     }

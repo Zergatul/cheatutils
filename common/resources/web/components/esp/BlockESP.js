@@ -12,7 +12,7 @@ let blockInfoPromise = http.get('/api/block-info').then(blocksList => {
     }
 });
 
-function createComponent(template) {
+export function createComponent(template) {
     let args = {
         template: template,
         setup() {
@@ -252,6 +252,4 @@ function createComponent(template) {
     addComponent(args, 'ColorPicker');
 
     return args;
-}
-
-export { createComponent }
+};

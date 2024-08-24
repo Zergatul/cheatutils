@@ -1,7 +1,8 @@
 import * as http from '/http.js'
-import { components } from '/components.js';
+import { withCss } from '/components/Loader.js'
+import { components } from '/components.js'
 
-function createSimpleComponent(url, template) {
+export function createSimpleComponent(url, template, settings) {
     const args = {
         template: template,
         created() {
@@ -23,7 +24,15 @@ function createSimpleComponent(url, template) {
         }
     };
     components.add(args, 'SwitchCheckbox');
+    if (settings) {
+        if (settings.components) {
+            for (let component of settings.components) {
+                components.add(args, component);
+            }
+        }
+        if (settings.css) {
+            return withCss(settings.css, args);
+        }
+    }
     return args;
 }
-
-export { createSimpleComponent }

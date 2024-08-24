@@ -2,43 +2,27 @@
     <div class="modules">
         <div class="module-group">
             <div class="module-group-header">Automation</div>
-            <button
-                v-for="module in automation"
-                @click="onModuleClick(module)"
-                :class="{ active: statuses[module.component], faded: !filtered[module.component] }"
-            >
-                {{ module.name }}
-            </button>
+            <module-button v-for="module in automation" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
             <div class="module-group-header">ESP</div>
-            <button v-for="module in esp" :class="{ active: statuses[module.component], faded: !filtered[module.component] }">
-                {{ module.name }}
-            </button>
+            <module-button v-for="module in esp" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
             <div class="module-group-header">Hacks</div>
-            <button v-for="module in hacks" :class="{ active: statuses[module.component], faded: !filtered[module.component] }">
-                {{ module.name }}
-            </button>
+            <module-button v-for="module in hacks" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
             <div class="module-group-header">Visuals</div>
-            <button v-for="module in visuals" :class="{ active: statuses[module.component], faded: !filtered[module.component] }">
-                {{ module.name }}
-            </button>
+            <module-button v-for="module in visuals" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
             <div class="module-group-header">Scripting</div>
-            <button v-for="module in scripting" :class="{ active: statuses[module.component], faded: !filtered[module.component] }">
-                {{ module.name }}
-            </button>
+            <module-button v-for="module in scripting" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
             <div class="module-group-header">Utility</div>
-            <button v-for="module in utility" :class="{ active: statuses[module.component], faded: !filtered[module.component] }">
-                {{ module.name }}
-            </button>
+            <module-button v-for="module in utility" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
     </div>
 </div>

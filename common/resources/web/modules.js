@@ -63,49 +63,57 @@ module({
     group: 'automation',
     name: 'Auto Eat',
     component: 'AutoEat',
+    path: 'auto-eat',
     tags: ['auto', 'eat']
 });
 module({
     group: 'automation',
-    name: 'Auto Respawn Reset',
+    name: 'Anti Respawn Reset',
     component: 'AntiRespawnReset',
+    path: 'anti-respawn-reset',
     tags: ['anti', 'respawn', 'bed', 'anchor']
 });
 module({
     group: 'automation',
     name: 'Auto Craft',
     component: 'AutoCraft',
+    path: 'auto-craft',
     tags: ['auto', 'craft']
 });
 module({
     group: 'automation',
     name: 'Auto Attack',
     component: 'AutoAttack',
+    path: 'auto-attack',
     tags: ['auto', 'attack']
 });
 module({
     group: 'automation',
     name: 'Schematica (ALPHA)',
     component: 'Schematica',
+    path: 'schematica',
     tags: ['schematica']
 });
 module({
     group: 'automation',
     name: 'Auto Hotbar',
     component: 'AutoHotbar',
+    path: 'auto-hotbar',
     tags: ['auto', 'hotbar']
 });
 
 module({
     group: 'esp',
-    name: 'Blocks',
-    component: 'Blocks',
+    name: 'Block ESP',
+    component: 'BlockESP',
+    path: 'block-esp',
     tags: ['blocks', 'esp', 'xray']
 });
 module({
     group: 'esp',
-    name: 'Entities',
+    name: 'Entity ESP',
     component: 'Entities',
+    path: 'entity-esp',
     tags: ['entity', 'entities', 'esp']
 });
 module({

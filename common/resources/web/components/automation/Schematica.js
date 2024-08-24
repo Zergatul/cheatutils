@@ -1,7 +1,8 @@
-import * as http from '/http.js';
+import * as http from '/http.js'
+import { components } from '/components.js'
 
-function createComponent(template) {
-    return {
+export function createComponent(template) {
+    const args = {
         template: template,
         created() {
             http.get('/api/schematica').then(response => {
@@ -98,7 +99,7 @@ function createComponent(template) {
                 });
             }
         }
-    }
+    };
+    components.add(args, 'SwitchCheckbox');
+    return args;
 }
-
-export { createComponent }

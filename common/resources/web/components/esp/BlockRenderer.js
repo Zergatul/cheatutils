@@ -1,4 +1,4 @@
-import * as mat4 from '../gl-matrix/mat4.js';
+import * as mat4 from '/gl-matrix/mat4.js';
 import * as http from '/http.js';
 
 const vertexShaderSource = `

@@ -1,0 +1,305 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Module can only properly place simple blocks, which have only 1 block state. No directional blocks, stairs, slabs and so on.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+        <div>
+            <button style="width: 200px;" @click="clear()">Clear</button>
+        </div>
+        <fieldset>
+            <legend>
+                Missing Blocks
+            </legend>
+            <div class="input-section input-section-flex">
+                <switch-checkbox v-model="config.showMissingBlockGhosts" @change="update()">Show as ghost blocks</switch-checkbox>
+                <div>
+                    <span class="field-description">Max distance:</span>
+                    <input type="text" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
+                </div>
+            </div>
+            <div class="input-section input-section-flex">
+                <switch-checkbox v-model="config.showMissingBlockTracers" @change="update()">Show tracers</switch-checkbox>
+                <div>
+                    <span class="field-description">Max distance:</span>
+                    <input type="text" v-model="config.missingBlockTracersMaxDistance" @change="update()">
+                </div>
+            </div>
+            <div class="input-section input-section-flex">
+                <switch-checkbox v-model="config.showMissingBlockCubes" @change="update()">Show mini-cubes</switch-checkbox>
+                <div>
+                    <span class="field-description">Max distance:</span>
+                    <input type="text" v-model="config.missingBlockCubesMaxDistance" @change="update()">
+                </div>
+            </div>
+            <div class="section-description">
+                Missing Blocks: real world block = replacable, schematica block != Air
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Wrong Blocks
+            </legend>
+            <div class="input-section">
+                <switch-checkbox v-model="config.replaceableAsAir" @change="update()">
+                    Treat replaceable blocks as air (e.g. snow, water, grass). Requires rescan.
+                </switch-checkbox>
+            </div>
+            <div class="input-section">
+                <switch-checkbox v-model="config.airAlwaysValid" @change="update()">
+                    Air blocks in schematica are always valid. Requires rescan.
+                </switch-checkbox>
+            </div>
+            <div class="input-section input-section-flex">
+                <switch-checkbox v-model="config.showWrongBlockTracers" @change="update()">
+                    Show tracers
+                </switch-checkbox>
+                <div>
+                    <span class="field-description">Max distance:</span>
+                    <input type="text" v-model="config.wrongBlockTracersMaxDistance" @change="update()">
+                </div>
+            </div>
+            <div class="input-section input-section-flex">
+                <switch-checkbox v-model="config.showWrongBlockCubes" @change="update()">
+                    Show mini-cubes
+                </switch-checkbox>
+                <div class="input-section">
+                    <span class="field-description">Max distance:</span>
+                    <input type="text" v-model="config.wrongBlockCubesMaxDistance" @change="update()">
+                </div>
+            </div>
+            <div class="section-description">
+                Wrong Blocks: real world block != schematica block and real world block != Air
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoBuild" @change="update()">
+                    Auto Build
+                </switch-checkbox>
+            </legend>
+            <div class="input-section">
+                <span class="field-description">Max Build Distance:</span>
+                <input type="text" v-model="config.maxRange" @change="update()">
+            </div>
+            <div class="input-section">
+                <span class="field-description">Use hotbar slots:</span>
+                <input type="text" v-model="slots" @change="onSlotsUpdate()">
+                <div class="input-description">Separated by comma. Example: 6,7,8</div>
+            </div>
+            <div class="input-section">
+                <switch-checkbox v-model="config.useShift" @change="update()">
+                    Use Shift while placing blocks
+                </switch-checkbox>
+            </div>
+            <div class="section-description">
+                Max Build Distance - distance between player eyes and center of block module will try to place.<br>
+                Using shift may cause your character to randomly crouch for a fraction of a second.
+            </div>
+            <div class="input-section">
+                <switch-checkbox v-model="config.attachToAir" @change="update()">
+                    Attach to Air
+                </switch-checkbox>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                File
+            </legend>
+            <div class="input-section">
+                <input type="file" ref="fileInput" @change="onFileSelected()">
+            </div>
+            <div v-if="schematic" class="schematic-info">
+                <div>
+                    Size: W={{ schematic.width }} H={{ schematic.height }} L={{ schematic.length }}
+                </div>
+                <div>
+                    Palette:
+                </div>
+                <table v-if="schematic.palette.length != 65536">
+                    <thead>
+                        <tr>
+                            <td>ID</td>
+                            <td>Count</td>
+                            <td>Block</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in schematic.paletteMap">
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.count }}</td>
+                            <td>
+                                <input type="text" v-model="item.block">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table v-if="schematic.palette.length == 65536">
+                    <thead>
+                        <tr>
+                            <td>ID1</td>
+                            <td>ID2</td>
+                            <td>Count</td>
+                            <td>Block</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in schematic.paletteMap">
+                            <td>{{ item.id >> 8 }}</td>
+                            <td>{{ item.id & 0xFF }}</td>
+                            <td>{{ item.count }}</td>
+                            <td>
+                                <input type="text" v-model="item.block">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="section-description">
+                Supported formats: .schematic, .litematic
+            </div>
+        </fieldset>
+
+        <fieldset v-if="schematic">
+            <legend>
+                <button @click="place()">Place in the World</button>
+            </legend>
+            <div class="input-section">
+                <table>
+                    <colgroup>
+                        <col style="width: 24px;">
+                        <col style="width: 220px;">
+                        <col style="width: 160px;">
+                        <col style="width: 80px;">
+                        <col style="width: 80px;">
+                        <col style="width: 80px;">
+                        <col style="width: 80px;">
+                        <col style="width: 80px;">
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="field-description">X:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="placing.x">
+                            </td>
+                            <td>
+                                <switch-checkbox v-model="placing.flipX">Flip X</switch-checkbox>
+                            </td>
+                            <td>
+                                <span class="field-description">Rotate X:</span>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="-90">
+                                    <span class="text">-90°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="0">
+                                    <span class="text">0°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="90">
+                                    <span class="text">90°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="180">
+                                    <span class="text">180°</span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="field-description">Y:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="placing.y">
+                            </td>
+                            <td>
+                                <switch-checkbox v-model="placing.flipY">Flip Y</switch-checkbox>
+                            </td>
+                            <td>
+                                <span class="field-description">Rotate Y:</span>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="-90">
+                                    <span class="text">-90°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="0">
+                                    <span class="text">0°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="90">
+                                    <span class="text">90°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="180">
+                                    <span class="text">180°</span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="field-description">Z:</span>
+                            </td>
+                            <td>
+                                <input type="text" v-model="placing.z">
+                            </td>
+                            <td>
+                                <switch-checkbox v-model="placing.flipZ">Flip Z</switch-checkbox>
+                            </td>
+                            <td>
+                                <span class="field-description">Rotate Z:</span>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="-90">
+                                    <span class="text">-90°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="0">
+                                    <span class="text">0°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="90">
+                                    <span class="text">90°</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label>
+                                    <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="180">
+                                    <span class="text">180°</span>
+                                </label>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
+    </div>
+</div>

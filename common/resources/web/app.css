@@ -22,13 +22,11 @@ div#vue-app {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
 }
 
 div.main-header {
     background-color: var(--color1);
     display: flex;
-    font-style: Roboto;
     height: 4em;
 }
 
@@ -109,6 +107,13 @@ div.description {
     font-size: 0.8em;
     margin-bottom: 1em;
     max-width: 60em;
+}
+
+span.field-description {
+    display: inline-block;
+    font-family: var(--font2);
+    font-size: 0.8em;
+    margin-right: 0.5em;
 }
 
 div.section-description {
@@ -414,16 +419,6 @@ label.switch-label > span {
     margin: 4px 8px 8px 8px;
 }
 
-
-
-
-
-span.field-description {
-    display: inline-block;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 16px;
-    margin-right: 4px;
-}
 
 div.input-description {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

@@ -2,9 +2,15 @@ import { ref, onMounted, onUnmounted } from '/vue.esm-browser.js';
 import { modules } from '/modules.js'
 import * as http from '/http.js'
 import * as events from '/events-service.js'
+import { getComponent } from '/components/Loader.js'
+
+const button = getComponent('ModuleButton');
 
 export function createComponent(template) {
     return {
+        components: {
+            ModuleButton: button
+        },
         template,
         setup() {
             const automation = ref(modules.automation);

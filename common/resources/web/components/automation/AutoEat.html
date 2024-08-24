@@ -1,0 +1,24 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Automatically consumes item held in offhand. Can be useful for afk farms.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.isHungerLimitEnabled" @change="update()">Enable Hunger Limit</switch-checkbox>
+            </legend>
+            <div class="input-section">
+                <span class="field-description">Min Hunger:</span>
+                <input type="text" v-model="config.hungerLimit" @change="update()">
+            </div>
+            <div class="section-description">
+                If Hunger Limit is disabled module consumes food as soon as it can do.<br>
+                You can specify hunger limit after which module will consume food.
+            </div>
+        </fieldset>
+    </div>
+</div>

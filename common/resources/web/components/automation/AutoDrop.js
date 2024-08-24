@@ -2,7 +2,7 @@ import { withCss } from '/components/Loader.js';
 import { components } from '/components.js'
 import * as http from '/http.js';
 
-function createComponent(template) {
+export function createComponent(template) {
     let args = {
         template: template,
         created() {
@@ -24,8 +24,5 @@ function createComponent(template) {
         }
     };
     components.add(args, 'ItemList');
-    withCss(import.meta.url, args);
-    return args;
+    return withCss(import.meta.url, args);;
 }
-
-export { createComponent }
