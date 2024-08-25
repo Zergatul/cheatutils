@@ -1,0 +1,29 @@
+<div class="module-main">
+    <div class="description">
+        Calculates server tick rate based on SetTime packet.
+        You can display TPS by using scripting and Status Overlay.
+        Use method <b>tps.get() → float</b>.
+    </div>
+
+    <div class="module-sections">
+        <div class="description">
+            Example 1. Display TPS with 1 decimal:
+            <pre style="margin-left: 40px;">
+overlay.add("TPS: " + tps.get().toStandardString(1));
+            </pre>
+            Example 2. Display TPS in different colors with 2 decimals:
+            <pre style="margin-left: 40px;">
+float tpsVal = tps.get();
+string tpsColor;
+if (tpsVal > 19.8) {
+    tpsColor = "#00FF21";
+} else if (tpsVal > 19) {
+    tpsColor = "#FFD800";
+} else {
+    tpsColor = "#FF006E";
+}
+overlay.add("#CDC1FF", "TPS:", tpsColor, tpsVal.toStandardString(2));
+            </pre>
+        </div>
+    </div>
+</div>

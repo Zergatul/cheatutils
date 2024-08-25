@@ -1,0 +1,28 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <div class="actions">
+            <button class="w8" @click="save()" v-if="config">Save</button>
+            <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
+        </div>
+
+        <div v-show="!showRefs">
+            <div>
+                <script-editor v-model="config.code" :type="'OVERLAY'"></script-editor>
+            </div>
+        </div>
+
+        <div v-show="showRefs">
+            <ul class="refs">
+                <li v-for="item in refs" v-html="item"></li>
+            </ul>
+        </div>
+    </div>
+</div>

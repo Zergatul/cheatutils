@@ -1,0 +1,39 @@
+<div class="module-main" v-if="loaded">
+    <div class="description">
+        Create profile with different settings and switch between them.<br>
+        You can use <b>profiles</b> API to switch profiles from scripts.<br>
+        You can use <b>events.onJoinServer</b> from Events Scripting module to automatically load profile based on server and/or Minecraft account.
+    </div>
+
+    <div class="module-sections">
+        <div class="flex-row">
+            <select class="w12" v-model="selectedProfile" @change="change()">
+                <option value="">&lt;Default&gt;</option>
+                <option v-for="profile in profiles" :value="profile">{{ profile }}</option>
+            </select>
+            <button class="w12" v-if="selectedProfile != ''" @click="remove()">Delete</button>
+        </div>
+
+        <div class="flex-row">
+            <input type="text" class="w12" v-model="newProfile" @input="validate()">
+            <div class="input-description" v-if="!isValidName">
+                Should be non-empty, characters
+                <kbd>\</kbd>
+                <kbd>/</kbd>
+                <kbd>:</kbd>
+                <kbd>*</kbd>
+                <kbd>?</kbd>
+                <kbd>"</kbd>
+                <kbd>&lt;</kbd>
+                <kbd>&gt;</kbd>
+                <kbd>|</kbd>
+                are not allowed.
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="w12" :disabled="!isValidName" @click="createCopy()">Copy current into new profile</button>
+            <button class="w12" :disabled="!isValidName" @click="createNew()">Create blank new profile</button>
+        </div>
+    </div>
+</div>

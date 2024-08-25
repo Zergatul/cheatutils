@@ -1,0 +1,26 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Disable all fogs (water, lava, powder snow).
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                Method
+            </legend>
+            <radio name="on-ground" value="SkipSetupFog" v-model="config.method" @change="update()">
+                Skip FogRenderer.setupFog(...)
+            </radio>
+            <radio name="on-ground" value="FogDistanceMod" v-model="config.method" @change="update()">
+                Modify fog distances: near plane = 10000, far plane = 1000000
+            </radio>
+            <div class="section-description">
+                First option may not work properly with graphic optimization mods or shaders.
+            </div>
+        </fieldset>
+    </div>
+</div>

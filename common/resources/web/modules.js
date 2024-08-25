@@ -318,96 +318,112 @@ module({
     group: 'visuals',
     name: 'Full Bright',
     component: 'FullBright',
+    path: 'full-bright',
     tags: ['full', 'bright', 'night', 'vision']
 });
 module({
     group: 'visuals',
     name: 'Armor Overlay',
     component: 'ArmorOverlay',
+    path: 'armor-overlay',
     tags: ['armor', 'overlay']
 });
 module({
     group: 'visuals',
     name: 'Shulker Tooltip',
     component: 'ShulkerTooltip',
+    path: 'shulker-tooltip',
     tags: ['shulker', 'tooltip']
 });
 module({
     group: 'visuals',
     name: 'Advanced Tooltips',
     component: 'AdvancedTooltips',
+    path: 'adv-tooltips',
     tags: ['advanced', 'tooltips']
 });
 module({
     group: 'visuals',
     name: 'Exploration Mini Map',
     component: 'ExplorationMiniMap',
+    path: 'exploration-mini-map',
     tags: ['exploration', 'minimap']
 });
 module({
     group: 'visuals',
     name: 'Death Coordinates',
     component: 'DeathCoordinates',
+    path: 'death-coordinates',
     tags: ['death', 'coordinates']
 });
 module({
     group: 'visuals',
     name: 'No Fog',
     component: 'Fog',
+    path: 'no-fog',
     tags: ['fog']
 });
 module({
     group: 'visuals',
     name: 'Chunks',
     component: 'Chunks',
+    path: 'chunks',
     tags: ['chunks', 'distance']
 });
 module({
     group: 'visuals',
     name: 'Status Effects',
     component: 'StatusEffects',
+    path: 'status-effects',
     tags: ['status', 'effects']
 });
 module({
     group: 'visuals',
     name: 'Particles',
     component: 'Particles',
+    path: 'particles',
     tags: ['particles']
 });
 module({
     group: 'visuals',
     name: 'Zoom',
     component: 'Zoom',
+    path: 'zoom',
     tags: ['zoom']
 });
 module({
     group: 'visuals',
     name: 'Performance',
     component: 'Performance',
-    tags: ['performance']
+    path: 'performance',
+    tags: ['performance', 'fps']
 });
 module({
     group: 'visuals',
     name: 'World Markers',
     component: 'WorldMarkers',
+    path: 'world-markers',
     tags: ['world', 'markers']
 });
 module({
     group: 'visuals',
     name: 'Hurt Bobbing',
     component: 'BobHurt',
+    path: 'bob-hurt',
     tags: ['nohurtcam', 'bobhurt']
 });
 module({
     group: 'visuals',
     name: 'No Weather',
     component: 'NoWeather',
+    path: 'no-weather',
     tags: ['no', 'weather']
 });
 module({
     group: 'visuals',
     name: 'Fake Weather',
     component: 'FakeWeather',
+    path: 'fake-weather',
     tags: ['fake', 'weather']
 });
 
@@ -415,54 +431,63 @@ module({
     group: 'scripting',
     name: 'Key Bindings',
     component: 'KeyBindingScripts',
+    path: 'key-bindings',
     tags: ['key', 'bindings', 'scripting']
 });
 module({
     group: 'scripting',
     name: 'Status Overlay',
     component: 'StatusOverlay',
+    path: 'status-overlay',
     tags: ['status', 'overlay', 'f3']
 });
 module({
     group: 'scripting',
     name: 'Events Scripting',
     component: 'EventsScripting',
+    path: 'events-scripting',
     tags: ['events', 'tick', 'scripting']
 });
 module({
     group: 'scripting',
     name: 'Block Automation',
     component: 'BlockAutomation',
+    path: 'block-automation',
     tags: ['scripted', 'block', 'placer', 'automation']
 });
 module({
     group: 'scripting',
     name: 'Exec',
     component: 'Exec',
+    path: 'exec',
     tags: ['exec']
 });
 module({
     group: 'scripting',
     name: 'Villager Roller',
     component: 'VillagerRoller',
+    path: 'villager-roller',
     tags: ['villager', 'roller']
 });
 module({
     group: 'scripting',
     name: 'TPS',
     component: 'Tps',
+    path: 'tps',
     tags: ['tps', 'tick', 'rate']
 });
 module({
     group: 'scripting',
     name: 'Debug',
     component: 'Debugging',
+    path: 'debugging',
     tags: ['script', 'debug']
 });
 module({
     group: 'scripting',
     name: 'Editor Config',
-    component: 'MonacoEditor',
+    component: 'MonacoEditorConfig',
+    path: 'editor-config',
     tags: ['script', 'editor', 'config', 'monaco']
 });
 
@@ -470,42 +495,49 @@ module({
     group: 'utility',
     name: 'Core Config',
     component: 'Core',
+    path: 'core',
     tags: ['core', 'port']
 });
 module({
     group: 'utility',
     name: 'Profiles',
     component: 'Profiles',
+    path: 'profiles',
     tags: ['profiles']
 });
 module({
     group: 'utility',
     name: 'User Name',
     component: 'UserName',
+    path: 'user-name',
     tags: ['user', 'name']
 });
 module({
     group: 'utility',
     name: 'Container Summary',
     component: 'ContainerSummary',
+    path: 'container-summary',
     tags: ['container', 'summary']
 });
 module({
     group: 'utility',
     name: 'Chat',
     component: 'ChatUtilities',
+    path: 'chat',
     tags: ['chat']
 });
 module({
     group: 'utility',
     name: 'Lock Inputs',
     component: 'LockInputs',
+    path: 'lock-inputs',
     tags: ['lock', 'inputs']
 });
 module({
     group: 'utility',
     name: 'World Download',
     component: 'WorldDownload',
+    path: 'world-download',
     tags: ['world', 'download']
 });
 

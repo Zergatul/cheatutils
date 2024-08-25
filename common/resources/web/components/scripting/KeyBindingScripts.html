@@ -1,0 +1,78 @@
+<div class="module-main key-bindings" v-if="list">
+    <div class="description">
+        Write scripts and bind them to ingame keybindings.
+    </div>
+
+    <div class="module-sections">
+        <template v-if="mode == 'list'">
+            <div>
+                <button class="w8" @click="add()">Add...</button>
+            </div>
+            <div class="scripts-list">
+                <table>
+                    <tr v-for="script in list">
+                        <td><button class="w4" @click="edit(script.name)">Edit</button></td>
+                        <td><button class="w4" @click="remove(script.name)">Remove</button></td>
+                        <td>
+                            <select v-model="script.key" @change="assign(script)">
+                                <option value="-1">&lt;Assign to key bind...&gt;</option>
+                                <option value="0">Key 0</option>
+                                <option value="1">Key 1</option>
+                                <option value="2">Key 2</option>
+                                <option value="3">Key 3</option>
+                                <option value="4">Key 4</option>
+                                <option value="5">Key 5</option>
+                                <option value="6">Key 6</option>
+                                <option value="7">Key 7</option>
+                                <option value="8">Key 8</option>
+                                <option value="9">Key 9</option>
+                                <option value="10">Key 10</option>
+                                <option value="11">Key 11</option>
+                                <option value="12">Key 12</option>
+                                <option value="13">Key 13</option>
+                                <option value="14">Key 14</option>
+                                <option value="15">Key 15</option>
+                                <option value="16">Key 16</option>
+                                <option value="17">Key 17</option>
+                                <option value="18">Key 18</option>
+                                <option value="19">Key 19</option>
+                                <option value="20">Key 20</option>
+                                <option value="21">Key 21</option>
+                                <option value="22">Key 22</option>
+                                <option value="23">Key 23</option>
+                                <option value="24">Key 24</option>
+                                <option value="25">Key 25</option>
+                                <option value="26">Key 26</option>
+                                <option value="27">Key 27</option>
+                                <option value="28">Key 28</option>
+                                <option value="29">Key 29</option>
+                            </select>
+                        </td>
+                        <td class="script-name-cell">{{ script.name }}</td>
+                    </tr>
+                </table>
+            </div>
+        </template>
+        <template v-if="mode == 'add' || mode == 'edit'">
+            <div class="actions">
+                <button class="w8" @click="mode = 'list'">Back</button>
+                <button class="w8" @click="save()">Save</button>
+                <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
+            </div>
+            <div class="flex-row">
+                <span>Name:</span>
+                <input type="text" v-model="script.name">
+            </div>
+            <div v-show="!showRefs">
+                <div>
+                    <script-editor v-model="script.code" :type="'KEYBINDING'"></script-editor>
+                </div>
+            </div>
+            <div v-show="showRefs">
+                <ul class="refs">
+                    <li v-for="item in refs" v-html="item"></li>
+                </ul>
+            </div>
+        </template>
+    </div>
+</div>

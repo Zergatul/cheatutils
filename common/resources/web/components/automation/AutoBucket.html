@@ -17,7 +17,7 @@
             <legend>
                 Speed Threshold
             </legend>
-            <div class="input-section">
+            <div>
                 <input type="text" class="w3" v-model="config.speedThreshold" @change="update()">
                 <div class="section-description">
                     Module tries to use water bucket only if your speed (blocks/sec) if greater than specified value.
@@ -47,7 +47,7 @@
             <legend>
                 Reach Distance
             </legend>
-            <div class="input-section">
+            <div>
                 <input type="text" class="w3" v-model="config.reachDistance" @change="update()">
             </div>
             <div class="section-description">

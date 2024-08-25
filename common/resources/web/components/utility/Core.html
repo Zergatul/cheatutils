@@ -1,0 +1,19 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                HTTP Server Default Port
+            </legend>
+            <div>
+                <input type="text" v-model="config.port" @change="update()">
+            </div>
+            <div class="section-description">
+                Default value: 5005
+            </div>
+        </fieldset>
+    </div>
+</div>

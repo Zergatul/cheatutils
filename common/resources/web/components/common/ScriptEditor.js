@@ -298,7 +298,7 @@ const languageSettingsContructor = (async () => {
     applyTheme();
 })();
 
-function createComponent(template) {
+export function createComponent(template) {
     return {
         template: template,
         props: [
@@ -350,6 +350,9 @@ function createComponent(template) {
         methods: {},
         watch: {
             modelValue(value) {
+                if (this.editor == null) {
+                    return;
+                }
                 if (this.editor.getModel().getValue() != value) {
                     this.editor.getModel().setValue(value);
                 }
@@ -357,5 +360,3 @@ function createComponent(template) {
         }
     };
 }
-
-export { createComponent }

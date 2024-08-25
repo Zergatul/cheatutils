@@ -1,0 +1,11 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Display status effects above hotbar. Also displays seconds.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
+</div>

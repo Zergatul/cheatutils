@@ -8,6 +8,8 @@ public abstract class CodeApiBase<T> extends ApiBase {
 
     @Override
     public String post(String code) throws HttpException {
+        code = gson.fromJson(code, String.class);
+
         if (code == null || code.isEmpty()) {
             setCode(null);
             ConfigStore.instance.requestWrite();

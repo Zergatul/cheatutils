@@ -1,0 +1,17 @@
+<div class="module-main">
+    <div class="description">
+        Call <b>debug.write("text");</b> from any script to see logs here.<br>
+        Module keeps either last 100 logs or logs from last second (which is bigger).
+    </div>
+
+    <div class="module-sections">
+        <div class="actions">
+            <button class="w10" @click="toggleAutoScroll()">Auto-Scroll: {{ autoScroll ? 'ON' : 'OFF' }}</button>
+            <button class="w10" @click="toggleAutoRefresh()">Auto-Refresh: {{ autoRefresh ? 'ON' : 'OFF' }}</button>
+            <button class="w10" @click="toggleDelay()">Auto-Refresh Delay: {{ getDelay() }}ms</button>
+            <button class="w10" @click="clear()">Clear</button>
+        </div>
+
+        <div ref="messages" class="debug-messages"></div>
+    </div>
+</div>

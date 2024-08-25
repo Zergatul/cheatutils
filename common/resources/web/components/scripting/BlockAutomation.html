@@ -1,0 +1,94 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Write script to place blocks, use items on blocks, break blocks in range.<br>
+        Every game tick module runs your script for all blocks in range. You can get current block coordinates from <b>x</b>, <b>y</b>, <b>z</b> variables.<br>
+        If your script calls <b>blockAutomation.useItem(...);</b> or <b>blockAutomation.breakBlock(...);</b> module will use item and place block, or break block at current coordinates.<br>
+        Some items require player to look at correct direction to be used. These kind of items send another packet to the server and are not supported by block automation. Example: filling/emptying bucket or glass bottle.<br>
+        If you are unsure if your item can be used from Block Automation try enter FreeCam and use item while looking at another direction.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <span class="field-description">Max Build Distance:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.maxRange" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">Distance between player eyes and center of block module will try to place</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Use hotbar slots:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w8" v-model="slots" @change="onSlotsUpdate()">
+                    </td>
+                    <td>
+                        <div class="input-description">Separated by comma. Example: 6,7,8</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <switch-checkbox v-model="config.useShift" @change="update()">
+                            Use Shift while placing blocks
+                        </switch-checkbox>
+                    </td>
+                    <td>
+                        <div class="input-description">Using shift may cause your character to randomly crouch for a fraction of a second</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <switch-checkbox v-model="config.attachToAir" @change="update()">
+                            Attach to Air
+                        </switch-checkbox>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Actions per tick:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.actionsPerTick" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <switch-checkbox v-model="config.debugMode" @change="update()">
+                            Debug Mode
+                        </switch-checkbox>
+                    </td>
+                    <td>
+                        <div class="input-description">Shows block place plans, doesn't actually place blocks. Use <b>blockAutomation.useOne();</b> hotkey to place one block.</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="actions">
+            <button class="w8" @click="save()" v-if="config">Save</button>
+            <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
+        </div>
+
+        <div v-show="!showRefs">
+            <script-editor v-model="code" :type="'BLOCK_AUTOMATION'"></script-editor>
+        </div>
+        <div v-show="showRefs">
+            <ul class="refs">
+                <li v-for="item in refs" v-html="item"></li>
+            </ul>
+        </div>
+    </div>
+</div>

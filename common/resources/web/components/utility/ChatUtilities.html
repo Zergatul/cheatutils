@@ -1,0 +1,48 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.dontCloseChatOnEnter" @change="update()">Don't Close On Enter</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                When you type something in chat, and press enter to send, chat remains open. If you press enter with no message - chat closes. Or you can use Esc button as usual.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.overrideMessageLimit" @change="update()">Override Message Limit</switch-checkbox>
+            </legend>
+            <div>
+                <input type="text" class="w5" v-model="config.messageLimit" @change="update()">
+            </div>
+            <div class="section-description">
+                Default value: 100.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.showTime" @change="update()">Show Time</switch-checkbox>
+            </legend>
+            <div>
+                <input type="text" class="w8" v-model="config.timeFormat" @change="update()">
+            </div>
+            <div class="section-description">
+                <ul>
+                    <li>HH - hours in 24 format</li>
+                    <li>hh - hours in 12 format</li>
+                    <li>a - AM/PM</li>
+                    <li>mm - minutes</li>
+                    <li>ss - seconds</li>
+                    <li>SSS - milliseconds</li>
+                </ul>
+                Full documentation about format string: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+            </div>
+        </fieldset>
+    </div>
+</div>

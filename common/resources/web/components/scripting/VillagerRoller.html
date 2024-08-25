@@ -1,0 +1,24 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Automatically places/breaks lectern and checks Librarian trades.
+        Write script to decide when module should stop.<br>
+        Look at <b>villagerRoller.getState()</b> to see current module state and perform correct initial setup.
+    </div>
+
+    <div class="module-sections">
+        <div class="actions">
+            <button class="w8" @click="start()">Start</button>
+            <button class="w8" @click="stop()">Stop</button>
+            <button class="w8" @click="save()">Save</button>
+            <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
+        </div>
+        <div v-show="!showRefs">
+            <script-editor v-model="code" :type="'VILLAGER_ROLLER'"></script-editor>
+        </div>
+        <div v-show="showRefs">
+            <ul class="refs">
+                <li v-for="item in refs" v-html="item"></li>
+            </ul>
+        </div>
+    </div>
+</div>

@@ -180,10 +180,9 @@ export function createComponent(template) {
             self.setColorRgb(rgba[0], rgba[1], rgba[2], rgba[3]);
         },
         watch: {
-            modelValue: function (newValue) {
+            modelValue(newValue) {
                 if (this.color != newValue) {
                     this.color = newValue;
-                    this.setColor();
                 }
             }
         }

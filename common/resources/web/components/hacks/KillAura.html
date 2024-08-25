@@ -19,7 +19,7 @@
                 <div>
                     <radio name="method" value="Cooldown" v-model="config.delayMode" @change="update()">Item Cooldown</radio>
                 </div>
-                <div class="input-section" v-if="config.delayMode == 'ConstDelay'">
+                <div v-if="config.delayMode == 'ConstDelay'">
                     <div class="flex-row">
                         <span class="field-description">Tick Interval:</span>
                         <input type="text" class="w3" v-model="config.attackTickInterval" @change="update()">
@@ -28,7 +28,7 @@
                         How often kill aura attacks. 1 = fastest (attack every tick), 20 = attack once a second and so on. In other words: attack every X ticks.
                     </div>
                 </div>
-                <div class="input-section" v-if="config.delayMode == 'Cooldown'">
+                <div v-if="config.delayMode == 'Cooldown'">
                     <div class="flex-row">
                         <span class="field-description">Extra Ticks:</span>
                         <input type="text" class="w3" v-model="config.extraTicks" @change="update()">

@@ -1,0 +1,12 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Allows you to execute script from chat window.
+        Every chat message starting with single dot is considered as script and will be executed.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
+</div>

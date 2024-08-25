@@ -1,0 +1,20 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Change user name without restarting Minecraft. This is only for pirate servers, it cannot work with Mojang authentication.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <div class="flex-row">
+            <span>Name:</span>
+            <input type="text" class="w12" v-model="config.name" @change="update()">
+        </div>
+
+        <div>
+            <switch-checkbox v-model="config.showNameInTitle" @change="update()">Show User Name in Title</switch-checkbox>
+        </div>
+    </div>
+</div>

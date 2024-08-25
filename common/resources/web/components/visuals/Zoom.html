@@ -1,0 +1,23 @@
+<div class="module-main">
+    <div class="description">
+        Allows you to zoom to see distant objects.
+    </div>
+
+    <div class="module-sections">
+        <div class="description">
+            Use <b>Events Scripting</b> module to assign key bindings. Example script:
+            <pre>
+events.onHandleKeys(() => {
+    if (input.isKeyDown("C")) {
+        zoom.start(10, 0.2);
+    } else {
+        zoom.stop();
+    }
+});
+            </pre>
+            Here:<br>
+            10 - final FOV<br>
+            0.2 - how quickly zoom (in seconds, can be zero)
+        </div>
+    </div>
+</div>

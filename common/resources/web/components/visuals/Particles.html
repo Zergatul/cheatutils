@@ -1,0 +1,14 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Disables some particles.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.disableBlockBreaking" @change="update()">Disable Block Cracking (TerrainParticle)</switch-checkbox>
+        </div>
+        <div>
+            <switch-checkbox v-model="config.disableBlockDestroyed" @change="update()">Disable Block Destroy (TerrainParticle)</switch-checkbox>
+        </div>
+    </div>
+</div>
