@@ -16,6 +16,7 @@ fieldset.item-list > div {
 fieldset.item-list ul {
     flex-basis: 15em;
     flex-grow: 1;
+    margin-top: 0.5em;
 }
 
 fieldset.item-list div.search {

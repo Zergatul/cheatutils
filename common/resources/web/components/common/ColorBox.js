@@ -1,14 +1,14 @@
-import { Color } from './Color.js'
+import { Color } from '/color.js'
+import { withCss } from '/components/Loader.js'
 
-function createComponent(template) {
-    return {
+export function createComponent(template) {
+    const args = {
         template: template,
         props: ['color'],
         mounted() {
             let element = this.$.subTree.el;
             element.style.backgroundColor = Color.int32ToHex(this.color);
         }
-    }
-}
-
-export { createComponent }
+    };
+    return withCss(import.meta.url, args);
+};

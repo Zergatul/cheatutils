@@ -41,7 +41,7 @@ const pool = [];
 
 class BlockRendererCanvas {
 
-    static maxCanvases = 20;
+    static maxCanvases = 40;
 
     constructor() {
         const canvas = document.createElement('canvas');

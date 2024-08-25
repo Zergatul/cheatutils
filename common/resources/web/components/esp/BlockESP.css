@@ -1,0 +1,81 @@
+div.block-list {
+    border: 0.2em solid var(--color1);
+    flex-grow: 1;
+    flex-basis: 15em;
+    overflow-y: auto;
+    font-family: var(--font2);
+}
+
+div.block-list > table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+div.block-list div.canvas {
+    width: 36px;
+    height: 36px;
+}
+
+div.block-list > table td {
+    border-bottom: 0.1em solid var(--color1);
+}
+
+div.block-esp td.icon {
+    padding-left: 0.5em;
+}
+
+div.block-esp div.icon {
+    width: 1em;
+    height: 1em;
+    border: 0.1em solid var(--color1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+div.block-esp div.icon.child {
+    border-color: transparent;
+}
+
+div.block-list span.icon-desc {
+    display: inline-block;
+    padding-left: 0.4em;
+}
+
+div.block-list button.edit {
+    width: 4em;
+}
+
+div.block-list button.remove {
+    width: 4em;
+}
+
+table.block-info-table {
+    font-family: var(--font2);
+}
+
+div.block-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+}
+
+div.block-esp input.distance {
+    width: 4em;
+}
+
+div.block-edit > fieldset {
+    display: flex;
+    gap: 0.5em;
+}
+
+div.block-esp td.item-name {
+    width: 90%;
+}
+
+div.block-esp td.pad-cell {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}

@@ -1,261 +1,231 @@
-<div class="module-main">
+<div class="module-main block-esp">
     <div class="description">
         <div>You can try Rescan if something is wrong with block ESP.</div>
         <div>Use Ctrl+F5 in your browser if block textures are messed up after switching Minecraft versions or mod loaders.</div>
     </div>
 
     <div class="module-sections" v-if="blocksMap != null">
-        <div v-if="state == 'list'">
-            <div>
-                <button style="width: 200px;" @click="openAdd()">Add Block</button>
-                <button style="width: 200px;" @click="rescan()">Rescan Chunks</button>
+        <template v-if="state == 'list'">
+            <div class="actions">
+                <button class="action" @click="openAdd()">Add Block</button>
+                <button class="action" @click="rescan()">Rescan Chunks</button>
             </div>
-            <ul class="list-base blocks-list">
-                <template v-for="item in blocksConfigList" :key="item.blocks[0]">
-                    <li v-bind="{ 'data-id': item.blocks[0] }">
-                        <div class="c0">
-                            <div v-if="item.blocks.length > 1" @click="expandGroup(item)">
-                                {{ item.expanded ? '▼' : '▶' }}
-                            </div>
-                        </div>
-                        <div class="c1">
-                            <div></div>
-                        </div>
-                        <div class="c2">
-                            <div>{{ blocksMap[item.blocks[0]].name }}</div>
-                            <div class="smaller">{{ item.blocks[0] }}</div>
-                        </div>
-                        <div class="c3">
-                            <label class="switch-label">
-                                <input type="checkbox" class="switch"
-                                    v-model="item.enabled"
-                                    @change="update(item)">
-                                <span>Enabled</span>
-                            </label>
-                        </div>
-                        <div class="c4">
-                            <label class="switch-label">
-                                <input type="checkbox" class="switch"
-                                    v-model="item.drawTracers"
-                                    @change="update(item)">
-                                <color-box :color="item.tracerColor"></color-box>
-                                <span>T</span>
-                            </label>
-                        </div>
-                        <div class="c5">
-                            <label class="switch-label">
-                                <input type="checkbox" class="switch"
-                                    v-model="item.drawOutline"
-                                    @change="update(item)">
-                                <color-box :color="item.outlineColor"></color-box>
-                                <span>B</span>
-                            </label>
-                        </div>
-                        <div class="c6">
-                            <button class="edit" @click="openEdit(item.blocks[0])">Edit</button>
-                        </div>
-                        <div class="c6">
-                            <button class="remove" @click="removeById(item.blocks[0])">Remove</button>
-                        </div>
-                    </li>
-                    <template v-if="item.expanded">
-                        <template v-for="(block, index) in item.blocks" :key="block">
-                            <li v-bind="{ 'data-id': block }" v-if="index >= 1">
-                                <div class="c0"></div>
-                                <div class="c1">
-                                    <div></div>
-                                </div>
-                                <div class="c2">
-                                    <div>{{ blocksMap[block].name }}</div>
-                                    <div class="smaller">{{ block }}</div>
-                                </div>
-                                <div class="c3"></div>
-                                <div class="c4"></div>
-                                <div class="c5"></div>
-                                <div class="c6"></div>
-                                <div class="c6"></div>
-                            </li>
-                        </template>
-                    </template>
-                </template>
-            </ul>
-        </div>
-        <div v-if="state == 'add'">
-            <div style="padding-bottom: 16px;">
-                <button style="width: 200px;" @click="backToList()">Back</button>
-            </div>
-            <div>
-                <span class="text">Filter:</span>
-                <input type="text" class="search"
-                    v-model="search"
-                    @input="filterBlockList()">
-            </div>
-            <ul class="list-base add-block-list">
-                <li v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
-                    <div class="c1">
-                        <div></div>
-                    </div>
-                    <div class="c2">
-                        <div>{{ item.name }}</div>
-                        <div class="smaller">{{ item.id }}</div>
-                    </div>
-                    <div class="c3">
-                        <button class="edit" v-bind:class="{ 'button-highlight': blocksConfigMap[item.id] }" @click="openEdit(item.id)">
-                            {{ blocksConfigMap[item.id] ? 'Edit' : 'Add' }}
-                        </button>
-                    </div>
-                </li>
-            </ul>
-        </div>
-        <div v-if="state == 'edit'">
-            <div>
-                <button style="width: 200px;" @click="backToList()">Back</button>
-                <button style="width: 200px;" @click="remove()">Delete</button>
-                <button style="width: 200px;" @click="editGroup()">Edit Blocks in Group...</button>
-            </div>
-            <div v-if="selectedConfig">
-                <table class="edit-block-header">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="btn" v-if="selectedConfig.blocks.length > 1" @click="selectedConfig.expanded = !selectedConfig.expanded">
-                                    {{ selectedConfig.expanded ? '▼' : '▶' }}
+            <div class="block-list">
+                <table>
+                    <template v-for="item in blocksConfigList" :key="item.blocks[0]">
+                        <tr v-bind="{ 'data-id': item.blocks[0] }">
+                            <td class="icon">
+                                <div class="icon" v-if="item.blocks.length > 1" @click="expandGroup(item)">
+                                    {{ item.expanded ? '-' : '+' }}
                                 </div>
                             </td>
                             <td>
-                                <div>{{ blocksMap[selectedConfig.blocks[0]].name }}</div>
-                                <div class="smaller">{{ selectedConfig.blocks[0] }}</div>
+                                <div class="canvas"></div>
+                            </td>
+                            <td>
+                                <div>{{ blocksMap[item.blocks[0]].name }}</div>
+                                <div class="smaller">{{ item.blocks[0] }}</div>
+                            </td>
+                            <td>
+                                <switch-checkbox v-model="item.enabled" @change="update(item)">Enabled</switch-checkbox>
+                            </td>
+                            <td>
+                                <switch-checkbox v-model="item.drawTracers" title="Tracer" @change="update(item)">
+                                    <color-box :color="item.tracerColor"></color-box>
+                                    <span class="icon-desc">T</span>
+                                </switch-checkbox>
+                            </td>
+                            <td>
+                                <switch-checkbox v-model="item.drawOutline" title="Bounding Box" @change="update(item)">
+                                    <color-box :color="item.outlineColor"></color-box>
+                                    <span class="icon-desc">BB</span>
+                                </switch-checkbox>
+                            </td>
+                            <td>
+                                <button class="edit" @click="openEdit(item.blocks[0])">Edit</button>
+                            </td>
+                            <td>
+                                <button class="remove" @click="removeById(item.blocks[0])">Remove</button>
                             </td>
                         </tr>
-                        <template v-if="selectedConfig.expanded">
-                            <template v-for="(block, index) in selectedConfig.blocks" :key="block">
-                                <tr v-if="index >= 1">
-                                    <td></td>
+                        <template v-if="item.expanded">
+                            <template v-for="(block, index) in item.blocks" :key="block">
+                                <tr v-bind="{ 'data-id': block }" v-if="index >= 1">
+                                    <td class="icon">
+                                        <div class="icon child">↳</div>
+                                    </td>
+                                    <td>
+                                        <div class="canvas"></div>
+                                    </td>
                                     <td>
                                         <div>{{ blocksMap[block].name }}</div>
                                         <div class="smaller">{{ block }}</div>
                                     </td>
+                                    <td colspan="5"></td>
                                 </tr>
                             </template>
                         </template>
-                    </tbody>
+                    </template>
                 </table>
-                <div class="edit-block-settings">
-                    <label class="switch-label">
-                        <input type="checkbox" class="switch"
-                            v-model="selectedConfig.enabled"
-                            @change="update(selectedConfig)">
-                        <span>Enabled</span>
-                    </label>
-                </div>
-                <div>
-                    <span class="text">Max Distance:</span>
-                    <input type="text" v-model="selectedConfig.maxDistance" @change="update(selectedConfig)">
-                </div>
-                <fieldset style="margin-top: 16px;">
-                    <legend>
-                        <label class="switch-label">
-                            <input type="checkbox" class="switch"
-                                v-model="selectedConfig.drawTracers"
-                                @change="update(selectedConfig)">
-                            <span>Tracer</span>
-                        </label>
-                    </legend>
-                    <div style="display: flex;">
-                        <div class="color-picker-container">
-                            <color-picker
-                                v-model="selectedConfig.tracerColor"
-                                @update:model-value="update(selectedConfig)">
-                            </color-picker>
-                        </div>
-                        <div class="group-setting esp-additional">
-                            <div>
-                                <span class="field-description">Max Distance Override:</span>
-                                <input type="text" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
-                            </div>
-                            <div class="section-description">
-                                Leave this empty to use Max Distance value specified at the top.
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-                <fieldset>
-                    <legend>
-                        <label class="switch-label">
-                            <input type="checkbox" class="switch"
-                                v-model="selectedConfig.drawOutline"
-                                @change="update(selectedConfig)">
-                            <span>Bounding Box</span>
-                        </label>
-                    </legend>
-                    <div style="display: flex;">
-                        <div class="color-picker-container">
-                            <color-picker
-                                v-model="selectedConfig.outlineColor"
-                                @update:model-value="update(selectedConfig)">
-                            </color-picker>
-                        </div>
-                        <div class="group-setting esp-additional">
-                            <div>
-                                <span class="field-description">Max Distance Override:</span>
-                                <input type="text" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
-                            </div>
-                            <div class="section-description">
-                                Leave this empty to use Max Distance value specified at the top.
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-                <fieldset>
-                    <legend>
-                        <label class="switch-label">
-                            <input type="checkbox" class="switch"
-                                v-model="selectedConfig.drawOverlay"
-                                @change="update(selectedConfig)">
-                            <span>Overlay</span>
-                        </label>
-                    </legend>
-                    <div style="display: flex;">
-                        <div class="color-picker-container">
-                            <color-picker
-                                v-model="selectedConfig.overlayColor"
-                                @update:model-value="update(selectedConfig)">
-                            </color-picker>
-                        </div>
-                        <div class="group-setting esp-additional">
-                            
-                        </div>
-                    </div>
-                </fieldset>
             </div>
-        </div>
-        <div v-if="state == 'edit-group'">
-            <div style="padding-bottom: 16px;">
-                <button style="width: 200px;" @click="backToEdit()">Back</button>
+        </template>
+        <template v-if="state == 'add'">
+            <div class="actions">
+                <button class="action" @click="backToList()">Back</button>
             </div>
-            <div>
-                <span class="text">Filter:</span>
+            <div class="filter">
+                <span>Filter:</span>
                 <input type="text" class="search"
                     v-model="search"
                     @input="filterBlockList()">
             </div>
-            <ul class="list-base add-block-list">
-                <li v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
-                    <div class="c0">
-                        <input type="checkbox" v-if="groupEditShouldShowCheckbox(item)"
-                            :disabled="groupEditIsCheckboxDisabled(item)"
-                            :checked="groupEditGetCheckboxSelected(item)"
-                            @input="event => groupEditSetCheckboxSelected(item, event)">
+            <div class="block-list">
+                <table>
+                    <tr v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
+                        <td class="pad-cell">
+                            <div class="canvas"></div>
+                        </td>
+                        <td class="item-name">
+                            <div>{{ item.name }}</div>
+                            <div class="smaller">{{ item.id }}</div>
+                        </td>
+                        <td class="pad-cell">
+                            <button class="edit" @click="openEdit(item.id)">
+                                {{ blocksConfigMap[item.id] ? 'Edit' : 'Add' }}
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </template>
+        <template v-if="state == 'edit'">
+            <div class="actions">
+                <button class="action" @click="backToList()">Back</button>
+                <button class="action" @click="remove()">Delete</button>
+                <button class="action" @click="editGroup()">Edit Blocks in Group...</button>
+            </div>
+            <div class="block-edit" v-if="selectedConfig">
+                <table class="block-info-table">
+                    <tr>
+                        <td class="pad-cell">
+                            <div class="icon" v-if="selectedConfig.blocks.length > 1" @click="selectedConfig.expanded = !selectedConfig.expanded">
+                                {{ selectedConfig.expanded ? '-' : '+' }}
+                            </div>
+                        </td>
+                        <td style="width: 98%;">
+                            <div>{{ blocksMap[selectedConfig.blocks[0]].name }}</div>
+                            <div class="smaller">{{ selectedConfig.blocks[0] }}</div>
+                        </td>
+                    </tr>
+                    <template v-if="selectedConfig.expanded">
+                        <template v-for="(block, index) in selectedConfig.blocks" :key="block">
+                            <tr v-if="index >= 1">
+                                <td class="pad-cell">
+                                    <div class="icon child">↳</div>
+                                </td>
+                                <td style="width: 98%;">
+                                    <div>{{ blocksMap[block].name }}</div>
+                                    <div class="smaller">{{ block }}</div>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </table>
+                <div>
+                    <switch-checkbox v-model="selectedConfig.enabled" @change="update(selectedConfig)">
+                        Enabled
+                    </switch-checkbox>
+                </div>
+                <div>
+                    <span class="field-description">Max Distance:</span>
+                    <input type="text" class="distance" v-model="selectedConfig.maxDistance" @change="update(selectedConfig)">
+                </div>
+                <fieldset>
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.drawTracers" @change="update(selectedConfig)">
+                            Tracer
+                        </switch-checkbox>
+                    </legend>
+                    <color-picker
+                        v-model="selectedConfig.tracerColor"
+                        @update:model-value="update(selectedConfig)">
+                    </color-picker>
+                    <div>
+                        <div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" class="distance" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
+                        </div>
                     </div>
-                    <div class="c1">
-                        <div></div>
+                </fieldset>
+                <fieldset>
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.drawOutline" @change="update(selectedConfig)">
+                            Bounding Box
+                        </switch-checkbox>
+                    </legend>
+                    <color-picker
+                        v-model="selectedConfig.outlineColor"
+                        @update:model-value="update(selectedConfig)">
+                    </color-picker>
+                    <div>
+                        <div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" class="distance" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
+                        </div>
                     </div>
-                    <div class="c2">
-                        <div>{{ item.name }}</div>
-                        <div class="smaller">{{ item.id }}</div>
+                </fieldset>
+                <fieldset>
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.drawOverlay" @change="update(selectedConfig)">
+                            Overlay
+                        </switch-checkbox>
+                    </legend>
+                    <color-picker
+                        v-model="selectedConfig.overlayColor"
+                        @update:model-value="update(selectedConfig)">
+                    </color-picker>
+                    <div>
+                        
                     </div>
-                </li>
-            </ul>
-        </div>
+                </fieldset>
+            </div>
+        </template>
+        <template v-if="state == 'edit-group'">
+            <div class="actions">
+                <button class="action" @click="backToEdit()">Back</button>
+            </div>
+            <div class="filter">
+                <span>Filter:</span>
+                <input type="text" class="search"
+                    v-model="search"
+                    @input="filterBlockList()">
+            </div>
+            <div class="block-list">
+                <table>
+                    <tr v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
+                        <td class="pad-cell">
+                            <input type="checkbox" class="cb"
+                                v-if="groupEditShouldShowCheckbox(item)"
+                                :disabled="groupEditIsCheckboxDisabled(item)"
+                                :checked="groupEditGetCheckboxSelected(item)"
+                                @input="event => groupEditSetCheckboxSelected(item, event)">
+                        </td>
+                        <td class="pad-cell">
+                            <div class="canvas"></div>
+                        </td>
+                        <td class="item-name">
+                            <div>{{ item.name }}</div>
+                            <div class="smaller">{{ item.id }}</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </template>
     </div>
 </div>

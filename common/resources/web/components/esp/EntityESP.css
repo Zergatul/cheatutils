@@ -1,0 +1,80 @@
+div.entity-list {
+    border: 0.2em solid var(--color1);
+    flex-grow: 1;
+    flex-basis: 15em;
+    overflow-y: auto;
+    font-family: var(--font2);
+}
+
+div.entity-list > table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+div.entity-list > table td {
+    border-bottom: 0.1em solid var(--color1);
+    padding-left: 0.1em;
+    padding-right: 0.1em;
+}
+
+div.entity-esp div.checkboxes {
+    display: flex;
+    gap: 0.5em;
+}
+
+div.entity-esp div.v-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15em;
+}
+
+
+div.entity-esp button.edit,
+div.entity-esp button.remove {
+    width: 4em;
+}
+
+div.entity-info-row-1 {
+    align-items: center;
+    display: flex;
+    gap: 0.5em;
+}
+
+div.entity-info-id {
+    color: #242583;
+}
+
+div.entity-full-classname {
+    color: #781616;
+}
+
+div.entity-info-interface:after {
+    content: "[interface]";
+    color: #8A5F10;
+    font-size: 0.75em;
+}
+
+div.entity-esp td.last-cell {
+    text-align: right;
+}
+
+div.edit-entity-header {
+    font-family: var(--font2);
+}
+
+div.entity-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+}
+
+div.entity-edit > fieldset {
+    display: flex;
+    gap: 0.5em;
+}
+
+legend.glow-legend {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
+}

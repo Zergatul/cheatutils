@@ -10,11 +10,15 @@ export function createComponent(template) {
             modelValue: {
                 type: Boolean,
                 required: true
+            },
+            title: {
+                type: String,
+                required: false
             }
         },
         setup(props, { emit, slots }) {
             const name = ref('switch' + (index++));
-            const { modelValue } = toRefs(props);
+            const { modelValue, title } = toRefs(props);
 
             const onChange = event => {
                 emit('update:modelValue', event.target.checked);
@@ -28,6 +32,7 @@ export function createComponent(template) {
                 name,
                 hasSlot,
                 isChecked: modelValue,
+                title,
                 onChange
             };
         }

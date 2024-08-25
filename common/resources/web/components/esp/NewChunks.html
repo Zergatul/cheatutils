@@ -1,0 +1,15 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Uses liquid flows (water and lava) to determine if chunk is newly generated. Chunk status is displayed on Exploration Mini Map.<br>
+        Red squares - old chunks (chunks contains non-source water/lava blocks)<br>
+        Green squares - new chunks (chunk didn't have non-source water/lava blocks, but server sent block update packets with non-source water/lava)<br>
+        Yelllow squares - relatively new chunks (chunk already had non-source water/lava, but new non-source water/lava blocks appeared)<br>
+        Chunk without square - there is no water/lava to guess chunk status
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,80 @@
+input[type=checkbox].cb {
+    --active: var(--color7);
+    --active-inner: #fff;
+    --border: #BBC1E1;
+    --border-hover: var(--color1);
+    --background: #fff;
+    --disabled: #F6F8FF;
+    --disabled-inner: #E1E6F9;
+    appearance: none;
+    width: 2em;
+    height: 2em;
+    outline: none;
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    margin: 0;
+    cursor: pointer;
+    border: 1px solid var(--bc, var(--border));
+    background: var(--b, var(--background));
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.2s;
+}
+
+input[type=checkbox].cb:after {
+    content: "";
+    display: block;
+    left: 0;
+    top: 0;
+    position: absolute;
+    transition: transform var(--d-t, 0.3s) var(--d-t-e, ease), opacity var(--d-o, 0.2s);
+}
+
+input[type=checkbox].cb:checked {
+    --b: var(--active);
+    --bc: var(--active);
+    --d-o: .3s;
+    --d-t: .6s;
+    --d-t-e: cubic-bezier(.2, .85, .32, 1.2);
+}
+
+input[type=checkbox].cb:disabled {
+    --b: var(--disabled);
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+input[type=checkbox].cb:disabled:checked {
+    --b: var(--disabled-inner);
+    --bc: var(--border);
+}
+
+input[type=checkbox].cb:hover:not(:checked):not(:disabled) {
+    --bc: var(--border-hover);
+}
+
+input[type=checkbox].cb:after {
+    opacity: var(--o, 0);
+}
+
+input[type=checkbox].cb:checked {
+    --o: 1;
+}
+
+input[type=checkbox].cb {
+    border-radius: 0.4em;
+}
+
+input[type=checkbox].cb:after {
+    width: 0.4em;
+    height: 0.7em;
+    border: 0.2em solid var(--active-inner);
+    border-top: 0;
+    border-left: 0;
+    left: 0.65em;
+    top: 0.4em;
+    transform: rotate(var(--r, 20deg));
+}
+
+input[type=checkbox].cb:checked {
+    --r: 43deg;
+}

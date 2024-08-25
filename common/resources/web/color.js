@@ -7,7 +7,7 @@ function toHex(value) {
     }
 };
 
-const Color = {
+export const Color = {
     int32ToRgb(value) {
         let blue = value & 0xFF;
         value >>= 8;
@@ -82,5 +82,3 @@ const Color = {
         return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
     }
 };
-
-export { Color }

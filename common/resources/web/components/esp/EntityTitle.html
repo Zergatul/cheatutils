@@ -1,0 +1,40 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Overhauls Minecraft default entity title system. Displays titles with static font size with no distance fade out.<br>
+        Use Entity ESP to enable this for specific entities.
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                Titles Font
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Font Size:</span>
+                <input type="text" v-model="config.fontSize" @change="update()">
+            </div>
+            <div>
+                <switch-checkbox v-model="config.antiAliasing" @change="update()">Anti Aliasing</switch-checkbox>
+            </div>
+            <div class="section-description">
+                Font face: Consolas. Anti Aliasing looks better with bigger font size (about 18+).
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Enchantments Font
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Font Size:</span>
+                <input type="text" v-model="config.enchFontSize" @change="update()">
+            </div>
+            <div>
+                <switch-checkbox v-model="config.enchAntiAliasing" @change="update()">Anti Aliasing</switch-checkbox>
+            </div>
+            <div class="section-description">
+                Font face: Consolas. Anti Aliasing looks better with bigger font size (about 18+).
+            </div>
+        </fieldset>
+    </div>
+</div>

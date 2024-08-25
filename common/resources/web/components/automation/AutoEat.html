@@ -11,7 +11,7 @@
             <legend>
                 <switch-checkbox v-model="config.isHungerLimitEnabled" @change="update()">Enable Hunger Limit</switch-checkbox>
             </legend>
-            <div class="input-section">
+            <div class="flex-row">
                 <span class="field-description">Min Hunger:</span>
                 <input type="text" v-model="config.hungerLimit" @change="update()">
             </div>

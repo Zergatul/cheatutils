@@ -1,0 +1,13 @@
+div.projectile-path fieldset.items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+}
+
+div.projectile-path table td {
+    padding: 0.1em 0.2em;
+}
+
+div.projectile-path table input {
+    width: 4em;
+}

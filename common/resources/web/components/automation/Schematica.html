@@ -1,4 +1,4 @@
-<div class="module-main" v-if="config">
+<div class="module-main schematica" v-if="config">
     <div class="description">
         Module can only properly place simple blocks, which have only 1 block state. No directional blocks, stairs, slabs and so on.
     </div>
@@ -14,27 +14,41 @@
             <legend>
                 Missing Blocks
             </legend>
-            <div class="input-section input-section-flex">
-                <switch-checkbox v-model="config.showMissingBlockGhosts" @change="update()">Show as ghost blocks</switch-checkbox>
-                <div>
-                    <span class="field-description">Max distance:</span>
-                    <input type="text" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
-                </div>
-            </div>
-            <div class="input-section input-section-flex">
-                <switch-checkbox v-model="config.showMissingBlockTracers" @change="update()">Show tracers</switch-checkbox>
-                <div>
-                    <span class="field-description">Max distance:</span>
-                    <input type="text" v-model="config.missingBlockTracersMaxDistance" @change="update()">
-                </div>
-            </div>
-            <div class="input-section input-section-flex">
-                <switch-checkbox v-model="config.showMissingBlockCubes" @change="update()">Show mini-cubes</switch-checkbox>
-                <div>
-                    <span class="field-description">Max distance:</span>
-                    <input type="text" v-model="config.missingBlockCubesMaxDistance" @change="update()">
-                </div>
-            </div>
+            <table>
+                <tr>
+                    <td>
+                        <switch-checkbox v-model="config.showMissingBlockGhosts" @change="update()">Show as ghost blocks</switch-checkbox>
+                    </td>
+                    <td class="pad-left">
+                        <div class="flex-row">
+                            <span class="field-description">Max distance:</span>
+                            <input type="text" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <switch-checkbox v-model="config.showMissingBlockTracers" @change="update()">Show tracers</switch-checkbox>
+                    </td>
+                    <td class="pad-left">
+                        <div class="flex-row">
+                            <span class="field-description">Max distance:</span>
+                            <input type="text" v-model="config.missingBlockTracersMaxDistance" @change="update()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <switch-checkbox v-model="config.showMissingBlockCubes" @change="update()">Show mini-cubes</switch-checkbox>
+                    </td>
+                    <td class="pad-left">
+                        <div class="flex-row">
+                            <span class="field-description">Max distance:</span>
+                            <input type="text" v-model="config.missingBlockCubesMaxDistance" @change="update()">
+                        </div>
+                    </td>
+                </tr>
+            </table>
             <div class="section-description">
                 Missing Blocks: real world block = replacable, schematica block != Air
             </div>

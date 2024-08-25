@@ -56,4 +56,6 @@ div.switch > div.checkbox > input:checked + label:after {
 div.switch > label {
     cursor: pointer;
     padding-left: 0.2em;
+    display: inline-flex;
+    align-items: center;
 }

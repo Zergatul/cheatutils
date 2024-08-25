@@ -35,6 +35,12 @@ public class ModulesStatusApi extends ApiBase {
                 String key = fieldType.getSimpleName();
                 if (key.endsWith("Config")) {
                     key = key.substring(0, key.length() - 6);
+                    if (key.equals("Blocks")) {
+                        key = "BlockESP";
+                    }
+                    if (key.equals("Entities")) {
+                        key = "EntityESP";
+                    }
                 }
 
                 map.put(key, moduleConfig.isEnabled());

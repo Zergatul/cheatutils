@@ -1,10 +1,11 @@
 import { ref, nextTick, onUnmounted } from '/vue.esm-browser.js'
-import { addComponent } from '/components/Loader.js'
+import { withCss } from '/components/Loader.js'
 import { createBlockRenderer, removeBlockRenderer } from './BlockRenderer.js'
 import * as http from '/http.js';
+import { components } from '../../components.js';
 
-let blockInfoPromise = http.get('/api/block-info').then(blocksList => {
-    let blocksMap = {};
+const blockInfoPromise = http.get('/api/block-info').then(blocksList => {
+    const blocksMap = {};
     blocksList.forEach(b => blocksMap[b.id] = b);
     return {
         blocksList: blocksList,
@@ -13,7 +14,7 @@ let blockInfoPromise = http.get('/api/block-info').then(blocksList => {
 });
 
 export function createComponent(template) {
-    let args = {
+    const args = {
         template: template,
         setup() {
             const state = ref('list');
@@ -122,10 +123,10 @@ export function createComponent(template) {
             const expandGroup = config => {
                 config.expanded = !config.expanded;
 
-                // currentList can't be null here
-                const oldItems = [...currentList.children];
+                // currentScrollable can't be null here
+                const oldItems = [...getChildrenToObserve()];
                 nextTick(() => {
-                    for (let item of currentList.children) {
+                    for (let item of getChildrenToObserve()) {
                         if (!oldItems.includes(item)) {
                             observer.observe(item);
                         }
@@ -160,7 +161,11 @@ export function createComponent(template) {
             };
 
             let observer = null;
-            let currentList = null;
+            let currentScrollable = null;
+
+            const getChildrenToObserve = () => {
+                return currentScrollable.querySelectorAll(':scope > table > tr');
+            };
 
             const removeObserver = () => {
                 if (observer != null) {
@@ -172,29 +177,31 @@ export function createComponent(template) {
             const setupObserver = () => {
                 removeObserver();
 
-                currentList = document.querySelector('ul.blocks-list, ul.add-block-list');
-                if (currentList == null) {
-                    console.error('Cannot find list to initialize observer');
-                    return;
-                }
-
-                observer = new IntersectionObserver(entries => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            let id = entry.target.getAttribute('data-id');
-                            createBlockRenderer(entry.target.querySelector('div.c1 > div'), id);
-                        } else {
-                            removeBlockRenderer(entry.target.querySelector('div.c1 > div'));
-                        }
+                blockInfoPromise.then(() => {
+                    currentScrollable = document.querySelector('div.block-list');
+                    if (currentScrollable == null) {
+                        console.error('Cannot find list to initialize observer');
+                        return;
+                    }
+    
+                    observer = new IntersectionObserver(entries => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const id = entry.target.getAttribute('data-id');
+                                createBlockRenderer(entry.target.querySelector('div.canvas'), id);
+                            } else {
+                                removeBlockRenderer(entry.target.querySelector('div.canvas'));
+                            }
+                        });
+                      }, {
+                        root: currentScrollable,
+                        threshold: .5
                     });
-                  }, {
-                    root: currentList,
-                    threshold: .5
+    
+                    for (let item of getChildrenToObserve()) {
+                        observer.observe(item);
+                    }
                 });
-
-                for (let item of currentList.children) {
-                    observer.observe(item);
-                }
             };
 
             blockInfoPromise.then(info => {
@@ -248,8 +255,9 @@ export function createComponent(template) {
         }
     };
 
-    addComponent(args, 'ColorBox');
-    addComponent(args, 'ColorPicker');
+    components.add(args, 'ColorBox');
+    components.add(args, 'ColorPicker');
+    components.add(args, 'SwitchCheckbox');
 
-    return args;
+    return withCss(import.meta.url, args);
 };

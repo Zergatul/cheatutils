@@ -1,5 +1,6 @@
 import * as http from '/http.js'
 import { components } from '/components.js'
+import { withCss } from '/components/Loader.js'
 
 export function createComponent(template) {
     const args = {
@@ -100,6 +101,8 @@ export function createComponent(template) {
             }
         }
     };
+
     components.add(args, 'SwitchCheckbox');
-    return args;
+
+    return withCss(import.meta.url, args);
 }

@@ -1,0 +1,266 @@
+<div class="module-main entity-esp">
+    <div class="module-sections">
+        <template v-if="state == 'list'">
+            <div class="actions">
+                <button class="action" @click="openAdd()" v-show="entitiesConfigList">Add Entity</button>
+            </div>
+            <div class="entity-list">
+                <table>
+                    <tr v-for="item in entitiesConfigList" :key="item.clazz">
+                        <td>
+                            <div class="entity-info-row-1" :class="{ 'entity-info-interface': entitiesMap[item.clazz].isInterface }">
+                                <div class="entity-info-classname">{{ entitiesMap[item.clazz].simpleName }}</div>
+                                <div class="smaller entity-info-id" v-if="entitiesMap[item.clazz].id">{{ entitiesMap[item.clazz].id }}</div>
+                            </div>
+                            <div class="smaller" v-if="!entitiesMap[item.clazz].isInterface">
+                                <span v-for="clazz in entitiesMap[item.clazz].baseClasses">
+                                    🠞 {{ entitiesMap[clazz].simpleName }}
+                                </span>
+                                <span v-for="interface in entitiesMap[item.clazz].interfaces">
+                                    ⊕ {{ entitiesMap[interface].simpleName }}
+                                </span>
+                            </div>
+                            <div class="smaller entity-full-classname">{{ item.clazz }}</div>
+                        </td>
+                        <td>
+                            <div>
+                                <switch-checkbox v-model="item.enabled" @change="update(item)">Enabled</switch-checkbox>
+                            </div>
+                            <div class="checkboxes">
+                                <switch-checkbox v-model="item.drawTracers" title="Tracer" @change="update(item)">
+                                    <color-box :color="item.tracerColor"></color-box>
+                                    <span class="icon-desc">T</span>
+                                </switch-checkbox>
+                                <switch-checkbox v-model="item.glow" title="Outline" @change="update(item)">
+                                    <color-box :color="item.glowColor"></color-box>
+                                    <span class="icon-desc">Ou</span>
+                                </switch-checkbox>
+                                <switch-checkbox v-model="item.drawOverlay" title="Overlay" @change="update(item)">
+                                    <color-box :color="item.overlayColor"></color-box>
+                                    <span class="icon-desc">Ov</span>
+                                </switch-checkbox>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="v-buttons">
+                                <button @click="moveUp(item)">🡅</button>
+                                <button @click="moveDown(item)">🡇</button>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="v-buttons">
+                                <button class="edit" @click="openEdit(item.clazz)">Edit</button>
+                                <button class="remove" @click="removeByClass(item.clazz)">Remove</button>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </template>
+        <template v-if="state == 'add'">
+            <div class="actions">
+                <button class="action" @click="backToList()">Back</button>
+            </div>
+            <div class="filter">
+                <span class="text">Filter:</span>
+                <input type="text" class="search"
+                    v-model="search"
+                    @input="filterEntityList()">
+            </div>
+            <div class="entity-list">
+                <table>
+                    <tr v-for="item in entityListFiltered" :key="item.clazz">
+                        <td>
+                            <div class="entity-info-row-1" :class="{ 'entity-info-interface': item.isInterface }">
+                                <div class="entity-info-classname">{{ item.simpleName }}</div>
+                                <div class="smaller entity-info-id" v-if="item.id">{{ item.id }}</div>
+                            </div>
+                            <div class="smaller" v-if="!item.isInterface">
+                                <span class="entity-tree" v-for="clazz in item.baseClasses">
+                                    🠞 {{ entitiesMap[clazz].simpleName }}
+                                </span>
+                                <span class="entity-tree" v-for="interface in item.interfaces">
+                                    ⊕ {{ entitiesMap[interface].simpleName }}
+                                </span>
+                            </div>
+                            <div class="smaller entity-full-classname">{{ item.clazz }}</div>
+                        </td>
+                        <td class="last-cell">
+                            <button class="edit" @click="openEdit(item.clazz)">
+                                {{ entitiesConfigMap[item.clazz] ? 'Edit' : 'Add' }}
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </template>
+        <template v-if="state == 'edit'">
+            <div class="actions">
+                <button class="action" @click="backToList()">Back</button>
+                <button class="action" @click="remove()">Delete</button>
+            </div>
+            <div class="entity-edit" v-if="selectedConfig">
+                <div class="edit-entity-header">
+                    <div>{{ entitiesMap[selectedConfig.clazz].simpleName }}</div>
+                    <div class="smaller">
+                        <span class="entity-tree" v-for="clazz in entitiesMap[selectedConfig.clazz].baseClasses">
+                            🠞 {{ entitiesMap[clazz].simpleName }}
+                        </span>
+                        <span class="entity-tree" v-for="interface in entitiesMap[selectedConfig.clazz].interfaces">
+                            ⊕ {{ entitiesMap[interface].simpleName }}
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <switch-checkbox v-model="selectedConfig.enabled" @change="update(selectedConfig)">
+                        Enabled
+                    </switch-checkbox>
+                </div>
+                <div>
+                    <span class="field-description">Max Distance:</span>
+                    <input type="text" class="distance" v-model="selectedConfig.maxDistance" @change="update(selectedConfig)">
+                </div>
+                <fieldset>
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.drawTracers" @change="update(selectedConfig)">
+                            Tracer
+                        </switch-checkbox>
+                    </legend>
+                    <color-picker
+                        v-model="selectedConfig.tracerColor"
+                        @update:model-value="update(selectedConfig)" />
+                    <div class="group-setting esp-additional">
+                        <div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend class="glow-legend">
+                        <switch-checkbox v-model="selectedConfig.glow" @change="update(selectedConfig)">
+                            Outline
+                        </switch-checkbox>
+                        <select v-model="selectedConfig.outlineMethod" @change="update(selectedConfig)">
+                            <option value="0">Minecraft Built-In Glow Effect</option>
+                            <option value="1">Mod Outline Effect</option>
+                        </select>
+                    </legend>
+                    <color-picker
+                        v-model="selectedConfig.glowColor"
+                        @update:model-value="update(selectedConfig)" />
+                    <div class="group-setting esp-additional">
+                        <div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.glowMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.drawOutline" @change="update(selectedConfig)">
+                            Collision Box
+                        </switch-checkbox>
+                    </legend>
+                    <color-picker
+                        v-model="selectedConfig.outlineColor"
+                        @update:model-value="update(selectedConfig)" />
+                    <div class="group-setting esp-additional">
+                        <div>
+                            <span class="field-description">Max Distance Override:</span>
+                            <input type="text" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                        </div>
+                        <div class="section-description">
+                            Leave this empty to use Max Distance value specified at the top.
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.drawOverlay" @change="update(selectedConfig)">
+                            Overlay
+                        </switch-checkbox>
+                    </legend>
+                    <color-picker
+                        v-model="selectedConfig.overlayColor"
+                        @update:model-value="update(selectedConfig)" />
+                    <div class="group-setting esp-additional">
+                        
+                    </div>
+                </fieldset>
+                <fieldset style="flex-direction: column;">
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.drawTitles" @change="update(selectedConfig)">
+                            Custom Title System
+                        </switch-checkbox>
+                    </legend>
+                    <div>
+                        <switch-checkbox v-model="selectedConfig.showHp" @change="update(selectedConfig)">
+                            Show HP
+                        </switch-checkbox>
+                    </div>
+                    <div style="display: flex; gap: 1em;">
+                        <switch-checkbox v-model="selectedConfig.showDefaultNames" @change="update(selectedConfig)">
+                            Show Default Names
+                        </switch-checkbox>
+                        <div class="section-description" style="display: flex; align-items: center;">
+                            For example, zombie without Name Tag will be shown as "Zombie"
+                        </div>
+                    </div>
+                    <div>
+                        <switch-checkbox v-model="selectedConfig.showEquippedItems" @change="update(selectedConfig)">
+                            Show Equipped Items
+                        </switch-checkbox>
+                    </div>
+                    <div>
+                        <switch-checkbox v-model="selectedConfig.showOwner" @change="update(selectedConfig)">
+                            Show Owner
+                        </switch-checkbox>
+                    </div>
+                </fieldset>
+                <fieldset style="flex-direction: column;">
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.scriptEnabled" @change="update(selectedConfig)">
+                            Custom Script
+                        </switch-checkbox>
+                    </legend>
+                    <template v-if="selectedConfig.scriptEnabled">
+                        <div class="section-description">
+                            Write script to add custom behavior to current Entity ESP config.<br>
+                            You can change below on per entity basis:<br>
+                            <ul>
+                                <li>Disable Tracer/Outline/Overlay/Collision Box</li>
+                                <li>Change text displayed in the title</li>
+                            </ul>
+                            Use <b>id</b> variable to get id of current entity.<br>
+                            Use <b>event</b> variable to disable ESP things for current entity.<br>
+                            Use <b>game.entities</b> API to get information about entity by its id.<br>
+                            Warning! This script will run for every frame rendered, and for every entity matching class or interface.<br>
+                            Make sure to not execute complex code here, since it can hurt your FPS.
+                        </div>
+                        <div class="actions">
+                            <button class="action" @click="saveCode()">Save</button>
+                            <button class="action" @click="showApiRef()">Show/Hide API Reference</button>
+                        </div>
+                        <div v-show="!showRefs">
+                            <div>
+                                <script-editor v-model="code" :type="'ENTITY_ESP'"></script-editor>
+                            </div>
+                        </div>
+                        <div v-show="showRefs">
+                            <ul class="refs">
+                                <li v-for="item in refs" v-html="item"></li>
+                            </ul>
+                        </div>
+                    </template>
+                </fieldset>
+            </div>
+        </template>
+    </div>
+</div>

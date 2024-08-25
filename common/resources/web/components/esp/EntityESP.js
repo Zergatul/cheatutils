@@ -1,9 +1,10 @@
-import { addComponent } from '/components/Loader.js'
+import { withCss } from '/components/Loader.js'
 import { formatCodeResponse } from '/components/MonacoEditor.js'
 import * as http from '/http.js';
+import { components } from '../../components.js';
 
-let entityInfoPromise = http.get('/api/entity-info').then(entitiesList => {
-    let entitiesMap = {};
+const entityInfoPromise = http.get('/api/entity-info').then(entitiesList => {
+    const entitiesMap = {};
     entitiesList.forEach(e => entitiesMap[e.clazz] = e);
     return {
         entitiesList: entitiesList,
@@ -11,8 +12,8 @@ let entityInfoPromise = http.get('/api/entity-info').then(entitiesList => {
     }
 });
 
-function createComponent(template) {
-    let args = {
+export function createComponent(template) {
+    const args = {
         template: template,
         created() {
             entityInfoPromise.then(info => {
@@ -219,10 +220,11 @@ function createComponent(template) {
             }
         }
     };
-    addComponent(args, 'ColorBox');
-    addComponent(args, 'ColorPicker');
-    addComponent(args, 'ScriptEditor');
-    return args;
-}
 
-export { createComponent }
+    components.add(args, 'ColorBox');
+    components.add(args, 'ColorPicker');
+    components.add(args, 'ScriptEditor');
+    components.add(args, 'SwitchCheckbox');
+
+    return withCss(import.meta.url, args);
+};

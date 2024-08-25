@@ -8,7 +8,7 @@
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
         </div>
-        <div>
+        <div class="flex-row">
             <span class="field-description">Extra Ticks:</span>
             <input type="text" v-model="config.extraTicks" @change="update()">
             <div class="section-description">

@@ -1,7 +1,8 @@
-import * as http from '/http.js';
+import * as http from '/http.js'
+import { components } from '/components.js'
 
-function createComponent(template) {
-    return {
+export function createComponent(template) {
+    const args = {
         template: template,
         created() {
             http.get('/api/free-cam').then(response => {
@@ -33,13 +34,12 @@ function createComponent(template) {
                 });
             },
             update() {
-                let self = this;
                 http.post('/api/free-cam', this.config).then(response => {
                     this.config = response;
                 });
             }
         }
-    }
-}
-
-export { createComponent }
+    };
+    components.add(args, 'SwitchCheckbox');
+    return args;
+};

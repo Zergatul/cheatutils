@@ -1,7 +1,8 @@
-import { Color } from './Color.js'
+import { Color } from '/color.js'
+import { withCss } from '/components/Loader.js'
 
-function createComponent(template) {
-    return {
+export function createComponent(template) {
+    const args = {
         template: template,
         props: ['modelValue'],
         emits: ['update:modelValue'],
@@ -186,7 +187,6 @@ function createComponent(template) {
                 }
             }
         }
-    }
-}
-
-export { createComponent }
+    };
+    return withCss(import.meta.url, args);
+};

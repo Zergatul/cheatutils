@@ -112,7 +112,7 @@ module({
 module({
     group: 'esp',
     name: 'Entity ESP',
-    component: 'Entities',
+    component: 'EntityESP',
     path: 'entity-esp',
     tags: ['entity', 'entities', 'esp']
 });
@@ -120,42 +120,49 @@ module({
     group: 'esp',
     name: 'Projectile Path',
     component: 'ProjectilePath',
+    path: 'projectile-path',
     tags: ['projectile', 'path', 'ender', 'pearl']
 });
 module({
     group: 'esp',
     name: 'Light Level',
     component: 'LightLevel',
+    path: 'light-level',
     tags: ['light', 'level', 'mob', 'spawn']
 });
 module({
     group: 'esp',
     name: 'End City Chunks',
     component: 'EndCityChunks',
+    path: 'end-city-chunks',
     tags: ['end', 'city', 'cities', 'chunks']
 });
 module({
     group: 'esp',
     name: 'Entity Owner',
     component: 'EntityOwner',
+    path: 'entity-owner',
     tags: ['entity', 'owner']
 });
 module({
     group: 'esp',
     name: 'Free Cam',
     component: 'FreeCam',
+    path: 'freecam',
     tags: ['freecam', 'camera']
 });
 module({
     group: 'esp',
     name: 'New Chunks',
     component: 'NewChunks',
+    path: 'new-chunks',
     tags: ['new', 'chunks']
 });
 module({
     group: 'esp',
     name: 'Entity Titles',
     component: 'EntityTitle',
+    path: 'entity-titles',
     tags: ['entity', 'title', 'health']
 });
 
