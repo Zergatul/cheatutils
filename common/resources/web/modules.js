@@ -170,126 +170,147 @@ module({
     group: 'hacks',
     name: 'Kill Aura',
     component: 'KillAura',
+    path: 'kill-aura',
     tags: ['kill', 'aura', 'auto', 'attack']
 });
 module({
     group: 'hacks',
     name: 'Elytra Fly',
     component: 'ElytraHack',
+    path: 'elytra-fly',
     tags: ['elytra', 'hack', 'fly']
 });
 module({
     group: 'hacks',
     name: 'Pig',
     component: 'PigHack',
+    path: 'pig',
     tags: ['pig', 'hack']
 });
 module({
     group: 'hacks',
     name: 'Auto Criticals',
     component: 'AutoCriticals',
+    path: 'auto-criticals',
     tags: ['auto', 'criticals']
 });
 module({
     group: 'hacks',
     name: 'Fly',
     component: 'FlyHack',
+    path: 'fly',
     tags: ['fly', 'hack']
 });
 module({
     group: 'hacks',
     name: 'Elytra Tunnel',
     component: 'ElytraTunnel',
+    path: 'elytra-tunnel',
     tags: ['elytra', 'tunnel']
 });
 module({
     group: 'hacks',
     name: 'Movement',
     component: 'MovementHack',
+    path: 'movement',
     tags: ['movement', 'hack']
 });
 module({
     group: 'hacks',
     name: 'Scaffold',
     component: 'Scaffold',
+    path: 'scaffold',
     tags: ['scaffold']
 });
 module({
     group: 'hacks',
     name: 'No Fall',
     component: 'NoFall',
+    path: 'no-fall',
     tags: ['nofall', 'no', 'fall']
 });
 module({
     group: 'hacks',
     name: 'Fast Break',
     component: 'FastBreak',
+    path: 'fast-break',
     tags: ['fast', 'break']
 });
 module({
     group: 'hacks',
     name: 'Reach',
     component: 'Reach',
+    path: 'reach',
     tags: ['reach']
 });
 module({
     group: 'hacks',
     name: 'Teleport',
     component: 'TeleportHack',
+    path: 'teleport',
     tags: ['teleport', 'hack']
 });
 module({
     group: 'hacks',
     name: 'Fake Lag',
     component: 'FakeLag',
+    path: 'fake-lag',
     tags: ['fake', 'lag']
 });
 module({
     group: 'hacks',
     name: 'Blink',
     component: 'Blink',
+    path: 'blink',
     tags: ['blink']
 });
 module({
     group: 'hacks',
     name: 'Boat',
     component: 'BoatHack',
+    path: 'boat',
     tags: ['boat', 'hack', 'fly']
 });
 module({
     group: 'hacks',
     name: 'Inv Move',
     component: 'InvMove',
+    path: 'inv-move',
     tags: ['inventory', 'move', 'keys']
 });
 module({
     group: 'hacks',
     name: 'Area Mine',
     component: 'AreaMine',
+    path: 'area-mine',
     tags: ['area', 'mine']
 });
 module({
     group: 'hacks',
     name: 'Server Plugins',
     component: 'ServerPlugins',
+    path: 'server-plugins',
     tags: ['server', 'plugins']
 });
 module({
     group: 'hacks',
     name: 'Hitbox Size',
     component: 'HitboxSize',
+    path: 'hitbox-size',
     tags: ['hitbox', 'size']
 });
 module({
     group: 'hacks',
     name: 'Bedrock Breaker',
     component: 'BedrockBreaker',
+    path: 'bedrock-breaker',
     tags: ['bedrock', 'breaker']
 });
 module({
     group: 'hacks',
     name: 'Anti Hunger',
     component: 'AntiHunger',
+    path: 'anti-hunger',
     tags: ['anti', 'hunger']
 });
 

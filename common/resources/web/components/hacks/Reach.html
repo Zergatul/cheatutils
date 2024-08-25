@@ -1,0 +1,33 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Modify block interaction range and attack range. Kill Aura range setting is not affected by this.
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.overrideReachDistance" @change="update()">Override reach distance</switch-checkbox>
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Reach distance:</span>
+                <input type="text" class="w3" v-model="config.reachDistance" @change="update()">
+            </div>
+            <div class="section-description">
+                Default: 4.5
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.overrideAttackRange" @change="update()">Override attack range</switch-checkbox>
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Attack range:</span>
+                <input type="text" class="w3" v-model="config.attackRange" @change="update()">
+            </div>
+            <div class="section-description">
+                Default: 3.0
+            </div>
+        </fieldset>
+    </div>
+</div>

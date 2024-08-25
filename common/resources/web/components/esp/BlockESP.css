@@ -62,10 +62,6 @@ div.block-edit {
     gap: 0.4em;
 }
 
-div.block-esp input.distance {
-    width: 4em;
-}
-
 div.block-edit > fieldset {
     display: flex;
     gap: 0.5em;

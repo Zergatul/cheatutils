@@ -1,0 +1,37 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+            When you mine block your client sends 2 packets: when you started digging and when you finished.
+            Due to ping problems time difference between 2 packets can differ between client and server.
+            To make block dig rollback more rare server weakens rule, and doesn't check exact time.
+            We can abuse this and always send 2 packets quicker.
+            <br>
+            This hack cannot make "non-instamineable" block instamineable. Instamining has strict check on the server.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                Factor
+            </legend>
+            <div>
+                <input type="text" class="w3" v-model="config.factor" @change="update()">
+            </div>
+            <div class="section-description">
+                1=no change, 1.2=1.2x faster and so on. Maximum theoretical value for vanilla server: 1/0.7=1.428571. It is better to use lower value.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.disableDestroyDelay" @change="update()">Disable Destroy Delay</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Minecraft client sets 5 ticks delay after you break the block. This setting disables this delay by setting it to 0.
+            </div>
+        </fieldset>
+    </div>
+</div>

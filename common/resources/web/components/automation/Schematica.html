@@ -22,7 +22,7 @@
                     <td class="pad-left">
                         <div class="flex-row">
                             <span class="field-description">Max distance:</span>
-                            <input type="text" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
+                            <input type="text" class="w5" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
                         </div>
                     </td>
                 </tr>
@@ -33,7 +33,7 @@
                     <td class="pad-left">
                         <div class="flex-row">
                             <span class="field-description">Max distance:</span>
-                            <input type="text" v-model="config.missingBlockTracersMaxDistance" @change="update()">
+                            <input type="text" class="w5" v-model="config.missingBlockTracersMaxDistance" @change="update()">
                         </div>
                     </td>
                 </tr>
@@ -44,7 +44,7 @@
                     <td class="pad-left">
                         <div class="flex-row">
                             <span class="field-description">Max distance:</span>
-                            <input type="text" v-model="config.missingBlockCubesMaxDistance" @change="update()">
+                            <input type="text" class="w5" v-model="config.missingBlockCubesMaxDistance" @change="update()">
                         </div>
                     </td>
                 </tr>
@@ -58,34 +58,48 @@
             <legend>
                 Wrong Blocks
             </legend>
-            <div class="input-section">
-                <switch-checkbox v-model="config.replaceableAsAir" @change="update()">
-                    Treat replaceable blocks as air (e.g. snow, water, grass). Requires rescan.
-                </switch-checkbox>
-            </div>
-            <div class="input-section">
-                <switch-checkbox v-model="config.airAlwaysValid" @change="update()">
-                    Air blocks in schematica are always valid. Requires rescan.
-                </switch-checkbox>
-            </div>
-            <div class="input-section input-section-flex">
-                <switch-checkbox v-model="config.showWrongBlockTracers" @change="update()">
-                    Show tracers
-                </switch-checkbox>
-                <div>
-                    <span class="field-description">Max distance:</span>
-                    <input type="text" v-model="config.wrongBlockTracersMaxDistance" @change="update()">
-                </div>
-            </div>
-            <div class="input-section input-section-flex">
-                <switch-checkbox v-model="config.showWrongBlockCubes" @change="update()">
-                    Show mini-cubes
-                </switch-checkbox>
-                <div class="input-section">
-                    <span class="field-description">Max distance:</span>
-                    <input type="text" v-model="config.wrongBlockCubesMaxDistance" @change="update()">
-                </div>
-            </div>
+            <table>
+                <tr>
+                    <td colspan="2">
+                        <switch-checkbox v-model="config.replaceableAsAir" @change="update()">
+                            Treat replaceable blocks as air (e.g. snow, water, grass). Requires rescan.
+                        </switch-checkbox>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <switch-checkbox v-model="config.airAlwaysValid" @change="update()">
+                            Air blocks in schematica are always valid. Requires rescan.
+                        </switch-checkbox>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <switch-checkbox v-model="config.showWrongBlockTracers" @change="update()">
+                            Show tracers
+                        </switch-checkbox>
+                    </td>
+                    <td class="pad-left">
+                        <div class="flex-row">
+                            <span class="field-description">Max distance:</span>
+                            <input type="text" class="w5" v-model="config.wrongBlockTracersMaxDistance" @change="update()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <switch-checkbox v-model="config.showWrongBlockCubes" @change="update()">
+                            Show mini-cubes
+                        </switch-checkbox>
+                    </td>
+                    <td class="pad-left">
+                        <div class="flex-row">
+                            <span class="field-description">Max distance:</span>
+                            <input type="text" class="w5" v-model="config.wrongBlockCubesMaxDistance" @change="update()">
+                        </div>
+                    </td>
+                </tr>
+            </table>
             <div class="section-description">
                 Wrong Blocks: real world block != schematica block and real world block != Air
             </div>
@@ -97,16 +111,28 @@
                     Auto Build
                 </switch-checkbox>
             </legend>
-            <div class="input-section">
-                <span class="field-description">Max Build Distance:</span>
-                <input type="text" v-model="config.maxRange" @change="update()">
-            </div>
-            <div class="input-section">
-                <span class="field-description">Use hotbar slots:</span>
-                <input type="text" v-model="slots" @change="onSlotsUpdate()">
-                <div class="input-description">Separated by comma. Example: 6,7,8</div>
-            </div>
-            <div class="input-section">
+            <table>
+                <tr>
+                    <td>
+                        <span class="field-description">Max Build Distance:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w5" v-model="config.maxRange" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Use hotbar slots:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w5" v-model="slots" @change="onSlotsUpdate()">
+                    </td>
+                    <td>
+                        <div class="input-description">Separated by comma. Example: 6,7,8</div>
+                    </td>
+                </tr>
+            </table>
+            <div>
                 <switch-checkbox v-model="config.useShift" @change="update()">
                     Use Shift while placing blocks
                 </switch-checkbox>
@@ -115,7 +141,7 @@
                 Max Build Distance - distance between player eyes and center of block module will try to place.<br>
                 Using shift may cause your character to randomly crouch for a fraction of a second.
             </div>
-            <div class="input-section">
+            <div>
                 <switch-checkbox v-model="config.attachToAir" @change="update()">
                     Attach to Air
                 </switch-checkbox>
@@ -202,7 +228,7 @@
                                 <span class="field-description">X:</span>
                             </td>
                             <td>
-                                <input type="text" v-model="placing.x">
+                                <input type="text" class="w5" v-model="placing.x">
                             </td>
                             <td>
                                 <switch-checkbox v-model="placing.flipX">Flip X</switch-checkbox>
@@ -211,28 +237,16 @@
                                 <span class="field-description">Rotate X:</span>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="-90">
-                                    <span class="text">-90°</span>
-                                </label>
+                                <radio name="rotate-x" :value="-90" v-model="placing.rotateX">-90°</radio>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="0">
-                                    <span class="text">0°</span>
-                                </label>
+                                <radio name="rotate-x" :value="0" v-model="placing.rotateX">0°</radio>
+                             </td>
+                            <td>
+                                <radio name="rotate-x" :value="90" v-model="placing.rotateX">90°</radio>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="90">
-                                    <span class="text">90°</span>
-                                </label>
-                            </td>
-                            <td>
-                                <label>
-                                    <input type="radio" name="rotate-x" v-model="placing.rotateX" v-bind:value="180">
-                                    <span class="text">180°</span>
-                                </label>
+                                <radio name="rotate-x" :value="180" v-model="placing.rotateX">180°</radio>
                             </td>
                         </tr>
                         <tr>
@@ -240,7 +254,7 @@
                                 <span class="field-description">Y:</span>
                             </td>
                             <td>
-                                <input type="text" v-model="placing.y">
+                                <input type="text" class="w5" v-model="placing.y">
                             </td>
                             <td>
                                 <switch-checkbox v-model="placing.flipY">Flip Y</switch-checkbox>
@@ -249,28 +263,16 @@
                                 <span class="field-description">Rotate Y:</span>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="-90">
-                                    <span class="text">-90°</span>
-                                </label>
+                                <radio name="rotate-y" :value="-90" v-model="placing.rotateY">-90°</radio>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="0">
-                                    <span class="text">0°</span>
-                                </label>
+                                <radio name="rotate-y" :value="0" v-model="placing.rotateY">0°</radio>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="90">
-                                    <span class="text">90°</span>
-                                </label>
+                                <radio name="rotate-y" :value="90" v-model="placing.rotateY">90°</radio>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-y" v-model="placing.rotateY" v-bind:value="180">
-                                    <span class="text">180°</span>
-                                </label>
+                                <radio name="rotate-y" :value="180" v-model="placing.rotateY">180°</radio>
                             </td>
                         </tr>
                         <tr>
@@ -278,7 +280,7 @@
                                 <span class="field-description">Z:</span>
                             </td>
                             <td>
-                                <input type="text" v-model="placing.z">
+                                <input type="text" class="w5" v-model="placing.z">
                             </td>
                             <td>
                                 <switch-checkbox v-model="placing.flipZ">Flip Z</switch-checkbox>
@@ -287,28 +289,16 @@
                                 <span class="field-description">Rotate Z:</span>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="-90">
-                                    <span class="text">-90°</span>
-                                </label>
+                                <radio name="rotate-z" :value="-90" v-model="placing.rotateZ">-90°</radio>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="0">
-                                    <span class="text">0°</span>
-                                </label>
+                                <radio name="rotate-z" :value="0" v-model="placing.rotateZ">0°</radio>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="90">
-                                    <span class="text">90°</span>
-                                </label>
+                                <radio name="rotate-z" :value="90" v-model="placing.rotateZ">90°</radio>
                             </td>
                             <td>
-                                <label>
-                                    <input type="radio" name="rotate-z" v-model="placing.rotateZ" v-bind:value="180">
-                                    <span class="text">180°</span>
-                                </label>
+                                <radio name="rotate-z" :value="180" v-model="placing.rotateZ">-180°</radio>
                             </td>
                         </tr>
                     </tbody>

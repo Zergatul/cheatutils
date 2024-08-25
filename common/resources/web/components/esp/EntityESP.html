@@ -116,9 +116,9 @@
                         Enabled
                     </switch-checkbox>
                 </div>
-                <div>
+                <div class="flex-row">
                     <span class="field-description">Max Distance:</span>
-                    <input type="text" class="distance" v-model="selectedConfig.maxDistance" @change="update(selectedConfig)">
+                    <input type="text" class="w5" v-model="selectedConfig.maxDistance" @change="update(selectedConfig)">
                 </div>
                 <fieldset>
                     <legend>
@@ -130,9 +130,9 @@
                         v-model="selectedConfig.tracerColor"
                         @update:model-value="update(selectedConfig)" />
                     <div class="group-setting esp-additional">
-                        <div>
+                        <div class="flex-row">
                             <span class="field-description">Max Distance Override:</span>
-                            <input type="text" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
+                            <input type="text" class="w5" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
                         </div>
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.
@@ -153,9 +153,9 @@
                         v-model="selectedConfig.glowColor"
                         @update:model-value="update(selectedConfig)" />
                     <div class="group-setting esp-additional">
-                        <div>
+                        <div class="flex-row">
                             <span class="field-description">Max Distance Override:</span>
-                            <input type="text" v-model="selectedConfig.glowMaxDistance" @change="update(selectedConfig)">
+                            <input type="text" class="w5" v-model="selectedConfig.glowMaxDistance" @change="update(selectedConfig)">
                         </div>
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.
@@ -172,9 +172,9 @@
                         v-model="selectedConfig.outlineColor"
                         @update:model-value="update(selectedConfig)" />
                     <div class="group-setting esp-additional">
-                        <div>
+                        <div class="flex-row">
                             <span class="field-description">Max Distance Override:</span>
-                            <input type="text" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                            <input type="text" class="w5" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
                         </div>
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.

@@ -40,6 +40,7 @@ export function createComponent(template) {
             }
         }
     };
+    components.add(args, 'Radio');
     components.add(args, 'SwitchCheckbox');
     return args;
 };

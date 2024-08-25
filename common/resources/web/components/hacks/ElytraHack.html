@@ -1,0 +1,70 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Allows you to fly with Elytra without rockets.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                Method
+            </legend>
+            <div>
+                <div>
+                    <radio name="method" value="VanillaFly" v-model="config.method" @change="update()">
+                        Vanilla Fly (use Jump/Sneak/Forward/Backward keys to gain speed)
+                    </radio>
+                </div>
+                <div>
+                    <radio name="method" value="CreativeFly" v-model="config.method" @change="update()">
+                        Creative Fly (you fly like in creative mode)
+                    </radio>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Speed Settings
+            </legend>
+            <table>
+                <tr>
+                    <td>
+                        <span class="field-description">Max Speed:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.maxSpeed" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">Blocks/second</div>
+                    </td>
+                </tr>
+                <tr v-show="config.method == 'VanillaFly'">
+                    <td>
+                        <span class="field-description">Vertical Acceleration:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.vanillaFlyVerticalAcceleration" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">Blocks/sec^2, when you hold Jump or Sneak</div>
+                    </td>
+                </tr>
+                <tr v-show="config.method == 'VanillaFly'">
+                    <td>
+                        <span class="field-description">Horizontal Acceleration:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.vanillaFlyHorizontalAcceleration" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">Blocks/sec^2, when you hold Forward or Backward</div>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</div>

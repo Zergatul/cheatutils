@@ -1,0 +1,29 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Automatically mines blocks surrounding your target block. Activates only when instamine is active.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                Radius
+            </legend>
+            <div>
+                <input type="text" class="w3" v-model="config.radius" @change="update()">
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.preview" @change="update()">Preview</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Shows realtime preview of blocks that can be mined in 1 click
+            </div>
+        </fieldset>
+    </div>
+</div>

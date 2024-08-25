@@ -1,0 +1,53 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Breaks bedrock with single button click.
+        <div>
+            Conditions:
+            <ul>
+                <li>Netherite Pickaxe Efficiency 5 on hotbar</li>
+                <li>Some amount of pistons on hotbar</li>
+                <li>Some amount of redstone torches on hotbar</li>
+                <li>Haste 2 effect from beacon (you should be able to instamine pistons)</li>
+            </ul>
+            How to use:
+            <ul>
+                <li>Add <b>bedrockBreaker.process();</b> to keybinding</li>
+                <li>Target bedrock block</li>
+                <li>Ensure there are 2 empty blocks above bedrock</li>
+                <li>Ensure there is 1 block on the side of bedrock. Redstone torch will be placed on top of this block.</li>
+                <li>Press hotkey</li>
+                <li>If something goes wrong you should see system message</li>
+            </ul>
+            In this way you can break 1 bedrock by targeting it and pressing hotkey.<br>
+            Or you can use <b>bedrockBreaker.processNearby();</b> method to automatically break all nearby bedrock blocks at the highest Y level.
+        </div>
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.placeSupportBlock" @change="update()">Place support block</switch-checkbox>
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Support block ID:</span>
+                <input type="text" class="w20" v-model="config.supportBlockId" @change="update()">
+            </div>
+            <div class="section-description">
+                If there is no horizontally adjacent blocks to current bedrock, module can place support block automatically.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.replace" @change="update()">Replace bedrock</switch-checkbox>
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Replace block ID:</span>
+                <input type="text" class="w20" v-model="config.replaceBlockId" @change="update()">
+            </div>
+            <div class="section-description">
+                Replace bedrock with another block (to prevent items falling into the void).
+            </div>
+        </fieldset>
+    </div>
+</div>

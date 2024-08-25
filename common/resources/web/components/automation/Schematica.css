@@ -1,7 +1,3 @@
 div.schematica td.pad-left {
     padding-left: 2em;
 }
-
-div.schematica input[type=text] {
-    width: 5em;
-}

@@ -1,0 +1,87 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Different hacks related to movement.
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.disableSlowdownOnUseItem" @change="update()">No slow on item use</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Don't reduce your speed when you use consumable items, such as food or potions.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.scaleInputVector" @change="update()">Override max speed</switch-checkbox>
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Max speed factor:</span>
+                <input type="text" class="w4" v-model="config.inputVectorFactor" @change="update()">
+            </div>
+            <div class="section-description">
+                Value 1 means default speed. Value 2 increase max speed by 2 and so on.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.disableCrouchingSlowdown" @change="update()">No slow on crouch</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Don't reduce your speed when you are crouching or crawling.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.antiKnockback" @change="update()">Anti-Knockback</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Ignores server packet responsible for setting your speed. Knockback from mobs or players will be ignored.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.antiPush" @change="update()">Anti-Push</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Skips client-side code responsible for moving your character based on nearby entities.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.disableWaterPush" @change="update()">Disable Water Push Physics</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Water no longer moves your character.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.scaleJumpHeight" @change="update()">Override jump height</switch-checkbox>
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Jump height factor:</span>
+                <input type="text" class="w4" v-model="config.jumpHeightFactor" @change="update()">
+            </div>
+            <div class="section-description">
+                Value 1 means default jump height. Value 2 increase jump height by 2 and so on.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.disableSlimePhysics" @change="update()">Disable Slime Block Physics</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                No slow, no bounces.
+            </div>
+        </fieldset>
+    </div>
+</div>

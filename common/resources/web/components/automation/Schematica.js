@@ -17,6 +17,9 @@ export function createComponent(template) {
                 schematic: null,
                 slots: null,
                 placing: {
+                    flipX: false,
+                    flipY: false,
+                    flipZ: false,
                     rotateX: 0,
                     rotateY: 0,
                     rotateZ: 0
@@ -102,6 +105,7 @@ export function createComponent(template) {
         }
     };
 
+    components.add(args, 'Radio');
     components.add(args, 'SwitchCheckbox');
 
     return withCss(import.meta.url, args);

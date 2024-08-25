@@ -1,0 +1,12 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Allows you to use all hotkeys while different UI screens are active. For example you can move with inventory opened.<br>
+        <b>Doesn't work in Forge version!</b>
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
+</div>

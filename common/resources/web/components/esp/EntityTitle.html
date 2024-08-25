@@ -11,7 +11,7 @@
             </legend>
             <div class="flex-row">
                 <span class="field-description">Font Size:</span>
-                <input type="text" v-model="config.fontSize" @change="update()">
+                <input type="text" class="w3" v-model="config.fontSize" @change="update()">
             </div>
             <div>
                 <switch-checkbox v-model="config.antiAliasing" @change="update()">Anti Aliasing</switch-checkbox>
@@ -27,7 +27,7 @@
             </legend>
             <div class="flex-row">
                 <span class="field-description">Font Size:</span>
-                <input type="text" v-model="config.enchFontSize" @change="update()">
+                <input type="text" class="w3" v-model="config.enchFontSize" @change="update()">
             </div>
             <div>
                 <switch-checkbox v-model="config.enchAntiAliasing" @change="update()">Anti Aliasing</switch-checkbox>

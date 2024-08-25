@@ -87,6 +87,44 @@ a:hover {
     align-items: center;
 }
 
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.w3 {
+    width: 3em;
+}
+
+.w4 {
+    width: 4em;
+}
+
+.w5 {
+    width: 5em;
+}
+
+.w8 {
+    width: 8em;
+}
+
+.w10 {
+    width: 10em;
+}
+
+.w12 {
+    width: 12em;
+}
+
+.w20 {
+    width: 20em;
+}
+
+.w30 {
+    width: 30em;
+}
+
 /* modules */
 
 div.module-main {
