@@ -519,11 +519,6 @@ ul.item-list > li {
     gap: 12px;
 }
 
-div.script-editor {
-    width: 1000px;
-    height: 600px;
-}
-
 div.schematic-info {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 14px;

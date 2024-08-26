@@ -63,16 +63,10 @@
                 <span>Name:</span>
                 <input type="text" v-model="script.name">
             </div>
-            <div v-show="!showRefs">
-                <div>
-                    <script-editor v-model="script.code" :type="'KEYBINDING'"></script-editor>
-                </div>
-            </div>
-            <div v-show="showRefs">
-                <ul class="refs">
-                    <li v-for="item in refs" v-html="item"></li>
-                </ul>
-            </div>
+            <script-editor v-model="script.code" :type="'KEYBINDING'" v-show="!showRefs"></script-editor>
+            <ul class="refs" v-show="showRefs">
+                <li v-for="item in refs" v-html="item"></li>
+            </ul>
         </template>
     </div>
 </div>

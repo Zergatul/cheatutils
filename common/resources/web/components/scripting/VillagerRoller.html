@@ -12,13 +12,11 @@
             <button class="w8" @click="save()">Save</button>
             <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
         </div>
-        <div v-show="!showRefs">
-            <script-editor v-model="code" :type="'VILLAGER_ROLLER'"></script-editor>
-        </div>
-        <div v-show="showRefs">
-            <ul class="refs">
-                <li v-for="item in refs" v-html="item"></li>
-            </ul>
-        </div>
+
+        <script-editor v-model="code" :type="'VILLAGER_ROLLER'" v-show="!showRefs"></script-editor>
+
+        <ul class="refs" v-show="showRefs">
+            <li v-for="item in refs" v-html="item"></li>
+        </ul>
     </div>
 </div>

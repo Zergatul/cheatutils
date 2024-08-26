@@ -1,5 +1,6 @@
-import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.48.0/+esm';
-import * as http from '/http.js';
+import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.48.0/+esm'
+import * as http from '/http.js'
+import { withCss } from '/components/Loader.js'
 
 const languageId = 'cheatutils-scripting-language';
 const map = [];
@@ -299,7 +300,7 @@ const languageSettingsContructor = (async () => {
 })();
 
 export function createComponent(template) {
-    return {
+    const args = {
         template: template,
         props: [
             'modelValue',
@@ -327,6 +328,8 @@ export function createComponent(template) {
                 language: languageId,
                 'autoClosingBrackets': true,
                 'semanticHighlighting.enabled': true,
+                automaticLayout: true,      // automatically resize editor based on container size
+                fixedOverflowWidgets: true, // fix hover to be above parent->parent
                 ...settings
             });
             this.editor.onDidBlurEditorWidget(() => {
@@ -359,4 +362,5 @@ export function createComponent(template) {
             }
         }
     };
+    return withCss(import.meta.url, args);
 }

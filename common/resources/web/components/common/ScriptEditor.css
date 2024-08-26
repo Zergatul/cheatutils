@@ -1,0 +1,5 @@
+div.script-editor {
+    flex-basis: 28em;
+    flex-grow: 1;
+    overflow-y: hidden;
+}

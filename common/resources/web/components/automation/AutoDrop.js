@@ -1,6 +1,6 @@
-import { withCss } from '/components/Loader.js';
+import { withCss } from '/components/Loader.js'
 import { components } from '/components.js'
-import * as http from '/http.js';
+import * as http from '/http.js'
 
 export function createComponent(template) {
     let args = {

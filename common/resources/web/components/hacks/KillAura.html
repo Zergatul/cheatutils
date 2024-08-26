@@ -212,16 +212,10 @@
                     <button class="w8" @click="saveCode()">Save</button>
                     <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
                 </div>
-                <div v-show="!showRefs">
-                    <div>
-                        <script-editor v-model="code" :type="'KILL_AURA'"></script-editor>
-                    </div>
-                </div>
-                <div v-show="showRefs">
-                    <ul class="refs">
-                        <li v-for="item in refs" v-html="item"></li>
-                    </ul>
-                </div>
+                <script-editor v-model="code" :type="'KILL_AURA'" v-show="!showRefs"></script-editor>
+                <ul class="refs" v-show="showRefs">
+                    <li v-for="item in refs" v-html="item"></li>
+                </ul>
             </template>
         </fieldset>
     </div>

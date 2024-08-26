@@ -13,16 +13,10 @@
             <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
         </div>
 
-        <div v-show="!showRefs">
-            <div>
-                <script-editor v-model="config.code" :type="'OVERLAY'"></script-editor>
-            </div>
-        </div>
+        <script-editor v-model="config.code" :type="'OVERLAY'" v-show="!showRefs"></script-editor>
 
-        <div v-show="showRefs">
-            <ul class="refs">
-                <li v-for="item in refs" v-html="item"></li>
-            </ul>
-        </div>
+        <ul class="refs" v-show="showRefs">
+            <li v-for="item in refs" v-html="item"></li>
+        </ul>
     </div>
 </div>
