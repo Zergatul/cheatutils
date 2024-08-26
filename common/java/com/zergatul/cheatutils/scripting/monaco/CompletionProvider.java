@@ -178,6 +178,12 @@ public class CompletionProvider {
                         suggestions.addAll(get(parameters, output, ctx, line, column));
                     }
                 }
+                case INVALID_EXPRESSION -> {
+                    BoundInvalidExpressionNode invalid = (BoundInvalidExpressionNode) completionContext.entry.node;
+                    if (invalid.getRange().getLength() == 0) {
+                        canExpression = true;
+                    }
+                }
                 default -> {
                     canExpression = true; // good fallback?
                     //throw new InternalException();
@@ -265,6 +271,9 @@ public class CompletionProvider {
                 if (binary.right.getRange().containsOrEnds(line, column)) {
                     return getUnfinished(binary.right, line, column);
                 }
+                if (binary.right.getRange().isBefore(line, column)) { // there can be space
+                    return getUnfinished(binary.right, line, column);
+                }
             }
             if (node instanceof BoundMethodInvocationExpressionNode invocation) {
                 if (invocation.arguments.getRange().containsOrEnds(line, column)) {
@@ -272,6 +281,9 @@ public class CompletionProvider {
                         return getUnfinished(argument, line, column);
                     }
                 }
+            }
+            if (node instanceof BoundInvalidExpressionNode) {
+                return node;
             }
         }
 
@@ -340,6 +352,12 @@ public class CompletionProvider {
                                 list.add(documentationProvider.getLocalVariableSuggestion(parameter.getName(), SType.fromJavaType(parameter.getType())));
                             }
                         }
+                    }
+                }
+                case FUNCTION -> {
+                    BoundFunctionNode function = (BoundFunctionNode) context.entry.node;
+                    for (var x : function.parameters.parameters) {
+                        list.add(documentationProvider.getLocalVariableSuggestion((LocalVariable) x.getName().symbol));
                     }
                 }
                 default -> {
