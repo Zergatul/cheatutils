@@ -55,7 +55,6 @@ public class ModMain implements ClientModInitializer {
         register(EntityEsp.instance);
         register(ProjectilePath.instance);
         register(EndCityChunks.instance);
-        register(GameTickScriptingController.instance);
         register(AutoBucket.instance);
         register(WorldDownloadController.instance);
         register(EntityTitleController.instance);
@@ -75,7 +74,6 @@ public class ModMain implements ClientModInitializer {
         register(LightLevel.instance);
         register(ElytraFly.instance);
         register(AdvancedTooltips.instance);
-        register(AutoDisconnect.instance);
         register(Zoom.instance);
         register(ShulkerTooltipController.instance);
         register(ArmorOverlay.instance);
