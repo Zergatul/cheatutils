@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.mixins.common;
+package com.zergatul.cheatutils.mixins.neoforge;
 
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
@@ -20,7 +20,7 @@ public abstract class MixinCamera {
     protected abstract void setPosition(double x, double t, double z);
 
     @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setRotation(FF)V", ordinal = 0),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setRotation(FFF)V", ordinal = 0),
             method = "setup(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/world/entity/Entity;ZZF)V",
             cancellable = true)
     private void onSetup(BlockGetter level, Entity entity, boolean detached, boolean mirrored, float particalTicks, CallbackInfo info) {

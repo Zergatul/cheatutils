@@ -8,7 +8,7 @@ public class PreRenderGuiExecutor extends EventExecutor {
     public static final PreRenderGuiExecutor instance = new PreRenderGuiExecutor();
 
     private PreRenderGuiExecutor() {
-        super(1000);
+        super(5000);
         Events.PreRenderGui.add(this::onPreRenderGui);
     }
 
