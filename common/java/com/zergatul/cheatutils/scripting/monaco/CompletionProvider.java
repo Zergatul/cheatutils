@@ -253,6 +253,12 @@ public class CompletionProvider {
                 }
             }
 
+            if (node instanceof BoundAssignmentStatementNode assignment) {
+                if (assignment.right.getRange().containsOrEnds(line, column)) {
+                    return getUnfinished(assignment.right, line, column);
+                }
+            }
+
             if (node instanceof BoundReturnStatementNode returnStatement) {
                 if (returnStatement.expression != null && returnStatement.expression.getRange().endsWith(line, column)) {
                     return getUnfinished(returnStatement.expression, line, column);
