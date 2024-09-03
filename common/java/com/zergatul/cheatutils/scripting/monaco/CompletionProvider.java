@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
 import com.zergatul.scripting.InterfaceHelper;
+import com.zergatul.scripting.TextRange;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.*;
 import com.zergatul.scripting.compiler.CompilationParameters;
@@ -93,6 +94,13 @@ public class CompletionProvider {
                         BoundNode unfinished = getUnfinished(completionContext.prev, line, column);
                         if (unfinished != null) {
                             CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry, unfinished), line, column);
+                            suggestions.addAll(get(parameters, output, ctx, line, column));
+                        }
+                    } else {
+                        BoundIfStatementNode statement = (BoundIfStatementNode) completionContext.entry.node;
+                        // if (<here>)
+                        if (TextRange.isBetween(line, column, statement.lParen.getRange(), statement.rParen.getRange())) {
+                            CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry.parent, completionContext.entry.parent.node), line, column);
                             suggestions.addAll(get(parameters, output, ctx, line, column));
                         }
                     }
