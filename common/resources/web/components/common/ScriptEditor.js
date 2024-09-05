@@ -101,6 +101,35 @@ const languageSettingsContructor = (async () => {
         monaco.editor.setModelMarkers(model, 'owner', tokens);
     };
 
+    monaco.languages.setMonarchTokensProvider(languageId, {
+        tokenizer: {
+            root: [
+                // Comments (Single line)
+                [/(\/\/.*$)/, 'comment'],
+
+                // Multi-line comments
+                [/\/\*/, { token: 'comment', next: '@comment' }],
+
+                // Strings
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // Unclosed string
+                [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }]
+            ],
+    
+            // Multi-line comment tokenizer
+            comment: [
+                [/\*\//, { token: 'comment', next: '@pop' }],
+                [/./, 'comment']
+            ],
+    
+            // String tokenizer
+            string: [
+                [/[^\\"]+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+            ],
+        },
+    });
+
     monaco.languages.registerDocumentSemanticTokensProvider(languageId, {
         getLegend() {
             return {
