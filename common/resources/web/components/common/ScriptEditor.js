@@ -148,6 +148,9 @@ const languageSettingsContructor = (async () => {
                 if (type == 'WHITESPACE' || type == 'LINE_BREAK') {
                     continue;
                 }
+                if (token.range.length == 0) {
+                    continue;
+                }
                 /*
                     Line number (0-indexed, and offset from the previous line)
                     Column position (0-indexed, and offset from the previous column, unless this is the beginning of a new line)

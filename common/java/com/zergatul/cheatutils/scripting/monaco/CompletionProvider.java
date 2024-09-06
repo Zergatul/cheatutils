@@ -192,6 +192,9 @@ public class CompletionProvider {
                         canExpression = true;
                     }
                 }
+                case STRING_LITERAL, INTEGER_LITERAL, FLOAT_LITERAL -> {
+                    // do nothing
+                }
                 default -> {
                     canExpression = true; // good fallback?
                     //throw new InternalException();

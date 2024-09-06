@@ -11,10 +11,7 @@ import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.compiler.CompilationParameters;
-import com.zergatul.scripting.lexer.Lexer;
-import com.zergatul.scripting.lexer.LexerInput;
-import com.zergatul.scripting.lexer.LexerOutput;
-import com.zergatul.scripting.lexer.TokenType;
+import com.zergatul.scripting.lexer.*;
 import com.zergatul.scripting.parser.NodeType;
 import com.zergatul.scripting.parser.Parser;
 import com.zergatul.scripting.parser.ParserOutput;
@@ -137,14 +134,34 @@ public class Integration {
                         Lexer lexer = new Lexer(lexerInput);
                         LexerOutput lexerOutput = lexer.lex();
 
-                        Parser parser = new Parser(lexerOutput);
-                        ParserOutput parserOutput = parser.parse();
+                        boolean sent = false;
+                        for (Token token : lexerOutput.tokens()) {
+                            if (token.type == TokenType.COMMENT) {
+                                CommentToken comment = (CommentToken) token;
+                                boolean inside;
+                                if (comment.ending) {
+                                    inside = comment.getRange().containsOrEnds(request.line, request.column);
+                                } else {
+                                    inside = comment.getRange().contains(request.line, request.column);
+                                }
+                                if (inside) {
+                                    sent = true;
+                                    Json.sendResponse(exchange, List.of());
+                                    break;
+                                }
+                            }
+                        }
 
-                        CompilationParameters parameters = resolver.resolve(request.type);
-                        Binder binder = new Binder(parserOutput, parameters);
-                        BinderOutput binderOutput = binder.bind();
+                        if (!sent) {
+                            Parser parser = new Parser(lexerOutput);
+                            ParserOutput parserOutput = parser.parse();
 
-                        Json.sendResponse(exchange, completionProvider.get(parameters, binderOutput, request.line, request.column));
+                            CompilationParameters parameters = resolver.resolve(request.type);
+                            Binder binder = new Binder(parserOutput, parameters);
+                            BinderOutput binderOutput = binder.bind();
+
+                            Json.sendResponse(exchange, completionProvider.get(parameters, binderOutput, request.line, request.column));
+                        }
                     } else {
                         exchange.sendResponseHeaders(404, 0);
                     }
