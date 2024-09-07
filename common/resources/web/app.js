@@ -1,4 +1,4 @@
-import { createApp, defineComponent, ref, computed, onMounted, onUnmounted, watch } from '/vue.esm-browser.js'
+import { createApp, defineComponent, ref, computed, onMounted, onUnmounted, watch, nextTick } from '/vue.esm-browser.js'
 import * as http from '/http.js'
 import { getComponent } from '/components/Loader.js'
 import * as events from '/events-service.js'
@@ -69,6 +69,13 @@ const App = defineComponent({
                 }, 100);
             }
         };
+
+        watch(view, async (current) => {
+            if (current == main) {
+                await nextTick();
+                onFilterInput();
+            }
+        });
 
         onMounted(() => {
             events.subscribe(onEvent);
