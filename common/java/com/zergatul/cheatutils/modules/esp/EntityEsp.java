@@ -137,8 +137,11 @@ public class EntityEsp implements Module {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-        renderer.begin(event, false);
+        LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
+        ThickLineRenderer thickLineRenderer = RenderUtilities.instance.getThickLineRenderer();
+
+        lineRenderer.begin(event, false);
+        thickLineRenderer.begin(event, false);
 
         ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
         for (Entity entity : mc.player.clientLevel.entitiesForRendering()) {
@@ -162,7 +165,26 @@ public class EntityEsp implements Module {
                     distanceSqr < c.getOutlineMaxDistanceSqr()).findFirst().orElse(null);
 
             if (config != null && !isCollisionBoxDisabledFromScript(config, entity)) {
-                renderEntityBounding(renderer, partialTicks, entity, config);
+                Vec3 pos = entity.getPosition(partialTicks);
+                AABB box = entity.getDimensions(entity.getPose()).makeBoundingBox(pos);
+
+                float r = config.outlineColor.getRed() / 255f;
+                float g = config.outlineColor.getGreen() / 255f;
+                float b = config.outlineColor.getBlue() / 255f;
+                float a = config.outlineColor.getAlpha() / 255f;
+
+                if (config.outlineWidth == 1) {
+                    lineRenderer.cuboid(
+                            box.minX, box.minY, box.minZ,
+                            box.maxX, box.maxY, box.maxZ,
+                            r, g, b, a);
+                } else {
+                    thickLineRenderer.setWidth(config.outlineWidth);
+                    thickLineRenderer.cuboid(
+                            box.minX, box.minY, box.minZ,
+                            box.maxX, box.maxY, box.maxZ,
+                            r, g, b, a);
+                }
             }
 
             config = list.stream().filter(c ->
@@ -172,44 +194,28 @@ public class EntityEsp implements Module {
                             distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
             if (config != null && !isTracerDisabledFromScript(config, entity)) {
-                drawTracer(
-                        renderer,
-                        tracerX, tracerY, tracerZ,
-                        entity.getPosition(event.getTickDelta()),
-                        config);
+                float r = config.tracerColor.getRed() / 255f;
+                float g = config.tracerColor.getGreen() / 255f;
+                float b = config.tracerColor.getBlue() / 255f;
+                float a = config.tracerColor.getAlpha() / 255f;
+
+                Vec3 pos = entity.getPosition(event.getTickDelta());
+                if (config.tracerWidth == 1) {
+                    lineRenderer.line(tracerX, tracerY, tracerZ, pos.x, pos.y, pos.z, r, g, b, a);
+                } else {
+                    thickLineRenderer.setWidth(config.tracerWidth);
+                    thickLineRenderer.line(tracerX, tracerY, tracerZ, pos.x, pos.y, pos.z, r, g, b, a);
+                }
             }
         }
 
-        renderer.end();
+        lineRenderer.end();
+        thickLineRenderer.end();
 
         drawOverlays(event);
         drawOutlines(event);
 
         TextureStateTracker.restore();
-    }
-
-    private static void renderEntityBounding(LineRenderer renderer, float partialTicks, Entity entity, EntityEspConfig config) {
-        Vec3 pos = entity.getPosition(partialTicks);
-        AABB box = entity.getDimensions(entity.getPose()).makeBoundingBox(pos);
-
-        float r = config.outlineColor.getRed() / 255f;
-        float g = config.outlineColor.getGreen() / 255f;
-        float b = config.outlineColor.getBlue() / 255f;
-        float a = config.outlineColor.getAlpha() / 255f;
-
-        renderer.cuboid(
-                box.minX, box.minY, box.minZ,
-                box.maxX, box.maxY, box.maxZ,
-                r, g, b, a);
-    }
-
-    private static void drawTracer(LineRenderer renderer, double tx, double ty, double tz, Vec3 pos, EspConfigBase config) {
-        float r = config.tracerColor.getRed() / 255f;
-        float g = config.tracerColor.getGreen() / 255f;
-        float b = config.tracerColor.getBlue() / 255f;
-        float a = config.tracerColor.getAlpha() / 255f;
-
-        renderer.line(tx, ty, tz, pos.x, pos.y, pos.z, r, g, b, a);
     }
 
     private void drawOverlays(RenderWorldLastEvent event) {

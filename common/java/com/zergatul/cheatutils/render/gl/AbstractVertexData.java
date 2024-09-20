@@ -49,7 +49,7 @@ public abstract class AbstractVertexData {
     }
 
     public int vertices() {
-        return position / 4 / valuesPerVertex();
+        return position / getBytesPerVertex();
     }
 
     public void upload() {
@@ -66,5 +66,5 @@ public abstract class AbstractVertexData {
 
     protected abstract void bindAttributes();
 
-    protected abstract int valuesPerVertex();
+    protected abstract int getBytesPerVertex();
 }

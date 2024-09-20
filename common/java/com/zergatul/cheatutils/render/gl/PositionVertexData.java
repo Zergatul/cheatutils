@@ -6,12 +6,12 @@ public class PositionVertexData extends AbstractVertexData {
 
     @Override
     protected void bindAttributes() {
-        GL30.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, valuesPerVertex() * 4, 0);
+        GL30.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, getBytesPerVertex(), 0);
         GL30.glEnableVertexAttribArray(0);
     }
 
     @Override
-    protected int valuesPerVertex() {
-        return 3;
+    protected int getBytesPerVertex() {
+        return 3 * 4;
     }
 }
