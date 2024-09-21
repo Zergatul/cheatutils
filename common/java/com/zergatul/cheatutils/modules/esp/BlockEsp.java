@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EspConfigBase;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.BlockOverlayRenderer;
+import com.zergatul.cheatutils.render.GroupLineRenderer;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.core.BlockPos;
@@ -18,6 +19,10 @@ import java.util.Set;
 public class BlockEsp {
 
     public static final BlockEsp instance = new BlockEsp();
+
+    private final List<BlockPos> bbList = new ArrayList<>();
+    private final List<BlockPos> tracerList = new ArrayList<>();
+    private final List<BlockPos> overlayList = new ArrayList<>();
 
     private BlockEsp() {
         Events.AfterRenderWorld.add(this::render);
@@ -38,19 +43,16 @@ public class BlockEsp {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-        renderer.begin(event, false);
-
+        GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
         BlockOverlayRenderer overlayRenderer = RenderUtilities.instance.getBlockOverlayRenderer();
 
-        List<BlockPos> overlayList = new ArrayList<>();
-        for (BlockEspConfig config: ConfigStore.instance.getConfig().blocks.getBlockConfigs()) {
+        for (BlockEspConfig config : ConfigStore.instance.getConfig().blocks.getBlockConfigs()) {
             if (!config.enabled) {
                 continue;
             }
 
             Set<BlockPos> set = BlockFinder.instance.blocks.get(config);
-            if (set == null) {
+            if (set == null || set.isEmpty()) {
                 continue;
             }
 
@@ -58,28 +60,48 @@ public class BlockEsp {
             double outlineMaxDistanceSqr = config.getOutlineMaxDistanceSqr();
             double overlayMaxDistanceSqr = config.getOverlayMaxDistanceSqr();
 
+            bbList.clear();
+            tracerList.clear();
             overlayList.clear();
-            for (BlockPos pos: set) {
+
+            for (BlockPos pos : set) {
                 double dx = pos.getX() - playerX;
                 double dy = pos.getY() - playerY;
                 double dz = pos.getZ() - playerZ;
                 double distanceSqr = dx * dx + dy * dy + dz * dz;
 
                 if (config.drawOutline && distanceSqr < outlineMaxDistanceSqr) {
-                    renderBlockBounding(renderer, pos, config);
+                    bbList.add(pos);
                 }
 
                 if (config.drawTracers && distanceSqr < tracerMaxDistanceSqr) {
-                    drawTracer(
-                            renderer,
-                            tracerX, tracerY, tracerZ,
-                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                            config);
+                    tracerList.add(pos);
                 }
 
                 if (config.drawOverlay && distanceSqr < overlayMaxDistanceSqr) {
                     overlayList.add(pos);
                 }
+            }
+
+            if (!bbList.isEmpty()) {
+                renderer.begin(event);
+                for (BlockPos pos : bbList) {
+                    float x = pos.getX();
+                    float y = pos.getY();
+                    float z = pos.getZ();
+                    renderer.cuboid(x, y, z, x + 1, y + 1, z + 1);
+                }
+                renderer.end(config.outlineColor);
+            }
+
+            if (!tracerList.isEmpty()) {
+                renderer.begin(event);
+                for (BlockPos pos : bbList) {
+                    renderer.line(
+                            tracerX, tracerY, tracerZ,
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+                }
+                renderer.end(config.tracerColor);
             }
 
             if (!overlayList.isEmpty()) {
@@ -94,8 +116,6 @@ public class BlockEsp {
                         config.overlayColor.getAlpha() / 255f);
             }
         }
-
-        renderer.end();
     }
 
     private void renderBlockBounding(LineRenderer renderer, BlockPos pos, BlockEspConfig config) {

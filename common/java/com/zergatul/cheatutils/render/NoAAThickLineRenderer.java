@@ -69,7 +69,7 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
 
         if (v1.w < 0 || v2.w < 0) {
             // clipping
-            float t = (v1.w - 1e-3F) / (v1.w - v2.w);
+            float t = (v1.w - 0.0001f) / (v1.w - v2.w);
             if (v1.w <= 0) {
                 v1.lerp(v2, t);
             } else {
@@ -124,20 +124,19 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
         float v2z = v2.z / v2.w;
 
         // Step 2: Convert NDC to screen coordinates
-        float x0_screen = (v1x + 1.0f) * 0.5f * viewportWidth;
-        float y0_screen = (v1y + 1.0f) * 0.5f * viewportHeight;
+        float x1_screen = (v1x + 1.0f) * 0.5f * viewportWidth;
+        float y1_screen = (v1y + 1.0f) * 0.5f * viewportHeight;
 
-        float x1_screen = (v2x + 1.0f) * 0.5f * viewportWidth;
-        float y1_screen = (v2y + 1.0f) * 0.5f * viewportHeight;
+        float x2_screen = (v2x + 1.0f) * 0.5f * viewportWidth;
+        float y2_screen = (v2y + 1.0f) * 0.5f * viewportHeight;
 
         // Step 3: Calculate the direction vector of the line in screen space
-        float dx = x1_screen - x0_screen;
-        float dy = y1_screen - y0_screen;
+        float dx = x2_screen - x1_screen;
+        float dy = y2_screen - y1_screen;
 
         // Calculate the length to normalize the perpendicular vector
         float length = (float) Math.sqrt(dx * dx + dy * dy);
         if (length == 0.0f) {
-            // Avoid division by zero for zero-length lines
             return false;
         }
 
@@ -150,17 +149,17 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
         float offsetY = py * (lineWidth / 2.0f);
 
         // Step 6: Calculate the four corner points of the rectangle in screen space
-        float x0a = x0_screen + offsetX;
-        float y0a = y0_screen + offsetY;
+        float x0a = x1_screen + offsetX;
+        float y0a = y1_screen + offsetY;
 
-        float x0b = x0_screen - offsetX;
-        float y0b = y0_screen - offsetY;
+        float x0b = x1_screen - offsetX;
+        float y0b = y1_screen - offsetY;
 
-        float x1a = x1_screen + offsetX;
-        float y1a = y1_screen + offsetY;
+        float x1a = x2_screen + offsetX;
+        float y1a = y2_screen + offsetY;
 
-        float x1b = x1_screen - offsetX;
-        float y1b = y1_screen - offsetY;
+        float x1b = x2_screen - offsetX;
+        float y1b = y2_screen - offsetY;
 
         // Step 7: Convert the rectangle's corner points back to NDC coordinates
         float x0a_ndc = (x0a / (viewportWidth * 0.5f)) - 1.0f;

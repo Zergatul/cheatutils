@@ -8,6 +8,7 @@ public class RenderUtilities {
     public static final RenderUtilities instance = new RenderUtilities();
 
     private final LineRenderer lineRenderer = new FastLineRenderer();
+    private final GroupLineRenderer groupLineRenderer = new FastGroupLineRenderer();
     private final ThickLineRenderer thickLineRenderer = new NoAAThickLineRenderer();
     private final BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();
     private final EntityOverlayRenderer entityOverlayRenderer = new EntityOverlayRenderer();
@@ -19,6 +20,10 @@ public class RenderUtilities {
 
     public LineRenderer getLineRenderer() {
         return lineRenderer;
+    }
+
+    public GroupLineRenderer getGroupLineRenderer() {
+        return groupLineRenderer;
     }
 
     public BlockOverlayRenderer getBlockOverlayRenderer() {
