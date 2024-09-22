@@ -8,7 +8,7 @@ public class RenderUtilities {
     public static final RenderUtilities instance = new RenderUtilities();
 
     private final LineRenderer lineRenderer = new FastLineRenderer();
-    private final ThickLineRenderer thickLineRenderer = new NoAAThickLineRenderer();
+    private final ThickLineRenderer thickLineRenderer = new QuadAAThickLineRenderer();
     private final GroupLineRenderer groupLineRenderer = new FastGroupLineRenderer();
     private final GroupThickLineRenderer groupThickLineRenderer = new QuadAAGroupThickLineRenderer();
     private final BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();

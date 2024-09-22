@@ -2,17 +2,17 @@ package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.platform.Window;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.render.gl.EspGroupTrianglesAAProgram;
+import com.zergatul.cheatutils.render.gl.EspTrianglesAAProgram;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL30;
 
-public class QuadAAGroupThickLineRenderer implements GroupThickLineRenderer {
+public class QuadAAThickLineRenderer implements ThickLineRenderer {
 
     private static final float FEATHER = 1.25f;
 
-    private EspGroupTrianglesAAProgram program;
+    private EspTrianglesAAProgram program;
     private RenderWorldLastEvent event;
     private Vec3 view;
     private float lineWidth;
@@ -26,7 +26,10 @@ public class QuadAAGroupThickLineRenderer implements GroupThickLineRenderer {
     private final Vector4f rect4 = new Vector4f();
 
     @Override
-    public void begin(RenderWorldLastEvent event, float width) {
+    public void begin(RenderWorldLastEvent event, boolean depthTest) {
+        if (depthTest) {
+            throw new IllegalStateException("Depth test is not supported.");
+        }
         if (this.event != null) {
             throw new IllegalStateException("Rendered is already active");
         }
@@ -35,7 +38,7 @@ public class QuadAAGroupThickLineRenderer implements GroupThickLineRenderer {
         this.view = event.getCamera().getPosition();
 
         if (program == null) {
-            program = new EspGroupTrianglesAAProgram();
+            program = new EspTrianglesAAProgram();
         }
 
         program.buffer.clear();
@@ -43,11 +46,20 @@ public class QuadAAGroupThickLineRenderer implements GroupThickLineRenderer {
         Window window = Minecraft.getInstance().getWindow();
         viewportWidth = window.getWidth();
         viewportHeight = window.getHeight();
+        lineWidth = 2;
+    }
+
+    public void setWidth(float width) {
         lineWidth = width;
     }
 
     @Override
-    public void line(double x1, double y1, double z1, double x2, double y2, double z2) {
+    public void line(
+            double x1, double y1, double z1,
+            float r1, float g1, float b1, float a1,
+            double x2, double y2, double z2,
+            float r2, float g2, float b2, float a2
+    ) {
         v1.set((float) (x1 - view.x), (float) (y1 - view.y), (float) (z1 - view.z), 1);
         v2.set((float) (x2 - view.x), (float) (y2 - view.y), (float) (z2 - view.z), 1);
         v1.mul(event.getMvp());
@@ -68,31 +80,33 @@ public class QuadAAGroupThickLineRenderer implements GroupThickLineRenderer {
         }
 
         if (createRect()) {
-            point(rect1, 0);
-            point(rect2, 1);
-            point(rect4, 1);
+            point(rect1, r1, g1, b1, a1, 0);
+            point(rect2, r1, g1, b1, a1, 1);
+            point(rect4, r1, g1, b1, a1, 1);
 
-            point(rect1, 0);
-            point(rect4, 1);
-            point(rect3, 0);
+            point(rect1, r1, g1, b1, a1, 0);
+            point(rect4, r1, g1, b1, a1, 1);
+            point(rect3, r1, g1, b1, a1, 0);
         }
     }
 
     @Override
-    public void end(float r, float g, float b, float a) {
-        // set line settings
-        GL30.glEnable(GL30.GL_BLEND);
-        GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-        GL30.glDisable(GL30.GL_DEPTH_TEST);
-        GL30.glDisable(GL30.GL_CULL_FACE);
+    public void end() {
+        if (program.buffer.vertices() > 0) {
+            // set line settings
+            GL30.glEnable(GL30.GL_BLEND);
+            GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
+            GL30.glDisable(GL30.GL_DEPTH_TEST);
+            GL30.glDisable(GL30.GL_CULL_FACE);
 
-        // draw with shader program
-        program.draw(r, g, b, a, lineWidth, FEATHER);
+            // draw with shader program
+            program.draw(FEATHER);
 
-        // reset settings
-        GL30.glDisable(GL30.GL_BLEND);
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
-        GL30.glEnable(GL30.GL_CULL_FACE);
+            // reset settings
+            GL30.glDisable(GL30.GL_BLEND);
+            GL30.glEnable(GL30.GL_DEPTH_TEST);
+            GL30.glEnable(GL30.GL_CULL_FACE);
+        }
 
         // reset renderer state
         this.event = null;
@@ -172,10 +186,15 @@ public class QuadAAGroupThickLineRenderer implements GroupThickLineRenderer {
         return true;
     }
 
-    private void point(Vector4f v, float value) {
+    private void point(Vector4f v, float r, float g, float b, float a, float gradient) {
         program.buffer.add(v.x);
         program.buffer.add(v.y);
         program.buffer.add(v.z);
-        program.buffer.add(value);
+        program.buffer.add(r);
+        program.buffer.add(g);
+        program.buffer.add(b);
+        program.buffer.add(a);
+        program.buffer.add(gradient);
+        program.buffer.add(lineWidth);
     }
 }

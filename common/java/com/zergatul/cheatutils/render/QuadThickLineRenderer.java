@@ -8,7 +8,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL30;
 
-public class NoAAThickLineRenderer implements ThickLineRenderer {
+public class QuadThickLineRenderer implements ThickLineRenderer {
 
     private EspTrianglesProgram program;
     private RenderWorldLastEvent event;
