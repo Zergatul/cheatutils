@@ -1,5 +1,6 @@
 <div class="module-main block-esp">
     <div class="description">
+        <div>Lines thicker than 1 pixel cost more CPU/GPU resources.</div>
         <div>You can try Rescan if something is wrong with block ESP.</div>
         <div>Use Ctrl+F5 in your browser if block textures are messed up after switching Minecraft versions or mod loaders.</div>
     </div>
@@ -152,8 +153,24 @@
                     </color-picker>
                     <div>
                         <div class="flex-row">
-                            <span class="field-description">Max Distance Override:</span>
-                            <input type="text" class="w5" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <span class="field-description">Line Width:</span>
+                                    </td>
+                                    <td>
+                                        <input type="number" min="1" max="100" class="w5" v-model="selectedConfig.tracerWidth" @change="update(selectedConfig)">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="field-description">Max Distance Override:</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="w5" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.
@@ -172,8 +189,24 @@
                     </color-picker>
                     <div>
                         <div class="flex-row">
-                            <span class="field-description">Max Distance Override:</span>
-                            <input type="text" class="w5" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <span class="field-description">Line Width:</span>
+                                    </td>
+                                    <td>
+                                        <input type="number" min="1" max="100" class="w5" v-model="selectedConfig.outlineWidth" @change="update(selectedConfig)">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="field-description">Max Distance Override:</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="w5" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.

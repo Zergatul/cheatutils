@@ -2,15 +2,17 @@ package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.platform.Window;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.render.gl.EspTrianglesProgram;
+import com.zergatul.cheatutils.render.gl.EspGroupTrianglesAAProgram;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL30;
 
-public class NoAAThickLineRenderer implements ThickLineRenderer {
+public class QuadAAGroupThickLineRenderer implements GroupThickLineRenderer {
 
-    private EspTrianglesProgram program;
+    private static final float FEATHER = 1f;
+
+    private EspGroupTrianglesAAProgram program;
     private RenderWorldLastEvent event;
     private Vec3 view;
     private float lineWidth;
@@ -24,10 +26,7 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
     private final Vector4f rect4 = new Vector4f();
 
     @Override
-    public void begin(RenderWorldLastEvent event, boolean depthTest) {
-        if (depthTest) {
-            throw new IllegalStateException("Depth test is not supported.");
-        }
+    public void begin(RenderWorldLastEvent event, float width) {
         if (this.event != null) {
             throw new IllegalStateException("Rendered is already active");
         }
@@ -36,7 +35,7 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
         this.view = event.getCamera().getPosition();
 
         if (program == null) {
-            program = new EspTrianglesProgram();
+            program = new EspGroupTrianglesAAProgram();
         }
 
         program.buffer.clear();
@@ -44,20 +43,11 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
         Window window = Minecraft.getInstance().getWindow();
         viewportWidth = window.getWidth();
         viewportHeight = window.getHeight();
-        lineWidth = 2;
-    }
-
-    public void setWidth(float width) {
         lineWidth = width;
     }
 
     @Override
-    public void line(
-            double x1, double y1, double z1,
-            float r1, float g1, float b1, float a1,
-            double x2, double y2, double z2,
-            float r2, float g2, float b2, float a2
-    ) {
+    public void line(double x1, double y1, double z1, double x2, double y2, double z2) {
         v1.set((float) (x1 - view.x), (float) (y1 - view.y), (float) (z1 - view.z), 1);
         v2.set((float) (x2 - view.x), (float) (y2 - view.y), (float) (z2 - view.z), 1);
         v1.mul(event.getMvp());
@@ -78,33 +68,31 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
         }
 
         if (createRect()) {
-            point(rect1, r1, g1, b1, a1);
-            point(rect2, r1, g1, b1, a1);
-            point(rect4, r1, g1, b1, a1);
+            point(rect1, 0);
+            point(rect2, 1);
+            point(rect4, 1);
 
-            point(rect1, r1, g1, b1, a1);
-            point(rect4, r1, g1, b1, a1);
-            point(rect3, r1, g1, b1, a1);
+            point(rect1, 0);
+            point(rect4, 1);
+            point(rect3, 0);
         }
     }
 
     @Override
-    public void end() {
-        if (program.buffer.vertices() > 0) {
-            // set line settings
-            GL30.glEnable(GL30.GL_BLEND);
-            GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-            GL30.glDisable(GL30.GL_DEPTH_TEST);
-            GL30.glDisable(GL30.GL_CULL_FACE);
+    public void end(float r, float g, float b, float a) {
+        // set line settings
+        GL30.glEnable(GL30.GL_BLEND);
+        GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
+        GL30.glDisable(GL30.GL_DEPTH_TEST);
+        GL30.glDisable(GL30.GL_CULL_FACE);
 
-            // draw with shader program
-            program.draw();
+        // draw with shader program
+        program.draw(r, g, b, a, lineWidth, FEATHER);
 
-            // reset settings
-            GL30.glDisable(GL30.GL_BLEND);
-            GL30.glEnable(GL30.GL_DEPTH_TEST);
-            GL30.glEnable(GL30.GL_CULL_FACE);
-        }
+        // reset settings
+        GL30.glDisable(GL30.GL_BLEND);
+        GL30.glEnable(GL30.GL_DEPTH_TEST);
+        GL30.glEnable(GL30.GL_CULL_FACE);
 
         // reset renderer state
         this.event = null;
@@ -147,8 +135,8 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
         float py = dx / length;
 
         // Step 5: Scale the perpendicular vector by half the line width to get the offset
-        float offsetX = px * (lineWidth / 2.0f);
-        float offsetY = py * (lineWidth / 2.0f);
+        float offsetX = px * ((lineWidth + FEATHER) / 2.0f);
+        float offsetY = py * ((lineWidth + FEATHER) / 2.0f);
 
         // Step 6: Calculate the four corner points of the rectangle in screen space
         float x0a = x1_screen + offsetX;
@@ -176,25 +164,18 @@ public class NoAAThickLineRenderer implements ThickLineRenderer {
         float x1b_ndc = (x1b / (viewportWidth * 0.5f)) - 1.0f;
         float y1b_ndc = (y1b / (viewportHeight * 0.5f)) - 1.0f;
 
-        // Step 8: Reconstruct clip-space positions for the rectangle's corners
-        float w0 = v1.w;
-        float w1 = v2.w;
-
-        rect1.set(x0a_ndc * w0, y0a_ndc * w0, v1z * w0, w0);
-        rect2.set(x0b_ndc * w0, y0b_ndc * w0, v1z * w0, w0);
-        rect3.set(x1a_ndc * w1, y1a_ndc * w1, v2z * w1, w1);
-        rect4.set(x1b_ndc * w1, y1b_ndc * w1, v2z * w1, w1);
+        rect1.set(x0a_ndc, y0a_ndc, v1z, 1);
+        rect2.set(x0b_ndc, y0b_ndc, v1z, 1);
+        rect3.set(x1a_ndc, y1a_ndc, v2z, 1);
+        rect4.set(x1b_ndc, y1b_ndc, v2z, 1);
 
         return true;
     }
 
-    private void point(Vector4f v, float r, float g, float b, float a) {
-        program.buffer.add(v.x / v.w);
-        program.buffer.add(v.y / v.w);
-        program.buffer.add(v.z / v.w);
-        program.buffer.add(r);
-        program.buffer.add(g);
-        program.buffer.add(b);
-        program.buffer.add(a);
+    private void point(Vector4f v, float value) {
+        program.buffer.add(v.x);
+        program.buffer.add(v.y);
+        program.buffer.add(v.z);
+        program.buffer.add(value);
     }
 }

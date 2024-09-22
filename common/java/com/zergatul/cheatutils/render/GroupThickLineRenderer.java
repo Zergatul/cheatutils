@@ -4,9 +4,9 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 
 import java.awt.*;
 
-public interface GroupLineRenderer extends CuboidRenderer, SimpleLineRenderer {
+public interface GroupThickLineRenderer extends CuboidRenderer, SimpleLineRenderer {
 
-    void begin(RenderWorldLastEvent event);
+    void begin(RenderWorldLastEvent event, float width);
 
     void end(float r, float g, float b, float a);
 

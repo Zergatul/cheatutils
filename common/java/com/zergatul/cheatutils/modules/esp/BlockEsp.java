@@ -3,11 +3,8 @@ package com.zergatul.cheatutils.modules.esp;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EspConfigBase;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.BlockOverlayRenderer;
-import com.zergatul.cheatutils.render.GroupLineRenderer;
-import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
@@ -43,7 +40,8 @@ public class BlockEsp {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
+        GroupLineRenderer lineRenderer = RenderUtilities.instance.getGroupLineRenderer();
+        GroupThickLineRenderer thickLineRenderer = RenderUtilities.instance.getGroupThickLineRenderer();
         BlockOverlayRenderer overlayRenderer = RenderUtilities.instance.getBlockOverlayRenderer();
 
         for (BlockEspConfig config : ConfigStore.instance.getConfig().blocks.getBlockConfigs()) {
@@ -84,24 +82,50 @@ public class BlockEsp {
             }
 
             if (!bbList.isEmpty()) {
-                renderer.begin(event);
+                CuboidRenderer renderer;
+                if (config.outlineWidth == 1) {
+                    lineRenderer.begin(event);
+                    renderer = lineRenderer;
+                } else {
+                    thickLineRenderer.begin(event, config.outlineWidth);
+                    renderer = thickLineRenderer;
+                }
+
                 for (BlockPos pos : bbList) {
                     float x = pos.getX();
                     float y = pos.getY();
                     float z = pos.getZ();
                     renderer.cuboid(x, y, z, x + 1, y + 1, z + 1);
                 }
-                renderer.end(config.outlineColor);
+
+                if (config.outlineWidth == 1) {
+                    lineRenderer.end(config.outlineColor);
+                } else {
+                    thickLineRenderer.end(config.outlineColor);
+                }
             }
 
             if (!tracerList.isEmpty()) {
-                renderer.begin(event);
+                SimpleLineRenderer renderer;
+                if (config.tracerWidth == 1) {
+                    lineRenderer.begin(event);
+                    renderer = lineRenderer;
+                } else {
+                    thickLineRenderer.begin(event, config.tracerWidth);
+                    renderer = thickLineRenderer;
+                }
+
                 for (BlockPos pos : bbList) {
                     renderer.line(
                             tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
                 }
-                renderer.end(config.tracerColor);
+
+                if (config.tracerWidth == 1) {
+                    lineRenderer.end(config.tracerColor);
+                } else {
+                    thickLineRenderer.end(config.tracerColor);
+                }
             }
 
             if (!overlayList.isEmpty()) {
@@ -116,22 +140,6 @@ public class BlockEsp {
                         config.overlayColor.getAlpha() / 255f);
             }
         }
-    }
-
-    private void renderBlockBounding(LineRenderer renderer, BlockPos pos, BlockEspConfig config) {
-        int x1 = pos.getX();
-        int y1 = pos.getY();
-        int z1 = pos.getZ();
-        int x2 = x1 + 1;
-        int y2 = y1 + 1;
-        int z2 = z1 + 1;
-
-        float r = config.outlineColor.getRed() / 255f;
-        float g = config.outlineColor.getGreen() / 255f;
-        float b = config.outlineColor.getBlue() / 255f;
-        float a = config.outlineColor.getAlpha() / 255f;
-
-        renderer.cuboid(x1, y1, z1, x2, y2, z2, r, g, b, a);
     }
 
     private void renderOverlay(BlockOverlayRenderer renderer, BlockPos pos) {
@@ -183,14 +191,5 @@ public class BlockEsp {
                 x2, y2, z2,
                 x1, y2, z2,
                 x1, y1, z2);
-    }
-
-    private void drawTracer(LineRenderer renderer, double tx, double ty, double tz, double x, double y, double z, EspConfigBase config) {
-        float r = config.tracerColor.getRed() / 255f;
-        float g = config.tracerColor.getGreen() / 255f;
-        float b = config.tracerColor.getBlue() / 255f;
-        float a = config.tracerColor.getAlpha() / 255f;
-
-        renderer.line(tx, ty, tz, x, y, z, r, g, b, a);
     }
 }

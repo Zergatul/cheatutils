@@ -131,8 +131,24 @@
                         @update:model-value="update(selectedConfig)" />
                     <div class="group-setting esp-additional">
                         <div class="flex-row">
-                            <span class="field-description">Max Distance Override:</span>
-                            <input type="text" class="w5" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <span class="field-description">Line Width:</span>
+                                    </td>
+                                    <td>
+                                        <input type="number" min="1" max="100" class="w5" v-model="selectedConfig.tracerWidth" @change="update(selectedConfig)">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="field-description">Max Distance Override:</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="w5" v-model="selectedConfig.tracerMaxDistance" @change="update(selectedConfig)">
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.
@@ -173,8 +189,24 @@
                         @update:model-value="update(selectedConfig)" />
                     <div class="group-setting esp-additional">
                         <div class="flex-row">
-                            <span class="field-description">Max Distance Override:</span>
-                            <input type="text" class="w5" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <span class="field-description">Line Width:</span>
+                                    </td>
+                                    <td>
+                                        <input type="number" min="1" max="100" class="w5" v-model="selectedConfig.outlineWidth" @change="update(selectedConfig)">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="field-description">Max Distance Override:</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="w5" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.

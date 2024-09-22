@@ -42,22 +42,24 @@ public class FastLineRenderer implements LineRenderer {
 
     @Override
     public void end() {
-        // set line settings
-        GL30.glEnable(GL30.GL_BLEND);
-        GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-        GL30.glEnable(GL30.GL_LINE_SMOOTH);
-        if (depthTest) {
+        if (program.buffer.vertices() > 0) {
+            // set line settings
+            GL30.glEnable(GL30.GL_BLEND);
+            GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
+            GL30.glEnable(GL30.GL_LINE_SMOOTH);
+            if (depthTest) {
+                GL30.glEnable(GL30.GL_DEPTH_TEST);
+            } else {
+                GL30.glDisable(GL30.GL_DEPTH_TEST);
+            }
+
+            // draw with shader program
+            program.draw(event.getMvp());
+
+            // reset settings
+            GL30.glDisable(GL30.GL_BLEND);
             GL30.glEnable(GL30.GL_DEPTH_TEST);
-        } else {
-            GL30.glDisable(GL30.GL_DEPTH_TEST);
         }
-
-        // draw with shader program
-        program.draw(event.getMvp());
-
-        // reset settings
-        GL30.glDisable(GL30.GL_BLEND);
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
 
         // reset renderer state
         this.event = null;

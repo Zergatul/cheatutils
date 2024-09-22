@@ -23,6 +23,7 @@ public class EntitiesConfigApi extends ApiBase {
     @Override
     public synchronized String post(String body) throws MethodNotSupportedException {
         EntityEspConfig jsonConfig = gson.fromJson(body, EntityEspConfig.class);
+        jsonConfig.validate();
 
         EntityEspConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
                 .filter(c -> c.clazz == jsonConfig.clazz)
@@ -42,6 +43,8 @@ public class EntitiesConfigApi extends ApiBase {
     @Override
     public synchronized String put(String className, String body) throws MethodNotSupportedException {
         EntityEspConfig jsonConfig = gson.fromJson(body, EntityEspConfig.class);
+        jsonConfig.validate();
+
         String obfClassName = ClassRemapper.toObf(className);
         if (!obfClassName.equals(jsonConfig.clazz.getName())) {
             throw new MethodNotSupportedException("Entity class name don't match.");

@@ -32,6 +32,8 @@ public class BlocksConfigApi extends ApiBase {
     @Override
     public synchronized String post(String body) throws MethodNotSupportedException {
         BlockEspConfig jsonConfig = gson.fromJson(body, BlockEspConfig.class);
+        jsonConfig.validate();
+
         if (jsonConfig.blocks.size() == 0) {
             throw new MethodNotSupportedException("Received empty BlockEspConfig.");
         }
