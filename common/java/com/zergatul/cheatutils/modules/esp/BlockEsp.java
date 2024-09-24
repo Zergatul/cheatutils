@@ -82,12 +82,13 @@ public class BlockEsp {
             }
 
             if (!bbList.isEmpty()) {
+                final int lineWidth = config.outlineWidth;
                 CuboidRenderer renderer;
-                if (config.outlineWidth == 1) {
+                if (lineWidth == 1) {
                     lineRenderer.begin(event);
                     renderer = lineRenderer;
                 } else {
-                    thickLineRenderer.begin(event, config.outlineWidth);
+                    thickLineRenderer.begin(event, lineWidth);
                     renderer = thickLineRenderer;
                 }
 
@@ -98,7 +99,7 @@ public class BlockEsp {
                     renderer.cuboid(x, y, z, x + 1, y + 1, z + 1);
                 }
 
-                if (config.outlineWidth == 1) {
+                if (lineWidth == 1) {
                     lineRenderer.end(config.outlineColor);
                 } else {
                     thickLineRenderer.end(config.outlineColor);
@@ -106,12 +107,13 @@ public class BlockEsp {
             }
 
             if (!tracerList.isEmpty()) {
+                final int lineWidth = config.tracerWidth;
                 SimpleLineRenderer renderer;
-                if (config.tracerWidth == 1) {
+                if (lineWidth == 1) {
                     lineRenderer.begin(event);
                     renderer = lineRenderer;
                 } else {
-                    thickLineRenderer.begin(event, config.tracerWidth);
+                    thickLineRenderer.begin(event, lineWidth);
                     renderer = thickLineRenderer;
                 }
 
@@ -121,7 +123,7 @@ public class BlockEsp {
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
                 }
 
-                if (config.tracerWidth == 1) {
+                if (lineWidth == 1) {
                     lineRenderer.end(config.tracerColor);
                 } else {
                     thickLineRenderer.end(config.tracerColor);

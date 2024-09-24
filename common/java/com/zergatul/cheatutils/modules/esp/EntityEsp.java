@@ -173,13 +173,14 @@ public class EntityEsp implements Module {
                 float b = config.outlineColor.getBlue() / 255f;
                 float a = config.outlineColor.getAlpha() / 255f;
 
-                if (config.outlineWidth == 1) {
+                final int lineWidth = config.outlineWidth;
+                if (lineWidth == 1) {
                     lineRenderer.cuboid(
                             box.minX, box.minY, box.minZ,
                             box.maxX, box.maxY, box.maxZ,
                             r, g, b, a);
                 } else {
-                    thickLineRenderer.setWidth(config.outlineWidth);
+                    thickLineRenderer.setWidth(lineWidth);
                     thickLineRenderer.cuboid(
                             box.minX, box.minY, box.minZ,
                             box.maxX, box.maxY, box.maxZ,
@@ -200,10 +201,11 @@ public class EntityEsp implements Module {
                 float a = config.tracerColor.getAlpha() / 255f;
 
                 Vec3 pos = entity.getPosition(event.getTickDelta());
-                if (config.tracerWidth == 1) {
+                final int lineWidth = config.tracerWidth;
+                if (lineWidth == 1) {
                     lineRenderer.line(tracerX, tracerY, tracerZ, pos.x, pos.y, pos.z, r, g, b, a);
                 } else {
-                    thickLineRenderer.setWidth(config.tracerWidth);
+                    thickLineRenderer.setWidth(lineWidth);
                     thickLineRenderer.line(tracerX, tracerY, tracerZ, pos.x, pos.y, pos.z, r, g, b, a);
                 }
             }
