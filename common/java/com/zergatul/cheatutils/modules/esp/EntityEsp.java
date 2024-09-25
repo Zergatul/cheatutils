@@ -285,8 +285,7 @@ public class EntityEsp implements Module {
         for (EntityEspConfig config: outlineBufferedVertices.keySet()) {
             renderer.begin();
 
-            List<BufferedVerticesEntry> entries = outlineBufferedVertices.get(config);
-            for (BufferedVerticesEntry entry: entries) {
+            for (BufferedVerticesEntry entry : outlineBufferedVertices.get(config)) {
                 FloatList list = entry.list;
                 if (list.size() == 0) {
                     continue;

@@ -1,10 +1,8 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.platform.Window;
 import com.zergatul.cheatutils.render.gl.EntityOverlayBufferProgram;
 import com.zergatul.cheatutils.render.gl.FrameBuffer;
 import com.zergatul.cheatutils.render.gl.OutlineDrawProgram;
-import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
 
@@ -127,6 +125,7 @@ public class EntityOutlineRenderer {
         drawProgram.buffer.add(0);
 
         drawProgram.draw(FrameBuffers.get1(), red, green, blue, alpha);
+        //drawProgram.unbind();
 
         // reset settings
         GL30.glDisable(GL30.GL_BLEND);

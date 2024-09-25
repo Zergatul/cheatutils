@@ -125,6 +125,7 @@ public class EntityOverlayRenderer {
         drawProgram.buffer.add(0);
 
         drawProgram.draw(FrameBuffers.get1(), red, green, blue, alpha);
+        //drawProgram.unbind();
 
         // reset settings
         GL30.glDisable(GL30.GL_BLEND);
