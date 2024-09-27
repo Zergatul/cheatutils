@@ -575,7 +575,10 @@ ul.marker-list div.coordinates {
 div.debug-messages {
     border: 4px solid #1E1F22;
     font-family: 'Courier New', Courier, monospace;
-    height: calc(100vh - 200px);
+    display: flex;
+    flex-basis: 10em;
+    flex-direction: column;
+    flex-grow: 1;
     margin-top: 12px;
     overflow: scroll;
 }
