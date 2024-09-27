@@ -10,18 +10,25 @@ public class GlStateTracker {
     private static boolean depth;
     private static boolean cull;
     private static int texture;
-    private static int binding;
     private static int program;
+
+    private static int binding0;
+    private static int binding1;
 
     public static void save() {
         VAO = GL30.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING);
         VBO = GL30.glGetInteger(GL30.GL_ARRAY_BUFFER_BINDING);
-        blend = GL30.glGetBoolean(GL30.GL_BLEND);
-        depth = GL30.glGetBoolean(GL30.GL_DEPTH_TEST);
-        cull = GL30.glGetBoolean(GL30.GL_CULL_FACE);
+        blend = GL30.glIsEnabled(GL30.GL_BLEND);
+        depth = GL30.glIsEnabled(GL30.GL_DEPTH_TEST);
+        cull = GL30.glIsEnabled(GL30.GL_CULL_FACE);
         texture = GL30.glGetInteger(GL30.GL_ACTIVE_TEXTURE);
-        binding = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D);
+
         program = GL30.glGetInteger(GL30.GL_CURRENT_PROGRAM);
+
+        GL30.glActiveTexture(GL30.GL_TEXTURE0);
+        binding0 = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D);
+        GL30.glActiveTexture(GL30.GL_TEXTURE1);
+        binding1 = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D);
     }
 
     public static void restore() {
@@ -46,8 +53,13 @@ public class GlStateTracker {
             GL30.glDisable(GL30.GL_CULL_FACE);
         }
 
-        GL30.glActiveTexture(texture);
-        GL30.glBindTexture(GL30.GL_TEXTURE_2D, binding);
         GL30.glUseProgram(program);
+
+        GL30.glActiveTexture(GL30.GL_TEXTURE0);
+        GL30.glBindTexture(GL30.GL_TEXTURE_2D, binding0);
+        GL30.glActiveTexture(GL30.GL_TEXTURE1);
+        GL30.glBindTexture(GL30.GL_TEXTURE_2D, binding1);
+
+        GL30.glActiveTexture(texture);
     }
 }

@@ -8,7 +8,6 @@ import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
-import com.zergatul.cheatutils.configs.EspConfigBase;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.TextureStateShardAccessor;

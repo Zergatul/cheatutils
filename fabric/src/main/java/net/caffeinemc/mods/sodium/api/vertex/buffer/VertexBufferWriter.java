@@ -1,8 +1,8 @@
 package net.caffeinemc.mods.sodium.api.vertex.buffer;
 
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import org.lwjgl.system.MemoryStack;
 
 public interface VertexBufferWriter {
-    void push(MemoryStack stack, long ptr, int count, VertexFormatDescription format);
+    void push(MemoryStack stack, long ptr, int count, VertexFormat format);
 }

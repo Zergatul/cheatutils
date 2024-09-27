@@ -1,11 +1,11 @@
 package com.zergatul.cheatutils.mixins.fabric.compatibility.sodium;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.zergatul.cheatutils.utils.UnsafeUtil;
 import com.zergatul.cheatutils.webui.BlockModelApi;
-import net.caffeinemc.mods.sodium.api.vertex.attributes.CommonVertexAttribute;
 import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,11 +30,11 @@ public abstract class MixinBlockModelApiMemoryVertexConsumer implements VertexBu
     @Shadow
     protected abstract void endVertex();
 
-    public void push(MemoryStack stack, long ptr, int count, VertexFormatDescription format) {
-        int positionOffset = format.getElementOffset(CommonVertexAttribute.POSITION);
-        int colorOffset = format.getElementOffset(CommonVertexAttribute.COLOR);
-        int uvOffset = format.getElementOffset(CommonVertexAttribute.TEXTURE);
-        int stride = format.stride();
+    public void push(MemoryStack stack, long ptr, int count, VertexFormat format) {
+        int positionOffset = format.getOffset(VertexFormatElement.POSITION);
+        int colorOffset = format.getOffset(VertexFormatElement.COLOR);
+        int uvOffset = format.getOffset(VertexFormatElement.UV0);
+        int stride = format.getVertexSize();
         for (int i = 0; i < count; i++) {
             long offset = ptr + i * stride;
 

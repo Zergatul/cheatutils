@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.mixins.fabric.compatibility.sodium;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.zergatul.cheatutils.collections.FloatList;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.utils.UnsafeUtil;
-import net.caffeinemc.mods.sodium.api.vertex.attributes.CommonVertexAttribute;
 import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,8 +28,8 @@ public abstract class MixinEntityEspVertexConsumerWrapper implements VertexBuffe
     @Shadow
     private FloatList outlineList;
 
-    public void push(MemoryStack stack, long ptr, int count, VertexFormatDescription format) {
-        int length = count * format.stride();
+    public void push(MemoryStack stack, long ptr, int count, VertexFormat format) {
+        int length = count * format.getVertexSize();
         long copy = stack.nmalloc(length);
         UNSAFE.copyMemory(ptr, copy, length);
 
@@ -37,9 +37,9 @@ public abstract class MixinEntityEspVertexConsumerWrapper implements VertexBuffe
             writer.push(stack, copy, count, format);
         }
 
-        int positionOffset = format.getElementOffset(CommonVertexAttribute.POSITION);
-        int uvOffset = format.getElementOffset(CommonVertexAttribute.TEXTURE);
-        int stride = format.stride();
+        int positionOffset = format.getOffset(VertexFormatElement.POSITION);
+        int uvOffset = format.getOffset(VertexFormatElement.UV0);
+        int stride = format.getVertexSize();
         for (int i = 0; i < count; i++) {
             long offset = ptr + i * stride;
             float x = UNSAFE.getFloat(offset + positionOffset);
