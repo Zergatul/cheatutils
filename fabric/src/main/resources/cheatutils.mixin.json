@@ -88,6 +88,7 @@
     "fabric.MixinMultiPlayerGameMode",
     "fabric.MixinScreen",
 
+    "fabric.compatibility.iris.MixinOuterWrappedRenderType",
     "fabric.compatibility.sodium.MixinBlockModelApiMemoryVertexConsumer",
     "fabric.compatibility.sodium.MixinEntityEspVertexConsumerWrapper"
   ]

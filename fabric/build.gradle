@@ -83,6 +83,7 @@ jar {
     }
 
     exclude("net/caffeinemc/**")
+    exclude("net/irisshaders/**")
     exclude("com/zergatul/cheatutils/utils/mappings/**")
 }
 

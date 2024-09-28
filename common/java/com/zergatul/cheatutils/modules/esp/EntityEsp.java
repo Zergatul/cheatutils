@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.zergatul.cheatutils.collections.FloatList;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.compatibility.WrappedRenderType;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
@@ -44,6 +45,10 @@ public class EntityEsp implements Module {
         Events.AfterRenderWorld.add(this::render);
     }
 
+    private void onBeforeRender() {
+        scriptResults.clear();
+    }
+
     public MultiBufferSource onRenderEntityModifyBufferSource(Entity entity, MultiBufferSource bufferSource) {
         if (mc.player != null && ConfigStore.instance.getConfig().esp) {
             for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
@@ -64,6 +69,7 @@ public class EntityEsp implements Module {
                         entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr() &&
                         !isOutlineDisabledFromScript(config, entity);
                 if (drawOverlay || drawOutline) {
+                    // TODO: cache wrappers? each entity = new wrapper!
                     return new EntityEsp.MultiBufferSourceWrapper(config, bufferSource, drawOverlay, drawOutline);
                 }
             }
@@ -111,10 +117,6 @@ public class EntityEsp implements Module {
         }
 
         return executeScript(config, entity).title;
-    }
-
-    private void onBeforeRender() {
-        scriptResults.clear();
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -397,6 +399,10 @@ public class EntityEsp implements Module {
         @Override
         public VertexConsumer getBuffer(RenderType renderType) {
             if (isGoodRenderType(renderType)) {
+                // for Iris compatibility
+                if (renderType instanceof WrappedRenderType wrapped) {
+                    renderType = wrapped.unwrap();
+                }
                 if (renderType instanceof CompositeRenderTypeAccessor accessor) {
                     RenderType.CompositeState state = accessor.getState_CU();
                     RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();

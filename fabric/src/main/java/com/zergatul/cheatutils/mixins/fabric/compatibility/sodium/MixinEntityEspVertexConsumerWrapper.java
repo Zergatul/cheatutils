@@ -22,10 +22,10 @@ public abstract class MixinEntityEspVertexConsumerWrapper implements VertexBuffe
     @Shadow(remap = false)
     private VertexConsumer consumer;
 
-    @Shadow
+    @Shadow(remap = false)
     private FloatList overlayList;
 
-    @Shadow
+    @Shadow(remap = false)
     private FloatList outlineList;
 
     public void push(MemoryStack stack, long ptr, int count, VertexFormat format) {

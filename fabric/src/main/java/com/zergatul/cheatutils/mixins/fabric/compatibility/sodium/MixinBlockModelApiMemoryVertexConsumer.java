@@ -12,22 +12,22 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import sun.misc.Unsafe;
 
-@Mixin(BlockModelApi.MemoryVertexConsumer.class)
+@Mixin(value = BlockModelApi.MemoryVertexConsumer.class, remap = false)
 public abstract class MixinBlockModelApiMemoryVertexConsumer implements VertexBufferWriter {
 
     @Unique
     private static final Unsafe UNSAFE = UnsafeUtil.get();
 
-    @Shadow
+    @Shadow(remap = false)
     protected abstract VertexConsumer vertex(double x, double y, double z);
 
-    @Shadow
+    @Shadow(remap = false)
     protected abstract VertexConsumer color(int r, int g, int b, int a);
 
-    @Shadow
+    @Shadow(remap = false)
     protected abstract VertexConsumer uv(float u, float v);
 
-    @Shadow
+    @Shadow(remap = false)
     protected abstract void endVertex();
 
     public void push(MemoryStack stack, long ptr, int count, VertexFormat format) {
