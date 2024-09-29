@@ -313,6 +313,13 @@ module({
     path: 'anti-hunger',
     tags: ['anti', 'hunger']
 });
+module({
+    group: 'hacks',
+    name: 'Step Up',
+    component: 'StepUp',
+    path: 'step-up',
+    tags: ['step', 'up', 'jump']
+});
 
 module({
     group: 'visuals',

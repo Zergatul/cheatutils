@@ -861,6 +861,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().monacoEditor = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("step-up", StepUpConfig.class) {
+            @Override
+            protected StepUpConfig getConfig() {
+                return ConfigStore.instance.getConfig().stepUp;
+            }
+
+            @Override
+            protected void setConfig(StepUpConfig config) {
+                ConfigStore.instance.getConfig().stepUp = config;
+            }
+        });
     }
 
     @Override

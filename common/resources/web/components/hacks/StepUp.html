@@ -1,0 +1,25 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Allows you to walk up X blocks height without jumping. By default Minecraft allows you to step up only by 0.5 height for slabs/stairs.
+        <br>
+        Don't use with built-in Auto Jump option.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                Height
+            </legend>
+            <div>
+                <input type="text" class="w3" v-model="config.height" @change="update()">
+            </div>
+            <div class="section-description">
+                Vanilla height = 0.6
+            </div>
+        </fieldset>
+    </div>
+</div>

@@ -11,7 +11,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
@@ -168,6 +167,16 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
             return config.attackRange;
         } else {
             return super.entityInteractionRange();
+        }
+    }
+
+    @Override
+    public float maxUpStep() {
+        StepUpConfig config = ConfigStore.instance.getConfig().stepUp;
+        if (config.enabled) {
+            return (float) config.height;
+        } else {
+            return super.maxUpStep();
         }
     }
 }

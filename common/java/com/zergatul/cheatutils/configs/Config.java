@@ -69,6 +69,7 @@ public class Config {
     public CoreConfig coreConfig = new CoreConfig();
     public AntiHungerConfig antiHungerConfig = new AntiHungerConfig();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
+    public StepUpConfig stepUp = new StepUpConfig();
 
     public Config() {
         esp = true;
