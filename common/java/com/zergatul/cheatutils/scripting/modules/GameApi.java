@@ -1,6 +1,9 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.extensions.LivingEntityExtension;
+import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
@@ -8,11 +11,16 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -25,6 +33,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")
@@ -344,6 +353,75 @@ public class GameApi {
             });
         }
 
+        public boolean isPassenger(int entityId) {
+            return getBooleanValue(entityId, Entity::isPassenger);
+        }
+
+        public int getVehicle(int entityId) {
+            return getIntegerValue(entityId, entity -> {
+                Entity vehicle = entity.getVehicle();
+                return vehicle != null ? vehicle.getId() : Integer.MIN_VALUE;
+            });
+        }
+
+        public int[] getPassengers(int entityId) {
+            return getIntegerArrayValue(entityId, entity -> entity.getPassengers().stream().mapToInt(Entity::getId).toArray());
+        }
+
+        public boolean hasEffectByColor(int entityId, String color) {
+            return getBooleanValue(entityId, entity -> {
+                if (entity instanceof LivingEntityExtension living) {
+                    Integer value = ColorUtils.parseColor(color);
+                    if (value == null) {
+                        return false;
+                    }
+                    for (ParticleOptions option : living.getParticles_CU()) {
+                        if (option instanceof ColorParticleOptionAccessor colorOption) {
+                            if ((colorOption.getColor_CU() & 0xFFFFFF) == (value & 0xFFFFFF)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            });
+        }
+
+        public boolean hasEffectById(int entityId, String effectId) {
+            return getBooleanValue(entityId, entity -> {
+                assert mc.level != null;
+
+                if (entity instanceof LivingEntityExtension living) {
+                    ResourceLocation location = ResourceLocation.parse(effectId);
+                    MobEffect effect = Registries.MOB_EFFECTS.getValue(location);
+                    if (effect == null) {
+                        return false;
+                    }
+                    if (effect.isInstantenous()) {
+                        return false;
+                    }
+
+                    HolderLookup<MobEffect> lookup = mc.level.holderLookup(net.minecraft.core.registries.Registries.MOB_EFFECT);
+                    Optional<Holder.Reference<MobEffect>> optional = lookup.listElements().filter(e -> e.is(location)).findFirst();
+                    if (optional.isPresent()) {
+                        MobEffectInstance instance = new MobEffectInstance(optional.get());
+                        ParticleOptions option1 = effect.createParticleOptions(instance);
+                        if (option1 instanceof ColorParticleOptionAccessor colorOption1) {
+                            for (ParticleOptions option2 : living.getParticles_CU()) {
+                                if (option2 instanceof ColorParticleOptionAccessor colorOption2) {
+                                    if ((colorOption1.getColor_CU() & 0xFFFFFF) == (colorOption2.getColor_CU() & 0xFFFFFF)) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                }
+                return false;
+            });
+        }
+
         public String getEquippedHeadItemId(int entityId) {
             return getStringValue(entityId, getEquippedItemId(EquipmentSlot.HEAD));
         }
@@ -456,6 +534,19 @@ public class GameApi {
             Entity entity = mc.level.getEntity(entityId);
             if (entity == null) {
                 return "";
+            }
+
+            return getter.apply(entity);
+        }
+
+        private int[] getIntegerArrayValue(int entityId, Function<Entity, int[]> getter) {
+            if (mc.level == null) {
+                return new int[0];
+            }
+
+            Entity entity = mc.level.getEntity(entityId);
+            if (entity == null) {
+                return new int[0];
             }
 
             return getter.apply(entity);

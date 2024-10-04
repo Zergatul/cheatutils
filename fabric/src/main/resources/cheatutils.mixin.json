@@ -17,6 +17,7 @@
     "common.accessors.ClientChunkCacheStorageAccessor",
     "common.accessors.ClientLevelAccessor",
     "common.accessors.ClientPacketListenerAccessor",
+    "common.accessors.ColorParticleOptionAccessor",
     "common.accessors.CompositeRenderTypeAccessor",
     "common.accessors.CompositeStateAccessor",
     "common.accessors.CraftingScreenAccessor",
