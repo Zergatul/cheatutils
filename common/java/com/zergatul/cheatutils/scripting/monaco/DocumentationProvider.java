@@ -18,6 +18,9 @@ public class DocumentationProvider {
         if (type == SInt.instance) {
             return "32-bit signed integer";
         }
+        if (type == SInt64.instance) {
+            return "64-bit signed integer";
+        }
         if (type == SChar.instance) {
             return "Single character";
         }
@@ -30,16 +33,46 @@ public class DocumentationProvider {
         return null;
     }
 
-    public Suggestion getTypeSuggestion(SType type) {
+    public List<Suggestion> getTypeSuggestion(SType type) {
+        if (type == SInt.instance) {
+            return List.of(
+                    new Suggestion(
+                            "int",
+                            null,
+                            getTypeDocs(type),
+                            "int",
+                            CompletionItemKind.CLASS),
+                    new Suggestion(
+                            "int32",
+                            null,
+                            getTypeDocs(type),
+                            "int32",
+                            CompletionItemKind.CLASS));
+        }
+        if (type == SInt64.instance) {
+            return List.of(
+                    new Suggestion(
+                            "long",
+                            null,
+                            getTypeDocs(type),
+                            "long",
+                            CompletionItemKind.CLASS),
+                    new Suggestion(
+                            "int64",
+                            null,
+                            getTypeDocs(type),
+                            "int64",
+                            CompletionItemKind.CLASS));
+        }
         if (type instanceof SPredefinedType) {
-            return new Suggestion(
+            return List.of(new Suggestion(
                     type.toString(),
                     null,
                     getTypeDocs(type),
                     type.toString(),
-                    CompletionItemKind.CLASS);
+                    CompletionItemKind.CLASS));
         }
-        return null;
+        return List.of();
     }
 
     public Suggestion getStaticKeywordSuggestion() {

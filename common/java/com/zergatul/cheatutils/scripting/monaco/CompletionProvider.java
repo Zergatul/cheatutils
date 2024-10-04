@@ -212,8 +212,8 @@ public class CompletionProvider {
             suggestions.add(documentationProvider.getVoidKeywordSuggestion());
         }
         if (canType | canExpression) {
-            for (SType type : new SType[] { SBoolean.instance, SInt.instance, SChar.instance, SFloat.instance, SString.instance }) {
-                suggestions.add(documentationProvider.getTypeSuggestion(type));
+            for (SType type : new SType[] { SBoolean.instance, SInt.instance, SInt64.instance, SChar.instance, SFloat.instance, SString.instance }) {
+                suggestions.addAll(documentationProvider.getTypeSuggestion(type));
             }
         }
         if (canExpression) {

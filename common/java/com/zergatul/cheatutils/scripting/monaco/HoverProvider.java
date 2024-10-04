@@ -36,6 +36,7 @@ public class HoverProvider {
         return switch (node.getNodeType()) {
             case BOOLEAN_LITERAL -> getBoolean(range);
             case INTEGER_LITERAL -> getInt(range);
+            case INTEGER64_LITERAL -> getInt64(range);
             case CHAR_LITERAL -> getChar(range);
             case FLOAT_LITERAL -> getFloat(range);
             case STRING_LITERAL -> getString(range);
@@ -45,6 +46,8 @@ public class HoverProvider {
                     yield getBoolean(range);
                 } else if (type == SInt.instance) {
                     yield getInt(range);
+                } else if (type == SInt64.instance) {
+                    yield getInt64(range);
                 } else if (type == SChar.instance) {
                     yield getChar(range);
                 } else if (type == SFloat.instance) {
@@ -151,6 +154,10 @@ public class HoverProvider {
 
     private HoverResponse getInt(TextRange range) {
         return new HoverResponse(List.of(predefinedType("int"), description(documentationProvider.getTypeDocs(SInt.instance))), range);
+    }
+
+    private HoverResponse getInt64(TextRange range) {
+        return new HoverResponse(List.of(predefinedType("long"), description(documentationProvider.getTypeDocs(SInt64.instance))), range);
     }
 
     private HoverResponse getChar(TextRange range) {

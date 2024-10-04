@@ -19,6 +19,7 @@ public class EntityEspConfig extends EspConfigBase {
     // Entity Title
     public boolean drawTitles;
     public boolean showDefaultNames;
+    public boolean useRawNames;
     public boolean showHp;
     public boolean showEquippedItems;
     public boolean showOwner;
@@ -52,6 +53,7 @@ public class EntityEspConfig extends EspConfigBase {
 
         drawTitles = jsonConfig.drawTitles;
         showDefaultNames = jsonConfig.showDefaultNames;
+        useRawNames = jsonConfig.useRawNames;
         showHp = jsonConfig.showHp;
         showEquippedItems = jsonConfig.showEquippedItems;
         showOwner = jsonConfig.showOwner;

@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.controllers.EntityTitleController;
 import com.zergatul.cheatutils.modules.scripting.Containers;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
@@ -9,11 +10,22 @@ import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
@@ -108,6 +120,67 @@ public class ContainersApi {
     }
 
     @MethodDescription("""
+            Returns item tooltip lines at specified slot
+            """)
+    public String[] getItemTooltipAtSlot(int index) {
+        Slot slot = getSlot(index);
+        if (slot == null) {
+            return new String[0];
+        }
+
+        List<Component> components = Screen.getTooltipFromItem(mc, slot.getItem());
+        String[] result = new String[components.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = components.get(i).getString();
+        }
+        return result;
+    }
+
+    @MethodDescription("""
+            Returns item enchantment ids (like "minecraft:mending") at specified slot
+            """)
+    public String[] getEnchantmentIdsAtSlot(int index) {
+        Slot slot = getSlot(index);
+        if (slot == null) {
+            return new String[0];
+        }
+
+        ItemEnchantments enchantments = slot.getItem().getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+        if (!enchantments.isEmpty()) {
+            return getEnchantmentIds(enchantments);
+        }
+
+        enchantments = slot.getItem().getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
+        if (!enchantments.isEmpty()) {
+            return getEnchantmentIds(enchantments);
+        }
+
+        return new String[0];
+    }
+
+    @MethodDescription("""
+            Returns item enchantment levels at specified slot
+            """)
+    public int[] getEnchantmentLevelsAtSlot(int index) {
+        Slot slot = getSlot(index);
+        if (slot == null) {
+            return new int[0];
+        }
+
+        ItemEnchantments enchantments = slot.getItem().getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+        if (!enchantments.isEmpty()) {
+            return getEnchantmentLevels(enchantments);
+        }
+
+        enchantments = slot.getItem().getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
+        if (!enchantments.isEmpty()) {
+            return getEnchantmentLevels(enchantments);
+        }
+
+        return new int[0];
+    }
+
+    @MethodDescription("""
             Emulates click on specified slot.
             button parameter:
                 0=left
@@ -154,6 +227,10 @@ public class ContainersApi {
         return Containers.instance.waitForOpen();
     }
 
+    public void close() {
+        Containers.instance.close();
+    }
+
     @MethodDescription("""
             Waits for container menu id. Can be useful when interactive with custom server menus.
             If there is no container menu, script will stop here
@@ -183,5 +260,25 @@ public class ContainersApi {
         } else {
             return null;
         }
+    }
+
+    private String[] getEnchantmentIds(ItemEnchantments enchantments) {
+        List<String> ids = new ArrayList<>();
+        for (Holder<Enchantment> holder : enchantments.keySet()) {
+            holder.unwrapKey().ifPresent(enchantment -> ids.add(enchantment.location().toString()));
+            return ids.toArray(String[]::new);
+        }
+        return new String[0];
+    }
+
+    private int[] getEnchantmentLevels(ItemEnchantments enchantments) {
+        List<Integer> levels = new ArrayList<>();
+        for (Holder<Enchantment> holder : enchantments.keySet()) {
+            if (holder.unwrapKey().isPresent()) {
+                levels.add(enchantments.getLevel(holder));
+            }
+            return levels.stream().mapToInt(Integer::intValue).toArray();
+        }
+        return new int[0];
     }
 }

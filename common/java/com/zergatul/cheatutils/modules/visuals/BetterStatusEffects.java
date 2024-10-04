@@ -37,8 +37,6 @@ public class BetterStatusEffects implements Module {
             return;
         }
 
-        mc.getProfiler().push("equip");
-
         MobEffectTextureManager manager = mc.getMobEffectTextures();
 
         int left = (graphics.guiWidth() - collection.size() * 25) / 2;
@@ -72,7 +70,5 @@ public class BetterStatusEffects implements Module {
 
             left += 25;
         }
-
-        mc.getProfiler().pop();
     }
 }

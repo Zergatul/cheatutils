@@ -42,6 +42,13 @@ public class Containers implements Module {
         return future;
     }
 
+    public void close() {
+        AbstractContainerMenu menu = getContainerMenu();
+        if (menu != null && mc.screen != null) {
+            mc.screen.onClose();
+        }
+    }
+
     public CompletableFuture<Void> waitForNewId() {
         AbstractContainerMenu menu = getContainerMenu();
         if (menu == null) {

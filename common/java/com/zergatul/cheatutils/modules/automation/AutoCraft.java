@@ -51,8 +51,6 @@ public class AutoCraft {
             state = State.START;
         }
 
-        mc.getProfiler().push("auto-craft");
-
         try {
             switch (state) {
                 case START:
@@ -84,8 +82,6 @@ public class AutoCraft {
             logger.error(e);
             config.enabled = false;
         }
-
-        mc.getProfiler().pop();
     }
 
     private RecipeHolder<CraftingRecipe> findRecipe(AutoCraftConfig config) {

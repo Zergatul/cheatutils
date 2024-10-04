@@ -245,6 +245,14 @@
                             For example, zombie without Name Tag will be shown as "Zombie"
                         </div>
                     </div>
+                    <div style="display: flex; gap: 1em;">
+                        <switch-checkbox v-model="selectedConfig.useRawNames" @change="update(selectedConfig)">
+                            Use Raw Names
+                        </switch-checkbox>
+                        <div class="section-description" style="display: flex; align-items: center;">
+                            Show entity titles without formatting (with control characters like "§")
+                        </div>
+                    </div>
                     <div>
                         <switch-checkbox v-model="selectedConfig.showEquippedItems" @change="update(selectedConfig)">
                             Show Equipped Items

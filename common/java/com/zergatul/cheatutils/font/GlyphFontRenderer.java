@@ -4,10 +4,12 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.network.chat.Component;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -16,11 +18,21 @@ public class GlyphFontRenderer {
     private final Font font;
     private final boolean antiAliasing;
     private final Map<Character, Glyph> glyphs;
+    private final StringBuilder builder;
 
     public GlyphFontRenderer(Font font, boolean antiAliasing) {
         this.font = font;
         this.antiAliasing = antiAliasing;
-        glyphs = new HashMap<>();
+        this.glyphs = new HashMap<>();
+        this.builder = new StringBuilder();
+    }
+
+    public TextBounds getTextSize(StylizedText text) {
+        builder.delete(0, builder.length());
+        for (StylizedTextChunk chunk : text.chunks) {
+            builder.append(chunk.text());
+        }
+        return getTextSize(builder.toString());
     }
 
     public TextBounds getTextSize(String string) {

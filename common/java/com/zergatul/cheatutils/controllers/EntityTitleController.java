@@ -8,11 +8,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTitleConfig;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.GlyphFontRenderer;
+import com.zergatul.cheatutils.font.StylizedText;
+import com.zergatul.cheatutils.font.StylizedTextChunk;
 import com.zergatul.cheatutils.font.TextBounds;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
@@ -20,12 +21,14 @@ import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -36,7 +39,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.phys.Vec3;
@@ -53,6 +55,8 @@ public class EntityTitleController {
     public static final EntityTitleController instance = new EntityTitleController();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private final ArrayList<StylizedTextChunk> buffer = new ArrayList<>();
+    private final StringBuilder builder = new StringBuilder();
 
     private final LoadingCache<UUID, Optional<String>> usernameCache = CacheBuilder
             .newBuilder()
@@ -124,6 +128,7 @@ public class EntityTitleController {
             boolean showDefaultNames = false;
             boolean showHp = false;
             boolean showEquippedItems = false;
+            boolean useRaw = false;
             boolean showOwner = false;
             String title = null;
             for (EntityEspConfig entityConfig : entityConfigs) {
@@ -137,10 +142,10 @@ public class EntityTitleController {
                 if (distanceSqr < entityConfig.maxDistance * entityConfig.maxDistance) {
                     drawTitles = true;
                     showDefaultNames |= entityConfig.showDefaultNames;
+                    useRaw |= entityConfig.useRawNames;
                     showHp |= entityConfig.showHp;
                     showEquippedItems |= entityConfig.showEquippedItems;
                     showOwner |= entityConfig.showOwner;
-
                     if (title == null) {
                         title = EntityEsp.instance.getTitleOverride(entityConfig, entity);
                     }
@@ -154,6 +159,7 @@ public class EntityTitleController {
                         pos,
                         distanceSqr,
                         showDefaultNames,
+                        useRaw,
                         showHp,
                         showEquippedItems,
                         showOwner,
@@ -197,26 +203,31 @@ public class EntityTitleController {
             double xc = v2.x / v2.w * scaledHalfWidth;
             double yc = -v2.y / v2.w * scaledHalfHeight;
 
-            String text = getEntityText(entry);
+            StylizedText text = getEntityText(entry);
             if (text != null) {
                 TextBounds bounds = fontRenderer.getTextSize(text);
-                double width = bounds.width() * invScale;
-                double height = bounds.height() * invScale;
+                if (bounds.width() > 0) {
+                    double width = bounds.width() * invScale;
+                    double height = bounds.height() * invScale;
 
-                double xp = xc - width / 2;
-                yc -= height;
-                double yp = yc;
+                    double xp = xc - width / 2;
+                    yc -= height;
+                    double yp = yc;
 
-                double horizontalPadding = scale;
-                double verticalPadding = scale;
-                double rx1 = xp - horizontalPadding * invScale;
-                double rx2 = xp + width + horizontalPadding * invScale;
-                double ry1 = yp + (bounds.top() - verticalPadding) * invScale;
-                double ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-                Primitives.fill(poseStack, rx1, ry1, rx2, ry2, Color.BLACK.getRGB() & 0x40000000);
+                    double horizontalPadding = scale;
+                    double verticalPadding = scale;
+                    double rx1 = xp - horizontalPadding * invScale;
+                    double rx2 = xp + width + horizontalPadding * invScale;
+                    double ry1 = yp + (bounds.top() - verticalPadding) * invScale;
+                    double ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
+                    Primitives.fill(poseStack, rx1, ry1, rx2, ry2, Color.BLACK.getRGB() & 0x40000000);
 
-                RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-                fontRenderer.drawText(poseStack, text, (float)xp, (float)yp, invScale);
+                    for (StylizedTextChunk chunk : text.chunks) {
+                        chunk.setShaderColor();
+                        fontRenderer.drawText(poseStack, chunk.text(), (float) xp, (float) yp, invScale);
+                        xp += fontRenderer.getTextSize(chunk.text()).width() * invScale;
+                    }
+                }
             }
 
             if (entry.showOwner) {
@@ -354,33 +365,62 @@ public class EntityTitleController {
         poseStack.popPose();
     }
 
-    private String getEntityText(EntityEntry entry) {
+    private StylizedText getEntityText(EntityEntry entry) {
         if (entry.title != null) {
-            return entry.title;
+            return StylizedText.of(entry.title);
         }
 
-        String result;
+        Component component = null;
         if (entry.showDefaultNames) {
-            result = entry.entity.getDisplayName().getString();
+            component = entry.entity.getDisplayName();
         } else {
-            result = entry.entity.hasCustomName() || entry.entity instanceof Player ? entry.entity.getDisplayName().getString() : "";
+            component = entry.entity.hasCustomName() || entry.entity instanceof Player ? entry.entity.getDisplayName() : null;
+        }
+
+        StylizedText text = null;
+        if (component != null) {
+            if (entry.useRaw) {
+                String value = component.getString();
+                if (!value.isEmpty()) {
+                    text = StylizedText.of(value);
+                }
+            } else {
+                buffer.clear();
+                builder.delete(0, builder.length());
+                FormattedCharSequence sequence = component.getVisualOrderText();
+                StyleHolder last = new StyleHolder();
+                sequence.accept((unknown, style, character) -> {
+                    if (last.value != style) {
+                        if (!builder.isEmpty()) {
+                            buffer.add(new StylizedTextChunk(builder.toString(), last.value));
+                            builder.delete(0, builder.length());
+                        }
+                    }
+                    last.value = style;
+                    builder.append((char) character);
+                    return true;
+                });
+                if (!builder.isEmpty()) {
+                    buffer.add(new StylizedTextChunk(builder.toString(), last.value));
+                }
+                if (!buffer.isEmpty()) {
+                    text = new StylizedText();
+                    text.chunks.addAll(buffer);
+                }
+            }
         }
 
         if (entry.showHp && entry.entity instanceof LivingEntity living) {
-            result += "♥" + (int)living.getHealth();
-        }
-        return result.isEmpty() ? null : result;
-        /*String tags = String.join(";", entity.getTags());
-        if (entity instanceof LivingEntity living) {
-            for (AttributeInstance attr: living.getAttributes().getSyncableAttributes()) {
-                tags += attr.getAttribute().getDescriptionId() + "=" + attr.getValue() + ";";
+            if (text == null) {
+                text = new StylizedText();
+                text.append("♥", Style.EMPTY.withColor(ChatFormatting.RED));
+            } else {
+                text.append(" ♥", Style.EMPTY.withColor(ChatFormatting.RED));
             }
-            tags += "!";
-            for (AttributeInstance attr: living.getAttributes().getDirtyAttributes()) {
-                tags += attr.getAttribute().getDescriptionId() + "=" + attr.getValue() + ";";
-            }
+            text.append(String.valueOf((int)living.getHealth()), Style.EMPTY);
         }
-        return tags;*/
+
+        return text;
     }
 
     private List<EnchantmentEntry> getEnchantments(Entity entity, ItemStack itemStack) {
@@ -420,6 +460,7 @@ public class EntityTitleController {
             Vec3 position,
             double distanceSqr,
             boolean showDefaultNames,
+            boolean useRaw,
             boolean showHp,
             boolean showEquippedItems,
             boolean showOwner,
@@ -509,5 +550,9 @@ public class EntityTitleController {
         public EnchantmentDisplayEntry(String text) {
             this(text, Color.WHITE, ++index);
         }
+    }
+
+    private static class StyleHolder {
+        public Style value;
     }
 }
