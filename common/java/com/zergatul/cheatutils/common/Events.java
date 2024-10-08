@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.joml.Vector2ic;
 
 public class Events {
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
@@ -40,6 +41,8 @@ public class Events {
     public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<GetFieldOfViewEvent> GetFieldOfView = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderTooltipEvent> PreRenderTooltip = new CancelableEventHandler<>();
+    public static final ParameterizedEventHandler<Vector2ic> TooltipPositioned = new ParameterizedEventHandler<>();
+    public static final SimpleEventHandler PostRenderTooltip = new SimpleEventHandler();
     public static final ParameterizedEventHandler<ContainerRenderLabelsEvent> ContainerRenderLabels = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<SetupFogEvent> SetupFog = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<SendChatEvent> SendChat = new CancelableEventHandler<>();

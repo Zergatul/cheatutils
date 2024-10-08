@@ -84,7 +84,6 @@
     "common.MixinUser",
 
     "forge.accessors.GuiGraphicsAccessor",
-    "forge.MixinAbstractContainerScreen",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
     "forge.MixinLightTexture",

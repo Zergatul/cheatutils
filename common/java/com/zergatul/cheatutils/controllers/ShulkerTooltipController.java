@@ -4,22 +4,21 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
+import com.zergatul.cheatutils.common.events.PostRenderTooltipEvent;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.mixins.common.accessors.AbstractContainerScreenAccessor;
+import com.zergatul.cheatutils.configs.ShulkerTooltipConfig;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
+import org.joml.Vector2ic;
 
 // TODO: optimize
 public class ShulkerTooltipController {
@@ -36,13 +35,21 @@ public class ShulkerTooltipController {
     private ItemStack lockedStack;
     private Matrix4f lockedPose;
     private int lockedX, lockedY;
+    private PreRenderTooltipEvent currentEvent;
+    private boolean renderAfter;
+    private boolean renderToTheLeft;
 
     private ShulkerTooltipController() {
         Events.PreRenderTooltip.add(this::onPreRenderTooltip);
+        Events.TooltipPositioned.add(this::onTooltipPositioned);
+        Events.PostRenderTooltip.add(this::onPostRenderTooltip);
         Events.ContainerRenderLabels.add(this::onContainerRenderLabels);
     }
 
     private void onPreRenderTooltip(PreRenderTooltipEvent event) {
+        currentEvent = event;
+        renderAfter = false;
+
         if (locked && !allowTooltip) {
             event.cancel();
             return;
@@ -53,7 +60,8 @@ public class ShulkerTooltipController {
             return;
         }
 
-        if (!ConfigStore.instance.getConfig().shulkerTooltipConfig.enabled) {
+        ShulkerTooltipConfig config = ConfigStore.instance.getConfig().shulkerTooltipConfig;
+        if (!config.enabled) {
             clearLocked();
             return;
         }
@@ -63,33 +71,25 @@ public class ShulkerTooltipController {
             return;
         }
 
-        event.cancel();
-
-        PoseStack poseStack = event.getGraphics().pose();
-        poseStack.pushPose();
-        poseStack.translate(0, 0, TranslateZ);
-        RenderSystem.applyModelViewMatrix();
-
-        int x, y;
-        x = event.getX() - ImageWidth - 16;
-        y = event.getY() - 4;
-        if (x < 0) {
-            // show to the right
-            x = event.getX() + 16;
+        if (config.showOriginal) {
+            renderAfter = true;
+        } else {
+            event.cancel();
+            renderShulkerTooltip();
         }
+    }
 
-        if (Screen.hasControlDown()) {
-            locked = true;
-            lockedPose = poseStack.last().pose();
-            lockedStack = event.getItemStack();
-            lockedX = x;
-            lockedY = y;
+    private void onTooltipPositioned(Vector2ic position) {
+        if (renderAfter) {
+            // render shulker tooltip on the opposite side from vanilla tooltip
+            renderToTheLeft = position.x() > currentEvent.getX();
         }
+    }
 
-        renderShulkerInventory(event.getGraphics(), event.getItemStack(), poseStack.last().pose(), x, y);
-
-        poseStack.popPose();
-        RenderSystem.applyModelViewMatrix();
+    private void onPostRenderTooltip() {
+        if (renderAfter) {
+            renderShulkerTooltip();
+        }
     }
 
     private void onContainerRenderLabels(ContainerRenderLabelsEvent event) {
@@ -120,12 +120,44 @@ public class ShulkerTooltipController {
         }
     }
 
-    private int globalToScreenX(int x, AbstractContainerScreen<?> screen) {
-        return x - Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2 + ((AbstractContainerScreenAccessor) screen).getWidth_CU() / 2;
-    }
+    private void renderShulkerTooltip() {
+        PoseStack poseStack = currentEvent.getGraphics().pose();
+        poseStack.pushPose();
+        poseStack.translate(0, 0, TranslateZ);
+        RenderSystem.applyModelViewMatrix();
 
-    private int globalToScreenY(int y, AbstractContainerScreen<?> screen) {
-        return y - Minecraft.getInstance().getWindow().getGuiScaledHeight() / 2 + ((AbstractContainerScreenAccessor) screen).getHeight_CU() / 2;
+        // 12 pixels margin from DefaultTooltipPositioner and 4 pixels are vanilla border
+        int x, y;
+        if (renderAfter) {
+            // if we render together with vanilla tooltip there is no choice to render left or right
+            if (renderToTheLeft) {
+                x = currentEvent.getX() - ImageWidth - 8;
+                y = currentEvent.getY() - 16;
+            } else {
+                x = currentEvent.getX() + 8;
+                y = currentEvent.getY() - 16;
+            }
+        } else {
+            x = currentEvent.getX() - ImageWidth - 8;
+            y = currentEvent.getY() - 16;
+            if (x < 0) {
+                // show to the right
+                x = currentEvent.getX() + 8;
+            }
+        }
+
+        if (Screen.hasControlDown()) {
+            locked = true;
+            lockedPose = poseStack.last().pose();
+            lockedStack = currentEvent.getItemStack();
+            lockedX = x;
+            lockedY = y;
+        }
+
+        renderShulkerInventory(currentEvent.getGraphics(), currentEvent.getItemStack(), poseStack.last().pose(), x, y);
+
+        poseStack.popPose();
+        RenderSystem.applyModelViewMatrix();
     }
 
     private void renderShulkerInventory(GuiGraphics graphics, ItemStack itemStack, Matrix4f matrix, int x, int y) {

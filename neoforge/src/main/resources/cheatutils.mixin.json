@@ -83,7 +83,6 @@
     "common.MixinUser",
 
     "neoforge.accessors.GuiGraphicsAccessor",
-    "neoforge.MixinAbstractContainerScreen",
     "neoforge.MixinCamera",
     "neoforge.MixinGui",
     "neoforge.MixinLightTexture",
