@@ -7,11 +7,14 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.CraftingScreenAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,7 +34,7 @@ public class AutoCraft {
     }
 
     private void onClientTickEnd() {
-        if (mc.player == null || mc.level == null) {
+        if (mc.player == null || mc.level == null || mc.gameMode == null) {
             state = State.NONE;
             return;
         }
@@ -85,6 +88,9 @@ public class AutoCraft {
     }
 
     private RecipeHolder<CraftingRecipe> findRecipe(AutoCraftConfig config) {
+        assert mc.level != null;
+        assert mc.player != null;
+
         ImmutableList<ItemStack> inventory = new ImmutableList<>(mc.player.getInventory().items.stream().map(ItemStack::copy).toList());
 
         @SuppressWarnings("unchecked")
@@ -98,19 +104,27 @@ public class AutoCraft {
             // queue for next recipes to process
             Queue<CraftingTreeEntry> queue = new LinkedList<>();
 
-            // add base recipes to queue
-            for (RecipeHolder<CraftingRecipe> holder : holders) {
-                if (!holder.value().getResultItem(mc.level.registryAccess()).is(baseItem)) {
-                    continue;
-                }
-
+            if (baseItem == Items.FIREWORK_ROCKET) {
+                // hardcoded lvl3 basic fireworks
+                RecipeHolder<CraftingRecipe> holder = new RecipeHolder<>(
+                        ResourceLocation.parse("minecraft:hardcoded_fireworks"),
+                        new HardcodedFireworksRecipe());
                 queue.add(new CraftingTreeEntry(holder, null));
+            } else {
+                // add base recipes to queue
+                for (RecipeHolder<CraftingRecipe> holder : holders) {
+                    if (!holder.value().getResultItem(mc.level.registryAccess()).is(baseItem)) {
+                        continue;
+                    }
+
+                    queue.add(new CraftingTreeEntry(holder, null));
+                }
             }
 
-            while (queue.size() > 0) {
+            while (!queue.isEmpty()) {
                 CraftingTreeEntry entry = queue.poll();
                 List<Item> missing = getMissingIngredients(entry, inventory);
-                if (missing.size() == 0) {
+                if (missing.isEmpty()) {
                     // found recipe we can craft
                     return entry.holder;
                 }
@@ -201,6 +215,31 @@ public class AutoCraft {
             }
 
             return false;
+        }
+    }
+
+    private static class HardcodedFireworksRecipe extends ShapelessRecipe {
+
+        public HardcodedFireworksRecipe() {
+            super("minecraft:custom_group", CraftingBookCategory.MISC, createOutput(), createIngredients());
+        }
+
+        private static ItemStack createOutput() {
+            FireworkRocketRecipe recipe = new FireworkRocketRecipe(CraftingBookCategory.MISC);
+            CraftingInput input = CraftingInput.of(2, 2, List.of(
+                    new ItemStack(Items.PAPER, 1),
+                    new ItemStack(Items.GUNPOWDER, 1),
+                    new ItemStack(Items.GUNPOWDER, 1),
+                    new ItemStack(Items.GUNPOWDER, 1)));
+            return recipe.assemble(input, null);
+        }
+
+        private static NonNullList<Ingredient> createIngredients() {
+            return NonNullList.of(
+                    Ingredient.of(Items.PAPER),
+                    Ingredient.of(Items.GUNPOWDER),
+                    Ingredient.of(Items.GUNPOWDER),
+                    Ingredient.of(Items.GUNPOWDER));
         }
     }
 }
