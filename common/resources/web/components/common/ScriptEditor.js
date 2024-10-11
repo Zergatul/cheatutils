@@ -79,7 +79,7 @@ const languageSettingsContructor = (async () => {
         ]
     });
 
-    const tokens = await http.get('/api/code/tokens');
+    const tokenTypes = await http.get('/api/code/tokens');
     const nodes = await http.get('/api/code/nodes');
 
     const setDiagnostics = async (model) => {
@@ -133,18 +133,19 @@ const languageSettingsContructor = (async () => {
     monaco.languages.registerDocumentSemanticTokensProvider(languageId, {
         getLegend() {
             return {
-                tokenTypes: tokens,
+                tokenTypes: tokenTypes,
                 tokenModifiers: [],
             };
         },
         async provideDocumentSemanticTokens(model, lastResultId, token) {
             let tokenize = http.post('/api/code/tokenize', model.getValue());
             setDiagnostics(model);
-            let lexerOutput = await tokenize;
+
+            let tokens = await tokenize;
             let result = [];
             let prevToken = { range: { line1: 1, column1: 1, length: 0 } };
-            for (let token of lexerOutput.tokens.list) {
-                let type = tokens[token.type];
+            for (let token of tokens) {
+                let type = tokenTypes[token.type];
                 if (type == 'WHITESPACE' || type == 'LINE_BREAK') {
                     continue;
                 }
@@ -274,9 +275,9 @@ const languageSettingsContructor = (async () => {
         },
         async provideDocumentColors(model, token) {
             let result = [];
-            let lexerOutput = await http.post('/api/code/tokenize', model.getValue());
-            for (let token of lexerOutput.tokens.list) {
-                if (token.range.line1 == token.range.line2 && tokens[token.type] == 'STRING_LITERAL') {
+            let tokens = await http.post('/api/code/tokenize', model.getValue());
+            for (let token of tokens) {
+                if (token.range.line1 == token.range.line2 && tokenTypes[token.type] == 'STRING_LITERAL') {
                     let line = model.getLineContent(token.range.line1);
                     let value = line.substring(token.range.column1 - 1, token.range.column2 - 1);
                     if (value.match(/^"#[0-9a-fA-F]{6}"$/)) {

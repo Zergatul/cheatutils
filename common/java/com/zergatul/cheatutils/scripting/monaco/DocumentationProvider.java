@@ -5,7 +5,6 @@ import com.zergatul.scripting.symbols.LocalVariable;
 import com.zergatul.scripting.symbols.StaticVariable;
 import com.zergatul.scripting.type.*;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,6 +74,16 @@ public class DocumentationProvider {
         return List.of();
     }
 
+    public Suggestion getCustomTypeSuggestion(Class<?> clazz) {
+        CustomType type = clazz.getAnnotation(CustomType.class);
+        return new Suggestion(
+                type.name(),
+                null,
+                null,
+                type.name(),
+                CompletionItemKind.CLASS);
+    }
+
     public Suggestion getStaticKeywordSuggestion() {
         return new Suggestion(
                 "static",
@@ -90,6 +99,15 @@ public class DocumentationProvider {
                 null,
                 null,
                 "void",
+                CompletionItemKind.KEYWORD);
+    }
+
+    public Suggestion getLetKeywordSuggestion() {
+        return new Suggestion(
+                "let",
+                null,
+                null,
+                "let",
                 CompletionItemKind.KEYWORD);
     }
 

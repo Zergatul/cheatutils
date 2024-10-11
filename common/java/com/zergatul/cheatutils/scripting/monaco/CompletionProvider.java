@@ -179,6 +179,13 @@ public class CompletionProvider {
                         }
                     }
                 }
+                case FOREACH_LOOP_STATEMENT, ASSIGNMENT_STATEMENT, AUGMENTED_ASSIGNMENT_STATEMENT -> {
+                    BoundNode unfinished = getUnfinished(completionContext.entry.node, line, column);
+                    if (unfinished != null) {
+                        CompletionContext ctx = new CompletionContext(new SearchEntry(completionContext.entry, unfinished), line, column);
+                        suggestions.addAll(get(parameters, output, ctx, line, column));
+                    }
+                }
                 case BINARY_EXPRESSION -> {
                     BoundNode unfinished = getUnfinished(completionContext.entry.node, line, column);
                     if (unfinished != null) {
@@ -215,6 +222,12 @@ public class CompletionProvider {
             for (SType type : new SType[] { SBoolean.instance, SInt.instance, SInt64.instance, SChar.instance, SFloat.instance, SString.instance }) {
                 suggestions.addAll(documentationProvider.getTypeSuggestion(type));
             }
+            for (Class<?> clazz : parameters.getCustomTypes()) {
+                suggestions.add(documentationProvider.getCustomTypeSuggestion(clazz));
+            }
+        }
+        if (canStatement) {
+            suggestions.add(documentationProvider.getLetKeywordSuggestion());
         }
         if (canExpression) {
             suggestions.addAll(getSymbols(parameters, output, completionContext));
@@ -232,6 +245,28 @@ public class CompletionProvider {
     }
 
     private BoundNode getUnfinished(BoundNode node, int line, int column) {
+        if (node instanceof BoundForEachLoopStatementNode loop) {
+            if (loop.iterable.getRange().endsWith(line, column)) {
+                return getUnfinished(loop.iterable, line, column);
+            } else {
+                return null;
+            }
+        }
+        if (node instanceof BoundAssignmentStatementNode assignment) {
+            if (assignment.right.getRange().endsWith(line, column)) {
+                return getUnfinished(assignment.right, line, column);
+            } else {
+                return null;
+            }
+        }
+        if (node instanceof BoundAugmentedAssignmentStatementNode assignment) {
+            if (assignment.right.getRange().endsWith(line, column)) {
+                return getUnfinished(assignment.right, line, column);
+            } else {
+                return null;
+            }
+        }
+
         if (node instanceof BoundStatementNode) {
             // check if cursor at the end of statement
             if (!node.getRange().endsWith(line, column)) {
@@ -298,6 +333,9 @@ public class CompletionProvider {
                         return getUnfinished(argument, line, column);
                     }
                 }
+            }
+            if (node instanceof BoundNameExpressionNode name) {
+                return name;
             }
             if (node instanceof BoundInvalidExpressionNode) {
                 return node;
@@ -381,7 +419,17 @@ public class CompletionProvider {
                     addLocalVariables(list, getStatementsPriorTo(context.entry.node, context.prev));
                 }
             }
+
             context = context.up();
+
+            if (context != null && context.entry != null) {
+                // ForLoop has VariableDeclaration node inside
+                // we need to handle ForEachLoop separately
+                if (Objects.requireNonNull(context.entry.node.getNodeType()) == NodeType.FOREACH_LOOP_STATEMENT) {
+                    BoundForEachLoopStatementNode node = (BoundForEachLoopStatementNode) context.entry.node;
+                    list.add(documentationProvider.getLocalVariableSuggestion((LocalVariable) node.name.symbol));
+                }
+            }
         }
 
         return list;

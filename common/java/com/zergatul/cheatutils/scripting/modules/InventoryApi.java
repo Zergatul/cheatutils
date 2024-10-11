@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
 import com.zergatul.scripting.MethodDescription;
@@ -20,70 +21,28 @@ public class InventoryApi {
 
     private final static Minecraft mc = Minecraft.getInstance();
 
-    public String getHeadItemId() {
-        return getItemIdBySlot(EquipmentSlot.HEAD);
+    public ItemStackWrapper getHead() {
+        return getItemBySlot(EquipmentSlot.HEAD);
     }
 
-    public String getChestItemId() {
-        return getItemIdBySlot(EquipmentSlot.CHEST);
+    public ItemStackWrapper getChest() {
+        return getItemBySlot(EquipmentSlot.CHEST);
     }
 
-    public String getLegsItemId() {
-        return getItemIdBySlot(EquipmentSlot.LEGS);
+    public ItemStackWrapper getLegs() {
+        return getItemBySlot(EquipmentSlot.LEGS);
     }
 
-    public String getFeetItemId() {
-        return getItemIdBySlot(EquipmentSlot.FEET);
+    public ItemStackWrapper getFeet() {
+        return getItemBySlot(EquipmentSlot.FEET);
     }
 
-    public String getMainHandItemId() {
-        return getItemIdBySlot(EquipmentSlot.MAINHAND);
+    public ItemStackWrapper getMainHand() {
+        return getItemBySlot(EquipmentSlot.MAINHAND);
     }
 
-    public String getOffHandItemId() {
-        return getItemIdBySlot(EquipmentSlot.OFFHAND);
-    }
-
-    @MethodDescription("""
-            Returns value in range (0..1]
-            """)
-    public double getHeadItemDurability() {
-        return getItemDurabilityBySlot(EquipmentSlot.HEAD);
-    }
-
-    @MethodDescription("""
-            Returns value in range (0..1]
-            """)
-    public double getChestItemDurability() {
-        return getItemDurabilityBySlot(EquipmentSlot.CHEST);
-    }
-
-    @MethodDescription("""
-            Returns value in range (0..1]
-            """)
-    public double getLegsItemDurability() {
-        return getItemDurabilityBySlot(EquipmentSlot.LEGS);
-    }
-
-    @MethodDescription("""
-            Returns value in range (0..1]
-            """)
-    public double getFeetItemDurability() {
-        return getItemDurabilityBySlot(EquipmentSlot.FEET);
-    }
-
-    @MethodDescription("""
-            Returns value in range (0..1]
-            """)
-    public double getMainHandItemDurability() {
-        return getItemDurabilityBySlot(EquipmentSlot.MAINHAND);
-    }
-
-    @MethodDescription("""
-            Returns value in range (0..1]
-            """)
-    public double getOffHandItemDurability() {
-        return getItemDurabilityBySlot(EquipmentSlot.OFFHAND);
+    public ItemStackWrapper getOffHand() {
+        return getItemBySlot(EquipmentSlot.OFFHAND);
     }
 
     @MethodDescription("""
@@ -167,17 +126,12 @@ public class InventoryApi {
         return count;
     }
 
-    private String getItemIdBySlot(EquipmentSlot slot) {
+    private ItemStackWrapper getItemBySlot(EquipmentSlot slot) {
         if (mc.player == null) {
-            return "";
+            return new ItemStackWrapper(ItemStack.EMPTY);
         }
 
-        ItemStack itemStack = mc.player.getItemBySlot(slot);
-        if (itemStack.isEmpty()) {
-            return "";
-        }
-
-        return Registries.ITEMS.getKey(itemStack.getItem()).toString();
+        return new ItemStackWrapper(mc.player.getItemBySlot(slot));
     }
 
     private double getItemDurabilityBySlot(EquipmentSlot slot) {

@@ -40,6 +40,7 @@ public class HoverProvider {
             case CHAR_LITERAL -> getChar(range);
             case FLOAT_LITERAL -> getFloat(range);
             case STRING_LITERAL -> getString(range);
+            case CUSTOM_TYPE -> new HoverResponse(type(((BoundCustomTypeNode) node).type), range);
             case PREDEFINED_TYPE -> {
                 SType type = ((BoundPredefinedTypeNode) node).type;
                 if (type == SBoolean.instance) {
@@ -202,6 +203,8 @@ public class HoverProvider {
             } else {
                 return span(theme.getTypeColor(), "Future<") + type(future.getUnderlying()) + span(theme.getTypeColor(), ">");
             }
+        } else if (type instanceof SCustomType) {
+            return span(theme.getTypeColor(), type.toString());
         } else if (type instanceof SClassType) {
             Class<?> clazz = type.getJavaClass();
             if (clazz.getName().startsWith("com.zergatul.cheatutils.scripting.modules")) {

@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
+import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -34,7 +36,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class GameApi {
@@ -387,6 +391,9 @@ public class GameApi {
             });
         }
 
+        @MethodDescription("""
+                Checks if entity emits particle with the same color as color defined for specified effect
+                """)
         public boolean hasEffectById(int entityId, String effectId) {
             return getBooleanValue(entityId, entity -> {
                 assert mc.level != null;
@@ -422,28 +429,28 @@ public class GameApi {
             });
         }
 
-        public String getEquippedHeadItemId(int entityId) {
-            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.HEAD));
+        public ItemStackWrapper getEquippedHeadItem(int entityId) {
+            return getValue(entityId, getEquippedItem(EquipmentSlot.HEAD), () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
-        public String getEquippedChestItemId(int entityId) {
-            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.CHEST));
+        public ItemStackWrapper getEquippedChestItem(int entityId) {
+            return getValue(entityId, getEquippedItem(EquipmentSlot.CHEST), () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
-        public String getEquippedLegsItemId(int entityId) {
-            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.LEGS));
+        public ItemStackWrapper getEquippedLegsItem(int entityId) {
+            return getValue(entityId, getEquippedItem(EquipmentSlot.LEGS), () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
-        public String getEquippedFeetItemId(int entityId) {
-            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.FEET));
+        public ItemStackWrapper getEquippedFeetItem(int entityId) {
+            return getValue(entityId, getEquippedItem(EquipmentSlot.FEET), () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
-        public String getEquippedMainHandItemId(int entityId) {
-            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.MAINHAND));
+        public ItemStackWrapper getEquippedMainHandItem(int entityId) {
+            return getValue(entityId, getEquippedItem(EquipmentSlot.MAINHAND), () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
-        public String getEquippedOffHandItemId(int entityId) {
-            return getStringValue(entityId, getEquippedItemId(EquipmentSlot.OFFHAND));
+        public ItemStackWrapper getEquippedOffHandItem(int entityId) {
+            return getValue(entityId, getEquippedItem(EquipmentSlot.OFFHAND), () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
         public int getHealth(int entityId) {
@@ -454,6 +461,19 @@ public class GameApi {
                     return Integer.MIN_VALUE;
                 }
             });
+        }
+
+        @MethodDescription("""
+                Returns ItemStack if entity is ItemEntity
+                """)
+        public ItemStackWrapper getItemStack(int entityId) {
+            return getValue(entityId, (entity, factory) -> {
+                if (entity instanceof ItemEntity itemEntity) {
+                    return new ItemStackWrapper(itemEntity.getItem());
+                } else {
+                    return factory.get();
+                }
+            }, () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
         public int getIntTag(int entityId, String tag) {
@@ -473,16 +493,13 @@ public class GameApi {
             });
         }
 
-        private Function<Entity, String> getEquippedItemId(EquipmentSlot slot) {
+        private Function<Entity, ItemStackWrapper> getEquippedItem(EquipmentSlot slot) {
             return entity -> {
                 if (entity instanceof LivingEntity living) {
                     ItemStack stack = living.getItemBySlot(slot);
-                    if (stack.isEmpty()) {
-                        return "";
-                    }
-                    return Registries.ITEMS.getKey(stack.getItem()).toString();
+                    return new ItemStackWrapper(stack);
                 } else {
-                    return "";
+                    return new ItemStackWrapper(ItemStack.EMPTY);
                 }
             };
         }
@@ -550,6 +567,32 @@ public class GameApi {
             }
 
             return getter.apply(entity);
+        }
+
+        private <T> T getValue(int entityId, Function<Entity, T> getter, Supplier<T> defaultSupplier) {
+            if (mc.level == null) {
+                return defaultSupplier.get();
+            }
+
+            Entity entity = mc.level.getEntity(entityId);
+            if (entity == null) {
+                return defaultSupplier.get();
+            }
+
+            return getter.apply(entity);
+        }
+
+        private <T> T getValue(int entityId, BiFunction<Entity, Supplier<T>, T> getter, Supplier<T> defaultSupplier) {
+            if (mc.level == null) {
+                return defaultSupplier.get();
+            }
+
+            Entity entity = mc.level.getEntity(entityId);
+            if (entity == null) {
+                return defaultSupplier.get();
+            }
+
+            return getter.apply(entity, defaultSupplier);
         }
 
         private static double jumpStrengthToHeight(double s) {

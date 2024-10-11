@@ -15,14 +15,17 @@ import com.zergatul.scripting.lexer.*;
 import com.zergatul.scripting.parser.NodeType;
 import com.zergatul.scripting.parser.Parser;
 import com.zergatul.scripting.parser.ParserOutput;
+import com.zergatul.scripting.parser.ParserTreeVisitor;
+import com.zergatul.scripting.parser.nodes.BinaryOperatorNode;
+import com.zergatul.scripting.parser.nodes.CompilationUnitNode;
+import com.zergatul.scripting.parser.nodes.CustomTypeNode;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.StreamSupport;
 
 public class Integration {
 
@@ -49,8 +52,14 @@ public class Integration {
                         String code = gson.fromJson(request, String.class);
 
                         Lexer lexer = new Lexer(new LexerInput(code));
-                        LexerOutput output = lexer.lex();
-                        Json.sendResponse(exchange, output);
+                        LexerOutput lexerOutput = lexer.lex();
+                        List<Token> tokens = new ArrayList<>();
+                        lexerOutput.tokens().iterator().forEachRemaining(tokens::add);
+
+                        Parser parser = new Parser(lexerOutput);
+                        ParserOutput parserOutput = parser.parse();
+
+                        Json.sendResponse(exchange, createTokens(tokens, parserOutput.unit()));
                     } else if (path.equals(prefix + "diagnostics")) {
                         Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
@@ -80,13 +89,17 @@ public class Integration {
                                 })
                                 .toArray());
                     } else if (path.equals(prefix + "tokens")) {
-                        Json.sendResponse(exchange, Arrays.stream(TokenType.values()).map(Enum::name).toArray());
+                        Json.sendResponse(exchange, TokenTypeEx.VALUES);
                     } else if (path.equals(prefix + "nodes")) {
                         Json.sendResponse(exchange, Arrays.stream(NodeType.values()).map(Enum::name).toArray());
                     } else if (path.equals(prefix + "token-rules/light")) {
-                        Json.sendResponse(exchange, Arrays.stream(TokenType.values()).map(type -> new TokenRule(type.name(), light.getTokenColor(type))).toArray());
+                        Json.sendResponse(exchange, Arrays.stream(TokenTypeEx.VALUES)
+                                .map(type -> new TokenRule(type, TokenTypeEx.getTokenColor(type, light)))
+                                .toArray());
                     } else if (path.equals(prefix + "token-rules/dark")) {
-                        Json.sendResponse(exchange, Arrays.stream(TokenType.values()).map(type -> new TokenRule(type.name(), dark.getTokenColor(type))).toArray());
+                        Json.sendResponse(exchange, Arrays.stream(TokenTypeEx.VALUES)
+                                .map(type -> new TokenRule(type, TokenTypeEx.getTokenColor(type, dark)))
+                                .toArray());
                     } else if (path.startsWith(prefix + "hover/")) {
                         String theme = path.substring(path.indexOf("/hover/") + 7);
 
@@ -229,6 +242,31 @@ public class Integration {
         }
     }
 
+    private static List<TokenEx> createTokens(List<Token> tokens, CompilationUnitNode unit) {
+        Queue<CustomTypeNode> nodes = new ArrayDeque<>();
+        unit.accept(new ParserTreeVisitor() {
+            @Override
+            public void visit(CustomTypeNode node) {
+                nodes.add(node);
+            }
+        });
+
+        List<TokenEx> result = new ArrayList<>();
+        for (Token token : tokens) {
+            if (!nodes.isEmpty() && token instanceof IdentifierToken) {
+                if (nodes.peek().getRange().equals(token.getRange())) {
+                    nodes.poll();
+                    result.add(new TokenEx(TokenTypeEx.CUSTOM_TYPE_INDEX, token.getRange()));
+                    continue;
+                }
+            }
+
+            result.add(new TokenEx(token.type.ordinal(), token.getRange()));
+        }
+
+        return result;
+    }
+
     public record TokenRule(String token, String foreground) {}
 
     public record DiagnosticsRequest(String code, String type) {}
@@ -238,4 +276,6 @@ public class Integration {
     public record HoverRequest(String code, String type, int line, int column) {}
 
     public record CompletionRequest(String code, String type, int line, int column) {}
+
+    public record TokenEx(int type, TextRange range) {}
 }
