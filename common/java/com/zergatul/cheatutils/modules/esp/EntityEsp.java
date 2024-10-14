@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.compatibility.WrappedRenderType;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.font.StylizedText;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.TextureStateShardAccessor;
@@ -105,7 +106,7 @@ public class EntityEsp implements Module {
         return null;
     }
 
-    public String getTitleOverride(EntityEspConfig config, Entity entity) {
+    public StylizedText getTitleOverride(EntityEspConfig config, Entity entity) {
         if (!config.scriptEnabled || config.script == null) {
             return null;
         }
@@ -555,6 +556,6 @@ public class EntityEsp implements Module {
         public boolean outlineDisabled;
         public boolean overlayDisabled;
         public boolean collisionBoxDisabled;
-        public String title;
+        public StylizedText title;
     }
 }

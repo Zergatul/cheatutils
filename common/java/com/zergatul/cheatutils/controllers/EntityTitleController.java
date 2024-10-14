@@ -130,7 +130,7 @@ public class EntityTitleController {
             boolean showEquippedItems = false;
             boolean useRaw = false;
             boolean showOwner = false;
-            String title = null;
+            StylizedText title = null;
             for (EntityEspConfig entityConfig : entityConfigs) {
                 if (!entityConfig.enabled || !entityConfig.drawTitles) {
                     continue;
@@ -367,10 +367,10 @@ public class EntityTitleController {
 
     private StylizedText getEntityText(EntityEntry entry) {
         if (entry.title != null) {
-            return StylizedText.of(entry.title);
+            return entry.title;
         }
 
-        Component component = null;
+        Component component;
         if (entry.showDefaultNames) {
             component = entry.entity.getDisplayName();
         } else {
@@ -464,7 +464,7 @@ public class EntityTitleController {
             boolean showHp,
             boolean showEquippedItems,
             boolean showOwner,
-            String title) {}
+            StylizedText title) {}
 
     private static class EnchantmentEntry {
 
