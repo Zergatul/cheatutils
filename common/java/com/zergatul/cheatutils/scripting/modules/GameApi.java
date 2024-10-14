@@ -476,6 +476,14 @@ public class GameApi {
             }, () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
+        public String getNbt(int entityId) {
+            return getStringValue(entityId, entity -> {
+                CompoundTag compound = new CompoundTag();
+                entity.saveWithoutId(compound);
+                return compound.getAsString();
+            });
+        }
+
         public int getIntTag(int entityId, String tag) {
             return getIntegerValue(entityId, entity -> {
                 if (entity instanceof LivingEntity living) {
