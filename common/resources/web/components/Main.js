@@ -52,6 +52,10 @@ export function createComponent(template) {
                 window.location.hash = '#/' + module.path;
             };
 
+            const onMatrixServerClick = () => {
+                window.open('https://matrix.to/#/#cheatutils:matrix.org', '_blank');
+            };
+
             onMounted(() => {
                 onFilter('');
                 events.subscribe(onEvent);
@@ -77,7 +81,8 @@ export function createComponent(template) {
                 statuses,
                 filtered,
 
-                onModuleClick
+                onModuleClick,
+                onMatrixServerClick
             };
         }
     };
