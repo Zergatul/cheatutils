@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -25,6 +26,15 @@ public class FreeCamApi {
             """)
     public boolean isEnabled() {
         return FreeCam.instance.isActive();
+    }
+
+    public Position3d getPosition() {
+        FreeCam fc = FreeCam.instance;
+        if (fc.isActive()) {
+            return new Position3d(fc.getX(), fc.getY(), fc.getZ());
+        } else {
+            return new Position3d(0, 0, 0);
+        }
     }
 
     @MethodDescription("""

@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
+import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
@@ -105,6 +106,13 @@ public class GameApi {
     }
 
     public static class DimensionApi {
+
+        public String get() {
+            if (mc.level == null) {
+                return "";
+            }
+            return mc.level.dimension().location().toString();
+        }
 
         public boolean isOverworld() {
             if (mc.level == null) {
@@ -239,6 +247,13 @@ public class GameApi {
             }
 
             return target == null ? Integer.MIN_VALUE : target.getId();
+        }
+
+        public Position3d getPosition(int entityId) {
+            return getValue(
+                    entityId,
+                    entity -> new Position3d(entity.getX(), entity.getY(), entity.getZ()),
+                    () -> new Position3d(0, 0, 0));
         }
 
         public double getX(int entityId) {

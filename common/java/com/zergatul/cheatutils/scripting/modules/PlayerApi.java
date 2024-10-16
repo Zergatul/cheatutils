@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.controllers.SpeedCounterController;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.scripting.MethodDescription;
@@ -67,6 +68,14 @@ public class PlayerApi {
                 player.connection.sendCommand(text.substring(1));
             }
         }
+    }
+
+    public Position3d getPosition() {
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return new Position3d(0, 0, 0);
+        }
+        return new Position3d(entity.getX(), entity.getY(), entity.getZ());
     }
 
     @MethodDescription("""
