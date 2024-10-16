@@ -18,6 +18,8 @@ public class WorldDownloadApi extends ApiBase {
 
     @Override
     public String post(String body) throws HttpException {
+        body = gson.fromJson(body, String.class);
+
         if (body.startsWith("start:")) {
             try {
                 WorldDownloadController.instance.start(body.substring(6));
