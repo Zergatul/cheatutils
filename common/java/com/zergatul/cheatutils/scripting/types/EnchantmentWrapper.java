@@ -40,7 +40,7 @@ public class EnchantmentWrapper {
         int index = 0;
         for (Holder<Enchantment> holder : enchantments.keySet()) {
             int level = enchantments.getLevel(holder);
-            result[index++] = new EnchantmentWrapper(holder.unwrapKey().get().location(), holder.get(), level);
+            result[index++] = new EnchantmentWrapper(holder.unwrapKey().get().location(), holder.value(), level);
         }
         return result;
     }
