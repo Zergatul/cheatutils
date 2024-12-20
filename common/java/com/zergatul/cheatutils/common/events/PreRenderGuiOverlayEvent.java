@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.common.events;
 
 public class PreRenderGuiOverlayEvent implements CancelableEvent {
 
-    private GuiOverlayType type;
+    private final GuiOverlayType type;
     private boolean canceled;
 
     public PreRenderGuiOverlayEvent(GuiOverlayType type) {

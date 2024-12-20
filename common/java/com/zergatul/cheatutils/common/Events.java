@@ -51,4 +51,5 @@ public class Events {
     public static final ParameterizedEventHandler<Component> ChatMessageAdded = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler Close = new SimpleEventHandler();
     public static final ParameterizedEventHandler<ContainerClickEvent> ContainerMenuClick = new ParameterizedEventHandler<>();
+    public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
 }

@@ -883,6 +883,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().stepUp = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("aim-assist", AimAssistConfig.class) {
+            @Override
+            protected AimAssistConfig getConfig() {
+                return ConfigStore.instance.getConfig().aimAssist;
+            }
+
+            @Override
+            protected void setConfig(AimAssistConfig config) {
+                ConfigStore.instance.getConfig().aimAssist = config;
+            }
+        });
     }
 
     @Override

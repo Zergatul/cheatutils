@@ -93,6 +93,7 @@ public class ModMain {
         register(Containers.instance);
         register(AntiHunger.instance);
         register(Schematica.instance);
+        register(AimAssist.instance);
 
         register(TickEndExecutor.instance);
 

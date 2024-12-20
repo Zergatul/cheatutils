@@ -320,6 +320,13 @@ module({
     path: 'step-up',
     tags: ['step', 'up', 'jump']
 });
+module({
+    group: 'hacks',
+    name: 'Aim Assist',
+    component: 'AimAssist',
+    path: 'aim-assist',
+    tags: ['aim', 'bow', 'assist']
+});
 
 module({
     group: 'visuals',

@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.mixins.common.accessors.CrossbowItemAccessor;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.utils.ServerBehavior;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
@@ -154,13 +155,10 @@ public class ProjectilePath {
         float speedX = -Mth.sin(yRot * ((float)Math.PI / 180F)) * Mth.cos(xRot * ((float)Math.PI / 180F));
         float speedY = -Mth.sin((xRot + entry.getXRotDelta()) * ((float)Math.PI / 180F));
         float speedZ = Mth.cos(yRot * ((float)Math.PI / 180F)) * Mth.cos(xRot * ((float)Math.PI / 180F));
-        Vec3 movement = new Vec3(speedX, speedY, speedZ).normalize().scale(entry.getSpeed());
-
-        Vec3 playerSpeed = mc.player.getDeltaMovement();
-        if (mc.player.onGround()) {
-            playerSpeed = playerSpeed.subtract(0, playerSpeed.y, 0);
-        }
-        movement = movement.add(playerSpeed);
+        Vec3 movement = new Vec3(speedX, speedY, speedZ)
+                .normalize()
+                .scale(entry.getSpeed())
+                .add(ServerBehavior.predictPlayerKnownMovement());
 
         /*final double deviationBase = 0.0172275D;
         double dev = deviationBase * entry.getDeviation();

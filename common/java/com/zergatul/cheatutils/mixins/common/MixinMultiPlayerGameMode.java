@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FastBreakConfig;
-import com.zergatul.cheatutils.helpers.MixinMultiPlayerGameModeHelper;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -31,8 +31,8 @@ public abstract class MixinMultiPlayerGameMode {
     private int destroyDelay;
 
     @Inject(at = @At("HEAD"), method = "releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V", cancellable = true)
-    private void onReleaseUsingItem(Player p_105278_, CallbackInfo info) {
-        if (MixinMultiPlayerGameModeHelper.disableReleaseUsingItem) {
+    private void onReleaseUsingItem(Player player, CallbackInfo info) {
+        if (Events.PlayerReleaseUsingItem.trigger(new PlayerReleaseUsingItemEvent())) {
             info.cancel();
         }
     }

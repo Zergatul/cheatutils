@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.configs.AutoEatConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.helpers.MixinMultiPlayerGameModeHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
@@ -20,6 +20,7 @@ public class AutoEat {
 
     private AutoEat() {
         Events.ClientTickStart.add(this::onClickTickStart);
+        Events.PlayerReleaseUsingItem.add(this::onPlayerReleaseUsingItem);
         state = State.NONE;
     }
 
@@ -42,21 +43,31 @@ public class AutoEat {
         }
     }
 
+    private void onPlayerReleaseUsingItem(PlayerReleaseUsingItemEvent event) {
+        if (state == State.EATING) {
+            event.cancel();
+        }
+    }
+
     private void startEating() {
+        assert mc.player != null;
+        assert mc.gameMode != null;
+
         if (state == State.NONE || mc.player.getUseItem().isEmpty()) {
             InteractionResult result = mc.gameMode.useItem(mc.player, InteractionHand.OFF_HAND);
             if (result.consumesAction()) {
                 mc.gameRenderer.itemInHandRenderer.itemUsed(InteractionHand.OFF_HAND);
-                MixinMultiPlayerGameModeHelper.disableReleaseUsingItem = true;
                 state = State.EATING;
             }
         }
     }
 
     private void stopEating() {
+        assert mc.player != null;
+        assert mc.gameMode != null;
+
         if (state == State.EATING) {
             mc.gameMode.releaseUsingItem(mc.player);
-            MixinMultiPlayerGameModeHelper.disableReleaseUsingItem = false;
             state = State.NONE;
         }
     }

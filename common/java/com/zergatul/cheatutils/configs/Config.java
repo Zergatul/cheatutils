@@ -55,7 +55,6 @@ public class Config {
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
     public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
     public FakeWeatherConfig fakeWeatherConfig = new FakeWeatherConfig();
-    public AutoAimConfig autoAimConfig = new AutoAimConfig();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
     public ExecConfig execConfig = new ExecConfig();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
@@ -70,6 +69,7 @@ public class Config {
     public AntiHungerConfig antiHungerConfig = new AntiHungerConfig();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
     public StepUpConfig stepUp = new StepUpConfig();
+    public AimAssistConfig aimAssist = new AimAssistConfig();
 
     public Config() {
         esp = true;

@@ -1,0 +1,39 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Works only with bow.
+        Once you start using bow, module searches for the closest to your crosshair living entity,
+        and if it is possible to reach it with arrow and current bow power,
+        then module sets its target as current entity.
+        If you release bow you will rotate to the proper rotation on the server and shoot the arrow.
+        <br>
+
+        You can add below script to Status Overlay module to see what is current targeted entity:
+        <pre>
+if (aimAssist.hasTarget()) {
+    let id = aimAssist.getEntityId();
+    overlay.addAtPosition(
+        window.getGuiWidth() / 2 + 16,
+        window.getGuiHeight() / 2 + 16,
+        "#FFFFFF",
+        "Target: " + game.entities.getName(id));
+}
+        </pre>
+
+        Or you can configure Entity ESP to highlight this entity via custom script.
+        Add Entity ESP entry for LivingEntity class,
+        check "Enabled", uncheck "Tracer", check "Outline", uncheck "Collision Box",
+        check "Custom Script", add below script, click "Save" to save the script,
+        go back to Entity ESP list, and move LivingEntity to the top on the list:
+        <pre>
+if (id != aimAssist.getEntityId()) {
+    event.disableOutline();
+}
+        </pre>
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
+</div>
