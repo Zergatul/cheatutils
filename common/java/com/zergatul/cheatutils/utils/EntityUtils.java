@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -68,15 +69,22 @@ public class EntityUtils {
                     Entity entity = factory.create(null, null);
                     entityClass = entity.getClass();
                 } catch (Throwable throwable) {
-                    StackTraceElement element = findEntityConstructor(throwable);
-                    entityClass = Class.forName(element.getClassName());
+                    Optional<Class<?>> optional = findEntityClassByConstructor(throwable).or(() -> findEntityReturnMethod(throwable));
+                    if (optional.isPresent()) {
+                        entityClass = optional.get();
+                    } else {
+                        logger.warn("Cannot figure out entity class name from stacktrace for {}.", key);
+                        logger.warn("Exception", throwable);
+                        return null;
+                    }
                 }
 
                 EntityInfo info = new EntityInfo(entityClass, Registries.ENTITY_TYPES.getKey(et).toString());
                 set.add(info);
                 return info;
             } catch (Throwable throwable) {
-                logger.warn("Create entity by EntityType {} failed.", key, throwable);
+                logger.warn("Create entity by EntityType {} failed.", key);
+                logger.warn("Exception", throwable);
                 return null;
             }
         }).filter(Objects::nonNull).forEach(finalClasses::add);
@@ -117,7 +125,7 @@ public class EntityUtils {
         }
     }
 
-    private static StackTraceElement findEntityConstructor(Throwable throwable) {
+    private static Optional<Class<?>> findEntityClassByConstructor(Throwable throwable) {
         StackTraceElement[] elements = throwable.getStackTrace();
         int index = -1;
         for (int i = 0; i < elements.length; i++) {
@@ -131,9 +139,52 @@ public class EntityUtils {
         }
         StackTraceElement element = elements[index - 1];
         if (!element.getMethodName().equals("<init>")) {
-            throw new IllegalStateException("Constructor call expected on stack trace.");
+            return Optional.empty();
         }
-        return element;
+
+        try {
+            return Optional.of(Class.forName(element.getClassName()));
+        } catch (ClassNotFoundException ex) {
+            logger.warn("Cannot get Class object for {}.", element.getClassName());
+            logger.warn("Exception", ex);
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<Class<?>> findEntityReturnMethod(Throwable throwable) {
+        for (StackTraceElement element : throwable.getStackTrace()) {
+            if (element.getClassName().startsWith("com.zergatul.cheatutils")) {
+                return Optional.empty();
+            }
+
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(element.getClassName());
+            } catch (ClassNotFoundException ex) {
+                logger.warn("Cannot get Class object for {}.", element.getClassName());
+                logger.warn("Exception", ex);
+                continue;
+            }
+
+            List<Method> methods = Arrays.stream(clazz.getDeclaredMethods())
+                    .filter(m -> m.getName().equals(element.getMethodName()))
+                    .toList();
+            if (methods.isEmpty()) {
+                logger.warn("Cannot find method {} for class {}.", element.getMethodName(), element.getClassName());
+                continue;
+            }
+            if (methods.size() > 1) {
+                logger.warn("More than one {} method exists for class {}.", element.getMethodName(), element.getClassName());
+                continue;
+            }
+
+            Method method = methods.getFirst();
+            if (Entity.class.isAssignableFrom(method.getReturnType())) {
+                return Optional.of(method.getReturnType());
+            }
+        }
+
+        return Optional.empty();
     }
 
     private static void forEachInterface(Class<?> clazz, Consumer<Class<?>> consumer) {
