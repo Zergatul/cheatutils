@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -65,18 +66,27 @@ public class EntityUtils {
             Class<?> entityClass;
             try {
                 try {
+                    // we know it is not OK to pass null as parameters, but we do this explicitly to trigger exception
+                    @SuppressWarnings("ConstantConditions")
                     Entity entity = factory.create(null, null);
                     entityClass = entity.getClass();
                 } catch (Throwable throwable) {
-                    StackTraceElement element = findEntityConstructor(throwable);
-                    entityClass = Class.forName(element.getClassName());
+                    Optional<Class<?>> optional = findEntityClassFromException(throwable);
+                    if (optional.isPresent()) {
+                        entityClass = optional.get();
+                    } else {
+                        logger.warn("Cannot figure out entity class name from stacktrace for {}.", key);
+                        logger.warn("Exception", throwable);
+                        return null;
+                    }
                 }
 
                 EntityInfo info = new EntityInfo(entityClass, Registries.ENTITY_TYPES.getKey(et).toString());
                 set.add(info);
                 return info;
             } catch (Throwable throwable) {
-                logger.warn("Create entity by EntityType {} failed.", key, throwable);
+                logger.warn("Create entity by EntityType {} failed.", key);
+                logger.warn("Exception", throwable);
                 return null;
             }
         }).filter(Objects::nonNull).forEach(finalClasses::add);
@@ -117,11 +127,14 @@ public class EntityUtils {
         }
     }
 
-    private static StackTraceElement findEntityConstructor(Throwable throwable) {
+    private static Optional<Class<?>> findEntityClassFromException(Throwable throwable) {
         StackTraceElement[] elements = throwable.getStackTrace();
+
+        // find index of first com.zergatul.cheatutils.EntityUtils class in stack trace
+        // we will check elements only before this index
         int index = -1;
         for (int i = 0; i < elements.length; i++) {
-            if (elements[i].getClassName().startsWith("com.zergatul.cheatutils")) {
+            if (elements[i].getClassName().equals(EntityUtils.class.getName())) {
                 index = i;
                 break;
             }
@@ -133,12 +146,42 @@ public class EntityUtils {
         while (index > 0) {
             index--;
             StackTraceElement element = elements[index];
+
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(element.getClassName());
+            } catch (ClassNotFoundException ex) {
+                logger.warn("Cannot get Class object for {}.", element.getClassName());
+                logger.warn("Exception", ex);
+                continue;
+            }
+
+            Class<?> returnType;
+            // for constructor, we simply use current class
             if (element.getMethodName().equals("<init>")) {
-                return element;
+                returnType = clazz;
+            } else {
+                // for methods, we have to check return value
+                List<Method> methods = Arrays.stream(clazz.getDeclaredMethods())
+                        .filter(m -> m.getName().equals(element.getMethodName()))
+                        .toList();
+                if (methods.isEmpty()) {
+                    logger.warn("Cannot find method {} for class {}.", element.getMethodName(), element.getClassName());
+                    continue;
+                }
+                if (methods.size() > 1) {
+                    logger.warn("More than one {} method exists for class {}.", element.getMethodName(), element.getClassName());
+                    continue;
+                }
+                returnType = methods.getFirst().getReturnType();
+            }
+
+            if (Entity.class.isAssignableFrom(returnType)) {
+                return Optional.of(returnType);
             }
         }
 
-        throw new IllegalStateException("Constructor call expected on stack trace.");
+        return Optional.empty();
     }
 
     private static void forEachInterface(Class<?> clazz, Consumer<Class<?>> consumer) {
