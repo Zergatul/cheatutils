@@ -46,6 +46,37 @@ public class InventoryApi {
     }
 
     @MethodDescription("""
+            Slot parameters should be 1..9 range
+            """)
+    public ItemStackWrapper getHotbarItem(int slot) {
+        if (mc.player == null) {
+            return new ItemStackWrapper(ItemStack.EMPTY);
+        }
+
+        if (slot < 1 || slot > 9) {
+            return new ItemStackWrapper(ItemStack.EMPTY);
+        }
+
+        return new ItemStackWrapper(mc.player.getInventory().getItem(slot - 1));
+    }
+
+    @MethodDescription("""
+            Selects slot on your hotbar. Slot parameters should be 1..9 range.
+            """)
+    @ApiVisibility(ApiType.ACTION)
+    public void setSelectedHotbarSlot(int slot) {
+        if (mc.player == null) {
+            return;
+        }
+
+        if (slot < 1 || slot > 9) {
+            return;
+        }
+
+        mc.player.getInventory().setSelectedHotbarSlot(slot - 1);
+    }
+
+    @MethodDescription("""
             Equips item by id to corresponding slot
             """)
     @ApiVisibility(ApiType.ACTION)

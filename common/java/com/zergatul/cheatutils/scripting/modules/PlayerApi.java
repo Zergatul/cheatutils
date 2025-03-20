@@ -20,6 +20,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -358,6 +359,25 @@ public class PlayerApi {
         return 1d - mc.player.getAttackStrengthScale(0);
     }
 
+    @MethodDescription("""
+            Returns distance to entity.
+            Uses the same algorithm as vanilla Minecraft when checking if entity is close enough for interaction.
+            This is distance from player eyes to entity bounding box.
+            """)
+    public double getInteractionDistanceTo(int entityId) {
+        if (mc.player == null || mc.level == null) {
+            return Double.NaN;
+        }
+
+        Entity entity = mc.level.getEntity(entityId);
+        if (entity == null) {
+            return Double.NaN;
+        }
+
+        // copy from Player.canInteractWithEntity
+        return Math.sqrt(entity.getBoundingBox().distanceToSqr(mc.player.getEyePosition()));
+    }
+
     public static class TargetApi {
 
         public boolean hasBlock() {
@@ -523,10 +543,28 @@ public class PlayerApi {
     public static class InteractionsApi {
 
         @ApiVisibility(ApiType.ACTION)
+        public void interactWithEntity(int entityId) {
+            interactWithEntity(entityId, false);
+        }
+
+        @ApiVisibility(ApiType.ACTION)
+        public void interactWithEntity(int entityId, boolean offHand) {
+            if (mc.level == null || mc.gameMode == null) {
+                return;
+            }
+
+            Entity entity = mc.level.getEntity(entityId);
+            if (entity == null) {
+                return;
+            }
+
+            interactWithEntity(entity, offHand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
+        }
+
+        @ApiVisibility(ApiType.ACTION)
         public void openClosestChestBoat() {
             assert mc.gameMode != null;
 
-            Minecraft mc = Minecraft.getInstance();
             if (mc.level != null && mc.player != null) {
                 Stream<ChestBoat> boats = StreamSupport
                         .stream(mc.level.entitiesForRendering().spliterator(), false)
@@ -559,7 +597,6 @@ public class PlayerApi {
 
         @ApiVisibility(ApiType.ACTION)
         public void openTradingWithClosestVillager() {
-            Minecraft mc = Minecraft.getInstance();
             if (mc.level != null && mc.player != null) {
                 Villager villager = StreamSupport.stream(mc.level.entitiesForRendering().spliterator(), false)
                         .filter(Villager.class::isInstance)
@@ -569,17 +606,25 @@ public class PlayerApi {
                 if (villager == null) {
                     return;
                 }
-                interactWithEntity(mc, villager);
+                interactWithEntity(villager, InteractionHand.MAIN_HAND);
             }
         }
 
-        private void interactWithEntity(Minecraft mc, Entity entity) {
+        private void interactWithEntity(Entity entity, InteractionHand hand) {
             assert mc.player != null;
             assert mc.gameMode != null;
 
-            mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
-            mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
-            mc.player.swing(InteractionHand.MAIN_HAND);
+            // copy from Minecraft.startUseItem
+            InteractionResult result = mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), hand);
+            if (!result.consumesAction()) {
+                result = mc.gameMode.interact(mc.player, entity, hand);
+            }
+
+            if (result instanceof InteractionResult.Success success) {
+                if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
+                    mc.player.swing(hand);
+                }
+            }
         }
     }
 }
