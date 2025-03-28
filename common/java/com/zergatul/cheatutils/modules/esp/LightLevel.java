@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -34,8 +33,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.List;
@@ -46,35 +43,39 @@ public class LightLevel implements Module {
     public static final LightLevel instance = new LightLevel();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Logger logger = LogManager.getLogger(LightLevel.class);
-    private final ResourceLocation[] textures = new ResourceLocation[16];
+    private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/light-level.png");
+    private final TextureLocation[] numbers = new TextureLocation[16];
     private final HashMap<ChunkPos, HashSet<BlockPos>> chunks = new HashMap<>();
     private final List<BlockPos> listForRendering = new ArrayList<>();
-    private final Map<Direction, Pair<float[], float[]>> rotations = Map.ofEntries(
-            Map.entry(Direction.NORTH, new Pair<>(
-                    new float[] { 0, 0, 1, 1 },
-                    new float[] { 0, 1, 1, 0 })),
-            Map.entry(Direction.SOUTH, new Pair<>(
-                    new float[] { 1, 1, 0, 0 },
-                    new float[] { 1, 0, 0, 1 })),
-            Map.entry(Direction.EAST, new Pair<>(
-                    new float[] { 0, 1, 1, 0 },
-                    new float[] { 1, 1, 0, 0 })),
-            Map.entry(Direction.WEST, new Pair<>(
-                    new float[] { 1, 0, 0, 1 },
-                    new float[] { 0, 0, 1, 1 })));
+    private final Map<Direction, RotationIndexes> rotations = Map.ofEntries(
+            Map.entry(Direction.NORTH, new RotationIndexes(
+                    new int[] { 0, 0, 1, 1 },
+                    new int[] { 0, 1, 1, 0 })),
+            Map.entry(Direction.SOUTH, new RotationIndexes(
+                    new int[] { 1, 1, 0, 0 },
+                    new int[] { 1, 0, 0, 1 })),
+            Map.entry(Direction.EAST, new RotationIndexes(
+                    new int[] { 0, 1, 1, 0 },
+                    new int[] { 1, 1, 0, 0 })),
+            Map.entry(Direction.WEST, new RotationIndexes(
+                    new int[] { 1, 0, 0, 1 },
+                    new int[] { 0, 0, 1, 1 })));
 
     private boolean active = false;
 
     private LightLevel() {
-        for (int i = 0; i < 16; i++) {
-            textures[i] = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/light-level-" + i + ".png");
-        }
-
         Events.AfterRenderWorld.add(this::render);
         Events.RawChunkLoaded.add(this::onChunkLoaded);
         Events.RawChunkUnloaded.add(this::onChunkUnLoaded);
         Events.RawBlockUpdated.add(this::onBlockChanged);
+
+        for (int i = 0; i < 16; i++) {
+            float x1 = 0.25f * (i % 4);
+            float y1 = 0.25f * (i >> 2);
+            float x2 = x1 + 0.25f;
+            float y2 = y1 + 0.25f;
+            numbers[i] = new TextureLocation(new float[] { x1, x2 }, new float[] { y1, y2 });
+        }
     }
 
     public void onChanged() {
@@ -108,14 +109,15 @@ public class LightLevel implements Module {
         Vec3 view = camera.getPosition();
 
         Direction direction = Direction.fromYRot(camera.getYRot());
-        Pair<float[], float[]> texRot = rotations.get(direction);
-        float[] u = texRot.getFirst();
-        float[] v = texRot.getSecond();
+        RotationIndexes rot = rotations.get(direction);
 
         double maxDistance2 = config.maxDistance * config.maxDistance;
         double xc = config.useFreeCamPosition ? view.x : mc.player.getX();
         double yc = config.useFreeCamPosition ? view.y : mc.player.getY();
         double zc = config.useFreeCamPosition ? view.z : mc.player.getZ();
+
+        Texture3dRenderer renderer1 = RenderUtilities.instance.getTexture3dRenderer();
+        renderer1.begin();
 
         List<BlockPos> listTracers = new ArrayList<>();
         for (BlockPos pos: getBlockForRendering()) {
@@ -136,17 +138,17 @@ public class LightLevel implements Module {
                 float x2 = x1 + 0.9f;
                 float z2 = z1 + 0.9f;
 
-                Texture3dRenderer renderer = RenderUtilities.instance.getTexture3dRenderer();
-                renderer.begin();
-                renderer.quad(
-                        x1, y, z1, u[0], v[0],
-                        x1, y, z2, u[1], v[1],
-                        x2, y, z2, u[2], v[2],
-                        x2, y, z1, u[3], v[3]);
-                int textureId = ((GlTexture) mc.getTextureManager().getTexture(textures[blockLight]).getTexture()).glId();
-                renderer.end(event.getMvp(), textureId);
+                TextureLocation location = numbers[blockLight];
+                renderer1.quad(
+                        x1, y, z1, location.x[rot.u[0]], location.y[rot.v[0]],
+                        x1, y, z2, location.x[rot.u[1]], location.y[rot.v[1]],
+                        x2, y, z2, location.x[rot.u[2]], location.y[rot.v[2]],
+                        x2, y, z1, location.x[rot.u[3]], location.y[rot.v[3]]);
             }
         }
+
+        int textureId = ((GlTexture) mc.getTextureManager().getTexture(texture).getTexture()).glId();
+        renderer1.end(event.getMvp(), textureId);
 
         Vec3 tracerCenter = event.getTracerCenter();
         double tracerX = tracerCenter.x;
@@ -307,4 +309,8 @@ public class LightLevel implements Module {
 
         return state.isSolid() && state.isCollisionShapeFullBlock(mc.level, pos);
     }
+
+    private record TextureLocation(float[] x, float[] y) {}
+
+    private record RotationIndexes(int[] u, int[] v) {}
 }
