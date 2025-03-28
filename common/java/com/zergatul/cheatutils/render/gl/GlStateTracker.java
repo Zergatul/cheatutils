@@ -2,9 +2,12 @@ package com.zergatul.cheatutils.render.gl;
 
 import org.lwjgl.opengl.GL30;
 
+import static org.lwjgl.opengl.GL30.*;
+
 public class GlStateTracker {
 
     public static final int PROGRAM = 0x01;
+    public static final int TEXTURE = 0x02;
 
     private static int VAO;
     private static int VBO;
@@ -18,62 +21,78 @@ public class GlStateTracker {
     private static int binding1;
 
     public static void save() {
-        VAO = GL30.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING);
-        VBO = GL30.glGetInteger(GL30.GL_ARRAY_BUFFER_BINDING);
-        blend = GL30.glIsEnabled(GL30.GL_BLEND);
-        depth = GL30.glIsEnabled(GL30.GL_DEPTH_TEST);
-        cull = GL30.glIsEnabled(GL30.GL_CULL_FACE);
-        texture = GL30.glGetInteger(GL30.GL_ACTIVE_TEXTURE);
+        VAO = glGetInteger(GL_VERTEX_ARRAY_BINDING);
+        VBO = glGetInteger(GL_ARRAY_BUFFER_BINDING);
+        blend = glIsEnabled(GL_BLEND);
+        depth = glIsEnabled(GL_DEPTH_TEST);
+        cull = glIsEnabled(GL_CULL_FACE);
+        texture = glGetInteger(GL_ACTIVE_TEXTURE);
 
-        program = GL30.glGetInteger(GL30.GL_CURRENT_PROGRAM);
+        program = glGetInteger(GL_CURRENT_PROGRAM);
 
-        GL30.glActiveTexture(GL30.GL_TEXTURE0);
-        binding0 = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D);
-        GL30.glActiveTexture(GL30.GL_TEXTURE1);
-        binding1 = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D);
+        glActiveTexture(GL_TEXTURE0);
+        binding0 = glGetInteger(GL_TEXTURE_BINDING_2D);
+        glActiveTexture(GL_TEXTURE1);
+        binding1 = glGetInteger(GL_TEXTURE_BINDING_2D);
     }
 
     public static void restore() {
-        GL30.glBindVertexArray(VAO);
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, VBO);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
         if (blend) {
-            GL30.glEnable(GL30.GL_BLEND);
+            glEnable(GL_BLEND);
         } else {
-            GL30.glDisable(GL30.GL_BLEND);
+            glDisable(GL_BLEND);
         }
 
         if (depth) {
-            GL30.glEnable(GL30.GL_DEPTH_TEST);
+            glEnable(GL_DEPTH_TEST);
         } else {
-            GL30.glDisable(GL30.GL_DEPTH_TEST);
+            glDisable(GL_DEPTH_TEST);
         }
 
         if (cull) {
-            GL30.glEnable(GL30.GL_CULL_FACE);
+            glEnable(GL_CULL_FACE);
         } else {
-            GL30.glDisable(GL30.GL_CULL_FACE);
+            glDisable(GL_CULL_FACE);
         }
 
-        GL30.glUseProgram(program);
+        glUseProgram(program);
 
-        GL30.glActiveTexture(GL30.GL_TEXTURE0);
-        GL30.glBindTexture(GL30.GL_TEXTURE_2D, binding0);
-        GL30.glActiveTexture(GL30.GL_TEXTURE1);
-        GL30.glBindTexture(GL30.GL_TEXTURE_2D, binding1);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, binding0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, binding1);
 
-        GL30.glActiveTexture(texture);
+        glActiveTexture(texture);
     }
 
     public static void save(int flags) {
         if ((flags & PROGRAM) != 0) {
-            program = GL30.glGetInteger(GL30.GL_CURRENT_PROGRAM);
+            program = glGetInteger(GL_CURRENT_PROGRAM);
+        }
+        if ((flags & TEXTURE) != 0) {
+            texture = glGetInteger(GL_ACTIVE_TEXTURE);
+
+            glActiveTexture(GL_TEXTURE0);
+            binding0 = glGetInteger(GL_TEXTURE_BINDING_2D);
+            glActiveTexture(GL_TEXTURE1);
+            binding1 = glGetInteger(GL_TEXTURE_BINDING_2D);
         }
     }
 
     public static void restore(int flags) {
         if ((flags & PROGRAM) != 0) {
-            GL30.glUseProgram(program);
+            glUseProgram(program);
+        }
+        if ((flags & TEXTURE) != 0) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, binding0);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, binding1);
+
+            glActiveTexture(texture);
         }
     }
 }

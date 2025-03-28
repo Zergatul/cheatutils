@@ -4,8 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.yggdrasil.ProfileResult;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -22,6 +20,7 @@ import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -30,7 +29,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
@@ -178,13 +176,16 @@ public class EntityTitleController {
             return;
         }
 
-        float scale = (float) mc.getWindow().getGuiScale();
-        float invScale = 1 / scale;
-        float scaledHalfWidth = mc.getWindow().getWidth() * invScale / 2;
-        float scaledHalfHeight = mc.getWindow().getHeight() * invScale / 2;
+        GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+
+        int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
+        int scrWidth = mc.getWindow().getWidth();
+        int scrHeight = mc.getWindow().getHeight();
+        int halfScrWidth = scrWidth / 2;
+        int halfScrHeight = scrHeight / 2;
 
         Matrix4f matrix = new Matrix4f();
-        matrix.ortho(-scaledHalfWidth, scaledHalfWidth, scaledHalfHeight, -scaledHalfHeight, -1, 1);
+        matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
         List<ItemStack> items = new ArrayList<>();
         List<List<EnchantmentEntry>> enchantments = new ArrayList<>();
@@ -199,36 +200,34 @@ public class EntityTitleController {
                 continue; // behind
             }
 
-            float xc = v2.x / v2.w * scaledHalfWidth;
-            float yc = -v2.y / v2.w * scaledHalfHeight;
+            int xc = Math.round(v2.x / v2.w * halfScrWidth);
+            int yc = Math.round(-v2.y / v2.w * halfScrHeight);
 
             StylizedText text = getEntityText(entry);
             if (text != null) {
                 TextBounds bounds = fontRenderer.getTextSize(text);
                 if (bounds.width() > 0) {
-                    float width = bounds.width() * invScale;
-                    float height = bounds.height() * invScale;
+                    int width = bounds.width();
+                    int height = bounds.height();
 
-                    float xp = xc - width / 2;
+                    int xp = xc - width / 2;
                     yc -= height;
-                    float yp = yc;
+                    int yp = yc;
 
-                    float horizontalPadding = scale;
-                    float verticalPadding = scale;
-                    float rx1 = xp - horizontalPadding * invScale;
-                    float rx2 = xp + width + horizontalPadding * invScale;
-                    float ry1 = yp + (bounds.top() - verticalPadding) * invScale;
-                    float ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-                    float width2 = rx2 - rx1;
-                    float height2 = ry2 - ry1;
+                    int rx1 = xp - scale;
+                    int rx2 = xp + width + scale;
+                    int ry1 = yp + (bounds.top() - scale);
+                    int ry2 = yp + height - (bounds.bottom() - scale);
+                    int width2 = rx2 - rx1;
+                    int height2 = ry2 - ry1;
 
                     MainFrameBuffer.enter();
                     Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
 
                     for (StylizedTextChunk chunk : text.chunks) {
                         int color = chunk.getColor();
-                        fontRenderer.drawText(matrix, chunk.text(), xp, yp, invScale, color);
-                        xp += fontRenderer.getTextSize(chunk.text()).width() * invScale;
+                        fontRenderer.drawText(matrix, chunk.text(), xp, yp, color);
+                        xp += fontRenderer.getTextSize(chunk.text()).width();
                     }
 
                     MainFrameBuffer.exit();
@@ -242,25 +241,23 @@ public class EntityTitleController {
                     if (nameOpt.isPresent()) {
                         String ownerText = "Owner: " + nameOpt.get();
                         TextBounds bounds = fontRenderer.getTextSize(ownerText);
-                        float width = bounds.width() * invScale;
-                        float height = bounds.height() * invScale;
+                        int width = bounds.width();
+                        int height = bounds.height();
 
-                        float xp = xc - width / 2;
+                        int xp = xc - width / 2;
                         yc -= height;
-                        float yp = yc;
+                        int yp = yc;
 
-                        float horizontalPadding = scale;
-                        float verticalPadding = scale;
-                        float rx1 = xp - horizontalPadding * invScale;
-                        float rx2 = xp + width + horizontalPadding * invScale;
-                        float ry1 = yp + (bounds.top() - verticalPadding) * invScale;
-                        float ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-                        float width2 = rx2 - rx1;
-                        float height2 = ry2 - ry1;
+                        int rx1 = xp - scale;
+                        int rx2 = xp + width + scale;
+                        int ry1 = yp + (bounds.top() - scale);
+                        int ry2 = yp + height - (bounds.bottom() - scale);
+                        int width2 = rx2 - rx1;
+                        int height2 = ry2 - ry1;
 
                         MainFrameBuffer.enter();
                         Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
-                        fontRenderer.drawText(matrix, ownerText, xp, yp, invScale, 0xFFFFFFFF);
+                        fontRenderer.drawText(matrix, ownerText, xp, yp, 0xFFFFFFFF);
                         MainFrameBuffer.exit();
                     }
                 }
@@ -304,12 +301,12 @@ public class EntityTitleController {
                         enchantments.add(entries);
 
                         TextBounds[] bounds = new TextBounds[entries.size()];
-                        int maxWidth = 16;
+                        int maxWidth = 16 * scale;
                         int maxTextWidth = 0;
                         for (int i = 0; i < bounds.length; i++) {
                             EnchantmentEntry ee = entries.get(i);
                             bounds[i] = enchFontRenderer.getTextSize(ee.text + ee.level);
-                            int width = Mth.ceil(bounds[i].width() * invScale);
+                            int width = bounds[i].width();
                             if (width > maxWidth) {
                                 maxWidth = width;
                             }
@@ -323,43 +320,45 @@ public class EntityTitleController {
                         enchantmentBounds.add(bounds);
                     }
 
-                    double width = 0;
+                    int width = 0;
                     for (int ew : enchantmentWidths) {
                         width += ew;
                     }
-                    double height = 16;
+                    int height = 16 * scale;
 
-                    double xp = xc - width / 2 + scaledHalfWidth;
+                    int xp = xc - width / 2 + halfScrWidth;
                     yc -= height;
-                    double yp = yc + scaledHalfHeight;
+                    int yp = yc + halfScrHeight;
 
-                    double xpl = xp;
+                    int xpl = xp;
+
+                    GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
                     for (int i = 0; i < items.size(); i++) {
-                        double xCenterOffset = enchantmentTextWidths.get(i) > 16 ? (enchantmentTextWidths.get(i) - 16) / 2d : 0;
+                        int xCenterOffset = enchantmentTextWidths.get(i) > 16 * scale ? (enchantmentTextWidths.get(i) - 16 * scale) / 2 : 0;
                         event.graphics().pose().pushPose();
                         event.graphics().pose().setIdentity();
-                        event.graphics().pose().translate(xpl + xCenterOffset, yp, 0);
+                        event.graphics().pose().translate(1d * (xpl + xCenterOffset) / scale, 1d * yp / scale, 0);
                         event.getGuiGraphics().renderItem(livingEntity, items.get(i), 0, 0, 0);
                         event.getGuiGraphics().renderItemDecorations(mc.font, items.get(i), 0, 0);
                         event.graphics().pose().popPose();
                         xpl += enchantmentWidths.get(i);
                     }
+                    GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
 
-                    xpl = xp - scaledHalfWidth;
+                    xpl = xp - halfScrWidth;
                     MainFrameBuffer.enter();
                     for (int i = 0; i < items.size(); i++) {
                         List<EnchantmentEntry> entries = enchantments.get(i);
                         TextBounds[] bounds = enchantmentBounds.get(i);
-                        double ypl = yp - scaledHalfHeight;
-                        double xCenterOffset = enchantmentTextWidths.get(i) < 16 ? (16 - enchantmentTextWidths.get(i)) / 2d : 0;
+                        int ypl = yp - halfScrHeight;
+                        int xCenterOffset = enchantmentTextWidths.get(i) < 16 * scale ? (16 * scale - enchantmentTextWidths.get(i)) / 2 : 0;
                         for (int j = entries.size() - 1; j >= 0; j--) {
                             EnchantmentEntry e = entries.get(j);
-                            ypl -= bounds[j].height() * invScale;
+                            ypl -= bounds[j].height();
 
                             TextBounds bound = enchFontRenderer.getTextSize(e.text);
-                            enchFontRenderer.drawText(matrix, e.text, (float)(xpl + xCenterOffset), (float)ypl, invScale, e.color.getRGB());
-
-                            enchFontRenderer.drawText(matrix, Integer.toString(e.level), (float) (xpl + bound.width() * invScale + xCenterOffset), (float)ypl, invScale, 0xFF00FFFF);
+                            enchFontRenderer.drawText(matrix, e.text, (float)(xpl + xCenterOffset), (float)ypl, e.color.getRGB());
+                            enchFontRenderer.drawText(matrix, Integer.toString(e.level), (float) (xpl + bound.width() + xCenterOffset), (float)ypl, 0xFF00FFFF);
                         }
                         xpl += enchantmentWidths.get(i);
                     }
@@ -367,6 +366,8 @@ public class EntityTitleController {
                 }
             }
         }
+
+        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
     }
 
     private StylizedText getEntityText(EntityEntry entry) {

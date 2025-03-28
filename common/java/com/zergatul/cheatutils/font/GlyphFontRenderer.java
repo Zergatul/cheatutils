@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.font;
 
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.TextureColor2dRenderer;
-import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
 
 import java.awt.*;
@@ -58,7 +57,7 @@ public class GlyphFontRenderer {
         return new TextBounds(width, height, top, bottom);
     }
 
-    public void drawText(Matrix4f matrix, String string, float x, float y, double invScale, int color) {
+    public void drawText(Matrix4f matrix, String string, float x, float y, int color) {
         if (string == null) {
             return;
         }
@@ -73,8 +72,8 @@ public class GlyphFontRenderer {
 
         for (int i = 0; i < string.length(); i++) {
             Glyph glyph = glyphs.get(string.charAt(i));
-            float width = (float)(glyph.getWidth() * invScale);
-            float height = (float)(glyph.getHeight() * invScale);
+            float width = glyph.getWidth();
+            float height = glyph.getHeight();
 
             renderer.begin();
             renderer.rect(x, y, width, height, r, g, b, 1);

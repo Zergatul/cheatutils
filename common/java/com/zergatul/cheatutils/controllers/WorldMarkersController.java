@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -55,13 +54,14 @@ public class WorldMarkersController {
         Camera camera = event.getCamera();
         Vec3 view = camera.getPosition();
 
-        float scale = (float) mc.getWindow().getGuiScale();
-        float invScale = 1 / scale;
-        float scaledHalfWidth = mc.getWindow().getWidth() * invScale / 2;
-        float scaledHalfHeight = mc.getWindow().getHeight() * invScale / 2;
+        int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
+        int scrWidth = mc.getWindow().getWidth();
+        int scrHeight = mc.getWindow().getHeight();
+        int halfScrWidth = scrWidth / 2;
+        int halfScrHeight = scrHeight / 2;
 
         Matrix4f matrix = new Matrix4f();
-        matrix.ortho(-scaledHalfWidth, scaledHalfWidth, scaledHalfHeight, -scaledHalfHeight, -1, 1);
+        matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
         String dimension = mc.level.dimension().location().toString();
         for (WorldMarkersConfig.Entry entry : config.entries) {
@@ -85,34 +85,32 @@ public class WorldMarkersController {
                 continue; // behind
             }
 
-            float xc = v2.x / v2.w * scaledHalfWidth;
-            float yc = -v2.y / v2.w * scaledHalfHeight;
+            int xc = Math.round(v2.x / v2.w * halfScrWidth);
+            int yc = Math.round(-v2.y / v2.w * halfScrHeight);
 
             TextBounds bounds = fontRenderer.getTextSize(entry.name);
-            float width = bounds.width() * invScale;
-            float height = bounds.height() * invScale;
+            int width = bounds.width();
+            int height = bounds.height();
 
-            float xp = xc - width / 2;
+            int xp = xc - width / 2;
             yc -= 2 * height;
-            float yp = yc;
+            int yp = yc;
 
             int color = entry.color.getRGB();
             int inverse = ColorUtils.inverse(color);
 
-            float horizontalPadding = scale;
-            float verticalPadding = scale;
-            float rx1 = xp - horizontalPadding * invScale;
-            float rx2 = xp + width + horizontalPadding * invScale;
-            float ry1 = yp + (bounds.top() - verticalPadding) * invScale;
-            float ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-            float width2 = rx2 - rx1;
-            float height2 = ry2 - ry1;
+            int rx1 = xp - scale;
+            int rx2 = xp + width + scale;
+            int ry1 = yp + (bounds.top() - scale);
+            int ry2 = yp + height - (bounds.bottom() - scale);
+            int width2 = rx2 - rx1;
+            int height2 = ry2 - ry1;
             Primitives.fill(matrix, rx1, ry1, width2, height2, inverse & 0x40FFFFFF);
 
-            fontRenderer.drawText(matrix, entry.name, xp, yp, invScale, color);
+            fontRenderer.drawText(matrix, entry.name, xp, yp, color);
 
             // border
-            float bw = config.borderWidth * invScale;
+            int bw = config.borderWidth;
             Primitives.fill(matrix,
                     rx1 - bw, ry1 - bw,
                     width2 + 2 * bw, bw,
