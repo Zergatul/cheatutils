@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL30;
 public class EspTrianglesProgram extends Program {
 
     public EspTrianglesProgram() {
-        super("esp-triangles", new PositionColorVertexData());
+        super("esp-triangles", new Position3dColorVertexData());
     }
 
     public void draw() {

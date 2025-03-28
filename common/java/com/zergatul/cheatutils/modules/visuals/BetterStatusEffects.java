@@ -66,7 +66,13 @@ public class BetterStatusEffects implements Module {
             int width = mc.font.width(duration);
             int textLeft = left + (24 - width) / 2;
             int textTop = y + 25;
-            Primitives.fill(graphics.pose(), textLeft, textTop, textLeft + width, textTop + mc.font.lineHeight, -1873784752);
+
+            graphics.fill(
+                    textLeft - 1,
+                    textTop,
+                    textLeft - 1 + width + 2,
+                    textTop + mc.font.lineHeight,
+                    -1873784752);
             graphics.drawString(mc.font, duration, textLeft, textTop, 16777215);
 
             left += 25;

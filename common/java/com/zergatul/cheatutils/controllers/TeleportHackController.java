@@ -111,7 +111,7 @@ public class TeleportHackController {
         NetworkPacketsController.instance.sendPacket(
                 new ServerboundMovePlayerPacket.Pos(target.x, target.y, target.z, findSurface, false));
 
-        mc.player.moveTo(target);
+        mc.player.snapTo(target);
 
         return true;
     }

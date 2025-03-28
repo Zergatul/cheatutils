@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.*;
@@ -93,12 +94,12 @@ public class EventsScripting implements Module {
     public void setScript(Runnable runnable) {
         clear();
         if (runnable != null) {
-            RenderSystem.recordRenderCall(runnable::run);
+            TickEndExecutor.instance.execute(runnable);
         }
     }
 
     public void clear() {
-        RenderSystem.recordRenderCall(() -> {
+        TickEndExecutor.instance.execute(() -> {
             onHandleKeys.clear();
             onTickEnd.clear();
             onPlayerAdded.clear();

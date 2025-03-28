@@ -74,7 +74,7 @@ public class ModMain implements ClientModInitializer {
         register(ElytraFly.instance);
         register(AdvancedTooltips.instance);
         register(Zoom.instance);
-        register(ShulkerTooltipController.instance);
+        register(ShulkerTooltip.instance);
         register(ArmorOverlay.instance);
         register(Fog.instance);
         register(AutoAttack.instance);

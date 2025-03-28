@@ -6,6 +6,7 @@ import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.StringTagVisitor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -74,7 +75,10 @@ public class ItemStackWrapper {
         if (mc.level == null) {
             return "";
         }
-        return inner.save(mc.level.registryAccess()).getAsString();
+
+        StringTagVisitor visitor = new StringTagVisitor();
+        inner.save(mc.level.registryAccess()).accept(visitor);
+        return visitor.build();
     }
 
     public boolean hasEnchantment(String id) {

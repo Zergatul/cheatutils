@@ -10,7 +10,7 @@ public class EntityOverlayBufferProgram extends Program {
     private final int textureUniform;
 
     public EntityOverlayBufferProgram() {
-        super("entity-overlay-buffer", new PositionTextureVertexData());
+        super("entity-overlay-buffer", new Position3dTextureVertexData());
 
         mvpUniform = GL30.glGetUniformLocation(id, "MVP");
         if (mvpUniform == -1) {

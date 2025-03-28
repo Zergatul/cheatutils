@@ -1,8 +1,9 @@
 package com.zergatul.cheatutils.webui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.utils.UnsafeUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -32,16 +33,16 @@ public class TexturesHandler implements HttpHandler {
         AbstractTexture texture = textureManager.getTexture(location);
 
         CompletableFuture<byte[]> pngFuture = new CompletableFuture<>();
-        RenderSystem.recordRenderCall(() -> {
+        TickEndExecutor.instance.execute(() -> {
             byte[] result = null;
             try {
                 int prevTexture = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D);
 
-                GL30.glBindTexture(GL30.GL_TEXTURE_2D, texture.getId());
+                GL30.glBindTexture(GL30.GL_TEXTURE_2D, ((GlTexture) texture.getTexture()).glId());
                 int width = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_WIDTH);
                 int height = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_HEIGHT);
                 int format = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_INTERNAL_FORMAT);
-                if (format == GL30.GL_RGBA) {
+                if (format == GL30.GL_RGBA || format == GL30.GL_RGBA8) {
                     long address = ALLOCATOR.malloc(width * height * 4);
                     try {
                         GL30.glGetTexImage(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, address);

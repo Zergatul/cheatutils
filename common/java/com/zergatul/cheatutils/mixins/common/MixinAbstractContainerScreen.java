@@ -1,9 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
-import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
 import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
@@ -131,8 +129,6 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
         }
 
         List<ContainerSummaryController.ItemDrawable> list = ContainerSummaryController.instance.groupItems(items);
-
-        RenderSystem.enableDepthTest();
 
         boolean group = !Screen.hasAltDown();
 

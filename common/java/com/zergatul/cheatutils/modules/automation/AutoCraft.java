@@ -96,7 +96,7 @@ public class AutoCraft {
         assert mc.level != null;
         assert mc.player != null;
 
-        ImmutableList<ItemStack> inventory = new ImmutableList<>(mc.player.getInventory().items.stream().map(ItemStack::copy).toList());
+        ImmutableList<ItemStack> inventory = new ImmutableList<>(mc.player.getInventory().getNonEquipmentItems().stream().map(ItemStack::copy).toList());
 
         List<RecipeDisplayEntry> recipes = mc.player.getRecipeBook().getCollections().stream()
                 .flatMap(c -> c.getRecipes().stream())

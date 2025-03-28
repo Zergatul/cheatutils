@@ -109,7 +109,9 @@ public class Scaffold implements Module {
     }
 
     private void placeBlock(BlockPos destination, Direction direction, BlockPos neighbour, ScaffoldConfig config) {
-        int selectedSlot = mc.player.getInventory().selected;
+        assert mc.player != null;
+
+        int selectedSlot = mc.player.getInventory().getSelectedSlot();
         Optional<InteractionHand> optional = selectItem(config);
         if (optional.isEmpty()) {
             return;
@@ -135,14 +137,14 @@ public class Scaffold implements Module {
         }
 
         if (config.keepSelectedSlot) {
-            mc.player.getInventory().selected = selectedSlot;
+            mc.player.getInventory().setSelectedSlot(selectedSlot);
         }
 
         if (itemStack.isEmpty() && config.replaceBlocksFromInventory) {
             for (int i = 9; i < 36; i++) {
                 ItemStack itemStack1 = mc.player.getInventory().getItem(i);
                 if (!itemStack1.isEmpty() && item == itemStack1.getItem()) {
-                    InventoryUtils.moveItemStack(new InventorySlot(i), hand == InteractionHand.MAIN_HAND ? new InventorySlot(mc.player.getInventory().selected) : new InventorySlot(EquipmentSlot.OFFHAND));
+                    InventoryUtils.moveItemStack(new InventorySlot(i), hand == InteractionHand.MAIN_HAND ? new InventorySlot(mc.player.getInventory().getSelectedSlot()) : new InventorySlot(EquipmentSlot.OFFHAND));
                     return;
                 }
             }
@@ -150,7 +152,9 @@ public class Scaffold implements Module {
     }
 
     private Optional<InteractionHand> selectItem(ScaffoldConfig config) {
-        Item mainHandItem = mc.player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+        assert mc.player != null;
+
+        Item mainHandItem = mc.player.getMainHandItem().getItem();
         if (mainHandItem instanceof BlockItem blockItem && isValidBlock(blockItem.getBlock(), config)) {
             return Optional.of(InteractionHand.MAIN_HAND);
         }
@@ -165,7 +169,7 @@ public class Scaffold implements Module {
             ItemStack stack = mc.player.getInventory().getItem(i);
             if (stack.getItem() instanceof BlockItem blockItem) {
                 if (isValidBlock(blockItem.getBlock(), config)) {
-                    mc.player.getInventory().selected = i;
+                    mc.player.getInventory().setSelectedSlot(i);
                     return Optional.of(InteractionHand.MAIN_HAND);
                 }
             }

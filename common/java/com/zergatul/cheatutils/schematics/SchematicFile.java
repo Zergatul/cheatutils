@@ -60,11 +60,11 @@ public class SchematicFile implements SchemaFileEditable {
         ValidateRequiredTags(compound);
         this.compound = compound;
 
-        width = compound.getShort(WIDTH_TAG);
-        height = compound.getShort(HEIGHT_TAG);
-        length = compound.getShort(LENGTH_TAG);
-        blocks = compound.getByteArray(BLOCKS_TAG);
-        data = compound.getByteArray(DATA_TAG);
+        width = compound.getShort(WIDTH_TAG).orElseThrow();
+        height = compound.getShort(HEIGHT_TAG).orElseThrow();
+        length = compound.getShort(LENGTH_TAG).orElseThrow();
+        blocks = compound.getByteArray(BLOCKS_TAG).orElseThrow();
+        data = compound.getByteArray(DATA_TAG).orElseThrow();
 
         ValidateSize();
 
@@ -118,7 +118,7 @@ public class SchematicFile implements SchemaFileEditable {
             throw new InvalidFormatException("Not implemented");
         }
         if (NbtUtils.hasString(compound, "Materials")) {
-            String materials = compound.getString("Materials");
+            String materials = compound.getString("Materials").orElseThrow();
             switch (materials) {
                 case "Alpha":
                     return AlphaMapping.get();

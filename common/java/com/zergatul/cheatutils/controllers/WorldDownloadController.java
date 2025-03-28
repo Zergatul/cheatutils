@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.controllers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.mixins.common.accessors.SerializableChunkDataAccessor;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
@@ -46,7 +47,7 @@ public class WorldDownloadController {
 
     public void start(String name) {
         final Object syncObject = new Object();
-        RenderSystem.recordRenderCall(() -> {
+        TickEndExecutor.instance.execute(() -> {
             try {
                 stopInternal();
 
@@ -79,7 +80,7 @@ public class WorldDownloadController {
 
     public void stop() {
         final Object syncObject = new Object();
-        RenderSystem.recordRenderCall(() -> {
+        TickEndExecutor.instance.execute(() -> {
             try {
                 stopInternal();
             } finally {

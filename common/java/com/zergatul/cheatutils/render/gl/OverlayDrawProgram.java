@@ -8,7 +8,7 @@ public class OverlayDrawProgram extends Program {
     private final int overlayColorUniform;
 
     public OverlayDrawProgram() {
-        super("overlay-draw", new PositionTextureVertexData());
+        super("overlay-draw", new Position3dTextureVertexData());
 
         textureUniform = GL30.glGetUniformLocation(id, "BufferTexture");
         if (textureUniform == -1) {

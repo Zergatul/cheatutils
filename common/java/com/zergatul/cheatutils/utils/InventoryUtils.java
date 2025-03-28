@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.network.HashedStack;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.world.entity.player.Inventory;
@@ -26,58 +27,18 @@ public class InventoryUtils {
 
         ItemStack air = new ItemStack(Items.AIR, 1);
         ItemStack fromItemStack = fromSlot.get();
-        Int2ObjectMap<ItemStack> int2objectmap = new Int2ObjectOpenHashMap<>();
-        int2objectmap.put(fromSlot.toMenuIndex(), air);
-        NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                0, // containerId
-                mc.player.inventoryMenu.getStateId(),
-                fromSlot.toMenuIndex(),
-                0, // buttonNum
-                ClickType.PICKUP,
-                fromItemStack,
-                int2objectmap
-        ));
+        sendPacket(fromSlot, fromItemStack, fromSlot, air);
         fromSlot.set(air);
 
         ItemStack toItemStack = toSlot.get();
         if (toItemStack.isEmpty()) {
-            int2objectmap = new Int2ObjectOpenHashMap<>();
-            int2objectmap.put(toSlot.toMenuIndex(), fromItemStack);
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                    0, // containerId
-                    mc.player.inventoryMenu.getStateId(),
-                    toSlot.toMenuIndex(),
-                    0, // buttonNum
-                    ClickType.PICKUP,
-                    air,
-                    int2objectmap
-            ));
+            sendPacket(toSlot, air, toSlot, fromItemStack);
             toSlot.set(fromItemStack);
         } else {
-            int2objectmap = new Int2ObjectOpenHashMap<>();
-            int2objectmap.put(toSlot.toMenuIndex(), fromItemStack);
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                    0, // containerId
-                    mc.player.inventoryMenu.getStateId(),
-                    toSlot.toMenuIndex(),
-                    0, // buttonNum
-                    ClickType.PICKUP,
-                    toItemStack,
-                    int2objectmap
-            ));
+            sendPacket(toSlot, toItemStack, toSlot, fromItemStack);
             toSlot.set(fromItemStack);
 
-            int2objectmap = new Int2ObjectOpenHashMap<>();
-            int2objectmap.put(fromSlot.toMenuIndex(), toItemStack);
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                    0, // containerId
-                    mc.player.inventoryMenu.getStateId(),
-                    fromSlot.toMenuIndex(),
-                    0, // buttonNum
-                    ClickType.PICKUP,
-                    air,
-                    int2objectmap
-            ));
+            sendPacket(fromSlot, air, fromSlot, toItemStack);
             fromSlot.set(toItemStack);
         }
 
@@ -93,24 +54,24 @@ public class InventoryUtils {
 
         ItemStack fromItemStack = fromSlot.get();
         ItemStack toItemStack = toSlot.get();
-        Int2ObjectMap<ItemStack> int2objectmap = new Int2ObjectOpenHashMap<>();
-        int2objectmap.put(fromSlot.toMenuIndex(), toItemStack);
-        int2objectmap.put(toSlot.toMenuIndex(), fromItemStack);
+        Int2ObjectMap<HashedStack> int2objectmap = new Int2ObjectOpenHashMap<>();
+        int2objectmap.put(fromSlot.toMenuIndex(), toHashed(toItemStack));
+        int2objectmap.put(toSlot.toMenuIndex(), toHashed(fromItemStack));
         NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
                 0, // containerId
                 mc.player.inventoryMenu.getStateId(),
                 fromSlot.toMenuIndex(),
-                toSlot.toInventoryIndex(), // buttonNum
+                (byte) toSlot.toInventoryIndex(), // buttonNum
                 ClickType.SWAP,
-                new ItemStack(Items.AIR, 1),
-                int2objectmap));
+                int2objectmap,
+                toHashed(new ItemStack(Items.AIR, 1))));
 
         fromSlot.set(toItemStack);
         toSlot.set(fromItemStack);
     }
 
     public static void dropItemStacks(List<InventorySlot> slots) {
-        if (slots == null || slots.size() == 0) {
+        if (slots == null || slots.isEmpty()) {
             return;
         }
 
@@ -121,28 +82,17 @@ public class InventoryUtils {
         for (InventorySlot slot: slots) {
             ItemStack air = new ItemStack(Items.AIR, 1);
             ItemStack fromItemStack = slot.get();
-            Int2ObjectMap<ItemStack> int2objectmap = new Int2ObjectOpenHashMap<>();
-            int2objectmap.put(slot.toMenuIndex(), air);
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                    0, // containerId
-                    mc.player.inventoryMenu.getStateId(),
-                    slot.toMenuIndex(),
-                    0, // buttonNum
-                    ClickType.PICKUP,
-                    fromItemStack,
-                    int2objectmap
-            ));
+            sendPacket(slot, fromItemStack, slot, air);
             slot.set(air);
 
             NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
                     0, // containerId
                     mc.player.inventoryMenu.getStateId(),
-                    -999, // slotNum
-                    0, // buttonNum
+                    (short) -999, // slotNum
+                    (byte) 0, // buttonNum
                     ClickType.PICKUP,
-                    air,
-                    new Int2ObjectOpenHashMap<>()
-            ));
+                    new Int2ObjectOpenHashMap<>(),
+                    toHashed(air)));
         }
 
         if (!(mc.screen instanceof InventoryScreen)) {
@@ -165,34 +115,14 @@ public class InventoryUtils {
 
         // pickup source slot
         ItemStack air = new ItemStack(Items.AIR, 1);
-        Int2ObjectMap<ItemStack> int2objectmap = new Int2ObjectOpenHashMap<>();
-        int2objectmap.put(fromSlot.toMenuIndex(), air);
-        NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                0, // containerId
-                mc.player.inventoryMenu.getStateId(),
-                fromSlot.toMenuIndex(),
-                0, // buttonNum
-                ClickType.PICKUP,
-                sourceItemStack,
-                int2objectmap
-        ));
+        sendPacket(fromSlot, sourceItemStack, fromSlot, air);
         fromSlot.set(air);
 
         int total = sourceItemStack.getCount() + destItemStack.getCount();
         if (total <= stackSize) {
             // click on destination
             ItemStack newDestItemStack = destItemStack.copyWithCount(total);
-            int2objectmap = new Int2ObjectOpenHashMap<>();
-            int2objectmap.put(toSlot.toMenuIndex(), newDestItemStack);
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                    0, // containerId
-                    mc.player.inventoryMenu.getStateId(),
-                    toSlot.toMenuIndex(),
-                    0, // buttonNum
-                    ClickType.PICKUP,
-                    air,
-                    int2objectmap
-            ));
+            sendPacket(toSlot, air, toSlot, newDestItemStack);
             toSlot.set(newDestItemStack);
         } else {
             int remainder = total - stackSize;
@@ -200,31 +130,11 @@ public class InventoryUtils {
             // click on destination
             ItemStack newDestItemStack = destItemStack.copyWithCount(stackSize);
             ItemStack remainderItemStack = destItemStack.copyWithCount(remainder);
-            int2objectmap = new Int2ObjectOpenHashMap<>();
-            int2objectmap.put(toSlot.toMenuIndex(), newDestItemStack);
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                    0, // containerId
-                    mc.player.inventoryMenu.getStateId(),
-                    toSlot.toMenuIndex(),
-                    0, // buttonNum
-                    ClickType.PICKUP,
-                    remainderItemStack,
-                    int2objectmap
-            ));
+            sendPacket(toSlot, remainderItemStack, toSlot, newDestItemStack);
             toSlot.set(newDestItemStack);
 
             // click on source
-            int2objectmap = new Int2ObjectOpenHashMap<>();
-            int2objectmap.put(fromSlot.toMenuIndex(), remainderItemStack);
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
-                    0, // containerId
-                    mc.player.inventoryMenu.getStateId(),
-                    fromSlot.toMenuIndex(),
-                    0, // buttonNum
-                    ClickType.PICKUP,
-                    air,
-                    int2objectmap
-            ));
+            sendPacket(toSlot, air, fromSlot, remainderItemStack);
             fromSlot.set(remainderItemStack);
         }
     }
@@ -262,5 +172,25 @@ public class InventoryUtils {
         }
 
         return false;
+    }
+
+    private static void sendPacket(InventorySlot slot, ItemStack stack, InventorySlot changedSlot, ItemStack changedStack) {
+        assert mc.player != null;
+
+        Int2ObjectMap<HashedStack> changedSlots = new Int2ObjectOpenHashMap<>();
+        changedSlots.put(changedSlot.toMenuIndex(), toHashed(changedStack));
+        NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
+                0, // containerId
+                mc.player.inventoryMenu.getStateId(),
+                slot.toMenuIndex(), // slotNum
+                (byte) 0, // buttonNum
+                ClickType.PICKUP,
+                changedSlots,
+                toHashed(stack))); //carriedItem
+    }
+
+    private static HashedStack toHashed(ItemStack itemStack) {
+        assert mc.player != null;
+        return HashedStack.create(itemStack, mc.player.connection.decoratedHashOpsGenenerator());
     }
 }

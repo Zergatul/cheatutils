@@ -48,12 +48,11 @@ public abstract class MixinLevelRenderer {
             Matrix4f projection,
             ResourceHandle<?> handle1,
             ResourceHandle<?> handle2,
-            ResourceHandle<?> handle3,
-            ResourceHandle<?> handle4,
             boolean bl,
             Frustum frustum,
-            ResourceHandle<?> handle5,
-            CallbackInfo info
+            ResourceHandle<?> handle3,
+            ResourceHandle<?> handle4,
+            CallbackInfo ci
     ) {
         FakePlayer.render(this.minecraft, camera, renderBuffers, this::renderEntity);
     }

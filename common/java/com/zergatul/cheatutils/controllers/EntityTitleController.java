@@ -8,6 +8,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTitleConfig;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
@@ -17,6 +18,7 @@ import com.zergatul.cheatutils.font.StylizedTextChunk;
 import com.zergatul.cheatutils.font.TextBounds;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -29,10 +31,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -41,6 +40,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import java.awt.*;
@@ -85,7 +85,7 @@ public class EntityTitleController {
     }
 
     public void onFontChange(EntityTitleConfig config) {
-        RenderSystem.recordRenderCall(() -> {
+        TickEndExecutor.instance.execute(() -> {
             if (fontRenderer != null) {
                 fontRenderer.dispose();
             }
@@ -94,7 +94,7 @@ public class EntityTitleController {
     }
 
     public void onEnchantmentFontChange(EntityTitleConfig config) {
-        RenderSystem.recordRenderCall(() -> {
+        TickEndExecutor.instance.execute(() -> {
             if (enchFontRenderer != null) {
                 enchFontRenderer.dispose();
             }
@@ -178,19 +178,19 @@ public class EntityTitleController {
             return;
         }
 
-        double scale = mc.getWindow().getGuiScale();
-        double invScale = 1 / scale;
-        double scaledHalfWidth = mc.getWindow().getWidth() * invScale / 2;
-        double scaledHalfHeight = mc.getWindow().getHeight() * invScale / 2;
+        float scale = (float) mc.getWindow().getGuiScale();
+        float invScale = 1 / scale;
+        float scaledHalfWidth = mc.getWindow().getWidth() * invScale / 2;
+        float scaledHalfHeight = mc.getWindow().getHeight() * invScale / 2;
+
+        Matrix4f matrix = new Matrix4f();
+        matrix.ortho(-scaledHalfWidth, scaledHalfWidth, scaledHalfHeight, -scaledHalfHeight, -1, 1);
+
         List<ItemStack> items = new ArrayList<>();
         List<List<EnchantmentEntry>> enchantments = new ArrayList<>();
         List<TextBounds[]> enchantmentBounds = new ArrayList<>();
         List<Integer> enchantmentWidths = new ArrayList<>();
         List<Integer> enchantmentTextWidths = new ArrayList<>();
-
-        PoseStack poseStack = event.getGuiGraphics().pose();
-        poseStack.pushPose();
-        poseStack.last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
 
         for (EntityEntry entry : entities) {
             Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
@@ -199,33 +199,39 @@ public class EntityTitleController {
                 continue; // behind
             }
 
-            double xc = v2.x / v2.w * scaledHalfWidth;
-            double yc = -v2.y / v2.w * scaledHalfHeight;
+            float xc = v2.x / v2.w * scaledHalfWidth;
+            float yc = -v2.y / v2.w * scaledHalfHeight;
 
             StylizedText text = getEntityText(entry);
             if (text != null) {
                 TextBounds bounds = fontRenderer.getTextSize(text);
                 if (bounds.width() > 0) {
-                    double width = bounds.width() * invScale;
-                    double height = bounds.height() * invScale;
+                    float width = bounds.width() * invScale;
+                    float height = bounds.height() * invScale;
 
-                    double xp = xc - width / 2;
+                    float xp = xc - width / 2;
                     yc -= height;
-                    double yp = yc;
+                    float yp = yc;
 
-                    double horizontalPadding = scale;
-                    double verticalPadding = scale;
-                    double rx1 = xp - horizontalPadding * invScale;
-                    double rx2 = xp + width + horizontalPadding * invScale;
-                    double ry1 = yp + (bounds.top() - verticalPadding) * invScale;
-                    double ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-                    Primitives.fill(poseStack, rx1, ry1, rx2, ry2, Color.BLACK.getRGB() & 0x40000000);
+                    float horizontalPadding = scale;
+                    float verticalPadding = scale;
+                    float rx1 = xp - horizontalPadding * invScale;
+                    float rx2 = xp + width + horizontalPadding * invScale;
+                    float ry1 = yp + (bounds.top() - verticalPadding) * invScale;
+                    float ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
+                    float width2 = rx2 - rx1;
+                    float height2 = ry2 - ry1;
+
+                    MainFrameBuffer.enter();
+                    Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
 
                     for (StylizedTextChunk chunk : text.chunks) {
-                        chunk.setShaderColor();
-                        fontRenderer.drawText(poseStack, chunk.text(), (float) xp, (float) yp, invScale);
+                        int color = chunk.getColor();
+                        fontRenderer.drawText(matrix, chunk.text(), xp, yp, invScale, color);
                         xp += fontRenderer.getTextSize(chunk.text()).width() * invScale;
                     }
+
+                    MainFrameBuffer.exit();
                 }
             }
 
@@ -236,23 +242,26 @@ public class EntityTitleController {
                     if (nameOpt.isPresent()) {
                         String ownerText = "Owner: " + nameOpt.get();
                         TextBounds bounds = fontRenderer.getTextSize(ownerText);
-                        double width = bounds.width() * invScale;
-                        double height = bounds.height() * invScale;
+                        float width = bounds.width() * invScale;
+                        float height = bounds.height() * invScale;
 
-                        double xp = xc - width / 2;
+                        float xp = xc - width / 2;
                         yc -= height;
-                        double yp = yc;
+                        float yp = yc;
 
-                        double horizontalPadding = scale;
-                        double verticalPadding = scale;
-                        double rx1 = xp - horizontalPadding * invScale;
-                        double rx2 = xp + width + horizontalPadding * invScale;
-                        double ry1 = yp + (bounds.top() - verticalPadding) * invScale;
-                        double ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
-                        Primitives.fill(poseStack, rx1, ry1, rx2, ry2, Color.BLACK.getRGB() & 0x40000000);
+                        float horizontalPadding = scale;
+                        float verticalPadding = scale;
+                        float rx1 = xp - horizontalPadding * invScale;
+                        float rx2 = xp + width + horizontalPadding * invScale;
+                        float ry1 = yp + (bounds.top() - verticalPadding) * invScale;
+                        float ry2 = yp + height - (bounds.bottom() - verticalPadding) * invScale;
+                        float width2 = rx2 - rx1;
+                        float height2 = ry2 - ry1;
 
-                        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-                        fontRenderer.drawText(poseStack, ownerText, (float)xp, (float)yp, invScale);
+                        MainFrameBuffer.enter();
+                        Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
+                        fontRenderer.drawText(matrix, ownerText, xp, yp, invScale, 0xFFFFFFFF);
+                        MainFrameBuffer.exit();
                     }
                 }
             }
@@ -291,7 +300,7 @@ public class EntityTitleController {
                     enchantmentTextWidths.clear();
                     enchantmentBounds.clear();
                     for (ItemStack item : items) {
-                        List<EnchantmentEntry> entries = getEnchantments(entry.entity, item);
+                        List<EnchantmentEntry> entries = getEnchantments(item);
                         enchantments.add(entries);
 
                         TextBounds[] bounds = new TextBounds[entries.size()];
@@ -337,6 +346,7 @@ public class EntityTitleController {
                     }
 
                     xpl = xp - scaledHalfWidth;
+                    MainFrameBuffer.enter();
                     for (int i = 0; i < items.size(); i++) {
                         List<EnchantmentEntry> entries = enchantments.get(i);
                         TextBounds[] bounds = enchantmentBounds.get(i);
@@ -347,24 +357,16 @@ public class EntityTitleController {
                             ypl -= bounds[j].height() * invScale;
 
                             TextBounds bound = enchFontRenderer.getTextSize(e.text);
-                            RenderSystem.setShaderColor(
-                                    e.color.getRed() / 255f,
-                                    e.color.getGreen() / 255f,
-                                    e.color.getBlue() / 255f,
-                                    e.color.getAlpha() / 255f);
-                            enchFontRenderer.drawText(poseStack, e.text, (float)(xpl + xCenterOffset), (float)ypl, invScale);
+                            enchFontRenderer.drawText(matrix, e.text, (float)(xpl + xCenterOffset), (float)ypl, invScale, e.color.getRGB());
 
-                            RenderSystem.setShaderColor(0f, 1f, 1f, 1f);
-                            enchFontRenderer.drawText(poseStack, Integer.toString(e.level), (float) (xpl + bound.width() * invScale + xCenterOffset), (float)ypl, invScale);
+                            enchFontRenderer.drawText(matrix, Integer.toString(e.level), (float) (xpl + bound.width() * invScale + xCenterOffset), (float)ypl, invScale, 0xFF00FFFF);
                         }
                         xpl += enchantmentWidths.get(i);
                     }
+                    MainFrameBuffer.exit();
                 }
             }
         }
-
-        poseStack.popPose();
-        RenderSystem.setShaderColor(1, 1, 1, 1);
     }
 
     private StylizedText getEntityText(EntityEntry entry) {
@@ -425,7 +427,7 @@ public class EntityTitleController {
         return text;
     }
 
-    private List<EnchantmentEntry> getEnchantments(Entity entity, ItemStack itemStack) {
+    private List<EnchantmentEntry> getEnchantments(ItemStack itemStack) {
         if (!itemStack.isEnchanted()) {
             return List.of();
         }
@@ -444,10 +446,12 @@ public class EntityTitleController {
 
     private UUID getOwner(Entity entity) {
         if (entity instanceof TamableAnimal animal) {
-            return animal.getOwnerUUID();
+            EntityReference<LivingEntity> reference = animal.getOwnerReference();
+            return reference != null ? reference.getUUID() : null;
         }
         if (entity instanceof AbstractHorse horse) {
-            return horse.getOwnerUUID();
+            EntityReference<LivingEntity> reference = horse.getOwnerReference();
+            return reference != null ? reference.getUUID() : null;
         }
         if (entity instanceof Projectile projectile) {
             ProjectileAccessor projectileMixin = (ProjectileAccessor) projectile;

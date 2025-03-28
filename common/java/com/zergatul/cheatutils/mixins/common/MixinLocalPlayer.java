@@ -86,7 +86,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     }
 
     @ModifyMethodReturnValue(
-            method = "aiStep",
+            method = "modifyInput",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isMovingSlowly()Z"))
     private static boolean onAiStepCrouchCheck(boolean isMovingSlowly) {
         if (ConfigStore.instance.getConfig().movementHackConfig.disableCrouchingSlowdown) {

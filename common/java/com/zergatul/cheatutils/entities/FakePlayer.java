@@ -34,7 +34,6 @@ public class FakePlayer extends RemotePlayer {
         super((ClientLevel) player.level(), player.getGameProfile());
         list.add(this);
 
-        this.animStep = this.animStepO = 0;
         this.attackAnim = this.oAttackAnim = player.attackAnim;
         this.bob = this.oBob = player.bob;
         this.elytraRotX = player.elytraRotX;
@@ -90,6 +89,7 @@ public class FakePlayer extends RemotePlayer {
             case LEGS -> legs;
             case FEET -> feet;
             case BODY -> body;
+            case SADDLE -> ItemStack.EMPTY;
         };
     }
 

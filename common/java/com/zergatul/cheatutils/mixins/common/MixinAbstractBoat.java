@@ -20,9 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinAbstractBoat extends Entity {
 
     @Shadow
-    private float invFriction;
-
-    @Shadow
     private boolean inputUp;
 
     @Shadow
@@ -36,32 +33,6 @@ public abstract class MixinAbstractBoat extends Entity {
 
     private MixinAbstractBoat(EntityType<?> p_19870_, Level p_19871_) {
         super(p_19870_, p_19871_);
-    }
-
-    @ModifyArg(
-            method = "floatBoat()V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/AbstractBoat;setDeltaMovement(DDD)V", ordinal = 0),
-            index = 0)
-    private double onFloatBoatSetDeltaMovementX(double dx) {
-        var config = ConfigStore.instance.getConfig().boatHackConfig;
-        if (config.overrideFriction) {
-            return dx / invFriction * config.friction;
-        } else {
-            return dx;
-        }
-    }
-
-    @ModifyArg(
-            method = "floatBoat()V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/AbstractBoat;setDeltaMovement(DDD)V", ordinal = 0),
-            index = 2)
-    private double onFloatBoatSetDeltaMovementZ(double dz) {
-        var config = ConfigStore.instance.getConfig().boatHackConfig;
-        if (config.overrideFriction) {
-            return dz / invFriction * config.friction;
-        } else {
-            return dz;
-        }
     }
 
     @Inject(at = @At("HEAD"), method = "controlBoat()V")
@@ -92,7 +63,7 @@ public abstract class MixinAbstractBoat extends Entity {
             return;
         }
 
-        Boat boat = (Boat) (Object) this;
+        AbstractBoat boat = (AbstractBoat) (Object) this;
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (boat.getControllingPassenger() != player) {

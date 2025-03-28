@@ -9,10 +9,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CoreShaders;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.MutableComponent;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 
@@ -91,12 +88,6 @@ public class StatusOverlay implements Module {
         poseStack.setIdentity();
         poseStack.translate(0, 0, TranslateZ);
 
-        RenderSystem.disableDepthTest();
-        RenderSystem.disableCull();
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         for (Align align: Align.values()) {
@@ -109,15 +100,28 @@ public class StatusOverlay implements Module {
                 int width = mc.font.width(text.component);
                 int x = getLeft(align.hAlign, mc.getWindow().getGuiScaledWidth(), width);
                 int y = getTop(align.vAlign, mc.getWindow().getGuiScaledHeight(), mc.font.lineHeight, i, list.size());
-                Primitives.fill(poseStack, x, y, x + width, y + mc.font.lineHeight, text.background);
-                event.getGuiGraphics().drawString(mc.font, text.component, x, y, 16777215);
+                if (width > 0) {
+                    event.getGuiGraphics().fill(
+                            x - 1,
+                            y,
+                            x - 1 + width + 2,
+                            y + mc.font.lineHeight,
+                            text.background);
+                    event.getGuiGraphics().drawString(mc.font, text.component, x, y, 16777215);
+                }
             }
         }
 
         for (FreeText text: freeTexts) {
             int width = mc.font.width(text.component);
-            Primitives.fill(poseStack, text.x, text.y, text.x + width, text.y + mc.font.lineHeight, text.background);
-            event.getGuiGraphics().drawString(mc.font, text.component, text.x, text.y, 16777215);
+            if (width > 0) {
+                event.getGuiGraphics().fill(
+                        text.x - 1,
+                        text.y,
+                        text.x - 1 + width + 2,
+                        text.y + mc.font.lineHeight, text.background);
+                event.getGuiGraphics().drawString(mc.font, text.component, text.x, text.y, 16777215);
+            }
         }
 
         poseStack.popPose();

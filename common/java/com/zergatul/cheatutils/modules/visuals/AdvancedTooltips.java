@@ -14,6 +14,7 @@ import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.Bees;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -42,9 +43,9 @@ public class AdvancedTooltips implements Module {
                 int beesCount = 0;
                 int honeyLevel = 0;
 
-                List<BeehiveBlockEntity.Occupant> bees = itemStack.get(DataComponents.BEES);
+                Bees bees = itemStack.get(DataComponents.BEES);
                 if (bees != null) {
-                    beesCount = bees.size();
+                    beesCount = bees.bees().size();
                 }
 
                 BlockItemStateProperties properties = itemStack.get(DataComponents.BLOCK_STATE);

@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.modules.esp;
 
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
@@ -268,7 +269,7 @@ public class EntityEsp implements Module {
                 }
 
                 AbstractTexture texture = mc.getTextureManager().getTexture(entry.texture);
-                renderer.renderBuffer(event.getMvp(), texture.getId());
+                renderer.renderBuffer(event.getMvp(), ((GlTexture) texture.getTexture()).glId());
             }
 
             renderer.end(
@@ -323,7 +324,7 @@ public class EntityEsp implements Module {
                 }
 
                 AbstractTexture texture = mc.getTextureManager().getTexture(entry.texture);
-                renderer.renderBuffer(event.getMvp(), texture.getId());
+                renderer.renderBuffer(event.getMvp(), ((GlTexture) texture.getTexture()).glId());
             }
 
             renderer.end(

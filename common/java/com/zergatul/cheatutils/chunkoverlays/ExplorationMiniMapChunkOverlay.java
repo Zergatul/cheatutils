@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
-import com.zergatul.cheatutils.render.Primitives;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.Texture2dRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.LevelChunkUtils;
 import net.minecraft.core.BlockPos;
@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.MapColor;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,28 +70,35 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     }
 
     @Override
-    public void onPostDrawSegments(Dimension dimension, PoseStack poseStack, float xp, float zp, float xc, float zc, float multiplier) {
+    public void onPostDrawSegments(Dimension dimension, Matrix4f matrix, float xp, float zp, float xc, float zc, float multiplier) {
         final int ImageSize = 8;
 
+        Texture2dRenderer renderer =  RenderUtilities.instance.getTexture2dRenderer();
         for (Marker marker : markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
-            RenderSystem.setShaderTexture(0, MarkerTexture);
-            Primitives.drawTexture(poseStack.last().pose(),
-                    -ImageSize / 2f + ((float) marker.x - xc) * multiplier, -ImageSize / 2f + ((float) marker.z - zc) * multiplier,
-                    ImageSize, ImageSize, getTranslateZ() + 2, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
+            renderer.begin();
+            renderer.rect(
+                    -ImageSize / 2f + ((float) marker.x - xc) * multiplier,
+                    -ImageSize / 2f + ((float) marker.z - zc) * multiplier,
+                    ImageSize, ImageSize);
+            renderer.end(matrix, ((GlTexture) mc.getTextureManager().getTexture(MarkerTexture).getTexture()).glId());
         }
 
         double distanceToPlayer = Math.sqrt((xp - xc) * (xp - xc) + (zp - zc) * (zp - zc));
         if (distanceToPlayer * multiplier > 2 * ImageSize) {
-            RenderSystem.setShaderTexture(0, CenterPosTexture);
-            Primitives.drawTexture(poseStack.last().pose(),
-                    -ImageSize / 2f, -ImageSize / 2f,
-                    ImageSize, ImageSize, getTranslateZ() + 3, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
+            renderer.begin();
+            renderer.rect(
+                    -ImageSize / 2f,
+                    -ImageSize / 2f,
+                    ImageSize, ImageSize);
+            renderer.end(matrix, ((GlTexture) mc.getTextureManager().getTexture(CenterPosTexture).getTexture()).glId());
         }
 
-        RenderSystem.setShaderTexture(0, PlayerPosTexture);
-        Primitives.drawTexture(poseStack.last().pose(),
-                -ImageSize / 2f + (xp - xc) * multiplier, -ImageSize / 2f + (zp - zc) * multiplier,
-                ImageSize, ImageSize, getTranslateZ() + 4, 0, 0, ImageSize, ImageSize, ImageSize, ImageSize);
+        renderer.begin();
+        renderer.rect(
+                -ImageSize / 2f + (xp - xc) * multiplier,
+                -ImageSize / 2f + (zp - zc) * multiplier,
+                ImageSize, ImageSize);
+        renderer.end(matrix, ((GlTexture) mc.getTextureManager().getTexture(PlayerPosTexture).getTexture()).glId());
     }
 
     @Override

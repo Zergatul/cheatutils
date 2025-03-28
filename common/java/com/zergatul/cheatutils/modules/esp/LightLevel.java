@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.buffers.BufferUsage;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
@@ -11,15 +9,15 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.RenderHelper;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.GroupLineRenderer;
+import com.zergatul.cheatutils.render.Texture3dRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.CoreShaders;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +36,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.List;
@@ -53,8 +50,6 @@ public class LightLevel implements Module {
     private final ResourceLocation[] textures = new ResourceLocation[16];
     private final HashMap<ChunkPos, HashSet<BlockPos>> chunks = new HashMap<>();
     private final List<BlockPos> listForRendering = new ArrayList<>();
-    private boolean active = false;
-    private VertexBuffer vertexBuffer;
     private final Map<Direction, Pair<float[], float[]>> rotations = Map.ofEntries(
             Map.entry(Direction.NORTH, new Pair<>(
                     new float[] { 0, 0, 1, 1 },
@@ -69,12 +64,12 @@ public class LightLevel implements Module {
                     new float[] { 1, 0, 0, 1 },
                     new float[] { 0, 0, 1, 1 })));
 
+    private boolean active = false;
+
     private LightLevel() {
         for (int i = 0; i < 16; i++) {
             textures[i] = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/light-level-" + i + ".png");
         }
-
-        RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer(BufferUsage.DYNAMIC_WRITE));
 
         Events.AfterRenderWorld.add(this::render);
         Events.RawChunkLoaded.add(this::onChunkLoaded);
@@ -102,6 +97,7 @@ public class LightLevel implements Module {
 
     private void render(RenderWorldLastEvent event) {
         assert mc.level != null;
+        assert mc.player != null;
 
         LightLevelConfig config = ConfigStore.instance.getConfig().lightLevelConfig;
         if (!config.enabled) {
@@ -110,12 +106,6 @@ public class LightLevel implements Module {
 
         Camera camera = mc.gameRenderer.getMainCamera();
         Vec3 view = camera.getPosition();
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
-        RenderSystem.enableBlend();
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         Direction direction = Direction.fromYRot(camera.getYRot());
         Pair<float[], float[]> texRot = rotations.get(direction);
@@ -140,19 +130,21 @@ public class LightLevel implements Module {
                 listTracers.add(pos);
             }
             if (config.showLightLevelValue) {
-                RenderSystem.setShaderTexture(0, textures[blockLight]);
                 float y = (float)(pos.getY() + 0.05 - view.y);
                 float x1 = (float)(pos.getX() + 0.05 - view.x);
                 float z1 = (float)(pos.getZ() + 0.05 - view.z);
                 float x2 = x1 + 0.9f;
                 float z2 = z1 + 0.9f;
-                BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                bufferBuilder.addVertex(x1, y, z1).setUv(u[0], v[0]);
-                bufferBuilder.addVertex(x1, y, z2).setUv(u[1], v[1]);
-                bufferBuilder.addVertex(x2, y, z2).setUv(u[2], v[2]);
-                bufferBuilder.addVertex(x2, y, z1).setUv(u[3], v[3]);
 
-                RenderHelper.drawBuffer(vertexBuffer, bufferBuilder, event.getPose(), event.getProjection(), CoreShaders.POSITION_TEX);
+                Texture3dRenderer renderer = RenderUtilities.instance.getTexture3dRenderer();
+                renderer.begin();
+                renderer.quad(
+                        x1, y, z1, u[0], v[0],
+                        x1, y, z2, u[1], v[1],
+                        x2, y, z2, u[2], v[2],
+                        x2, y, z1, u[3], v[3]);
+                int textureId = ((GlTexture) mc.getTextureManager().getTexture(textures[blockLight]).getTexture()).glId();
+                renderer.end(event.getMvp(), textureId);
             }
         }
 
@@ -161,42 +153,30 @@ public class LightLevel implements Module {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
+        renderer.begin(event);
 
         for (BlockPos pos: listTracers) {
-            double y = pos.getY() + 0.05 - view.y;
+            double y = pos.getY() + 0.05;
             if (config.showTracers) {
-                buffer.addVertex((float) (tracerX - view.x), (float) (tracerY - view.y), (float) (tracerZ - view.z)).setColor(1f, 1f, 1f, 0.5f);
-                buffer.addVertex((float) (pos.getX() + 0.5 - view.x), (float) y, (float) (pos.getZ() + 0.5 - view.z)).setColor(1f, 1f, 1f, 0.5f);
+                renderer.line(
+                        tracerX, tracerY, tracerZ,
+                        pos.getX() + 0.5, y, pos.getZ() + 0.5);
             }
 
             if (config.showLocations) {
-                double x1 = pos.getX() + 0.05 - view.x;
-                double z1 = pos.getZ() + 0.05 - view.z;
+                double x1 = pos.getX() + 0.05;
+                double z1 = pos.getZ() + 0.05;
                 double x2 = x1 + 0.9;
                 double z2 = z1 + 0.9;
-                buffer.addVertex((float) x1, (float) y, (float) z1).setColor(1f, 1f, 1f, 0.5f);
-                buffer.addVertex((float) x1, (float) y, (float) z2).setColor(1f, 1f, 1f, 0.5f);
-                buffer.addVertex((float) x1, (float) y, (float) z2).setColor(1f, 1f, 1f, 0.5f);
-                buffer.addVertex((float) x2, (float) y, (float) z2).setColor(1f, 1f, 1f, 0.5f);
-                buffer.addVertex((float) x2, (float) y, (float) z2).setColor(1f, 1f, 1f, 0.5f);
-                buffer.addVertex((float) x2, (float) y, (float) z1).setColor(1f, 1f, 1f, 0.5f);
-                buffer.addVertex((float) x2, (float) y, (float) z1).setColor(1f, 1f, 1f, 0.5f);
-                buffer.addVertex((float) x1, (float) y, (float) z1).setColor(1f, 1f, 1f, 0.5f);
+                renderer.line(x1, y, z1, x1, y, z2);
+                renderer.line(x1, y, z2, x2, y, z2);
+                renderer.line(x2, y, z2, x2, y, z1);
+                renderer.line(x2, y, z1, x1, y, z1);
             }
         }
 
-        RenderSystem.disableCull();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableDepthTest();
-        GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-        RenderHelper.drawBuffer(vertexBuffer, buffer, event.getPose(), event.getProjection(), CoreShaders.POSITION_COLOR);
-
-        RenderSystem.disableBlend();
-        RenderSystem.enableCull();
-        RenderSystem.enableDepthTest();
+        renderer.end(1f, 1f, 1f, 0.5f);
     }
 
     public List<BlockPos> getBlockForRendering() {

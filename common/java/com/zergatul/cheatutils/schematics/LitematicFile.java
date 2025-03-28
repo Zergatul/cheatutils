@@ -25,15 +25,15 @@ public class LitematicFile implements SchemaFile {
         ValidateRequiredTags(compound);
         this.compound = compound;
 
-        version = compound.getInt("Version");
-        subVersion = compound.getInt("SubVersion");
-        dataVersion = compound.getInt("MinecraftDataVersion");
+        version = compound.getInt("Version").orElseThrow();
+        subVersion = compound.getInt("SubVersion").orElseThrow();
+        dataVersion = compound.getInt("MinecraftDataVersion").orElseThrow();
 
-        CompoundTag regionCompounds = compound.getCompound("Regions");
+        CompoundTag regionCompounds = compound.getCompound("Regions").orElseThrow();
         regions = new Region[regionCompounds.size()];
         int index = 0;
-        for (String key : regionCompounds.getAllKeys()) {
-            regions[index++] = new Region(key, regionCompounds.getCompound(key));
+        for (String key : regionCompounds.keySet()) {
+            regions[index++] = new Region(key, regionCompounds.getCompound(key).orElseThrow());
         }
 
         if (regions.length == 0) {
@@ -62,9 +62,9 @@ public class LitematicFile implements SchemaFile {
             throw new InvalidFormatException("Invalid NBT structure. [Regions] CompoundTag is required.");
         }
 
-        CompoundTag regions = compound.getCompound("Regions");
-        for (String key : regions.getAllKeys()) {
-            ValidateRegion(regions.getCompound(key), String.format("Invalid NBT structure in %s region", key));
+        CompoundTag regions = compound.getCompound("Regions").orElseThrow();
+        for (String key : regions.keySet()) {
+            ValidateRegion(regions.getCompoundOrEmpty(key), String.format("Invalid NBT structure in %s region", key));
         }
     }
 
@@ -85,8 +85,8 @@ public class LitematicFile implements SchemaFile {
             throw new InvalidFormatException(String.format("%s. [TileEntities] ListTag is required.", errorPrefix));
         }
 
-        ValidateVector(compound.getCompound("Position"), errorPrefix + ", [Position] tag");
-        ValidateVector(compound.getCompound("Size"), errorPrefix + ", [Size] tag");
+        ValidateVector(compound.getCompound("Position").orElseThrow(), errorPrefix + ", [Position] tag");
+        ValidateVector(compound.getCompound("Size").orElseThrow(), errorPrefix + ", [Size] tag");
     }
 
     private void ValidateVector(CompoundTag compound, String errorPrefix) throws InvalidFormatException {
@@ -151,13 +151,13 @@ public class LitematicFile implements SchemaFile {
         public Region(String name, CompoundTag compound) throws InvalidFormatException {
             this.name = name;
 
-            CompoundTag sizeTag = compound.getCompound("Size");
-            width = sizeTag.getInt("x");
-            height = sizeTag.getInt("y");
-            length = sizeTag.getInt("z");
+            CompoundTag sizeTag = compound.getCompound("Size").orElseThrow();
+            width = sizeTag.getInt("x").orElseThrow();
+            height = sizeTag.getInt("y").orElseThrow();
+            length = sizeTag.getInt("z").orElseThrow();
 
             palette = ParsePalette((ListTag) compound.get("BlockStatePalette"));
-            blocks = compound.getLongArray("BlockStates");
+            blocks = compound.getLongArray("BlockStates").orElseThrow();
             bitSize = 32 - Integer.numberOfLeadingZeros(palette.length);
             bitMask = (1L << bitSize) - 1L;
             summary = CreateSummary();
@@ -187,8 +187,8 @@ public class LitematicFile implements SchemaFile {
             BlockState[] palette = new BlockState[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag item = (CompoundTag) list.get(i);
-                String blockId = item.getString("Name");
-                CompoundTag propertiesTag = item.getCompound("Properties");
+                String blockId = item.getString("Name").orElseThrow();
+                CompoundTag propertiesTag = item.getCompound("Properties").orElseThrow();
                 BlockStateMapping mapping = null;
                 BlockStateMappingLoop:
                 for (BlockStateMapping m : BlockStateMapping.get()) {
@@ -200,11 +200,11 @@ public class LitematicFile implements SchemaFile {
                         continue;
                     }
 
-                    for (String key : propertiesTag.getAllKeys()) {
+                    for (String key : propertiesTag.keySet()) {
                         Tag valueTag = propertiesTag.get(key);
                         String value;
                         if (valueTag instanceof StringTag stringTag) {
-                            value = stringTag.getAsString();
+                            value = stringTag.value();
                         } else {
                             throw new InvalidFormatException("Not implemented.");
                         }

@@ -1,17 +1,13 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.GroupLineRenderer;
 import com.zergatul.cheatutils.utils.FreeCamPath;
-import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -338,27 +334,20 @@ public class FreeCam implements Module {
             return;
         }
 
-        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-        RenderSystem.setShaderColor(1f, 1.0f, 1f, 1f);
+        GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
+        renderer.begin(event);
 
         Vec3 view = event.getCamera().getPosition();
         for (int i = 1; i < path.size(); i++) {
             FreeCamPath.Entry e1 = path.get(i - 1);
             FreeCamPath.Entry e2 = path.get(i);
 
-            bufferBuilder.addVertex(
-                            (float) (e1.position().x - view.x),
-                            (float) (e1.position().y - view.y),
-                            (float) (e1.position().z - view.z))
-                    .setColor(1, 1, 1, 1f);
-            bufferBuilder.addVertex(
-                            (float) (e2.position().x - view.x),
-                            (float) (e2.position().y - view.y),
-                            (float) (e2.position().z - view.z))
-                    .setColor(1, 1, 1, 1f);
+            renderer.line(
+                    e1.position().x, e1.position().y, e1.position().z,
+                    e2.position().x, e2.position().y, e2.position().z);
         }
 
-        Primitives.renderLines(bufferBuilder, event.getPose(), event.getProjection());
+        renderer.end(1, 1, 1, 1);
     }
 
     public void startPath() {

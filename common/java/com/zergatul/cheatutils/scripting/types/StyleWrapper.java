@@ -33,7 +33,7 @@ public class StyleWrapper {
         if (event == null) {
             return "";
         }
-        return event.getAction().toString();
+        return event.action().toString();
     }
 
     @MethodDescription("""
@@ -47,12 +47,12 @@ public class StyleWrapper {
             return false;
         }
 
-        if (event.getAction() == ClickEvent.Action.RUN_COMMAND) {
+        if (event.action() == ClickEvent.Action.RUN_COMMAND) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null) {
                 return false;
             }
-            String command = StringUtil.filterText(event.getValue());
+            String command = StringUtil.filterText(((ClickEvent.RunCommand) event).command());
             if (command.startsWith("/")) {
                 return mc.player.connection.sendUnsignedCommand(command.substring(1));
             } else {

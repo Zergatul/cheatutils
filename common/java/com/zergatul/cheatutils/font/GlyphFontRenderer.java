@@ -1,18 +1,13 @@
 package com.zergatul.cheatutils.font;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import net.minecraft.client.renderer.CoreShaders;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.network.chat.Component;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.TextureColor2dRenderer;
+import net.minecraft.client.Minecraft;
+import org.joml.Matrix4f;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-
-import static org.lwjgl.opengl.GL11.*;
 
 public class GlyphFontRenderer {
 
@@ -63,47 +58,27 @@ public class GlyphFontRenderer {
         return new TextBounds(width, height, top, bottom);
     }
 
-    public void drawText(PoseStack stack, String string, float x, float y, double invScale) {
+    public void drawText(Matrix4f matrix, String string, float x, float y, double invScale, int color) {
         if (string == null) {
             return;
         }
 
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
         ensureGlyphs(string);
+
+        float r = (float) (color >> 16 & 0xFF) / 255;
+        float g = (float) (color >> 8 & 0xFF) / 255;
+        float b = (float) (color & 0xFF) / 255;
+
+        TextureColor2dRenderer renderer = RenderUtilities.instance.getTextureColor2dRenderer();
+
         for (int i = 0; i < string.length(); i++) {
             Glyph glyph = glyphs.get(string.charAt(i));
-            glyph.bindTexture();
             float width = (float)(glyph.getWidth() * invScale);
             float height = (float)(glyph.getHeight() * invScale);
 
-            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-            BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-
-            bufferBuilder
-                    .addVertex(stack.last().pose(), x, y + height, 0)
-                    .setColor(1f, 1f, 1f, 1f)
-                    .setUv(0, 1);
-            bufferBuilder
-                    .addVertex(stack.last().pose(), x + width, y + height, 0)
-                    .setColor(1f, 1f, 1f, 1f)
-                    .setUv(1, 1);
-            bufferBuilder
-                    .addVertex(stack.last().pose(), x + width, y, 0)
-                    .setColor(1f, 1f, 1f, 1f)
-                    .setUv(1, 0);
-            bufferBuilder
-                    .addVertex(stack.last().pose(), x, y, 0)
-                    .setColor(1f, 1f, 1f, 1f)
-                    .setUv(0, 0);
-
-            MeshData data = bufferBuilder.build();
-            if (data != null) {
-                BufferUploader.drawWithShader(data);
-            }
+            renderer.begin();
+            renderer.rect(x, y, width, height, r, g, b, 1);
+            renderer.end(matrix, glyph.getTextureId());
 
             x += width;
         }

@@ -1,27 +1,28 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.visuals;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ShulkerTooltipConfig;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.Texture2dRenderer;
+import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 import org.joml.Vector2ic;
 
-// TODO: optimize
-public class ShulkerTooltipController {
+public class ShulkerTooltip {
 
-    public static ShulkerTooltipController instance = new ShulkerTooltipController();
+    public static ShulkerTooltip instance = new ShulkerTooltip();
 
     private static final ResourceLocation CONTAINER_TEXTURE = ResourceLocation.parse("textures/gui/container/shulker_box.png");
     private static final int ImageWidth = 176;
@@ -38,7 +39,7 @@ public class ShulkerTooltipController {
     private boolean renderAfter;
     private boolean renderToTheLeft;
 
-    private ShulkerTooltipController() {
+    private ShulkerTooltip() {
         Events.PreRenderTooltip.add(this::onPreRenderTooltip);
         Events.TooltipPositioned.add(this::onTooltipPositioned);
         Events.PostRenderTooltip.add(this::onPostRenderTooltip);
@@ -156,13 +157,19 @@ public class ShulkerTooltipController {
     }
 
     private void renderShulkerInventory(GuiGraphics graphics, ItemStack itemStack, Matrix4f matrix, int x, int y) {
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, CONTAINER_TEXTURE);
+        MainFrameBuffer.enter();
 
-        drawTexture(matrix, x, y, ImageWidth, 6, 100, 0, 0, ImageWidth, 6, 256, 256);
-        drawTexture(matrix, x, y + 6, ImageWidth, 60, 100, 0, 14, ImageWidth, 60, 256, 256);
-        drawTexture(matrix, x, y + 66, ImageWidth, 6, 100, 0, 160, ImageWidth, 6, 256, 256);
+        Texture2dRenderer renderer = RenderUtilities.instance.getTexture2dRenderer();
+        renderer.begin();
+        renderer.rect(x, y, ImageWidth, 6, 0, 0, ImageWidth, 6, 256, 256);
+        renderer.rect(x, y + 6, ImageWidth, 60, 0, 14, ImageWidth, 60, 256, 256);
+        renderer.rect(x, y + 66, ImageWidth, 6, 0, 160, ImageWidth, 6, 256, 256);
+        renderer.end(
+                mc.getWindow().getGuiScaledWidth(),
+                mc.getWindow().getGuiScaledHeight(),
+                ((GlTexture) mc.getTextureManager().getTexture(CONTAINER_TEXTURE).getTexture()).glId());
+
+        MainFrameBuffer.exit();
 
         NonNullList<ItemStack> content = ItemUtils.getShulkerContent(itemStack);
         for (int i = 0; i < content.size(); i++) {
@@ -192,19 +199,7 @@ public class ShulkerTooltipController {
         }
     }
 
-    private void drawTexture(Matrix4f matrix, int x, int y, int width, int height, int z, int texX, int texY, int texWidth, int texHeight, int texSizeX, int texSizeY) {
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        RenderSystem.enableDepthTest();
-        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.addVertex(matrix, x, y, z).setUv(1F * texX / texSizeX, 1F * texY / texSizeY);
-        bufferbuilder.addVertex(matrix, x, y + height, z).setUv(1F * texX / texSizeX, 1F * (texY + texHeight) / texSizeY);
-        bufferbuilder.addVertex(matrix, x + width, y + height, z).setUv(1F * (texX + texWidth) / texSizeX, 1F * (texY + texHeight) / texSizeY);
-        bufferbuilder.addVertex(matrix, x + width, y, z).setUv(1F * (texX + texWidth) / texSizeX, 1F * texY / texSizeY);
-        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
-    }
-
     private void renderSlot(GuiGraphics graphics, ItemStack itemStack, int x, int y) {
-        RenderSystem.enableDepthTest();
         graphics.renderFakeItem(itemStack, x, y);
         graphics.renderItemDecorations(mc.font, itemStack, x, y);
     }

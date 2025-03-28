@@ -21,6 +21,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
+import net.minecraft.nbt.StringTagVisitor;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -510,7 +511,9 @@ public class GameApi {
             return getStringValue(entityId, entity -> {
                 CompoundTag compound = new CompoundTag();
                 entity.saveWithoutId(compound);
-                return compound.getAsString();
+                StringTagVisitor visitor = new StringTagVisitor();
+                compound.accept(visitor);
+                return visitor.build();
             });
         }
 
@@ -521,7 +524,7 @@ public class GameApi {
                     living.addAdditionalSaveData(compound);
                     Tag item = compound.get(tag);
                     if (item instanceof NumericTag numeric) {
-                        return numeric.getAsInt();
+                        return numeric.intValue();
                     } else {
                         return Integer.MIN_VALUE;
                     }

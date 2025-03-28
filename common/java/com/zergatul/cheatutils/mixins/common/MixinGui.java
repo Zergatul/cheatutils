@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -51,6 +52,7 @@ public abstract class MixinGui {
     private void onBeforeRender(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
         if (RenderWorldLastEvent.last != null) {
             Events.PreRenderGui.trigger(new RenderGuiEvent(graphics, RenderWorldLastEvent.last));
+            RenderSystem.setShaderColor(1, 1, 1, 1);
         }
     }
 

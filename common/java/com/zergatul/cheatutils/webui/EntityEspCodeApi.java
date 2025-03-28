@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.controllers.ScriptsController;
@@ -26,7 +27,7 @@ public class EntityEspCodeApi extends ApiBase {
         }
 
         if (request.code == null || request.code.isBlank()) {
-            RenderSystem.recordRenderCall(() -> {
+            TickEndExecutor.instance.execute(() -> {
                 config.code = null;
                 config.script = null;
                 ConfigStore.instance.requestWrite();
@@ -36,7 +37,7 @@ public class EntityEspCodeApi extends ApiBase {
 
         CompilationResult result = ScriptsController.instance.compileEntityEsp(request.code);
         if (result.getProgram() != null) {
-            RenderSystem.recordRenderCall(() -> {
+            TickEndExecutor.instance.execute(() -> {
                 config.code = request.code;
                 config.script = result.getProgram();
                 ConfigStore.instance.requestWrite();

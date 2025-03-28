@@ -4,6 +4,8 @@ import org.lwjgl.opengl.GL30;
 
 public class GlStateTracker {
 
+    public static final int PROGRAM = 0x01;
+
     private static int VAO;
     private static int VBO;
     private static boolean blend;
@@ -61,5 +63,17 @@ public class GlStateTracker {
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, binding1);
 
         GL30.glActiveTexture(texture);
+    }
+
+    public static void save(int flags) {
+        if ((flags & PROGRAM) != 0) {
+            program = GL30.glGetInteger(GL30.GL_CURRENT_PROGRAM);
+        }
+    }
+
+    public static void restore(int flags) {
+        if ((flags & PROGRAM) != 0) {
+            GL30.glUseProgram(program);
+        }
     }
 }

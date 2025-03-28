@@ -2,20 +2,26 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.Color2dRenderer;
+import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.Primitives;
+import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import com.zergatul.cheatutils.utils.ItemUtils;
+import jdk.jfr.Frequency;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +42,10 @@ public class ContainerSummaryController {
     public List<ItemDrawable> groupItems(List<ItemStack> items) {
         Map<Item, ItemDrawable> map = new HashMap<>();
         for (ItemStack itemStack: items) {
+            if (itemStack.is(Items.AIR)) {
+                continue;
+            }
+
             addItem(map, itemStack);
 
             if (ItemUtils.isShulkerBox(itemStack)) {
@@ -195,18 +205,31 @@ public class ContainerSummaryController {
             int yo = y;
             int fullWidth = width + H_PADDING * 2;
 
-            Primitives.fill(graphics.pose(), x, y, x + fullWidth, y + ItemDrawable.HEIGHT * list.size(), -1873784752);
+            GlStateTracker.save(GlStateTracker.PROGRAM);
+            MainFrameBuffer.enter();
+
+            Matrix4f matrix = new Matrix4f();
+            matrix.ortho(
+                    0, mc.getWindow().getGuiScaledWidth(),
+                    mc.getWindow().getGuiScaledHeight(), 0,
+                    -1, 1);
+
+            Primitives.fill(matrix, x, y, fullWidth, ItemDrawable.HEIGHT * list.size(), -1873784752);
+
+            Color2dRenderer renderer = RenderUtilities.instance.getColor2dRenderer();
+            renderer.begin();
+            renderer.rect(x, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 1, 1, 1, 1);
+            renderer.rect(x + fullWidth, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 1, 1, 1, 1);
+            for (int i = 0; i <= list.size(); i++) {
+                renderer.rect(x, yo + ItemDrawable.HEIGHT * i, fullWidth, 1, 1, 1, 1, 1);
+            }
+            renderer.end(matrix);
+
+            MainFrameBuffer.exit();
+            GlStateTracker.restore(GlStateTracker.PROGRAM);
+
             for (ItemDrawable drawable : list) {
                 y += drawable.draw(graphics, font, itemRenderer, player, x + (width - drawable.width) / 2 + H_PADDING, y + 2);
-            }
-
-            RenderSystem.setShader(CoreShaders.POSITION_TEX);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShaderTexture(0, CONTAINER_TEXTURE);
-            Primitives.drawTexture(graphics.pose().last().pose(), x, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
-            Primitives.drawTexture(graphics.pose().last().pose(), x + fullWidth, yo, 1, ItemDrawable.HEIGHT * list.size() + 1, 124, 3, 3, 1, 1, 256, 256);
-            for (int i = 0; i <= list.size(); i++) {
-                Primitives.drawTexture(graphics.pose().last().pose(), x, yo + ItemDrawable.HEIGHT * i, fullWidth, 1, 124, 3, 3, 1, 1, 256, 256);
             }
 
             return fullWidth;

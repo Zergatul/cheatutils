@@ -188,7 +188,7 @@ public class BlockAutomation {
                         } else {
                             debugPlan = null;
                             debugStep = false;
-                            mc.player.getInventory().selected = slot;
+                            mc.player.getInventory().setSelectedSlot(slot);
                             BlockUtils.applyPlacingPlan(plan, config.useShift);
                             actionPerformed = true;
                             continue actionLoop;
@@ -210,7 +210,7 @@ public class BlockAutomation {
 
         int slot = slotSelector.selectItem(config, breakItemPredicate);
         if (slot >= 0) {
-            mc.player.getInventory().selected = slot;
+            mc.player.getInventory().setSelectedSlot(slot);
             return true;
         } else {
             return false;

@@ -73,7 +73,7 @@ public class InventoryApi {
             return;
         }
 
-        mc.player.getInventory().setSelectedHotbarSlot(slot - 1);
+        mc.player.getInventory().setSelectedSlot(slot - 1);
     }
 
     @MethodDescription("""
@@ -108,7 +108,7 @@ public class InventoryApi {
         Inventory inventory = mc.player.getInventory();
         for (int i = 0; i < 9; i++) {
             if (inventory.getItem(i).is(item)) {
-                inventory.selected = i;
+                inventory.setSelectedSlot(i);
                 return true;
             }
         }

@@ -231,13 +231,15 @@ public class AutoBucket implements Module {
     }
 
     private ItemStack findItemStackToUse(ClientLevel level, AutoBucketConfig config) {
+        assert mc.player != null;
+
         // search for 0 fall damage items
         // check hotbar
         Inventory inventory = mc.player.getInventory();
         if (config.useWaterBucket && !level.dimensionType().ultraWarm()) {
             for (int i = 0; i < 9; i++) {
                 if (inventory.getItem(i).getItem() == Items.WATER_BUCKET) {
-                    inventory.selected = i;
+                    inventory.setSelectedSlot(i);
                     return inventory.getItem(i);
                 }
             }
@@ -245,7 +247,7 @@ public class AutoBucket implements Module {
         if (config.useSlimeBlock) {
             for (int i = 0; i < 9; i++) {
                 if (inventory.getItem(i).getItem() == Items.SLIME_BLOCK) {
-                    inventory.selected = i;
+                    inventory.setSelectedSlot(i);
                     return inventory.getItem(i);
                 }
             }
@@ -253,7 +255,7 @@ public class AutoBucket implements Module {
         if (config.useCobweb) {
             for (int i = 0; i < 9; i++) {
                 if (inventory.getItem(i).getItem() == Items.COBWEB) {
-                    inventory.selected = i;
+                    inventory.setSelectedSlot(i);
                     return inventory.getItem(i);
                 }
             }

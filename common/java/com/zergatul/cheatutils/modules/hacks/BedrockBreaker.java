@@ -242,9 +242,9 @@ public class BedrockBreaker implements Module {
         // equip pickaxe if present
         int pickaxeSlot = findPickaxe();
         if (pickaxeSlot >= 0) {
-            mc.player.getInventory().selected = pickaxeSlot;
+            mc.player.getInventory().setSelectedSlot(pickaxeSlot);
         }
-        mc.player.connection.send(new ServerboundSetCarriedItemPacket(mc.player.getInventory().selected));
+        mc.player.connection.send(new ServerboundSetCarriedItemPacket(mc.player.getInventory().getSelectedSlot()));
 
         blockDestroyProgress = getPistonDestroyProgress();
         blockDestroySeqNumber = getSequenceNumber();
@@ -428,10 +428,10 @@ public class BedrockBreaker implements Module {
 
         int pickaxeSlot = findPickaxe();
         if (pickaxeSlot >= 0) {
-            mc.player.getInventory().selected = pickaxeSlot;
+            mc.player.getInventory().setSelectedSlot(pickaxeSlot);
         }
 
-        mc.player.connection.send(new ServerboundSetCarriedItemPacket(mc.player.getInventory().selected));
+        mc.player.connection.send(new ServerboundSetCarriedItemPacket(mc.player.getInventory().getSelectedSlot()));
 
         blockDestroyProgress = getPistonDestroyProgress();
         blockDestroySeqNumber = getSequenceNumber();
@@ -662,7 +662,7 @@ public class BedrockBreaker implements Module {
         tickCount = 0;
 
         if (mc.player != null) {
-            mc.player.connection.send(new ServerboundSetCarriedItemPacket(mc.player.getInventory().selected));
+            mc.player.connection.send(new ServerboundSetCarriedItemPacket(mc.player.getInventory().getSelectedSlot()));
         }
 
         if (message != null) {

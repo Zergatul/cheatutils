@@ -30,7 +30,7 @@ public class AutoEat {
 
         AutoEatConfig config = ConfigStore.instance.getConfig().autoEatConfig;
         if (config.enabled && (!config.isHungerLimitEnabled || mc.player.getFoodData().getFoodLevel() <= config.hungerLimit)) {
-            ItemStack itemStack = mc.player.getInventory().offhand.get(0);
+            ItemStack itemStack = mc.player.getOffhandItem();
             FoodProperties food = itemStack.get(DataComponents.FOOD);
             if (food != null && mc.player.getFoodData().needsFood()) {
                 startEating();

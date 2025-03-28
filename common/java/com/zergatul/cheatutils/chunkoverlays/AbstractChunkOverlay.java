@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
@@ -12,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.joml.Matrix4f;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,7 +103,7 @@ public abstract class AbstractChunkOverlay {
 
     public abstract boolean isEnabled();
 
-    public void onPostDrawSegments(Dimension dimension, PoseStack poseStack, float xp, float zp, float xc, float zc, float multiplier) {
+    public void onPostDrawSegments(Dimension dimension, Matrix4f matrix, float xp, float zp, float xc, float zc, float multiplier) {
 
     }
 

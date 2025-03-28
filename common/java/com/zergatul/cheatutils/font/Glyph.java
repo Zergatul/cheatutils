@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.font;
 
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -79,7 +80,7 @@ public class Glyph {
 
             ByteBuffer data = BufferUtils.createByteBuffer(bytes.length).put(bytes);
             data.flip();
-            texture = new DynamicTexture(NativeImage.read(data));
+            texture = new DynamicTexture(null, NativeImage.read(data));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -105,8 +106,8 @@ public class Glyph {
         return baseline;
     }
 
-    public void bindTexture() {
-        RenderSystem.setShaderTexture(0, texture.getId());
+    public int getTextureId() {
+        return ((GlTexture) texture.getTexture()).glId();
     }
 
     public void dispose() {

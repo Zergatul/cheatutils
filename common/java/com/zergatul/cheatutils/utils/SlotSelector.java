@@ -74,9 +74,9 @@ public class SlotSelector {
         Inventory inventory = mc.player.getInventory();
 
         // check if we are holding correct item
-        if (predicate.test(inventory.getSelected())) {
-            lastSlotUsage[inventory.selected] = System.nanoTime();
-            return inventory.selected;
+        if (predicate.test(inventory.getSelectedItem())) {
+            lastSlotUsage[inventory.getSelectedSlot()] = System.nanoTime();
+            return inventory.getSelectedSlot();
         }
 
         // search on hotbar

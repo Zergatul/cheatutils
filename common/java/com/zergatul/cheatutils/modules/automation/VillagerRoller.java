@@ -178,7 +178,7 @@ public class VillagerRoller implements Module {
                 case SETUP_WAITING_FOR_LECTERN_BREAK -> {
                     if (lecternDestroyed) {
                         lecternDestroyed = false;
-                        slot = mc.player.getInventory().selected;
+                        slot = mc.player.getInventory().getSelectedSlot();
                         state = State.WAITING_FOR_PROFESSION_LOSE;
                     }
                     return;
@@ -192,7 +192,7 @@ public class VillagerRoller implements Module {
                         return;
                     }
                     if (entity instanceof Villager villager) {
-                        if (villager.getVillagerData().getProfession() == VillagerProfession.NONE) {
+                        if (villager.getVillagerData().profession().is(VillagerProfession.NONE)) {
                             state = State.PLACING_LECTERN;
                         } else {
                             return;
@@ -231,7 +231,7 @@ public class VillagerRoller implements Module {
                             return;
                         }
 
-                        inventory.selected = lecternSlot;
+                        inventory.setSelectedSlot(lecternSlot);
                         var plan = new BlockUtils.PlaceBlockPlan(pos.relative(Direction.DOWN).immutable(), Direction.DOWN, pos);
                         BlockUtils.applyPlacingPlan(plan, false);
 
@@ -255,7 +255,7 @@ public class VillagerRoller implements Module {
                         return;
                     }
                     if (entity instanceof Villager villager) {
-                        if (villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) {
+                        if (villager.getVillagerData().profession().is(VillagerProfession.LIBRARIAN)) {
                             EntityInteraction.interact(villager);
                             offers = null;
                             state = State.WAITING_FOR_TRADE_MENU;
@@ -325,7 +325,7 @@ public class VillagerRoller implements Module {
 
                 case START_BREAKING_LECTERN -> {
                     if (mc.level.getBlockState(pos).is(Blocks.LECTERN)) {
-                        mc.player.getInventory().selected = slot;
+                        mc.player.getInventory().setSelectedSlot(slot);
                         if (mc.gameMode.startDestroyBlock(pos, Direction.UP)) {
                             state = State.BREAKING_LECTERN_PROGRESS;
                         }

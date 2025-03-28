@@ -49,7 +49,7 @@ public class AutoHotbar implements Module {
         }
 
         if (config.refillSlotOffhand && !lastTickOffhand.isEmpty()) {
-            if (shouldRefill(lastTickOffhand, inventory.offhand.get(0))) {
+            if (shouldRefill(lastTickOffhand, mc.player.getOffhandItem())) {
                 int slot = findSameItem(inventory, lastTickOffhand);
                 if (slot > 0) {
                     InventoryUtils.addItemStack(new InventorySlot(slot), new InventorySlot(EquipmentSlot.OFFHAND));
@@ -60,7 +60,7 @@ public class AutoHotbar implements Module {
         for (int i = 0; i < 9; i++) {
             lastTickHotbar[i] = inventory.getItem(i).copy();
         }
-        lastTickOffhand = inventory.offhand.get(0).copy();
+        lastTickOffhand = mc.player.getOffhandItem().copy();
     }
 
     private void clear() {

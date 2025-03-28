@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -18,14 +19,13 @@ public class ArmorOverlay {
     }
 
     public void render(GuiGraphics graphics, Player player, int left, int top) {
-        List<ItemStack> armor = player.getInventory().armor;
-        renderItem(graphics, armor.get(3), left, top);
+        renderItem(graphics, player.getItemBySlot(EquipmentSlot.HEAD), left, top);
         left += 16;
-        renderItem(graphics, armor.get(2), left, top);
+        renderItem(graphics, player.getItemBySlot(EquipmentSlot.CHEST), left, top);
         left += 16;
-        renderItem(graphics, armor.get(1), left, top);
+        renderItem(graphics, player.getItemBySlot(EquipmentSlot.LEGS), left, top);
         left += 16;
-        renderItem(graphics, armor.get(0), left, top);
+        renderItem(graphics, player.getItemBySlot(EquipmentSlot.FEET), left, top);
     }
 
     private void renderItem(GuiGraphics graphics, ItemStack itemStack, int left, int top) {

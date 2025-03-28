@@ -13,7 +13,7 @@ public class Segment {
     public Segment(SegmentPos pos, int segmentSize) {
         this.pos = pos;
         this.image = new NativeImage(segmentSize * 16, segmentSize * 16, true);
-        this.texture = new DynamicTexture(image);
+        this.texture = new DynamicTexture(null, image);
     }
 
     public void onChange() {

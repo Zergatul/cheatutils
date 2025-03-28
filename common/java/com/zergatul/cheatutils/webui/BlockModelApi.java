@@ -9,14 +9,14 @@ import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccess
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.TextureStateShardAccessor;
 import com.zergatul.cheatutils.utils.JavaRandom;
-import com.zergatul.cheatutils.wrappers.BakedModelWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -55,17 +55,20 @@ public class BlockModelApi extends ApiBase {
         List<Quad> result = new ArrayList<>();
 
         BlockState state = block.defaultBlockState();
-        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-        for (Direction direction : Direction.values()) {
-            List<BakedQuad> quads = BakedModelWrapper.getQuads(model, state, direction, random);
+        BlockStateModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+        List<BlockModelPart> parts = model.collectParts(random);
+        for (BlockModelPart part : parts) {
+            for (Direction direction : Direction.values()) {
+                List<BakedQuad> quads = part.getQuads(direction);
+                for (BakedQuad quad : quads) {
+                    result.add(new Quad(quad, state));
+                }
+            }
+
+            List<BakedQuad> quads = part.getQuads(null);
             for (BakedQuad quad : quads) {
                 result.add(new Quad(quad, state));
             }
-        }
-
-        List<BakedQuad> quads = BakedModelWrapper.getQuads(model, state, null, random);
-        for (BakedQuad quad : quads) {
-            result.add(new Quad(quad, state));
         }
 
         return result;
@@ -203,9 +206,9 @@ public class BlockModelApi extends ApiBase {
         public final Vertex[] vertices;
 
         public Quad(BakedQuad quad, BlockState state) {
-            this.location = quad.getSprite().atlasLocation().toString();
+            this.location = quad.sprite().atlasLocation().toString();
 
-            int[] values = quad.getVertices();
+            int[] values = quad.vertices();
             this.vertices = new Vertex[4];
             for (int i = 0; i < 4; i++) {
                 int offset = i * 8;

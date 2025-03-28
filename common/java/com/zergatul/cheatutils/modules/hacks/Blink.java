@@ -76,7 +76,7 @@ public class Blink implements Module {
         packets.clear();
 
         if (mc.player != null) {
-            mc.player.moveTo(startX, startY, startZ, startYRot, startXRot);
+            mc.player.snapTo(startX, startY, startZ, startYRot, startXRot);
         }
 
         fake.remove(Entity.RemovalReason.DISCARDED);

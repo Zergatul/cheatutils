@@ -8,7 +8,7 @@ public class EspLinesProgram extends Program {
     private final int mvpUniform;
 
     public EspLinesProgram() {
-        super("esp-lines", new PositionColorVertexData());
+        super("esp-lines", new Position3dColorVertexData());
 
         mvpUniform = GL30.glGetUniformLocation(id, "MVP");
         if (mvpUniform == -1) {

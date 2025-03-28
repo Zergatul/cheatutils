@@ -48,7 +48,7 @@ public class CoordinatesLeakProtectionController {
                 BlockState[] col = cols[(x << 4) | z];
                 for (int y = -64; y <= -60; y++) {
                     pos.setY(y);
-                    chunk.setBlockState(pos, col[y + 64], false);
+                    chunk.setBlockState(pos, col[y + 64], 0);
                 }
             }
         }

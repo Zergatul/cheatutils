@@ -10,7 +10,7 @@ public class OutlineDrawProgram extends Program {
     private final int pixelHeightUniform;
 
     public OutlineDrawProgram() {
-        super("outline-draw", new PositionTextureVertexData());
+        super("outline-draw", new Position3dTextureVertexData());
 
         textureUniform = GL30.glGetUniformLocation(id, "BufferTexture");
         if (textureUniform == -1) {
