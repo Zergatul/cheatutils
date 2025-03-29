@@ -28,6 +28,7 @@
     "common.accessors.KeyMappingAccessor",
     "common.accessors.LivingEntityAccessor",
     "common.accessors.MinecraftAccessor",
+    "common.accessors.MouseHandlerAccessor",
     "common.accessors.MultiPlayerGameModeAccessor",
     "common.accessors.ProjectileAccessor",
     "common.accessors.SerializableChunkDataAccessor",
