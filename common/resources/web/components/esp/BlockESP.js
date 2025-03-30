@@ -1,10 +1,10 @@
 import * as FallbackLoader from '/fallback-loader.js'
 import { withCss } from '/components/Loader.js'
-import { createBlockRenderer, removeBlockRenderer } from './BlockRenderer.js'
+import { BlockRenderingCanvas } from './BlockRenderer.js'
 import * as http from '/http.js'
 import { components } from '../../components.js'
 
-const { ref, nextTick, onUnmounted } = await FallbackLoader.vue();
+const { ref, nextTick, onMounted, onUnmounted } = await FallbackLoader.vue();
 
 const blockInfoPromise = http.get('/api/block-info').then(blocksList => {
     const blocksMap = {};
@@ -19,6 +19,7 @@ export function createComponent(template) {
     const args = {
         template: template,
         setup() {
+            const root = ref(null);
             const state = ref('list');
             const search = ref('');
             const blocksList = ref(null);
@@ -176,6 +177,8 @@ export function createComponent(template) {
                 }
             };
 
+            const renderer = new BlockRenderingCanvas();
+
             const setupObserver = () => {
                 removeObserver();
 
@@ -190,16 +193,16 @@ export function createComponent(template) {
                         entries.forEach(entry => {
                             if (entry.isIntersecting) {
                                 const id = entry.target.getAttribute('data-id');
-                                createBlockRenderer(entry.target.querySelector('div.canvas'), id);
+                                renderer.createCanvas(entry.target.querySelector('div.canvas'), id);
                             } else {
-                                removeBlockRenderer(entry.target.querySelector('div.canvas'));
+                                renderer.deleteCanvas(entry.target.querySelector('div.canvas'));
                             }
                         });
                       }, {
                         root: currentScrollable,
                         threshold: .5
                     });
-    
+
                     for (let item of getChildrenToObserve()) {
                         observer.observe(item);
                     }
@@ -224,11 +227,33 @@ export function createComponent(template) {
                 nextTick(() => setupObserver());
             });
 
+            let mutationObserver = null;
+            onMounted(() => {
+                mutationObserver = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'childList') {
+                            for (let node of mutation.removedNodes) {
+                                if (node instanceof HTMLElement) {
+                                    node.querySelectorAll('div.canvas').forEach(div => renderer.deleteCanvas(div));
+                                }
+                            }
+                        }
+                    });
+                });
+                mutationObserver.observe(root.value, { childList: true, subtree: true });
+            });
+
             onUnmounted(() => {
                 removeObserver();
+                if (mutationObserver) {
+                    mutationObserver.disconnect();
+                }
+                renderer.dispose();
             });
 
             return {
+                root,
+
                 state,
                 search,
                 blocksList,
