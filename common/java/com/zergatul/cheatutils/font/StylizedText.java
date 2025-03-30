@@ -9,8 +9,12 @@ public class StylizedText {
     public final ArrayList<StylizedTextChunk> chunks = new ArrayList<>(4);
 
     public static StylizedText of(String value) {
+        return of(value, Style.EMPTY);
+    }
+
+    public static StylizedText of(String value, Style style) {
         StylizedText text = new StylizedText();
-        text.chunks.add(new StylizedTextChunk(value, Style.EMPTY));
+        text.chunks.add(new StylizedTextChunk(value, style));
         return text;
     }
 

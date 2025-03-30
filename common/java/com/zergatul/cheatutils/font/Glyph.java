@@ -1,20 +1,13 @@
 package com.zergatul.cheatutils.font;
 
-import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import net.minecraft.util.Mth;
-import org.lwjgl.BufferUtils;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
 
 public class Glyph {
 
@@ -23,16 +16,25 @@ public class Glyph {
     private final int baseline;
     private final int top;
     private final int bottom;
-    private DynamicTexture texture;
+    private final AtlasTexture.Item sprite;
 
-    public Glyph(Font font, char ch, boolean antiAliasing) {
+    private Glyph(int width, int height, int baseline, int top, int bottom, AtlasTexture.Item sprite) {
+        this.width = width;
+        this.height = height;
+        this.baseline = baseline;
+        this.top = top;
+        this.bottom = bottom;
+        this.sprite = sprite;
+    }
+
+    public static Glyph create(AtlasTexture texture, Font font, char ch, boolean antiAliasing) {
         AffineTransform affineTransform = new AffineTransform();
         FontRenderContext frc = new FontRenderContext(affineTransform, antiAliasing, false);
         String charStr = Character.toString(ch);
         Rectangle2D bounds = font.getStringBounds(charStr, frc);
-        height = Mth.ceil(bounds.getHeight());
-        width = Mth.ceil(bounds.getWidth());
-        baseline = Mth.ceil(Math.abs(bounds.getMinY()));
+        int height = Mth.ceil(bounds.getHeight());
+        int width = Mth.ceil(bounds.getWidth());
+        int baseline = Mth.ceil(Math.abs(bounds.getMinY()));
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         g.setFont(font);
@@ -55,6 +57,7 @@ public class Glyph {
             }
         }
 
+        int top, bottom;
         if (shift == -1) {
             // blank glyph
             top = baseline;
@@ -73,17 +76,8 @@ public class Glyph {
             bottom = height - 1 - shift;
         }
 
-        try {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", stream);
-            byte[] bytes = stream.toByteArray();
-
-            ByteBuffer data = BufferUtils.createByteBuffer(bytes.length).put(bytes);
-            data.flip();
-            texture = new DynamicTexture(null, NativeImage.read(data));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        AtlasTexture.Item sprite = texture.add(image);
+        return new Glyph(width, height, baseline, top, bottom, sprite);
     }
 
     public int getWidth() {
@@ -106,16 +100,12 @@ public class Glyph {
         return baseline;
     }
 
-    public int getTextureId() {
-        return ((GlTexture) texture.getTexture()).glId();
+    public AtlasTexture.Item getSprite() {
+        return sprite;
     }
 
-    public void dispose() {
-        texture.close();
-    }
-
-    private boolean hasPixels(BufferedImage image, int y) {
-        for (int x = 0; x < width; x++) {
+    private static boolean hasPixels(BufferedImage image, int y) {
+        for (int x = 0; x < image.getWidth(); x++) {
             if ((image.getRGB(x, y) & 0xFF000000) != 0) {
                 return true;
             }

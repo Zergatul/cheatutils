@@ -1,14 +1,14 @@
 package com.zergatul.cheatutils.render.gl;
 
-import org.lwjgl.opengl.GL30;
-
 import static org.lwjgl.opengl.GL30.*;
 
 public class GlStateTracker {
 
     public static final int PROGRAM = 0x01;
     public static final int TEXTURE = 0x02;
+    public static final int FRAMEBUFFER = 0x04;
 
+    private static int FBO;
     private static int VAO;
     private static int VBO;
     private static boolean blend;
@@ -80,6 +80,9 @@ public class GlStateTracker {
             glActiveTexture(GL_TEXTURE1);
             binding1 = glGetInteger(GL_TEXTURE_BINDING_2D);
         }
+        if ((flags & FRAMEBUFFER) != 0) {
+            FBO = glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
+        }
     }
 
     public static void restore(int flags) {
@@ -93,6 +96,9 @@ public class GlStateTracker {
             glBindTexture(GL_TEXTURE_2D, binding1);
 
             glActiveTexture(texture);
+        }
+        if ((flags & FRAMEBUFFER) != 0) {
+            glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         }
     }
 }

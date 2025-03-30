@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.render;
 
+import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import com.zergatul.cheatutils.render.gl.Position2dTextureColorProgram;
 import org.joml.Matrix4f;
 
@@ -22,6 +23,18 @@ public class TextureColor2dRenderer {
                 x, y + height, 0, 1,
                 x + width, y + height, 1, 1,
                 x + width, y, 1, 0,
+                red, green, blue, alpha);
+    }
+
+    public void rect(
+            float x, float y, float width, float height,
+            AtlasTexture.Item item,
+            float red, float green, float blue, float alpha) {
+        quad(
+                x, y, item.getU1(), item.getV1(),
+                x, y + height, item.getU1(), item.getV2(),
+                x + width, y + height, item.getU2(), item.getV2(),
+                x + width, y, item.getU2(), item.getV1(),
                 red, green, blue, alpha);
     }
 

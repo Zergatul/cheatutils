@@ -6,7 +6,9 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
 import com.zergatul.cheatutils.font.GlyphFontRenderer;
 import com.zergatul.cheatutils.font.TextBounds;
+import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.Primitives;
+import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import net.minecraft.client.Camera;
@@ -50,6 +52,9 @@ public class WorldMarkersController {
         if (mc.level == null) {
             return;
         }
+
+        GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        MainFrameBuffer.enter();
 
         Camera camera = event.getCamera();
         Vec3 view = camera.getPosition();
@@ -133,5 +138,8 @@ public class WorldMarkersController {
                     bw, height2,
                     color);
         }
+
+        MainFrameBuffer.exit();
+        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
     }
 }

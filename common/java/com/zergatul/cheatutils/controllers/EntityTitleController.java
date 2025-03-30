@@ -223,12 +223,7 @@ public class EntityTitleController {
 
                     MainFrameBuffer.enter();
                     Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
-
-                    for (StylizedTextChunk chunk : text.chunks) {
-                        int color = chunk.getColor();
-                        fontRenderer.drawText(matrix, chunk.text(), xp, yp, color);
-                        xp += fontRenderer.getTextSize(chunk.text()).width();
-                    }
+                    fontRenderer.drawText(matrix, text, xp, yp);
 
                     MainFrameBuffer.exit();
                 }
@@ -356,9 +351,9 @@ public class EntityTitleController {
                             EnchantmentEntry e = entries.get(j);
                             ypl -= bounds[j].height();
 
-                            TextBounds bound = enchFontRenderer.getTextSize(e.text);
-                            enchFontRenderer.drawText(matrix, e.text, (float)(xpl + xCenterOffset), (float)ypl, e.color.getRGB());
-                            enchFontRenderer.drawText(matrix, Integer.toString(e.level), (float) (xpl + bound.width() + xCenterOffset), (float)ypl, 0xFF00FFFF);
+                            StylizedText enchantmentText = StylizedText.of(e.text, Style.EMPTY.withColor(e.color.getRGB()));
+                            enchantmentText.append(Integer.toString(e.level), Style.EMPTY.withColor(0xFF00FFFF));
+                            enchFontRenderer.drawText(matrix, enchantmentText, xpl + xCenterOffset, ypl);
                         }
                         xpl += enchantmentWidths.get(i);
                     }

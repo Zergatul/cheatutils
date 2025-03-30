@@ -9,8 +9,8 @@ public class FrameBuffer {
     private static int prevFBO;
     private int FBO;
     private int FBT;
-    private float pixelWidth;
-    private float pixelHeight;
+    private final float pixelWidth;
+    private final float pixelHeight;
 
     public FrameBuffer() {
         push();
