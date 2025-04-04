@@ -7,25 +7,59 @@
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
         </div>
-        <div>
-            <button style="width: 200px;" @click="clear()">Clear</button>
-        </div>
+
+        <fieldset>
+            <legend>
+                Current Schematics
+            </legend>
+            <table class="summary">
+                <thead>
+                    <tr>
+                        <td>Name</td>
+                        <td>X</td>
+                        <td>Y</td>
+                        <td>Z</td>
+                        <td>
+                            <button style="width: 8em;" @click="removeAll()">Remove All</button>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(summary, index) in summaries">
+                        <td>{{ summary.name }}</td>
+                        <td @click="move(summary, index, 'x')">{{ summary.x }}</td>
+                        <td @click="move(summary, index, 'y')">{{ summary.y }}</td>
+                        <td @click="move(summary, index, 'z')">{{ summary.z }}</td>
+                        <td>
+                            <button style="width: 8em;" @click="removeAt(index)">Remove</button>
+                        </td>
+                        <td>
+                            <button style="width: 8em;" @click="rescan(index)">Rescan</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="section-description">
+                Click on coordinate to move schematica.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.renderBlocks" @change="update()">
+                    Render Blocks
+                </switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Render schematica in your world.
+            </div>
+        </fieldset>
+
         <fieldset>
             <legend>
                 Missing Blocks
             </legend>
             <table>
-                <tr>
-                    <td>
-                        <switch-checkbox v-model="config.showMissingBlockGhosts" @change="update()">Show as ghost blocks</switch-checkbox>
-                    </td>
-                    <td class="pad-left">
-                        <div class="flex-row">
-                            <span class="field-description">Max distance:</span>
-                            <input type="text" class="w5" v-model="config.missingBlockGhostsMaxDistance" @change="update()">
-                        </div>
-                    </td>
-                </tr>
                 <tr>
                     <td>
                         <switch-checkbox v-model="config.showMissingBlockTracers" @change="update()">Show tracers</switch-checkbox>
@@ -160,49 +194,34 @@
                     Size: W={{ schematic.width }} H={{ schematic.height }} L={{ schematic.length }}
                 </div>
                 <div>
-                    Palette:
+                    Palette (Click on block state to edit, while focused in text input: press &lt;Enter&gt; to apply edit change, or &lt;Esc&gt; to cancel):
                 </div>
-                <table v-if="schematic.palette.length != 65536">
+                <table>
                     <thead>
                         <tr>
                             <td>ID</td>
                             <td>Count</td>
-                            <td>Block</td>
+                            <td>Original</td>
+                            <td>Block State</td>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="item in schematic.paletteMap">
                             <td>{{ item.id }}</td>
                             <td>{{ item.count }}</td>
-                            <td>
-                                <input type="text" v-model="item.block">
+                            <td class="break-all">{{ item.raw }}</td>
+                            <td class="break-all" v-if="!item.editing" @click="beginEdit(item)">
+                                {{ item.stateFormatted }}
                             </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table v-if="schematic.palette.length == 65536">
-                    <thead>
-                        <tr>
-                            <td>ID1</td>
-                            <td>ID2</td>
-                            <td>Count</td>
-                            <td>Block</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in schematic.paletteMap">
-                            <td>{{ item.id >> 8 }}</td>
-                            <td>{{ item.id & 0xFF }}</td>
-                            <td>{{ item.count }}</td>
-                            <td>
-                                <input type="text" v-model="item.block">
+                            <td v-if="item.editing">
+                                <auto-complete :value="item.editText" :list="blockStatesFormatted" @apply="onItemEditApply(item, $event)" @cancel="onItemEditCancel(item)"></auto-complete>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div class="section-description">
-                Supported formats: .schematic, .litematic
+                Supported formats: .schematic, .litematic, .schem
             </div>
         </fieldset>
 

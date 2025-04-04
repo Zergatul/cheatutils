@@ -1,14 +1,11 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.controllers.SchematicaController;
+import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.schematics.InvalidFormatException;
 import com.zergatul.cheatutils.schematics.PlacingSettings;
 import com.zergatul.cheatutils.schematics.SchemaFile;
 import com.zergatul.cheatutils.schematics.SchemaFormatFactory;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -29,24 +26,15 @@ public class SchematicaPlaceApi extends ApiBase {
         // replace palette
         for (PaletteEntry entry : request.palette) {
             if (0 < entry.id && entry.id < schema.getPalette().length) {
-                Block block = Registries.BLOCKS.getValue(ResourceLocation.parse(entry.block));
-                if (block != Blocks.AIR) {
-                    schema.getPalette()[entry.id] = block.defaultBlockState();
-                }
+                schema.getPalette()[entry.id] = entry.state;
             }
         }
 
-        SchematicaController.instance.place(schema, request.placing);
-        return "{}";
-    }
-
-    @Override
-    public String delete(String id) {
-        SchematicaController.instance.clear();
+        Schematica.instance.place(schema, request.name, request.placing);
         return "{}";
     }
 
     public record Request(String file, String name, PlacingSettings placing, PaletteEntry[] palette) {}
 
-    public record PaletteEntry(int id, String block) {}
+    public record PaletteEntry(int id, BlockState state) {}
 }

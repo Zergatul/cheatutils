@@ -90,6 +90,8 @@ sourceSets {
             srcDir '../common/java'
             srcDir '../java-scripting-language/src/main/java'
             srcDir '../mixin-plugin/common/java'
+            exclude 'com/zergatul/cheatutils/mixins/common/schematics/MixinRenderRegionCache.java'
+            exclude 'com/zergatul/cheatutils/mixins/common/schematics/MixinSectionCompiler.java'
         }
         resources {
             srcDir '../common/resources'

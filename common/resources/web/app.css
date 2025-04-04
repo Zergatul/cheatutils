@@ -519,21 +519,6 @@ ul.item-list > li {
     gap: 12px;
 }
 
-div.schematic-info {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
-}
-
-div.schematic-info table {
-    border: 2px solid #00627A;
-    border-collapse: collapse;
-    width: 100%;
-}
-
-div.schematic-info td {
-    border: 2px solid #00627A;
-}
-
 ul.marker-list {
     width: 1000px;
 }
