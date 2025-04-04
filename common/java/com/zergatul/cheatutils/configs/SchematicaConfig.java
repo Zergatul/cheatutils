@@ -4,8 +4,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 
 public class SchematicaConfig extends BlockPlacerConfig implements ValidatableConfig {
 
-    public boolean showMissingBlockGhosts;
-    public double missingBlockGhostsMaxDistance;
+    public boolean renderBlocks;
     public boolean showMissingBlockTracers;
     public double missingBlockTracersMaxDistance;
     public boolean showMissingBlockCubes;
@@ -21,8 +20,7 @@ public class SchematicaConfig extends BlockPlacerConfig implements ValidatableCo
     public SchematicaConfig() {
         super();
 
-        showMissingBlockGhosts = true;
-        missingBlockGhostsMaxDistance = 10;
+        renderBlocks = true;
 
         showMissingBlockTracers = false;
         missingBlockTracersMaxDistance = 30;
@@ -39,7 +37,6 @@ public class SchematicaConfig extends BlockPlacerConfig implements ValidatableCo
 
     @Override
     public void validate() {
-        missingBlockGhostsMaxDistance = MathUtils.clamp(missingBlockGhostsMaxDistance, 1, 1000);
         missingBlockTracersMaxDistance = MathUtils.clamp(missingBlockTracersMaxDistance, 1, 1000);
         missingBlockCubesMaxDistance = MathUtils.clamp(missingBlockCubesMaxDistance, 1, 1000);
         wrongBlockTracersMaxDistance = MathUtils.clamp(wrongBlockTracersMaxDistance, 1, 1000);

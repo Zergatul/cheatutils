@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
+import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.utils.MathUtils;
@@ -34,6 +35,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new BlocksConfigApi.Add());
         apis.add(new BlockInfoApi());
         apis.add(new BlockModelApi());
+        apis.add(new BlockStateApi());
         apis.add(new RescanChunksApi());
         apis.add(new EntityInfoApi());
         apis.add(new EntitiesConfigApi());
@@ -48,6 +50,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ClassNameApi());
         apis.add(new SchematicaUploadApi());
         apis.add(new SchematicaPlaceApi());
+        apis.add(new SchematicaSummaryApi());
         apis.add(new WorldDownloadApi());
         apis.add(new EntityConfigMoveApi());
         apis.add(new FreeCamPathApi());
@@ -563,7 +566,14 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(SchematicaConfig config) {
+                SchematicaConfig oldConfig = getConfig();
                 ConfigStore.instance.getConfig().schematicaConfig = config;
+
+                boolean oldBlockRenderingState = oldConfig.enabled && oldConfig.renderBlocks;
+                boolean newBlockRenderingState = config.enabled && config.renderBlocks;
+                if (oldBlockRenderingState != newBlockRenderingState) {
+                    Schematica.instance.onBlockRenderingStateChanged();
+                }
             }
         });
 

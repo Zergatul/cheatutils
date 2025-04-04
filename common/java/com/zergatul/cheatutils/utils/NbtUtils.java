@@ -28,6 +28,14 @@ public class NbtUtils {
         return value instanceof ByteArrayTag;
     }
 
+    public static boolean hasInts(CompoundTag compound, String key) {
+        Tag value = compound.get(key);
+        if (value == null) {
+            return false;
+        }
+        return value instanceof IntArrayTag;
+    }
+
     public static boolean hasLongs(CompoundTag compound, String key) {
         Tag value = compound.get(key);
         if (value == null) {
