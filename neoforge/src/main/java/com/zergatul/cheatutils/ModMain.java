@@ -38,7 +38,9 @@ public class ModMain {
         bus.addListener(this::onCommonSetup);
         bus.addListener(this::onLoadComplete);
         bus.addListener(this::onRegisterKeybindings);
+    }
 
+    private void onCommonSetup(final FMLCommonSetupEvent event) {
         register(KeyBindingsController.instance);
         register(BlockEventsProcessor.instance);
         register(NetworkPacketsController.instance);
@@ -93,6 +95,13 @@ public class ModMain {
         register(AntiHunger.instance);
 
         register(TickEndExecutor.instance);
+
+        NeoForge.EVENT_BUS.register(new NeoForgeEvents());
+    }
+
+    private void onLoadComplete(final FMLLoadCompleteEvent event) {
+        Profiles.instance.init();
+        ConfigHttpServer.instance.start();
     }
 
     private void register(Module module) {
@@ -102,15 +111,6 @@ public class ModMain {
     @SuppressWarnings("EmptyMethod")
     private void register(Object instance) {
         //logger.info("Registered: {}", instance.getClass().getName());
-    }
-
-    private void onCommonSetup(final FMLCommonSetupEvent event) {
-        NeoForge.EVENT_BUS.register(new NeoForgeEvents());
-    }
-
-    private void onLoadComplete(final FMLLoadCompleteEvent event) {
-        Profiles.instance.init();
-        ConfigHttpServer.instance.start();
     }
 
     private void onRegisterKeybindings(final RegisterKeyMappingsEvent event) {
