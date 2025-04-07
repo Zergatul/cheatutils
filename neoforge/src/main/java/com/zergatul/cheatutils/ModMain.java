@@ -41,7 +41,6 @@ public class ModMain {
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
-        register(KeyBindingsController.instance);
         register(BlockEventsProcessor.instance);
         register(NetworkPacketsController.instance);
         register(SpeedCounterController.instance);
@@ -114,6 +113,7 @@ public class ModMain {
     }
 
     private void onRegisterKeybindings(final RegisterKeyMappingsEvent event) {
+        register(KeyBindingsController.instance);
         Events.RegisterKeyBindings.trigger(event::register);
     }
 }
