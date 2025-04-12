@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.render;
 
-import com.zergatul.cheatutils.render.gl.Position2dColorProgram;
 import com.zergatul.cheatutils.render.gl.Position3dColorProgram;
 import org.joml.Matrix4f;
 
@@ -14,6 +13,65 @@ public class Color3dRenderer {
     public void begin() {
         createGlObjectsIfRequired();
         program.buffer.clear();
+    }
+
+    public void cuboid(
+            float x1, float y1, float z1,
+            float x2, float y2, float z2,
+            float r, float g, float b, float a
+    ) {
+        if (x1 > x2) {
+            float buf = x1;
+            x1 = x2;
+            x2 = buf;
+        }
+        if (y1 > y2) {
+            float buf = y1;
+            y1 = y2;
+            y2 = buf;
+        }
+        if (z1 > z2) {
+            float buf = z1;
+            z1 = z2;
+            z2 = buf;
+        }
+
+        quad(
+                x1, y1, z1,
+                x1, y1, z2,
+                x2, y1, z2,
+                x2, y1, z1,
+                r, g, b, a);
+        quad(
+                x1, y2, z1,
+                x1, y2, z2,
+                x2, y2, z2,
+                x2, y2, z1,
+                r, g, b, a);
+        quad(
+                x1, y1, z1,
+                x1, y1, z2,
+                x1, y2, z2,
+                x1, y2, z1,
+                r, g, b, a);
+        quad(
+                x2, y1, z1,
+                x2, y1, z2,
+                x2, y2, z2,
+                x2, y2, z1,
+                r, g, b, a);
+        quad(
+                x1, y1, z1,
+                x1, y2, z1,
+                x2, y2, z1,
+                x2, y1, z1,
+                r, g, b, a);
+        quad(
+                x1, y1, z2,
+                x1, y2, z2,
+                x2, y2, z2,
+                x2, y1, z2,
+                r, g, b, a);
     }
 
     public void quad(

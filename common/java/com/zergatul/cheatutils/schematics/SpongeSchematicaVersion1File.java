@@ -55,7 +55,7 @@ public class SpongeSchematicaVersion1File implements SchemaFile {
 
         PaletteEntry[] palette = parsePalette(compound.getCompound(PALETTE_TAG).orElseThrow());
         byte[] encodedBlocks = compound.getByteArray(BLOCK_DATA_TAG).orElseThrow();
-        int[] blocks = VarIntDecoder.decode(encodedBlocks);
+        int[] blocks = VarIntFormat.decode(encodedBlocks);
 
         if (blocks.length != width * height * length) {
             throw new InvalidFormatException(String.format("Blocks array size mismatch. Expected: %d, actual: %d.", width * height * length, blocks.length));

@@ -51,13 +51,23 @@ export function createComponent(template) {
                 slots: null,
                 blockStatesFormatted: null,
                 placing: {
-                    flipX: false,
-                    flipY: false,
-                    flipZ: false,
-                    rotateX: 0,
-                    rotateY: 0,
-                    rotateZ: 0
-                }
+                    transforms: ['']
+                },
+                allTransforms: [
+                    'Flip X',
+                    'Flip Y',
+                    'Flip Z',
+                    'Rotate X -90deg',
+                    'Rotate X +90deg',
+                    'Rotate X 180deg',
+                    'Rotate Y -90deg',
+                    'Rotate Y +90deg',
+                    'Rotate Y 180deg',
+                    'Rotate Z -90deg',
+                    'Rotate Z +90deg',
+                    'Rotate Z 180deg',
+                ],
+                format: 'litematic'
             };
         },
         methods: {
@@ -77,7 +87,7 @@ export function createComponent(template) {
                         resolve(null);
                         return;
                     }
-    
+
                     let file = input.files[0];
                     let reader = new FileReader();
                     reader.onload = event => resolve({
@@ -200,11 +210,58 @@ export function createComponent(template) {
                     z: summary.z
                 }).then(() => this.reloadSummaries());
             },
+            onTransformChanged() {
+                if (this.placing.transforms[this.placing.transforms.length - 1] != '') {
+                    this.placing.transforms.push('');
+                }
+                for (let i = 0; i < this.placing.transforms.length - 1; i++) {
+                    if (this.placing.transforms[i] == '') {
+                        this.placing.transforms.splice(i, 1);
+                    }
+                }
+            },
             update() {
                 http.post('/api/schematica', this.config).then(response => {
                     this.config = response;
                     this.onConfigLoaded();
                 });
+            },
+            async download() {
+                let extension = null;
+                switch (this.format) {
+                    case 'litematic': extension = '.litematic'; break;
+                    case 'schem-v1': extension = '.schem'; break;
+                }
+
+                let response = await http.post('/api/schematica-download', {
+                    format: this.format,
+                    x1: this.config.create.x1,
+                    y1: this.config.create.y1,
+                    z1: this.config.create.z1,
+                    x2: this.config.create.x2,
+                    y2: this.config.create.y2,
+                    z2: this.config.create.z2
+                });
+                if (response.error) {
+                    alert(response.error);
+                } else {
+                    let decoded = atob(response.data);
+                    let bytes = new Uint8Array(decoded.length);
+                    for (let i = 0; i < bytes.length; i++) {
+                        bytes[i] = decoded.charCodeAt(i);
+                    }
+                    let blob = new Blob([bytes], { type: 'application/octet-stream' });
+                    let url = URL.createObjectURL(blob);
+
+                    let anchor = document.createElement('a');
+                    anchor.href = url;
+                    anchor.download = 'cheatutils' + extension;
+
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    document.body.removeChild(anchor);
+                    URL.revokeObjectURL(url);
+                }
             }
         }
     };

@@ -21,34 +21,31 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Change permissions for gradlew
-        run: |
-          chmod +x ./mixin-plugin/annotation-processor/gradlew
-          chmod +x ./fabric/gradlew
-          chmod +x ./forge/gradlew
-          chmod +x ./neoforge/gradlew
-
       - name: Build Annotation Processor
         run: |
           pushd ./mixin-plugin/annotation-processor
+          chmod +x ./gradlew
           ./gradlew build
           popd
 
       - name: Build Forge
         run: |
           pushd ./forge
+          chmod +x ./gradlew
           ./gradlew build
           popd
 
       - name: Build Fabric
         run: |
           pushd ./fabric
+          chmod +x ./gradlew
           ./gradlew build
           popd
 
       - name: Build NeoForge
         run: |
           pushd ./neoforge
+          chmod +x ./gradlew
           ./gradlew build
           popd
 
@@ -64,9 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fabric
-          path: |
-            ./fabric/build/libs/*.jar
-            !./fabric/build/libs/*-sources.jar
+          path: ./fabric/build/libs/*.jar
           compression-level: 0
           if-no-files-found: error
 

@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class BlockStateMapper {
 
@@ -77,6 +78,51 @@ public class BlockStateMapper {
                 });
             });
         }).findFirst().orElse(block.defaultBlockState());
+    }
+
+    public static CompoundTag serialize(BlockState state) {
+        CompoundTag compound = new CompoundTag();
+        compound.putString("Name", Registries.BLOCKS.getKey(state.getBlock()).toString());
+        Map<String, String> properties = getPropertiesAsStrings(state);
+        if (!properties.isEmpty()) {
+            compound.put("Properties", getPropertiesAsCompound(properties));
+        }
+        return compound;
+    }
+
+    public static String serializeAsString(BlockState state) {
+        StringBuilder builder = new StringBuilder(Registries.BLOCKS.getKey(state.getBlock()).toString());
+        Map<String, String> properties = getPropertiesAsStrings(state);
+        if (!properties.isEmpty()) {
+            builder.append('[');
+            properties.keySet().stream().sorted().forEach(key -> builder
+                    .append(key)
+                    .append('=')
+                    .append(properties.get(key))
+                    .append(','));
+            builder.delete(builder.length() - 1, builder.length());
+            builder.append(']');
+        }
+        return builder.toString();
+    }
+
+    private static CompoundTag getPropertiesAsCompound(Map<String, String> properties) {
+        CompoundTag compound = new CompoundTag();
+        properties.keySet().stream().sorted().forEach(key -> compound.putString(key, properties.get(key)));
+        return compound;
+    }
+
+    private static Map<String, String> getPropertiesAsStrings(BlockState state) {
+        if (state.getProperties().isEmpty()) {
+            return Map.of();
+        }
+
+        Map<String, String> map = new HashMap<>(state.getProperties().size());
+        for (Map.Entry<Property<?>, Comparable<?>> entry : state.getValues().entrySet()) {
+            map.put(entry.getKey().getName(), getPropertyValueName(entry.getKey(), entry.getValue()));
+        }
+
+        return map;
     }
 
     @SuppressWarnings("unchecked")

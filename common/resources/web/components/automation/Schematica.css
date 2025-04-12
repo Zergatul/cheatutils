@@ -48,3 +48,21 @@ div.schematic-info table input {
     box-sizing: border-box;
     width: 100%;
 }
+
+div.transforms {
+    display: flex;
+    gap: 0.5em;
+    margin-top: 0.4em;
+}
+
+div.schematica div.download {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+div.schematica div.download div.download-settings {
+    display: flex;
+    gap: 1em;
+}

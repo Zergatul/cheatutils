@@ -1,21 +1,25 @@
 package com.zergatul.cheatutils.modules.automation;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.Color3dRenderer;
 import com.zergatul.cheatutils.render.GroupLineRenderer;
-import com.zergatul.cheatutils.schematics.PlacingConverter;
-import com.zergatul.cheatutils.schematics.PlacingSettings;
-import com.zergatul.cheatutils.schematics.SchemaFile;
+import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.schematics.*;
 import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.item.BlockItem;
@@ -27,21 +31,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
+import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Schematica {
 
     public static final Schematica instance = new Schematica();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Long2ObjectMap<SectionInfo> lookup = new Long2ObjectOpenHashMap<>();
     private final List<Entry> entries = new ArrayList<>();
     private final SlotSelector slotSelector = new SlotSelector();
+    private volatile Long2ObjectMap<SectionInfo> lookup = new Long2ObjectOpenHashMap<>();
 
     private Schematica() {
         Events.RawChunkUnloaded.add(this::onChunkLoaded);
@@ -71,12 +77,12 @@ public class Schematica {
         }
     }
 
-    public synchronized BlockState getBlockState(BlockPos pos) {
+    public BlockState getBlockState(BlockPos pos) {
         return getBlockState(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public synchronized BlockState getBlockState(int x, int y, int z) {
-        if (y < -64 || y >= 320) {
+    public BlockState getBlockState(int x, int y, int z) {
+        if (mc.level == null || mc.level.isOutsideBuildHeight(y)) {
             return Blocks.AIR.defaultBlockState();
         }
 
@@ -92,15 +98,15 @@ public class Schematica {
         return info.getBlockState(x, y, z);
     }
 
-    public synchronized SectionInfo getSectionInfo(SectionPos pos) {
+    public SectionInfo getSectionInfo(SectionPos pos) {
         return lookup.get(pos.asLong());
     }
 
-    public synchronized boolean hasBlocksAtSection(SectionPos pos) {
+    public boolean hasBlocksAtSection(SectionPos pos) {
         return lookup.containsKey(pos.asLong());
     }
 
-    public synchronized boolean hasBlocksAtSection(long index) {
+    public boolean hasBlocksAtSection(long index) {
         return lookup.containsKey(index);
     }
 
@@ -118,7 +124,7 @@ public class Schematica {
         });
     }
 
-    public synchronized void place(SchemaFile file, String name, PlacingSettings placing) {
+    public void place(SchemaFile file, String name, PlacingSettings placing) {
         TickEndExecutor.instance.execute(() -> {
             final Entry entry = new Entry(file, name, placing);
             entries.add(entry);
@@ -131,65 +137,69 @@ public class Schematica {
                 }
             }
 
-            for (Chunk chunk : entry.chunks.values()) {
-                for (ChunkSection section : chunk.sections) {
-                    if (section == null) {
-                        continue;
-                    }
-                    long index = SectionPos.asLong(section.getSectionX(), section.getSectionY(), section.getSectionZ());
-                    SectionInfo info = lookup.get(index);
-                    if (info == null) {
-                        info = SectionInfo.EMPTY;
-                    }
-                    lookup.put(index, info.add(entry, section));
+            safeLookupUpdate(lookup -> {
+                for (Chunk chunk : entry.chunks.values()) {
+                    for (ChunkSection section : chunk.sections.values()) {
+                        if (section == null) {
+                            continue;
+                        }
+                        long index = SectionPos.asLong(section.getSectionX(), section.getSectionY(), section.getSectionZ());
+                        SectionInfo info = lookup.get(index);
+                        if (info == null) {
+                            info = SectionInfo.EMPTY;
+                        }
+                        lookup.put(index, info.add(entry, section));
 
-                    if (mc.level != null) {
-                        mc.levelRenderer.setSectionDirty(section.getSectionX(), section.getSectionY(), section.getSectionZ());
-                        mc.level.getChunkSource().onSectionEmptinessChanged(section.getSectionX(), section.getSectionY(), section.getSectionZ(), false); // hasOnlyAir=false
+                        if (mc.level != null) {
+                            mc.levelRenderer.setSectionDirty(section.getSectionX(), section.getSectionY(), section.getSectionZ());
+                            mc.level.getChunkSource().onSectionEmptinessChanged(section.getSectionX(), section.getSectionY(), section.getSectionZ(), false); // hasOnlyAir=false
+                        }
                     }
                 }
-            }
+            });
         });
     }
 
-    public synchronized void remove(int index) {
+    public void remove(int index) {
         TickEndExecutor.instance.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
 
-            Entry entry = entries.remove(index);
-            for (Chunk chunk : entry.chunks.values()) {
-                for (ChunkSection section : chunk.sections) {
-                    if (section == null) {
-                        continue;
-                    }
+            safeLookupUpdate(lookup -> {
+                Entry entry = entries.remove(index);
+                for (Chunk chunk : entry.chunks.values()) {
+                    for (ChunkSection section : chunk.sections.values()) {
+                        if (section == null) {
+                            continue;
+                        }
 
-                    if (mc.level != null) {
-                        mc.levelRenderer.setSectionDirty(
-                                section.getSectionX(),
-                                section.getSectionY(),
-                                section.getSectionZ());
-                    }
+                        if (mc.level != null) {
+                            mc.levelRenderer.setSectionDirty(
+                                    section.getSectionX(),
+                                    section.getSectionY(),
+                                    section.getSectionZ());
+                        }
 
-                    long sectionIndex = section.asLongIndex();
-                    SectionInfo info = lookup.get(sectionIndex);
-                    if (info == null) {
-                        continue; // should not happen...
-                    }
+                        long sectionIndex = section.asLongIndex();
+                        SectionInfo info = lookup.get(sectionIndex);
+                        if (info == null) {
+                            continue; // should not happen...
+                        }
 
-                    info = info.remove(entry, section);
-                    if (info == SectionInfo.EMPTY) {
-                        lookup.remove(sectionIndex);
-                    } else {
-                        lookup.put(sectionIndex, info);
+                        info = info.remove(entry, section);
+                        if (info == SectionInfo.EMPTY) {
+                            lookup.remove(sectionIndex);
+                        } else {
+                            lookup.put(sectionIndex, info);
+                        }
                     }
                 }
-            }
+            });
         });
     }
 
-    public synchronized void clear() {
+    public void clear() {
         TickEndExecutor.instance.execute(() -> {
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
@@ -197,7 +207,7 @@ public class Schematica {
                 }
             }
 
-            lookup.clear();
+            lookup = new Long2ObjectOpenHashMap<>();
             entries.clear();
         });
     }
@@ -214,7 +224,7 @@ public class Schematica {
 
             Entry entry = entries.get(index);
             for (Chunk chunk : entry.chunks.values()) {
-                for (ChunkSection section : chunk.sections) {
+                for (ChunkSection section : chunk.sections.values()) {
                     if (section == null) {
                         continue;
                     }
@@ -236,70 +246,142 @@ public class Schematica {
                 return;
             }
 
-            Entry oldEntry = entries.get(index);
-            for (Chunk chunk : oldEntry.chunks.values()) {
-                for (ChunkSection section : chunk.sections) {
-                    if (section == null) {
-                        continue;
-                    }
+            safeLookupUpdate(lookup -> {
+                Entry oldEntry = entries.get(index);
+                for (Chunk chunk : oldEntry.chunks.values()) {
+                    for (ChunkSection section : chunk.sections.values()) {
+                        if (section == null) {
+                            continue;
+                        }
 
-                    if (mc.level != null) {
-                        mc.levelRenderer.setSectionDirty(
-                                section.getSectionX(),
-                                section.getSectionY(),
-                                section.getSectionZ());
-                    }
+                        if (mc.level != null) {
+                            mc.levelRenderer.setSectionDirty(
+                                    section.getSectionX(),
+                                    section.getSectionY(),
+                                    section.getSectionZ());
+                        }
 
-                    long sectionIndex = section.asLongIndex();
-                    SectionInfo info = lookup.get(sectionIndex);
-                    if (info == null) {
-                        continue; // should not happen...
-                    }
+                        long sectionIndex = section.asLongIndex();
+                        SectionInfo info = lookup.get(sectionIndex);
+                        if (info == null) {
+                            continue; // should not happen...
+                        }
 
-                    info = info.remove(oldEntry, section);
-                    if (info == SectionInfo.EMPTY) {
-                        lookup.remove(sectionIndex);
-                    } else {
-                        lookup.put(sectionIndex, info);
-                    }
-                }
-            }
-
-            Entry newEntry = oldEntry.moveTo(x, y, z);
-            entries.set(index, newEntry);
-
-            for (Chunk chunk : newEntry.chunks.values()) {
-                for (ChunkSection section : chunk.sections) {
-                    if (section == null) {
-                        continue;
-                    }
-
-                    long chunkIndex = SectionPos.asLong(section.getSectionX(), section.getSectionY(), section.getSectionZ());
-                    SectionInfo info = lookup.get(chunkIndex);
-                    if (info == null) {
-                        info = SectionInfo.EMPTY;
-                    }
-                    lookup.put(chunkIndex, info.add(newEntry, section));
-
-                    // last parameter - return empty chunk, not null
-                    if (mc.level != null) {
-                        section.onChunkLoaded(newEntry, mc.level.getChunkSource().getChunk(section.getSectionX(), section.getSectionZ(), true));
-                        mc.levelRenderer.setSectionDirty(
-                                section.getSectionX(),
-                                section.getSectionY(),
-                                section.getSectionZ());
-                        mc.level.getChunkSource().onSectionEmptinessChanged(
-                                section.getSectionX(),
-                                section.getSectionY(),
-                                section.getSectionZ(),
-                                false); // hasOnlyAir=false
+                        info = info.remove(oldEntry, section);
+                        if (info == SectionInfo.EMPTY) {
+                            lookup.remove(sectionIndex);
+                        } else {
+                            lookup.put(sectionIndex, info);
+                        }
                     }
                 }
-            }
+
+                Entry newEntry = oldEntry.moveTo(x, y, z);
+                entries.set(index, newEntry);
+
+                for (Chunk chunk : newEntry.chunks.values()) {
+                    for (ChunkSection section : chunk.sections.values()) {
+                        if (section == null) {
+                            continue;
+                        }
+
+                        long chunkIndex = SectionPos.asLong(section.getSectionX(), section.getSectionY(), section.getSectionZ());
+                        SectionInfo info = lookup.get(chunkIndex);
+                        if (info == null) {
+                            info = SectionInfo.EMPTY;
+                        }
+                        lookup.put(chunkIndex, info.add(newEntry, section));
+
+                        // last parameter - return empty chunk, not null
+                        if (mc.level != null) {
+                            section.onChunkLoaded(newEntry, mc.level.getChunkSource().getChunk(section.getSectionX(), section.getSectionZ(), true));
+                            mc.levelRenderer.setSectionDirty(
+                                    section.getSectionX(),
+                                    section.getSectionY(),
+                                    section.getSectionZ());
+                            mc.level.getChunkSource().onSectionEmptinessChanged(
+                                    section.getSectionX(),
+                                    section.getSectionY(),
+                                    section.getSectionZ(),
+                                    false); // hasOnlyAir=false
+                        }
+                    }
+                }
+            });
         });
     }
 
-    private synchronized void onClientTickEnd() {
+    public DownloadInfo download(String format, int x1, int y1, int z1, int x2, int y2, int z2) {
+        if (mc.level == null) {
+            return DownloadInfo.of("You have to join Minecraft world");
+        }
+
+        Function<SchematicaOutputData, DownloadInfo> create;
+        switch (format) {
+            case "litematic" -> create = LitematicaOutputFile::create;
+            case "schem-v1" -> create = SpongeSchematicaVersion1OutputFile::create;
+            default -> {
+                return DownloadInfo.of(String.format("Format '%s' is not supported", format));
+            }
+        }
+
+        CompletableFuture<DownloadInfo> future = new CompletableFuture<>();
+        TickEndExecutor.instance.execute(() -> {
+            ClientChunkCache source = mc.level.getChunkSource();
+            for (int x = x1; x <= x2; x += 16) {
+                for (int z = z1; z < z2; z += 16) {
+                    int chunkX = SectionPos.blockToSectionCoord(x);
+                    int chunkZ = SectionPos.blockToSectionCoord(z);
+                    if (!source.hasChunk(chunkX, chunkZ)) {
+                        future.complete(DownloadInfo.of(String.format("Chunk [%d; %d] is not loaded", chunkX, chunkZ)));
+                        return;
+                    }
+                }
+            }
+
+            List<BlockState> palette = new ArrayList<>();
+            palette.add(Blocks.AIR.defaultBlockState());
+            Map<BlockState, Integer> lookup = new HashMap<>();
+            lookup.put(Blocks.AIR.defaultBlockState(), 0);
+
+            int width = x2 - x1 + 1;
+            int height = y2 - y1 + 1;
+            int length = z2 - z1 + 1;
+            int[] blocks = new int[width * height * length];
+            int i = 0;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            for (int y = y1; y <= y2; y++) {
+                pos.setY(y);
+                for (int z = z1; z <= z2; z++) {
+                    pos.setZ(z);
+                    for (int x = x1; x <= x2; x++) {
+                        pos.setX(x);
+                        BlockState state = mc.level.getBlockState(pos);
+                        Integer index = lookup.get(state);
+                        if (index == null) {
+                            int newIndex = palette.size();
+                            palette.add(state);
+                            lookup.put(state, newIndex);
+                            blocks[i++] = newIndex;
+                        } else {
+                            blocks[i++] = index;
+                        }
+                    }
+                }
+            }
+
+            SchematicaOutputData data = new SchematicaOutputData(width, height, length, palette, blocks);
+            future.complete(create.apply(data.optimized()));
+        });
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return DownloadInfo.of("Interrupted");
+        }
+    }
+
+    private void onClientTickEnd() {
         SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
         if (!config.enabled || !config.autoBuild) {
             return;
@@ -353,7 +435,7 @@ public class Schematica {
         }
     }
 
-    private synchronized void onRender(RenderWorldLastEvent event) {
+    private void onRender(RenderWorldLastEvent event) {
         SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
         if (!config.enabled) {
             return;
@@ -364,6 +446,10 @@ public class Schematica {
         }
 
         Vec3 view = event.getCamera().getPosition();
+
+        if (config.create.enabled) {
+            renderCreateBoundaries(event, view, config.create);
+        }
 
         if (config.showMissingBlockTracers) {
             Vec3 tracerCenter = event.getTracerCenter();
@@ -444,16 +530,50 @@ public class Schematica {
         }
     }
 
-    private synchronized void onChunkLoaded(LevelChunk chunk) {
+    private void renderCreateBoundaries(RenderWorldLastEvent event, Vec3 view, SchematicaConfig.Create create) {
+        final double gap = 0.0625;
+
+        Color3dRenderer quadRenderer = RenderUtilities.instance.getColor3dRenderer();
+        quadRenderer.begin();
+        quadRenderer.cuboid(
+                (float) (create.getX1() - gap - view.x),
+                (float) (create.getY1() - gap - view.y),
+                (float) (create.getZ1() - gap - view.z),
+                (float) (create.getX2() + gap - view.x),
+                (float) (create.getY2() + gap - view.y),
+                (float) (create.getZ2() + gap - view.z),
+                0.00f, 0.58f, 1.00f, 0.2f);
+        GL11.glDepthMask(false);
+        quadRenderer.end(event.getMvp());
+        GL11.glDepthMask(true);
+
+        LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
+        lineRenderer.begin(event, true);
+        lineRenderer.cuboid(
+                create.getX1() - gap, create.getY1() - gap, create.getZ1() - gap,
+                create.getX2() + gap, create.getY2() + gap, create.getZ2() + gap,
+                1f, 1f, 1f, 1f);
+        lineRenderer.end();
+    }
+
+    private void onChunkLoaded(LevelChunk chunk) {
         for (Entry entry : entries) {
             entry.onChunkLoaded(chunk);
         }
     }
 
-    private synchronized void onBlockUpdated(BlockUpdateEvent event) {
+    private void onBlockUpdated(BlockUpdateEvent event) {
         for (Entry entry : entries) {
             entry.onBlockUpdated(event);
         }
+    }
+
+    private void safeLookupUpdate(Consumer<Long2ObjectMap<SectionInfo>> consumer) {
+        assert RenderSystem.isOnRenderThread();
+
+        final Long2ObjectMap<SectionInfo> copy = new Long2ObjectOpenHashMap<>(lookup);
+        consumer.accept(copy);
+        lookup = copy;
     }
 
     private SchematicaConfig getConfig() {
@@ -479,15 +599,17 @@ public class Schematica {
             z2 = z1 + converter.getLength();
 
             chunks = new HashMap<>();
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int x = 0; x < file.getWidth(); x++) {
                 for (int y = 0; y < file.getHeight(); y++) {
                     for (int z = 0; z < file.getLength(); z++) {
                         BlockState state = file.getBlockState(x, y, z);
                         if (!state.isAir()) {
-                            PlacingConverter.Vec3iMutable vec = converter.convert(x, y, z);
-                            int wx = x1 + vec.x;
-                            int wy = y1 + vec.y;
-                            int wz = z1 + vec.z;
+                            pos.set(x, y, z);
+                            converter.convert(pos);
+                            int wx = x1 + pos.getX();
+                            int wy = y1 + pos.getY();
+                            int wz = z1 + pos.getZ();
                             long chunkIndex = blockToChunkIndex(wx, wz);
                             Chunk chunk = chunks.computeIfAbsent(chunkIndex, k -> new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0));
                             chunk.setBlockState(wx & 0x0F, wy, wz & 0x0F, state);
@@ -516,7 +638,7 @@ public class Schematica {
                     continue;
                 }
 
-                for (ChunkSection section : chunk.sections) {
+                for (ChunkSection section : chunk.sections.values()) {
                     if (section == null) {
                         continue;
                     }
@@ -541,7 +663,7 @@ public class Schematica {
                     continue;
                 }
 
-                for (ChunkSection section : chunk.sections) {
+                for (ChunkSection section : chunk.sections.values()) {
                     if (section == null) {
                         continue;
                     }
@@ -633,35 +755,22 @@ public class Schematica {
 
     private static class Chunk {
 
-        private static final int MIN_Y = -64;
-        private static final int MAX_Y = 320;
-        private static final int MIN_SECTION_Y = MIN_Y >> 4;
-        private static final int MAX_SECTION_Y = MAX_Y >> 4;
-
         private final int minX;
         private final int minZ;
-        public final ChunkSection[] sections;
+        public final Int2ObjectMap<ChunkSection> sections;
 
         public Chunk(int x, int z) {
             minX = x;
             minZ = z;
-            sections = new ChunkSection[MAX_SECTION_Y - MIN_SECTION_Y];
-        }
-
-        public int getChunkX() {
-            return SectionPos.blockToSectionCoord(minX);
-        }
-
-        public int getChunkZ() {
-            return SectionPos.blockToSectionCoord(minZ);
+            sections = new Int2ObjectOpenHashMap<>();
         }
 
         public BlockState getBlockState(int x, int y, int z) {
-            int sectionIndex = (y - MIN_Y) >> 4;
-            if (sectionIndex >= sections.length) {
-                return Blocks.AIR.defaultBlockState();
-            }
-            ChunkSection section = sections[sectionIndex];
+            assert 0 <= x && x < 16;
+            assert 0 <= z && z < 16;
+
+            int sectionIndex = SectionPos.blockToSectionCoord(y);
+            ChunkSection section = sections.get(sectionIndex);
             if (section == null) {
                 return Blocks.AIR.defaultBlockState();
             } else {
@@ -676,33 +785,33 @@ public class Schematica {
         }
 
         public void onChunkLoaded(Entry entry, LevelChunk chunk) {
-            for (int i = 0; i < sections.length; i++) {
-                if (sections[i] != null) {
-                    sections[i].onChunkLoaded(entry, chunk);
-                }
+            assert chunk.getPos().getMinBlockX() == minX;
+            assert chunk.getPos().getMinBlockZ() == minZ;
+
+            for (ChunkSection section : sections.values()) {
+                section.onChunkLoaded(entry, chunk);
             }
         }
 
         public void onBlockUpdated(BlockUpdateEvent event) {
-            if (event.pos().getY() >= 320) { // light update?
-                return;
-            }
-            int sectionIndex = (event.pos().getY() - MIN_Y) >> 4;
-            ChunkSection section = sections[sectionIndex];
+            int sectionIndex = SectionPos.blockToSectionCoord(event.pos().getY());
+            ChunkSection section = sections.get(sectionIndex);
             if (section != null) {
                 section.onBlockUpdated(event);
             }
         }
 
         public void setBlockState(int x, int y, int z, BlockState state) {
-            int sectionIndex = (y - MIN_Y) >> 4;
-            if (sectionIndex < 0 || sectionIndex >= sections.length) {
-                return; // we can lose blocks on move
+            assert 0 <= x && x < 16;
+            assert 0 <= z && z < 16;
+
+            int sectionIndex = SectionPos.blockToSectionCoord(y);
+            ChunkSection section = sections.get(sectionIndex);
+            if (section == null) {
+                section = new ChunkSection(minX, SectionPos.sectionToBlockCoord(sectionIndex), minZ);
+                sections.put(sectionIndex, section);
             }
-            if (sections[sectionIndex] == null) {
-                sections[sectionIndex] = new ChunkSection(minX, MIN_Y + (sectionIndex << 4), minZ);
-            }
-            sections[sectionIndex].setBlockState(x, y & 0x0F, z, state);
+            section.setBlockState(x, y & 0x0F, z, state);
         }
     }
 
@@ -821,28 +930,6 @@ public class Schematica {
             } else {
                 return !chunkState.isAir() && chunkState != finalState;
             }
-        }
-
-        private boolean contains(BlockPos pos) {
-            if (pos.getX() < minX) {
-                return false;
-            }
-            if (pos.getX() >= minX + 16) {
-                return false;
-            }
-            if (pos.getY() < minY) {
-                return false;
-            }
-            if (pos.getY() >= minY + 16) {
-                return false;
-            }
-            if (pos.getZ() < minZ) {
-                return false;
-            }
-            if (pos.getZ() >= minZ + 16) {
-                return false;
-            }
-            return true;
         }
     }
 
@@ -981,4 +1068,15 @@ public class Schematica {
     }
 
     public record EntrySummary(String name, int x, int y, int z) {}
+
+    public record DownloadInfo(byte[] data, String error) {
+
+        public static DownloadInfo of(byte[] data) {
+            return new DownloadInfo(data, null);
+        }
+
+        public static DownloadInfo of(String error) {
+            return new DownloadInfo(null, error);
+        }
+    }
 }
