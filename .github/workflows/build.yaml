@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - '1.20.*'
+      - '1.20.[0-9]'
 
 jobs:
   build:
@@ -47,8 +47,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fabric
-          path: |
-            ./fabric/build/libs/*.jar
-            !./fabric/build/libs/*-sources.jar
+          path: ./fabric/build/libs/*.jar
           compression-level: 0
           if-no-files-found: error

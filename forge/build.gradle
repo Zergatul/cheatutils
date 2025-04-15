@@ -57,6 +57,16 @@ minecraft {
     }
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir '../common/java'
+        }
+        resources {
+            srcDir '../common/resources'
+        }
+    }
+}
 
 repositories {
     // Put repositories for dependencies here
