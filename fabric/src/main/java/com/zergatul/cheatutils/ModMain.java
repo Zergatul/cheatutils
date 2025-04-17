@@ -86,6 +86,7 @@ public class ModMain implements ClientModInitializer {
         register(RenderUtilities.instance);
         register(Containers.instance);
         register(AntiHunger.instance);
+        register(Schematica.instance);
 
         register(TickEndExecutor.instance);
 
