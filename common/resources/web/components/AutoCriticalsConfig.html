@@ -2,29 +2,31 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Auto Criticals</legend>
+    <div class="module-main">
+        <h2 class="module-header">Auto Criticals</h2>
         <div class="description">
             Tricks server to think every your attack is critical.
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.enabled"
-                    @change="update()">
-                <span>Enabled</span>
-            </label>
-        </div>
-        <div class="description">
-            Some servers may think you are lagging if you try to use auto criticals if you are not standing on ground. In this case server tries to rollback you to another position causing problems. Use below setting in this case.
-        </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.onlyOnGround"
-                    @change="update()">
-                <span>Only on ground</span>
-            </label>
-        </div>
-    </fieldset>
+        <fieldset style="padding-top: 16px;" v-if="config">
+            <legend>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.enabled"
+                        @change="update()">
+                    <span>Enabled</span>
+                </label>
+            </legend>
+            <div class="description">
+                Some servers may think you are lagging if you try to use auto criticals if you are not standing on ground. In this case server tries to rollback you to another position causing problems. Use below setting in this case.
+            </div>
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.onlyOnGround"
+                        @change="update()">
+                    <span>Only on ground</span>
+                </label>
+            </div>
+        </fieldset>
+    </div>
 </div>

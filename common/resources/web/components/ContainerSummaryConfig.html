@@ -2,26 +2,25 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Container Summary</legend>
+    <div class="module-main">
+        <h2 class="module-header">Container Summary</h2>
         <div class="description">
             Shows total number of items inside chests, barrels, etc., including nested shulker boxes.<br>
             Hold Alt to disable stacks grouping.
         </div>
-        <div>
-            <label class="switch-label">
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend><label class="switch-label">
                 <input type="checkbox" class="switch"
                     v-model="config.enabled"
                     @change="update()">
                 <span>Enabled</span>
-            </label>
-        </div>
+            </label></legend>
         <div>
             <label class="switch-label">
                 <input type="checkbox" class="switch"
                     v-model="config.showForInventory"
                     @change="update()">
-                <span>Show for player inventory</span>
+                <span>Also show for player inventory</span>
             </label>
         </div>
     </fieldset>

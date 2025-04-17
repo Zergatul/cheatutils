@@ -2,26 +2,29 @@
     <div>
         <button style="width: 200px;" @click="$emit('back')">Back</button>
     </div>
-    <fieldset style="padding-top: 16px;" v-if="config">
-        <legend>Particles</legend>
+    <div class="module-main" v-if="config">
+        <h2 class="module-header">Particles</h2>
         <div class="description">
             Disables some particles.
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.disableBlockBreaking"
-                    @change="update()">
-                <span>Disable Block Cracking (TerrainParticle)</span>
-            </label>
+
+        <div class="module-sections">
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.disableBlockBreaking"
+                        @change="update()">
+                    <span>Disable Block Cracking (TerrainParticle)</span>
+                </label>
+            </div>
+            <div>
+                <label class="switch-label">
+                    <input type="checkbox" class="switch"
+                        v-model="config.disableBlockDestroyed"
+                        @change="update()">
+                    <span>Disable Block Destroy (TerrainParticle)</span>
+                </label>
+            </div>
         </div>
-        <div>
-            <label class="switch-label">
-                <input type="checkbox" class="switch"
-                    v-model="config.disableBlockDestroyed"
-                    @change="update()">
-                <span>Disable Block Destroy (TerrainParticle)</span>
-            </label>
-        </div>
-    </fieldset>
+    </div>
 </div>

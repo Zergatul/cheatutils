@@ -1,5 +1,10 @@
+body {
+  padding: 1em;
+  margin: 0;
+}
+
 button.faded {
-    opacity: 0.2;
+    opacity: 0.3;
 }
 
 table.main-table > thead > tr > th {
@@ -18,17 +23,33 @@ table.main-table > tbody > tr > td > button {
 
 button {
     box-sizing: border-box;
-    border-radius: 10px;
-    border-width: 4px;
-    border-style: solid;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
     font-size: 14px;
-    height: 32px;
+    min-height: 32px;
+    width: 15em;
+    background-color: #333;
+    border-color: transparent;
+}
+
+:not(.main-container) .child :is(button) {
+    border-color: transparent;
+    background-color: transparent;
+    width: 100%;
+}
+
+button:hover:not(:disabled) {
+    filter: brightness(80%);
+    cursor: pointer;
 }
 
 button + button {
     margin-left: 16px;
+}
+
+button + button + button {
+  width: unset !important;
+  min-width: 220px !important;
 }
 
 select {
@@ -197,7 +218,7 @@ ul.add-entity-list button.edit {
     gap: 8px;
 }
 
-.entity-info-classname {
+.entitSy-info-classname {
     display: inline-block;
 }
 
@@ -288,8 +309,18 @@ input[type=number] {
     font-size: 14px;
 }
 
+.search-wrapper {
+    position: fixed;
+    bottom: 1em;
+    left: 1em;
+}
+
 input.search {
     width: 300px;
+    padding: 0.4em;
+    border: none;
+    outline: none;
+    border-radius: 0px;
 }
 
 div.module-main {
@@ -467,16 +498,11 @@ div.edit-block-settings {
 }
 
 fieldset {
-    border-width: 4px;
-    border-style: solid;
-    border-radius: 10px;
-    width: 1000px;
-}
-
-div.module-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  background-color: #15151580;
+  width: calc(100% - 30px);
+  border: none;
+  color: #fff;
+  width: 1000px;
 }
 
 legend {
@@ -485,6 +511,20 @@ legend {
     font-size: 14px;
     display: flex;
     align-items: center;
+
+    background-color: #2F81F7;
+    color: #fff;
+    
+    width: calc(100% + 24px);
+    padding: 10px;
+    box-sizing: border-box;
+    transform: translateX(-12px);
+}
+
+div.module-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 legend > label {
@@ -819,32 +859,36 @@ table.inputs-table {
 
 @media (prefers-color-scheme: light) {
     body {
-        background-color: #FFFFFF;
         color: #000000;
+        background:
+          linear-gradient(
+            to bottom right,
+            #ffffff, 
+            #999999
+          );
+        min-height: 100vh;
     }
 
     a, a:visited {
-        color: #2F81F7;
+        color: #9FD0FB;
         text-decoration: none;
     }
 
     a:hover {
-        color: #2F81F7;
+        color: #9FD0FB;
         text-decoration: underline;
     }
 
     button {
-        border-color:#333AA3;
-        background-color: #FFFFFF;
-        color: #000000;
+        color: #ddd;
     }
 
     button.active {
-        background-color: #C6FFBA;
+        color: #61a2ff;
     }
 
     button:hover:not(:disabled) {
-        background-color: #BBBFFF;
+        color: #ddd;
     }
 
     .button-highlight {
@@ -871,6 +915,7 @@ table.inputs-table {
 
     ul.list-base > li {
         background: linear-gradient(0deg, #CCCCCC, #FFFFFF 50%, #CCCCCC 100%);
+        color: #000;
     }
 
     ul.list-base > li + li {
@@ -878,7 +923,7 @@ table.inputs-table {
     }
 
     div.entity-info-interface:after {
-        color: #8A5F10;
+        color: #ddd;
     }
 
     div.entity-info-id {
@@ -886,11 +931,11 @@ table.inputs-table {
     }
 
     div.section-description {
-        color: #92711f;
+        color: #ffe7b8;
     }
 
     div.input-description {
-        color: #92711f;
+        color: #ddd;
     }
 
     fieldset {
@@ -924,12 +969,22 @@ table.inputs-table {
     ul.refs .comment {
         color: #277813;
     }
+
+    ul.refs {
+        background-color: #242424;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
     body {
-        background-color: #3C3F41;
         color: #BBBBBB;
+        background:
+          linear-gradient(
+            to bottom right,
+            #101010, 
+            #292929
+          );
+        min-height: 100vh;
     }
 
     a, a:visited {
@@ -943,17 +998,11 @@ table.inputs-table {
     }
 
     button {
-        background-color: #4C5052;
-        border-color: #5E6060;
         color: #BBBBBB;
     }
 
     button.active {
-        background-color: #3F523C;
-    }
-
-    button:hover:not(:disabled) {
-        background-color: #365880;
+        color: #2f81f7;
     }
 
     .button-highlight {
@@ -997,7 +1046,7 @@ table.inputs-table {
     }
 
     div.section-description {
-        color: #FFC66D;
+        color: #ffe7b8;
     }
 
     div.input-description {
@@ -1035,4 +1084,45 @@ table.inputs-table {
     ul.refs .comment {
         color: #43CE21;
     }
+
+    ul.refs {
+        background-color: #242424;
+    }
+}
+
+/* Main page styles */
+.main-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.main-container > div {
+    flex: 1;
+}
+
+.main-container .child {
+    flex: 1;
+    background-color: #15151580;
+    height: auto;
+}
+
+.main-container .title {
+    height: 2em;
+    line-height: 2em;
+    text-align: center;
+
+    background-color: #2F81F7;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+}
+
+legend .switch-label {
+  align-items: unset !important;
+}
+
+legend .switch-label span {
+  margin-bottom: 4px !important;
 }
