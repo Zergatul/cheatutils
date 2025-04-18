@@ -74,10 +74,6 @@ public class ElytraFly implements Module {
         if (mc.player == null) {
             return;
         }
-        ItemStack chest = mc.player.getItemBySlot(EquipmentSlot.CHEST);
-        if (chest.getItem() != Items.ELYTRA) {
-            return;
-        }
         if (!mc.player.isFallFlying()) {
             return;
         }
