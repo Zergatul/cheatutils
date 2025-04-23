@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -61,6 +62,7 @@ public class FreeCam implements Module {
     private long pathStartTime;
 
     private FreeCam() {
+        Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
         Events.ClientTickStart.add(this::onClientTickStart);
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
@@ -210,20 +212,6 @@ public class FreeCam implements Module {
         oldCameraType = null;
     }
 
-    public boolean onPlayerTurn(double yRot, double xRot) {
-        if (active && !cameraLock && !followCamera) {
-            if (!eyeLock && !moveAlongPath) {
-                this.xRot += (float) xRot * 0.15F;
-                this.yRot += (float) yRot * 0.15F;
-                this.xRot = Mth.clamp(this.xRot, -90, 90);
-                calculateVectors();
-            }
-            return false;
-        } else {
-            return !ConfigStore.instance.getConfig().lockInputsConfig.mouseInputDisabled;
-        }
-    }
-
     public boolean onRenderCrosshairIsFirstPerson(boolean isFirstPerson) {
         FreeCamConfig config = getConfig();
         if (active) {
@@ -239,6 +227,18 @@ public class FreeCam implements Module {
             return true;
         } else {
             return cameraType.isFirstPerson();
+        }
+    }
+
+    private void onPlayerTurnByMouse(PlayerTurnByMouseEvent event) {
+        if (active && !cameraLock && !followCamera) {
+            if (!eyeLock && !moveAlongPath) {
+                this.xRot += (float) event.getXRot() * 0.15F;
+                this.yRot += (float) event.getYRot() * 0.15F;
+                this.xRot = Mth.clamp(this.xRot, -90, 90);
+                calculateVectors();
+            }
+            event.cancel();
         }
     }
 

@@ -14,38 +14,38 @@
     <div class="module-sections">
         <div class="description">
             Example 1. When assigned to button first click enables blink, second click sends packets to server teleporting you for other players to current position.
-            <pre>
-if (blink.isEnabled()) {
-    blink.apply();
-} else {
-    blink.enable();
-}
-            </pre>
+            <CodeBlock :code='`
+                if (blink.isEnabled()) {
+                    blink.apply();
+                } else {
+                    blink.enable();
+                }
+            `' />
         </div>
         <div class="description">
             Example 2. Add this to <b>Status Overlay</b> script to see blink status under crosshair.
-            <pre>
-if (blink.isEnabled()) {
-    overlay.center();
-    overlay.middle();
-    overlay.add("");
-    overlay.add("BLINK:" +
-        " Packets=" + convert.toString(blink.getPackets()) + 
-        " Distance=" + convert.toString(blink.getDistance(), 1));
-}
-            </pre>
+            <CodeBlock :code='`
+                if (blink.isEnabled()) {
+                    overlay.center();
+                    overlay.middle();
+                    overlay.add("");
+                    overlay.add("BLINK:" +
+                        " Packets=" + convert.toString(blink.getPackets()) + 
+                        " Distance=" + convert.toString(blink.getDistance(), 1));
+                }
+            `' />
         </div>
         <div class="description">
             Example 3. Add this to <b>Events Scripting</b> to automatically disable blink if distance > 10 blocks, or captured packets > 50.
-            <pre>
-events.onTickEnd(() => {
-    if (blink.isEnabled()) {
-        if (blink.getDistance() > 10 || blink.getPackets() > 50) {
-            blink.disable();
-        }
-    }
-});
-            </pre>
+            <CodeBlock :code='`
+                events.onTickEnd(() => {
+                    if (blink.isEnabled()) {
+                        if (blink.getDistance() > 10 || blink.getPackets() > 50) {
+                            blink.disable();
+                        }
+                    }
+                });
+            `' />
         </div>
     </div>
 </div>

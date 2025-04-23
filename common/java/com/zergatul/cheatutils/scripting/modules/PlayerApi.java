@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.InputBuilder;
+import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.scripting.MethodDescription;
@@ -376,6 +377,25 @@ public class PlayerApi {
 
         // copy from Player.canInteractWithEntity
         return Math.sqrt(entity.getBoundingBox().distanceToSqr(mc.player.getEyePosition()));
+    }
+
+    @MethodDescription("""
+            Returns list of nearby blocks coordinates.
+            Uses distance from player eyes to blocks center.
+            Blocks are sorted in ascending order by the distance from the eyes.
+            Allowed range values: [0..100]
+            """)
+    public BlockPosWrapper[] enumerateNearbyBlocks(double range) {
+        if (mc.player == null) {
+            return new BlockPosWrapper[0];
+        }
+        if (range < 0 || range > 100) {
+            return new BlockPosWrapper[0];
+        }
+        return NearbyBlockEnumerator.getPositions(mc.player.getEyePosition(), range)
+                .stream()
+                .map(BlockPosWrapper::new)
+                .toArray(BlockPosWrapper[]::new);
     }
 
     public static class TargetApi {

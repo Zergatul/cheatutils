@@ -1,5 +1,9 @@
+import { components } from '/components.js'
+
 export function createComponent(template) {
-    return {
+    const args = {
         template: template
-    }
+    };
+    components.add(args, 'CodeBlock');
+    return args;
 }

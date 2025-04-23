@@ -2,12 +2,14 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
+import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.ServerBehavior;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
@@ -29,21 +32,37 @@ public class AimAssist implements Module {
 
     private final Minecraft mc = Minecraft.getInstance();
 
-    private Entity target;
+    private boolean isTargetLockEnabled;
+    private Entity bowAssistTarget;
+    private Entity targetLockEntity;
 
     private AimAssist() {
         Events.ClientTickEnd.add(this::onTickEnd);
         Events.PlayerReleaseUsingItem.add(this::onPlayerReleaseUsingItem);
+        Events.RenderTickStart.add(this::onRenderTickStart);
+        Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
     }
 
-    public Entity getTargetEntity() {
-        return target;
+    public boolean isTargetLockEnabled() {
+        return isTargetLockEnabled;
+    }
+
+    public void enableTargetLock() {
+        isTargetLockEnabled = true;
+    }
+
+    public void disableTargetLock() {
+        isTargetLockEnabled = false;
+    }
+
+    public Entity getBowAssistTarget() {
+        return bowAssistTarget;
     }
 
     private void onTickEnd() {
-        target = null;
+        bowAssistTarget = null;
 
-        if (!ConfigStore.instance.getConfig().aimAssist.enabled) {
+        if (!ConfigStore.instance.getConfig().aimAssist.bowAssist) {
             return;
         }
         if (mc.player == null || mc.level == null) {
@@ -57,9 +76,9 @@ public class AimAssist implements Module {
         }
 
         Rotation playerRot = new Rotation(mc.player.getXRot(), mc.player.getYRot());
-        if (target == null) {
-            target = findTarget(playerRot);
-            if (target == null) {
+        if (bowAssistTarget == null) {
+            bowAssistTarget = findTarget(playerRot);
+            if (bowAssistTarget == null) {
                 return;
             }
         }
@@ -70,15 +89,15 @@ public class AimAssist implements Module {
 
         List<Rotation> rotations = findRotations(mc.player, speed);
         if (rotations.isEmpty()) {
-            target = null;
+            bowAssistTarget = null;
         }
     }
 
     private void onPlayerReleaseUsingItem(PlayerReleaseUsingItemEvent event) {
-        if (!ConfigStore.instance.getConfig().aimAssist.enabled) {
+        if (!ConfigStore.instance.getConfig().aimAssist.bowAssist) {
             return;
         }
-        if (mc.player == null || mc.level == null || target == null) {
+        if (mc.player == null || mc.level == null || bowAssistTarget == null) {
             return;
         }
 
@@ -95,6 +114,32 @@ public class AimAssist implements Module {
             NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Rot(
                     rotation.yRot(), rotation.xRot(),
                     mc.player.onGround(), mc.player.horizontalCollision));
+        }
+    }
+
+    private void onRenderTickStart(DeltaTracker delta) {
+        if (mc.player == null || !isTargetLockEnabled) {
+            targetLockEntity = null;
+            return;
+        }
+
+        float partialTicks = delta.getGameTimeDeltaPartialTick(true);
+        if (targetLockEntity == null) {
+            Rotation rotation = new Rotation(mc.player.getXRot(partialTicks), mc.player.getYRot(partialTicks));
+            targetLockEntity = findTarget(rotation);
+        }
+
+        if (targetLockEntity != null) {
+            AABB box = targetLockEntity.getDimensions(targetLockEntity.getPose()).makeBoundingBox(targetLockEntity.getPosition(partialTicks));
+            Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(partialTicks), box.getCenter());
+            mc.player.setXRot(rotation.xRot());
+            mc.player.setYRot(rotation.yRot());
+        }
+    }
+
+    private void onPlayerTurnByMouse(PlayerTurnByMouseEvent event) {
+        if (targetLockEntity != null) {
+            event.cancel();
         }
     }
 
@@ -122,9 +167,9 @@ public class AimAssist implements Module {
     }
 
     private List<Rotation> findRotations(LocalPlayer player, float speed) {
-        assert target != null;
+        assert bowAssistTarget != null;
 
-        Rotation straight = RotationUtils.getRotation(player.getEyePosition(), target.position());
+        Rotation straight = RotationUtils.getRotation(player.getEyePosition(), bowAssistTarget.position());
         Rotation rot1 = findRotation(player, speed, straight.withXRot(-90));
         Rotation rot2 = findRotation(player, speed, straight.withXRot(90));
         if (rot1 == null && rot2 == null) {
@@ -188,7 +233,7 @@ public class AimAssist implements Module {
             }
         }
 
-        if (bestDistance < target.getBbWidth() / 2) {
+        if (bestDistance < bowAssistTarget.getBbWidth() / 2) {
             return rotation;
         } else {
             return null;
@@ -205,10 +250,10 @@ public class AimAssist implements Module {
                 .add(ServerBehavior.predictPlayerKnownMovement());
 
         Path path = new Path();
-        path.entityPosition[0] = getEntityCenter(target);
+        path.entityPosition[0] = getEntityCenter(bowAssistTarget);
         path.arrowPosition[0] = player.getEyePosition();
 
-        Vec3 entityDeltaMovement = getEntitySpeed(target);
+        Vec3 entityDeltaMovement = getEntitySpeed(bowAssistTarget);
         for (int i = 1; i < 200; i++) {
             path.entityPosition[i] = path.entityPosition[i - 1].add(entityDeltaMovement);
             path.arrowPosition[i] = path.arrowPosition[i - 1].add(deltaMovement);

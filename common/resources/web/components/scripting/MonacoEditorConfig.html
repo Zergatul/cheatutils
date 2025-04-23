@@ -10,12 +10,12 @@
             Editor uses light or dark theme based on your browser settings.
             <br>
             Specify JSON here. Example:
-<pre>
-    {
-        "fontSize": 20,
-        "renderWhitespace": "all"
-    }
-</pre>
+            <CodeBlock :code='`
+                {
+                    "fontSize": 20,
+                    "renderWhitespace": "all"
+                }
+            `' />
         </div>
 
         <textarea style="width: 400px; height: 200px;" v-model="config.json"></textarea>

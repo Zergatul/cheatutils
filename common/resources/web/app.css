@@ -567,3 +567,13 @@ div.debug-messages {
     margin-top: 12px;
     overflow: scroll;
 }
+
+pre {
+    background: #CDD8CE;
+    color:#000000;
+    font-size: 0.9em;
+    margin: 0.5em 0;
+    padding: 0.4em 1em;
+    border-radius: 4px;
+    overflow-x: auto;
+}

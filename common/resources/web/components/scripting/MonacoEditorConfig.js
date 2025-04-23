@@ -1,7 +1,8 @@
+import { components } from '/components.js'
 import * as http from '/http.js'
 
 export function createComponent(template) {
-    return {
+    const args = {
         template: template,
         created() {
             http.get('/api/monaco-editor-settings').then(response => {
@@ -29,5 +30,7 @@ export function createComponent(template) {
                 });
             }
         }
-    }
+    };
+    components.add(args, 'CodeBlock');
+    return args;
 }
