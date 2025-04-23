@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
+import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.Minecraft;
 
@@ -18,9 +19,8 @@ public class ClassNameApi extends ApiBase {
         }
 
         try {
-            Class.forName(className, false, Minecraft.class.getClassLoader());
-        }
-        catch (ClassNotFoundException e) {
+            ClassUtils.forName(className);
+        } catch (ClassNotFoundException e) {
             throw new ApiException("Class not found", HttpResponseCodes.NOT_FOUND);
         }
 

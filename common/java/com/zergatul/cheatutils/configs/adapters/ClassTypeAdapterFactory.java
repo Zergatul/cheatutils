@@ -6,6 +6,7 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class ClassTypeAdapterFactory implements TypeAdapterFactory {
                 return null;
             } else {
                 try {
-                    return Class.forName(ClassRemapper.toObf(value));
+                    return ClassUtils.forName(ClassRemapper.toObf(value));
                 }
                 catch (Exception e) {
                     e.printStackTrace();

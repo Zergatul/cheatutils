@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.utils.mappings;
 
+import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import net.minecraft.client.Minecraft;
 
@@ -16,7 +17,7 @@ public class EntityMappingGenerator {
 
             Class<?> clazz;
             try {
-                clazz = Class.forName(norm, false, Minecraft.class.getClassLoader());
+                clazz = ClassUtils.forName(norm);
             } catch (Throwable e) {
                 e.printStackTrace();
                 return;
