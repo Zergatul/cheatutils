@@ -140,5 +140,6 @@ export function createComponent(template) {
     components.add(args, 'Radio');
     components.add(args, 'SwitchCheckbox');
     components.add(args, 'ScriptEditor');
+    components.add(args, 'CodeBlock');
     return withCss(import.meta.url, args);
 }

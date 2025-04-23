@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
+import com.zergatul.cheatutils.modules.utilities.LockInputs;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.modules.visuals.*;
@@ -88,6 +89,7 @@ public class ModMain implements ClientModInitializer {
         register(AntiHunger.instance);
         register(Schematica.instance);
         register(AimAssist.instance);
+        register(LockInputs.instance);
 
         register(TickEndExecutor.instance);
 

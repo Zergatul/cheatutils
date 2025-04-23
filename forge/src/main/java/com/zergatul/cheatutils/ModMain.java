@@ -12,6 +12,7 @@ import com.zergatul.cheatutils.modules.scripting.Containers;
 import com.zergatul.cheatutils.modules.scripting.Exec;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.modules.utilities.LockInputs;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.modules.visuals.*;
@@ -95,6 +96,7 @@ public class ModMain {
         register(AntiHunger.instance);
         register(Schematica.instance);
         register(AimAssist.instance);
+        register(LockInputs.instance);
 
         register(TickEndExecutor.instance);
     }

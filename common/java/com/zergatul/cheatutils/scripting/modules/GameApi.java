@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
+import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.scripting.types.BoundingBox;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 import com.zergatul.cheatutils.scripting.types.Position3d;
@@ -680,6 +681,13 @@ public class GameApi {
         @MethodDescription("""
                 Returns block id at specified coordinates. Example return value: "minecraft:stone"
                 """)
+        public String getId(BlockPosWrapper pos) {
+            return getId(pos.getX(), pos.getY(), pos.getZ());
+        }
+
+        @MethodDescription("""
+                Returns block id at specified coordinates. Example return value: "minecraft:stone"
+                """)
         public String getId(int x, int y, int z) {
             if (mc.level == null) {
                 return "";
@@ -687,6 +695,13 @@ public class GameApi {
 
             Block block = mc.level.getBlockState(new BlockPos(x, y, z)).getBlock();
             return Registries.BLOCKS.getKey(block).toString();
+        }
+
+        @MethodDescription("""
+                Returns true if you can place another block at specified coordinates
+                """)
+        public boolean canBeReplaced(BlockPosWrapper pos) {
+            return canBeReplaced(pos.getX(), pos.getY(), pos.getZ());
         }
 
         @MethodDescription("""
@@ -723,6 +738,14 @@ public class GameApi {
                 return Integer.MIN_VALUE;
             }
             return mc.level.getBrightness(LightLayer.SKY, new BlockPos(x, y, z));
+        }
+
+        @MethodDescription("""
+                Returns integer tag of BlockState at specified coordinates.
+                For example you can check tag "age" for "minecraft:wheat" to see when crops are ready to be harvested.
+                """)
+        public int getIntegerTag(BlockPosWrapper pos, String tag) {
+            return getIntegerTag(pos.getX(), pos.getY(), pos.getZ(), tag);
         }
 
         @MethodDescription("""

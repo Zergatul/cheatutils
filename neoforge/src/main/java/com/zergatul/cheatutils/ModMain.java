@@ -94,6 +94,7 @@ public class ModMain {
         register(AntiHunger.instance);
         register(Schematica.instance);
         register(AimAssist.instance);
+        register(LockInputs.instance);
 
         register(TickEndExecutor.instance);
 

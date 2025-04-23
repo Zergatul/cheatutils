@@ -6,15 +6,15 @@
     <div class="module-sections">
         <div class="description">
             Use <b>Events Scripting</b> module to assign key bindings. Example script:
-            <pre>
-events.onHandleKeys(() => {
-    if (input.isKeyDown("C")) {
-        zoom.start(10, 0.2);
-    } else {
-        zoom.stop();
-    }
-});
-            </pre>
+            <CodeBlock :code='`
+                events.onHandleKeys(() => {
+                    if (input.isKeyDown("C")) {
+                        zoom.start(10, 0.2);
+                    } else {
+                        zoom.stop();
+                    }
+                });
+            `' />
             Here:<br>
             10 - final FOV<br>
             0.2 - how quickly zoom (in seconds, can be zero)

@@ -3,24 +3,43 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.configs.AimAssistConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.automation.AimAssist;
-import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.scripting.ApiVisibility;
 import net.minecraft.world.entity.Entity;
 
 @SuppressWarnings("unused")
-public class AimAssistApi extends ModuleApi<AimAssistConfig> {
+public class AimAssistApi {
 
-    public boolean hasTarget() {
-        return AimAssist.instance.getTargetEntity() != null;
+    public boolean isBowAssistEnabled() {
+        return getConfig().bowAssist;
     }
 
-    public int getEntityId() {
-        Entity target = AimAssist.instance.getTargetEntity();
+    public void toggleBowAssist() {
+        AimAssistConfig config = getConfig();
+        config.bowAssist = !config.bowAssist;
+        ConfigStore.instance.requestWrite();
+    }
+
+    public boolean hasBowAssistTarget() {
+        return AimAssist.instance.getBowAssistTarget() != null;
+    }
+
+    public int getBowAssistEntityId() {
+        Entity target = AimAssist.instance.getBowAssistTarget();
         return target != null ? target.getId() : Integer.MIN_VALUE;
     }
 
-    @Override
-    protected AimAssistConfig getConfig() {
+    public boolean isTargetLockEnabled() {
+        return AimAssist.instance.isTargetLockEnabled();
+    }
+
+    public void enableTargetLock() {
+        AimAssist.instance.enableTargetLock();
+    }
+
+    public void disableTargetLock() {
+        AimAssist.instance.disableTargetLock();
+    }
+
+    private AimAssistConfig getConfig() {
         return ConfigStore.instance.getConfig().aimAssist;
     }
 }
