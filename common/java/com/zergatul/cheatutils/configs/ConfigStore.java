@@ -143,7 +143,7 @@ public class ConfigStore {
         config.blocks.refreshMap();
 
         ConfigHttpServer.instance.onConfigUpdated();
-        EntityTitleController.instance.onFontChange(config.entityTitleConfig);
+        EntityTitleController.instance.onTitleFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
 

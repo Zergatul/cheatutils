@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.render.gl;
 
-import java.awt.image.BufferedImage;
+import com.zergatul.cheatutils.render.gl.images.ImageSource;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class AtlasTexture {
         lines.add(new Line(0, 0, 0));
     }
 
-    public Item add(BufferedImage image) {
+    public Item add(ImageSource image) {
         Line last = lines.getLast();
         if (hasSpace(last, image)) {
             return addToLine(last, image);
@@ -42,7 +43,7 @@ public class AtlasTexture {
         texture.dispose();
     }
 
-    private Item addToLine(Line line, BufferedImage image) {
+    private Item addToLine(Line line, ImageSource image) {
         texture.update(image, line.width, line.top);
 
         float u1 = 1f * line.width / texture.getWidth();
@@ -58,20 +59,28 @@ public class AtlasTexture {
         return item;
     }
 
-    private boolean hasSpace(Line line, BufferedImage image) {
-        return line.top + image.getHeight() < texture.getHeight() && line.width + image.getWidth() < texture.getWidth();
+    private boolean hasSpace(Line line, ImageSource image) {
+        return hasSpace(line, image.getWidth(), image.getHeight());
     }
 
     private boolean hasSpace(Line line, Item item) {
-        return line.top + item.height < texture.getHeight() && line.width + item.width < texture.getWidth();
+        return hasSpace(line, item.width, item.height);
     }
 
-    private boolean hasSpaceOnNewLine(Line line, BufferedImage image) {
-        return line.top + line.height + image.getHeight() < texture.getHeight() && image.getWidth() < texture.getWidth();
+    private boolean hasSpace(Line line, int width, int height) {
+        return line.top + height < texture.getHeight() && line.width + width < texture.getWidth();
+    }
+
+    private boolean hasSpaceOnNewLine(Line line, ImageSource image) {
+        return hasSpaceOnNewLine(line, image.getWidth(), image.getHeight());
     }
 
     private boolean hasSpaceOnNewLine(Line line, Item item) {
-        return line.top + line.height + item.height < texture.getHeight() && item.width < texture.getWidth();
+        return hasSpaceOnNewLine(line, item.width, item.height);
+    }
+
+    private boolean hasSpaceOnNewLine(Line line, int width, int height) {
+        return line.top + line.height + height < texture.getHeight() && width < texture.getWidth();
     }
 
     private void resize() {

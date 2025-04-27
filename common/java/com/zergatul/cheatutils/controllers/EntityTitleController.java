@@ -54,6 +54,7 @@ public class EntityTitleController {
     private final Minecraft mc = Minecraft.getInstance();
     private final ArrayList<StylizedTextChunk> buffer = new ArrayList<>();
     private final StringBuilder builder = new StringBuilder();
+    private final char heart = '♥'; // ♥
 
     private final LoadingCache<UUID, Optional<String>> usernameCache = CacheBuilder
             .newBuilder()
@@ -74,29 +75,29 @@ public class EntityTitleController {
             });
 
     private final List<EntityEntry> entities = new ArrayList<>();
-    private GlyphFontRenderer fontRenderer;
-    private GlyphFontRenderer enchFontRenderer;
+    private GlyphFontRenderer titleFontRenderer;
+    private GlyphFontRenderer enchantmentFontRenderer;
 
     private EntityTitleController() {
         Events.AfterRenderWorld.add(this::onRenderWorld);
         Events.PreRenderGui.add(this::onRenderGui);
     }
 
-    public void onFontChange(EntityTitleConfig config) {
+    public void onTitleFontChange(EntityTitleConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            if (fontRenderer != null) {
-                fontRenderer.dispose();
+            if (titleFontRenderer != null) {
+                titleFontRenderer.dispose();
             }
-            fontRenderer = new GlyphFontRenderer(new Font("Consolas", Font.PLAIN, config.fontSize), config.antiAliasing);
+            titleFontRenderer = new GlyphFontRenderer(config.titleFont.face, config.titleFont.size);
         });
     }
 
     public void onEnchantmentFontChange(EntityTitleConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            if (enchFontRenderer != null) {
-                enchFontRenderer.dispose();
+            if (enchantmentFontRenderer != null) {
+                enchantmentFontRenderer.dispose();
             }
-            enchFontRenderer = new GlyphFontRenderer(new Font("Consolas", Font.PLAIN, config.enchFontSize), config.enchAntiAliasing);
+            enchantmentFontRenderer = new GlyphFontRenderer(config.enchantmentFont.face, config.enchantmentFont.size);
         });
     }
 
@@ -168,7 +169,7 @@ public class EntityTitleController {
     }
 
     public void onRenderGui(RenderGuiEvent event) {
-        if (fontRenderer == null) {
+        if (titleFontRenderer == null) {
             return;
         }
 
@@ -205,10 +206,10 @@ public class EntityTitleController {
 
             StylizedText text = getEntityText(entry);
             if (text != null) {
-                TextBounds bounds = fontRenderer.getTextSize(text);
-                if (bounds.width() > 0) {
-                    int width = bounds.width();
-                    int height = bounds.height();
+                TextBounds bounds = titleFontRenderer.getTextSize(text);
+                if (bounds.getWidth() > 0) {
+                    int width = bounds.getWidth();
+                    int height = bounds.getHeight();
 
                     int xp = xc - width / 2;
                     yc -= height;
@@ -216,150 +217,150 @@ public class EntityTitleController {
 
                     int rx1 = xp - scale;
                     int rx2 = xp + width + scale;
-                    int ry1 = yp + (bounds.top() - scale);
-                    int ry2 = yp + height - (bounds.bottom() - scale);
+                    int ry1 = yp + (/*bounds.getY0()*/ - scale);
+                    int ry2 = yp + height - (/*bounds.getY1()*/ - scale);
                     int width2 = rx2 - rx1;
                     int height2 = ry2 - ry1;
 
                     MainFrameBuffer.enter();
                     Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
-                    fontRenderer.drawText(matrix, text, xp, yp);
+                    titleFontRenderer.drawText(matrix, text, xp, yp - bounds.getY0());
 
                     MainFrameBuffer.exit();
                 }
             }
 
-            if (entry.showOwner) {
-                UUID owner = getOwner(entry.entity);
-                if (owner != null) {
-                    Optional<String> nameOpt = usernameCache.getUnchecked(owner);
-                    if (nameOpt.isPresent()) {
-                        String ownerText = "Owner: " + nameOpt.get();
-                        TextBounds bounds = fontRenderer.getTextSize(ownerText);
-                        int width = bounds.width();
-                        int height = bounds.height();
-
-                        int xp = xc - width / 2;
-                        yc -= height;
-                        int yp = yc;
-
-                        int rx1 = xp - scale;
-                        int rx2 = xp + width + scale;
-                        int ry1 = yp + (bounds.top() - scale);
-                        int ry2 = yp + height - (bounds.bottom() - scale);
-                        int width2 = rx2 - rx1;
-                        int height2 = ry2 - ry1;
-
-                        MainFrameBuffer.enter();
-                        Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
-                        fontRenderer.drawText(matrix, ownerText, xp, yp, 0xFFFFFFFF);
-                        MainFrameBuffer.exit();
-                    }
-                }
-            }
-
-            if (entry.showEquippedItems && enchFontRenderer != null && entry.entity instanceof LivingEntity livingEntity) {
-                ItemStack mainHand = livingEntity.getItemBySlot(EquipmentSlot.MAINHAND);
-                ItemStack head = livingEntity.getItemBySlot(EquipmentSlot.HEAD);
-                ItemStack chest = livingEntity.getItemBySlot(EquipmentSlot.CHEST);
-                ItemStack legs = livingEntity.getItemBySlot(EquipmentSlot.LEGS);
-                ItemStack feet = livingEntity.getItemBySlot(EquipmentSlot.FEET);
-                ItemStack offhand = livingEntity.getItemBySlot(EquipmentSlot.OFFHAND);
-
-                items.clear();
-                if (!mainHand.isEmpty()) {
-                    items.add(mainHand);
-                }
-                if (!head.isEmpty()) {
-                    items.add(head);
-                }
-                if (!chest.isEmpty()) {
-                    items.add(chest);
-                }
-                if (!legs.isEmpty()) {
-                    items.add(legs);
-                }
-                if (!feet.isEmpty()) {
-                    items.add(feet);
-                }
-                if (!offhand.isEmpty()) {
-                    items.add(offhand);
-                }
-
-                if (!items.isEmpty()) {
-                    enchantments.clear();
-                    enchantmentWidths.clear();
-                    enchantmentTextWidths.clear();
-                    enchantmentBounds.clear();
-                    for (ItemStack item : items) {
-                        List<EnchantmentEntry> entries = getEnchantments(item);
-                        enchantments.add(entries);
-
-                        TextBounds[] bounds = new TextBounds[entries.size()];
-                        int maxWidth = 16 * scale;
-                        int maxTextWidth = 0;
-                        for (int i = 0; i < bounds.length; i++) {
-                            EnchantmentEntry ee = entries.get(i);
-                            bounds[i] = enchFontRenderer.getTextSize(ee.text + ee.level);
-                            int width = bounds[i].width();
-                            if (width > maxWidth) {
-                                maxWidth = width;
-                            }
-                            if (width > maxTextWidth) {
-                                maxTextWidth = width;
-                            }
-                        }
-
-                        enchantmentWidths.add(maxWidth);
-                        enchantmentTextWidths.add(maxTextWidth);
-                        enchantmentBounds.add(bounds);
-                    }
-
-                    int width = 0;
-                    for (int ew : enchantmentWidths) {
-                        width += ew;
-                    }
-                    int height = 16 * scale;
-
-                    int xp = xc - width / 2 + halfScrWidth;
-                    yc -= height;
-                    int yp = yc + halfScrHeight;
-
-                    int xpl = xp;
-
-                    GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
-                    for (int i = 0; i < items.size(); i++) {
-                        int xCenterOffset = enchantmentTextWidths.get(i) > 16 * scale ? (enchantmentTextWidths.get(i) - 16 * scale) / 2 : 0;
-                        event.graphics().pose().pushPose();
-                        event.graphics().pose().setIdentity();
-                        event.graphics().pose().translate(1d * (xpl + xCenterOffset) / scale, 1d * yp / scale, 0);
-                        event.getGuiGraphics().renderItem(livingEntity, items.get(i), 0, 0, 0);
-                        event.getGuiGraphics().renderItemDecorations(mc.font, items.get(i), 0, 0);
-                        event.graphics().pose().popPose();
-                        xpl += enchantmentWidths.get(i);
-                    }
-                    GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
-
-                    xpl = xp - halfScrWidth;
-                    MainFrameBuffer.enter();
-                    for (int i = 0; i < items.size(); i++) {
-                        List<EnchantmentEntry> entries = enchantments.get(i);
-                        TextBounds[] bounds = enchantmentBounds.get(i);
-                        int ypl = yp - halfScrHeight;
-                        int xCenterOffset = enchantmentTextWidths.get(i) < 16 * scale ? (16 * scale - enchantmentTextWidths.get(i)) / 2 : 0;
-                        for (int j = entries.size() - 1; j >= 0; j--) {
-                            EnchantmentEntry e = entries.get(j);
-                            ypl -= bounds[j].height();
-
-                            StylizedText enchantmentText = StylizedText.of(e.text, Style.EMPTY.withColor(e.color.getRGB()));
-                            enchantmentText.append(Integer.toString(e.level), Style.EMPTY.withColor(0xFF00FFFF));
-                            enchFontRenderer.drawText(matrix, enchantmentText, xpl + xCenterOffset, ypl);
-                        }
-                        xpl += enchantmentWidths.get(i);
-                    }
-                    MainFrameBuffer.exit();
-                }
-            }
+//            if (entry.showOwner) {
+//                UUID owner = getOwner(entry.entity);
+//                if (owner != null) {
+//                    Optional<String> nameOpt = usernameCache.getUnchecked(owner);
+//                    if (nameOpt.isPresent()) {
+//                        String ownerText = "Owner: " + nameOpt.get();
+//                        TextBounds bounds = titleFontRenderer.getTextSize(ownerText);
+//                        int width = bounds.width();
+//                        int height = bounds.height();
+//
+//                        int xp = xc - width / 2;
+//                        yc -= height;
+//                        int yp = yc;
+//
+//                        int rx1 = xp - scale;
+//                        int rx2 = xp + width + scale;
+//                        int ry1 = yp + (bounds.top() - scale);
+//                        int ry2 = yp + height - (bounds.bottom() - scale);
+//                        int width2 = rx2 - rx1;
+//                        int height2 = ry2 - ry1;
+//
+//                        MainFrameBuffer.enter();
+//                        Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
+//                        titleFontRenderer.drawText(matrix, ownerText, xp, yp, 0xFFFFFFFF);
+//                        MainFrameBuffer.exit();
+//                    }
+//                }
+//            }
+//
+//            if (entry.showEquippedItems && enchantmentFontRenderer != null && entry.entity instanceof LivingEntity livingEntity) {
+//                ItemStack mainHand = livingEntity.getItemBySlot(EquipmentSlot.MAINHAND);
+//                ItemStack head = livingEntity.getItemBySlot(EquipmentSlot.HEAD);
+//                ItemStack chest = livingEntity.getItemBySlot(EquipmentSlot.CHEST);
+//                ItemStack legs = livingEntity.getItemBySlot(EquipmentSlot.LEGS);
+//                ItemStack feet = livingEntity.getItemBySlot(EquipmentSlot.FEET);
+//                ItemStack offhand = livingEntity.getItemBySlot(EquipmentSlot.OFFHAND);
+//
+//                items.clear();
+//                if (!mainHand.isEmpty()) {
+//                    items.add(mainHand);
+//                }
+//                if (!head.isEmpty()) {
+//                    items.add(head);
+//                }
+//                if (!chest.isEmpty()) {
+//                    items.add(chest);
+//                }
+//                if (!legs.isEmpty()) {
+//                    items.add(legs);
+//                }
+//                if (!feet.isEmpty()) {
+//                    items.add(feet);
+//                }
+//                if (!offhand.isEmpty()) {
+//                    items.add(offhand);
+//                }
+//
+//                if (!items.isEmpty()) {
+//                    enchantments.clear();
+//                    enchantmentWidths.clear();
+//                    enchantmentTextWidths.clear();
+//                    enchantmentBounds.clear();
+//                    for (ItemStack item : items) {
+//                        List<EnchantmentEntry> entries = getEnchantments(item);
+//                        enchantments.add(entries);
+//
+//                        TextBounds[] bounds = new TextBounds[entries.size()];
+//                        int maxWidth = 16 * scale;
+//                        int maxTextWidth = 0;
+//                        for (int i = 0; i < bounds.length; i++) {
+//                            EnchantmentEntry ee = entries.get(i);
+//                            bounds[i] = enchantmentFontRenderer.getTextSize(ee.text + ee.level);
+//                            int width = bounds[i].width();
+//                            if (width > maxWidth) {
+//                                maxWidth = width;
+//                            }
+//                            if (width > maxTextWidth) {
+//                                maxTextWidth = width;
+//                            }
+//                        }
+//
+//                        enchantmentWidths.add(maxWidth);
+//                        enchantmentTextWidths.add(maxTextWidth);
+//                        enchantmentBounds.add(bounds);
+//                    }
+//
+//                    int width = 0;
+//                    for (int ew : enchantmentWidths) {
+//                        width += ew;
+//                    }
+//                    int height = 16 * scale;
+//
+//                    int xp = xc - width / 2 + halfScrWidth;
+//                    yc -= height;
+//                    int yp = yc + halfScrHeight;
+//
+//                    int xpl = xp;
+//
+//                    GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+//                    for (int i = 0; i < items.size(); i++) {
+//                        int xCenterOffset = enchantmentTextWidths.get(i) > 16 * scale ? (enchantmentTextWidths.get(i) - 16 * scale) / 2 : 0;
+//                        event.graphics().pose().pushPose();
+//                        event.graphics().pose().setIdentity();
+//                        event.graphics().pose().translate(1d * (xpl + xCenterOffset) / scale, 1d * yp / scale, 0);
+//                        event.getGuiGraphics().renderItem(livingEntity, items.get(i), 0, 0, 0);
+//                        event.getGuiGraphics().renderItemDecorations(mc.font, items.get(i), 0, 0);
+//                        event.graphics().pose().popPose();
+//                        xpl += enchantmentWidths.get(i);
+//                    }
+//                    GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+//
+//                    xpl = xp - halfScrWidth;
+//                    MainFrameBuffer.enter();
+//                    for (int i = 0; i < items.size(); i++) {
+//                        List<EnchantmentEntry> entries = enchantments.get(i);
+//                        TextBounds[] bounds = enchantmentBounds.get(i);
+//                        int ypl = yp - halfScrHeight;
+//                        int xCenterOffset = enchantmentTextWidths.get(i) < 16 * scale ? (16 * scale - enchantmentTextWidths.get(i)) / 2 : 0;
+//                        for (int j = entries.size() - 1; j >= 0; j--) {
+//                            EnchantmentEntry e = entries.get(j);
+//                            ypl -= bounds[j].height();
+//
+//                            StylizedText enchantmentText = StylizedText.of(e.text, Style.EMPTY.withColor(e.color.getRGB()));
+//                            enchantmentText.append(Integer.toString(e.level), Style.EMPTY.withColor(0xFF00FFFF));
+//                            enchantmentFontRenderer.drawText(matrix, enchantmentText, xpl + xCenterOffset, ypl);
+//                        }
+//                        xpl += enchantmentWidths.get(i);
+//                    }
+//                    MainFrameBuffer.exit();
+//                }
+//            }
         }
 
         GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
@@ -413,9 +414,9 @@ public class EntityTitleController {
         if (entry.showHp && entry.entity instanceof LivingEntity living) {
             if (text == null) {
                 text = new StylizedText();
-                text.append("♥", Style.EMPTY.withColor(ChatFormatting.RED));
+                text.append(Character.toString(heart), Style.EMPTY.withColor(ChatFormatting.RED));
             } else {
-                text.append(" ♥", Style.EMPTY.withColor(ChatFormatting.RED));
+                text.append(" " + heart, Style.EMPTY.withColor(ChatFormatting.RED));
             }
             text.append(String.valueOf((int)living.getHealth()), Style.EMPTY);
         }

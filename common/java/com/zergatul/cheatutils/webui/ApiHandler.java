@@ -70,6 +70,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new DebuggingApi());
         apis.add(new KillAuraCodeApi());
         apis.add(new HitboxSizeCodeApi());
+        apis.add(new FontsApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -613,11 +614,10 @@ public class ApiHandler implements HttpHandler {
                 EntityTitleConfig oldConfig = ConfigStore.instance.getConfig().entityTitleConfig;
                 ConfigStore.instance.getConfig().entityTitleConfig = config;
 
-                if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
-                    EntityTitleController.instance.onFontChange(config);
+                if (!oldConfig.titleFont.equals(config.titleFont)) {
+                    EntityTitleController.instance.onTitleFontChange(config);
                 }
-
-                if (oldConfig.enchFontSize != config.enchFontSize || oldConfig.enchAntiAliasing != config.enchAntiAliasing) {
+                if (!oldConfig.enchantmentFont.equals(config.enchantmentFont)) {
                     EntityTitleController.instance.onEnchantmentFontChange(config);
                 }
             }

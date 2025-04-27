@@ -1,33 +1,32 @@
 package com.zergatul.cheatutils.font;
 
 import com.zergatul.cheatutils.render.gl.AtlasTexture;
-import net.minecraft.util.Mth;
 
-import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 public class Glyph {
 
-    private final int width;
-    private final int height;
-    private final int baseline;
-    private final int top;
-    private final int bottom;
+    public static final Glyph EMPTY = new Glyph(0, 0, 0, 0, 0, 0,null);
+
+    private final int x0;
+    private final int x1;
+    private final int y0;
+    private final int y1;
+    private final int advance;
+    private final int leftSideBearing;
     private final AtlasTexture.Item sprite;
 
-    private Glyph(int width, int height, int baseline, int top, int bottom, AtlasTexture.Item sprite) {
-        this.width = width;
-        this.height = height;
-        this.baseline = baseline;
-        this.top = top;
-        this.bottom = bottom;
+    public Glyph(int x0, int x1, int y0, int y1, int advance, int leftSideBearing, AtlasTexture.Item sprite) {
+        this.x0 = x0;
+        this.x1 = x1;
+        this.y0 = y0;
+        this.y1 = y1;
+        this.advance = advance;
+        this.leftSideBearing = leftSideBearing;
         this.sprite = sprite;
     }
 
-    public static Glyph create(AtlasTexture texture, Font font, char ch, boolean antiAliasing) {
+    /*public static Glyph create(AtlasTexture texture, Font font, char ch, boolean antiAliasing) {
         AffineTransform affineTransform = new AffineTransform();
         FontRenderContext frc = new FontRenderContext(affineTransform, antiAliasing, false);
         String charStr = Character.toString(ch);
@@ -76,28 +75,44 @@ public class Glyph {
             bottom = height - 1 - shift;
         }
 
-        AtlasTexture.Item sprite = texture.add(image);
+        AtlasTexture.Item sprite = texture.add(ImageSource.fromBuffered(image));
         return new Glyph(width, height, baseline, top, bottom, sprite);
-    }
+    }*/
 
     public int getWidth() {
-        return width;
+        return x1 - x0;
     }
 
     public int getHeight() {
-        return height;
+        return y1 - y0;
     }
 
-    public int getTop() {
-        return top;
+    public int getX0() {
+        return x0;
     }
 
-    public int getBottom() {
-        return bottom;
+    public int getX1() {
+        return x1;
     }
 
-    public int getBaseline() {
-        return baseline;
+    public int getY0() {
+        return y0;
+    }
+
+    public int getY1() {
+        return y1;
+    }
+
+    public boolean isBlank() {
+        return x0 == x1;
+    }
+
+    public int getAdvanceWidth() {
+        return advance;
+    }
+
+    public int getLeftSideBearing() {
+        return leftSideBearing;
     }
 
     public AtlasTexture.Item getSprite() {

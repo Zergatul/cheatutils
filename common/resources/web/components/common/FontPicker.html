@@ -1,0 +1,22 @@
+<div v-if="fonts">
+    <table>
+        <tr>
+            <td>
+                <span class="field-description">Font Name:</span>
+            </td>
+            <td>
+                <select v-model="modelValue.face" @change="update()">
+                    <option v-for="font in fonts" :value="font.name">{{ font.name }}</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="field-description">Font Size:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="8" max="100" v-model="modelValue.size" @change="update()">
+            </td>
+        </tr>
+    </table>
+</div>
