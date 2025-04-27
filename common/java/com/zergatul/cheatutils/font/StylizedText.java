@@ -1,25 +1,51 @@
 package com.zergatul.cheatutils.font;
 
-import net.minecraft.network.chat.Style;
+import com.zergatul.cheatutils.utils.ColorUtils;
 
-import java.util.ArrayList;
+import java.awt.*;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class StylizedText {
 
     public final ArrayList<StylizedTextChunk> chunks = new ArrayList<>(4);
 
-    public static StylizedText of(String value) {
-        return of(value, Style.EMPTY);
+    public static StylizedText empty() {
+        return new StylizedText();
     }
 
-    public static StylizedText of(String value, Style style) {
+    public static StylizedText of(String value) {
+        return of(value, Color.WHITE.getRGB());
+    }
+
+    public static StylizedText of(String value, int color) {
         StylizedText text = new StylizedText();
-        text.chunks.add(new StylizedTextChunk(value, style));
+        text.chunks.add(new StylizedTextChunk(value, color));
         return text;
     }
 
-    public void append(String value, Style style) {
-        chunks.add(new StylizedTextChunk(value, style));
+    public static StylizedText createSafe(String text, String color) {
+        return of(text, parseColorSafe(color));
+    }
+
+    public static StylizedText createSafe(String[] parameters) {
+        if (parameters.length == 0 || parameters.length % 2 != 0) {
+            return empty();
+        } else {
+            StylizedText text = empty();
+            for (int i = 0; i < parameters.length; i += 2) {
+                text.append(parameters[i + 1], parseColorSafe(parameters[i]));
+            }
+            return text;
+        }
+    }
+
+    public void append(String value, int color) {
+        chunks.add(new StylizedTextChunk(value, color));
+    }
+
+    public IntStream chars() {
+        return chunks.stream().map(StylizedTextChunk::text).flatMapToInt(String::chars);
     }
 
     public int length() {
@@ -28,5 +54,10 @@ public class StylizedText {
             length += chunk.text().length();
         }
         return length;
+    }
+
+    private static int parseColorSafe(String color) {
+        Integer colorInt = ColorUtils.parseColor(color);
+        return colorInt != null ? colorInt : Color.WHITE.getRGB();
     }
 }

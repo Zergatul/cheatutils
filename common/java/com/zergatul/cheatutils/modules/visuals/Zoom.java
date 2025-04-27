@@ -81,9 +81,7 @@ public class Zoom implements Module {
                     onGetFov(event);
                     return;
                 }
-                double fraction = 1d * (now - begin) / (end - begin);
-                double transform = linear(fraction);
-                event.set(originalFov + transform * (finalFov - originalFov));
+                event.set(perceptual(originalFov, finalFov, 1d * (now - begin) / (end - begin)));
                 break;
 
             case ZOOM_STATIC:
@@ -95,17 +93,28 @@ public class Zoom implements Module {
                     state = State.NONE;
                     return;
                 }
-                fraction = 1d * (end - now) / (end - begin);
-                transform = linear(fraction);
-                event.set(originalFov + transform * (finalFov - originalFov));
+                event.set(perceptual(finalFov, originalFov, 1d * (now - begin) / (end - begin)));
                 break;
         }
 
         fovFactor = event.get() / originalFov;
     }
 
-    private double linear(double value) {
-        return value;
+    private double perceptual(double fov1, double fov2, double t) {
+        assert 0 <= t && t <= 1;
+
+        double scale1 = 1 / Math.tan(Math.toRadians(fov1 / 2));
+        double scale2 = 1 / Math.tan(Math.toRadians(fov2 / 2));
+        double scale = lerp(scale1, scale2, smoothstep(t));
+        return Math.toDegrees(2 * Math.atan(1 / scale));
+    }
+
+    private double smoothstep(double t) {
+        return t * t * (3 - 2 * t);
+    }
+
+    public static double lerp(double v1, double v2, double t) {
+        return v1 + t * (v2 - v1);
     }
 
     private enum State {

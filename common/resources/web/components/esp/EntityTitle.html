@@ -9,31 +9,26 @@
             <legend>
                 Titles Font
             </legend>
-            <div class="flex-row">
-                <span class="field-description">Font Size:</span>
-                <input type="text" class="w3" v-model="config.fontSize" @change="update()">
-            </div>
-            <div>
-                <switch-checkbox v-model="config.antiAliasing" @change="update()">Anti Aliasing</switch-checkbox>
-            </div>
-            <div class="section-description">
-                Font face: Consolas. Anti Aliasing looks better with bigger font size (about 18+).
-            </div>
+            <font-picker v-model="config.titleFont" @change="update()"></font-picker>
         </fieldset>
 
         <fieldset>
             <legend>
                 Enchantments Font
             </legend>
-            <div class="flex-row">
-                <span class="field-description">Font Size:</span>
-                <input type="text" class="w3" v-model="config.enchFontSize" @change="update()">
-            </div>
+            <font-picker v-model="config.enchantmentFont" @change="update()"></font-picker>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                HP prefix
+            </legend>
             <div>
-                <switch-checkbox v-model="config.enchAntiAliasing" @change="update()">Anti Aliasing</switch-checkbox>
+                <input type="text" class="w3" v-model="config.hpPrefix" @change="update()">
             </div>
             <div class="section-description">
-                Font face: Consolas. Anti Aliasing looks better with bigger font size (about 18+).
+                String that will be inserted before entity HP (if you enabled showing HP in the titles).
+                Some fonts may not have specific unicode heart symbol, so you can replace it with something else.
             </div>
         </fieldset>
     </div>

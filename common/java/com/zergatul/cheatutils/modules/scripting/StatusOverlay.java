@@ -1,24 +1,24 @@
 package com.zergatul.cheatutils.modules.scripting;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
+import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
+import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.MutableComponent;
+import org.joml.Matrix4f;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
-public class StatusOverlay implements Module {
+public class StatusOverlay implements Module, FontBackendHolder {
 
     public static final StatusOverlay instance = new StatusOverlay();
 
-    private static final int TranslateZ = 200;
-    private static final int DefaultBackground = 0x90505050;
+    private static final int DEFAULT_BACKGROUND = 0x90505050;
 
     private static final Minecraft mc = Minecraft.getInstance();
     private final Map<Align, List<AlignedText>> texts = new HashMap<>();
@@ -26,6 +26,11 @@ public class StatusOverlay implements Module {
     private Runnable script;
     private HorizontalAlign hAlign;
     private VerticalAlign vAlign;
+    private int backgroundColor;
+
+    private boolean fontChanged;
+    private CompletableFuture<FontBackend> fontBackendFuture;
+    private FontRenderer fontRenderer;
 
     private StatusOverlay() {
         for (Align align: Align.values()) {
@@ -35,23 +40,32 @@ public class StatusOverlay implements Module {
         Events.PostRenderGui.add(this::render);
     }
 
+    @Override
+    public boolean uses(FontBackend backend) {
+        return fontRenderer != null && fontRenderer.uses(backend);
+    }
+
+    public void onFontChange() {
+        TickEndExecutor.instance.execute(() -> fontChanged = true);
+    }
+
     public void setScript(Runnable script) {
         this.script = script;
     }
 
-    public void addText(MutableComponent message) {
-        addText(DefaultBackground, message);
+    public void addText(StylizedText message) {
+        addText(backgroundColor, message);
     }
 
-    public void addText(int background, MutableComponent message) {
+    public void addText(int background, StylizedText message) {
         texts.get(Align.get(vAlign, hAlign)).add(new AlignedText(background, message));
     }
 
-    public void addFreeText(int x, int y, MutableComponent message) {
-        addFreeText(x, y, DefaultBackground, message);
+    public void addFreeText(int x, int y, StylizedText message) {
+        addFreeText(x, y, backgroundColor, message);
     }
 
-    public void addFreeText(int x, int y, int background, MutableComponent message) {
+    public void addFreeText(int x, int y, int background, StylizedText message) {
         freeTexts.add(new FreeText(x, y, background, message));
     }
 
@@ -61,6 +75,10 @@ public class StatusOverlay implements Module {
 
     public void setVerticalAlign(VerticalAlign align) {
         vAlign = align;
+    }
+
+    public void setDefaultBackgroundColor(int color) {
+        backgroundColor = color;
     }
 
     private void render(RenderGuiEvent event) {
@@ -73,6 +91,23 @@ public class StatusOverlay implements Module {
             return;
         }
 
+        if (fontChanged) {
+            fontBackendFuture = FontLibrary.instance.createBackend(config.font.asFontParameters());
+            // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
+            fontChanged = false;
+        }
+
+        if (fontBackendFuture != null) {
+            if (fontBackendFuture.isDone()) {
+                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font.asFontRenderDetails());
+                fontBackendFuture = null;
+            }
+        }
+
+        if (fontRenderer == null) {
+            return;
+        }
+
         for (Align align: Align.values()) {
             texts.get(align).clear();
         }
@@ -81,78 +116,50 @@ public class StatusOverlay implements Module {
 
         hAlign = HorizontalAlign.RIGHT;
         vAlign = VerticalAlign.BOTTOM;
+        backgroundColor = DEFAULT_BACKGROUND;
         script.run();
 
-        PoseStack poseStack = event.getGuiGraphics().pose();
-        poseStack.pushPose();
-        poseStack.setIdentity();
-        poseStack.translate(0, 0, TranslateZ);
+        int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
+        int scrWidth = mc.getWindow().getWidth();
+        int scrHeight = mc.getWindow().getHeight();
+        int halfScrWidth = scrWidth / 2;
+        int halfScrHeight = scrHeight / 2;
 
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Matrix4f matrix = new Matrix4f();
+        matrix.ortho(0, scrWidth, scrHeight, 0, -1, 1);
 
-        for (Align align: Align.values()) {
+        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+
+        for (Align align : Align.values()) {
             List<AlignedText> list = texts.get(align);
             if (list.isEmpty()) {
                 continue;
             }
-            for (int i = 0; i < list.size(); i++) {
-                AlignedText text = list.get(i);
-                int width = mc.font.width(text.component);
-                int x = getLeft(align.hAlign, mc.getWindow().getGuiScaledWidth(), width);
-                int y = getTop(align.vAlign, mc.getWindow().getGuiScaledHeight(), mc.font.lineHeight, i, list.size());
-                if (width > 0) {
-                    event.getGuiGraphics().fill(
-                            x - 1,
-                            y,
-                            x - 1 + width + 2,
-                            y + mc.font.lineHeight,
-                            text.background);
-                    event.getGuiGraphics().drawString(mc.font, text.component, x, y, 16777215);
-                }
+
+            FlexColumnElement flex = new FlexColumnElement().setAlign(align.hAlign);
+            for (AlignedText item : list) {
+                flex.append(new TextElement(fontRenderer, item.text).setBackgroundColor(item.background));
             }
+
+            int x = switch (align.hAlign) {
+                case LEFT -> 2 * scale;
+                case CENTER -> halfScrWidth;
+                case RIGHT -> scrWidth - 2 * scale;
+            };
+            int y = switch (align.vAlign) {
+                case TOP -> 2 * scale;
+                case MIDDLE -> halfScrHeight;
+                case BOTTOM -> scrHeight - 2 * scale;
+            };
+
+            context.render(flex, x, y, align.hAlign, align.vAlign);
         }
 
-        for (FreeText text: freeTexts) {
-            int width = mc.font.width(text.component);
-            if (width > 0) {
-                event.getGuiGraphics().fill(
-                        text.x - 1,
-                        text.y,
-                        text.x - 1 + width + 2,
-                        text.y + mc.font.lineHeight, text.background);
-                event.getGuiGraphics().drawString(mc.font, text.component, text.x, text.y, 16777215);
-            }
+        for (FreeText item : freeTexts) {
+            context.render(
+                    new TextElement(fontRenderer, item.text).setBackgroundColor(item.background),
+                    item.x, item.y, HorizontalAlign.LEFT, VerticalAlign.TOP);
         }
-
-        poseStack.popPose();
-    }
-
-    private int getLeft(HorizontalAlign align, int screenWidth, int textWidth) {
-        return switch (align) {
-            case LEFT -> 2;
-            case CENTER -> (screenWidth - textWidth) / 2;
-            case RIGHT -> screenWidth - 2 - textWidth;
-        };
-    }
-
-    private int getTop(VerticalAlign align, int screenHeight, int textHeight, int index, int count) {
-        return switch (align) {
-            case TOP -> 2 + index * textHeight;
-            case MIDDLE -> (screenHeight - textHeight * count) / 2 + index * textHeight;
-            case BOTTOM -> screenHeight - 2 - textHeight * (count - index);
-        };
-    }
-
-    public enum HorizontalAlign {
-        LEFT,
-        CENTER,
-        RIGHT
-    }
-
-    public enum VerticalAlign {
-        TOP,
-        MIDDLE,
-        BOTTOM
     }
 
     private enum Align {
@@ -195,7 +202,7 @@ public class StatusOverlay implements Module {
         }
     }
 
-    private record AlignedText(int background, MutableComponent component) {}
+    private record AlignedText(int background, StylizedText text) {}
 
-    private record FreeText(int x, int y, int background, MutableComponent component) {}
+    private record FreeText(int x, int y, int background, StylizedText text) {}
 }

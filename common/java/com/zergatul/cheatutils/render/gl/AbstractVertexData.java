@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.render.gl;
 
+import com.zergatul.cheatutils.utils.IntUtils;
 import com.zergatul.cheatutils.utils.UnsafeUtil;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 import sun.misc.Unsafe;
@@ -42,6 +44,18 @@ public abstract class AbstractVertexData {
 
         UNSAFE.putFloat(address + position, value);
         position += 4;
+    }
+
+    public void add(FloatList list) {
+        if (position + list.size() * 4 > capacity) {
+            capacity = IntUtils.nextPowerOfTwo(position + list.size() * 4);
+            address = ALLOCATOR.realloc(address, capacity);
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+            UNSAFE.putFloat(address + position, list.getFloat(i));
+            position += 4;
+        }
     }
 
     public void clear() {

@@ -7,8 +7,11 @@ import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.Schematica;
+import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
+import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
@@ -70,6 +73,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new DebuggingApi());
         apis.add(new KillAuraCodeApi());
         apis.add(new HitboxSizeCodeApi());
+        apis.add(new FontsApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -372,8 +376,8 @@ public class ApiHandler implements HttpHandler {
                 WorldMarkersConfig oldConfig = ConfigStore.instance.getConfig().worldMarkersConfig;
                 ConfigStore.instance.getConfig().worldMarkersConfig = config;
 
-                if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
-                    WorldMarkersController.instance.onFontChange(config);
+                if (!oldConfig.font.equals(config.font)) {
+                    WorldMarkers.instance.onFontChange();
                 }
             }
         });
@@ -447,7 +451,16 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(StatusOverlayConfig config) {
-                ConfigStore.instance.getConfig().statusOverlayConfig.enabled = config.enabled;
+                StatusOverlayConfig existingConfig = ConfigStore.instance.getConfig().statusOverlayConfig;
+                existingConfig.enabled = config.enabled;
+
+                FontConfig oldFont = existingConfig.font;
+                FontConfig newFont = config.font;
+
+                if (!oldFont.equals(newFont)) {
+                    existingConfig.font = newFont;
+                    StatusOverlay.instance.onFontChange();
+                }
             }
         });
 
@@ -613,12 +626,11 @@ public class ApiHandler implements HttpHandler {
                 EntityTitleConfig oldConfig = ConfigStore.instance.getConfig().entityTitleConfig;
                 ConfigStore.instance.getConfig().entityTitleConfig = config;
 
-                if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
-                    EntityTitleController.instance.onFontChange(config);
+                if (!oldConfig.titleFont.equals(config.titleFont)) {
+                    EntityTitle.instance.onTitleFontChange();
                 }
-
-                if (oldConfig.enchFontSize != config.enchFontSize || oldConfig.enchAntiAliasing != config.enchAntiAliasing) {
-                    EntityTitleController.instance.onEnchantmentFontChange(config);
+                if (!oldConfig.enchantmentFont.equals(config.enchantmentFont)) {
+                    EntityTitle.instance.onEnchantmentFontChange();
                 }
             }
         });

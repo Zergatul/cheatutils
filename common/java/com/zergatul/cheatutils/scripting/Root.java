@@ -81,4 +81,5 @@ public class Root {
     public static HttpApi http = new HttpApi();
     public static OsApi os = new OsApi();
     public static DebugApi debug = new DebugApi();
+    public static RenderApi render = new RenderApi();
 }

@@ -1,14 +1,11 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
-import com.zergatul.cheatutils.font.GlyphFontRenderer;
-import com.zergatul.cheatutils.font.TextBounds;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
-import com.zergatul.cheatutils.render.Primitives;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
+import com.zergatul.cheatutils.font.*;
+import com.zergatul.cheatutils.ui.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import net.minecraft.client.Camera;
@@ -17,26 +14,29 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
-import java.awt.*;
+import java.util.concurrent.CompletableFuture;
 
-public class WorldMarkersController {
+public class WorldMarkers implements FontBackendHolder {
 
-    public static final WorldMarkersController instance = new WorldMarkersController();
+    public static final WorldMarkers instance = new WorldMarkers();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private GlyphFontRenderer fontRenderer;
 
-    private WorldMarkersController() {
+    private boolean fontChanged;
+    private CompletableFuture<FontBackend> fontBackendFuture;
+    private FontRenderer fontRenderer;
+
+    private WorldMarkers() {
         Events.PreRenderGui.add(this::onPreRenderGui);
     }
 
-    public void onFontChange(WorldMarkersConfig config) {
-        TickEndExecutor.instance.execute(() -> {
-            if (fontRenderer != null) {
-                fontRenderer.dispose();
-            }
-            fontRenderer = new GlyphFontRenderer(new Font("Consolas", Font.PLAIN, config.fontSize), config.antiAliasing);
-        });
+    @Override
+    public boolean uses(FontBackend backend) {
+        return fontRenderer != null && fontRenderer.uses(backend);
+    }
+
+    public void onFontChange() {
+        TickEndExecutor.instance.execute(() -> fontChanged = true);
     }
 
     private void onPreRenderGui(RenderGuiEvent event) {
@@ -49,12 +49,29 @@ public class WorldMarkersController {
             return;
         }
 
+        if (fontChanged) {
+            fontBackendFuture = FontLibrary.instance.createBackend(config.font.asFontParameters());
+            // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
+            fontChanged = false;
+        }
+
+        if (fontBackendFuture != null) {
+            if (fontBackendFuture.isDone()) {
+                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font.asFontRenderDetails());
+                fontBackendFuture = null;
+            }
+        }
+
         if (mc.level == null) {
             return;
         }
 
-        GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
-        MainFrameBuffer.enter();
+        if (fontRenderer == null) {
+            return;
+        }
+
+        /*GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        MainFrameBuffer.enter();*/
 
         Camera camera = event.getCamera();
         Vec3 view = camera.getPosition();
@@ -67,6 +84,8 @@ public class WorldMarkersController {
 
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
+
+        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
 
         String dimension = mc.level.dimension().location().toString();
         for (WorldMarkersConfig.Entry entry : config.entries) {
@@ -93,53 +112,27 @@ public class WorldMarkersController {
             int xc = Math.round(v2.x / v2.w * halfScrWidth);
             int yc = Math.round(-v2.y / v2.w * halfScrHeight);
 
-            TextBounds bounds = fontRenderer.getTextSize(entry.name);
-            int width = bounds.width();
-            int height = bounds.height();
-
-            int xp = xc - width / 2;
-            yc -= 2 * height;
-            int yp = yc;
-
             int color = entry.color.getRGB();
             int inverse = ColorUtils.inverse(color);
 
-            int rx1 = xp - scale;
-            int rx2 = xp + width + scale;
-            int ry1 = yp + (bounds.top() - scale);
-            int ry2 = yp + height - (bounds.bottom() - scale);
-            int width2 = rx2 - rx1;
-            int height2 = ry2 - ry1;
-            Primitives.fill(matrix, rx1, ry1, width2, height2, inverse & 0x40FFFFFF);
+            StylizedText text = StylizedText.of(entry.name, entry.color.getRGB());
+            FlexColumnElement flex = new FlexColumnElement();
+            flex.append(
+                    new DivisionElement()
+                            .setBackgroundColor(inverse & 0x40FFFFFF)
+                            .setBorderWidth(config.borderWidth)
+                            .setBorderColor(entry.color.getRGB())
+                            .setMargin(context.getScale())
+                            .setContent(
+                                    new TextElement(fontRenderer, text)
+                                            .setCompactHeight(true)));
+            flex.append(
+                    new RectangleElement(config.borderWidth, (int) fontRenderer.getLineHeight(), entry.color.getRGB()));
 
-            fontRenderer.drawText(matrix, entry.name, xp, yp, color);
-
-            // border
-            int bw = config.borderWidth;
-            Primitives.fill(matrix,
-                    rx1 - bw, ry1 - bw,
-                    width2 + 2 * bw, bw,
-                    color);
-            Primitives.fill(matrix,
-                    rx1 - bw, ry2,
-                    width2 + 2 * bw, bw,
-                    color);
-            Primitives.fill(matrix,
-                    rx1 - bw, ry1 - bw,
-                    bw, height2 + 2 * bw,
-                    color);
-            Primitives.fill(matrix,
-                    rx2, ry1 - bw,
-                    bw, height2 + 2 * bw,
-                    color);
-
-            Primitives.fill(matrix,
-                    xc - bw / 2, ry2,
-                    bw, height2,
-                    color);
+            context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
         }
 
-        MainFrameBuffer.exit();
-        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        /*MainFrameBuffer.exit();
+        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);*/
     }
 }

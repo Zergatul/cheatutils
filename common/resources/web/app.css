@@ -577,3 +577,9 @@ pre {
     border-radius: 4px;
     overflow-x: auto;
 }
+
+span.hint {
+    color: var(--color1);
+    font-family: var(--font2);
+    font-size: 0.7em;
+}

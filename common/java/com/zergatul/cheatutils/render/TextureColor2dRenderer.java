@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.render;
 
 import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import com.zergatul.cheatutils.render.gl.Position2dTextureColorProgram;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -15,6 +16,10 @@ public class TextureColor2dRenderer {
     public void begin() {
         createGlObjectsIfRequired();
         program.buffer.clear();
+    }
+
+    public void fill(FloatList buffer) {
+        program.buffer.add(buffer);
     }
 
     public void rect(float x, float y, float width, float height, float red, float green, float blue, float alpha) {

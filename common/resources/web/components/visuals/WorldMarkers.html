@@ -22,22 +22,13 @@
                             <input type="text" class="w3" v-model="config.borderWidth" @change="update()">
                         </td>
                     </tr>
-                    <tr>
-                        <td>
-                            <span class="field-description">Font Size:</span>
-                        </td>
-                        <td>
-                            <input type="text" class="w3" v-model="config.fontSize" @change="update()">
-                        </td>
-                    </tr>
                 </tbody>
             </table>
-            <div>
-                <switch-checkbox v-model="config.antiAliasing" @change="update()">Anti Aliasing</switch-checkbox>
-            </div>
-            <div class="section-description">
-                Font face: Consolas. Anti Aliasing looks better with bigger font size (about 18+).
-            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Font</legend>
+            <font-picker v-model="config.font" @change="update()"></font-picker>
         </fieldset>
 
         <fieldset>

@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.modules;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.*;
+import com.zergatul.cheatutils.font.FontBackendHolders;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
@@ -36,10 +37,10 @@ public class Modules {
         register(EndCityChunks.instance);
         register(AutoBucket.instance);
         register(WorldDownloadController.instance);
-        register(EntityTitleController.instance);
+        register(EntityTitle.instance);
         register(ContainerButtonsController.instance);
         register(TeleportHackController.instance);
-        register(WorldMarkersController.instance);
+        register(WorldMarkers.instance);
         register(TpsCounterController.instance);
         register(BlockAutomation.instance);
         register(PlayerInfoController.instance);
@@ -75,6 +76,10 @@ public class Modules {
         register(KillAura.instance);
 
         register(TickEndExecutor.instance);
+
+        FontBackendHolders.add(StatusOverlay.instance);
+        FontBackendHolders.add(EntityTitle.instance);
+        FontBackendHolders.add(WorldMarkers.instance);
     }
 
     public static void registerKeyBindings() {

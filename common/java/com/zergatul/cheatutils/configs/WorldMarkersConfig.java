@@ -9,18 +9,21 @@ import java.util.List;
 public class WorldMarkersConfig extends ModuleConfig implements ValidatableConfig {
 
     public List<Entry> entries = new ArrayList<>();
-    public int fontSize;
-    public boolean antiAliasing;
+    public FontConfig font;
     public int borderWidth;
 
     public WorldMarkersConfig() {
-        fontSize = 12;
+        font = new FontConfig();
         borderWidth = 1;
     }
 
     @Override
     public void validate() {
-        fontSize = MathUtils.clamp(fontSize, 8, 100);
+        if (font == null) {
+            font = new FontConfig();
+        }
+        font.validate();
+
         borderWidth = MathUtils.clamp(borderWidth, 1, 10);
         for (Entry entry : entries) {
             entry.validate();

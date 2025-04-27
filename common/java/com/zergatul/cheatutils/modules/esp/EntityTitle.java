@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.esp;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -10,23 +10,15 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTitleConfig;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
-import com.zergatul.cheatutils.font.GlyphFontRenderer;
-import com.zergatul.cheatutils.font.StylizedText;
-import com.zergatul.cheatutils.font.StylizedTextChunk;
-import com.zergatul.cheatutils.font.TextBounds;
+import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
-import com.zergatul.cheatutils.modules.esp.EntityEsp;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
-import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
-import net.minecraft.ChatFormatting;
+import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.*;
@@ -47,13 +39,22 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class EntityTitleController {
+public class EntityTitle implements FontBackendHolder {
 
-    public static final EntityTitleController instance = new EntityTitleController();
+    public static final EntityTitle instance = new EntityTitle();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final ArrayList<StylizedTextChunk> buffer = new ArrayList<>();
     private final StringBuilder builder = new StringBuilder();
+    private final List<EquipmentSlot> equipmentOrder = List.of(
+            EquipmentSlot.MAINHAND,
+            EquipmentSlot.HEAD,
+            EquipmentSlot.CHEST,
+            EquipmentSlot.BODY,
+            EquipmentSlot.SADDLE,
+            EquipmentSlot.LEGS,
+            EquipmentSlot.FEET,
+            EquipmentSlot.OFFHAND);
 
     private final LoadingCache<UUID, Optional<String>> usernameCache = CacheBuilder
             .newBuilder()
@@ -74,30 +75,37 @@ public class EntityTitleController {
             });
 
     private final List<EntityEntry> entities = new ArrayList<>();
-    private GlyphFontRenderer fontRenderer;
-    private GlyphFontRenderer enchFontRenderer;
 
-    private EntityTitleController() {
+    private boolean titleFontChanged;
+    private CompletableFuture<FontBackend> titleFontBackendFuture;
+    private FontRenderer titleFontRenderer;
+
+    private boolean enchantmentFontChanged;
+    private CompletableFuture<FontBackend> enchantmentFontBackendFuture;
+    private FontRenderer enchantmentFontRenderer;
+
+    private EntityTitle() {
         Events.AfterRenderWorld.add(this::onRenderWorld);
         Events.PreRenderGui.add(this::onRenderGui);
     }
 
-    public void onFontChange(EntityTitleConfig config) {
-        TickEndExecutor.instance.execute(() -> {
-            if (fontRenderer != null) {
-                fontRenderer.dispose();
-            }
-            fontRenderer = new GlyphFontRenderer(new Font("Consolas", Font.PLAIN, config.fontSize), config.antiAliasing);
-        });
+    @Override
+    public boolean uses(FontBackend backend) {
+        if (titleFontRenderer != null && titleFontRenderer.uses(backend)) {
+            return true;
+        }
+        if (enchantmentFontRenderer != null && enchantmentFontRenderer.uses(backend)) {
+            return true;
+        }
+        return false;
     }
 
-    public void onEnchantmentFontChange(EntityTitleConfig config) {
-        TickEndExecutor.instance.execute(() -> {
-            if (enchFontRenderer != null) {
-                enchFontRenderer.dispose();
-            }
-            enchFontRenderer = new GlyphFontRenderer(new Font("Consolas", Font.PLAIN, config.enchFontSize), config.enchAntiAliasing);
-        });
+    public void onTitleFontChange() {
+        TickEndExecutor.instance.execute(() -> titleFontChanged = true);
+    }
+
+    public void onEnchantmentFontChange() {
+        TickEndExecutor.instance.execute(() -> enchantmentFontChanged = true);
     }
 
     private void onRenderWorld(RenderWorldLastEvent event) {
@@ -168,15 +176,39 @@ public class EntityTitleController {
     }
 
     public void onRenderGui(RenderGuiEvent event) {
-        if (fontRenderer == null) {
-            return;
-        }
-
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
 
-        GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        EntityTitleConfig config = ConfigStore.instance.getConfig().entityTitleConfig;
+
+        if (titleFontChanged) {
+            titleFontBackendFuture = FontLibrary.instance.createBackend(config.titleFont.asFontParameters());
+            // titleFontRenderer = null; // more smooth transition, but shows prev font for few frames?
+            titleFontChanged = false;
+        }
+
+        if (enchantmentFontChanged) {
+            enchantmentFontBackendFuture = FontLibrary.instance.createBackend(config.enchantmentFont.asFontParameters());
+            // enchantmentFontRenderer = null; // more smooth transition, but shows prev font for few frames?
+            enchantmentFontChanged = false;
+        }
+
+        if (titleFontBackendFuture != null) {
+            if (titleFontBackendFuture.isDone()) {
+                titleFontRenderer = titleFontBackendFuture.join().createFontRenderer(config.titleFont.asFontRenderDetails());
+                titleFontBackendFuture = null;
+            }
+        }
+        if (enchantmentFontBackendFuture != null) {
+            if (enchantmentFontBackendFuture.isDone()) {
+                enchantmentFontRenderer = enchantmentFontBackendFuture.join().createFontRenderer(config.enchantmentFont.asFontRenderDetails());
+                enchantmentFontBackendFuture = null;
+            }
+        }
+        if (titleFontRenderer == null) {
+            return;
+        }
 
         int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
         int scrWidth = mc.getWindow().getWidth();
@@ -187,11 +219,10 @@ public class EntityTitleController {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
+        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+
         List<ItemStack> items = new ArrayList<>();
         List<List<EnchantmentEntry>> enchantments = new ArrayList<>();
-        List<TextBounds[]> enchantmentBounds = new ArrayList<>();
-        List<Integer> enchantmentWidths = new ArrayList<>();
-        List<Integer> enchantmentTextWidths = new ArrayList<>();
 
         for (EntityEntry entry : entities) {
             Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
@@ -203,30 +234,17 @@ public class EntityTitleController {
             int xc = Math.round(v2.x / v2.w * halfScrWidth);
             int yc = Math.round(-v2.y / v2.w * halfScrHeight);
 
-            StylizedText text = getEntityText(entry);
+            StylizedText text = getEntityText(config, entry);
+            FlexColumnElement flex = new FlexColumnElement().setGap(context.getScale());
+
             if (text != null) {
-                TextBounds bounds = fontRenderer.getTextSize(text);
-                if (bounds.width() > 0) {
-                    int width = bounds.width();
-                    int height = bounds.height();
-
-                    int xp = xc - width / 2;
-                    yc -= height;
-                    int yp = yc;
-
-                    int rx1 = xp - scale;
-                    int rx2 = xp + width + scale;
-                    int ry1 = yp + (bounds.top() - scale);
-                    int ry2 = yp + height - (bounds.bottom() - scale);
-                    int width2 = rx2 - rx1;
-                    int height2 = ry2 - ry1;
-
-                    MainFrameBuffer.enter();
-                    Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
-                    fontRenderer.drawText(matrix, text, xp, yp);
-
-                    MainFrameBuffer.exit();
-                }
+                flex.append(
+                        new DivisionElement()
+                                .setMargin(context.getScale())
+                                .setBackgroundColor(Color.BLACK.getRGB() & 0x40000000)
+                                .setContent(
+                                        new TextElement(titleFontRenderer, text)
+                                                .setCompactHeight(true)));
             }
 
             if (entry.showOwner) {
@@ -234,138 +252,50 @@ public class EntityTitleController {
                 if (owner != null) {
                     Optional<String> nameOpt = usernameCache.getUnchecked(owner);
                     if (nameOpt.isPresent()) {
-                        String ownerText = "Owner: " + nameOpt.get();
-                        TextBounds bounds = fontRenderer.getTextSize(ownerText);
-                        int width = bounds.width();
-                        int height = bounds.height();
-
-                        int xp = xc - width / 2;
-                        yc -= height;
-                        int yp = yc;
-
-                        int rx1 = xp - scale;
-                        int rx2 = xp + width + scale;
-                        int ry1 = yp + (bounds.top() - scale);
-                        int ry2 = yp + height - (bounds.bottom() - scale);
-                        int width2 = rx2 - rx1;
-                        int height2 = ry2 - ry1;
-
-                        MainFrameBuffer.enter();
-                        Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
-                        fontRenderer.drawText(matrix, ownerText, xp, yp, 0xFFFFFFFF);
-                        MainFrameBuffer.exit();
+                        flex.insertAt(0, new DivisionElement()
+                                .setMargin(context.getScale())
+                                .setBackgroundColor(Color.BLACK.getRGB() & 0x40000000)
+                                .setContent(
+                                        new TextElement(titleFontRenderer, StylizedText.of("Owner: " + nameOpt.get()))
+                                                .setCompactHeight(true)));
                     }
                 }
             }
 
-            if (entry.showEquippedItems && enchFontRenderer != null && entry.entity instanceof LivingEntity livingEntity) {
-                ItemStack mainHand = livingEntity.getItemBySlot(EquipmentSlot.MAINHAND);
-                ItemStack head = livingEntity.getItemBySlot(EquipmentSlot.HEAD);
-                ItemStack chest = livingEntity.getItemBySlot(EquipmentSlot.CHEST);
-                ItemStack legs = livingEntity.getItemBySlot(EquipmentSlot.LEGS);
-                ItemStack feet = livingEntity.getItemBySlot(EquipmentSlot.FEET);
-                ItemStack offhand = livingEntity.getItemBySlot(EquipmentSlot.OFFHAND);
-
-                items.clear();
-                if (!mainHand.isEmpty()) {
-                    items.add(mainHand);
-                }
-                if (!head.isEmpty()) {
-                    items.add(head);
-                }
-                if (!chest.isEmpty()) {
-                    items.add(chest);
-                }
-                if (!legs.isEmpty()) {
-                    items.add(legs);
-                }
-                if (!feet.isEmpty()) {
-                    items.add(feet);
-                }
-                if (!offhand.isEmpty()) {
-                    items.add(offhand);
-                }
+            if (entry.showEquippedItems && enchantmentFontRenderer != null && entry.entity instanceof LivingEntity livingEntity) {
+                collectEquipment(livingEntity, items);
 
                 if (!items.isEmpty()) {
+                    int maxEnchantments = 0;
                     enchantments.clear();
-                    enchantmentWidths.clear();
-                    enchantmentTextWidths.clear();
-                    enchantmentBounds.clear();
                     for (ItemStack item : items) {
                         List<EnchantmentEntry> entries = getEnchantments(item);
                         enchantments.add(entries);
-
-                        TextBounds[] bounds = new TextBounds[entries.size()];
-                        int maxWidth = 16 * scale;
-                        int maxTextWidth = 0;
-                        for (int i = 0; i < bounds.length; i++) {
-                            EnchantmentEntry ee = entries.get(i);
-                            bounds[i] = enchFontRenderer.getTextSize(ee.text + ee.level);
-                            int width = bounds[i].width();
-                            if (width > maxWidth) {
-                                maxWidth = width;
-                            }
-                            if (width > maxTextWidth) {
-                                maxTextWidth = width;
-                            }
+                        if (entries.size() > maxEnchantments) {
+                            maxEnchantments = entries.size();
                         }
-
-                        enchantmentWidths.add(maxWidth);
-                        enchantmentTextWidths.add(maxTextWidth);
-                        enchantmentBounds.add(bounds);
                     }
 
-                    int width = 0;
-                    for (int ew : enchantmentWidths) {
-                        width += ew;
-                    }
-                    int height = 16 * scale;
-
-                    int xp = xc - width / 2 + halfScrWidth;
-                    yc -= height;
-                    int yp = yc + halfScrHeight;
-
-                    int xpl = xp;
-
-                    GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+                    TableElement table = new TableElement(1 + maxEnchantments, items.size());
+                    //table.setBorderWidth(1);
                     for (int i = 0; i < items.size(); i++) {
-                        int xCenterOffset = enchantmentTextWidths.get(i) > 16 * scale ? (enchantmentTextWidths.get(i) - 16 * scale) / 2 : 0;
-                        event.graphics().pose().pushPose();
-                        event.graphics().pose().setIdentity();
-                        event.graphics().pose().translate(1d * (xpl + xCenterOffset) / scale, 1d * yp / scale, 0);
-                        event.getGuiGraphics().renderItem(livingEntity, items.get(i), 0, 0, 0);
-                        event.getGuiGraphics().renderItemDecorations(mc.font, items.get(i), 0, 0);
-                        event.graphics().pose().popPose();
-                        xpl += enchantmentWidths.get(i);
-                    }
-                    GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
-
-                    xpl = xp - halfScrWidth;
-                    MainFrameBuffer.enter();
-                    for (int i = 0; i < items.size(); i++) {
-                        List<EnchantmentEntry> entries = enchantments.get(i);
-                        TextBounds[] bounds = enchantmentBounds.get(i);
-                        int ypl = yp - halfScrHeight;
-                        int xCenterOffset = enchantmentTextWidths.get(i) < 16 * scale ? (16 * scale - enchantmentTextWidths.get(i)) / 2 : 0;
-                        for (int j = entries.size() - 1; j >= 0; j--) {
-                            EnchantmentEntry e = entries.get(j);
-                            ypl -= bounds[j].height();
-
-                            StylizedText enchantmentText = StylizedText.of(e.text, Style.EMPTY.withColor(e.color.getRGB()));
-                            enchantmentText.append(Integer.toString(e.level), Style.EMPTY.withColor(0xFF00FFFF));
-                            enchFontRenderer.drawText(matrix, enchantmentText, xpl + xCenterOffset, ypl);
+                        List<EnchantmentEntry> itemEnchantments = enchantments.get(i);
+                        for (int j = 0; j < itemEnchantments.size(); j++) {
+                            table.setContent(maxEnchantments - itemEnchantments.size() + j, i,
+                                    new TextElement(enchantmentFontRenderer, itemEnchantments.get(j).getText()));
                         }
-                        xpl += enchantmentWidths.get(i);
+                        table.setContent(maxEnchantments, i, new ItemStackElement(livingEntity, items.get(i)));
                     }
-                    MainFrameBuffer.exit();
+
+                    flex.insertAt(0, table);
                 }
             }
-        }
 
-        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+            context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
+        }
     }
 
-    private StylizedText getEntityText(EntityEntry entry) {
+    private StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
         if (entry.title != null) {
             return entry.title;
         }
@@ -388,20 +318,21 @@ public class EntityTitleController {
                 buffer.clear();
                 builder.delete(0, builder.length());
                 FormattedCharSequence sequence = component.getVisualOrderText();
-                StyleHolder last = new StyleHolder();
+                ColorHolder last = new ColorHolder();
                 sequence.accept((unknown, style, character) -> {
-                    if (last.value != style) {
+                    int color = style.getColor() != null ? (style.getColor().getValue() | 0xFF000000) : Color.WHITE.getRGB();
+                    if (last.color != color) {
                         if (!builder.isEmpty()) {
-                            buffer.add(new StylizedTextChunk(builder.toString(), last.value));
+                            buffer.add(new StylizedTextChunk(builder.toString(), last.color));
                             builder.delete(0, builder.length());
                         }
                     }
-                    last.value = style;
+                    last.color = color;
                     builder.append((char) character);
                     return true;
                 });
                 if (!builder.isEmpty()) {
-                    buffer.add(new StylizedTextChunk(builder.toString(), last.value));
+                    buffer.add(new StylizedTextChunk(builder.toString(), last.color));
                 }
                 if (!buffer.isEmpty()) {
                     text = new StylizedText();
@@ -413,14 +344,24 @@ public class EntityTitleController {
         if (entry.showHp && entry.entity instanceof LivingEntity living) {
             if (text == null) {
                 text = new StylizedText();
-                text.append("♥", Style.EMPTY.withColor(ChatFormatting.RED));
+                text.append(config.hpPrefix, 0xFFFF5555);
             } else {
-                text.append(" ♥", Style.EMPTY.withColor(ChatFormatting.RED));
+                text.append(" " + config.hpPrefix, 0xFFFF5555);
             }
-            text.append(String.valueOf((int)living.getHealth()), Style.EMPTY);
+            text.append(String.valueOf((int)living.getHealth()), Color.WHITE.getRGB());
         }
 
         return text;
+    }
+
+    private void collectEquipment(LivingEntity entity, List<ItemStack> items) {
+        items.clear();
+        for (EquipmentSlot slot : equipmentOrder) {
+            ItemStack itemStack = entity.getItemBySlot(slot);
+            if (!itemStack.isEmpty()) {
+                items.add(itemStack);
+            }
+        }
     }
 
     private List<EnchantmentEntry> getEnchantments(ItemStack itemStack) {
@@ -539,6 +480,12 @@ public class EntityTitleController {
             }
             this.level = level;
         }
+
+        public StylizedText getText() {
+            StylizedText stylizedText = StylizedText.of(text, color.getRGB());
+            stylizedText.append(Integer.toString(level), 0xFF00FFFF);
+            return stylizedText;
+        }
     }
 
     private record EnchantmentDisplayEntry(String text, Color color, int priority) {
@@ -554,7 +501,7 @@ public class EntityTitleController {
         }
     }
 
-    private static class StyleHolder {
-        public Style value;
+    private static class ColorHolder {
+        public int color;
     }
 }

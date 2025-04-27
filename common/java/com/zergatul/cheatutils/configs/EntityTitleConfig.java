@@ -1,22 +1,27 @@
 package com.zergatul.cheatutils.configs;
 
-import com.zergatul.cheatutils.utils.MathUtils;
-
 public class EntityTitleConfig implements ValidatableConfig {
 
-    public int fontSize;
-    public boolean antiAliasing;
-    public int enchFontSize;
-    public boolean enchAntiAliasing;
+    public String hpPrefix;
+    public FontConfig titleFont;
+    public FontConfig enchantmentFont;
 
     public EntityTitleConfig() {
-        fontSize = 12;
-        enchFontSize = 12;
+        hpPrefix = "\u2665";
+        titleFont = new FontConfig();
+        enchantmentFont = new FontConfig();
     }
 
     @Override
     public void validate() {
-        fontSize = MathUtils.clamp(fontSize, 8, 100);
-        enchFontSize = MathUtils.clamp(enchFontSize, 8, 100);
+        if (titleFont == null) {
+            titleFont = new FontConfig();
+        }
+        titleFont.validate();
+
+        if (enchantmentFont == null) {
+            enchantmentFont = new FontConfig();
+        }
+        enchantmentFont.validate();
     }
 }

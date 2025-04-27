@@ -1,17 +1,10 @@
 package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
-import com.zergatul.cheatutils.controllers.*;
+import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.Modules;
-import com.zergatul.cheatutils.modules.automation.*;
-import com.zergatul.cheatutils.modules.esp.*;
-import com.zergatul.cheatutils.modules.hacks.*;
-import com.zergatul.cheatutils.modules.scripting.*;
 import com.zergatul.cheatutils.modules.utilities.*;
-import com.zergatul.cheatutils.modules.visuals.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -47,6 +40,7 @@ public class ModMain {
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
+        SystemFonts.initAsync();
         Profiles.instance.init();
         ConfigHttpServer.instance.start();
     }

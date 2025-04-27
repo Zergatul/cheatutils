@@ -6,12 +6,14 @@ import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
+import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.HitboxSize;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.world.level.block.state.BlockState;
@@ -143,9 +145,10 @@ public class ConfigStore {
         config.blocks.refreshMap();
 
         ConfigHttpServer.instance.onConfigUpdated();
-        EntityTitleController.instance.onFontChange(config.entityTitleConfig);
-        EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
-        WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
+        EntityTitle.instance.onTitleFontChange();
+        EntityTitle.instance.onEnchantmentFontChange();
+        WorldMarkers.instance.onFontChange();
+        StatusOverlay.instance.onFontChange();
 
         ScriptsController.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {

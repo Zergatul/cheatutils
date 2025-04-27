@@ -9,14 +9,19 @@
         </div>
 
         <div class="actions">
-            <button class="w8" @click="save()" v-if="config">Save</button>
+            <button class="w8" @click="save()">Save</button>
             <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
+            <button class="w8" @click="showFontConfig()" v-if="!isFontMode()">Change Font</button>
+            <button class="w8" @click="backToScript()" v-if="isFontMode()">Back to Script</button>
         </div>
 
-        <script-editor v-model="config.code" :type="'OVERLAY'" v-show="!showRefs"></script-editor>
+        <script-editor v-model="config.code" :type="'OVERLAY'" v-show="isScriptMode()"></script-editor>
 
-        <ul class="refs" v-show="showRefs">
+        <ul class="refs" v-show="isRefsMode()">
             <li v-for="item in refs" v-html="item"></li>
         </ul>
+
+        <font-picker v-model="config.font" @change="update()" v-show="isFontMode()">
+        </font-picker>
     </div>
 </div>

@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.render;
 
 import com.zergatul.cheatutils.render.gl.Position2dColorProgram;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -14,6 +15,10 @@ public class Color2dRenderer {
     public void begin() {
         createGlObjectsIfRequired();
         program.buffer.clear();
+    }
+
+    public void fill(FloatList list) {
+        program.buffer.add(list);
     }
 
     public void rect(float x, float y, float width, float height, float red, float green, float blue, float alpha) {

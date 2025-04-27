@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
@@ -32,6 +33,7 @@ public class ModMain {
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
+        SystemFonts.initAsync();
         Profiles.instance.init();
         ConfigHttpServer.instance.start();
     }

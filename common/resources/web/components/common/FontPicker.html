@@ -1,0 +1,103 @@
+<div v-if="fonts">
+    <table>
+        <tr>
+            <td>
+                <span class="field-description">Font Renderer:</span>
+            </td>
+            <td>
+                <select v-model="modelValue.renderer" @change="update()">
+                    <option value="AWT">AWT (Java Abstract Window Toolkit)</option>
+                    <option value="STB">STB (From LWJGL)</option>
+                    <option value="VANILLA">Vanilla</option>
+                </select>
+            </td>
+        </tr>
+        <tr v-if="!isVanilla">
+            <td>
+                <span class="field-description">Font Name:</span>
+            </td>
+            <td>
+                <select v-model="modelValue.face" @change="update()">
+                    <option v-for="font in fonts" :value="font.name">{{ font.name }}</option>
+                </select>
+            </td>
+        </tr>
+        <tr v-if="!isVanilla">
+            <td>
+                <span class="field-description">Font Size:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="8" max="100" v-model="modelValue.size" @change="update()">
+            </td>
+        </tr>
+        <tr v-if="isVanilla">
+            <td>
+                <span class="field-description">Font Scale:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="0" max="50" v-model="modelValue.scale" @change="update()">
+            </td>
+            <td>
+                <span class="field-description">Set to 0 to use your current GUI scaling</span>
+            </td>
+        </tr>
+        <tr v-if="isAWT">
+            <td>
+                <span class="field-description">Anti-Aliasing:</span>
+            </td>
+            <td>
+                <switch-checkbox v-model="modelValue.antiAliasing" @change="update()"></switch-checkbox>
+            </td>
+        </tr>
+        <tr v-if="!isVanilla">
+            <td>
+                <span class="field-description">Letter Spacing:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="-10" max="10" step="0.25" v-model="modelValue.letterSpacing" @change="update()">
+            </td>
+        </tr>
+        <tr v-if="!isVanilla">
+            <td>
+                <span class="field-description">Line Spacing:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="-50" max="50" step="1" v-model="modelValue.lineSpacing" @change="update()">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="field-description">Drop Shadow:</span>
+            </td>
+            <td>
+                <switch-checkbox v-model="modelValue.dropShadow" @change="update()"></switch-checkbox>
+            </td>
+        </tr>
+        <tr v-if="!isVanilla && modelValue.dropShadow">
+            <td>
+                <span class="field-description">Shadow Offset X:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="-50" max="50" step="1" v-model="modelValue.shadowOffsetX" @change="update()">
+            </td>
+        </tr>
+        <tr v-if="!isVanilla && modelValue.dropShadow">
+            <td>
+                <span class="field-description">Shadow Offset Y:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="-50" max="50" step="1" v-model="modelValue.shadowOffsetY" @change="update()">
+            </td>
+        </tr>
+    </table>
+    <div v-if="!isVanilla">
+        <span class="hint">Selected: {{ fontDescription }}</span>
+    </div>
+    <div v-if="!isVanilla">
+        <span class="hint">
+            You can create directory "fonts" in your Minecraft directory,
+            add .otf/.ttf/.ttc font files and they should appear in the font selection list
+            once you restart the game.
+        </span>
+    </div>
+</div>
