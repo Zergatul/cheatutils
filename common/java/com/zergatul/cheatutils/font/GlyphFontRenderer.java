@@ -3,10 +3,9 @@ package com.zergatul.cheatutils.font;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.TextureColor2dRenderer;
 import com.zergatul.cheatutils.render.gl.AtlasTexture;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.joml.Matrix4f;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class GlyphFontRenderer {
 
@@ -14,7 +13,7 @@ public class GlyphFontRenderer {
 
     private final String name;
     private final int size;
-    private final Map<Character, Glyph> glyphs;
+    private final Int2ObjectMap<Glyph> glyphs;
     private final StringBuilder builder;
 
     private Font font;
@@ -23,7 +22,7 @@ public class GlyphFontRenderer {
         this.name = name;
         this.size = size;
         this.texture = new AtlasTexture();
-        this.glyphs = new HashMap<>();
+        this.glyphs = new Int2ObjectOpenHashMap<>();
         this.builder = new StringBuilder();
     }
 
@@ -96,6 +95,13 @@ public class GlyphFontRenderer {
         renderer.begin();
         font.render(renderer, glyphs, string, x, y, r, g, b, 1);
         renderer.end(matrix, texture.getId());
+    }
+
+    public int getLineHeight() {
+        if (!ensureFontLoaded()) {
+            return 0;
+        }
+        return font.getLineHeight(size);
     }
 
     public void dispose() {

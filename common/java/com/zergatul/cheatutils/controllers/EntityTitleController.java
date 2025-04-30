@@ -21,6 +21,7 @@ import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.gl.GlStateTracker;
+import com.zergatul.cheatutils.ui.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -212,13 +213,13 @@ public class EntityTitleController {
                     int height = bounds.getHeight();
 
                     int xp = xc - width / 2;
-                    yc -= height;
+                    yc -= height + scale; // move a bit upper
                     int yp = yc;
 
                     int rx1 = xp - scale;
                     int rx2 = xp + width + scale;
-                    int ry1 = yp + (/*bounds.getY0()*/ - scale);
-                    int ry2 = yp + height - (/*bounds.getY1()*/ - scale);
+                    int ry1 = yp - scale;
+                    int ry2 = yp + height + scale;
                     int width2 = rx2 - rx1;
                     int height2 = ry2 - ry1;
 
@@ -227,67 +228,98 @@ public class EntityTitleController {
                     titleFontRenderer.drawText(matrix, text, xp, yp - bounds.getY0());
 
                     MainFrameBuffer.exit();
+
+                    yc -= scale;
                 }
             }
 
-//            if (entry.showOwner) {
-//                UUID owner = getOwner(entry.entity);
-//                if (owner != null) {
-//                    Optional<String> nameOpt = usernameCache.getUnchecked(owner);
-//                    if (nameOpt.isPresent()) {
-//                        String ownerText = "Owner: " + nameOpt.get();
-//                        TextBounds bounds = titleFontRenderer.getTextSize(ownerText);
-//                        int width = bounds.width();
-//                        int height = bounds.height();
-//
-//                        int xp = xc - width / 2;
-//                        yc -= height;
-//                        int yp = yc;
-//
-//                        int rx1 = xp - scale;
-//                        int rx2 = xp + width + scale;
-//                        int ry1 = yp + (bounds.top() - scale);
-//                        int ry2 = yp + height - (bounds.bottom() - scale);
-//                        int width2 = rx2 - rx1;
-//                        int height2 = ry2 - ry1;
-//
-//                        MainFrameBuffer.enter();
-//                        Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
-//                        titleFontRenderer.drawText(matrix, ownerText, xp, yp, 0xFFFFFFFF);
-//                        MainFrameBuffer.exit();
-//                    }
-//                }
-//            }
-//
-//            if (entry.showEquippedItems && enchantmentFontRenderer != null && entry.entity instanceof LivingEntity livingEntity) {
-//                ItemStack mainHand = livingEntity.getItemBySlot(EquipmentSlot.MAINHAND);
-//                ItemStack head = livingEntity.getItemBySlot(EquipmentSlot.HEAD);
-//                ItemStack chest = livingEntity.getItemBySlot(EquipmentSlot.CHEST);
-//                ItemStack legs = livingEntity.getItemBySlot(EquipmentSlot.LEGS);
-//                ItemStack feet = livingEntity.getItemBySlot(EquipmentSlot.FEET);
-//                ItemStack offhand = livingEntity.getItemBySlot(EquipmentSlot.OFFHAND);
-//
-//                items.clear();
-//                if (!mainHand.isEmpty()) {
-//                    items.add(mainHand);
-//                }
-//                if (!head.isEmpty()) {
-//                    items.add(head);
-//                }
-//                if (!chest.isEmpty()) {
-//                    items.add(chest);
-//                }
-//                if (!legs.isEmpty()) {
-//                    items.add(legs);
-//                }
-//                if (!feet.isEmpty()) {
-//                    items.add(feet);
-//                }
-//                if (!offhand.isEmpty()) {
-//                    items.add(offhand);
-//                }
-//
-//                if (!items.isEmpty()) {
+            if (entry.showOwner) {
+                UUID owner = getOwner(entry.entity);
+                if (owner != null) {
+                    Optional<String> nameOpt = usernameCache.getUnchecked(owner);
+                    if (nameOpt.isPresent()) {
+                        String ownerText = "Owner: " + nameOpt.get();
+                        TextBounds bounds = titleFontRenderer.getTextSize(ownerText);
+                        int width = bounds.getWidth();
+                        int height = bounds.getHeight();
+
+                        int xp = xc - width / 2;
+                        yc -= height + scale;
+                        int yp = yc;
+
+                        int rx1 = xp - scale;
+                        int rx2 = xp + width + scale;
+                        int ry1 = yp - scale;
+                        int ry2 = yp + height + scale;
+                        int width2 = rx2 - rx1;
+                        int height2 = ry2 - ry1;
+
+                        MainFrameBuffer.enter();
+                        Primitives.fill(matrix, rx1, ry1, width2, height2, Color.BLACK.getRGB() & 0x40000000);
+                        titleFontRenderer.drawText(matrix, ownerText, xp, yp - bounds.getY0(), 0xFFFFFFFF);
+                        MainFrameBuffer.exit();
+
+                        yc -= scale;
+                    }
+                }
+            }
+
+            if (entry.showEquippedItems && enchantmentFontRenderer != null && entry.entity instanceof LivingEntity livingEntity) {
+                ItemStack mainHand = livingEntity.getItemBySlot(EquipmentSlot.MAINHAND);
+                ItemStack head = livingEntity.getItemBySlot(EquipmentSlot.HEAD);
+                ItemStack chest = livingEntity.getItemBySlot(EquipmentSlot.CHEST);
+                ItemStack legs = livingEntity.getItemBySlot(EquipmentSlot.LEGS);
+                ItemStack feet = livingEntity.getItemBySlot(EquipmentSlot.FEET);
+                ItemStack offhand = livingEntity.getItemBySlot(EquipmentSlot.OFFHAND);
+
+                items.clear();
+                if (!mainHand.isEmpty()) {
+                    items.add(mainHand);
+                }
+                if (!head.isEmpty()) {
+                    items.add(head);
+                }
+                if (!chest.isEmpty()) {
+                    items.add(chest);
+                }
+                if (!legs.isEmpty()) {
+                    items.add(legs);
+                }
+                if (!feet.isEmpty()) {
+                    items.add(feet);
+                }
+                if (!offhand.isEmpty()) {
+                    items.add(offhand);
+                }
+
+                if (!items.isEmpty()) {
+                    {
+                        int maxEnchantments = 0;
+                        enchantments.clear();
+                        for (ItemStack item : items) {
+                            List<EnchantmentEntry> entries = getEnchantments(item);
+                            enchantments.add(entries);
+                            if (entries.size() > maxEnchantments) {
+                                maxEnchantments = entries.size();
+                            }
+                        }
+
+                        TableElement table = new TableElement(1 + maxEnchantments, items.size());
+                        //table.setBorderWidth(1);
+                        for (int i = 0; i < items.size(); i++) {
+                            List<EnchantmentEntry> itemEnchantments = enchantments.get(i);
+                            for (int j = 0; j < itemEnchantments.size(); j++) {
+                                EnchantmentEntry enchantmentEntry = itemEnchantments.get(j);
+                                StylizedText enchantmentText = StylizedText.of(enchantmentEntry.text, Style.EMPTY.withColor(enchantmentEntry.color.getRGB()));
+                                enchantmentText.append(Integer.toString(enchantmentEntry.level), Style.EMPTY.withColor(0xFF00FFFF));
+                                table.setContent(maxEnchantments - itemEnchantments.size() + j, i, new TextElement(enchantmentFontRenderer, enchantmentText));
+                            }
+                            table.setContent(maxEnchantments, i, new ItemStackElement(livingEntity, items.get(i)));
+                        }
+                        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+                        context.render(table, xc, yc, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
+                    }
+
 //                    enchantments.clear();
 //                    enchantmentWidths.clear();
 //                    enchantmentTextWidths.clear();
@@ -302,7 +334,7 @@ public class EntityTitleController {
 //                        for (int i = 0; i < bounds.length; i++) {
 //                            EnchantmentEntry ee = entries.get(i);
 //                            bounds[i] = enchantmentFontRenderer.getTextSize(ee.text + ee.level);
-//                            int width = bounds[i].width();
+//                            int width = bounds[i].getWidth();
 //                            if (width > maxWidth) {
 //                                maxWidth = width;
 //                            }
@@ -345,22 +377,24 @@ public class EntityTitleController {
 //                    MainFrameBuffer.enter();
 //                    for (int i = 0; i < items.size(); i++) {
 //                        List<EnchantmentEntry> entries = enchantments.get(i);
-//                        TextBounds[] bounds = enchantmentBounds.get(i);
-//                        int ypl = yp - halfScrHeight;
-//                        int xCenterOffset = enchantmentTextWidths.get(i) < 16 * scale ? (16 * scale - enchantmentTextWidths.get(i)) / 2 : 0;
-//                        for (int j = entries.size() - 1; j >= 0; j--) {
-//                            EnchantmentEntry e = entries.get(j);
-//                            ypl -= bounds[j].height();
-//
-//                            StylizedText enchantmentText = StylizedText.of(e.text, Style.EMPTY.withColor(e.color.getRGB()));
-//                            enchantmentText.append(Integer.toString(e.level), Style.EMPTY.withColor(0xFF00FFFF));
-//                            enchantmentFontRenderer.drawText(matrix, enchantmentText, xpl + xCenterOffset, ypl);
+//                        if (!entries.isEmpty()) {
+//                            TextBounds[] bounds = enchantmentBounds.get(i);
+//                            int ypl = yp - halfScrHeight;
+//                            ypl -= bounds[bounds.length - 1].getHeight();
+//                            for (int j = entries.size() - 1; j >= 0; j--) {
+//                                EnchantmentEntry e = entries.get(j);
+//                                StylizedText enchantmentText = StylizedText.of(e.text, Style.EMPTY.withColor(e.color.getRGB()));
+//                                enchantmentText.append(Integer.toString(e.level), Style.EMPTY.withColor(0xFF00FFFF));
+//                                int xCenterOffset = (16 * scale - bounds[j].getWidth()) / 2;
+//                                enchantmentFontRenderer.drawText(matrix, enchantmentText, xpl + xCenterOffset, ypl - bounds[j].getY0());
+//                                ypl -= enchantmentFontRenderer.getLineHeight();
+//                            }
 //                        }
 //                        xpl += enchantmentWidths.get(i);
 //                    }
 //                    MainFrameBuffer.exit();
-//                }
-//            }
+                }
+            }
         }
 
         GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);

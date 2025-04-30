@@ -3,13 +3,13 @@ package com.zergatul.cheatutils.font;
 import com.zergatul.cheatutils.render.TextureColor2dRenderer;
 import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import com.zergatul.cheatutils.render.gl.images.ImageSource;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Map;
 
 public class StbFont extends Font {
 
@@ -71,7 +71,7 @@ public class StbFont extends Font {
     }
 
     @Override
-    public TextBounds getSize(Map<Character, Glyph> glyphs, String text) {
+    public TextBounds getSize(Int2ObjectMap<Glyph> glyphs, String text) {
         int width = 0;
         int y0 = 0;
         int y1 = 0;
@@ -79,7 +79,12 @@ public class StbFont extends Font {
             char ch = text.charAt(i);
             Glyph glyph = glyphs.get(ch);
             width += glyph.getLeftSideBearing();
-            width += glyph.getAdvanceWidth();
+            // for last character we don't use advance width, and just use glyph width
+            if (i < text.length() - 1) {
+                width += glyph.getAdvanceWidth();
+            } else {
+                width += glyph.getX0() + glyph.getWidth();
+            }
             if (glyph.getY0() < y0) {
                 y0 = glyph.getY0();
             }
@@ -91,7 +96,7 @@ public class StbFont extends Font {
     }
 
     @Override
-    public int render(TextureColor2dRenderer renderer, Map<Character, Glyph> glyphs, String text, int x, int y, float r, float g, float b, float a) {
+    public int render(TextureColor2dRenderer renderer, Int2ObjectMap<Glyph> glyphs, String text, int x, int y, float r, float g, float b, float a) {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             Glyph glyph = glyphs.get(ch);
@@ -111,11 +116,12 @@ public class StbFont extends Font {
         return x;
     }
 
-    private float getScaleForPixelHeight(float pixels) {
-        return pixels / (ascent - descent);
+    @Override
+    public int getLineHeight(float size) {
+        return Math.round(getScaleForPixelHeight(size) * (ascent - descent + lineGap));
     }
 
-    private float getLineHeight(float pixels) {
-        return ascent - descent + lineGap;
+    private float getScaleForPixelHeight(float pixels) {
+        return pixels / (ascent - descent);
     }
 }

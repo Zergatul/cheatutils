@@ -22,6 +22,7 @@ public class MainFrameBuffer {
     }
 
     public static void exit() {
+        // TODO: the same frame buffer restored???
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, lastFrameBufferObject);
     }
 }
