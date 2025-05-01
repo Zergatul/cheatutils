@@ -1,7 +1,5 @@
 package com.zergatul.cheatutils.ui;
 
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -41,17 +39,6 @@ public class ItemStackElement implements Element {
 
     @Override
     public void render(RenderingContext context) {
-        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
-
-        GuiGraphics graphics = context.getGraphics();
-        int scale = context.getScale();
-        graphics.pose().pushPose();
-        graphics.pose().setIdentity();
-        graphics.pose().translate(1d * (x + context.getHalfWidth()) / scale, 1d * (y + context.getHalfHeight()) / scale, 0);
-        graphics.renderItem(entity, itemStack, 0, 0, 0);
-        graphics.renderItemDecorations(context.getFont(), itemStack, 0, 0);
-        graphics.pose().popPose();
-
-        GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        context.queueItemStackRender(entity, itemStack, x, y);
     }
 }

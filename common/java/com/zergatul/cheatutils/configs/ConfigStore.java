@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
+import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.HitboxSize;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
@@ -143,8 +144,8 @@ public class ConfigStore {
         config.blocks.refreshMap();
 
         ConfigHttpServer.instance.onConfigUpdated();
-        EntityTitleController.instance.onTitleFontChange(config.entityTitleConfig);
-        EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
+        EntityTitle.instance.onTitleFontChange(config.entityTitleConfig);
+        EntityTitle.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
 
         ScriptsController.instance.clear();

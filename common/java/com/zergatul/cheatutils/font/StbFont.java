@@ -3,6 +3,8 @@ package com.zergatul.cheatutils.font;
 import com.zergatul.cheatutils.render.TextureColor2dRenderer;
 import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import com.zergatul.cheatutils.render.gl.images.ImageSource;
+import com.zergatul.cheatutils.utils.FloatListHelper;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
@@ -109,6 +111,30 @@ public class StbFont extends Font {
                 float width = glyph.getWidth();
                 float height = glyph.getHeight();
                 renderer.rect(x + glyph.getX0(), y + glyph.getY0(), width, height, glyph.getSprite(), r, g, b, a);
+            }
+            x += glyph.getAdvanceWidth();
+        }
+
+        return x;
+    }
+
+    @Override
+    public int render(FloatList buffer, Int2ObjectMap<Glyph> glyphs, String text, int x, int y, float r, float g, float b, float a) {
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            Glyph glyph = glyphs.get(ch);
+            x += glyph.getLeftSideBearing();
+            if (!glyph.isBlank()) {
+                /*if (!isMonospace && i > 0) {
+                    int advance = STBTruetype.stbtt_GetCodepointKernAdvance(info, text.charAt(i - 1), ch);
+                    x += Math.round(advance * scale);
+                }*/
+                float width = glyph.getWidth();
+                float height = glyph.getHeight();
+                FloatListHelper.rect(
+                        buffer,
+                        x + glyph.getX0(), y + glyph.getY0(), width, height,
+                        glyph.getSprite(), r, g, b, a);
             }
             x += glyph.getAdvanceWidth();
         }

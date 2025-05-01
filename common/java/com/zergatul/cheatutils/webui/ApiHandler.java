@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.Schematica;
+import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.utils.MathUtils;
@@ -615,10 +616,10 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().entityTitleConfig = config;
 
                 if (!oldConfig.titleFont.equals(config.titleFont)) {
-                    EntityTitleController.instance.onTitleFontChange(config);
+                    EntityTitle.instance.onTitleFontChange(config);
                 }
                 if (!oldConfig.enchantmentFont.equals(config.enchantmentFont)) {
-                    EntityTitleController.instance.onEnchantmentFontChange(config);
+                    EntityTitle.instance.onEnchantmentFontChange(config);
                 }
             }
         });

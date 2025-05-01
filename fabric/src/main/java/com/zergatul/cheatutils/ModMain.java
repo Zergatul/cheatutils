@@ -59,7 +59,7 @@ public class ModMain implements ClientModInitializer {
         register(EndCityChunks.instance);
         register(AutoBucket.instance);
         register(WorldDownloadController.instance);
-        register(EntityTitleController.instance);
+        register(EntityTitle.instance);
         register(ContainerButtonsController.instance);
         register(TeleportHackController.instance);
         register(WorldMarkersController.instance);

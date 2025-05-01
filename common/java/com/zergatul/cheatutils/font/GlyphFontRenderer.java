@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.font;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.TextureColor2dRenderer;
 import com.zergatul.cheatutils.render.gl.AtlasTexture;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.joml.Matrix4f;
@@ -45,6 +46,30 @@ public class GlyphFontRenderer {
 
         ensureGlyphs(string);
         return font.getSize(glyphs, string);
+    }
+
+    public void drawText(FloatList buffer, StylizedText text, int x, int y) {
+        if (text.length() == 0) {
+            return;
+        }
+
+        if (!ensureFontLoaded()) {
+            return;
+        }
+
+        for (StylizedTextChunk chunk : text.chunks) {
+            ensureGlyphs(chunk.text());
+        }
+
+        for (StylizedTextChunk chunk : text.chunks) {
+            String string = chunk.text();
+            int color = chunk.getColor();
+            float r = (float) (color >> 16 & 0xFF) / 255;
+            float g = (float) (color >> 8 & 0xFF) / 255;
+            float b = (float) (color & 0xFF) / 255;
+
+            x = font.render(buffer, glyphs, string, x, y, r, g, b, 1);
+        }
     }
 
     public void drawText(Matrix4f matrix, StylizedText text, int x, int y) {
@@ -102,6 +127,10 @@ public class GlyphFontRenderer {
             return 0;
         }
         return font.getLineHeight(size);
+    }
+
+    public int getTextureId() {
+        return texture.getId();
     }
 
     public void dispose() {
