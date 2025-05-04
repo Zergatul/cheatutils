@@ -18,5 +18,18 @@
             </legend>
             <FontPicker v-model="config.enchantmentFont" @change="update()"></FontPicker>
         </fieldset>
+
+        <fieldset>
+            <legend>
+                HP prefix
+            </legend>
+            <div>
+                <input type="text" class="w3" v-model="config.hpPrefix" @change="update()">
+            </div>
+            <div class="section-description">
+                String that will be inserted before entity HP (if you enabled showing HP in the titles).
+                Some fonts may not have specific unicode heart symbol, so you can replace it with something else.
+            </div>
+        </fieldset>
     </div>
 </div>

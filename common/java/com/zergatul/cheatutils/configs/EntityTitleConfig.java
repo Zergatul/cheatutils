@@ -2,10 +2,12 @@ package com.zergatul.cheatutils.configs;
 
 public class EntityTitleConfig implements ValidatableConfig {
 
+    public String hpPrefix;
     public FontConfig titleFont;
     public FontConfig enchantmentFont;
 
     public EntityTitleConfig() {
+        hpPrefix = "\u2665";
         titleFont = new FontConfig();
         enchantmentFont = new FontConfig();
     }

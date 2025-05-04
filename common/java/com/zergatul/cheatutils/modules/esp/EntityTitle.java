@@ -51,7 +51,6 @@ public class EntityTitle {
     private final Minecraft mc = Minecraft.getInstance();
     private final ArrayList<StylizedTextChunk> buffer = new ArrayList<>();
     private final StringBuilder builder = new StringBuilder();
-    private final char heart = '♥'; // ♥
     private final List<EquipmentSlot> equipmentOrder = List.of(
             EquipmentSlot.MAINHAND,
             EquipmentSlot.HEAD,
@@ -183,6 +182,8 @@ public class EntityTitle {
             return;
         }
 
+        EntityTitleConfig config = ConfigStore.instance.getConfig().entityTitleConfig;
+
         GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
 
         int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
@@ -209,7 +210,7 @@ public class EntityTitle {
             int xc = Math.round(v2.x / v2.w * halfScrWidth);
             int yc = Math.round(-v2.y / v2.w * halfScrHeight);
 
-            StylizedText text = getEntityText(entry);
+            StylizedText text = getEntityText(config, entry);
             FlexColumnElement flex = new FlexColumnElement().setGap(context.getScale());
 
             if (text != null) {
@@ -272,7 +273,7 @@ public class EntityTitle {
         GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
     }
 
-    private StylizedText getEntityText(EntityEntry entry) {
+    private StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
         if (entry.title != null) {
             return entry.title;
         }
@@ -320,9 +321,9 @@ public class EntityTitle {
         if (entry.showHp && entry.entity instanceof LivingEntity living) {
             if (text == null) {
                 text = new StylizedText();
-                text.append(Character.toString(heart), Style.EMPTY.withColor(ChatFormatting.RED));
+                text.append(config.hpPrefix, Style.EMPTY.withColor(ChatFormatting.RED));
             } else {
-                text.append(" " + heart, Style.EMPTY.withColor(ChatFormatting.RED));
+                text.append(" " + config.hpPrefix, Style.EMPTY.withColor(ChatFormatting.RED));
             }
             text.append(String.valueOf((int)living.getHealth()), Style.EMPTY);
         }
