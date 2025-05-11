@@ -99,4 +99,18 @@ public class EventsApi {
     public void onContainerMenuSlotClick(ContainerClickConsumer consumer) {
         EventsScripting.instance.addOnContainerMenuClick(consumer);
     }
+
+    @MethodDescription("""
+            Triggers when multiplayer server sends update about player list.
+            Event is getting triggered on every player add/update/remove.
+            Example:
+            events.onPlayerInfoUpdate((info, type) => {
+                // type can be either: ADD, UPDATE, REMOVE
+                // ...
+            });
+            """)
+    @ApiVisibility(ApiType.EVENTS)
+    public void onPlayerInfoUpdate(PlayerInfoUpdateConsumer consumer) {
+        EventsScripting.instance.addOnPlayerInfoUpdate(consumer);
+    }
 }

@@ -3,19 +3,15 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
-import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
-import com.zergatul.cheatutils.scripting.types.BoundingBox;
-import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
-import com.zergatul.cheatutils.scripting.types.Position3d;
+import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
-import com.zergatul.cheatutils.utils.JavaRandom;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -25,12 +21,7 @@ import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.StringTagVisitor;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.progress.ChunkProgressListener;
-import net.minecraft.world.RandomSequences;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
@@ -38,22 +29,14 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.phys.AABB;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -120,6 +103,14 @@ public class GameApi {
             return false;
         }
         return mc.level.isThundering();
+    }
+
+    public PlayerInfoWrapper[] getOnlinePlayers() {
+        ClientPacketListener listener = mc.getConnection();
+        if (listener == null) {
+            return new PlayerInfoWrapper[0];
+        }
+        return listener.getOnlinePlayers().stream().map(PlayerInfoWrapper::new).toArray(PlayerInfoWrapper[]::new);
     }
 
     public static class DimensionApi {

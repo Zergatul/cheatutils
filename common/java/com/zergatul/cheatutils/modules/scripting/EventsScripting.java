@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.*;
 import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
+import com.zergatul.cheatutils.scripting.types.PlayerInfoWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 
@@ -26,6 +27,7 @@ public class EventsScripting implements Module {
     private final List<ChatMessageConsumer> onChatMessage = new ArrayList<>();
     private final List<ServerAddressConsumer> onJoinServer = new ArrayList<>();
     private final List<ContainerClickConsumer> onContainerMenuClick = new ArrayList<>();
+    private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new ArrayList<>();
 
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
@@ -89,6 +91,14 @@ public class EventsScripting implements Module {
                 }
             }
         });
+
+        Events.PlayerInfoUpdated.add(event -> {
+            if (canTrigger()) {
+                for (PlayerInfoUpdateConsumer consumer : onPlayerInfoUpdate) {
+                    consumer.accept(new PlayerInfoWrapper(event.info()), event.type().toString());
+                }
+            }
+        });
     }
 
     public void setScript(Runnable runnable) {
@@ -108,6 +118,7 @@ public class EventsScripting implements Module {
             onChatMessage.clear();
             onJoinServer.clear();
             onContainerMenuClick.clear();
+            onPlayerInfoUpdate.clear();
         });
     }
 
@@ -141,6 +152,10 @@ public class EventsScripting implements Module {
 
     public void addOnContainerMenuClick(ContainerClickConsumer consumer) {
         onContainerMenuClick.add(consumer);
+    }
+
+    public void addOnPlayerInfoUpdate(PlayerInfoUpdateConsumer consumer) {
+        onPlayerInfoUpdate.add(consumer);
     }
 
     private boolean canTrigger() {

@@ -1,11 +1,9 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.mojang.brigadier.ParseResults;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheRadiusPacket;

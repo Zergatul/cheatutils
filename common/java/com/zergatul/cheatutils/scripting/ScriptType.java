@@ -90,6 +90,7 @@ public enum ScriptType {
                 .addCustomType(ComponentWrapper.class)
                 .addCustomType(FormattedTextComponent.class)
                 .addCustomType(StyleWrapper.class)
+                .addCustomType(PlayerInfoWrapper.class)
                 .setInterface(funcInterface)
                 .setAsyncReturnType(asyncReturnType)
                 .setVisibilityChecker(new VisibilityChecker() {

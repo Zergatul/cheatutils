@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
@@ -41,63 +42,7 @@ public class ModMain {
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
-        register(BlockEventsProcessor.instance);
-        register(NetworkPacketsController.instance);
-        register(SpeedCounterController.instance);
-        register(BlockFinder.instance);
-        register(PreRenderGuiExecutor.instance);
-
-        register(AutoTotem.instance);
-        register(KillAura.instance);
-        register(AutoEat.instance);
-        register(NoFall.instance);
-        register(Scaffold.instance);
-
-        register(LockInputsController.instance);
-        register(AutoCraft.instance);
-        register(BlockEsp.instance);
-        register(EntityEsp.instance);
-        register(ProjectilePath.instance);
-        register(EndCityChunks.instance);
-        register(AutoBucket.instance);
-        register(WorldDownloadController.instance);
-        register(EntityTitleController.instance);
-        register(ContainerButtonsController.instance);
-        register(TeleportHackController.instance);
-        register(WorldMarkersController.instance);
-        register(TpsCounterController.instance);
-        register(BlockAutomation.instance);
-
-        //register(FakeLag.instance);
-        register(FlyHack.instance);
-        register(FreeCam.instance);
-        register(AutoFish.instance);
-        register(ChunkOverlayController.instance);
-        register(StatusOverlay.instance);
-        register(AutoCriticals.instance);
-        register(LightLevel.instance);
-        register(ElytraFly.instance);
-        register(AdvancedTooltips.instance);
-        register(Zoom.instance);
-        register(ShulkerTooltip.instance);
-        register(ArmorOverlay.instance);
-        register(Fog.instance);
-        register(AutoAttack.instance);
-        register(Exec.instance);
-        register(VillagerRoller.instance);
-        register(AutoHotbar.instance);
-        register(AreaMine.instance);
-        register(ServerPlugins.instance);
-        register(BedrockBreaker.instance);
-        register(RenderUtilities.instance);
-        register(Containers.instance);
-        register(AntiHunger.instance);
-        register(Schematica.instance);
-        register(AimAssist.instance);
-        register(LockInputs.instance);
-
-        register(TickEndExecutor.instance);
-
+        Modules.register();
         NeoForge.EVENT_BUS.register(new NeoForgeEvents());
     }
 
@@ -110,13 +55,8 @@ public class ModMain {
         modules.add(module);
     }
 
-    @SuppressWarnings("EmptyMethod")
-    private void register(Object instance) {
-        //logger.info("Registered: {}", instance.getClass().getName());
-    }
-
     private void onRegisterKeybindings(final RegisterKeyMappingsEvent event) {
-        register(KeyBindingsController.instance);
+        Modules.registerKeyBindings();
         Events.RegisterKeyBindings.trigger(event::register);
     }
 }

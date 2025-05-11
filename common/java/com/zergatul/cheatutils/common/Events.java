@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.common;
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -53,4 +54,5 @@ public class Events {
     public static final ParameterizedEventHandler<ContainerClickEvent> ContainerMenuClick = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
     public static final CancelableEventHandler<PlayerTurnByMouseEvent> PlayerTurnByMouse = new CancelableEventHandler<>();
+    public static final ParameterizedEventHandler<PlayerInfoUpdateEvent> PlayerInfoUpdated = new ParameterizedEventHandler<>();
 }

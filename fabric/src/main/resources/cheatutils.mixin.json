@@ -48,6 +48,8 @@
     "common.MixinChatComponent",
     "common.MixinChatScreen",
     "common.MixinClientboundDisconnectPacket",
+    "common.MixinClientboundPlayerInfoRemovePacket",
+    "common.MixinClientboundPlayerInfoUpdatePacket",
     "common.MixinClientHandshakePacketListenerImpl",
     "common.MixinClientPacketListener",
     "common.MixinClientLevel",
