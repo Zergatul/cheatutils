@@ -48,6 +48,7 @@ public class Schematica {
     private final List<Entry> entries = new ArrayList<>();
     private final SlotSelector slotSelector = new SlotSelector();
     private volatile Long2ObjectMap<SectionInfo> lookup = new Long2ObjectOpenHashMap<>();
+    private double placementCounter;
 
     private Schematica() {
         Events.RawChunkUnloaded.add(this::onChunkLoaded);
@@ -384,54 +385,65 @@ public class Schematica {
     private void onClientTickEnd() {
         SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
         if (!config.enabled || !config.autoBuild) {
+            placementCounter = 0;
             return;
         }
 
         if (mc.level == null || mc.player == null) {
+            placementCounter = 0;
             return;
         }
 
-        Vec3 eyePos = mc.player.getEyePosition();
-        ItemStack itemInHand = mc.player.getMainHandItem();
+        placementCounter += 1 / config.placementRate;
+        while (placementCounter >= 1) {
+            placementCounter -= 1;
 
-        Block blockInHand;
-        if (itemInHand.getItem() instanceof BlockItem blockItem) {
-            blockInHand = blockItem.getBlock();
-        } else {
-            blockInHand = null;
-        }
+            Vec3 eyePos = mc.player.getEyePosition();
+            ItemStack itemInHand = mc.player.getMainHandItem();
 
-        BlockUtils.PlaceBlockPlan plan = null;
-        BlockState state = null;
-        for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
-            for (Entry entry : entries) {
-                state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
-                if (state.isAir()) {
-                    continue;
+            Block blockInHand;
+            if (itemInHand.getItem() instanceof BlockItem blockItem) {
+                blockInHand = blockItem.getBlock();
+            } else {
+                blockInHand = null;
+            }
+
+            BlockUtils.PlaceBlockPlan plan = null;
+            BlockState state = null;
+            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
+                for (Entry entry : entries) {
+                    state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
+                    if (state.isAir()) {
+                        continue;
+                    }
+
+                    plan = BlockUtils.getPlacingPlan(pos, config.attachToAir);
+                    if (plan != null) {
+                        break;
+                    }
                 }
 
-                plan = BlockUtils.getPlacingPlan(pos, config.attachToAir);
                 if (plan != null) {
                     break;
                 }
             }
 
-            if (plan != null) {
-                break;
+            if (plan == null) {
+                placementCounter = 0;
+                return;
             }
-        }
 
-        if (plan == null) {
-            return;
-        }
-
-        int slot = slotSelector.selectBlock(config, state.getBlock());
-        if (slot >= 0)  {
-            mc.player.getInventory().setSelectedSlot(slot);
-            blockInHand = state.getBlock();
-        }
-        if (blockInHand == state.getBlock()) {
-            BlockUtils.applyPlacingPlan(plan, config.useShift);
+            int slot = slotSelector.selectBlock(config, state.getBlock());
+            if (slot >= 0) {
+                mc.player.getInventory().setSelectedSlot(slot);
+                blockInHand = state.getBlock();
+            }
+            if (blockInHand == state.getBlock()) {
+                BlockUtils.applyPlacingPlan(plan, config.useShift);
+            } else {
+                placementCounter = 0;
+                return;
+            }
         }
     }
 

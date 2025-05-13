@@ -148,6 +148,17 @@
             <table>
                 <tr>
                     <td>
+                        <span class="field-description">Placement Rate:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w5" v-model="config.placementRate" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">Place 1 block once in X ticks. Can be floating pointer number.</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <span class="field-description">Max Build Distance:</span>
                     </td>
                     <td>
