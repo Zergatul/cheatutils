@@ -5,9 +5,13 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 
+import java.awt.*;
+import java.awt.Font;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +36,8 @@ public abstract class SystemFontInfo {
     }
 
     public abstract StbFont load();
+
+    public abstract java.awt.Font createAwtFont() throws IOException, FontFormatException;
 
     @Override
     public String toString() {
@@ -104,6 +110,13 @@ public abstract class SystemFontInfo {
         }
 
         @Override
+        public java.awt.Font createAwtFont() throws IOException, FontFormatException {
+            try (InputStream stream = Files.newInputStream(Path.of(path))) {
+                return java.awt.Font.createFont(Font.TRUETYPE_FONT, stream);
+            }
+        }
+
+        @Override
         public StbFont load() {
             STBTTFontinfo fontInfo = STBTTFontinfo.calloc();
             byte[] data;
@@ -138,6 +151,14 @@ public abstract class SystemFontInfo {
         @Override
         public String getInfo() {
             return String.format("%s [%s #%s]", name, path, index);
+        }
+
+        @Override
+        public Font createAwtFont() throws IOException, FontFormatException {
+            try (InputStream stream = Files.newInputStream(Path.of(path))) {
+                Font[] fonts = java.awt.Font.createFonts(stream);
+                return fonts[index];
+            }
         }
 
         @Override

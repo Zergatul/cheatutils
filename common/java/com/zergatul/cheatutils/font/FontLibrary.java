@@ -40,7 +40,7 @@ public class FontLibrary {
         return null;
     }
 
-    public void tick() {
+    private void tick() {
         assert RenderSystem.isOnRenderThread();
 
         if (loadingFonts.isEmpty()) {
