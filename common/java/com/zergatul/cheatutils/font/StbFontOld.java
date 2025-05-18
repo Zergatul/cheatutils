@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.render.gl.images.ImageSource;
 import com.zergatul.cheatutils.utils.FloatListHelper;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.minecraft.util.Mth;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
@@ -13,7 +14,7 @@ import org.lwjgl.stb.STBTruetype;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-public class StbFont extends Font {
+public class StbFontOld extends FontOld {
 
     private final STBTTFontinfo info;
     @SuppressWarnings("unused")
@@ -22,7 +23,7 @@ public class StbFont extends Font {
     private final int descent;
     private final int lineGap;
 
-    public StbFont(STBTTFontinfo info, ByteBuffer buffer) {
+    public StbFontOld(STBTTFontinfo info, ByteBuffer buffer) {
         this.info = info;
         this.buffer = buffer;
 
@@ -74,9 +75,9 @@ public class StbFont extends Font {
 
     @Override
     public TextBounds getSize(Int2ObjectMap<Glyph> glyphs, String text) {
-        int width = 0;
-        int y0 = 0;
-        int y1 = 0;
+        float width = 0;
+        float y0 = 0;
+        float y1 = 0;
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             Glyph glyph = glyphs.get(ch);
@@ -94,11 +95,11 @@ public class StbFont extends Font {
                 y1 = glyph.getY1();
             }
         }
-        return new TextBounds(width, y0, y1);
+        return new TextBounds(Mth.ceil(width), Math.round(y0), Math.round(y1));
     }
 
     @Override
-    public int render(TextureColor2dRenderer renderer, Int2ObjectMap<Glyph> glyphs, String text, int x, int y, float r, float g, float b, float a) {
+    public float render(TextureColor2dRenderer renderer, Int2ObjectMap<Glyph> glyphs, String text, float x, float y, float r, float g, float b, float a) {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             Glyph glyph = glyphs.get(ch);
@@ -119,7 +120,7 @@ public class StbFont extends Font {
     }
 
     @Override
-    public int render(FloatList buffer, Int2ObjectMap<Glyph> glyphs, String text, int x, int y, float r, float g, float b, float a) {
+    public float render(FloatList buffer, Int2ObjectMap<Glyph> glyphs, String text, float x, float y, float r, float g, float b, float a) {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             Glyph glyph = glyphs.get(ch);
@@ -143,8 +144,8 @@ public class StbFont extends Font {
     }
 
     @Override
-    public int getLineHeight(float size) {
-        return Math.round(getScaleForPixelHeight(size) * (ascent - descent + lineGap));
+    public float getLineHeight(float size) {
+        return getScaleForPixelHeight(size) * (ascent - descent + lineGap);
     }
 
     private float getScaleForPixelHeight(float pixels) {

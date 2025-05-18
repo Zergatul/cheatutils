@@ -6,9 +6,4 @@ public class StbFontReference extends FontReference {
     public GlyphRenderer createGlyphRenderer(FontRenderParameters parameters) {
         return null;
     }
-
-    @Override
-    public FontRenderer createFontRenderer(FontRenderParameters parameters) {
-        return null;
-    }
 }

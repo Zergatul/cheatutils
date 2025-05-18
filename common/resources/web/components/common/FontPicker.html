@@ -18,5 +18,21 @@
                 <input type="number" class="w4" min="8" max="100" v-model="modelValue.size" @change="update()">
             </td>
         </tr>
+        <tr>
+            <td>
+                <span class="field-description">Anti-Aliasing:</span>
+            </td>
+            <td>
+                <switch-checkbox v-model="modelValue.antiAliasing" @change="update()"></switch-checkbox>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="field-description">Letter Spacing:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="-10" max="10" step="0.25" v-model="modelValue.letterSpacing" @change="update()">
+            </td>
+        </tr>
     </table>
 </div>

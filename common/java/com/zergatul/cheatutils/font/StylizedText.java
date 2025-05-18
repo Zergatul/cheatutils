@@ -2,7 +2,8 @@ package com.zergatul.cheatutils.font;
 
 import net.minecraft.network.chat.Style;
 
-import java.util.ArrayList;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class StylizedText {
 
@@ -20,6 +21,10 @@ public class StylizedText {
 
     public void append(String value, Style style) {
         chunks.add(new StylizedTextChunk(value, style));
+    }
+
+    public IntStream chars() {
+        return chunks.stream().map(StylizedTextChunk::text).flatMapToInt(String::chars);
     }
 
     public int length() {

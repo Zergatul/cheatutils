@@ -10,9 +10,7 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTitleConfig;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
-import com.zergatul.cheatutils.font.GlyphFontRenderer;
-import com.zergatul.cheatutils.font.StylizedText;
-import com.zergatul.cheatutils.font.StylizedTextChunk;
+import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -44,7 +42,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class EntityTitle {
+public class EntityTitle implements GlyphRendererHolder {
 
     public static final EntityTitle instance = new EntityTitle();
 
@@ -80,29 +78,36 @@ public class EntityTitle {
             });
 
     private final List<EntityEntry> entities = new ArrayList<>();
-    private GlyphFontRenderer titleFontRenderer;
-    private GlyphFontRenderer enchantmentFontRenderer;
+    private CompletableFuture<GlyphRenderer> titleGlyphRendererFuture;
+    private FontRenderer titleFontRenderer;
+    private CompletableFuture<GlyphRenderer> enchantmentGlyphRendererFuture;
+    private FontRenderer enchantmentFontRenderer;
 
     private EntityTitle() {
         Events.AfterRenderWorld.add(this::onRenderWorld);
         Events.PreRenderGui.add(this::onRenderGui);
     }
 
+    @Override
+    public boolean uses(GlyphRenderer renderer) {
+        if (titleFontRenderer != null && titleFontRenderer.uses(renderer)) {
+            return true;
+        }
+        if (enchantmentFontRenderer != null && enchantmentFontRenderer.uses(renderer)) {
+            return true;
+        }
+        return false;
+    }
+
     public void onTitleFontChange(EntityTitleConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            if (titleFontRenderer != null) {
-                titleFontRenderer.dispose();
-            }
-            titleFontRenderer = new GlyphFontRenderer(config.titleFont.face, config.titleFont.size);
+            titleGlyphRendererFuture = FontLibrary2.instance.createRenderer(config.titleFont.asFontParameters());
         });
     }
 
     public void onEnchantmentFontChange(EntityTitleConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            if (enchantmentFontRenderer != null) {
-                enchantmentFontRenderer.dispose();
-            }
-            enchantmentFontRenderer = new GlyphFontRenderer(config.enchantmentFont.face, config.enchantmentFont.size);
+            enchantmentGlyphRendererFuture = FontLibrary2.instance.createRenderer(config.enchantmentFont.asFontParameters());
         });
     }
 
@@ -174,15 +179,27 @@ public class EntityTitle {
     }
 
     public void onRenderGui(RenderGuiEvent event) {
-        if (titleFontRenderer == null) {
-            return;
-        }
-
         if (!ConfigStore.instance.getConfig().esp) {
             return;
         }
 
         EntityTitleConfig config = ConfigStore.instance.getConfig().entityTitleConfig;
+
+        if (titleGlyphRendererFuture != null) {
+            if (titleGlyphRendererFuture.isDone()) {
+                titleFontRenderer = titleGlyphRendererFuture.join().createFontRenderer(config.titleFont.asFontRenderDetails());
+                titleGlyphRendererFuture = null;
+            }
+        }
+        if (enchantmentGlyphRendererFuture != null) {
+            if (enchantmentGlyphRendererFuture.isDone()) {
+                enchantmentFontRenderer = enchantmentGlyphRendererFuture.join().createFontRenderer(config.enchantmentFont.asFontRenderDetails());
+                enchantmentGlyphRendererFuture = null;
+            }
+        }
+        if (titleFontRenderer == null) {
+            return;
+        }
 
         GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
 

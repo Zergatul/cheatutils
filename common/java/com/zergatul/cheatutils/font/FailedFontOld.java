@@ -5,9 +5,9 @@ import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
-public class FailedFont extends Font {
+public class FailedFontOld extends FontOld {
 
-    public static final Font instance = new FailedFont();
+    public static final FontOld instance = new FailedFontOld();
 
     @Override
     public Glyph createGlyph(AtlasTexture texture, char ch, float size) {
@@ -20,17 +20,17 @@ public class FailedFont extends Font {
     }
 
     @Override
-    public int render(TextureColor2dRenderer renderer, Int2ObjectMap<Glyph> glyphs, String text, int x, int y, float r, float g, float b, float a) {
+    public float render(TextureColor2dRenderer renderer, Int2ObjectMap<Glyph> glyphs, String text, float x, float y, float r, float g, float b, float a) {
         return 0;
     }
 
     @Override
-    public int render(FloatList buffer, Int2ObjectMap<Glyph> glyphs, String text, int x, int y, float r, float g, float b, float a) {
+    public float render(FloatList buffer, Int2ObjectMap<Glyph> glyphs, String text, float x, float y, float r, float g, float b, float a) {
         return 0;
     }
 
     @Override
-    public int getLineHeight(float size) {
+    public float getLineHeight(float size) {
         return 0;
     }
 }

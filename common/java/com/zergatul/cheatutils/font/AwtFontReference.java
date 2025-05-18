@@ -14,9 +14,4 @@ public class AwtFontReference extends FontReference {
     public GlyphRenderer createGlyphRenderer(FontRenderParameters parameters) {
         return new AwtGlyphRenderer(font, parameters);
     }
-
-    @Override
-    public FontRenderer createFontRenderer(FontRenderParameters parameters) {
-        return null;
-    }
 }

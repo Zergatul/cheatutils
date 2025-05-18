@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils.ui;
 
-import com.zergatul.cheatutils.font.GlyphFontRenderer;
+import com.zergatul.cheatutils.font.FontRenderer;
 import com.zergatul.cheatutils.font.StylizedText;
 import com.zergatul.cheatutils.font.TextBounds;
 import it.unimi.dsi.fastutil.floats.FloatList;
 
 public class TextElement implements Element {
 
-    private final GlyphFontRenderer font;
+    private final FontRenderer font;
     private final StylizedText text;
 
     private boolean compactHeight;
@@ -15,7 +15,7 @@ public class TextElement implements Element {
     private int measuredWidth, measuredHeight;
     private int x, y;
 
-    public TextElement(GlyphFontRenderer font, StylizedText text) {
+    public TextElement(FontRenderer font, StylizedText text) {
         this.font = font;
         this.text = text;
     }
@@ -34,7 +34,7 @@ public class TextElement implements Element {
     public void measure(RenderingContext context) {
         bounds = font.getTextSize(text);
         measuredWidth = bounds.getWidth();
-        measuredHeight = compactHeight ? bounds.getHeight() : font.getLineHeight();
+        measuredHeight = compactHeight ? bounds.getHeight() : Math.round(font.getLineHeight());
     }
 
     @Override
@@ -45,7 +45,7 @@ public class TextElement implements Element {
 
     @Override
     public void render(RenderingContext context) {
-        FloatList buffer = context.getTextureColor2dBuffer(font.getTextureId());
+        FloatList buffer = context.getTextureColor2dBuffer(font.getTexture().getId());
         font.drawText(buffer, text, x, y + measuredHeight - bounds.getY1()); // align bottom
     }
 

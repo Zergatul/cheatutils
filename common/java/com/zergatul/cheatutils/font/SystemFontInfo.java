@@ -35,7 +35,7 @@ public abstract class SystemFontInfo {
         return name;
     }
 
-    public abstract StbFont load();
+    public abstract StbFontOld load();
 
     public abstract java.awt.Font createAwtFont() throws IOException, FontFormatException;
 
@@ -117,7 +117,7 @@ public abstract class SystemFontInfo {
         }
 
         @Override
-        public StbFont load() {
+        public StbFontOld load() {
             STBTTFontinfo fontInfo = STBTTFontinfo.calloc();
             byte[] data;
             try {
@@ -133,7 +133,7 @@ public abstract class SystemFontInfo {
                 throw new CannotLoadFontException("Failed to init font.");
             }
 
-            return new StbFont(fontInfo, buffer);
+            return new StbFontOld(fontInfo, buffer);
         }
     }
 
@@ -162,7 +162,7 @@ public abstract class SystemFontInfo {
         }
 
         @Override
-        public StbFont load() {
+        public StbFontOld load() {
             STBTTFontinfo fontInfo = STBTTFontinfo.calloc();
             byte[] data;
             try {
@@ -178,7 +178,7 @@ public abstract class SystemFontInfo {
                 throw new CannotLoadFontException("Failed to init font.");
             }
 
-            return new StbFont(fontInfo, buffer);
+            return new StbFontOld(fontInfo, buffer);
         }
     }
 

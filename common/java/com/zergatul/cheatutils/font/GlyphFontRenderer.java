@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 
 public class GlyphFontRenderer {
@@ -17,7 +18,7 @@ public class GlyphFontRenderer {
     private final Int2ObjectMap<Glyph> glyphs;
     private final StringBuilder builder;
 
-    private Font font;
+    private FontOld font;
 
     public GlyphFontRenderer(String name, int size) {
         this.name = name;
@@ -48,7 +49,7 @@ public class GlyphFontRenderer {
         return font.getSize(glyphs, string);
     }
 
-    public void drawText(FloatList buffer, StylizedText text, int x, int y) {
+    public void drawText(FloatList buffer, StylizedText text, float x, float y) {
         if (text.length() == 0) {
             return;
         }
@@ -72,7 +73,7 @@ public class GlyphFontRenderer {
         }
     }
 
-    public void drawText(Matrix4f matrix, StylizedText text, int x, int y) {
+    public void drawText(Matrix4f matrix, StylizedText text, float x, float y) {
         if (text.length() == 0) {
             return;
         }
@@ -95,7 +96,7 @@ public class GlyphFontRenderer {
             float g = (float) (color >> 8 & 0xFF) / 255;
             float b = (float) (color & 0xFF) / 255;
 
-            x = font.render(renderer, glyphs, string, x, y, r, g, b, 1);
+            x = font.render(renderer, glyphs, string, Math.round(x), Math.round(y), r, g, b, 1);
         }
 
         renderer.end(matrix, texture.getId());
@@ -126,7 +127,7 @@ public class GlyphFontRenderer {
         if (!ensureFontLoaded()) {
             return 0;
         }
-        return font.getLineHeight(size);
+        return Mth.ceil(font.getLineHeight(size));
     }
 
     public int getTextureId() {

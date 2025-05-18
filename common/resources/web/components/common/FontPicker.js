@@ -1,4 +1,5 @@
 import * as FallbackLoader from '/fallback-loader.js'
+import { components } from '/components.js'
 import * as http from '/http.js'
 
 const { ref, toRefs, onMounted, onUnmounted } = await FallbackLoader.vue();
@@ -6,7 +7,7 @@ const { ref, toRefs, onMounted, onUnmounted } = await FallbackLoader.vue();
 const fontsPromise = http.get('/api/fonts');
 
 export function createComponent(template) {
-    return {
+    const args = {
         template: template,
         props: {
             modelValue: {
@@ -18,7 +19,9 @@ export function createComponent(template) {
             if (!modelValue.value) {
                 modelValue.value = {
                     face: 'Consolas',
-                    size: 16
+                    size: 16,
+                    antiAliasing: false,
+                    letterSpacing: 0
                 };
             }
 
@@ -36,4 +39,6 @@ export function createComponent(template) {
             };
         }
     };
+    components.add(args, 'SwitchCheckbox');
+    return args;
 }

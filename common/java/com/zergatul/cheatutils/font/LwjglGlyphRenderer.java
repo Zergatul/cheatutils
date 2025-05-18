@@ -1,11 +1,23 @@
 package com.zergatul.cheatutils.font;
 
-import com.zergatul.cheatutils.render.gl.AtlasTexture;
-
 public class LwjglGlyphRenderer extends GlyphRenderer {
 
+    public LwjglGlyphRenderer() {
+
+    }
+
     @Override
-    public Glyph create(AtlasTexture texture, char ch) {
-        return null;
+    public FontRenderer createFontRenderer(FontRenderDetails details) {
+        throw new RuntimeException(); // TODO
+    }
+
+    @Override
+    public float getLineHeight() {
+        throw new RuntimeException(); // TODO
+    }
+
+    @Override
+    protected Glyph renderGlyph(char ch) {
+        throw new RuntimeException(); // TODO
     }
 }
