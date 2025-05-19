@@ -166,6 +166,10 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
+tasks.withType(JavaCompile).configureEach {
+    it.options.compilerArgs.add("-parameters")
+}
+
 tasks.named('jar', org.gradle.jvm.tasks.Jar).configure {
     archiveFileName = "cheatutils-$mod_version-neoforge-${minecraft_version}.jar"
 }
