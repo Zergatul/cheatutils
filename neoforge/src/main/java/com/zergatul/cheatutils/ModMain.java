@@ -4,6 +4,8 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.*;
+import com.zergatul.cheatutils.font.GlyphRendererHolders;
+import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
@@ -61,7 +63,7 @@ public class ModMain {
         register(EndCityChunks.instance);
         register(AutoBucket.instance);
         register(WorldDownloadController.instance);
-        register(EntityTitleController.instance);
+        register(EntityTitle.instance);
         register(ContainerButtonsController.instance);
         register(TeleportHackController.instance);
         register(WorldMarkersController.instance);
@@ -98,10 +100,13 @@ public class ModMain {
 
         register(TickEndExecutor.instance);
 
+        GlyphRendererHolders.add(EntityTitle.instance);
+
         NeoForge.EVENT_BUS.register(new NeoForgeEvents());
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
+        SystemFonts.initAsync();
         Profiles.instance.init();
         ConfigHttpServer.instance.start();
     }
