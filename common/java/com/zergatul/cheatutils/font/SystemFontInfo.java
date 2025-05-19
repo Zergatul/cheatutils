@@ -35,9 +35,9 @@ public abstract class SystemFontInfo {
         return name;
     }
 
-    public abstract StbFontOld load();
+    public abstract Font createAwtFont() throws IOException, FontFormatException;
 
-    public abstract java.awt.Font createAwtFont() throws IOException, FontFormatException;
+    public abstract StbFont createStbFont();
 
     @Override
     public String toString() {
@@ -110,30 +110,35 @@ public abstract class SystemFontInfo {
         }
 
         @Override
-        public java.awt.Font createAwtFont() throws IOException, FontFormatException {
+        public Font createAwtFont() throws IOException, FontFormatException {
             try (InputStream stream = Files.newInputStream(Path.of(path))) {
                 return java.awt.Font.createFont(Font.TRUETYPE_FONT, stream);
             }
         }
 
         @Override
-        public StbFontOld load() {
+        public StbFont createStbFont() {
             STBTTFontinfo fontInfo = STBTTFontinfo.calloc();
-            byte[] data;
             try {
-                data = Files.readAllBytes(Paths.get(path));
-            } catch (IOException ex) {
-                throw new CannotLoadFontException(ex);
-            }
-            ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
-            buffer.put(data);
-            buffer.flip();
+                byte[] data;
+                try {
+                    data = Files.readAllBytes(Paths.get(path));
+                } catch (IOException ex) {
+                    throw new CannotLoadFontException(ex);
+                }
+                ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
+                buffer.put(data);
+                buffer.flip();
 
-            if (!STBTruetype.stbtt_InitFont(fontInfo, buffer)) {
-                throw new CannotLoadFontException("Failed to init font.");
-            }
+                if (!STBTruetype.stbtt_InitFont(fontInfo, buffer)) {
+                    throw new CannotLoadFontException("Failed to init font.");
+                }
 
-            return new StbFontOld(fontInfo, buffer);
+                return new StbFont(fontInfo, buffer);
+            } catch (Throwable e) {
+                fontInfo.free();
+                throw e;
+            }
         }
     }
 
@@ -162,23 +167,28 @@ public abstract class SystemFontInfo {
         }
 
         @Override
-        public StbFontOld load() {
+        public StbFont createStbFont() {
             STBTTFontinfo fontInfo = STBTTFontinfo.calloc();
-            byte[] data;
             try {
-                data = Files.readAllBytes(Paths.get(path));
-            } catch (IOException ex) {
-                throw new CannotLoadFontException(ex);
-            }
-            ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
-            buffer.put(data);
-            buffer.flip();
+                byte[] data;
+                try {
+                    data = Files.readAllBytes(Paths.get(path));
+                } catch (IOException ex) {
+                    throw new CannotLoadFontException(ex);
+                }
+                ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
+                buffer.put(data);
+                buffer.flip();
 
-            if (!STBTruetype.stbtt_InitFont(fontInfo, buffer, offset)) {
-                throw new CannotLoadFontException("Failed to init font.");
-            }
+                if (!STBTruetype.stbtt_InitFont(fontInfo, buffer, offset)) {
+                    throw new CannotLoadFontException("Failed to init font.");
+                }
 
-            return new StbFontOld(fontInfo, buffer);
+                return new StbFont(fontInfo, buffer);
+            } catch (Throwable e) {
+                fontInfo.free();
+                throw e;
+            }
         }
     }
 

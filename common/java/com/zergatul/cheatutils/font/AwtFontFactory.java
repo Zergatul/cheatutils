@@ -5,6 +5,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class AwtFontFactory extends FontFactory {
+
+    protected AwtFontFactory() {}
+
     @Override
     public CompletableFuture<FontReference> create(String name) {
         Optional<SystemFontInfo> optional = SystemFonts.getFontsBlocking()

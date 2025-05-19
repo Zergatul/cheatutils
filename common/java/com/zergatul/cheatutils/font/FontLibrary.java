@@ -31,7 +31,7 @@ public class FontLibrary {
         if (!loadingFonts.containsKey(name)) {
             Optional<SystemFontInfo> optional = SystemFonts.getFontsBlocking().stream().filter(f -> f.getName().equals(name)).findFirst();
             if (optional.isPresent()) {
-                loadingFonts.put(name, CompletableFuture.supplyAsync(() -> optional.get().load()));
+                //loadingFonts.put(name, CompletableFuture.supplyAsync(() -> optional.get().load()));
             } else {
                 loadedFonts.put(name, FailedFontOld.instance);
             }

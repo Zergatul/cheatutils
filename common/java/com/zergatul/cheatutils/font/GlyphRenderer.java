@@ -7,11 +7,7 @@ import com.zergatul.cheatutils.utils.GlobalTicks;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-import java.lang.ref.Cleaner;
-
 public abstract class GlyphRenderer {
-
-    private static final Cleaner CLEANER = Cleaner.create();
 
     protected final AtlasTexture texture;
     protected final Int2ObjectMap<Glyph> glyphs;
@@ -24,7 +20,7 @@ public abstract class GlyphRenderer {
         this.glyphs = new Int2ObjectOpenHashMap<>();
         this.lastUsed = GlobalTicks.get();
 
-        CLEANER.register(this, new CleanExecutor(this.texture));
+        SharedCleaner.register(this, new GlyphRendererCleaner(this.texture));
     }
 
     public abstract FontRenderer createFontRenderer(FontRenderDetails details);
@@ -52,7 +48,7 @@ public abstract class GlyphRenderer {
 
     protected abstract Glyph renderGlyph(char ch);
 
-    private record CleanExecutor(AtlasTexture texture) implements Runnable {
+    private record GlyphRendererCleaner(AtlasTexture texture) implements Runnable {
         @Override
         public void run() {
             TickEndExecutor.instance.execute(texture::dispose);

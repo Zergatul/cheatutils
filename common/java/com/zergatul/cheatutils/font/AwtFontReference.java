@@ -6,7 +6,7 @@ public class AwtFontReference extends FontReference {
 
     private final Font font;
 
-    public AwtFontReference(Font font) {
+    protected AwtFontReference(Font font) {
         this.font = font;
     }
 
