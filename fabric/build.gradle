@@ -115,19 +115,8 @@ tasks.withType(JavaCompile).configureEach {
     dependsOn('buildAnnotationProcessor')
 }
 
-tasks.build.doLast {
-    def devJar = file(jar.archiveFile)
-    // assuming loom set path to \fabric\build\devlibs\zergatul.cheatutils-{version}-dev.jar
-    def finalJar = file(devJar.path.replace("devlibs", "libs").replace("-dev.", "."))
-    def renamedJar = Paths.get(finalJar.parent, "$archives_base_name-$mod_version-fabric-${minecraft_version}.jar").toFile()
-
-    if (finalJar.exists()) {
-        if (renamedJar.exists()) {
-            renamedJar.delete()
-        }
-        finalJar.renameTo(renamedJar)
-    } else {
-        println "Renaming final JAR failed"
-        println "Can't find final JAR at: ${finalJar.path}"
+remapJar {
+    afterEvaluate {
+        archiveFileName = "$archives_base_name-$mod_version-fabric-${minecraft_version}.jar"
     }
 }
