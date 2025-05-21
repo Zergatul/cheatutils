@@ -77,7 +77,7 @@ public abstract class FontRenderer implements GlyphRendererHolder {
     }
 
     public float getLineHeight() {
-        return glyphRenderer.getLineHeight();
+        return glyphRenderer.getLineHeight() + details.lineSpacing();
     }
 
     public void drawText(Matrix4f matrix, String text, float x, float y, int color) {

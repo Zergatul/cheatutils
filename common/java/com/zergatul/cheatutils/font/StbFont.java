@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.font;
 
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
@@ -9,6 +11,8 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 public class StbFont {
+
+    private static final Logger LOGGER = LogManager.getLogger(StbFont.class);
 
     private final STBTTFontinfo info;
     private final int ascent;
@@ -44,6 +48,7 @@ public class StbFont {
     private record StbFontCleaner(STBTTFontinfo info, ByteBuffer buffer) implements Runnable {
         @Override
         public void run() {
+            LOGGER.info("Releasing STB font");
             TickEndExecutor.instance.execute(() -> {
                 info.free();
                 buffer.clear();

@@ -35,26 +35,20 @@ public class FontLibrary2 {
         FontEntry fontEntry = fonts.get(key);
         if (fontEntry != null) {
             GlyphRenderer renderer = fontEntry.createRenderer(parameters.asRenderParameters());
-            if (logger.isDebugEnabled()) {
-                logger.info("Created glyph renderer directly: {}", parameters);
-            }
+            logger.info("Created glyph renderer from existing font reference: {}", parameters);
             renderers.put(parameters, new GlyphRendererEntry(renderer, fontEntry));
             return CompletableFuture.completedFuture(renderer);
         }
 
         CompletableFuture<FontEntry> fontFuture = fontFutures.get(key);
         if (fontFuture == null) {
-            if (logger.isDebugEnabled()) {
-                logger.info("Started font loading: {}", parameters);
-            }
-            fontFuture = parameters.type().getFactory().create(parameters.name()).thenApplyAsync(font -> {
-                if (logger.isDebugEnabled()) {
-                    logger.info("Finished font loading: {}", parameters);
-                }
-                FontEntry entry1 = new FontEntry(font);
-                fonts.put(key, entry1);
+            logger.info("Started font loading: {}", parameters);
+            fontFuture = parameters.getType().getFactory().create(parameters.getName()).thenApplyAsync(font -> {
+                logger.info("Finished font loading: {}", parameters);
+                FontEntry entry = new FontEntry(font);
+                fonts.put(key, entry);
                 fontFutures.remove(key);
-                return entry1;
+                return entry;
             }, TickEndExecutor.instance);
             fontFutures.put(key, fontFuture);
         }
@@ -62,9 +56,7 @@ public class FontLibrary2 {
         CompletableFuture<GlyphRenderer> future = new CompletableFuture<>();
         fontFuture.thenAcceptAsync(entry -> {
             GlyphRenderer renderer = entry.createRenderer(parameters.asRenderParameters());
-            if (logger.isDebugEnabled()) {
-                logger.info("Created glyph renderer asynchronously: {}", parameters);
-            }
+            logger.info("Created glyph renderer asynchronously: {}", parameters);
             renderers.put(parameters, new GlyphRendererEntry(renderer, entry));
             future.complete(renderer);
         }, TickEndExecutor.instance);
@@ -88,9 +80,7 @@ public class FontLibrary2 {
             GlyphRenderer renderer = entry.getValue().renderer;
             if (renderer.isStale()) {
                 if (GlyphRendererHolders.getHolders().noneMatch(h -> h.uses(renderer))) {
-                    if (logger.isDebugEnabled()) {
-                        logger.info("Releasing glyph renderer: {}", entry.getKey());
-                    }
+                    logger.info("Releasing glyph renderer: {}", entry.getKey());
                     iterator.remove();
                     entry.getValue().fontEntry.renderers.remove(renderer);
                     removed = true;
@@ -105,9 +95,7 @@ public class FontLibrary2 {
         while (iterator.hasNext()) {
             Map.Entry<FontKey, FontEntry> entry = iterator.next();
             if (entry.getValue().renderers.isEmpty()) {
-                if (logger.isDebugEnabled()) {
-                    logger.info("Releasing font: {}", entry.getKey());
-                }
+                logger.info("Releasing font reference: {}", entry.getKey());
                 iterator.remove();
             }
         }
@@ -115,7 +103,7 @@ public class FontLibrary2 {
 
     private record FontKey(FontRendererType type, String name) {
         public FontKey(FontParameters parameters) {
-            this(parameters.type(), parameters.name());
+            this(parameters.getType(), parameters.getName());
         }
     }
 

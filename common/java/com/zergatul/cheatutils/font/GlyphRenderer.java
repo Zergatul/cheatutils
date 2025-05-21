@@ -6,8 +6,12 @@ import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import com.zergatul.cheatutils.utils.GlobalTicks;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public abstract class GlyphRenderer {
+
+    private static final Logger LOGGER = LogManager.getLogger(GlyphRenderer.class);
 
     protected final AtlasTexture texture;
     protected final Int2ObjectMap<Glyph> glyphs;
@@ -51,6 +55,7 @@ public abstract class GlyphRenderer {
     private record GlyphRendererCleaner(AtlasTexture texture) implements Runnable {
         @Override
         public void run() {
+            LOGGER.info("Releasing atlas texture");
             TickEndExecutor.instance.execute(texture::dispose);
         }
     }
