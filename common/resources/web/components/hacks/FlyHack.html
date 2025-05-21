@@ -31,5 +31,34 @@
                 While flying this module overrides onGround flag in MovePlayerPacket. Both options works fine in vanilla. For Fast Break hack, Disable Fly Penalty option you need to set OnGround = true.
             </div>
         </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.vanillaAntiFlyBypass" @change="update()">Vanilla Anti-Fly Bypass</switch-checkbox>
+            </legend>
+            <table>
+                <tr>
+                    <td>Interval (ticks):</td>
+                    <td>
+                        <input type="text" class="w4" v-model="config.antiFlyInterval" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Drop Distance (blocks):</td>
+                    <td>
+                        <input type="text" class="w4" v-model="config.antiFlyDistance" @change="update()">
+                    </td>
+                </tr>
+            </table>
+            <div class="section-description">
+                Once in [Interval] ticks sends packet to the server indicating that you fell down by [Drop Distance].
+                This causes vanilla server to think you legimately falling down and reset anti-fly protection.
+                Doesn't work on NeoForge server.
+                <br>
+                Vanilla server kicks you with message "Flying is not enabled on this server" if you fly for 80 ticks.
+                <br>
+                Vanilla server stops considering you flying if you fall by 0.03125 blocks.
+            </div>
+        </fieldset>
     </div>
 </div>
