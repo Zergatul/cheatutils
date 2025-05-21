@@ -210,6 +210,10 @@ public class KillAura implements Module {
     private boolean shouldAttackNow(KillAuraConfig config) {
         assert mc.player != null;
 
+        if (config.doNotAttackOnItemUse && mc.player.isUsingItem()) {
+            return false;
+        }
+
         if (KillAuraConfig.Cooldown.equals(config.delayMode)) {
             return mc.player.getAttackStrengthScale((float) -config.extraTicks) == 1;
         } else {

@@ -24,7 +24,6 @@ public class Modules {
         register(PreRenderGuiExecutor.instance);
 
         register(AutoTotem.instance);
-        register(KillAura.instance);
         register(AutoEat.instance);
         register(NoFall.instance);
         register(Scaffold.instance);
@@ -71,6 +70,9 @@ public class Modules {
         register(Schematica.instance);
         register(AimAssist.instance);
         register(LockInputs.instance);
+
+        // should be after everything so "Don't Attack on Item Use" can work better
+        register(KillAura.instance);
 
         register(TickEndExecutor.instance);
     }

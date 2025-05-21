@@ -31,6 +31,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
     public ImmutableList<CustomPriorityEntry> customEntries;
     public boolean attackAll;
     public boolean autoRotate;
+    public boolean doNotAttackOnItemUse;
     public boolean scriptEnabled;
     public String code;
 
@@ -60,6 +61,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
         other.customEntries = customEntries;
         other.attackAll = attackAll;
         other.autoRotate = autoRotate;
+        other.doNotAttackOnItemUse = doNotAttackOnItemUse;
         other.scriptEnabled = scriptEnabled;
     }
 

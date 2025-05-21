@@ -25,12 +25,12 @@ public class AutoEat {
     }
 
     private void onClickTickStart() {
-        if (mc.player == null || mc.level == null) {
+        if (mc.player == null) {
             return;
         }
 
         AutoEatConfig config = ConfigStore.instance.getConfig().autoEatConfig;
-        if (config.enabled && (!config.isHungerLimitEnabled || mc.player.getFoodData().getFoodLevel() <= config.hungerLimit)) {
+        if (shouldStartEating(config)) {
             ItemStack itemStack = mc.player.getOffhandItem();
             FoodProperties food = itemStack.get(DataComponents.FOOD);
             if (food != null && mc.player.getFoodData().needsFood()) {
@@ -41,6 +41,18 @@ public class AutoEat {
         } else {
             stopEating();
         }
+    }
+
+    private boolean shouldStartEating(AutoEatConfig config) {
+        assert mc.player != null;
+
+        if (!config.enabled) {
+            return false;
+        }
+        if (state != State.EATING && mc.player.isUsingItem()) {
+            return false;
+        }
+        return !config.isHungerLimitEnabled || mc.player.getFoodData().getFoodLevel() <= config.hungerLimit;
     }
 
     private void onPlayerReleaseUsingItem(PlayerReleaseUsingItemEvent event) {
