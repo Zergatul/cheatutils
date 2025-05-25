@@ -2,7 +2,8 @@ package com.zergatul.cheatutils.font;
 
 public enum FontRendererType {
     AWT(new AwtFontFactory()),
-    STB(new StbFontFactory());
+    STB(new StbFontFactory()),
+    VANILLA(new VanillaFontFactory());
 
     private final FontFactory factory;
 

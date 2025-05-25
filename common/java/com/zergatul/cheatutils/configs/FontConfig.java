@@ -10,6 +10,7 @@ public class FontConfig implements ValidatableConfig {
     public String face;
     public FontRendererType renderer;
     public double size;
+    public int scale;
     public boolean antiAliasing;
     public double letterSpacing;
     public double lineSpacing;
@@ -18,16 +19,29 @@ public class FontConfig implements ValidatableConfig {
         this.face = "Consolas";
         this.renderer = FontRendererType.AWT;
         this.size = 16;
+        this.scale = 0;
         this.antiAliasing = false;
     }
 
     public boolean equals(FontConfig other) {
-        return  other.face.equals(face) &&
-                other.renderer == renderer &&
-                other.size == size &&
-                other.antiAliasing == antiAliasing &&
-                other.letterSpacing == letterSpacing &&
-                other.lineSpacing == lineSpacing;
+        if (other.renderer != renderer) {
+            return false;
+        }
+        return switch (renderer) {
+            case AWT ->
+                    other.face.equals(face) &&
+                    other.size == size &&
+                    other.antiAliasing == antiAliasing &&
+                    other.letterSpacing == letterSpacing &&
+                    other.lineSpacing == lineSpacing;
+            case STB ->
+                    other.face.equals(face) &&
+                    other.size == size &&
+                    other.letterSpacing == letterSpacing &&
+                    other.lineSpacing == lineSpacing;
+            case VANILLA ->
+                    other.scale == scale;
+        };
     }
 
     public FontParameters asFontParameters() {
@@ -35,7 +49,7 @@ public class FontConfig implements ValidatableConfig {
     }
 
     public FontRenderDetails asFontRenderDetails() {
-        return new FontRenderDetails((float) letterSpacing, (float) lineSpacing);
+        return new FontRenderDetails((float) letterSpacing, (float) lineSpacing, scale);
     }
 
     @Override

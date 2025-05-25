@@ -9,7 +9,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class AtlasTexture {
 
-    public Texture texture; // TODO: Make private
+    private Texture texture;
     private List<Line> lines;
 
     public AtlasTexture() {

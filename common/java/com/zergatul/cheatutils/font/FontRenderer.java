@@ -29,6 +29,10 @@ public abstract class FontRenderer implements GlyphRendererHolder {
         return glyphRenderer == renderer;
     }
 
+    public boolean isSingleTexture() {
+        return true;
+    }
+
     public AtlasTexture getTexture() {
         return glyphRenderer.texture;
     }
@@ -40,14 +44,14 @@ public abstract class FontRenderer implements GlyphRendererHolder {
         return getTextSize(text.chars());
     }
 
-    public TextBounds getTextSize(String text) {
+    /*public TextBounds getTextSize(String text) {
         if (text == null || text.isEmpty()) {
             return TextBounds.EMPTY;
         }
 
         glyphRenderer.ensureGlyphs(text);
         return getTextSize(text.chars());
-    }
+    }*/
 
     private TextBounds getTextSize(IntStream chars) {
         float width = 0;
@@ -78,6 +82,31 @@ public abstract class FontRenderer implements GlyphRendererHolder {
 
     public float getLineHeight() {
         return glyphRenderer.getLineHeight() + details.lineSpacing();
+    }
+
+    public void drawText(Matrix4f matrix, StylizedText text, float x, float y) {
+        if (text == null) {
+            return;
+        }
+
+        for (StylizedTextChunk chunk : text.chunks) {
+            glyphRenderer.ensureGlyphs(chunk.text());
+        }
+
+        TextureColor2dRenderer renderer = RenderUtilities.instance.getTextureColor2dRenderer();
+        renderer.begin();
+
+        for (StylizedTextChunk chunk : text.chunks) {
+            String string = chunk.text();
+            int color = chunk.getColor();
+            float r = (float) (color >> 16 & 0xFF) / 255;
+            float g = (float) (color >> 8 & 0xFF) / 255;
+            float b = (float) (color & 0xFF) / 255;
+
+            x = renderGlyphs(renderer, string, x, y, r, g, b, 1);
+        }
+
+        renderer.end(matrix, glyphRenderer.texture.getId());
     }
 
     public void drawText(Matrix4f matrix, String text, float x, float y, int color) {

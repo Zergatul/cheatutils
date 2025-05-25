@@ -11,10 +11,15 @@ public class FontParameters {
 
     public FontParameters(FontRendererType type, String name, float size, boolean antiAliasing) {
         this.type = type;
-        this.name = name;
-        this.size = size;
+        if (type != FontRendererType.VANILLA) {
+            this.name = name;
+            this.size = size;
+        } else {
+            this.name = null;
+            this.size = 0;
+        }
         if (type == FontRendererType.STB) {
-            this.antiAliasing = true;
+            this.antiAliasing = false;
         } else {
             this.antiAliasing = antiAliasing;
         }
@@ -35,7 +40,7 @@ public class FontParameters {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof FontParameters other) {
-            return other.type == type && other.name.equals(name) && other.size == size && other.antiAliasing == antiAliasing;
+            return other.type == type && Objects.equals(other.name, name) && other.size == size && other.antiAliasing == antiAliasing;
         } else {
             return false;
         }
@@ -48,6 +53,10 @@ public class FontParameters {
 
     @Override
     public String toString() {
-        return String.format("[type=%s, name=%s, size=%s, aa=%s]", type, name, size, antiAliasing);
+        return switch (type) {
+            case AWT -> String.format("[type=%s, name=%s, size=%s, aa=%s]", type, name, size, antiAliasing);
+            case STB -> String.format("[type=%s, name=%s, size=%s]", type, name, size);
+            case VANILLA -> String.format("[type=%s]", type);
+        };
     }
 }
