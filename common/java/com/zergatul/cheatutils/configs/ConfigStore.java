@@ -13,6 +13,7 @@ import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.world.level.block.state.BlockState;
@@ -146,7 +147,7 @@ public class ConfigStore {
         ConfigHttpServer.instance.onConfigUpdated();
         EntityTitle.instance.onTitleFontChange(config.entityTitleConfig);
         EntityTitle.instance.onEnchantmentFontChange(config.entityTitleConfig);
-        WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
+        WorldMarkers.instance.onFontChange(config.worldMarkersConfig);
 
         ScriptsController.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {

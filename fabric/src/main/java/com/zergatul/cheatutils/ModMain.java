@@ -63,7 +63,7 @@ public class ModMain implements ClientModInitializer {
         register(EntityTitle.instance);
         register(ContainerButtonsController.instance);
         register(TeleportHackController.instance);
-        register(WorldMarkersController.instance);
+        register(WorldMarkers.instance);
         register(TpsCounterController.instance);
         register(BlockAutomation.instance);
 
@@ -97,6 +97,7 @@ public class ModMain implements ClientModInitializer {
         register(TickEndExecutor.instance);
 
         GlyphRendererHolders.add(EntityTitle.instance);
+        GlyphRendererHolders.add(WorldMarkers.instance);
 
         Events.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
     }

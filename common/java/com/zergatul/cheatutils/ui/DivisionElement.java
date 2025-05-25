@@ -47,7 +47,15 @@ public class DivisionElement implements Element {
     @Override
     public void render(RenderingContext context) {
         if (borderWidth > 0) {
-            throw new RuntimeException(); // TODO
+            Color2dRenderer renderer = context.getColor2dRenderer();
+            float a = (borderColor >> 24 & 255) / 255.0F;
+            float r = (borderColor >> 16 & 255) / 255.0F;
+            float g = (borderColor >> 8 & 255) / 255.0F;
+            float b = (borderColor & 255) / 255.0F;
+            renderer.rect(x, y, measuredWidth, borderWidth, r, g, b, a);
+            renderer.rect(x, y + measuredHeight - borderWidth, measuredWidth, borderWidth, r, g, b, a);
+            renderer.rect(x, y, borderWidth, measuredHeight, r, g, b, a);
+            renderer.rect(x + measuredWidth - borderWidth, y, borderWidth, measuredHeight, r, g, b, a);
         }
 
         if (bgColor != 0) {
@@ -72,12 +80,14 @@ public class DivisionElement implements Element {
         return this;
     }
 
-    public void setBorderWidth(int width) {
+    public DivisionElement setBorderWidth(int width) {
         this.borderWidth = width;
+        return this;
     }
 
-    public void setBorderColor(int color) {
+    public DivisionElement setBorderColor(int color) {
         this.borderColor = color;
+        return this;
     }
 
     public DivisionElement setBackgroundColor(int color) {

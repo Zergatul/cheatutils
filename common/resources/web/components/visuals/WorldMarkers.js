@@ -68,5 +68,6 @@ export function createComponent(template) {
     components.add(args, 'ColorBox');
     components.add(args, 'ColorPicker');
     components.add(args, 'SwitchCheckbox');
+    components.add(args, 'FontPicker');
     return args;
 }

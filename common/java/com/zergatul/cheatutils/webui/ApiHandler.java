@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
@@ -374,8 +375,8 @@ public class ApiHandler implements HttpHandler {
                 WorldMarkersConfig oldConfig = ConfigStore.instance.getConfig().worldMarkersConfig;
                 ConfigStore.instance.getConfig().worldMarkersConfig = config;
 
-                if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
-                    WorldMarkersController.instance.onFontChange(config);
+                if (!oldConfig.font.equals(config.font)) {
+                    WorldMarkers.instance.onFontChange(config);
                 }
             }
         });
