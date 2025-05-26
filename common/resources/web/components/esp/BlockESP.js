@@ -29,6 +29,17 @@ export function createComponent(template) {
             const selectedConfig = ref(null);
             const blockListFiltered = ref(null);
 
+            const blockRenderingKey = 'disableBlockRendering';
+            const disableBlockRendering = ref(localStorage.getItem(blockRenderingKey) != null);
+            const toggleBlockRendering = () => {
+                if (disableBlockRendering.value) {
+                    localStorage.removeItem(blockRenderingKey);
+                } else {
+                    localStorage.setItem(blockRenderingKey, '1');
+                }
+                location.reload();
+            };
+
             const backToList = () => {
                 state.value = 'list';
                 blocksConfigList.value.forEach(config => {
@@ -182,6 +193,10 @@ export function createComponent(template) {
             const setupObserver = () => {
                 removeObserver();
 
+                if (disableBlockRendering.value) {
+                    return;
+                }
+
                 blockInfoPromise.then(() => {
                     currentScrollable = document.querySelector('div.block-list');
                     if (currentScrollable == null) {
@@ -262,6 +277,7 @@ export function createComponent(template) {
                 blocksConfigMap,
                 selectedConfig,
                 blockListFiltered,
+                disableBlockRendering,
 
                 backToList,
                 backToEdit,
@@ -274,6 +290,7 @@ export function createComponent(template) {
                 rescan,
                 update,
                 expandGroup,
+                toggleBlockRendering,
                 groupEditShouldShowCheckbox,
                 groupEditGetCheckboxSelected,
                 groupEditSetCheckboxSelected,
