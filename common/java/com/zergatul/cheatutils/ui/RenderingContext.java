@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.ui;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.Color2dRenderer;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
+import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import com.zergatul.cheatutils.render.TextureColor2dRenderer;
 import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -27,9 +28,8 @@ public class RenderingContext {
     private final int halfHeight;
     private final int scale;
     private final Font font;
+    private final RenderBuffers buffers;
 
-    private Color2dRenderer color2dRenderer;
-    private Int2ObjectMap<FloatList> textureColor2dBuffers;
     private List<ItemStackRenderEntry> itemStacksQueue;
 
     public RenderingContext(GuiGraphics graphics, Matrix4f matrix, int halfWidth, int halfHeight) {
@@ -41,10 +41,15 @@ public class RenderingContext {
         Minecraft mc = Minecraft.getInstance();
         this.scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
         this.font = mc.font;
+        this.buffers = new RenderBuffers();
     }
 
     public GuiGraphics getGraphics() {
         return graphics;
+    }
+
+    public RenderBuffers getBuffers() {
+        return buffers;
     }
 
     public Matrix4f getMatrix() {
@@ -53,29 +58,6 @@ public class RenderingContext {
 
     public int getScale() {
         return scale;
-    }
-
-    public Color2dRenderer getColor2dRenderer() {
-        if (color2dRenderer == null) {
-            color2dRenderer = RenderUtilities.instance.getColor2dRenderer();
-            color2dRenderer.begin();
-        }
-
-        return color2dRenderer;
-    }
-
-    public FloatList getTextureColor2dBuffer(int textureId) {
-        if (textureColor2dBuffers == null) {
-            // use simple array map, since we shouldn't have a lot of entries here
-            textureColor2dBuffers = new Int2ObjectArrayMap<>();
-        }
-        FloatList list = textureColor2dBuffers.get(textureId);
-        if (list == null) {
-            list = new FloatArrayList(32);
-            textureColor2dBuffers.put(textureId, list);
-        }
-
-        return list;
     }
 
     public void queueItemStackRender(LivingEntity entity, ItemStack itemStack, int x, int y) {
@@ -106,23 +88,10 @@ public class RenderingContext {
         reset();
         element.render(this);
 
-        if (color2dRenderer != null) {
-            MainFrameBuffer.enter();
-            color2dRenderer.end(matrix);
-        }
-
-        if (textureColor2dBuffers != null && !textureColor2dBuffers.isEmpty()) {
-            MainFrameBuffer.enter();
-            TextureColor2dRenderer renderer =  RenderUtilities.instance.getTextureColor2dRenderer();
-            for (int textureId : textureColor2dBuffers.keySet()) {
-                renderer.begin();
-                renderer.fill(textureColor2dBuffers.get(textureId));
-                renderer.end(matrix, textureId);
-            }
-        }
+        buffers.render(matrix);
 
         if (itemStacksQueue != null) {
-            GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+           // GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
             graphics.pose().pushPose();
             for (ItemStackRenderEntry entry : itemStacksQueue) {
                 graphics.pose().setIdentity();
@@ -131,15 +100,11 @@ public class RenderingContext {
                 graphics.renderItemDecorations(font, entry.itemStack, 0, 0);
             }
             graphics.pose().popPose();
-            GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+            // GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
         }
     }
 
     private void reset() {
-        color2dRenderer = null;
-        if (textureColor2dBuffers != null) {
-            textureColor2dBuffers.clear();
-        }
         if (itemStacksQueue != null) {
             itemStacksQueue.clear();
         }

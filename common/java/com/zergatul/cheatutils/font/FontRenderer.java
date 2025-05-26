@@ -3,6 +3,8 @@ package com.zergatul.cheatutils.font;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.TextureColor2dRenderer;
+import com.zergatul.cheatutils.render.buffers.RenderBuffers;
+import com.zergatul.cheatutils.render.buffers.TextureColor2dRenderBuffer;
 import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import com.zergatul.cheatutils.utils.FloatListHelper;
 import it.unimi.dsi.fastutil.floats.FloatList;
@@ -27,14 +29,6 @@ public abstract class FontRenderer implements GlyphRendererHolder {
     @Override
     public boolean uses(GlyphRenderer renderer) {
         return glyphRenderer == renderer;
-    }
-
-    public boolean isSingleTexture() {
-        return true;
-    }
-
-    public AtlasTexture getTexture() {
-        return glyphRenderer.texture;
     }
 
     public TextBounds getTextSize(StylizedText text) {
@@ -84,7 +78,49 @@ public abstract class FontRenderer implements GlyphRendererHolder {
         return glyphRenderer.getLineHeight() + details.lineSpacing();
     }
 
-    public void drawText(Matrix4f matrix, StylizedText text, float x, float y) {
+//    public void drawText(Matrix4f matrix, StylizedText text, float x, float y) {
+//        if (text == null) {
+//            return;
+//        }
+//
+//        for (StylizedTextChunk chunk : text.chunks) {
+//            glyphRenderer.ensureGlyphs(chunk.text());
+//        }
+//
+//        TextureColor2dRenderer renderer = RenderUtilities.instance.getTextureColor2dRenderer();
+//        renderer.begin();
+//
+//        for (StylizedTextChunk chunk : text.chunks) {
+//            String string = chunk.text();
+//            int color = chunk.getColor();
+//            float r = (float) (color >> 16 & 0xFF) / 255;
+//            float g = (float) (color >> 8 & 0xFF) / 255;
+//            float b = (float) (color & 0xFF) / 255;
+//
+//            x = renderGlyphs(renderer, string, x, y, r, g, b, 1);
+//        }
+//
+//        renderer.end(matrix, glyphRenderer.texture.getId());
+//    }
+
+//    public void drawText(Matrix4f matrix, String text, float x, float y, int color) {
+//        if (text == null || text.isEmpty()) {
+//            return;
+//        }
+//
+//        glyphRenderer.ensureGlyphs(text);
+//
+//        float r = (float) (color >> 16 & 0xFF) / 255;
+//        float g = (float) (color >> 8 & 0xFF) / 255;
+//        float b = (float) (color & 0xFF) / 255;
+//
+//        TextureColor2dRenderer renderer = RenderUtilities.instance.getTextureColor2dRenderer();
+//        renderer.begin();
+//        renderGlyphs(renderer, text, x, y, r, g, b, 1);
+//        renderer.end(matrix, glyphRenderer.texture.getId());
+//    }
+
+    public void drawText(RenderBuffers buffers, StylizedText text, float x, float y) {
         if (text == null) {
             return;
         }
@@ -93,9 +129,6 @@ public abstract class FontRenderer implements GlyphRendererHolder {
             glyphRenderer.ensureGlyphs(chunk.text());
         }
 
-        TextureColor2dRenderer renderer = RenderUtilities.instance.getTextureColor2dRenderer();
-        renderer.begin();
-
         for (StylizedTextChunk chunk : text.chunks) {
             String string = chunk.text();
             int color = chunk.getColor();
@@ -103,76 +136,37 @@ public abstract class FontRenderer implements GlyphRendererHolder {
             float g = (float) (color >> 8 & 0xFF) / 255;
             float b = (float) (color & 0xFF) / 255;
 
-            x = renderGlyphs(renderer, string, x, y, r, g, b, 1);
-        }
-
-        renderer.end(matrix, glyphRenderer.texture.getId());
-    }
-
-    public void drawText(Matrix4f matrix, String text, float x, float y, int color) {
-        if (text == null || text.isEmpty()) {
-            return;
-        }
-
-        glyphRenderer.ensureGlyphs(text);
-
-        float r = (float) (color >> 16 & 0xFF) / 255;
-        float g = (float) (color >> 8 & 0xFF) / 255;
-        float b = (float) (color & 0xFF) / 255;
-
-        TextureColor2dRenderer renderer = RenderUtilities.instance.getTextureColor2dRenderer();
-        renderer.begin();
-        renderGlyphs(renderer, text, x, y, r, g, b, 1);
-        renderer.end(matrix, glyphRenderer.texture.getId());
-    }
-
-    public void drawText(FloatList buffer, StylizedText text, float x, float y) {
-        if (text == null) {
-            return;
-        }
-
-        for (StylizedTextChunk chunk : text.chunks) {
-            glyphRenderer.ensureGlyphs(chunk.text());
-        }
-
-        for (StylizedTextChunk chunk : text.chunks) {
-            String string = chunk.text();
-            int color = chunk.getColor();
-            float r = (float) (color >> 16 & 0xFF) / 255;
-            float g = (float) (color >> 8 & 0xFF) / 255;
-            float b = (float) (color & 0xFF) / 255;
-
-            x = renderGlyphs(buffer, string, x, y, r, g, b, 1);
+            x = renderGlyphs(buffers, string, x, y, r, g, b, 1);
         }
     }
 
-    private float renderGlyphs(TextureColor2dRenderer renderer, String text, float x, float y, float r, float g, float b, float a) {
+//    private float renderGlyphs(TextureColor2dRenderer renderer, String text, float x, float y, float r, float g, float b, float a) {
+//        for (int i = 0; i < text.length(); i++) {
+//            char ch = text.charAt(i);
+//            Glyph glyph = glyphRenderer.get(ch);
+//            x += glyph.getLeftSideBearing();
+//            if (!glyph.isBlank()) {
+//                renderer.rect(
+//                        Math.round(x + glyph.getX0()),
+//                        Math.round(y + glyph.getY0()),
+//                        (int) Math.ceil(glyph.getWidth()),
+//                        (int) Math.ceil(glyph.getHeight()),
+//                        glyph.getSprite(),
+//                        r, g, b, a);
+//            }
+//            x += glyph.getAdvanceWidth() + details.letterSpacing();
+//        }
+//        return x;
+//    }
+
+    private float renderGlyphs(RenderBuffers buffers, String text, float x, float y, float r, float g, float b, float a) {
+        TextureColor2dRenderBuffer buffer = buffers.getTexColor2d(glyphRenderer.texture.getId());
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             Glyph glyph = glyphRenderer.get(ch);
             x += glyph.getLeftSideBearing();
             if (!glyph.isBlank()) {
-                renderer.rect(
-                        Math.round(x + glyph.getX0()),
-                        Math.round(y + glyph.getY0()),
-                        (int) Math.ceil(glyph.getWidth()),
-                        (int) Math.ceil(glyph.getHeight()),
-                        glyph.getSprite(),
-                        r, g, b, a);
-            }
-            x += glyph.getAdvanceWidth() + details.letterSpacing();
-        }
-        return x;
-    }
-
-    private float renderGlyphs(FloatList buffer, String text, float x, float y, float r, float g, float b, float a) {
-        for (int i = 0; i < text.length(); i++) {
-            char ch = text.charAt(i);
-            Glyph glyph = glyphRenderer.get(ch);
-            x += glyph.getLeftSideBearing();
-            if (!glyph.isBlank()) {
-                FloatListHelper.rect(
-                        buffer,
+                buffer.rect(
                         Math.round(x + glyph.getX0()),
                         Math.round(y + glyph.getY0()),
                         (int) Math.ceil(glyph.getWidth()),

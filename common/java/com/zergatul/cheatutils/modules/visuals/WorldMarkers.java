@@ -68,8 +68,8 @@ public class WorldMarkers implements GlyphRendererHolder {
             return;
         }
 
-        GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
-        MainFrameBuffer.enter();
+        /*GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        MainFrameBuffer.enter();*/
 
         Camera camera = event.getCamera();
         Vec3 view = camera.getPosition();
@@ -130,7 +130,7 @@ public class WorldMarkers implements GlyphRendererHolder {
             context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
         }
 
-        MainFrameBuffer.exit();
-        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        /*MainFrameBuffer.exit();
+        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);*/
     }
 }

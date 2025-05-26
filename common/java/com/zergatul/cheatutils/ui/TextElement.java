@@ -45,12 +45,7 @@ public class TextElement implements Element {
 
     @Override
     public void render(RenderingContext context) {
-        if (font.isSingleTexture()) {
-            FloatList buffer = context.getTextureColor2dBuffer(font.getTexture().getId());
-            font.drawText(buffer, text, x, y + measuredHeight - bounds.getY1()); // align bottom
-        } else {
-            font.drawText(context.getMatrix(), text, x, y + measuredHeight - bounds.getY1());
-        }
+        font.drawText(context.getBuffers(), text, x, y + measuredHeight - bounds.getY1()); // align bottom
     }
 
     public TextElement setCompactHeight(boolean compact) {

@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.ui;
 
 import com.zergatul.cheatutils.render.Color2dRenderer;
+import com.zergatul.cheatutils.render.buffers.Color2dRenderBuffer;
 
 public class DivisionElement implements Element {
 
@@ -47,24 +48,24 @@ public class DivisionElement implements Element {
     @Override
     public void render(RenderingContext context) {
         if (borderWidth > 0) {
-            Color2dRenderer renderer = context.getColor2dRenderer();
+            Color2dRenderBuffer buffer = context.getBuffers().getColor2d();
             float a = (borderColor >> 24 & 255) / 255.0F;
             float r = (borderColor >> 16 & 255) / 255.0F;
             float g = (borderColor >> 8 & 255) / 255.0F;
             float b = (borderColor & 255) / 255.0F;
-            renderer.rect(x, y, measuredWidth, borderWidth, r, g, b, a);
-            renderer.rect(x, y + measuredHeight - borderWidth, measuredWidth, borderWidth, r, g, b, a);
-            renderer.rect(x, y, borderWidth, measuredHeight, r, g, b, a);
-            renderer.rect(x + measuredWidth - borderWidth, y, borderWidth, measuredHeight, r, g, b, a);
+            buffer.rect(x, y, measuredWidth, borderWidth, r, g, b, a);
+            buffer.rect(x, y + measuredHeight - borderWidth, measuredWidth, borderWidth, r, g, b, a);
+            buffer.rect(x, y, borderWidth, measuredHeight, r, g, b, a);
+            buffer.rect(x + measuredWidth - borderWidth, y, borderWidth, measuredHeight, r, g, b, a);
         }
 
         if (bgColor != 0) {
-            Color2dRenderer renderer = context.getColor2dRenderer();
+            Color2dRenderBuffer buffer = context.getBuffers().getColor2d();
             float a = (bgColor >> 24 & 255) / 255.0F;
             float r = (bgColor >> 16 & 255) / 255.0F;
             float g = (bgColor >> 8 & 255) / 255.0F;
             float b = (bgColor & 255) / 255.0F;
-            renderer.rect(
+            buffer.rect(
                     x + borderWidth, y + borderWidth,
                     measuredWidth - 2 * borderWidth, measuredHeight - 2 * borderWidth,
                     r, g, b, a);

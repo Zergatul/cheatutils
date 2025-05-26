@@ -201,7 +201,7 @@ public class EntityTitle implements GlyphRendererHolder {
             return;
         }
 
-        GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        //GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
 
         int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
         int scrWidth = mc.getWindow().getWidth();
@@ -287,7 +287,7 @@ public class EntityTitle implements GlyphRendererHolder {
             context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
         }
 
-        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
+        //GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
     }
 
     private StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
