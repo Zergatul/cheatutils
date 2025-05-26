@@ -10,6 +10,7 @@
             <div class="actions">
                 <button class="action" @click="openAdd()">Add Block</button>
                 <button class="action" @click="rescan()">Rescan Chunks</button>
+                <button class="action" @click="toggleBlockRendering()">Block Rendering: {{ disableBlockRendering ? 'OFF' : 'ON' }}</button>
             </div>
             <div class="block-list">
                 <table>
