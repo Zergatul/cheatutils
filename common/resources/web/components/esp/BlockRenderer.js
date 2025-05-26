@@ -157,6 +157,10 @@ class BlockRenderingCanvas {
     }
 
     requestTexture(id) {
+        if (this.textures.has(id)) {
+            return;
+        }
+
         const data = {};
         this.textures.set(id, data);
 
@@ -181,8 +185,6 @@ class BlockRenderingCanvas {
         } else {
             data.image.addEventListener('load', () => processImage());
         }
-
-        return data;
     }
 
     setupMatrix() {
