@@ -106,7 +106,7 @@ public abstract class SystemFontInfo {
 
         @Override
         public String getInfo() {
-            return String.format("%s [%s]", name, path);
+            return String.format("[%s]", path);
         }
 
         @Override
@@ -155,7 +155,7 @@ public abstract class SystemFontInfo {
 
         @Override
         public String getInfo() {
-            return String.format("%s [%s #%s]", name, path, index);
+            return String.format("[%s] #%s", path, index);
         }
 
         @Override

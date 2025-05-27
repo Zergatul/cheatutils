@@ -7,8 +7,8 @@ import com.zergatul.cheatutils.utils.MathUtils;
 
 public class FontConfig implements ValidatableConfig {
 
-    public String face;
     public FontRendererType renderer;
+    public String face;
     public double size;
     public int scale;
     public boolean antiAliasing;
@@ -16,8 +16,8 @@ public class FontConfig implements ValidatableConfig {
     public double lineSpacing;
 
     public FontConfig() {
+        this.renderer = FontRendererType.VANILLA;
         this.face = "Consolas";
-        this.renderer = FontRendererType.AWT;
         this.size = 16;
         this.scale = 0;
         this.antiAliasing = false;

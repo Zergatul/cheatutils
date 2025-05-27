@@ -2,16 +2,6 @@
     <table>
         <tr>
             <td>
-                <span class="field-description">Font Name:</span>
-            </td>
-            <td>
-                <select v-model="modelValue.face" @change="update()">
-                    <option v-for="font in fonts" :value="font.name">{{ font.name }}</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>
                 <span class="field-description">Font Renderer:</span>
             </td>
             <td>
@@ -20,6 +10,19 @@
                     <option value="STB">STB (From LWJGL)</option>
                     <option value="VANILLA">Vanilla</option>
                 </select>
+            </td>
+        </tr>
+        <tr v-if="modelValue.renderer != 'VANILLA'">
+            <td>
+                <span class="field-description">Font Name:</span>
+            </td>
+            <td>
+                <select v-model="modelValue.face" @change="update()">
+                    <option v-for="font in fonts" :value="font.name">{{ font.name }}</option>
+                </select>
+            </td>
+            <td>
+                <span class="field-description">{{ fontDescription }}</span>
             </td>
         </tr>
         <tr v-if="modelValue.renderer != 'VANILLA'">
