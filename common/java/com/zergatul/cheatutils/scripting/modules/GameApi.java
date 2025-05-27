@@ -35,7 +35,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -556,6 +560,66 @@ public class GameApi {
                     entityId,
                     entity -> new BoundingBox(entity.getBoundingBox()),
                     () -> new BoundingBox(new AABB(0, 0, 0, 0, 0, 0)));
+        }
+
+        @MethodDescription("""
+                Returns all entity ids for specified entity type id.
+                Entities are sorted by the distance from the player eyes.
+                """)
+        public int[] enumerateById(String id) {
+            if (mc.level == null || mc.player == null) {
+                return new int[0];
+            }
+
+            EntityType<?> type = Registries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
+            if (type == null) {
+                return new int[0];
+            }
+
+            List<Entity> entities = new ArrayList<>();
+            for (Entity entity : mc.level.entitiesForRendering()) {
+                if (entity == mc.player) {
+                    continue;
+                }
+                if (entity.getType() == type) {
+                    entities.add(entity);
+                }
+            }
+
+            Vec3 eye = mc.player.getEyePosition();
+            entities.sort(Comparator.comparingDouble(e -> e.distanceToSqr(eye)));
+
+            return entities.stream().mapToInt(Entity::getId).toArray();
+        }
+
+        @MethodDescription("""
+                Returns all entity ids for specified class name.
+                Entities are sorted by the distance from the player eyes.
+                """)
+        public int[] enumerateByClass(String className) {
+            if (mc.level == null || mc.player == null) {
+                return new int[0];
+            }
+
+            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
+            if (info == null) {
+                return new int[0];
+            }
+
+            List<Entity> entities = new ArrayList<>();
+            for (Entity entity : mc.level.entitiesForRendering()) {
+                if (entity == mc.player) {
+                    continue;
+                }
+                if (info.clazz.isAssignableFrom(entity.getClass())) {
+                    entities.add(entity);
+                }
+            }
+
+            Vec3 eye = mc.player.getEyePosition();
+            entities.sort(Comparator.comparingDouble(e -> e.distanceToSqr(eye)));
+
+            return entities.stream().mapToInt(e -> e.getId()).toArray();
         }
 
         private Function<Entity, ItemStackWrapper> getEquippedItem(EquipmentSlot slot) {
