@@ -5,9 +5,6 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
 import com.zergatul.cheatutils.font.*;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
-import com.zergatul.cheatutils.render.Primitives;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import com.zergatul.cheatutils.ui.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -39,7 +36,7 @@ public class WorldMarkers implements GlyphRendererHolder {
 
     public void onFontChange(WorldMarkersConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            glyphRendererFuture = FontLibrary2.instance.createRenderer(config.font.asFontParameters());
+            glyphRendererFuture = FontLibrary.instance.createRenderer(config.font.asFontParameters());
         });
     }
 

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GetFieldOfViewEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.font.GlyphFontRenderer;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
 import net.minecraft.client.Camera;

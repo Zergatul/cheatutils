@@ -14,7 +14,6 @@ import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import com.zergatul.cheatutils.ui.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
@@ -101,13 +100,13 @@ public class EntityTitle implements GlyphRendererHolder {
 
     public void onTitleFontChange(EntityTitleConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            titleGlyphRendererFuture = FontLibrary2.instance.createRenderer(config.titleFont.asFontParameters());
+            titleGlyphRendererFuture = FontLibrary.instance.createRenderer(config.titleFont.asFontParameters());
         });
     }
 
     public void onEnchantmentFontChange(EntityTitleConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            enchantmentGlyphRendererFuture = FontLibrary2.instance.createRenderer(config.enchantmentFont.asFontParameters());
+            enchantmentGlyphRendererFuture = FontLibrary.instance.createRenderer(config.enchantmentFont.asFontParameters());
         });
     }
 
