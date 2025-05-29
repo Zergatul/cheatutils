@@ -136,6 +136,9 @@ public class VanillaFontRenderer extends FontRenderer {
         float scale = getScale();
 
         for (StylizedTextChunk chunk : text.chunks) {
+            if (chunk.text().isEmpty()) {
+                continue;
+            }
 
             Map<RenderType, MyVertexConsumer> map = new HashMap<>();
             var source = new MultiBufferSource() {
@@ -161,43 +164,45 @@ public class VanillaFontRenderer extends FontRenderer {
                     0, // backgroundColor
                     15728880);
 
-            RenderType type = map.keySet().stream().findFirst().orElseThrow();
-            if (type instanceof CompositeRenderTypeAccessor accessor) {
-                RenderType.CompositeState state = accessor.getState_CU();
-                RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
-                if (shard instanceof RenderStateShard.TextureStateShard textureStateShard) {
-                    Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
-                    AbstractTexture t = mc.getTextureManager().getTexture(texture.get());
-                    int id = ((GlTexture) t.getTexture()).glId();
+            if (!map.isEmpty()) {
+                RenderType type = map.keySet().stream().findFirst().orElseThrow();
+                if (type instanceof CompositeRenderTypeAccessor accessor) {
+                    RenderType.CompositeState state = accessor.getState_CU();
+                    RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
+                    if (shard instanceof RenderStateShard.TextureStateShard textureStateShard) {
+                        Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
+                        AbstractTexture t = mc.getTextureManager().getTexture(texture.get());
+                        int id = ((GlTexture) t.getTexture()).glId();
 
-                    if (type.mode() == VertexFormat.Mode.QUADS) {
-                        MyVertexConsumer consumer = map.get(type);
+                        if (type.mode() == VertexFormat.Mode.QUADS) {
+                            MyVertexConsumer consumer = map.get(type);
 
-                        MainFrameBuffer.enter();
+                            MainFrameBuffer.enter();
 
-                        var buffer = buffers.getTexColor2d(id);
-                        for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
-                            buffer.quad(
-                                    x + consumer.list.get(i * 8 * 4 + 0) * scale, // x1
-                                    y + consumer.list.get(i * 8 * 4 + 1) * scale, // y1
-                                    consumer.list.get(i * 8 * 4 + 2), // u1
-                                    consumer.list.get(i * 8 * 4 + 3), // v1
-                                    x + consumer.list.get(i * 8 * 4 + 8) * scale, // x2
-                                    y + consumer.list.get(i * 8 * 4 + 9) * scale, // y2
-                                    consumer.list.get(i * 8 * 4 + 10), // u2
-                                    consumer.list.get(i * 8 * 4 + 11), // v2
-                                    x + consumer.list.get(i * 8 * 4 + 16) * scale, // x3
-                                    y + consumer.list.get(i * 8 * 4 + 17) * scale, // y3
-                                    consumer.list.get(i * 8 * 4 + 18), // u3
-                                    consumer.list.get(i * 8 * 4 + 19), // v3
-                                    x + consumer.list.get(i * 8 * 4 + 24) * scale, // x3
-                                    y + consumer.list.get(i * 8 * 4 + 25) * scale, // y3
-                                    consumer.list.get(i * 8 * 4 + 26), // u3
-                                    consumer.list.get(i * 8 * 4 + 27), // v3
-                                    consumer.list.get(i * 8 * 4 + 4), // r
-                                    consumer.list.get(i * 8 * 4 + 5), // g
-                                    consumer.list.get(i * 8 * 4 + 6), // b
-                                    consumer.list.get(i * 8 * 4 + 7)); // a
+                            var buffer = buffers.getTexColor2d(id);
+                            for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
+                                buffer.quad(
+                                        x + consumer.list.get(i * 8 * 4 + 0) * scale, // x1
+                                        y + consumer.list.get(i * 8 * 4 + 1) * scale, // y1
+                                        consumer.list.get(i * 8 * 4 + 2), // u1
+                                        consumer.list.get(i * 8 * 4 + 3), // v1
+                                        x + consumer.list.get(i * 8 * 4 + 8) * scale, // x2
+                                        y + consumer.list.get(i * 8 * 4 + 9) * scale, // y2
+                                        consumer.list.get(i * 8 * 4 + 10), // u2
+                                        consumer.list.get(i * 8 * 4 + 11), // v2
+                                        x + consumer.list.get(i * 8 * 4 + 16) * scale, // x3
+                                        y + consumer.list.get(i * 8 * 4 + 17) * scale, // y3
+                                        consumer.list.get(i * 8 * 4 + 18), // u3
+                                        consumer.list.get(i * 8 * 4 + 19), // v3
+                                        x + consumer.list.get(i * 8 * 4 + 24) * scale, // x3
+                                        y + consumer.list.get(i * 8 * 4 + 25) * scale, // y3
+                                        consumer.list.get(i * 8 * 4 + 26), // u3
+                                        consumer.list.get(i * 8 * 4 + 27), // v3
+                                        consumer.list.get(i * 8 * 4 + 4), // r
+                                        consumer.list.get(i * 8 * 4 + 5), // g
+                                        consumer.list.get(i * 8 * 4 + 6), // b
+                                        consumer.list.get(i * 8 * 4 + 7)); // a
+                            }
                         }
                     }
                 }

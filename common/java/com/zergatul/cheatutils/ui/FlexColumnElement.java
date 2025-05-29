@@ -6,9 +6,14 @@ import java.util.List;
 public class FlexColumnElement implements Element {
 
     private List<Element> items;
+    private HorizontalAlign align;
     private int gap;
     private int measuredWidth, measuredHeight;
     private int x, y;
+
+    public FlexColumnElement() {
+        this.align = HorizontalAlign.CENTER;
+    }
 
     @Override
     public void measure(RenderingContext context) {
@@ -51,9 +56,12 @@ public class FlexColumnElement implements Element {
 
         int yOffset = y;
         for (Element item : items) {
-            item.layout(
-                    x + (measuredWidth - item.getMeasuredWidth()) / 2, yOffset,
-                    item.getMeasuredWidth(), item.getMeasuredHeight());
+            int xItem = switch (align) {
+                case LEFT -> x;
+                case CENTER -> x + (measuredWidth - item.getMeasuredWidth()) / 2;
+                case RIGHT -> x + measuredWidth - item.getMeasuredWidth();
+            };
+            item.layout(xItem, yOffset, item.getMeasuredWidth(), item.getMeasuredHeight());
             yOffset += item.getMeasuredHeight() + gap;
         }
     }
@@ -67,6 +75,11 @@ public class FlexColumnElement implements Element {
         for (Element item : items) {
             item.render(context);
         }
+    }
+
+    public FlexColumnElement setAlign(HorizontalAlign align) {
+        this.align = align;
+        return this;
     }
 
     public FlexColumnElement setGap(int gap) {

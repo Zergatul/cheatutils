@@ -1,23 +1,24 @@
 package com.zergatul.cheatutils.modules.scripting;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
+import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
+import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.MutableComponent;
+import org.joml.Matrix4f;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
-public class StatusOverlay implements Module {
+public class StatusOverlay implements Module, GlyphRendererHolder {
 
     public static final StatusOverlay instance = new StatusOverlay();
 
-    private static final int TranslateZ = 200;
     private static final int DefaultBackground = 0x90505050;
 
     private static final Minecraft mc = Minecraft.getInstance();
@@ -27,6 +28,9 @@ public class StatusOverlay implements Module {
     private HorizontalAlign hAlign;
     private VerticalAlign vAlign;
 
+    private CompletableFuture<GlyphRenderer> glyphRendererFuture;
+    private FontRenderer fontRenderer;
+
     private StatusOverlay() {
         for (Align align: Align.values()) {
             texts.put(align, new ArrayList<>());
@@ -35,15 +39,26 @@ public class StatusOverlay implements Module {
         Events.PostRenderGui.add(this::render);
     }
 
+    @Override
+    public boolean uses(GlyphRenderer renderer) {
+        return fontRenderer != null && fontRenderer.uses(renderer);
+    }
+
+    public void onFontChange(StatusOverlayConfig config) {
+        TickEndExecutor.instance.execute(() -> {
+            glyphRendererFuture = FontLibrary.instance.createRenderer(config.font.asFontParameters());
+        });
+    }
+
     public void setScript(Runnable script) {
         this.script = script;
     }
 
-    public void addText(MutableComponent message) {
+    public void addText(StylizedText message) {
         addText(DefaultBackground, message);
     }
 
-    public void addText(int background, MutableComponent message) {
+    public void addText(int background, StylizedText message) {
         texts.get(Align.get(vAlign, hAlign)).add(new AlignedText(background, message));
     }
 
@@ -73,6 +88,17 @@ public class StatusOverlay implements Module {
             return;
         }
 
+        if (glyphRendererFuture != null) {
+            if (glyphRendererFuture.isDone()) {
+                fontRenderer = glyphRendererFuture.join().createFontRenderer(config.font.asFontRenderDetails());
+                glyphRendererFuture = null;
+            }
+        }
+
+        if (fontRenderer == null) {
+            return;
+        }
+
         for (Align align: Align.values()) {
             texts.get(align).clear();
         }
@@ -83,7 +109,43 @@ public class StatusOverlay implements Module {
         vAlign = VerticalAlign.BOTTOM;
         script.run();
 
-        PoseStack poseStack = event.getGuiGraphics().pose();
+        int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
+        int scrWidth = mc.getWindow().getWidth();
+        int scrHeight = mc.getWindow().getHeight();
+        int halfScrWidth = scrWidth / 2;
+        int halfScrHeight = scrHeight / 2;
+
+        Matrix4f matrix = new Matrix4f();
+        matrix.ortho(0, scrWidth, scrHeight, 0, -1, 1);
+
+        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+
+        for (Align align : Align.values()) {
+            List<AlignedText> list = texts.get(align);
+            if (list.isEmpty()) {
+                continue;
+            }
+
+            FlexColumnElement flex = new FlexColumnElement().setAlign(align.hAlign);
+            for (AlignedText item : list) {
+                flex.append(new TextElement(fontRenderer, item.text));
+            }
+
+            int x = switch (align.hAlign) {
+                case LEFT -> 2 * scale;
+                case CENTER -> halfScrWidth;
+                case RIGHT -> scrWidth - 2 * scale;
+            };
+            int y = switch (align.vAlign) {
+                case TOP -> 2 * scale;
+                case MIDDLE -> halfScrHeight;
+                case BOTTOM -> scrHeight - 2 * scale;
+            };
+
+            context.render(flex, x, y, align.hAlign, align.vAlign);
+        }
+
+        /*PoseStack poseStack = event.getGuiGraphics().pose();
         poseStack.pushPose();
         poseStack.setIdentity();
         poseStack.translate(0, 0, TranslateZ);
@@ -97,7 +159,7 @@ public class StatusOverlay implements Module {
             }
             for (int i = 0; i < list.size(); i++) {
                 AlignedText text = list.get(i);
-                int width = mc.font.width(text.component);
+                int width = mc.font.width(text.text);
                 int x = getLeft(align.hAlign, mc.getWindow().getGuiScaledWidth(), width);
                 int y = getTop(align.vAlign, mc.getWindow().getGuiScaledHeight(), mc.font.lineHeight, i, list.size());
                 if (width > 0) {
@@ -107,24 +169,24 @@ public class StatusOverlay implements Module {
                             x - 1 + width + 2,
                             y + mc.font.lineHeight,
                             text.background);
-                    event.getGuiGraphics().drawString(mc.font, text.component, x, y, 16777215);
+                    event.getGuiGraphics().drawString(mc.font, text.text, x, y, 16777215);
                 }
             }
         }
 
         for (FreeText text: freeTexts) {
-            int width = mc.font.width(text.component);
+            int width = mc.font.width(text.text);
             if (width > 0) {
                 event.getGuiGraphics().fill(
                         text.x - 1,
                         text.y,
                         text.x - 1 + width + 2,
                         text.y + mc.font.lineHeight, text.background);
-                event.getGuiGraphics().drawString(mc.font, text.component, text.x, text.y, 16777215);
+                event.getGuiGraphics().drawString(mc.font, text.text, text.x, text.y, 16777215);
             }
         }
 
-        poseStack.popPose();
+        poseStack.popPose();*/
     }
 
     private int getLeft(HorizontalAlign align, int screenWidth, int textWidth) {
@@ -141,18 +203,6 @@ public class StatusOverlay implements Module {
             case MIDDLE -> (screenHeight - textHeight * count) / 2 + index * textHeight;
             case BOTTOM -> screenHeight - 2 - textHeight * (count - index);
         };
-    }
-
-    public enum HorizontalAlign {
-        LEFT,
-        CENTER,
-        RIGHT
-    }
-
-    public enum VerticalAlign {
-        TOP,
-        MIDDLE,
-        BOTTOM
     }
 
     private enum Align {
@@ -195,7 +245,7 @@ public class StatusOverlay implements Module {
         }
     }
 
-    private record AlignedText(int background, MutableComponent component) {}
+    private record AlignedText(int background, StylizedText text) {}
 
     private record FreeText(int x, int y, int background, MutableComponent component) {}
 }

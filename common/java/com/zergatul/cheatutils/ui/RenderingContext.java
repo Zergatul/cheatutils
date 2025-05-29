@@ -73,15 +73,16 @@ public class RenderingContext {
         int width = element.getMeasuredWidth();
         int height = element.getMeasuredHeight();
 
-        if (hAlign == HorizontalAlign.CENTER) {
-            x -= width / 2;
-        } else {
-            throw new RuntimeException();
+        switch (hAlign) {
+            case LEFT -> {}
+            case CENTER -> x -= width / 2;
+            case RIGHT -> x -= width;
         }
-        if (vAlign == VerticalAlign.BOTTOM) {
-            y -= height;
-        } else {
-            throw new RuntimeException();
+
+        switch (vAlign) {
+            case TOP -> {}
+            case MIDDLE -> y -= height / 2;
+            case BOTTOM -> y -= height;
         }
 
         element.layout(x, y, width, height);

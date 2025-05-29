@@ -1,8 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.font.StylizedText;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.ui.HorizontalAlign;
+import com.zergatul.cheatutils.ui.VerticalAlign;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,7 +22,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void left() {
-        StatusOverlay.instance.setHorizontalAlign(StatusOverlay.HorizontalAlign.LEFT);
+        StatusOverlay.instance.setHorizontalAlign(HorizontalAlign.LEFT);
     }
 
     @MethodDescription("""
@@ -27,7 +30,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void center() {
-        StatusOverlay.instance.setHorizontalAlign(StatusOverlay.HorizontalAlign.CENTER);
+        StatusOverlay.instance.setHorizontalAlign(HorizontalAlign.CENTER);
     }
 
     @MethodDescription("""
@@ -35,7 +38,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void right() {
-        StatusOverlay.instance.setHorizontalAlign(StatusOverlay.HorizontalAlign.RIGHT);
+        StatusOverlay.instance.setHorizontalAlign(HorizontalAlign.RIGHT);
     }
 
     @MethodDescription("""
@@ -43,7 +46,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void top() {
-        StatusOverlay.instance.setVerticalAlign(StatusOverlay.VerticalAlign.TOP);
+        StatusOverlay.instance.setVerticalAlign(VerticalAlign.TOP);
     }
 
     @MethodDescription("""
@@ -51,7 +54,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void middle() {
-        StatusOverlay.instance.setVerticalAlign(StatusOverlay.VerticalAlign.MIDDLE);
+        StatusOverlay.instance.setVerticalAlign(VerticalAlign.MIDDLE);
     }
 
     @MethodDescription("""
@@ -59,7 +62,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void bottom() {
-        StatusOverlay.instance.setVerticalAlign(StatusOverlay.VerticalAlign.BOTTOM);
+        StatusOverlay.instance.setVerticalAlign(VerticalAlign.BOTTOM);
     }
 
     @MethodDescription("""
@@ -75,12 +78,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void add(String color, String text) {
-        Integer colorInt = ColorUtils.parseColor(color);
-        MutableComponent component = MutableComponent.create(new PlainTextContents.LiteralContents(text));
-        if (colorInt != null) {
-            component = component.withStyle(Style.EMPTY.withColor(colorInt));
-        }
-        StatusOverlay.instance.addText(component);
+        StatusOverlay.instance.addText(StylizedText.createSafe(text, color));
     }
 
     @MethodDescription("""
@@ -88,17 +86,11 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void add(String color1, String text1, String color2, String text2) {
-        Integer color1Int = ColorUtils.parseColor(color1);
-        Integer color2Int = ColorUtils.parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new PlainTextContents.LiteralContents(text1));
-        if (color1Int != null) {
-            component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
-        }
-        MutableComponent component2 = MutableComponent.create(new PlainTextContents.LiteralContents(text2));
-        if (color2Int != null) {
-            component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
-        }
-        StatusOverlay.instance.addText(component1.append(" ").append(component2));
+        StatusOverlay.instance.addText(StylizedText.createSafe(new String[] {
+                color1, text1,
+                "#FFFFFF", " ",
+                color2, text2
+        }));
     }
 
     @MethodDescription("""
@@ -110,9 +102,9 @@ public class OverlayApi {
     public void add(String backgroundColor, String[] parameters) {
         Integer background = ColorUtils.parseColor(backgroundColor);
         if (background != null) {
-            StatusOverlay.instance.addText(background, constructMessage(parameters));
+            StatusOverlay.instance.addText(background, StylizedText.createSafe(parameters));
         } else {
-            StatusOverlay.instance.addText(constructMessage(parameters));
+            StatusOverlay.instance.addText(StylizedText.createSafe(parameters));
         }
     }
 

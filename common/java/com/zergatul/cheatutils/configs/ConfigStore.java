@@ -148,6 +148,7 @@ public class ConfigStore {
         EntityTitle.instance.onTitleFontChange(config.entityTitleConfig);
         EntityTitle.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkers.instance.onFontChange(config.worldMarkersConfig);
+        StatusOverlay.instance.onFontChange(config.statusOverlayConfig);
 
         ScriptsController.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {

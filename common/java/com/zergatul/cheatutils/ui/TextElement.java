@@ -45,7 +45,11 @@ public class TextElement implements Element {
 
     @Override
     public void render(RenderingContext context) {
-        font.drawText(context.getBuffers(), text, x, y + measuredHeight - bounds.getY1()); // align bottom
+        if (compactHeight) {
+            font.drawText(context.getBuffers(), text, x, y + measuredHeight - bounds.getY1()); // align bottom
+        } else {
+            font.drawText(context.getBuffers(), text, x, y + font.getLineHeight());
+        }
     }
 
     public TextElement setCompactHeight(boolean compact) {

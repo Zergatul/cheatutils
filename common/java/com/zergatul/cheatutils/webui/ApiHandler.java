@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
+import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Minecraft;
@@ -450,7 +451,16 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(StatusOverlayConfig config) {
-                ConfigStore.instance.getConfig().statusOverlayConfig.enabled = config.enabled;
+                StatusOverlayConfig existingConfig = ConfigStore.instance.getConfig().statusOverlayConfig;
+                existingConfig.enabled = config.enabled;
+
+                FontConfig oldFont = existingConfig.font;
+                FontConfig newFont = config.font;
+
+                if (!oldFont.equals(newFont)) {
+                    existingConfig.font = newFont;
+                    StatusOverlay.instance.onFontChange(existingConfig);
+                }
             }
         });
 

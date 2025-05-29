@@ -96,6 +96,7 @@ public class ModMain implements ClientModInitializer {
 
         register(TickEndExecutor.instance);
 
+        GlyphRendererHolders.add(StatusOverlay.instance);
         GlyphRendererHolders.add(EntityTitle.instance);
         GlyphRendererHolders.add(WorldMarkers.instance);
 
