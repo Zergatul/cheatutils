@@ -15,6 +15,14 @@ public class Color2dRenderBuffer {
         list.clear();
     }
 
+    public void rect(float x, float y, float w, float h, int color) {
+        float a = (color >> 24 & 255) / 255.0F;
+        float r = (color >> 16 & 255) / 255.0F;
+        float g = (color >> 8 & 255) / 255.0F;
+        float b = (color & 255) / 255.0F;
+        rect(x, y, w, h, r, g, b, a);
+    }
+
     public void rect(float x, float y, float w, float h, float r, float g, float b, float a) {
         quad(
                 x, y,

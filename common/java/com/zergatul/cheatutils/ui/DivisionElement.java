@@ -61,14 +61,10 @@ public class DivisionElement implements Element {
 
         if (bgColor != 0) {
             Color2dRenderBuffer buffer = context.getBuffers().getColor2d();
-            float a = (bgColor >> 24 & 255) / 255.0F;
-            float r = (bgColor >> 16 & 255) / 255.0F;
-            float g = (bgColor >> 8 & 255) / 255.0F;
-            float b = (bgColor & 255) / 255.0F;
             buffer.rect(
                     x + borderWidth, y + borderWidth,
                     measuredWidth - 2 * borderWidth, measuredHeight - 2 * borderWidth,
-                    r, g, b, a);
+                    bgColor);
         }
 
         if (content != null) {

@@ -6,7 +6,7 @@ public class VanillaGlyphRenderer extends GlyphRenderer {
 
     @Override
     public FontRenderer createFontRenderer(FontRenderDetails details) {
-        return new VanillaFontRenderer(details.scale());
+        return new VanillaFontRenderer(details.scale(), details.dropShadow());
     }
 
     @Override

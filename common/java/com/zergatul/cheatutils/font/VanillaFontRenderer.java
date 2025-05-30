@@ -27,10 +27,12 @@ public class VanillaFontRenderer extends FontRenderer {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final int scale;
+    private final boolean dropShadow;
 
-    protected VanillaFontRenderer(int scale) {
+    protected VanillaFontRenderer(int scale, boolean dropShadow) {
         super(null, null);
         this.scale = scale;
+        this.dropShadow = dropShadow;
     }
 
     @Override
@@ -53,87 +55,11 @@ public class VanillaFontRenderer extends FontRenderer {
         return mc.font.lineHeight * getScale();
     }
 
-//    @Override
-//    public void drawText(Matrix4f matrix, StylizedText text, float x, float y) {
-//        float scale = getScale();
-//
-//        for (StylizedTextChunk chunk : text.chunks) {
-//
-//            Map<RenderType, MyVertexConsumer> map = new HashMap<>();
-//            var source = new MultiBufferSource() {
-//                @Override
-//                public VertexConsumer getBuffer(RenderType renderType) {
-//                    if (map.containsKey(renderType)) {
-//                        return map.get(renderType);
-//                    } else {
-//                        var consumer = new MyVertexConsumer();
-//                        map.put(renderType, consumer);
-//                        return consumer;
-//                    }
-//                }
-//            };
-//
-//            mc.font.drawInBatch(
-//                    chunk.text(),
-//                    0, 0, chunk.getColor(),
-//                    false, // drawShadow
-//                    new Matrix4f(),
-//                    source,
-//                    Font.DisplayMode.NORMAL,
-//                    0, // backgroundColor
-//                    15728880);
-//
-//            RenderType type = map.keySet().stream().findFirst().orElseThrow();
-//            if (type instanceof CompositeRenderTypeAccessor accessor) {
-//                RenderType.CompositeState state = accessor.getState_CU();
-//                RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
-//                if (shard instanceof RenderStateShard.TextureStateShard textureStateShard) {
-//                    Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
-//                    AbstractTexture t = mc.getTextureManager().getTexture(texture.get());
-//                    int id = ((GlTexture) t.getTexture()).glId();
-//
-//                    if (type.mode() == VertexFormat.Mode.QUADS) {
-//                        MyVertexConsumer consumer = map.get(type);
-//
-//                        MainFrameBuffer.enter();
-//
-//                        TextureColor2dRenderer renderer = RenderUtilities.instance.getTextureColor2dRenderer();
-//                        renderer.begin();
-//                        for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
-//                            renderer.quad(
-//                                    x + consumer.list.get(i * 8 * 4 + 0) * scale, // x1
-//                                    y + consumer.list.get(i * 8 * 4 + 1) * scale, // y1
-//                                    consumer.list.get(i * 8 * 4 + 2), // u1
-//                                    consumer.list.get(i * 8 * 4 + 3), // v1
-//                                    x + consumer.list.get(i * 8 * 4 + 8) * scale, // x2
-//                                    y + consumer.list.get(i * 8 * 4 + 9) * scale, // y2
-//                                    consumer.list.get(i * 8 * 4 + 10), // u2
-//                                    consumer.list.get(i * 8 * 4 + 11), // v2
-//                                    x + consumer.list.get(i * 8 * 4 + 16) * scale, // x3
-//                                    y + consumer.list.get(i * 8 * 4 + 17) * scale, // y3
-//                                    consumer.list.get(i * 8 * 4 + 18), // u3
-//                                    consumer.list.get(i * 8 * 4 + 19), // v3
-//                                    x + consumer.list.get(i * 8 * 4 + 24) * scale, // x3
-//                                    y + consumer.list.get(i * 8 * 4 + 25) * scale, // y3
-//                                    consumer.list.get(i * 8 * 4 + 26), // u3
-//                                    consumer.list.get(i * 8 * 4 + 27), // v3
-//                                    consumer.list.get(i * 8 * 4 + 4), // r
-//                                    consumer.list.get(i * 8 * 4 + 5), // g
-//                                    consumer.list.get(i * 8 * 4 + 6), // b
-//                                    consumer.list.get(i * 8 * 4 + 7)); // a
-//                        }
-//                        renderer.end(matrix, id);
-//                    }
-//                }
-//            }
-//
-//            x += mc.font.width(chunk.text()) * scale;
-//        }
-//    }
-
     @Override
     public void drawText(RenderBuffers buffers, StylizedText text, float x, float y) {
         float scale = getScale();
+
+        y -= getLineHeight();
 
         for (StylizedTextChunk chunk : text.chunks) {
             if (chunk.text().isEmpty()) {
@@ -180,28 +106,56 @@ public class VanillaFontRenderer extends FontRenderer {
                             MainFrameBuffer.enter();
 
                             var buffer = buffers.getTexColor2d(id);
+
+                            if (dropShadow) {
+                                for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
+                                    float r = consumer.list.getFloat(i * 8 * 4 + 4) * SHADOW_FACTOR;
+                                    float g = consumer.list.getFloat(i * 8 * 4 + 5) * SHADOW_FACTOR;
+                                    float b = consumer.list.getFloat(i * 8 * 4 + 6) * SHADOW_FACTOR;
+                                    float a = consumer.list.getFloat(i * 8 * 4 + 7);
+                                    buffer.quad(
+                                            x + scale + consumer.list.getFloat(i * 8 * 4 + 0) * scale, // x1
+                                            y + scale + consumer.list.getFloat(i * 8 * 4 + 1) * scale, // y1
+                                            consumer.list.getFloat(i * 8 * 4 + 2), // u1
+                                            consumer.list.getFloat(i * 8 * 4 + 3), // v1
+                                            x + scale + consumer.list.getFloat(i * 8 * 4 + 8) * scale, // x2
+                                            y + scale + consumer.list.getFloat(i * 8 * 4 + 9) * scale, // y2
+                                            consumer.list.getFloat(i * 8 * 4 + 10), // u2
+                                            consumer.list.getFloat(i * 8 * 4 + 11), // v2
+                                            x + scale + consumer.list.getFloat(i * 8 * 4 + 16) * scale, // x3
+                                            y + scale + consumer.list.getFloat(i * 8 * 4 + 17) * scale, // y3
+                                            consumer.list.getFloat(i * 8 * 4 + 18), // u3
+                                            consumer.list.getFloat(i * 8 * 4 + 19), // v3
+                                            x + scale + consumer.list.getFloat(i * 8 * 4 + 24) * scale, // x3
+                                            y + scale + consumer.list.getFloat(i * 8 * 4 + 25) * scale, // y3
+                                            consumer.list.getFloat(i * 8 * 4 + 26), // u3
+                                            consumer.list.getFloat(i * 8 * 4 + 27), // v3
+                                            r, g, b, a);
+                                }
+                            }
+
                             for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
                                 buffer.quad(
-                                        x + consumer.list.get(i * 8 * 4 + 0) * scale, // x1
-                                        y + consumer.list.get(i * 8 * 4 + 1) * scale, // y1
-                                        consumer.list.get(i * 8 * 4 + 2), // u1
-                                        consumer.list.get(i * 8 * 4 + 3), // v1
-                                        x + consumer.list.get(i * 8 * 4 + 8) * scale, // x2
-                                        y + consumer.list.get(i * 8 * 4 + 9) * scale, // y2
-                                        consumer.list.get(i * 8 * 4 + 10), // u2
-                                        consumer.list.get(i * 8 * 4 + 11), // v2
-                                        x + consumer.list.get(i * 8 * 4 + 16) * scale, // x3
-                                        y + consumer.list.get(i * 8 * 4 + 17) * scale, // y3
-                                        consumer.list.get(i * 8 * 4 + 18), // u3
-                                        consumer.list.get(i * 8 * 4 + 19), // v3
-                                        x + consumer.list.get(i * 8 * 4 + 24) * scale, // x3
-                                        y + consumer.list.get(i * 8 * 4 + 25) * scale, // y3
-                                        consumer.list.get(i * 8 * 4 + 26), // u3
-                                        consumer.list.get(i * 8 * 4 + 27), // v3
-                                        consumer.list.get(i * 8 * 4 + 4), // r
-                                        consumer.list.get(i * 8 * 4 + 5), // g
-                                        consumer.list.get(i * 8 * 4 + 6), // b
-                                        consumer.list.get(i * 8 * 4 + 7)); // a
+                                        x + consumer.list.getFloat(i * 8 * 4 + 0) * scale, // x1
+                                        y + consumer.list.getFloat(i * 8 * 4 + 1) * scale, // y1
+                                        consumer.list.getFloat(i * 8 * 4 + 2), // u1
+                                        consumer.list.getFloat(i * 8 * 4 + 3), // v1
+                                        x + consumer.list.getFloat(i * 8 * 4 + 8) * scale, // x2
+                                        y + consumer.list.getFloat(i * 8 * 4 + 9) * scale, // y2
+                                        consumer.list.getFloat(i * 8 * 4 + 10), // u2
+                                        consumer.list.getFloat(i * 8 * 4 + 11), // v2
+                                        x + consumer.list.getFloat(i * 8 * 4 + 16) * scale, // x3
+                                        y + consumer.list.getFloat(i * 8 * 4 + 17) * scale, // y3
+                                        consumer.list.getFloat(i * 8 * 4 + 18), // u3
+                                        consumer.list.getFloat(i * 8 * 4 + 19), // v3
+                                        x + consumer.list.getFloat(i * 8 * 4 + 24) * scale, // x3
+                                        y + consumer.list.getFloat(i * 8 * 4 + 25) * scale, // y3
+                                        consumer.list.getFloat(i * 8 * 4 + 26), // u3
+                                        consumer.list.getFloat(i * 8 * 4 + 27), // v3
+                                        consumer.list.getFloat(i * 8 * 4 + 4), // r
+                                        consumer.list.getFloat(i * 8 * 4 + 5), // g
+                                        consumer.list.getFloat(i * 8 * 4 + 6), // b
+                                        consumer.list.getFloat(i * 8 * 4 + 7)); // a
                             }
                         }
                     }

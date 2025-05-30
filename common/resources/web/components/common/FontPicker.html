@@ -12,7 +12,7 @@
                 </select>
             </td>
         </tr>
-        <tr v-if="modelValue.renderer != 'VANILLA'">
+        <tr v-if="!isVanilla">
             <td>
                 <span class="field-description">Font Name:</span>
             </td>
@@ -25,7 +25,7 @@
                 <span class="field-description">{{ fontDescription }}</span>
             </td>
         </tr>
-        <tr v-if="modelValue.renderer != 'VANILLA'">
+        <tr v-if="!isVanilla">
             <td>
                 <span class="field-description">Font Size:</span>
             </td>
@@ -33,7 +33,7 @@
                 <input type="number" class="w4" min="8" max="100" v-model="modelValue.size" @change="update()">
             </td>
         </tr>
-        <tr v-if="modelValue.renderer == 'VANILLA'">
+        <tr v-if="isVanilla">
             <td>
                 <span class="field-description">Font Scale:</span>
             </td>
@@ -44,7 +44,7 @@
                 <span class="field-description">Set to 0 to use your current GUI scaling</span>
             </td>
         </tr>
-        <tr v-if="modelValue.renderer == 'AWT'">
+        <tr v-if="isAWT">
             <td>
                 <span class="field-description">Anti-Aliasing:</span>
             </td>
@@ -52,7 +52,7 @@
                 <switch-checkbox v-model="modelValue.antiAliasing" @change="update()"></switch-checkbox>
             </td>
         </tr>
-        <tr v-if="modelValue.renderer != 'VANILLA'">
+        <tr v-if="!isVanilla">
             <td>
                 <span class="field-description">Letter Spacing:</span>
             </td>
@@ -60,12 +60,36 @@
                 <input type="number" class="w4" min="-10" max="10" step="0.25" v-model="modelValue.letterSpacing" @change="update()">
             </td>
         </tr>
-        <tr v-if="modelValue.renderer != 'VANILLA'">
+        <tr v-if="!isVanilla">
             <td>
                 <span class="field-description">Line Spacing:</span>
             </td>
             <td>
                 <input type="number" class="w4" min="-50" max="50" step="1" v-model="modelValue.lineSpacing" @change="update()">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="field-description">Drop Shadow:</span>
+            </td>
+            <td>
+                <switch-checkbox v-model="modelValue.dropShadow" @change="update()"></switch-checkbox>
+            </td>
+        </tr>
+        <tr v-if="!isVanilla && modelValue.dropShadow">
+            <td>
+                <span class="field-description">Shadow Offset X:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="-50" max="50" step="1" v-model="modelValue.shadowOffsetX" @change="update()">
+            </td>
+        </tr>
+        <tr v-if="!isVanilla && modelValue.dropShadow">
+            <td>
+                <span class="field-description">Shadow Offset Y:</span>
+            </td>
+            <td>
+                <input type="number" class="w4" min="-50" max="50" step="1" v-model="modelValue.shadowOffsetY" @change="update()">
             </td>
         </tr>
     </table>

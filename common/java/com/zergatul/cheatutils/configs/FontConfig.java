@@ -14,6 +14,8 @@ public class FontConfig implements ValidatableConfig {
     public boolean antiAliasing;
     public double letterSpacing;
     public double lineSpacing;
+    public boolean dropShadow;
+    public int shadowOffsetX, shadowOffsetY;
 
     public FontConfig() {
         this.renderer = FontRendererType.VANILLA;
@@ -21,6 +23,9 @@ public class FontConfig implements ValidatableConfig {
         this.size = 16;
         this.scale = 0;
         this.antiAliasing = false;
+        this.dropShadow = false;
+        this.shadowOffsetX = 1;
+        this.shadowOffsetY = 1;
     }
 
     public boolean equals(FontConfig other) {
@@ -33,14 +38,21 @@ public class FontConfig implements ValidatableConfig {
                     other.size == size &&
                     other.antiAliasing == antiAliasing &&
                     other.letterSpacing == letterSpacing &&
-                    other.lineSpacing == lineSpacing;
+                    other.lineSpacing == lineSpacing &&
+                    other.dropShadow == dropShadow &&
+                    other.shadowOffsetX == shadowOffsetX &&
+                    other.shadowOffsetY == shadowOffsetY;
             case STB ->
                     other.face.equals(face) &&
                     other.size == size &&
                     other.letterSpacing == letterSpacing &&
-                    other.lineSpacing == lineSpacing;
+                    other.lineSpacing == lineSpacing &&
+                    other.dropShadow == dropShadow &&
+                    other.shadowOffsetX == shadowOffsetX &&
+                    other.shadowOffsetY == shadowOffsetY;
             case VANILLA ->
-                    other.scale == scale;
+                    other.scale == scale &&
+                    other.dropShadow == dropShadow;
         };
     }
 
@@ -49,7 +61,7 @@ public class FontConfig implements ValidatableConfig {
     }
 
     public FontRenderDetails asFontRenderDetails() {
-        return new FontRenderDetails((float) letterSpacing, (float) lineSpacing, scale);
+        return new FontRenderDetails((float) letterSpacing, (float) lineSpacing, dropShadow, shadowOffsetX, shadowOffsetY, scale);
     }
 
     @Override

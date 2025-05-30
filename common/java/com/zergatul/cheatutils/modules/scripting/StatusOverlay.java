@@ -9,7 +9,6 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.MutableComponent;
 import org.joml.Matrix4f;
 
 import java.util.*;
@@ -19,7 +18,7 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
 
     public static final StatusOverlay instance = new StatusOverlay();
 
-    private static final int DefaultBackground = 0x90505050;
+    private static final int DEFAULT_BACKGROUND = 0x90505050;
 
     private static final Minecraft mc = Minecraft.getInstance();
     private final Map<Align, List<AlignedText>> texts = new HashMap<>();
@@ -27,6 +26,7 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
     private Runnable script;
     private HorizontalAlign hAlign;
     private VerticalAlign vAlign;
+    private int backgroundColor;
 
     private CompletableFuture<GlyphRenderer> glyphRendererFuture;
     private FontRenderer fontRenderer;
@@ -55,18 +55,18 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
     }
 
     public void addText(StylizedText message) {
-        addText(DefaultBackground, message);
+        addText(backgroundColor, message);
     }
 
     public void addText(int background, StylizedText message) {
         texts.get(Align.get(vAlign, hAlign)).add(new AlignedText(background, message));
     }
 
-    public void addFreeText(int x, int y, MutableComponent message) {
-        addFreeText(x, y, DefaultBackground, message);
+    public void addFreeText(int x, int y, StylizedText message) {
+        addFreeText(x, y, backgroundColor, message);
     }
 
-    public void addFreeText(int x, int y, int background, MutableComponent message) {
+    public void addFreeText(int x, int y, int background, StylizedText message) {
         freeTexts.add(new FreeText(x, y, background, message));
     }
 
@@ -76,6 +76,10 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
 
     public void setVerticalAlign(VerticalAlign align) {
         vAlign = align;
+    }
+
+    public void setDefaultBackgroundColor(int color) {
+        backgroundColor = color;
     }
 
     private void render(RenderGuiEvent event) {
@@ -107,6 +111,7 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
 
         hAlign = HorizontalAlign.RIGHT;
         vAlign = VerticalAlign.BOTTOM;
+        backgroundColor = DEFAULT_BACKGROUND;
         script.run();
 
         int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
@@ -128,7 +133,7 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
 
             FlexColumnElement flex = new FlexColumnElement().setAlign(align.hAlign);
             for (AlignedText item : list) {
-                flex.append(new TextElement(fontRenderer, item.text));
+                flex.append(new TextElement(fontRenderer, item.text).setBackgroundColor(item.background));
             }
 
             int x = switch (align.hAlign) {
@@ -145,64 +150,11 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
             context.render(flex, x, y, align.hAlign, align.vAlign);
         }
 
-        /*PoseStack poseStack = event.getGuiGraphics().pose();
-        poseStack.pushPose();
-        poseStack.setIdentity();
-        poseStack.translate(0, 0, TranslateZ);
-
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-        for (Align align: Align.values()) {
-            List<AlignedText> list = texts.get(align);
-            if (list.isEmpty()) {
-                continue;
-            }
-            for (int i = 0; i < list.size(); i++) {
-                AlignedText text = list.get(i);
-                int width = mc.font.width(text.text);
-                int x = getLeft(align.hAlign, mc.getWindow().getGuiScaledWidth(), width);
-                int y = getTop(align.vAlign, mc.getWindow().getGuiScaledHeight(), mc.font.lineHeight, i, list.size());
-                if (width > 0) {
-                    event.getGuiGraphics().fill(
-                            x - 1,
-                            y,
-                            x - 1 + width + 2,
-                            y + mc.font.lineHeight,
-                            text.background);
-                    event.getGuiGraphics().drawString(mc.font, text.text, x, y, 16777215);
-                }
-            }
+        for (FreeText item : freeTexts) {
+            context.render(
+                    new TextElement(fontRenderer, item.text).setBackgroundColor(item.background),
+                    item.x, item.y, HorizontalAlign.LEFT, VerticalAlign.TOP);
         }
-
-        for (FreeText text: freeTexts) {
-            int width = mc.font.width(text.text);
-            if (width > 0) {
-                event.getGuiGraphics().fill(
-                        text.x - 1,
-                        text.y,
-                        text.x - 1 + width + 2,
-                        text.y + mc.font.lineHeight, text.background);
-                event.getGuiGraphics().drawString(mc.font, text.text, text.x, text.y, 16777215);
-            }
-        }
-
-        poseStack.popPose();*/
-    }
-
-    private int getLeft(HorizontalAlign align, int screenWidth, int textWidth) {
-        return switch (align) {
-            case LEFT -> 2;
-            case CENTER -> (screenWidth - textWidth) / 2;
-            case RIGHT -> screenWidth - 2 - textWidth;
-        };
-    }
-
-    private int getTop(VerticalAlign align, int screenHeight, int textHeight, int index, int count) {
-        return switch (align) {
-            case TOP -> 2 + index * textHeight;
-            case MIDDLE -> (screenHeight - textHeight * count) / 2 + index * textHeight;
-            case BOTTOM -> screenHeight - 2 - textHeight * (count - index);
-        };
     }
 
     private enum Align {
@@ -247,5 +199,5 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
 
     private record AlignedText(int background, StylizedText text) {}
 
-    private record FreeText(int x, int y, int background, MutableComponent component) {}
+    private record FreeText(int x, int y, int background, StylizedText text) {}
 }

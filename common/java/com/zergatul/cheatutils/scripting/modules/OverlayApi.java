@@ -8,11 +8,6 @@ import com.zergatul.cheatutils.ui.HorizontalAlign;
 import com.zergatul.cheatutils.ui.VerticalAlign;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.contents.PlainTextContents;
-
-import static com.zergatul.cheatutils.utils.ComponentUtils.constructMessage;
 
 @SuppressWarnings("unused")
 public class OverlayApi {
@@ -66,6 +61,17 @@ public class OverlayApi {
     }
 
     @MethodDescription("""
+            Sets default background color to be used when method does not have background color as parameter
+            """)
+    @ApiVisibility(ApiType.OVERLAY)
+    public void backgroundColor(String color) {
+        Integer colorInt = ColorUtils.parseColor(color);
+        if (colorInt != null) {
+            StatusOverlay.instance.setDefaultBackgroundColor(colorInt);
+        }
+    }
+
+    @MethodDescription("""
             Adds text to Status Overlay
             """)
     @ApiVisibility(ApiType.OVERLAY)
@@ -110,40 +116,29 @@ public class OverlayApi {
 
     @MethodDescription("""
             Adds text to Status Overlay at screen 2D coordinates. Ignores current alignment settings.
-            Use window.getGuiWidth() and window.getGuiHeight() to implement custom alignment.
+            Use window.getWidth() and window.getHeight() to implement custom alignment.
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void addAtPosition(int x, int y, String color, String text) {
-        Integer colorInt = ColorUtils.parseColor(color);
-        MutableComponent component = MutableComponent.create(new PlainTextContents.LiteralContents(text));
-        if (colorInt != null) {
-            component = component.withStyle(Style.EMPTY.withColor(colorInt));
-        }
-        StatusOverlay.instance.addFreeText(x, y, component);
+        StatusOverlay.instance.addFreeText(x, y, StylizedText.createSafe(text, color));
     }
 
     @MethodDescription("""
             Adds text to Status Overlay at screen 2D coordinates. Ignores current alignment settings.
-            Use window.getGuiWidth() and window.getGuiHeight() to implement custom alignment.
+            Use window.getWidth() and window.getHeight() to implement custom alignment.
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void addAtPosition(int x, int y, String color1, String text1, String color2, String text2) {
-        Integer color1Int = ColorUtils.parseColor(color1);
-        Integer color2Int = ColorUtils.parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new PlainTextContents.LiteralContents(text1));
-        if (color1Int != null) {
-            component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
-        }
-        MutableComponent component2 = MutableComponent.create(new PlainTextContents.LiteralContents(text2));
-        if (color2Int != null) {
-            component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
-        }
-        StatusOverlay.instance.addFreeText(x, y, component1.append(" ").append(component2));
+        StatusOverlay.instance.addFreeText(x, y, StylizedText.createSafe(new String[] {
+                color1, text1,
+                "#FFFFFF", " ",
+                color2, text2
+        }));
     }
 
     @MethodDescription("""
             Adds text to Status Overlay at screen 2D coordinates. Ignores current alignment settings.
-            Use window.getGuiWidth() and window.getGuiHeight() to implement custom alignment.
+            Use window.getWidth() and window.getHeight() to implement custom alignment.
             Parameters array should have length dividable by 2, and look like this: [color1, text1, color2, text2] and so on.
             No space will be added in between, unlike with other add(...) methods.
             """)
@@ -151,9 +146,9 @@ public class OverlayApi {
     public void addAtPosition(int x, int y, String backgroundColor, String[] parameters) {
         Integer background = ColorUtils.parseColor(backgroundColor);
         if (background != null) {
-            StatusOverlay.instance.addFreeText(x, y, background, constructMessage(parameters));
+            StatusOverlay.instance.addFreeText(x, y, background, StylizedText.createSafe(parameters));
         } else {
-            StatusOverlay.instance.addFreeText(x, y, constructMessage(parameters));
+            StatusOverlay.instance.addFreeText(x, y, StylizedText.createSafe(parameters));
         }
     }
 }

@@ -15,8 +15,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class SystemFonts {
 
-    private static CompletableFuture<List<SystemFontInfo>> future;
     private static final Logger logger = LogManager.getLogger(SystemFonts.class);
+    private static CompletableFuture<List<SystemFontInfo>> future;
 
     public static void initAsync() {
         if (future == null) {

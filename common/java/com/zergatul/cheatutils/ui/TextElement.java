@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.ui;
 import com.zergatul.cheatutils.font.FontRenderer;
 import com.zergatul.cheatutils.font.StylizedText;
 import com.zergatul.cheatutils.font.TextBounds;
-import it.unimi.dsi.fastutil.floats.FloatList;
 
 public class TextElement implements Element {
 
@@ -14,6 +13,7 @@ public class TextElement implements Element {
     private TextBounds bounds;
     private int measuredWidth, measuredHeight;
     private int x, y;
+    private int bgColor;
 
     public TextElement(FontRenderer font, StylizedText text) {
         this.font = font;
@@ -49,11 +49,19 @@ public class TextElement implements Element {
             font.drawText(context.getBuffers(), text, x, y + measuredHeight - bounds.getY1()); // align bottom
         } else {
             font.drawText(context.getBuffers(), text, x, y + font.getLineHeight());
+            if (bgColor != 0) {
+                context.getBuffers().getColor2d().rect(x, y, measuredWidth, font.getLineHeight(), bgColor);
+            }
         }
     }
 
     public TextElement setCompactHeight(boolean compact) {
         this.compactHeight = compact;
+        return this;
+    }
+
+    public TextElement setBackgroundColor(int color) {
+        this.bgColor = color;
         return this;
     }
 }

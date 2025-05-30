@@ -22,7 +22,9 @@ export function createComponent(template) {
                     face: 'Consolas',
                     size: 16,
                     antiAliasing: false,
-                    letterSpacing: 0
+                    letterSpacing: 0,
+                    shadowOffsetX: 1,
+                    shadowOffsetY: 1
                 };
             }
 
@@ -43,6 +45,14 @@ export function createComponent(template) {
                 return null;
             });
 
+            const isVanilla = computed(() => {
+                return modelValue.value.renderer == 'VANILLA';
+            });
+
+            const isAWT = computed(() => {
+                return modelValue.value.renderer == 'AWT';
+            });
+
             const update = () => {
                 emit('update:modelValue', modelValue.value);
             };
@@ -51,6 +61,8 @@ export function createComponent(template) {
                 modelValue,
                 fonts,
                 fontDescription,
+                isVanilla,
+                isAWT,
                 update
             };
         }
