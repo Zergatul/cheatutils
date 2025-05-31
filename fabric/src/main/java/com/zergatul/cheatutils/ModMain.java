@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.font.GlyphRendererHolders;
+import com.zergatul.cheatutils.font.FontBackendHolders;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.*;
@@ -96,9 +96,9 @@ public class ModMain implements ClientModInitializer {
 
         register(TickEndExecutor.instance);
 
-        GlyphRendererHolders.add(StatusOverlay.instance);
-        GlyphRendererHolders.add(EntityTitle.instance);
-        GlyphRendererHolders.add(WorldMarkers.instance);
+        FontBackendHolders.add(StatusOverlay.instance);
+        FontBackendHolders.add(EntityTitle.instance);
+        FontBackendHolders.add(WorldMarkers.instance);
 
         Events.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
     }

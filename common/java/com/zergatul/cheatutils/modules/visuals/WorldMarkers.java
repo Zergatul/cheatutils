@@ -17,12 +17,12 @@ import org.joml.Vector4f;
 
 import java.util.concurrent.CompletableFuture;
 
-public class WorldMarkers implements GlyphRendererHolder {
+public class WorldMarkers implements FontBackendHolder {
 
     public static final WorldMarkers instance = new WorldMarkers();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private CompletableFuture<GlyphRenderer> glyphRendererFuture;
+    private CompletableFuture<FontBackend> glyphRendererFuture;
     private FontRenderer fontRenderer;
 
     private WorldMarkers() {
@@ -30,13 +30,13 @@ public class WorldMarkers implements GlyphRendererHolder {
     }
 
     @Override
-    public boolean uses(GlyphRenderer renderer) {
-        return fontRenderer != null && fontRenderer.uses(renderer);
+    public boolean uses(FontBackend backend) {
+        return fontRenderer != null && fontRenderer.uses(backend);
     }
 
     public void onFontChange(WorldMarkersConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            glyphRendererFuture = FontLibrary.instance.createRenderer(config.font.asFontParameters());
+            glyphRendererFuture = FontLibrary.instance.createBackend(config.font.asFontParameters());
         });
     }
 
@@ -110,7 +110,7 @@ public class WorldMarkers implements GlyphRendererHolder {
             int color = entry.color.getRGB();
             int inverse = ColorUtils.inverse(color);
 
-            StylizedText text = StylizedText.of(entry.name, Style.EMPTY.withColor(entry.color.getRGB()));
+            StylizedText text = StylizedText.of(entry.name, entry.color.getRGB());
             FlexColumnElement flex = new FlexColumnElement();
             flex.append(
                     new DivisionElement()

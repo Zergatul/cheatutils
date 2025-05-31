@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class EntityTitle implements GlyphRendererHolder {
+public class EntityTitle implements FontBackendHolder {
 
     public static final EntityTitle instance = new EntityTitle();
 
@@ -77,9 +77,9 @@ public class EntityTitle implements GlyphRendererHolder {
             });
 
     private final List<EntityEntry> entities = new ArrayList<>();
-    private CompletableFuture<GlyphRenderer> titleGlyphRendererFuture;
+    private CompletableFuture<FontBackend> titleFontBackendFuture;
     private FontRenderer titleFontRenderer;
-    private CompletableFuture<GlyphRenderer> enchantmentGlyphRendererFuture;
+    private CompletableFuture<FontBackend> enchantmentFontBackendFuture;
     private FontRenderer enchantmentFontRenderer;
 
     private EntityTitle() {
@@ -88,11 +88,11 @@ public class EntityTitle implements GlyphRendererHolder {
     }
 
     @Override
-    public boolean uses(GlyphRenderer renderer) {
-        if (titleFontRenderer != null && titleFontRenderer.uses(renderer)) {
+    public boolean uses(FontBackend backend) {
+        if (titleFontRenderer != null && titleFontRenderer.uses(backend)) {
             return true;
         }
-        if (enchantmentFontRenderer != null && enchantmentFontRenderer.uses(renderer)) {
+        if (enchantmentFontRenderer != null && enchantmentFontRenderer.uses(backend)) {
             return true;
         }
         return false;
@@ -100,13 +100,13 @@ public class EntityTitle implements GlyphRendererHolder {
 
     public void onTitleFontChange(EntityTitleConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            titleGlyphRendererFuture = FontLibrary.instance.createRenderer(config.titleFont.asFontParameters());
+            titleFontBackendFuture = FontLibrary.instance.createBackend(config.titleFont.asFontParameters());
         });
     }
 
     public void onEnchantmentFontChange(EntityTitleConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            enchantmentGlyphRendererFuture = FontLibrary.instance.createRenderer(config.enchantmentFont.asFontParameters());
+            enchantmentFontBackendFuture = FontLibrary.instance.createBackend(config.enchantmentFont.asFontParameters());
         });
     }
 
@@ -184,16 +184,16 @@ public class EntityTitle implements GlyphRendererHolder {
 
         EntityTitleConfig config = ConfigStore.instance.getConfig().entityTitleConfig;
 
-        if (titleGlyphRendererFuture != null) {
-            if (titleGlyphRendererFuture.isDone()) {
-                titleFontRenderer = titleGlyphRendererFuture.join().createFontRenderer(config.titleFont.asFontRenderDetails());
-                titleGlyphRendererFuture = null;
+        if (titleFontBackendFuture != null) {
+            if (titleFontBackendFuture.isDone()) {
+                titleFontRenderer = titleFontBackendFuture.join().createFontRenderer(config.titleFont.asFontRenderDetails());
+                titleFontBackendFuture = null;
             }
         }
-        if (enchantmentGlyphRendererFuture != null) {
-            if (enchantmentGlyphRendererFuture.isDone()) {
-                enchantmentFontRenderer = enchantmentGlyphRendererFuture.join().createFontRenderer(config.enchantmentFont.asFontRenderDetails());
-                enchantmentGlyphRendererFuture = null;
+        if (enchantmentFontBackendFuture != null) {
+            if (enchantmentFontBackendFuture.isDone()) {
+                enchantmentFontRenderer = enchantmentFontBackendFuture.join().createFontRenderer(config.enchantmentFont.asFontRenderDetails());
+                enchantmentFontBackendFuture = null;
             }
         }
         if (titleFontRenderer == null) {
@@ -312,20 +312,21 @@ public class EntityTitle implements GlyphRendererHolder {
                 buffer.clear();
                 builder.delete(0, builder.length());
                 FormattedCharSequence sequence = component.getVisualOrderText();
-                StyleHolder last = new StyleHolder();
+                ColorHolder last = new ColorHolder();
                 sequence.accept((unknown, style, character) -> {
-                    if (last.value != style) {
+                    int color = style.getColor() != null ? (style.getColor().getValue() | 0xFF000000) : Color.WHITE.getRGB();
+                    if (last.color != color) {
                         if (!builder.isEmpty()) {
-                            buffer.add(new StylizedTextChunk(builder.toString(), last.value));
+                            buffer.add(new StylizedTextChunk(builder.toString(), last.color));
                             builder.delete(0, builder.length());
                         }
                     }
-                    last.value = style;
+                    last.color = color;
                     builder.append((char) character);
                     return true;
                 });
                 if (!builder.isEmpty()) {
-                    buffer.add(new StylizedTextChunk(builder.toString(), last.value));
+                    buffer.add(new StylizedTextChunk(builder.toString(), last.color));
                 }
                 if (!buffer.isEmpty()) {
                     text = new StylizedText();
@@ -337,11 +338,11 @@ public class EntityTitle implements GlyphRendererHolder {
         if (entry.showHp && entry.entity instanceof LivingEntity living) {
             if (text == null) {
                 text = new StylizedText();
-                text.append(config.hpPrefix, Style.EMPTY.withColor(ChatFormatting.RED));
+                text.append(config.hpPrefix, 0xFFFF5555);
             } else {
-                text.append(" " + config.hpPrefix, Style.EMPTY.withColor(ChatFormatting.RED));
+                text.append(" " + config.hpPrefix, 0xFFFF5555);
             }
-            text.append(String.valueOf((int)living.getHealth()), Style.EMPTY);
+            text.append(String.valueOf((int)living.getHealth()), Color.WHITE.getRGB());
         }
 
         return text;
@@ -475,8 +476,8 @@ public class EntityTitle implements GlyphRendererHolder {
         }
 
         public StylizedText getText() {
-            StylizedText stylizedText = StylizedText.of(text, Style.EMPTY.withColor(color.getRGB()));
-            stylizedText.append(Integer.toString(level), Style.EMPTY.withColor(0xFF00FFFF));
+            StylizedText stylizedText = StylizedText.of(text, color.getRGB());
+            stylizedText.append(Integer.toString(level), 0xFF00FFFF);
             return stylizedText;
         }
     }
@@ -494,7 +495,7 @@ public class EntityTitle implements GlyphRendererHolder {
         }
     }
 
-    private static class StyleHolder {
-        public Style value;
+    private static class ColorHolder {
+        public int color;
     }
 }

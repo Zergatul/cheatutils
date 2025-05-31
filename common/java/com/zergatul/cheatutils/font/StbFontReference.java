@@ -9,7 +9,7 @@ public class StbFontReference extends FontReference {
     }
 
     @Override
-    public GlyphRenderer createGlyphRenderer(FontRenderParameters parameters) {
+    public FontBackend createFontBackend(FontRenderParameters parameters) {
         return new StbGlyphRenderer(font, parameters);
     }
 }

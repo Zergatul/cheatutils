@@ -60,18 +60,24 @@ public class SystemFonts {
 
     private static List<Path> getFontDirectories() {
         String os = System.getProperty("os.name").toLowerCase();
+        Path mcFonts = Paths.get(System.getProperty("user.dir"), "fonts");
+
         if (os.contains("win")) {
-            return List.of(Paths.get(System.getenv("WINDIR"), "Fonts"));
+            return List.of(
+                    Paths.get(System.getenv("WINDIR"), "Fonts"),
+                    mcFonts);
         } else if (os.contains("mac")) {
             return List.of(
                     Paths.get("/System/Library/Fonts"),
                     Paths.get("/Library/Fonts"),
-                    Paths.get(System.getProperty("user.home"), "Library/Fonts"));
+                    Paths.get(System.getProperty("user.home"), "Library/Fonts"),
+                    mcFonts);
         } else {
             return List.of(
                     Paths.get("/usr/share/fonts"),
                     Paths.get("/usr/local/share/fonts"),
-                    Paths.get(System.getProperty("user.home"), ".fonts"));
+                    Paths.get(System.getProperty("user.home"), ".fonts"),
+                    mcFonts);
         }
     }
 }

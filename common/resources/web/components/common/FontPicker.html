@@ -21,9 +21,6 @@
                     <option v-for="font in fonts" :value="font.name">{{ font.name }}</option>
                 </select>
             </td>
-            <td>
-                <span class="field-description">{{ fontDescription }}</span>
-            </td>
         </tr>
         <tr v-if="!isVanilla">
             <td>
@@ -93,4 +90,14 @@
             </td>
         </tr>
     </table>
+    <div v-if="!isVanilla">
+        <span class="hint">Selected: {{ fontDescription }}</span>
+    </div>
+    <div v-if="!isVanilla">
+        <span class="hint">
+            You can create directory "fonts" in your Minecraft directory,
+            add .otf/.ttf/.ttc font files and they should appear in the font selection list
+            once you restart the game.
+        </span>
+    </div>
 </div>

@@ -1,21 +1,14 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.font.*;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
-import com.zergatul.cheatutils.render.TextureColor2dRenderer;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.TitleScreen;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.awt.*;
 import java.util.concurrent.CompletableFuture;
 
 @Mixin(TitleScreen.class)
@@ -25,7 +18,7 @@ public abstract class MixinTitleScreen {
     private CompletableFuture<GlyphRenderer> rendererFuture;
 
     @Unique
-    private FontRenderer renderer;
+    private GlyphFontRenderer renderer;
 
     @Unique
     private String debugText = "Hello World!!!";

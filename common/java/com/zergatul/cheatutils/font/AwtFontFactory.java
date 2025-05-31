@@ -1,10 +1,15 @@
 package com.zergatul.cheatutils.font;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.awt.Font;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class AwtFontFactory extends FontFactory {
+
+    private final Logger logger = LogManager.getLogger(AwtFontFactory.class);
 
     protected AwtFontFactory() {}
 
@@ -15,7 +20,7 @@ public class AwtFontFactory extends FontFactory {
                 .filter(f -> f.getName().equals(name))
                 .findFirst();
         if (optional.isEmpty()) {
-            throw new RuntimeException(); // TODO - return failed font
+            return CompletableFuture.completedFuture(new FailedFontReference());
         }
 
         SystemFontInfo info = optional.get();
@@ -24,7 +29,8 @@ public class AwtFontFactory extends FontFactory {
             try {
                 font = info.createAwtFont();
             } catch (Throwable e) {
-                throw new RuntimeException(); // TODO - return failed font
+                logger.error(e);
+                return new FailedFontReference();
             }
             return new AwtFontReference(font);
         });

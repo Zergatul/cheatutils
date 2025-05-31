@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.font;
 
 import com.zergatul.cheatutils.utils.ColorUtils;
-import net.minecraft.network.chat.Style;
 
+import java.awt.*;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -15,17 +15,17 @@ public class StylizedText {
     }
 
     public static StylizedText of(String value) {
-        return of(value, Style.EMPTY);
+        return of(value, Color.WHITE.getRGB());
     }
 
-    public static StylizedText of(String value, Style style) {
+    public static StylizedText of(String value, int color) {
         StylizedText text = new StylizedText();
-        text.chunks.add(new StylizedTextChunk(value, style));
+        text.chunks.add(new StylizedTextChunk(value, color));
         return text;
     }
 
     public static StylizedText createSafe(String text, String color) {
-        return of(text, createStyleSafe(color));
+        return of(text, parseColorSafe(color));
     }
 
     public static StylizedText createSafe(String[] parameters) {
@@ -34,14 +34,14 @@ public class StylizedText {
         } else {
             StylizedText text = empty();
             for (int i = 0; i < parameters.length; i += 2) {
-                text.append(parameters[i + 1], createStyleSafe(parameters[i]));
+                text.append(parameters[i + 1], parseColorSafe(parameters[i]));
             }
             return text;
         }
     }
 
-    public void append(String value, Style style) {
-        chunks.add(new StylizedTextChunk(value, style));
+    public void append(String value, int color) {
+        chunks.add(new StylizedTextChunk(value, color));
     }
 
     public IntStream chars() {
@@ -56,8 +56,8 @@ public class StylizedText {
         return length;
     }
 
-    private static Style createStyleSafe(String color) {
+    private static int parseColorSafe(String color) {
         Integer colorInt = ColorUtils.parseColor(color);
-        return colorInt != null ? Style.EMPTY.withColor(colorInt) : Style.EMPTY;
+        return colorInt != null ? colorInt : Color.WHITE.getRGB();
     }
 }

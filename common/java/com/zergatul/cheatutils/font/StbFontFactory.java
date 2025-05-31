@@ -1,9 +1,14 @@
 package com.zergatul.cheatutils.font;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class StbFontFactory extends FontFactory {
+
+    private final Logger logger = LogManager.getLogger(StbFontFactory.class);
 
     protected StbFontFactory() {}
 
@@ -14,7 +19,7 @@ public class StbFontFactory extends FontFactory {
                 .filter(f -> f.getName().equals(name))
                 .findFirst();
         if (optional.isEmpty()) {
-            throw new RuntimeException(); // TODO - return failed font
+            return CompletableFuture.completedFuture(new FailedFontReference());
         }
 
         SystemFontInfo info = optional.get();
@@ -23,7 +28,8 @@ public class StbFontFactory extends FontFactory {
             try {
                 font = info.createStbFont();
             } catch (Throwable e) {
-                throw new RuntimeException(); // TODO - return failed font
+                logger.error(e);
+                return new FailedFontReference();
             }
             return new StbFontReference(font);
         });

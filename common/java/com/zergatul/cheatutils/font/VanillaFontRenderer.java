@@ -27,22 +27,25 @@ public class VanillaFontRenderer extends FontRenderer {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final FontBufferSource bufferSource = new FontBufferSource();
+    private final FontBackend backend;
     private final int scale;
     private final boolean dropShadow;
 
-    protected VanillaFontRenderer(int scale, boolean dropShadow) {
-        super(null, null);
+    protected VanillaFontRenderer(FontBackend backend, int scale, boolean dropShadow) {
+        this.backend = backend;
         this.scale = scale;
         this.dropShadow = dropShadow;
     }
 
     @Override
-    public boolean uses(GlyphRenderer renderer) {
-        return false;
+    public boolean uses(FontBackend backend) {
+        return this.backend == backend;
     }
 
     @Override
     public TextBounds getTextSize(StylizedText text) {
+        backend.markUse();
+
         int width = 0;
         for (StylizedTextChunk chunk : text.chunks) {
             width += mc.font.width(chunk.text());
@@ -58,6 +61,8 @@ public class VanillaFontRenderer extends FontRenderer {
 
     @Override
     public void drawText(RenderBuffers buffers, StylizedText text, float x, float y) {
+        backend.markUse();
+
         float scale = getScale();
 
         y -= getLineHeight();
@@ -69,7 +74,7 @@ public class VanillaFontRenderer extends FontRenderer {
 
             mc.font.drawInBatch(
                     chunk.text(),
-                    0, 0, chunk.getColor(),
+                    0, 0, chunk.color(),
                     false, // drawShadow
                     new Matrix4f(),
                     bufferSource,

@@ -14,7 +14,7 @@ import org.joml.Matrix4f;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class StatusOverlay implements Module, GlyphRendererHolder {
+public class StatusOverlay implements Module, FontBackendHolder {
 
     public static final StatusOverlay instance = new StatusOverlay();
 
@@ -28,7 +28,7 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
     private VerticalAlign vAlign;
     private int backgroundColor;
 
-    private CompletableFuture<GlyphRenderer> glyphRendererFuture;
+    private CompletableFuture<FontBackend> fontBackendFuture;
     private FontRenderer fontRenderer;
 
     private StatusOverlay() {
@@ -40,13 +40,13 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
     }
 
     @Override
-    public boolean uses(GlyphRenderer renderer) {
-        return fontRenderer != null && fontRenderer.uses(renderer);
+    public boolean uses(FontBackend backend) {
+        return fontRenderer != null && fontRenderer.uses(backend);
     }
 
     public void onFontChange(StatusOverlayConfig config) {
         TickEndExecutor.instance.execute(() -> {
-            glyphRendererFuture = FontLibrary.instance.createRenderer(config.font.asFontParameters());
+            fontBackendFuture = FontLibrary.instance.createBackend(config.font.asFontParameters());
         });
     }
 
@@ -92,10 +92,10 @@ public class StatusOverlay implements Module, GlyphRendererHolder {
             return;
         }
 
-        if (glyphRendererFuture != null) {
-            if (glyphRendererFuture.isDone()) {
-                fontRenderer = glyphRendererFuture.join().createFontRenderer(config.font.asFontRenderDetails());
-                glyphRendererFuture = null;
+        if (fontBackendFuture != null) {
+            if (fontBackendFuture.isDone()) {
+                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font.asFontRenderDetails());
+                fontBackendFuture = null;
             }
         }
 

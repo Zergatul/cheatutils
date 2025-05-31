@@ -3,35 +3,28 @@ package com.zergatul.cheatutils.font;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.render.gl.AtlasTexture;
-import com.zergatul.cheatutils.utils.GlobalTicks;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class GlyphRenderer {
+public abstract class GlyphRenderer extends FontBackend {
 
     private static final Logger LOGGER = LogManager.getLogger(GlyphRenderer.class);
 
     protected final AtlasTexture texture;
     protected final Int2ObjectMap<Glyph> glyphs;
-    protected long lastUsed;
 
     protected GlyphRenderer() {
         assert RenderSystem.isOnRenderThread();
 
         this.texture = new AtlasTexture();
         this.glyphs = new Int2ObjectOpenHashMap<>();
-        this.lastUsed = GlobalTicks.get();
 
         SharedCleaner.register(this, new GlyphRendererCleaner(this.texture));
     }
 
-    public abstract FontRenderer createFontRenderer(FontRenderDetails details);
-
     public void ensureGlyphs(String text) {
-        lastUsed = GlobalTicks.get();
-
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             if (!glyphs.containsKey(ch)) {
@@ -45,10 +38,6 @@ public abstract class GlyphRenderer {
     }
 
     public abstract float getLineHeight();
-
-    public boolean isStale() {
-        return (GlobalTicks.get() - lastUsed) > 10 * 60 * 20; // 10 minutes
-    }
 
     protected abstract Glyph renderGlyph(char ch);
 

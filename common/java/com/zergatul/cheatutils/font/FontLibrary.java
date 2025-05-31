@@ -17,26 +17,26 @@ public class FontLibrary {
     private final Logger logger = LogManager.getLogger(FontLibrary.class);
     private final Map<FontKey, FontEntry> fonts = new HashMap<>();
     private final Map<FontKey, CompletableFuture<FontEntry>> fontFutures = new HashMap<>();
-    private final Map<FontParameters, GlyphRendererEntry> renderers = new HashMap<>();
+    private final Map<FontParameters, FontBackendEntry> backends = new HashMap<>();
 
     private FontLibrary() {
         Events.ClientTickStart.add(this::onTickStart);
     }
 
-    public CompletableFuture<GlyphRenderer> createRenderer(FontParameters parameters) {
+    public CompletableFuture<FontBackend> createBackend(FontParameters parameters) {
         assert RenderSystem.isOnRenderThread();
 
-        GlyphRendererEntry rendererEntry = renderers.get(parameters);
-        if (rendererEntry != null) {
-            return CompletableFuture.completedFuture(rendererEntry.renderer);
+        FontBackendEntry backendEntry = backends.get(parameters);
+        if (backendEntry != null) {
+            return CompletableFuture.completedFuture(backendEntry.backend);
         }
 
         FontKey key = new FontKey(parameters);
         FontEntry fontEntry = fonts.get(key);
         if (fontEntry != null) {
-            GlyphRenderer renderer = fontEntry.createRenderer(parameters.asRenderParameters());
-            logger.info("Created glyph renderer from existing font reference: {}", parameters);
-            renderers.put(parameters, new GlyphRendererEntry(renderer, fontEntry));
+            FontBackend renderer = fontEntry.createBackend(parameters.asRenderParameters());
+            logger.info("Created font backend from existing font reference: {}", parameters);
+            backends.put(parameters, new FontBackendEntry(renderer, fontEntry));
             return CompletableFuture.completedFuture(renderer);
         }
 
@@ -53,11 +53,11 @@ public class FontLibrary {
             fontFutures.put(key, fontFuture);
         }
 
-        CompletableFuture<GlyphRenderer> future = new CompletableFuture<>();
+        CompletableFuture<FontBackend> future = new CompletableFuture<>();
         fontFuture.thenAcceptAsync(entry -> {
-            GlyphRenderer renderer = entry.createRenderer(parameters.asRenderParameters());
-            logger.info("Created glyph renderer asynchronously: {}", parameters);
-            renderers.put(parameters, new GlyphRendererEntry(renderer, entry));
+            FontBackend renderer = entry.createBackend(parameters.asRenderParameters());
+            logger.info("Created font backend asynchronously: {}", parameters);
+            backends.put(parameters, new FontBackendEntry(renderer, entry));
             future.complete(renderer);
         }, TickEndExecutor.instance);
 
@@ -66,23 +66,23 @@ public class FontLibrary {
 
     private void onTickStart() {
         if (GlobalTicks.get() % 100 == 0) {
-            if (removeStaleGlyphRenderers()) {
+            if (removeStaleFontBackends()) {
                 removeUnusedFonts();
             }
         }
     }
 
-    private boolean removeStaleGlyphRenderers() {
+    private boolean removeStaleFontBackends() {
         boolean removed = false;
-        Iterator<Map.Entry<FontParameters, GlyphRendererEntry>> iterator = renderers.entrySet().iterator();
+        Iterator<Map.Entry<FontParameters, FontBackendEntry>> iterator = backends.entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<FontParameters, GlyphRendererEntry> entry = iterator.next();
-            GlyphRenderer renderer = entry.getValue().renderer;
-            if (renderer.isStale()) {
-                if (GlyphRendererHolders.getHolders().noneMatch(h -> h.uses(renderer))) {
-                    logger.info("Releasing glyph renderer: {}", entry.getKey());
+            Map.Entry<FontParameters, FontBackendEntry> entry = iterator.next();
+            FontBackend backend = entry.getValue().backend;
+            if (backend.isStale()) {
+                if (FontBackendHolders.getHolders().noneMatch(h -> h.uses(backend))) {
+                    logger.info("Releasing font backend: {}", entry.getKey());
                     iterator.remove();
-                    entry.getValue().fontEntry.renderers.remove(renderer);
+                    entry.getValue().fontEntry.renderers.remove(backend);
                     removed = true;
                 }
             }
@@ -107,17 +107,17 @@ public class FontLibrary {
         }
     }
 
-    private record FontEntry(FontReference font, List<GlyphRenderer> renderers) {
+    private record FontEntry(FontReference font, List<FontBackend> renderers) {
         public FontEntry(FontReference font) {
             this(font, new ArrayList<>());
         }
 
-        public GlyphRenderer createRenderer(FontRenderParameters parameters) {
-            GlyphRenderer renderer = font.createGlyphRenderer(parameters);
+        public FontBackend createBackend(FontRenderParameters parameters) {
+            FontBackend renderer = font.createFontBackend(parameters);
             renderers.add(renderer);
             return renderer;
         }
     }
 
-    private record GlyphRendererEntry(GlyphRenderer renderer, FontEntry fontEntry) {}
+    private record FontBackendEntry(FontBackend backend, FontEntry fontEntry) {}
 }

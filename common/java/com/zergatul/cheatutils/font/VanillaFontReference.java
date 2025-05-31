@@ -5,7 +5,7 @@ public class VanillaFontReference extends FontReference {
     protected VanillaFontReference() {}
 
     @Override
-    public GlyphRenderer createGlyphRenderer(FontRenderParameters parameters) {
-        return new VanillaGlyphRenderer();
+    public FontBackend createFontBackend(FontRenderParameters parameters) {
+        return new VanillaFontBackend();
     }
 }

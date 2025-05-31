@@ -55,20 +55,7 @@ public class EntityEspEvent {
             Overrides title displayed above the entity. Works only with cheatutils title system.
             Array length must be divisible by 2. Example: [color1, text1, color2, text2]
             """)
-    public void setTitle(String[] data) {
-        if (data.length % 2 != 0) {
-            return;
-        }
-
-        StylizedText text = new StylizedText();
-        for (int i = 0; i < data.length; i += 2) {
-            Integer color = ColorUtils.parseColor(data[i]);
-            if (color == null) {
-                color = 0xFFFFFF;
-            }
-            text.chunks.add(new StylizedTextChunk(data[i + 1], Style.EMPTY.withColor(color)));
-        }
-
-        result.title = text;
+    public void setTitle(String[] parameters) {
+        result.title = StylizedText.createSafe(parameters);
     }
 }

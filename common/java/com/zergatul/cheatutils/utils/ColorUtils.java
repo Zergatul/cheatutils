@@ -24,7 +24,8 @@ public class ColorUtils {
                 }
                 return null;
             }
-            return  Integer.parseInt(str.substring(1, 3), 16) << 16 |
+            return  0xFF000000 |
+                    Integer.parseInt(str.substring(1, 3), 16) << 16 |
                     Integer.parseInt(str.substring(3, 5), 16) << 8 |
                     Integer.parseInt(str.substring(5, 7), 16);
         }
