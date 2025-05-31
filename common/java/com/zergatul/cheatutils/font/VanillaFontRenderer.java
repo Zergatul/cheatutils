@@ -6,8 +6,8 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.TextureStateShardAccessor;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
+import com.zergatul.cheatutils.render.buffers.TextureColor2dRenderBuffer;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import net.minecraft.client.Minecraft;
@@ -26,6 +26,7 @@ import java.util.Optional;
 public class VanillaFontRenderer extends FontRenderer {
 
     private final Minecraft mc = Minecraft.getInstance();
+    private final FontBufferSource bufferSource = new FontBufferSource();
     private final int scale;
     private final boolean dropShadow;
 
@@ -66,101 +67,99 @@ public class VanillaFontRenderer extends FontRenderer {
                 continue;
             }
 
-            Map<RenderType, MyVertexConsumer> map = new HashMap<>();
-            var source = new MultiBufferSource() {
-                @Override
-                public VertexConsumer getBuffer(RenderType renderType) {
-                    if (map.containsKey(renderType)) {
-                        return map.get(renderType);
-                    } else {
-                        var consumer = new MyVertexConsumer();
-                        map.put(renderType, consumer);
-                        return consumer;
-                    }
-                }
-            };
-
             mc.font.drawInBatch(
                     chunk.text(),
                     0, 0, chunk.getColor(),
                     false, // drawShadow
                     new Matrix4f(),
-                    source,
+                    bufferSource,
                     Font.DisplayMode.NORMAL,
                     0, // backgroundColor
                     15728880);
 
-            if (!map.isEmpty()) {
-                RenderType type = map.keySet().stream().findFirst().orElseThrow();
-                if (type instanceof CompositeRenderTypeAccessor accessor) {
+            if (bufferSource.hasData()) {
+                Map<RenderType, FontVertexConsumer> consumers = bufferSource.getConsumers();
+                for (var entry : consumers.entrySet()) {
+                    RenderType type = entry.getKey();
+                    FontVertexConsumer consumer = entry.getValue();
+
+                    if (consumer.list.isEmpty()) {
+                        continue;
+                    }
+
+                    if (!(type instanceof CompositeRenderTypeAccessor accessor)) {
+                        continue;
+                    }
+
                     RenderType.CompositeState state = accessor.getState_CU();
                     RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
-                    if (shard instanceof RenderStateShard.TextureStateShard textureStateShard) {
-                        Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
-                        AbstractTexture t = mc.getTextureManager().getTexture(texture.get());
-                        int id = ((GlTexture) t.getTexture()).glId();
+                    if (!(shard instanceof RenderStateShard.TextureStateShard textureStateShard)) {
+                        continue;
+                    }
 
-                        if (type.mode() == VertexFormat.Mode.QUADS) {
-                            MyVertexConsumer consumer = map.get(type);
+                    if (entry.getKey().mode() != VertexFormat.Mode.QUADS) {
+                        continue;
+                    }
 
-                            MainFrameBuffer.enter();
+                    Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
+                    AbstractTexture t = mc.getTextureManager().getTexture(texture.get());
+                    int id = ((GlTexture) t.getTexture()).glId();
 
-                            var buffer = buffers.getTexColor2d(id);
-
-                            if (dropShadow) {
-                                for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
-                                    float r = consumer.list.getFloat(i * 8 * 4 + 4) * SHADOW_FACTOR;
-                                    float g = consumer.list.getFloat(i * 8 * 4 + 5) * SHADOW_FACTOR;
-                                    float b = consumer.list.getFloat(i * 8 * 4 + 6) * SHADOW_FACTOR;
-                                    float a = consumer.list.getFloat(i * 8 * 4 + 7);
-                                    buffer.quad(
-                                            x + scale + consumer.list.getFloat(i * 8 * 4 + 0) * scale, // x1
-                                            y + scale + consumer.list.getFloat(i * 8 * 4 + 1) * scale, // y1
-                                            consumer.list.getFloat(i * 8 * 4 + 2), // u1
-                                            consumer.list.getFloat(i * 8 * 4 + 3), // v1
-                                            x + scale + consumer.list.getFloat(i * 8 * 4 + 8) * scale, // x2
-                                            y + scale + consumer.list.getFloat(i * 8 * 4 + 9) * scale, // y2
-                                            consumer.list.getFloat(i * 8 * 4 + 10), // u2
-                                            consumer.list.getFloat(i * 8 * 4 + 11), // v2
-                                            x + scale + consumer.list.getFloat(i * 8 * 4 + 16) * scale, // x3
-                                            y + scale + consumer.list.getFloat(i * 8 * 4 + 17) * scale, // y3
-                                            consumer.list.getFloat(i * 8 * 4 + 18), // u3
-                                            consumer.list.getFloat(i * 8 * 4 + 19), // v3
-                                            x + scale + consumer.list.getFloat(i * 8 * 4 + 24) * scale, // x3
-                                            y + scale + consumer.list.getFloat(i * 8 * 4 + 25) * scale, // y3
-                                            consumer.list.getFloat(i * 8 * 4 + 26), // u3
-                                            consumer.list.getFloat(i * 8 * 4 + 27), // v3
-                                            r, g, b, a);
-                                }
-                            }
-
-                            for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
-                                buffer.quad(
-                                        x + consumer.list.getFloat(i * 8 * 4 + 0) * scale, // x1
-                                        y + consumer.list.getFloat(i * 8 * 4 + 1) * scale, // y1
-                                        consumer.list.getFloat(i * 8 * 4 + 2), // u1
-                                        consumer.list.getFloat(i * 8 * 4 + 3), // v1
-                                        x + consumer.list.getFloat(i * 8 * 4 + 8) * scale, // x2
-                                        y + consumer.list.getFloat(i * 8 * 4 + 9) * scale, // y2
-                                        consumer.list.getFloat(i * 8 * 4 + 10), // u2
-                                        consumer.list.getFloat(i * 8 * 4 + 11), // v2
-                                        x + consumer.list.getFloat(i * 8 * 4 + 16) * scale, // x3
-                                        y + consumer.list.getFloat(i * 8 * 4 + 17) * scale, // y3
-                                        consumer.list.getFloat(i * 8 * 4 + 18), // u3
-                                        consumer.list.getFloat(i * 8 * 4 + 19), // v3
-                                        x + consumer.list.getFloat(i * 8 * 4 + 24) * scale, // x3
-                                        y + consumer.list.getFloat(i * 8 * 4 + 25) * scale, // y3
-                                        consumer.list.getFloat(i * 8 * 4 + 26), // u3
-                                        consumer.list.getFloat(i * 8 * 4 + 27), // v3
-                                        consumer.list.getFloat(i * 8 * 4 + 4), // r
-                                        consumer.list.getFloat(i * 8 * 4 + 5), // g
-                                        consumer.list.getFloat(i * 8 * 4 + 6), // b
-                                        consumer.list.getFloat(i * 8 * 4 + 7)); // a
-                            }
+                    TextureColor2dRenderBuffer buffer = buffers.getTexColor2d(id);
+                    if (dropShadow) {
+                        for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
+                            float r = consumer.list.getFloat(i * 8 * 4 + 4) * SHADOW_FACTOR;
+                            float g = consumer.list.getFloat(i * 8 * 4 + 5) * SHADOW_FACTOR;
+                            float b = consumer.list.getFloat(i * 8 * 4 + 6) * SHADOW_FACTOR;
+                            float a = consumer.list.getFloat(i * 8 * 4 + 7);
+                            buffer.quad(
+                                    x + scale + consumer.list.getFloat(i * 8 * 4 + 0) * scale, // x1
+                                    y + scale + consumer.list.getFloat(i * 8 * 4 + 1) * scale, // y1
+                                    consumer.list.getFloat(i * 8 * 4 + 2), // u1
+                                    consumer.list.getFloat(i * 8 * 4 + 3), // v1
+                                    x + scale + consumer.list.getFloat(i * 8 * 4 + 8) * scale, // x2
+                                    y + scale + consumer.list.getFloat(i * 8 * 4 + 9) * scale, // y2
+                                    consumer.list.getFloat(i * 8 * 4 + 10), // u2
+                                    consumer.list.getFloat(i * 8 * 4 + 11), // v2
+                                    x + scale + consumer.list.getFloat(i * 8 * 4 + 16) * scale, // x3
+                                    y + scale + consumer.list.getFloat(i * 8 * 4 + 17) * scale, // y3
+                                    consumer.list.getFloat(i * 8 * 4 + 18), // u3
+                                    consumer.list.getFloat(i * 8 * 4 + 19), // v3
+                                    x + scale + consumer.list.getFloat(i * 8 * 4 + 24) * scale, // x3
+                                    y + scale + consumer.list.getFloat(i * 8 * 4 + 25) * scale, // y3
+                                    consumer.list.getFloat(i * 8 * 4 + 26), // u3
+                                    consumer.list.getFloat(i * 8 * 4 + 27), // v3
+                                    r, g, b, a);
                         }
+                    }
+
+                    for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
+                        buffer.quad(
+                                x + consumer.list.getFloat(i * 8 * 4 + 0) * scale, // x1
+                                y + consumer.list.getFloat(i * 8 * 4 + 1) * scale, // y1
+                                consumer.list.getFloat(i * 8 * 4 + 2), // u1
+                                consumer.list.getFloat(i * 8 * 4 + 3), // v1
+                                x + consumer.list.getFloat(i * 8 * 4 + 8) * scale, // x2
+                                y + consumer.list.getFloat(i * 8 * 4 + 9) * scale, // y2
+                                consumer.list.getFloat(i * 8 * 4 + 10), // u2
+                                consumer.list.getFloat(i * 8 * 4 + 11), // v2
+                                x + consumer.list.getFloat(i * 8 * 4 + 16) * scale, // x3
+                                y + consumer.list.getFloat(i * 8 * 4 + 17) * scale, // y3
+                                consumer.list.getFloat(i * 8 * 4 + 18), // u3
+                                consumer.list.getFloat(i * 8 * 4 + 19), // v3
+                                x + consumer.list.getFloat(i * 8 * 4 + 24) * scale, // x3
+                                y + consumer.list.getFloat(i * 8 * 4 + 25) * scale, // y3
+                                consumer.list.getFloat(i * 8 * 4 + 26), // u3
+                                consumer.list.getFloat(i * 8 * 4 + 27), // v3
+                                consumer.list.getFloat(i * 8 * 4 + 4), // r
+                                consumer.list.getFloat(i * 8 * 4 + 5), // g
+                                consumer.list.getFloat(i * 8 * 4 + 6), // b
+                                consumer.list.getFloat(i * 8 * 4 + 7)); // a
                     }
                 }
             }
+
+            bufferSource.clear();
 
             x += mc.font.width(chunk.text()) * scale;
         }
@@ -174,23 +173,48 @@ public class VanillaFontRenderer extends FontRenderer {
         }
     }
 
-    private static class MyVertexConsumer implements VertexConsumer {
+    private static class FontBufferSource implements MultiBufferSource {
+
+        private final Map<RenderType, FontVertexConsumer> map = new HashMap<>();
+
+        public void clear() {
+            for (FontVertexConsumer consumer : map.values()) {
+                consumer.clear();
+            }
+        }
+
+        public boolean hasData() {
+            return map.values().stream().anyMatch(c -> !c.list.isEmpty());
+        }
+
+        public Map<RenderType, FontVertexConsumer> getConsumers() {
+            return map;
+        }
+
+        @Override
+        public VertexConsumer getBuffer(RenderType renderType) {
+            if (map.containsKey(renderType)) {
+                return map.get(renderType);
+            } else {
+                var consumer = new FontVertexConsumer();
+                map.put(renderType, consumer);
+                return consumer;
+            }
+        }
+    }
+
+    private static class FontVertexConsumer implements VertexConsumer {
 
         private final FloatList list;
         private int index;
 
-        private MyVertexConsumer() {
+        private FontVertexConsumer() {
             this.list = new FloatArrayList();
-            /*
-                list.add(x);
-                list.add(y);
-                list.add(u);
-                list.add(v);
-                list.add(r);
-                list.add(g);
-                list.add(b);
-                list.add(a);
-            */
+        }
+
+        public void clear() {
+            list.clear();
+            index = 0;
         }
 
         @Override
