@@ -134,7 +134,7 @@ public abstract class SystemFontInfo {
                     throw new CannotLoadFontException("Failed to init font.");
                 }
 
-                return new StbFont(fontInfo, buffer);
+                return new StbFont(this, fontInfo, buffer);
             } catch (Throwable e) {
                 fontInfo.free();
                 throw e;
@@ -184,7 +184,7 @@ public abstract class SystemFontInfo {
                     throw new CannotLoadFontException("Failed to init font.");
                 }
 
-                return new StbFont(fontInfo, buffer);
+                return new StbFont(this, fontInfo, buffer);
             } catch (Throwable e) {
                 fontInfo.free();
                 throw e;

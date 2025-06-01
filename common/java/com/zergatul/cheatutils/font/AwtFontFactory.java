@@ -32,7 +32,7 @@ public class AwtFontFactory extends FontFactory {
                 logger.error(e);
                 return new FailedFontReference();
             }
-            return new AwtFontReference(font);
+            return new AwtFontReference(info, font);
         });
     }
 }

@@ -19,18 +19,18 @@ public class StbFont {
     private final int descent;
     private final int lineGap;
 
-    protected StbFont(STBTTFontinfo info, ByteBuffer buffer) {
-        this.info = info;
+    protected StbFont(SystemFontInfo systemInfo, STBTTFontinfo stbInfo, ByteBuffer buffer) {
+        this.info = stbInfo;
 
         IntBuffer ascent  = BufferUtils.createIntBuffer(1);
         IntBuffer descent = BufferUtils.createIntBuffer(1);
         IntBuffer lineGap = BufferUtils.createIntBuffer(1);
-        STBTruetype.stbtt_GetFontVMetrics(info, ascent, descent, lineGap);
+        STBTruetype.stbtt_GetFontVMetrics(stbInfo, ascent, descent, lineGap);
         this.ascent = ascent.get(0);
         this.descent = descent.get(0);
         this.lineGap = lineGap.get(0);
 
-        SharedCleaner.register(this, new StbFontCleaner(info, buffer));
+        SharedCleaner.register(this, new StbFontCleaner(systemInfo.name, stbInfo, buffer));
     }
 
     public STBTTFontinfo getFontInfo() {
@@ -45,12 +45,12 @@ public class StbFont {
         return pixels / (ascent - descent);
     }
 
-    private record StbFontCleaner(STBTTFontinfo info, ByteBuffer buffer) implements Runnable {
+    private record StbFontCleaner(String fontName, STBTTFontinfo stbInfo, ByteBuffer buffer) implements Runnable {
         @Override
         public void run() {
-            LOGGER.info("Releasing STB font");
+            LOGGER.info("Releasing STB font: {}", fontName);
             TickEndExecutor.instance.execute(() -> {
-                info.free();
+                stbInfo.free();
                 buffer.clear();
             });
         }

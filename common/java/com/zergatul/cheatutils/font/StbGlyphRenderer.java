@@ -14,7 +14,8 @@ public class StbGlyphRenderer extends GlyphRenderer {
     private final float scale;
     private final float lineHeight;
 
-    protected StbGlyphRenderer(StbFont font, FontRenderParameters parameters) {
+    protected StbGlyphRenderer(SystemFontInfo info, StbFont font, FontRenderParameters parameters) {
+        super(String.format("%s[%s]", info.name, parameters.toString(FontRendererType.STB)));
         this.font = font;
         this.scale = font.getScaleForPixelHeight(parameters.size());
         this.lineHeight = font.getLineHeight(parameters.size());

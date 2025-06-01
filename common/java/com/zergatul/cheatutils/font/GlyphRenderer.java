@@ -15,13 +15,13 @@ public abstract class GlyphRenderer extends FontBackend {
     protected final AtlasTexture texture;
     protected final Int2ObjectMap<Glyph> glyphs;
 
-    protected GlyphRenderer() {
+    protected GlyphRenderer(String rendererName) {
         assert RenderSystem.isOnRenderThread();
 
         this.texture = new AtlasTexture();
         this.glyphs = new Int2ObjectOpenHashMap<>();
 
-        SharedCleaner.register(this, new GlyphRendererCleaner(this.texture));
+        SharedCleaner.register(this, new GlyphRendererCleaner(rendererName, this.texture));
     }
 
     public void ensureGlyphs(String text) {
@@ -41,10 +41,10 @@ public abstract class GlyphRenderer extends FontBackend {
 
     protected abstract Glyph renderGlyph(char ch);
 
-    private record GlyphRendererCleaner(AtlasTexture texture) implements Runnable {
+    private record GlyphRendererCleaner(String rendererName, AtlasTexture texture) implements Runnable {
         @Override
         public void run() {
-            LOGGER.info("Releasing atlas texture");
+            LOGGER.info("Releasing atlas texture: {}", rendererName);
             TickEndExecutor.instance.execute(texture::dispose);
         }
     }

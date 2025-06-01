@@ -31,7 +31,7 @@ public class StbFontFactory extends FontFactory {
                 logger.error(e);
                 return new FailedFontReference();
             }
-            return new StbFontReference(font);
+            return new StbFontReference(info, font);
         });
     }
 }

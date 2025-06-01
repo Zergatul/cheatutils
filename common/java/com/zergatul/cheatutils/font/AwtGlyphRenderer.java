@@ -18,7 +18,8 @@ public class AwtGlyphRenderer extends GlyphRenderer {
     private final boolean antiAliasing;
     private final float lineHeight;
 
-    protected AwtGlyphRenderer(Font font, FontRenderParameters parameters) {
+    protected AwtGlyphRenderer(SystemFontInfo info, Font font, FontRenderParameters parameters) {
+        super(String.format("%s[%s]", info.name, parameters.toString(FontRendererType.AWT)));
         this.font = font.deriveFont(parameters.size());
         this.antiAliasing = parameters.antiAliasing();
         this.lineHeight = calculateLineHeight();
