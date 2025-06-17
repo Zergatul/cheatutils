@@ -81,10 +81,10 @@ public class BlockUtils {
     }
 
     public static void applyPlacingPlan(InteractionHand hand, PlaceBlockPlan plan, boolean useShift) {
-        placeBlock(hand, plan.destination, plan.direction, plan.neighbour, plan.target, plan.rotation, useShift);
+        placeBlock(hand, plan.direction, plan.neighbour, plan.target, plan.rotation, useShift);
     }
 
-    private static void placeBlock(InteractionHand hand, BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation, boolean useShift) {
+    private static void placeBlock(InteractionHand hand, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation, boolean useShift) {
         if (mc.player == null) {
             return;
         }

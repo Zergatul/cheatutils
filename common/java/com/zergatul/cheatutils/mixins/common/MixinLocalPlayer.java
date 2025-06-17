@@ -1,9 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.authlib.GameProfile;
+import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.*;
-import com.zergatul.cheatutils.controllers.PlayerMotionController;
-import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
 import com.zergatul.mixin.ModifyMethodReturnValue;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -14,6 +13,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -22,9 +22,8 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 @Mixin(LocalPlayer.class)
 public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
-    private boolean flyHackOverride = false;
-    private boolean oldFlying;
-    private float oldFlyingSpeed;
+    @Unique
+    private boolean isInsideAiStep;
 
     public MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_) {
         super(p_234112_, p_234113_);
@@ -32,53 +31,29 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Inject(at = @At("HEAD"), method = "sendPosition()V")
     private void onBeforeSendPosition(CallbackInfo info) {
-        PlayerMotionController.instance.triggerOnBeforeSendPosition();
+        Events.BeforeSendPlayerPos.trigger();
     }
 
     @Inject(at = @At("TAIL"), method = "sendPosition()V")
     private void onAfterSendPosition(CallbackInfo info) {
-        PlayerMotionController.instance.triggerOnAfterSendPosition();
+        Events.AfterSendPlayerPos.trigger();
     }
 
     @Inject(at = @At("HEAD"), method = "aiStep()V")
     private void onBeforeAiStep(CallbackInfo info) {
-        MixinLocalPlayerHelper.insideAiStep = true;
-
-        FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
-        if (config.enabled) {
-            LocalPlayer player = (LocalPlayer) (Object) this;
-
-            oldFlying = player.getAbilities().flying;
-            oldFlyingSpeed = player.getAbilities().getFlyingSpeed();
-
-            player.getAbilities().flying = true;
-            if (config.overrideFlyingSpeed) {
-                player.getAbilities().setFlyingSpeed(config.flyingSpeed);
-            }
-
-            flyHackOverride = true;
-        }
-
-        ElytraFly.instance.onBeforeAiStep();
+        isInsideAiStep = true;
+        Events.BeforePlayerAiStep.trigger();
     }
 
     @Inject(at = @At("TAIL"), method = "aiStep()V")
     private void onAfterAiStep(CallbackInfo info) {
-        MixinLocalPlayerHelper.insideAiStep = false;
-
-        if (flyHackOverride) {
-            LocalPlayer player = (LocalPlayer) (Object) this;
-            player.getAbilities().flying = oldFlying;
-            player.getAbilities().setFlyingSpeed(oldFlyingSpeed);
-            flyHackOverride = false;
-        }
-
-        ElytraFly.instance.onAfterAiStep();
+        Events.AfterPlayerAiStep.trigger();
+        isInsideAiStep = false;
     }
 
     @Inject(at = @At("HEAD"), method = "isUsingItem()Z", cancellable = true)
     private void onIsUsingItem(CallbackInfoReturnable<Boolean> info) {
-        if (MixinLocalPlayerHelper.insideAiStep) {
+        if (isInsideAiStep) {
             if (ConfigStore.instance.getConfig().movementHackConfig.disableSlowdownOnUseItem) {
                 info.setReturnValue(false);
             }
@@ -103,7 +78,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public void lerpMotion(double dx, double dy, double dz) {
-        var config = ConfigStore.instance.getConfig().movementHackConfig;
+        MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
         if (config.antiKnockback) {
             return;
         }
@@ -112,7 +87,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public void push(double dx, double dy, double dz) {
-        var config = ConfigStore.instance.getConfig().movementHackConfig;
+        MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
         if (config.antiPush) {
             return;
         }

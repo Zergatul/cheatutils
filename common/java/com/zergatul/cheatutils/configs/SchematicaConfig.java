@@ -16,7 +16,6 @@ public class SchematicaConfig extends BlockPlacerConfig implements ValidatableCo
     public boolean replaceableAsAir;
     public boolean airAlwaysValid;
     public boolean autoBuild;
-    public double placementRate;
     public Create create;
 
     public SchematicaConfig() {
@@ -36,8 +35,6 @@ public class SchematicaConfig extends BlockPlacerConfig implements ValidatableCo
         showWrongBlockCubes = false;
         wrongBlockCubesMaxDistance = 10;
 
-        placementRate = 1;
-
         create = new Create();
     }
 
@@ -47,7 +44,6 @@ public class SchematicaConfig extends BlockPlacerConfig implements ValidatableCo
         missingBlockCubesMaxDistance = MathUtils.clamp(missingBlockCubesMaxDistance, 1, 1000);
         wrongBlockTracersMaxDistance = MathUtils.clamp(wrongBlockTracersMaxDistance, 1, 1000);
         wrongBlockCubesMaxDistance = MathUtils.clamp(wrongBlockCubesMaxDistance, 1, 1000);
-        placementRate = MathUtils.clamp(placementRate, 0.1, 100);
         super.validate();
     }
 

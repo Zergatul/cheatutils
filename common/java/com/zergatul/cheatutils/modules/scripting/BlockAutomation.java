@@ -2,15 +2,14 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.BlockAutomationConfig;
+import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.scripting.BlockPosConsumer;
-import com.zergatul.cheatutils.scripting.ItemStackPredicate;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
@@ -18,16 +17,12 @@ import com.zergatul.cheatutils.utils.SlotSelector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class BlockAutomation {
@@ -36,8 +31,8 @@ public class BlockAutomation {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
+    private final List<Runnable> queue = new ArrayList<>();
     private BlockPosConsumer script;
-    private String[] itemIds;
     private Predicate<ItemStack> useItemPredicate;
     private InteractionHand hand;
     private BlockPlacingMethod method;
@@ -49,7 +44,8 @@ public class BlockAutomation {
     private double actionTickCounter;
 
     private BlockAutomation() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.BeforeEntitiesTick.add(this::onBeforeEntitiesTick);
+        Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
     }
 
@@ -90,7 +86,7 @@ public class BlockAutomation {
         return currentDestroyingBlock != null;
     }
 
-    private void onClientTickEnd() {
+    private void onBeforeEntitiesTick() {
         BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
         // Block Automation code stops breaking lectern after first tick for Villager Roller
         if (!config.enabled || VillagerRoller.instance.isActive()) {
@@ -108,13 +104,11 @@ public class BlockAutomation {
             return;
         }
 
+        queue.clear();
         Vec3 eyePos = mc.player.getEyePosition(1);
 
-        actionTickCounter += config.actionsPerTick;
-        boolean actionPerformed = false;
-
-        actionLoop:
-        while (actionTickCounter >= 1) {
+        actionTickCounter += 1 / config.placementRate;
+        if (actionTickCounter >= 1) {
             actionTickCounter -= 1;
 
             if (mc.gameMode.isDestroying()) {
@@ -124,14 +118,14 @@ public class BlockAutomation {
                     if (currentDestroyingBlock != null) {
                         // check distance to block
                         if (currentDestroyingBlock.distToCenterSqr(eyePos) > config.maxRange * config.maxRange) {
-                            mc.gameMode.stopDestroyBlock();
+                            queue.add(() -> mc.gameMode.stopDestroyBlock());
                         } else {
                             if (mc.gameMode.continueDestroyBlock(currentDestroyingBlock, Direction.UP)) {
-                                mc.player.swing(InteractionHand.MAIN_HAND);
+                                queue.add(() -> mc.player.swing(InteractionHand.MAIN_HAND));
                             }
                         }
                     } else {
-                        mc.gameMode.stopDestroyBlock();
+                        queue.add(() -> mc.gameMode.stopDestroyBlock());
                     }
                 }
                 actionTickCounter = 0;
@@ -140,6 +134,7 @@ public class BlockAutomation {
 
             currentDestroyingBlock = null;
 
+            boolean actionPerformed = false;
             for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
                 useItemPredicate = null;
                 hand = null;
@@ -149,29 +144,30 @@ public class BlockAutomation {
 
                 if (breakCurrentBlock && !mc.level.isEmptyBlock(pos) && selectItemForBlockBreak(config)) {
                     currentDestroyingBlock = pos;
-                    mc.gameMode.startDestroyBlock(pos, Direction.UP);
-                    // if we call continueDestroyBlock after we block is destroyed
-                    // it can trigger destroying next block we don't want to touch
-                    if (mc.gameMode.isDestroying()) {
-                        mc.gameMode.continueDestroyBlock(currentDestroyingBlock, Direction.UP);
-                    }
-                    mc.player.swing(InteractionHand.MAIN_HAND);
+                    queue.add(() -> {
+                        mc.gameMode.startDestroyBlock(pos, Direction.UP);
+                        // if we call continueDestroyBlock after we block is destroyed
+                        // it can trigger destroying next block we don't want to touch
+                        if (mc.gameMode.isDestroying()) {
+                            mc.gameMode.continueDestroyBlock(currentDestroyingBlock, Direction.UP);
+                        }
+                        mc.player.swing(InteractionHand.MAIN_HAND);
+                    });
                     actionPerformed = true;
-                    continue actionLoop;
+                    break;
                 } else if (hand != null) {
                     BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
                     if (plan != null) {
                         if (config.debugMode && !debugStep) {
-                            debugPlan = plan;
-                            break actionLoop;
-                            // TODO: test after actions per tick change?
+                            debugPlan = plan; // TODO: test after actions per tick change?
                         } else {
                             debugPlan = null;
                             debugStep = false;
-                            BlockUtils.applyPlacingPlan(hand, plan, config.useShift);
+                            changeRotationIfRequired(config, plan);
+                            queue.add(() -> BlockUtils.applyPlacingPlan(hand, plan, config.useShift));
                             actionPerformed = true;
-                            continue actionLoop;
                         }
+                        break;
                     }
                 } else if (useItemPredicate != null) {
                     int slot = slotSelector.selectItem(config, useItemPredicate);
@@ -182,38 +178,30 @@ public class BlockAutomation {
                     BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pos, config.attachToAir, method);
                     if (plan != null) {
                         if (config.debugMode && !debugStep) {
-                            debugPlan = plan;
-                            break actionLoop;
-                            // TODO: test after actions per tick change?
+                            debugPlan = plan; // TODO: test after actions per tick change?
+                            break;
                         } else {
                             debugPlan = null;
                             debugStep = false;
                             mc.player.getInventory().setSelectedSlot(slot);
-                            BlockUtils.applyPlacingPlan(plan, config.useShift);
+                            changeRotationIfRequired(config, plan);
+                            queue.add(() -> BlockUtils.applyPlacingPlan(plan, config.useShift));
                             actionPerformed = true;
-                            continue actionLoop;
+                            break;
                         }
                     }
                 }
             }
 
             if (!actionPerformed) {
-                actionTickCounter = 0;
+                actionTickCounter = 1 - 1 / config.placementRate;
             }
-
-            break;
         }
     }
 
-    private boolean selectItemForBlockBreak(BlockAutomationConfig config) {
-        assert mc.player != null;
-
-        int slot = slotSelector.selectItem(config, breakItemPredicate);
-        if (slot >= 0) {
-            mc.player.getInventory().setSelectedSlot(slot);
-            return true;
-        } else {
-            return false;
+    private void onAfterSendPlayerPos() {
+        for (Runnable action : queue) {
+            action.run();
         }
     }
 
@@ -259,6 +247,24 @@ public class BlockAutomation {
 
             // reset color
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        }
+    }
+
+    private boolean selectItemForBlockBreak(BlockAutomationConfig config) {
+        assert mc.player != null;
+
+        int slot = slotSelector.selectItem(config, breakItemPredicate);
+        if (slot >= 0) {
+            mc.player.getInventory().setSelectedSlot(slot);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void changeRotationIfRequired(BlockAutomationConfig config, BlockUtils.PlaceBlockPlan plan) {
+        if (config.autoRotate) {
+            FakeRotation.instance.setServerRotation(plan.target());
         }
     }
 }
