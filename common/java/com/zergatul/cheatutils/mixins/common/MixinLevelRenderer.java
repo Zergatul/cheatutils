@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
@@ -13,6 +14,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -40,9 +42,11 @@ public abstract class MixinLevelRenderer {
             DeltaTracker delta,
             boolean renderBlockOutline,
             Camera camera,
-            GameRenderer gameRenderer,
             Matrix4f pose,
             Matrix4f projection,
+            GpuBufferSlice gpuBufferSlice,
+            Vector4f vector4f,
+            boolean b,
             CallbackInfo info
     ) {
         Events.BeforeRenderWorld.trigger();
@@ -54,9 +58,11 @@ public abstract class MixinLevelRenderer {
             DeltaTracker delta,
             boolean renderBlockOutline,
             Camera camera,
-            GameRenderer gameRenderer,
             Matrix4f pose,
             Matrix4f projection,
+            GpuBufferSlice gpuBufferSlice,
+            Vector4f vector4f,
+            boolean b,
             CallbackInfo info
     ) {
         GlStateTracker.save();

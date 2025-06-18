@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -21,15 +21,18 @@ public class ModMain {
     public static final Logger LOGGER = LogManager.getLogger(ModMain.class);
 
     public ModMain(final FMLJavaModLoadingContext context) {
-        context.getModEventBus().addListener(this::onCommonSetup);
-        context.getModEventBus().addListener(this::onLoadComplete);
-        context.getModEventBus().addListener(this::onRegisterKeyMappings);
+        BusGroup modBusGroup = context.getModBusGroup();
+
+        FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::onCommonSetup);
+        RegisterKeyMappingsEvent.getBus(modBusGroup).addListener(this::onRegisterKeyMappings);
+        FMLLoadCompleteEvent.getBus(modBusGroup).addListener(this::onLoadComplete);
+
         Modules.registerKeyBindings();
         Modules.register();
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
-        MinecraftForge.EVENT_BUS.register(new ForgeEvents());
+        new ForgeEvents().register();
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {

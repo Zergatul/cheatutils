@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.schematics.extensions.SectionCompileInfo;
 import com.zergatul.cheatutils.schematics.extensions.SectionCompilerExtension;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
-import net.minecraft.client.renderer.chunk.RenderChunkRegion;
+import net.minecraft.client.renderer.chunk.RenderSectionRegion;
 import net.minecraft.client.renderer.chunk.SectionCompiler;
 import net.minecraft.core.SectionPos;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,7 +19,7 @@ public abstract class MixinSectionCompiler {
     @Inject(at = @At("HEAD"), method = "compile")
     private void onCompileBegin(
             SectionPos sectionPos,
-            RenderChunkRegion renderChunkRegion,
+            RenderSectionRegion region,
             VertexSorting vertexSorting,
             SectionBufferBuilderPack sectionBufferBuilderPack,
             CallbackInfoReturnable<SectionCompiler.Results> unused
@@ -42,7 +42,7 @@ public abstract class MixinSectionCompiler {
     @Inject(at = @At("TAIL"), method = "compile")
     private void onCompileEnd(
             SectionPos sectionPos,
-            RenderChunkRegion renderChunkRegion,
+            RenderSectionRegion section,
             VertexSorting vertexSorting,
             SectionBufferBuilderPack sectionBufferBuilderPack,
             CallbackInfoReturnable<SectionCompiler.Results> info

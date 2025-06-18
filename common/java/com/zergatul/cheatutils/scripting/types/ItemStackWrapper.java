@@ -6,12 +6,15 @@ import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTagVisitor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.storage.TagValueOutput;
 
 import java.util.List;
 
@@ -76,8 +79,11 @@ public class ItemStackWrapper {
             return "";
         }
 
+        TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, mc.level.registryAccess());
+        output.store(ItemStack.MAP_CODEC, inner);
+        CompoundTag compound = output.buildResult();
         StringTagVisitor visitor = new StringTagVisitor();
-        inner.save(mc.level.registryAccess()).accept(visitor);
+        compound.accept(visitor);
         return visitor.build();
     }
 

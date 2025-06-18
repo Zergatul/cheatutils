@@ -9,12 +9,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface GuiAccessor {
 
     @Accessor("EFFECT_BACKGROUND_AMBIENT_SPRITE")
-    static ResourceLocation getEffectBackgroundAmbientSprite() {
+    static ResourceLocation getEffectBackgroundAmbientSprite_CU() {
         throw new AssertionError();
     }
 
     @Accessor("EFFECT_BACKGROUND_SPRITE")
-    static ResourceLocation getEffectBackgroundSprite() {
+    static ResourceLocation getEffectBackgroundSprite_CU() {
         throw new AssertionError();
     }
 }

@@ -1,7 +1,5 @@
 package net.irisshaders.iris.layer;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -17,16 +15,6 @@ public class OuterWrappedRenderType extends RenderType {
 
     @Override
     public void draw(MeshData meshData) {
-        throw new AssertionError();
-    }
-
-    @Override
-    public RenderTarget getRenderTarget() {
-        throw new AssertionError();
-    }
-
-    @Override
-    public RenderPipeline getRenderPipeline() {
         throw new AssertionError();
     }
 

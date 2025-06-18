@@ -1,24 +1,32 @@
 package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.SetupFogEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.FogConfig;
+import com.zergatul.cheatutils.mixins.common.accessors.FogRendererAccessor;
 import com.zergatul.cheatutils.modules.Module;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.fog.FogRenderer;
 
 public class Fog implements Module {
 
     public static final Fog instance = new Fog();
 
     private Fog() {
-        Events.SetupFog.add(this::onSetupFog);
+        Events.ClientTickStart.add(this::onClientTickStart);
     }
 
-    public void onSetupFog(SetupFogEvent event) {
-        FogConfig config = ConfigStore.instance.getConfig().fogConfig;
-        if (config.enabled && FogConfig.METHOD_MODIFY_FOG_DISTANCES.equals(config.method)) {
-            event.setFogStart(10000);
-            event.setFogEnd(1000000);
+    public void onClientTickStart() {
+        if (Minecraft.getInstance().level == null) {
+            return;
+        }
+        if (ConfigStore.instance.getConfig().fogConfig.enabled) {
+            if (FogRendererAccessor.isFogEnabled_CU()) {
+                FogRenderer.toggleFog();
+            }
+        } else {
+            if (!FogRendererAccessor.isFogEnabled_CU()) {
+                FogRenderer.toggleFog();
+            }
         }
     }
 }

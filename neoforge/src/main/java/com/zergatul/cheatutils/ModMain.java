@@ -2,7 +2,6 @@ package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.font.SystemFonts;
-import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
@@ -16,17 +15,12 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @SuppressWarnings("unused")
 @Mod(ModMain.MODID)
 public class ModMain {
 
     public static final String MODID = "cheatutils";
     public static final Logger LOGGER = LogManager.getLogger(ModMain.class);
-
-    private final List<Module> modules = new ArrayList<>();
 
     public ModMain(IEventBus bus, ModContainer container) {
         bus.addListener(this::onCommonSetup);
@@ -43,10 +37,6 @@ public class ModMain {
         SystemFonts.initAsync();
         Profiles.instance.init();
         ConfigHttpServer.instance.start();
-    }
-
-    private void register(Module module) {
-        modules.add(module);
     }
 
     private void onRegisterKeybindings(final RegisterKeyMappingsEvent event) {

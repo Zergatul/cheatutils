@@ -22,6 +22,7 @@ import net.minecraft.nbt.StringTagVisitor;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -65,7 +67,7 @@ public class GameApi {
             Returns Minecraft version
             """)
     public String getVersion() {
-        return SharedConstants.getCurrentVersion().getName();
+        return SharedConstants.getCurrentVersion().name();
     }
 
     @MethodDescription("""
@@ -505,8 +507,10 @@ public class GameApi {
 
         public String getNbt(int entityId) {
             return getStringValue(entityId, entity -> {
-                CompoundTag compound = new CompoundTag();
-                entity.saveWithoutId(compound);
+                TagValueOutput valueOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, entity.level().registryAccess());
+                entity.saveWithoutId(valueOutput);
+                CompoundTag compound = valueOutput.buildResult();
+
                 StringTagVisitor visitor = new StringTagVisitor();
                 compound.accept(visitor);
                 return visitor.build();
@@ -516,8 +520,10 @@ public class GameApi {
         public int getIntTag(int entityId, String tag) {
             return getIntegerValue(entityId, entity -> {
                 if (entity instanceof LivingEntity living) {
-                    CompoundTag compound = new CompoundTag();
-                    living.addAdditionalSaveData(compound);
+                    TagValueOutput valueOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, entity.level().registryAccess());
+                    living.saveWithoutId(valueOutput);
+                    CompoundTag compound = valueOutput.buildResult();
+
                     Tag item = compound.get(tag);
                     if (item instanceof NumericTag numeric) {
                         return numeric.intValue();

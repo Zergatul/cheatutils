@@ -19,7 +19,7 @@ public class LitematicaOutputFile {
 
     public static Schematica.DownloadInfo create(SchematicaOutputData data) {
         CompoundTag root = new CompoundTag();
-        root.putInt("MinecraftDataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+        root.putInt("MinecraftDataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
         root.putInt("Version", 6);
         root.putInt("SubVersion", 1);
         root.put("Metadata", createMetadata(data));

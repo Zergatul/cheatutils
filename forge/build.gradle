@@ -17,7 +17,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+    id 'net.minecraftforge.gradle' version '[6.0.36,6.2)'
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
@@ -46,21 +46,7 @@ minecraft {
         client {
             workingDirectory project.file('run')
             arg "-mixin.config=cheatutils.mixin.json"
-
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            property 'forge.logging.markers', 'REGISTRIES'
-
-            // Recommended logging level for the console
-            // You can set various levels here.
-            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
             property 'forge.logging.console.level', 'debug'
-
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            property 'forge.enabledGameTestNamespaces', 'cheatutils'
         }
     }
 }
@@ -69,6 +55,7 @@ sourceSets {
     main {
         java {
             srcDir '../common/java'
+            srcDir '../forge-and-fabric'
             srcDir '../java-scripting-language/src/main/java'
             srcDir '../mixin-plugin/common/java'
         }
@@ -79,13 +66,26 @@ sourceSets {
 }
 
 repositories {
-    // Put repositories for dependencies here
-    // ForgeGradle automatically adds the Forge maven and Maven Central for you
-
-    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so:
-    // flatDir {
-    //     dir 'libs'
-    // }
+    mavenCentral()
+    maven {
+        name = 'Forge'
+        url = 'https://maven.minecraftforge.net'
+    }
+    maven {
+        name = 'Minecraft libraries'
+        url = 'https://libraries.minecraft.net'
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Sponge'
+                url = 'https://repo.spongepowered.org/repository/maven-public'
+            }
+        }
+        filter {
+            includeGroupAndSubgroups('org.spongepowered')
+        }
+    }
 }
 
 dependencies {
@@ -107,16 +107,14 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-
-    // Hack fix for now, force jopt-simple to be exactly 5.0.4 because Mojang ships that version, but some transtive dependencies request 6.0+
-    implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.8'
 }
 
 mixin {
     add sourceSets.main, "cheatutils.mixin-refmap.json"
 }
 
-tasks.named('processResources', ProcessResources).configure {
+tasks.named('processResources', ProcessResources) {
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
             forge_version: forge_version, forge_version_range: forge_version_range,
@@ -136,18 +134,18 @@ jar {
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
-tasks.named('jar', Jar).configure {
+tasks.named('jar', Jar) {
     archiveFileName = "$mod_id-$mod_version-forge-${minecraft_version}.jar"
 
     manifest {
         attributes([
                 "Specification-Title"     : mod_id,
                 "Specification-Vendor"    : mod_authors,
-                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Specification-Version"   : '1', // We are version 1 of ourselves
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
                 "Implementation-Vendor"   : mod_authors,
-                "MixinConfigs"            : "cheatutils.mixin.json"
+                "MixinConfigs"            : 'cheatutils.mixin.json'
         ])
     }
 }

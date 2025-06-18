@@ -93,14 +93,14 @@ public class RenderingContext {
 
         if (itemStacksQueue != null) {
            // GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
-            graphics.pose().pushPose();
+            graphics.pose().pushMatrix();
             for (ItemStackRenderEntry entry : itemStacksQueue) {
-                graphics.pose().setIdentity();
-                graphics.pose().translate(1d * (entry.x + halfWidth) / scale, 1d * (entry.y + halfHeight) / scale, 0);
+                graphics.pose().identity();
+                graphics.pose().translate(1f * (entry.x + halfWidth) / scale, 1f * (entry.y + halfHeight) / scale);
                 graphics.renderItem(entry.entity, entry.itemStack, 0, 0, 0);
                 graphics.renderItemDecorations(font, entry.itemStack, 0, 0);
             }
-            graphics.pose().popPose();
+            graphics.pose().popMatrix();
             // GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
         }
     }

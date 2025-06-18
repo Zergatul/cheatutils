@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
+import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
 import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
@@ -25,6 +26,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +100,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
         }
 
         NonNullList<Slot> slots = this.menu.slots;
-        if (slots.size() == 0) {
+        if (slots.isEmpty()) {
             return;
         }
 
@@ -124,7 +126,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             }
         }
 
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             return;
         }
 
@@ -155,10 +157,16 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
         ContainerButtonsController.instance.dropAll(false);
     }
 
-    @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V", shift = At.Shift.AFTER),
-            method = "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
-    private void onRenderLabels(GuiGraphics graphics, int x, int y, float partialTicks, CallbackInfo info) {
-        Events.ContainerRenderLabels.trigger(new ContainerRenderLabelsEvent(graphics, (AbstractContainerScreen<?>) (Object) this, x, y));
+    @Inject(at = @At("TAIL"), method = "renderContents")
+    private void onAfterRenderContents(GuiGraphics graphics, int x, int y, float partialTicks, CallbackInfo info) {
+        Events.ContainerScreenAfterRenderContents.trigger(new ContainerRenderLabelsEvent(graphics, (AbstractContainerScreen<?>) (Object) this, x, y));
+    }
+
+    @Inject(at = @At("HEAD"), method = "getHoveredSlot", cancellable = true)
+    private void onGetHoveredSlot(double x, double y, CallbackInfoReturnable<Slot> info) {
+        ContainerScreenCalculateHoveredSlotEvent event = new ContainerScreenCalculateHoveredSlotEvent();
+        if (Events.ContainerCalculateHoveredSlot.trigger(event)) {
+            info.setReturnValue(event.getSlot());
+        }
     }
 }

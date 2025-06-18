@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.schematics.extensions.SectionCompileInfo;
 import com.zergatul.cheatutils.schematics.extensions.SectionCompilerExtension;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
-import net.minecraft.client.renderer.chunk.RenderChunkRegion;
+import net.minecraft.client.renderer.chunk.RenderSectionRegion;
 import net.minecraft.client.renderer.chunk.SectionCompiler;
 import net.minecraft.core.SectionPos;
 import net.neoforged.neoforge.client.event.AddSectionGeometryEvent;
@@ -19,10 +19,10 @@ import java.util.List;
 @Mixin(SectionCompiler.class)
 public abstract class MixinSectionCompiler {
 
-    @Inject(at = @At("HEAD"), method = "compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;Ljava/util/List;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;")
+    @Inject(at = @At("HEAD"), method = "compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderSectionRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;Ljava/util/List;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;")
     private void onCompileBegin(
             SectionPos sectionPos,
-            RenderChunkRegion renderChunkRegion,
+            RenderSectionRegion section,
             VertexSorting vertexSorting,
             SectionBufferBuilderPack sectionBufferBuilderPack,
             List<AddSectionGeometryEvent.AdditionalSectionRenderer> additionalRenderers,
@@ -43,10 +43,10 @@ public abstract class MixinSectionCompiler {
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;Ljava/util/List;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;")
+    @Inject(at = @At("TAIL"), method = "compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderSectionRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;Ljava/util/List;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;")
     private void onCompileEnd(
             SectionPos sectionPos,
-            RenderChunkRegion renderChunkRegion,
+            RenderSectionRegion section,
             VertexSorting vertexSorting,
             SectionBufferBuilderPack sectionBufferBuilderPack,
             List<AddSectionGeometryEvent.AdditionalSectionRenderer> additionalRenderers,

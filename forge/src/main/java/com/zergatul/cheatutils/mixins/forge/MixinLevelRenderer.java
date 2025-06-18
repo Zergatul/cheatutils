@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.mixins.forge;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
@@ -37,22 +37,21 @@ public abstract class MixinLevelRenderer {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V", ordinal = 0),
-            method = "lambda$addMainPass$1",
+            method = "lambda$addMainPass$2",
             require = 0)
     private void onAfterRenderEntities(
-            FogParameters fog,
+            GpuBufferSlice p_407574_,
             DeltaTracker deltaTracker,
             Camera camera,
             ProfilerFiller profiler,
-            Matrix4f pose,
-            Matrix4f projection,
+            Matrix4f p_361439_,
             ResourceHandle<?> handle1,
             ResourceHandle<?> handle2,
             Frustum frustum,
             boolean p_362593_,
             ResourceHandle<?> handle3,
             ResourceHandle<?> handle4,
-            CallbackInfo ci
+            CallbackInfo info
     ) {
         FakePlayer.render(this.minecraft, camera, renderBuffers, this::renderEntity);
     }

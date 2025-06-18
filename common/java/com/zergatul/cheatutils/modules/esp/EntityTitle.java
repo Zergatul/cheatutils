@@ -392,7 +392,8 @@ public class EntityTitle implements FontBackendHolder {
         }
         if (entity instanceof Projectile projectile) {
             ProjectileAccessor projectileMixin = (ProjectileAccessor) projectile;
-            return projectileMixin.getOwnerUUID_CU();
+            EntityReference<Entity> reference = projectileMixin.getOwner_CU();
+            return reference != null ? reference.getUUID() : null;
         }
         // fox?
         return null;

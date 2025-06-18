@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.mixins.fabric;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
@@ -40,12 +40,11 @@ public abstract class MixinLevelRenderer {
             method = "method_62214",
             require = 0)
     private void onAfterRenderEntities(
-            FogParameters fog,
+            GpuBufferSlice gpuBufferSlice,
             DeltaTracker deltaTracker,
             Camera camera,
-            ProfilerFiller profiler,
+            ProfilerFiller profilerFiller,
             Matrix4f pose,
-            Matrix4f projection,
             ResourceHandle<?> handle1,
             ResourceHandle<?> handle2,
             boolean bl,

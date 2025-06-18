@@ -222,8 +222,8 @@ public class BlockAutomation {
         if (config.enabled && config.debugMode && debugPlan != null) {
             // draw neighbour block
             LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-            renderer.begin(event, false);
 
+            renderer.begin(event, false);
             double x1 = debugPlan.neighbour().getX();
             double y1 = debugPlan.neighbour().getY();
             double z1 = debugPlan.neighbour().getZ();
@@ -235,30 +235,23 @@ public class BlockAutomation {
 
             // draw target block
             renderer.begin(event, false);
-            RenderSystem.setShaderColor(0.7f, 1f, 0.7f, 1f);
-
             x1 = debugPlan.destination().getX() + 0.05;
             y1 = debugPlan.destination().getY() + 0.05;
             z1 = debugPlan.destination().getZ() + 0.05;
             x2 = x1 + 0.9;
             y2 = y1 + 0.9;
             z2 = z1 + 0.9;
-            renderer.cuboid(x1, y1, z1, x2, y2, z2, 1f, 1f, 1f, 1f);
+            renderer.cuboid(x1, y1, z1, x2, y2, z2, 0.7f, 1f, 0.7f, 1f);
             renderer.end();
 
             // draw target point
             renderer.begin(event, false);
-            RenderSystem.setShaderColor(1f, 1f, 0.7f, 1f);
-
             for (Direction direction : Direction.values()) {
                 Vec3 p1 = debugPlan.target().relative(direction, 0.1);
                 Vec3 p2 = debugPlan.target().relative(direction, -0.1);
-                renderer.line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, 1f, 1f, 1f, 1f);
+                renderer.line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, 1f, 1f, 0.7f, 1f);
             }
             renderer.end();
-
-            // reset color
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         }
     }
 }

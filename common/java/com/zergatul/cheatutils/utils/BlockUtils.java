@@ -6,8 +6,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -94,7 +96,14 @@ public class BlockUtils {
         boolean emulateShift = useShift && !mc.player.isShiftKeyDown();
 
         if (emulateShift) {
-            NetworkPacketsController.instance.sendPacket(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY));
+            NetworkPacketsController.instance.sendPacket(new ServerboundPlayerInputPacket(new Input(
+                    mc.player.input.keyPresses.forward(),
+                    mc.player.input.keyPresses.backward(),
+                    mc.player.input.keyPresses.left(),
+                    mc.player.input.keyPresses.right(),
+                    mc.player.input.keyPresses.jump(),
+                    true,
+                    mc.player.input.keyPresses.sprint())));
         }
 
         if (rotation != null) {
@@ -123,7 +132,14 @@ public class BlockUtils {
         }
 
         if (emulateShift) {
-            NetworkPacketsController.instance.sendPacket(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.RELEASE_SHIFT_KEY));
+            NetworkPacketsController.instance.sendPacket(new ServerboundPlayerInputPacket(new Input(
+                    mc.player.input.keyPresses.forward(),
+                    mc.player.input.keyPresses.backward(),
+                    mc.player.input.keyPresses.left(),
+                    mc.player.input.keyPresses.right(),
+                    mc.player.input.keyPresses.jump(),
+                    false,
+                    mc.player.input.keyPresses.sprint())));
         }
     }
 

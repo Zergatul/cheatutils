@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.common;
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -43,8 +42,7 @@ public class Events {
     public static final CancelableEventHandler<PreRenderTooltipEvent> PreRenderTooltip = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<Vector2ic> TooltipPositioned = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler PostRenderTooltip = new SimpleEventHandler();
-    public static final ParameterizedEventHandler<ContainerRenderLabelsEvent> ContainerRenderLabels = new ParameterizedEventHandler<>();
-    public static final ParameterizedEventHandler<SetupFogEvent> SetupFog = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<ContainerRenderLabelsEvent> ContainerScreenAfterRenderContents = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<SendChatEvent> SendChat = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<Entity> EntityInteract = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockPos> BeforeInstaMine = new ParameterizedEventHandler<>();
@@ -52,7 +50,9 @@ public class Events {
     public static final ParameterizedEventHandler<Component> ChatMessageAdded = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler Close = new SimpleEventHandler();
     public static final ParameterizedEventHandler<ContainerClickEvent> ContainerMenuClick = new ParameterizedEventHandler<>();
+    public static final CancelableEventHandler<ContainerScreenCalculateHoveredSlotEvent> ContainerCalculateHoveredSlot = new CancelableEventHandler<>();
     public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
     public static final CancelableEventHandler<PlayerTurnByMouseEvent> PlayerTurnByMouse = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<PlayerInfoUpdateEvent> PlayerInfoUpdated = new ParameterizedEventHandler<>();
+    public static final SimpleEventHandler BeforeBlurMainFramebuffer = new SimpleEventHandler();
 }

@@ -54,7 +54,8 @@ public class StyleWrapper {
             }
             String command = StringUtil.filterText(((ClickEvent.RunCommand) event).command());
             if (command.startsWith("/")) {
-                return mc.player.connection.sendUnsignedCommand(command.substring(1));
+                mc.player.connection.sendUnattendedCommand(command.substring(1), null);
+                return true;
             } else {
                 return false;
             }

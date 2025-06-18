@@ -6,6 +6,7 @@ import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import org.lwjgl.opengl.GL30;
 
@@ -14,7 +15,7 @@ public class MainFrameBuffer {
     private static int lastFrameBufferObject;
 
     public static void enter() {
-        RenderTarget target = RenderType.solid().getRenderTarget();
+        RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
         GpuTexture colorTexture = target.getColorTexture();
         GpuTexture depthTexture = target.getDepthTexture();
         lastFrameBufferObject = ((GlTexture) colorTexture).getFbo(((GlDevice) RenderSystem.getDevice()).directStateAccess(), depthTexture);

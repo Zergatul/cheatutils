@@ -2,11 +2,10 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
-import net.minecraft.network.PacketSendListener;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import org.spongepowered.asm.mixin.Final;
@@ -34,7 +33,7 @@ public abstract class MixinConnection {
     }
 
     @Inject(at = @At("HEAD"), method = "doSendPacket", cancellable = true)
-    private void onPacketSend(Packet<?> packet, PacketSendListener listener, boolean flush, CallbackInfo info) {
+    private void onPacketSend(Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo info) {
         if (this.receiving == PacketFlow.CLIENTBOUND) {
             boolean skip = NetworkPacketsController.instance.triggerSend((Connection) (Object) this, packet);
             if (skip) {

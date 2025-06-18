@@ -1,23 +1,25 @@
 package com.zergatul.cheatutils.modules.visuals;
 
-import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
+import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ShulkerTooltipConfig;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Texture2dRenderer;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.utils.ItemUtils;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2fStack;
 import org.joml.Vector2ic;
 
 public class ShulkerTooltip {
@@ -26,14 +28,15 @@ public class ShulkerTooltip {
 
     private static final ResourceLocation CONTAINER_TEXTURE = ResourceLocation.parse("textures/gui/container/shulker_box.png");
     private static final int ImageWidth = 176;
-    private static final int ImageHeight = 166;
-    private static final int TranslateZ = 250;
+    //private static final int ImageHeight = 166;
+
+    private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_back");
+    private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_front");
 
     private final Minecraft mc = Minecraft.getInstance();
     private boolean locked = false;
     private boolean allowTooltip = false;
     private ItemStack lockedStack;
-    private Matrix4f lockedPose;
     private int lockedX, lockedY;
     private PreRenderTooltipEvent currentEvent;
     private boolean renderAfter;
@@ -43,7 +46,8 @@ public class ShulkerTooltip {
         Events.PreRenderTooltip.add(this::onPreRenderTooltip);
         Events.TooltipPositioned.add(this::onTooltipPositioned);
         Events.PostRenderTooltip.add(this::onPostRenderTooltip);
-        Events.ContainerRenderLabels.add(this::onContainerRenderLabels);
+        Events.ContainerScreenAfterRenderContents.add(this::onContainerRenderContents);
+        Events.ContainerCalculateHoveredSlot.add(this::onCalculateHoveredSlot);
     }
 
     private void onPreRenderTooltip(PreRenderTooltipEvent event) {
@@ -92,37 +96,37 @@ public class ShulkerTooltip {
         }
     }
 
-    private void onContainerRenderLabels(ContainerRenderLabelsEvent event) {
+    private void onContainerRenderContents(ContainerRenderLabelsEvent event) {
         if (locked) {
             if (Screen.hasControlDown()) {
-                PoseStack poseStack = event.getGuiGraphics().pose();
+                Matrix3x2fStack poseStack = event.getGuiGraphics().pose();
 
-                poseStack.pushPose();
-                poseStack.setIdentity();
-                poseStack.mulPose(lockedPose);
+                poseStack.pushMatrix();
+                poseStack.identity();
 
                 int x = lockedX;
                 int y = lockedY;
-
-                PoseStack.Pose pose = poseStack.last();
-                renderShulkerInventory(event.getGuiGraphics(), lockedStack, pose.pose(), x, y);
-
                 int mx = event.getMouseX();
                 int my = event.getMouseY();
-                renderTooltip(event.getGuiGraphics(), x, y, mx, my);
+                int hovered = getHoveredSlot(x, y, mx, my);
 
-                poseStack.popPose();
+                renderShulkerInventory(event.getGuiGraphics(), lockedStack, x, y, hovered);
+                renderTooltip(event.getGuiGraphics(), x, y, mx, my, hovered);
+
+                poseStack.popMatrix();
             } else {
                 clearLocked();
             }
         }
     }
 
-    private void renderShulkerTooltip() {
-        PoseStack poseStack = currentEvent.getGraphics().pose();
-        poseStack.pushPose();
-        poseStack.translate(0, 0, TranslateZ);
+    private void onCalculateHoveredSlot(ContainerScreenCalculateHoveredSlotEvent event) {
+        if (locked) {
+            event.setSlot(null);
+        }
+    }
 
+    private void renderShulkerTooltip() {
         // 12 pixels margin from DefaultTooltipPositioner and 4 pixels are vanilla border
         int x, y;
         if (renderAfter) {
@@ -145,31 +149,39 @@ public class ShulkerTooltip {
 
         if (Screen.hasControlDown()) {
             locked = true;
-            lockedPose = poseStack.last().pose();
             lockedStack = currentEvent.getItemStack();
             lockedX = x;
             lockedY = y;
         }
 
-        renderShulkerInventory(currentEvent.getGraphics(), currentEvent.getItemStack(), poseStack.last().pose(), x, y);
-
-        poseStack.popPose();
+        renderShulkerInventory(currentEvent.getGraphics(), currentEvent.getItemStack(), x, y, -1);
     }
 
-    private void renderShulkerInventory(GuiGraphics graphics, ItemStack itemStack, Matrix4f matrix, int x, int y) {
-        MainFrameBuffer.enter();
+    private void renderShulkerInventory(GuiGraphics graphics, ItemStack itemStack, int x, int y, int hovered) {
+        graphics.nextStratum();
 
-        Texture2dRenderer renderer = RenderUtilities.instance.getTexture2dRenderer();
-        renderer.begin();
-        renderer.rect(x, y, ImageWidth, 6, 0, 0, ImageWidth, 6, 256, 256);
-        renderer.rect(x, y + 6, ImageWidth, 60, 0, 14, ImageWidth, 60, 256, 256);
-        renderer.rect(x, y + 66, ImageWidth, 6, 0, 160, ImageWidth, 6, 256, 256);
-        renderer.end(
-                mc.getWindow().getGuiScaledWidth(),
-                mc.getWindow().getGuiScaledHeight(),
-                ((GlTexture) mc.getTextureManager().getTexture(CONTAINER_TEXTURE).getTexture()).glId());
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED, CONTAINER_TEXTURE,
+                x, y,
+                0, 0,
+                ImageWidth, 6,
+                256, 256);
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED, CONTAINER_TEXTURE,
+                x, y + 6,
+                0, 14,
+                ImageWidth, 60,
+                256, 256);
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED, CONTAINER_TEXTURE,
+                x, y + 66,
+                0, 160,
+                ImageWidth, 6,
+                256, 256);
 
-        MainFrameBuffer.exit();
+        if (hovered >= 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK_SPRITE, x + 4 + 18 * (hovered % 9), y + 6 + 18 * (hovered / 9), 24, 24);
+        }
 
         NonNullList<ItemStack> content = ItemUtils.getShulkerContent(itemStack);
         for (int i = 0; i < content.size(); i++) {
@@ -180,23 +192,34 @@ public class ShulkerTooltip {
                 renderSlot(graphics, slot, x + 8 + 18 * slotX, y + 10 + 18 * slotY);
             }
         }
+
+        if (hovered >= 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_SPRITE, x + 4 + 18 * (hovered % 9), y + 6 + 18 * (hovered / 9), 24, 24);
+        }
     }
 
-    private void renderTooltip(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
-        NonNullList<ItemStack> content = ItemUtils.getShulkerContent(lockedStack);
-        for (int i = 0; i < content.size(); i++) {
-            ItemStack slot = content.get(i);
-            int slotX = i % 9;
-            int slotY = i / 9;
-            if (!slot.isEmpty()) {
-                if (x + 8 + 18 * slotX <= mouseX && mouseX < x + 8 + 18 * slotX + 16) {
-                    if (y + 10 + 18 * slotY <= mouseY && mouseY < y + 10 + 18 * slotY + 16) {
-                        allowTooltip = true;
-                        graphics.renderTooltip(Minecraft.getInstance().font, slot, mouseX, mouseY);
-                    }
-                }
-            }
+    private void renderTooltip(GuiGraphics graphics, int x, int y, int mouseX, int mouseY, int hovered) {
+        if (hovered < 0) {
+            return;
         }
+
+        NonNullList<ItemStack> content = ItemUtils.getShulkerContent(lockedStack);
+        ItemStack slot = content.get(hovered);
+        if (slot.isEmpty()) {
+            return;
+        }
+
+        graphics.nextStratum();
+        allowTooltip = true;
+        graphics.renderTooltip(
+                mc.font,
+                Screen.getTooltipFromItem(mc, slot).stream()
+                        .map(Component::getVisualOrderText)
+                        .map(ClientTooltipComponent::create)
+                        .collect(Util.toMutableList()),
+                mouseX, mouseY,
+                DefaultTooltipPositioner.INSTANCE,
+                slot.get(DataComponents.TOOLTIP_STYLE));
     }
 
     private void renderSlot(GuiGraphics graphics, ItemStack itemStack, int x, int y) {
@@ -204,9 +227,21 @@ public class ShulkerTooltip {
         graphics.renderItemDecorations(mc.font, itemStack, x, y);
     }
 
+    private int getHoveredSlot(int x, int y, int mouseX, int mouseY) {
+        for (int i = 0; i < 27; i++) {
+            int slotX = i % 9;
+            int slotY = i / 9;
+            if (x + 8 + 18 * slotX <= mouseX && mouseX < x + 8 + 18 * slotX + 16) {
+                if (y + 10 + 18 * slotY <= mouseY && mouseY < y + 10 + 18 * slotY + 16) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
     private void clearLocked() {
         locked = false;
-        lockedPose = null;
         lockedStack = null;
     }
 }

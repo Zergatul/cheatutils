@@ -6,7 +6,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.common.events.RenderGuiEvent;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
@@ -37,7 +38,8 @@ public class StatusOverlay implements Module, FontBackendHolder {
             texts.put(align, new ArrayList<>());
         }
 
-        Events.PostRenderGui.add(this::render);
+        //Events.PostRenderGui.add(this::render);
+        Events.BeforeBlurMainFramebuffer.add(this::render);
     }
 
     @Override
@@ -81,7 +83,21 @@ public class StatusOverlay implements Module, FontBackendHolder {
         backgroundColor = color;
     }
 
-    private void render(RenderGuiEvent event) {
+    private void render() {
+        {
+            //MainFrameBuffer.enter();
+
+            /*var renderer = RenderUtilities.instance.getColor2dRenderer();
+            renderer.begin();
+            renderer.quad(
+                    -0.5f, -0.5f,
+                    +0.5f, -0.5f,
+                    +0.5f, +0.5f,
+                    -0.5f, +0.5f,
+                    1f, 1f, 1f, 1f);
+            renderer.end(new Matrix4f());*/
+        }
+
         if (mc.player == null) {
             return;
         }
@@ -128,7 +144,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(0, scrWidth, scrHeight, 0, -1, 1);
 
-        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+        RenderingContext context = new RenderingContext(null, matrix, halfScrWidth, halfScrHeight);
 
         for (Align align : Align.values()) {
             List<AlignedText> list = texts.get(align);

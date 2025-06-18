@@ -103,10 +103,6 @@ public class Schematica {
         return lookup.get(pos.asLong());
     }
 
-    public boolean hasBlocksAtSection(SectionPos pos) {
-        return lookup.containsKey(pos.asLong());
-    }
-
     public boolean hasBlocksAtSection(long index) {
         return lookup.containsKey(index);
     }
