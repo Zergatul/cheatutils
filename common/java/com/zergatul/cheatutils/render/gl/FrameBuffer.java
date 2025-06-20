@@ -9,6 +9,8 @@ public class FrameBuffer {
     private static int prevFBO;
     private int FBO;
     private int FBT;
+    private final int width;
+    private final int height;
     private final float pixelWidth;
     private final float pixelHeight;
 
@@ -19,8 +21,8 @@ public class FrameBuffer {
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, FBO);
 
         Window window = Minecraft.getInstance().getWindow();
-        int width = window.getWidth();
-        int height = window.getHeight();
+        width = window.getWidth();
+        height = window.getHeight();
 
         FBT = GL30.glGenTextures();
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, FBT);
@@ -60,6 +62,22 @@ public class FrameBuffer {
 
     public float getPixelHeight() {
         return pixelHeight;
+    }
+
+    public int getFramebufferId() {
+        return FBO;
+    }
+
+    public int getTextureId() {
+        return FBT;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public void delete() {

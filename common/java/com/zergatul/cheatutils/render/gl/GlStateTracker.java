@@ -11,9 +11,9 @@ public class GlStateTracker {
     private static int FBO;
     private static int VAO;
     private static int VBO;
-    private static boolean blend;
-    private static boolean depth;
-    private static boolean cull;
+    //private static boolean blend;
+    //private static boolean depth;
+    //private static boolean cull;
     private static int texture;
     private static int program;
 
@@ -23,9 +23,9 @@ public class GlStateTracker {
     public static void save() {
         VAO = glGetInteger(GL_VERTEX_ARRAY_BINDING);
         VBO = glGetInteger(GL_ARRAY_BUFFER_BINDING);
-        blend = glIsEnabled(GL_BLEND);
-        depth = glIsEnabled(GL_DEPTH_TEST);
-        cull = glIsEnabled(GL_CULL_FACE);
+        //blend = glIsEnabled(GL_BLEND);
+        //depth = glIsEnabled(GL_DEPTH_TEST);
+        //cull = glIsEnabled(GL_CULL_FACE);
         texture = glGetInteger(GL_ACTIVE_TEXTURE);
 
         program = glGetInteger(GL_CURRENT_PROGRAM);
@@ -40,23 +40,23 @@ public class GlStateTracker {
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-        if (blend) {
-            glEnable(GL_BLEND);
-        } else {
-            glDisable(GL_BLEND);
-        }
+//        if (blend) {
+//            glEnable(GL_BLEND);
+//        } else {
+//            glDisable(GL_BLEND);
+//        }
 
-        if (depth) {
-            glEnable(GL_DEPTH_TEST);
-        } else {
-            glDisable(GL_DEPTH_TEST);
-        }
+//        if (depth) {
+//            glEnable(GL_DEPTH_TEST);
+//        } else {
+//            glDisable(GL_DEPTH_TEST);
+//        }
 
-        if (cull) {
-            glEnable(GL_CULL_FACE);
-        } else {
-            glDisable(GL_CULL_FACE);
-        }
+//        if (cull) {
+//            glEnable(GL_CULL_FACE);
+//        } else {
+//            glDisable(GL_CULL_FACE);
+//        }
 
         glUseProgram(program);
 

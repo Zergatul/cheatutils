@@ -1,6 +1,10 @@
 package com.zergatul.cheatutils.modules.automation;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.zergatul.cheatutils.blocks.BlockPlacePlan;
+import com.zergatul.cheatutils.blocks.BlockPlacer;
+import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -31,7 +35,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -48,12 +51,13 @@ public class Schematica {
     private final List<Entry> entries = new ArrayList<>();
     private final SlotSelector slotSelector = new SlotSelector();
     private volatile Long2ObjectMap<SectionInfo> lookup = new Long2ObjectOpenHashMap<>();
-    private double placementCounter;
+    private double actionTickCounter;
+    private CompletableFuture<Void> applyFuture;
 
     private Schematica() {
         Events.RawChunkUnloaded.add(this::onChunkLoaded);
         Events.RawBlockUpdated.add(this::onBlockUpdated);
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterRenderWorld.add(this::onRender);
     }
 
@@ -378,21 +382,34 @@ public class Schematica {
         }
     }
 
-    private void onClientTickEnd() {
+    private void onAfterPlayerAiStep() {
         SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
         if (!config.enabled || !config.autoBuild) {
-            placementCounter = 0;
+            resetState();
             return;
         }
 
         if (mc.level == null || mc.player == null) {
-            placementCounter = 0;
+            resetState();
             return;
         }
 
-        placementCounter += 1 / config.placementRate;
-        while (placementCounter >= 1) {
-            placementCounter -= 1;
+        actionTickCounter += 1 / config.placementRate;
+        if (applyFuture != null) {
+            if (applyFuture.isDone()) {
+                applyFuture = null;
+            } else {
+                // block action is in progress
+                if (actionTickCounter > 1) {
+                    // don't accumulate too much while action is in progress
+                    actionTickCounter = 1;
+                }
+                return;
+            }
+        }
+
+        if (actionTickCounter >= 1) {
+            actionTickCounter -= 1;
 
             Vec3 eyePos = mc.player.getEyePosition();
             ItemStack itemInHand = mc.player.getMainHandItem();
@@ -404,7 +421,7 @@ public class Schematica {
                 blockInHand = null;
             }
 
-            BlockUtils.PlaceBlockPlan plan = null;
+            BlockPlacePlan plan = null;
             BlockState state = null;
             for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
                 for (Entry entry : entries) {
@@ -413,7 +430,7 @@ public class Schematica {
                         continue;
                     }
 
-                    plan = BlockUtils.getPlacingPlan(pos, config.attachToAir);
+                    plan = BlockPlacer.createPlan(state, pos, BlockPlacer.guessMethod(state), config);
                     if (plan != null) {
                         break;
                     }
@@ -425,7 +442,7 @@ public class Schematica {
             }
 
             if (plan == null) {
-                placementCounter = 0;
+                actionTickCounter = 0;
                 return;
             }
 
@@ -435,10 +452,9 @@ public class Schematica {
                 blockInHand = state.getBlock();
             }
             if (blockInHand == state.getBlock()) {
-                BlockUtils.applyPlacingPlan(plan, config.useShift);
+                applyFuture = plan.apply();
             } else {
-                placementCounter = 0;
-                return;
+                actionTickCounter = 0;
             }
         }
     }
@@ -551,9 +567,9 @@ public class Schematica {
                 (float) (create.getY2() + gap - view.y),
                 (float) (create.getZ2() + gap - view.z),
                 0.00f, 0.58f, 1.00f, 0.2f);
-        GL11.glDepthMask(false);
+        GlStateManager._depthMask(false);
         quadRenderer.end(event.getMvp());
-        GL11.glDepthMask(true);
+        GlStateManager._depthMask(true);
 
         LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
         lineRenderer.begin(event, true);
@@ -582,6 +598,11 @@ public class Schematica {
         final Long2ObjectMap<SectionInfo> copy = new Long2ObjectOpenHashMap<>(lookup);
         consumer.accept(copy);
         lookup = copy;
+    }
+
+    private void resetState() {
+        actionTickCounter = 0;
+        applyFuture = null;
     }
 
     private SchematicaConfig getConfig() {

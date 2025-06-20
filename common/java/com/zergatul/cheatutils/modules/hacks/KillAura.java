@@ -3,9 +3,8 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KillAuraConfig;
-import com.zergatul.cheatutils.controllers.FakeRotationController;
+import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
-import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.KillAuraFunction;
 import com.zergatul.cheatutils.utils.MathUtils;
@@ -36,9 +35,10 @@ public class KillAura implements Module {
     private KillAuraFunction script;
 
     private KillAura() {
-        PlayerMotionController.instance.addOnAfterSendPosition(this::onAfterSendPosition);
+        Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
+        Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos);
+        Events.ClientTickStart.add(this::onClientTickStart);
         Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
-        Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.DimensionChange.add(this::onDimensionChange);
     }
 
@@ -50,17 +50,14 @@ public class KillAura implements Module {
         this.script = script;
     }
 
-    private void onPlayerLoggingIn(Connection connection) {
-        ticks = 0;
-        lastAttackTick = 0;
-    }
-
-    private void onDimensionChange() {
-        lastAttackTick = 0;
-    }
-
-    private void onClientTickEnd() {
+    private void onClientTickStart() {
         ticks++;
+    }
+
+    private void onAfterPlayerAiStep() {
+        // calculate targets
+        assert mc.player != null;
+        assert mc.level != null;
 
         KillAuraConfig config = ConfigStore.instance.getConfig().killAuraConfig;
         if (!config.enabled) {
@@ -69,16 +66,12 @@ public class KillAura implements Module {
             return;
         }
 
-        LocalPlayer player = mc.player;
-        ClientLevel world = mc.level;
-
-        if (player == null || world == null) {
-            return;
-        }
-
         if (!shouldAttackNow(config)) {
             return;
         }
+
+        LocalPlayer player = mc.player;
+        ClientLevel level = mc.level;
 
         target = null;
         targets.clear();
@@ -88,7 +81,7 @@ public class KillAura implements Module {
         double maxRange2 = getRangeSquared(config);
         Vec3 eyePos = player.getEyePosition();
 
-        for (Entity entity : world.entitiesForRendering()) {
+        for (Entity entity : level.entitiesForRendering()) {
             double distance2 = getEntityInteractionDistance2(mc.player, entity);
             if (distance2 > maxRange2) {
                 continue;
@@ -112,7 +105,7 @@ public class KillAura implements Module {
 
                 if (config.maxHorizontalAngle != null) {
                     double targetYRot = Math.toDegrees(Math.atan2(diff.z, diff.x)) - 90F;
-                    double delta = MathUtils.deltaAngle180(targetYRot, player.getYRot());
+                    double delta = MathUtils.deltaAngle180((float) targetYRot, player.getYRot());
                     if (delta > config.maxHorizontalAngle) {
                         continue;
                     }
@@ -120,7 +113,7 @@ public class KillAura implements Module {
 
                 if (config.maxVerticalAngle != null) {
                     double targetXRot = Math.toDegrees(-Math.atan2(diff.y, diffXZ));
-                    double delta = MathUtils.deltaAngle180(targetXRot, player.getXRot());
+                    double delta = MathUtils.deltaAngle180((float) targetXRot, player.getXRot());
                     if (delta > config.maxVerticalAngle) {
                         continue;
                     }
@@ -150,34 +143,13 @@ public class KillAura implements Module {
 
         if (config.autoRotate) {
             if (target != null) {
-                FakeRotationController.instance.setServerRotation(getAttackPoint(target));
-                // attack will happen in onAfterSendPosition method
+                FakeRotation.instance.setServerRotation(getAttackPoint(target));
             }
-        } else {
-            executeAttack();
         }
     }
 
-    private Vec3 getAttackPoint(Entity entity) {
-        return entity.getBoundingBox().getCenter();
-    }
-
-    private int getPriority(KillAuraConfig config, Entity entity) {
-        int i = 0;
-        for (KillAuraConfig.PriorityEntry entry: config.priorities) {
-            if (entry.enabled && entry.predicate.test(entity)) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
-    }
-
-    private void onAfterSendPosition() {
-        executeAttack();
-    }
-
-    private void executeAttack() {
+    private void onAfterSendPlayerPos() {
+        // perform attack
         assert mc.gameMode != null;
         assert mc.player != null;
 
@@ -200,6 +172,30 @@ public class KillAura implements Module {
 
             lastAttackTick = ticks;
         }
+    }
+
+    private void onPlayerLoggingIn(Connection connection) {
+        ticks = 0;
+        lastAttackTick = 0;
+    }
+
+    private void onDimensionChange() {
+        lastAttackTick = 0;
+    }
+
+    private Vec3 getAttackPoint(Entity entity) {
+        return entity.getBoundingBox().getCenter();
+    }
+
+    private int getPriority(KillAuraConfig config, Entity entity) {
+        int i = 0;
+        for (KillAuraConfig.PriorityEntry entry: config.priorities) {
+            if (entry.enabled && entry.predicate.test(entity)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
     }
 
     private double getRangeSquared(KillAuraConfig config) {

@@ -1,13 +1,14 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.gl.EspTrianglesProgram;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL30;
 
+import static org.lwjgl.opengl.GL11.*;
 public class QuadThickLineRenderer implements ThickLineRenderer {
 
     private EspTrianglesProgram program;
@@ -92,18 +93,13 @@ public class QuadThickLineRenderer implements ThickLineRenderer {
     public void end() {
         if (program.buffer.vertices() > 0) {
             // set line settings
-            GL30.glEnable(GL30.GL_BLEND);
-            GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-            GL30.glDisable(GL30.GL_DEPTH_TEST);
-            GL30.glDisable(GL30.GL_CULL_FACE);
+            GlStateManager._enableBlend(); //glEnable(GL_BLEND);
+            GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
+            GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
+            GlStateManager._disableCull();
 
             // draw with shader program
             program.draw();
-
-            // reset settings
-            GL30.glDisable(GL30.GL_BLEND);
-            GL30.glEnable(GL30.GL_DEPTH_TEST);
-            GL30.glEnable(GL30.GL_CULL_FACE);
         }
 
         // reset renderer state

@@ -6,9 +6,6 @@ import com.zergatul.cheatutils.configs.ElytraHackConfig;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 public class ElytraFly implements Module {
@@ -21,6 +18,8 @@ public class ElytraFly implements Module {
 
     private ElytraFly() {
         Events.ClientTickStart.add(this::onClientTickStart);
+        Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
+        Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.ClientTickEnd.add(this::onClientTickEnd);
     }
 
@@ -40,27 +39,8 @@ public class ElytraFly implements Module {
         return delta;
     }
 
-    public void onBeforeAiStep() {
-        ElytraHackConfig config = ConfigStore.instance.getConfig().elytraHackConfig;
-        if (applyFly) {
-            mc.player.stopFallFlying();
-            mc.player.getAbilities().flying = true;
-            mc.player.getAbilities().setFlyingSpeed((float) (config.maxSpeed / 100));
-        }
-    }
-
     public float onModifyFlyingHorizontalMultiplier(float value) {
         return applyFly ? 1 / 0.6f : value;
-    }
-
-    public void onAfterAiStep() {
-        if (applyFly) {
-            if (mc.player.getAbilities().flying) {
-                mc.player.startFallFlying();
-            }
-            mc.player.getAbilities().flying = false;
-            applyFly = false;
-        }
     }
 
     public boolean shouldPlaySound() {
@@ -105,6 +85,29 @@ public class ElytraFly implements Module {
                 mc.player.setDeltaMovement(delta);
                 applySpeedLimit = true;
             }
+        }
+    }
+
+    private void onBeforePlayerAiStep() {
+        assert mc.player != null;
+
+        ElytraHackConfig config = ConfigStore.instance.getConfig().elytraHackConfig;
+        if (applyFly) {
+            mc.player.stopFallFlying();
+            mc.player.getAbilities().flying = true;
+            mc.player.getAbilities().setFlyingSpeed((float) (config.maxSpeed / 100));
+        }
+    }
+
+    private void onAfterPlayerAiStep() {
+        assert mc.player != null;
+
+        if (applyFly) {
+            if (mc.player.getAbilities().flying) {
+                mc.player.startFallFlying();
+            }
+            mc.player.getAbilities().flying = false;
+            applyFly = false;
         }
     }
 

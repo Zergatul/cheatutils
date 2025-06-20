@@ -3,7 +3,7 @@
         Write script to place blocks, use items on blocks, break blocks in range.<br>
         Every game tick module runs your script for all blocks in range. You can get current block coordinates from <b>x</b>, <b>y</b>, <b>z</b> variables.<br>
         If your script calls <b>blockAutomation.useItem(...);</b> or <b>blockAutomation.breakBlock(...);</b> module will use item and place block, or break block at current coordinates.<br>
-        Some items require player to look at correct direction to be used. These kind of items send another packet to the server and are not supported by block automation. Example: filling/emptying bucket or glass bottle.<br>
+        Some items require player to look in the correct direction to be used. These kind of items send another packet to the server and are not supported by block automation. Example: filling/emptying bucket or glass bottle.<br>
         If you are unsure if your item can be used from Block Automation try enter FreeCam and use item while looking at another direction.
     </div>
 
@@ -48,6 +48,16 @@
                 </tr>
                 <tr>
                     <td colspan="2">
+                        <switch-checkbox v-model="config.autoRotate" @change="update()">
+                            Auto Rotate
+                        </switch-checkbox>
+                    </td>
+                    <td>
+                        <div class="input-description">Some anti-cheats prevent you from placing/breaking blocks if your character doesn't look in the proper direction</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
                         <switch-checkbox v-model="config.attachToAir" @change="update()">
                             Attach to Air
                         </switch-checkbox>
@@ -55,13 +65,13 @@
                 </tr>
                 <tr>
                     <td>
-                        <span class="field-description">Actions per tick:</span>
+                        <span class="field-description">Placement Rate:</span>
                     </td>
                     <td>
-                        <input type="text" class="w3" v-model="config.actionsPerTick" @change="update()">
+                        <input type="text" class="w5" v-model="config.placementRate" @change="update()">
                     </td>
                     <td>
-                        <div class="input-description"></div>
+                        <div class="input-description">Place 1 block once in X ticks. Can be floating pointer number.</div>
                     </td>
                 </tr>
                 <tr>

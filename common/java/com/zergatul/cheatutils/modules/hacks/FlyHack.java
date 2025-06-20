@@ -15,11 +15,16 @@ public class FlyHack implements Module {
     public static final FlyHack instance = new FlyHack();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private boolean abilitiesOverridden;
+    private boolean oldFlying;
+    private float oldFlyingSpeed;
     private int tickCounter;
     private ServerboundMovePlayerPacket antiKickPacket;
 
     private FlyHack() {
         NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+        Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
+        Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.ClientTickEnd.add(this::onTickEnd);
     }
 
@@ -37,6 +42,36 @@ public class FlyHack implements Module {
             if (config.enabled) {
                 ((ServerboundMovePlayerPacketAccessor) packet).setOnGround_CU(config.onGroundFlag);
             }
+        }
+    }
+
+    private void onBeforePlayerAiStep() {
+        assert mc.player != null;
+
+        FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
+        if (config.enabled) {
+            LocalPlayer player = mc.player;
+
+            oldFlying = player.getAbilities().flying;
+            oldFlyingSpeed = player.getAbilities().getFlyingSpeed();
+
+            player.getAbilities().flying = true;
+            if (config.overrideFlyingSpeed) {
+                player.getAbilities().setFlyingSpeed(config.flyingSpeed);
+            }
+
+            abilitiesOverridden = true;
+        }
+    }
+
+    private void onAfterPlayerAiStep() {
+        assert mc.player != null;
+
+        if (abilitiesOverridden) {
+            LocalPlayer player = mc.player;
+            player.getAbilities().flying = oldFlying;
+            player.getAbilities().setFlyingSpeed(oldFlyingSpeed);
+            abilitiesOverridden = false;
         }
     }
 

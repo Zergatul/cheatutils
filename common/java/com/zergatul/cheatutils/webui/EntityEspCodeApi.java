@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.webui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;

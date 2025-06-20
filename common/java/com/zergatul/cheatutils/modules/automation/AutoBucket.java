@@ -4,7 +4,6 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.AutoBucketConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.VoxelShapeUtils;
@@ -171,14 +170,14 @@ public class AutoBucket implements Module {
         //logger.info("Collision pos = " + collisionPos);
 
         if (stack.getItem() instanceof BlockItem) {
-            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(collisionPos.above(), false);
-            if (plan == null) {
-                return;
-            }
-            double d2 = plan.destination().distToCenterSqr(mc.player.position());
-            if (d2 < 16) {
-                BlockUtils.applyPlacingPlan(plan, true);
-            }
+//            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(collisionPos.above(), false);
+//            if (plan == null) {
+//                return;
+//            }
+//            double d2 = plan.destination().distToCenterSqr(mc.player.position());
+//            if (d2 < 16) {
+//                BlockUtils.applyPlacingPlan(plan, true);
+//            }
         } else {
             Vec3 lookAt = new Vec3(
                     collisionPos.getX() + 0.5,

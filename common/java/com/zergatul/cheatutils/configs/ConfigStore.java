@@ -240,6 +240,27 @@ public class ConfigStore {
             }
         }
 
+        if (config.blocks != null && config.blocks.getBlockConfigs() != null) {
+            for (BlockEspConfig blockConfig : config.blocks.getBlockConfigs()) {
+                if (blockConfig.code != null && blockConfig.code.isBlank()) {
+                    blockConfig.code = null;
+                }
+
+                if (blockConfig.code != null) {
+                    try {
+                        CompilationResult result = ScriptsController.instance.compileBlockEsp(blockConfig.code);
+                        if (result.getProgram() != null) {
+                            blockConfig.script = result.getProgram();
+                        } else {
+                            result.getDiagnostics().forEach(m -> logger.error("Block ESP for {}: {}", blockConfig.blocks.stream().findFirst().get().getName(), m.message));
+                        }
+                    } catch (Throwable e) {
+                        logger.error(e);
+                    }
+                }
+            }
+        }
+
         if (config.entities != null && config.entities.configs != null) {
             for (EntityEspConfig entityConfig : config.entities.configs) {
                 if (entityConfig.code != null && entityConfig.code.isBlank()) {

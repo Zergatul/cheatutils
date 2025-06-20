@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
+import com.zergatul.cheatutils.common.events.ScreenRenderEvent;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -46,7 +46,7 @@ public class ShulkerTooltip {
         Events.PreRenderTooltip.add(this::onPreRenderTooltip);
         Events.TooltipPositioned.add(this::onTooltipPositioned);
         Events.PostRenderTooltip.add(this::onPostRenderTooltip);
-        Events.ContainerScreenAfterRenderContents.add(this::onContainerRenderContents);
+        Events.AfterScreenRendered.add(this::onAfterScreenRendered);
         Events.ContainerCalculateHoveredSlot.add(this::onCalculateHoveredSlot);
     }
 
@@ -96,7 +96,7 @@ public class ShulkerTooltip {
         }
     }
 
-    private void onContainerRenderContents(ContainerRenderLabelsEvent event) {
+    private void onAfterScreenRendered(ScreenRenderEvent event) {
         if (locked) {
             if (Screen.hasControlDown()) {
                 Matrix3x2fStack poseStack = event.getGuiGraphics().pose();

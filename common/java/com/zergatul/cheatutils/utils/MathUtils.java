@@ -43,8 +43,8 @@ public class MathUtils {
         }
     }
 
-    public static double deltaAngle180(double angle1, double angle2) {
-        double result = (angle1 - angle2) % 360;
+    public static float deltaAngle180(float angle1, float angle2) {
+        float result = (angle1 - angle2) % 360;
         if (result < -180) {
             result += 360;
         }

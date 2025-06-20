@@ -34,12 +34,12 @@ public class RenderBuffers {
         return texColor2d.get(textureId);
     }
 
-    public void render(Matrix4f matrix) {
+    public void render(Matrix4f matrix, Runnable framebufferSetup) {
         if (isEmpty()) {
             return;
         }
 
-        MainFrameBuffer.enter();
+        framebufferSetup.run();
         GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
 
         if (color2d != null) {
@@ -58,7 +58,7 @@ public class RenderBuffers {
                 renderer.begin();
                 TextureColor2dRenderBuffer buffer = texColor2d.get(textureId);
                 renderer.fill(buffer.getList());
-                renderer.end(matrix, textureId);
+                renderer.end(matrix, textureId, true);
                 buffer.clear();
             }
         }

@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.concurrent;
 import com.zergatul.cheatutils.common.Events;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class TickEndExecutor extends EventExecutor {

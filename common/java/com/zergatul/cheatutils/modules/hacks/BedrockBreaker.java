@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.mojang.datafixers.util.Pair;
+import com.zergatul.cheatutils.blocks.BlockPlacePlan;
+import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BedrockBreakerConfig;
@@ -8,15 +10,13 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.Root;
-import com.zergatul.cheatutils.utils.BlockPlacingMethod;
-import com.zergatul.cheatutils.utils.BlockUtils;
+import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
@@ -38,6 +38,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -192,22 +193,18 @@ public class BedrockBreaker implements Module {
             return;
         }
 
-        BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pistonPos, false, BlockPlacingMethod.facing(pistonDirection));
+        BlockPlacePlan plan = BlockPlacer.createPacketPlan(pistonPos, BlockPlacingMethod.facing(pistonDirection));
         if (plan == null) {
             reset("Cannot place initial piston");
             return;
         }
 
         mc.player.connection.send(new ServerboundSetCarriedItemPacket(pistonSlot));
-        mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(
-                Float.isNaN(plan.rotation().yRot()) ? mc.player.getYRot() : plan.rotation().yRot(),
-                Float.isNaN(plan.rotation().xRot()) ? mc.player.getXRot() : plan.rotation().xRot(),
-                mc.player.onGround(),
-                false));
-        mc.player.connection.send(new ServerboundUseItemOnPacket(
-                InteractionHand.MAIN_HAND,
-                new BlockHitResult(plan.target(), plan.direction(), plan.neighbour(), false),
-                getSequenceNumber()));
+        CompletableFuture<Void> future = plan.apply();
+        if (!future.isDone()) {
+            reset("Unexpected piston placing plan apply result");
+            return;
+        }
 
         state = State.PLACE_LEVER;
         state.handle(this);
@@ -321,22 +318,18 @@ public class BedrockBreaker implements Module {
             return;
         }
 
-        BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(pistonPos, false, BlockPlacingMethod.facing(pistonDirection.getOpposite()));
+        BlockPlacePlan plan = BlockPlacer.createPacketPlan(pistonPos, BlockPlacingMethod.facing(pistonDirection.getOpposite()));
         if (plan == null) {
             reset("Cannot place reverse piston");
             return;
         }
 
         mc.player.connection.send(new ServerboundSetCarriedItemPacket(pistonSlot));
-        mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(
-                Float.isNaN(plan.rotation().yRot()) ? mc.player.getYRot() : plan.rotation().yRot(),
-                Float.isNaN(plan.rotation().xRot()) ? mc.player.getXRot() : plan.rotation().xRot(),
-                mc.player.onGround(),
-                false));
-        mc.player.connection.send(new ServerboundUseItemOnPacket(
-                InteractionHand.MAIN_HAND,
-                new BlockHitResult(plan.target(), plan.direction(), plan.neighbour(), false),
-                getSequenceNumber()));
+        CompletableFuture<Void> future = plan.apply();
+        if (!future.isDone()) {
+            reset("Unexpected piston placing plan apply result");
+            return;
+        }
 
         state = State.WAIT_BEDROCK_BREAK;
         tickCount = 0;
@@ -361,17 +354,18 @@ public class BedrockBreaker implements Module {
                     return;
                 }
 
-                BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(bedrockPos, false, BlockPlacingMethod.FROM_HORIZONTAL);
+                BlockPlacePlan plan = BlockPlacer.createPacketPlan(bedrockPos, BlockPlacingMethod.FROM_HORIZONTAL);
                 if (plan == null) {
                     reset("Cannot place replacement block");
                     return;
                 }
 
                 mc.player.connection.send(new ServerboundSetCarriedItemPacket(replaceBlockSlot));
-                mc.player.connection.send(new ServerboundUseItemOnPacket(
-                        InteractionHand.MAIN_HAND,
-                        new BlockHitResult(plan.target(), plan.direction(), plan.neighbour(), false),
-                        getSequenceNumber()));
+                CompletableFuture<Void> future = plan.apply();
+                if (!future.isDone()) {
+                    reset("Unexpected replace block placing plan apply result");
+                    return;
+                }
             }
 
             if (mc.level.getBlockState(leverPos).is(Blocks.LEVER)) {

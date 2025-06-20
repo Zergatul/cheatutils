@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.render.gl.Position2dTextureProgram;
 import org.joml.Matrix4f;
 
@@ -73,16 +74,14 @@ public class Texture2dRenderer {
     }
 
     public void end(Matrix4f matrix, int textureId) {
-        glEnable(GL_BLEND);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager._disableDepthTest(); //glDisable(GL_DEPTH_TEST);
+        GlStateManager._disableCull(); //glDisable(GL_CULL_FACE);
+        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         program.draw(matrix, textureId);
-
-        glEnable(GL_DEPTH_TEST);
     }
 
     private void createGlObjectsIfRequired() {

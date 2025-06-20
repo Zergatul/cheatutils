@@ -1,16 +1,18 @@
 package com.zergatul.cheatutils.modules.automation;
 
+import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
+import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.VillagerRollerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
-import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.EntityInteraction;
+import com.zergatul.cheatutils.utils.EntityInteractionPlan;
+import com.zergatul.cheatutils.utils.EntityInteractionResult;
 import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -30,7 +32,8 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.shapes.CollisionContext;
+
+import java.util.concurrent.CompletableFuture;
 
 public class VillagerRoller implements Module {
 
@@ -43,6 +46,8 @@ public class VillagerRoller implements Module {
     private volatile boolean lecternPlaced;
     private volatile boolean lecternDestroyed;
     private volatile MerchantOffers offers;
+    private CompletableFuture<Void> applyFuture;
+    private CompletableFuture<EntityInteractionResult> interactFuture;
     private int villagerId;
     private int slot;
     private String stopReason;
@@ -75,6 +80,7 @@ public class VillagerRoller implements Module {
             pos = null;
             lecternPlaced = false;
             lecternDestroyed = false;
+            applyFuture = null;
             offers = null;
             stopReason = null;
         }
@@ -220,20 +226,17 @@ public class VillagerRoller implements Module {
                             return;
                         }
 
-                        if (!mc.level.getBlockState(pos).canBeReplaced()) {
-                            // another block placed at destination
-                            return;
-                        }
-
-                        CollisionContext collisioncontext = CollisionContext.of(mc.player);
-                        if (!mc.level.isUnobstructed(Blocks.LECTERN.defaultBlockState(), pos, collisioncontext)) {
-                            // collide with entity
+                        BlockPlacePlan plan = BlockPlacer.createPlan(
+                                Blocks.LECTERN.defaultBlockState(),
+                                pos,
+                                BlockPlacingMethod.ANY,
+                                getConfig());
+                        if (plan == null) {
                             return;
                         }
 
                         inventory.setSelectedSlot(lecternSlot);
-                        var plan = new BlockUtils.PlaceBlockPlan(pos.relative(Direction.DOWN).immutable(), Direction.DOWN, pos);
-                        BlockUtils.applyPlacingPlan(plan, false);
+                        applyFuture = plan.apply();
 
                         state = State.WAITING_FOR_LECTERN_BLOCK_UPDATE;
                     }
@@ -241,7 +244,10 @@ public class VillagerRoller implements Module {
                 }
 
                 case WAITING_FOR_LECTERN_BLOCK_UPDATE -> {
-                    if (lecternPlaced) {
+                    if (applyFuture != null && applyFuture.isDone()) {
+                        applyFuture = null;
+                    }
+                    if (applyFuture == null && lecternPlaced) {
                         lecternPlaced = false;
                         state = State.WAITING_FOR_PROFESSION_GAIN;
                     }
@@ -249,19 +255,29 @@ public class VillagerRoller implements Module {
                 }
 
                 case WAITING_FOR_PROFESSION_GAIN -> {
-                    Entity entity = mc.level.getEntity(villagerId);
-                    if (entity == null) {
-                        stop("Selected villager no longer exists");
-                        return;
-                    }
-                    if (entity instanceof Villager villager) {
-                        if (villager.getVillagerData().profession().is(VillagerProfession.LIBRARIAN)) {
-                            EntityInteraction.interact(villager);
-                            offers = null;
-                            state = State.WAITING_FOR_TRADE_MENU;
+                    if (interactFuture != null) {
+                        if (interactFuture.isDone()) {
+                            if (interactFuture.resultNow().isSuccess()) {
+                                offers = null;
+                                state = State.WAITING_FOR_TRADE_MENU;
+                            }
+                            interactFuture = null;
                         }
                     } else {
-                        stop("Selected villager is not a villager anymore. LOL");
+                        Entity entity = mc.level.getEntity(villagerId);
+                        if (entity == null) {
+                            stop("Selected villager no longer exists");
+                            return;
+                        }
+                        if (entity instanceof Villager villager) {
+                            if (villager.getVillagerData().profession().is(VillagerProfession.LIBRARIAN)) {
+                                EntityInteractionPlan plan = EntityInteraction.interact(villager, getConfig());
+                                interactFuture = plan.apply();
+
+                            }
+                        } else {
+                            stop("Selected villager is not a villager anymore. LOL");
+                        }
                     }
                     return;
                 }
@@ -326,7 +342,9 @@ public class VillagerRoller implements Module {
                 case START_BREAKING_LECTERN -> {
                     if (mc.level.getBlockState(pos).is(Blocks.LECTERN)) {
                         mc.player.getInventory().setSelectedSlot(slot);
-                        if (mc.gameMode.startDestroyBlock(pos, Direction.UP)) {
+                        BlockBreakPlan plan = BlockBreaker.createPlan(pos, getConfig());
+                        if (plan != null) {
+                            applyFuture = plan.apply();
                             state = State.BREAKING_LECTERN_PROGRESS;
                         }
                     }
@@ -334,11 +352,8 @@ public class VillagerRoller implements Module {
                 }
 
                 case BREAKING_LECTERN_PROGRESS -> {
-                    MultiPlayerGameModeAccessor mode = (MultiPlayerGameModeAccessor) mc.gameMode;
-                    if (mode.getIsDestroying_CU() && mode.getDestroyBlockPos_CU().equals(pos) && mode.getDestroyProgress_CU() < 1) {
-                        mc.gameMode.continueDestroyBlock(pos, Direction.UP);
-                    } else {
-                        mc.gameMode.stopDestroyBlock();
+                    if (applyFuture != null && applyFuture.isDone()) {
+                        applyFuture = null;
                         state = State.WAITING_FOR_LECTERN_BREAK;
                     }
                     return;
@@ -411,6 +426,10 @@ public class VillagerRoller implements Module {
             state = State.STOPPED;
             active = false;
         }
+    }
+
+    private VillagerRollerConfig getConfig() {
+        return ConfigStore.instance.getConfig().villagerRollerConfig;
     }
 
     private enum State {
