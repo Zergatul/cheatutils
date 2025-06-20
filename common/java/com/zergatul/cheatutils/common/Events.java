@@ -42,7 +42,7 @@ public class Events {
     public static final CancelableEventHandler<PreRenderTooltipEvent> PreRenderTooltip = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<Vector2ic> TooltipPositioned = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler PostRenderTooltip = new SimpleEventHandler();
-    public static final ParameterizedEventHandler<ContainerRenderLabelsEvent> ContainerScreenAfterRenderContents = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<ScreenRenderEvent> AfterScreenRendered = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<SendChatEvent> SendChat = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<Entity> EntityInteract = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockPos> BeforeInstaMine = new ParameterizedEventHandler<>();

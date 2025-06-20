@@ -55,7 +55,7 @@ sourceSets {
     main {
         java {
             srcDir '../common/java'
-            srcDir '../forge-and-fabric'
+            srcDir '../common/forge-and-fabric'
             srcDir '../java-scripting-language/src/main/java'
             srcDir '../mixin-plugin/common/java'
         }

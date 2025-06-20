@@ -79,6 +79,7 @@
     "common.MixinParticleEngine",
     "common.MixinPig",
     "common.MixinProjectileUtil",
+    "common.MixinScreen",
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSoundBufferLibrary",
     "common.MixinSlimeBlock",

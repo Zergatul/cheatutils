@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
+import com.zergatul.cheatutils.common.events.ScreenRenderEvent;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
@@ -155,11 +155,6 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
 
     private void onDropAllPress(Button button) {
         ContainerButtonsController.instance.dropAll(false);
-    }
-
-    @Inject(at = @At("TAIL"), method = "renderContents")
-    private void onAfterRenderContents(GuiGraphics graphics, int x, int y, float partialTicks, CallbackInfo info) {
-        Events.ContainerScreenAfterRenderContents.trigger(new ContainerRenderLabelsEvent(graphics, (AbstractContainerScreen<?>) (Object) this, x, y));
     }
 
     @Inject(at = @At("HEAD"), method = "getHoveredSlot", cancellable = true)
