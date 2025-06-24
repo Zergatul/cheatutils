@@ -1,10 +1,10 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.render.gl.Position3dColorProgram;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.glBlendFuncSeparate;
 
 public class Color3dRenderer {
 
@@ -131,10 +131,10 @@ public class Color3dRenderer {
     }
 
     public void end(Matrix4f matrix) {
-        glEnable(GL_BLEND);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
+        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager._enableDepthTest(); //glEnable(GL_DEPTH_TEST);
+        GlStateManager._disableCull(); //glDisable(GL_CULL_FACE);
 
         program.draw(matrix);
     }

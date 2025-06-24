@@ -1,16 +1,30 @@
 package com.zergatul.cheatutils.modules.scripting;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.opengl.GlTexture;
+import com.mojang.blaze3d.opengl.GlTextureView;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
+import com.zergatul.cheatutils.render.FrameBuffers;
 import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import net.minecraft.client.renderer.RenderPipelines;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL30;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -38,8 +52,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
             texts.put(align, new ArrayList<>());
         }
 
-        //Events.PostRenderGui.add(this::render);
-        Events.BeforeBlurMainFramebuffer.add(this::render);
+        Events.PostRenderGui.add(this::render);
     }
 
     @Override
@@ -83,21 +96,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
         backgroundColor = color;
     }
 
-    private void render() {
-        {
-            //MainFrameBuffer.enter();
-
-            /*var renderer = RenderUtilities.instance.getColor2dRenderer();
-            renderer.begin();
-            renderer.quad(
-                    -0.5f, -0.5f,
-                    +0.5f, -0.5f,
-                    +0.5f, +0.5f,
-                    -0.5f, +0.5f,
-                    1f, 1f, 1f, 1f);
-            renderer.end(new Matrix4f());*/
-        }
-
+    private void render(RenderGuiEvent event) {
         if (mc.player == null) {
             return;
         }
@@ -135,7 +134,16 @@ public class StatusOverlay implements Module, FontBackendHolder {
         backgroundColor = DEFAULT_BACKGROUND;
         script.run();
 
-        int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
+        if (texts.values().stream().allMatch(List::isEmpty) && freeTexts.isEmpty()) {
+            return;
+        }
+
+        GlStateManager._colorMask(true, true, true, true);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, FrameBuffers.get1().getFramebufferId());
+        GL30.glClearColor(0, 0, 0, 0);
+        GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
+
+        int scale = mc.getWindow().getGuiScale();
         int scrWidth = mc.getWindow().getWidth();
         int scrHeight = mc.getWindow().getHeight();
         int halfScrWidth = scrWidth / 2;
@@ -144,7 +152,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(0, scrWidth, scrHeight, 0, -1, 1);
 
-        RenderingContext context = new RenderingContext(null, matrix, halfScrWidth, halfScrHeight);
+        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight, () -> GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, FrameBuffers.get1().getFramebufferId()));
 
         for (Align align : Align.values()) {
             List<AlignedText> list = texts.get(align);
@@ -176,6 +184,9 @@ public class StatusOverlay implements Module, FontBackendHolder {
                     new TextElement(fontRenderer, item.text).setBackgroundColor(item.background),
                     item.x, item.y, HorizontalAlign.LEFT, VerticalAlign.TOP);
         }
+
+        event.graphics().nextStratum();
+        event.graphics().guiRenderState.submitGuiElement(new FboGuiRenderElement());
     }
 
     private enum Align {
@@ -221,4 +232,61 @@ public class StatusOverlay implements Module, FontBackendHolder {
     private record AlignedText(int background, StylizedText text) {}
 
     private record FreeText(int x, int y, int background, StylizedText text) {}
+
+    private static class FboTextureView extends GlTextureView {
+        protected FboTextureView(GlTexture glTexture) {
+            super(glTexture, 0, 1);
+        }
+    }
+
+    private static class FboTexture extends GlTexture {
+        protected FboTexture(int usage, String label, TextureFormat format, int width, int height, int depthOrLayers, int mipLevels, int id) {
+            super(usage, label, format, width, height, depthOrLayers, mipLevels, id);
+        }
+    }
+
+    private static class FboGuiRenderElement implements GuiElementRenderState {
+        @Override
+        public void buildVertices(VertexConsumer vertexConsumer, float f) {
+            final float z = 0.1f;
+            final Window window = mc.getWindow();
+            final float w = 1f * window.getWidth() / window.getGuiScale();
+            final float h = 1f * window.getHeight() / window.getGuiScale();
+            vertexConsumer.addVertex(0, 0, z).setColor(-1).setUv(0, 1);
+            vertexConsumer.addVertex(0, h, z).setColor(-1).setUv(0, 0);
+            vertexConsumer.addVertex(w, h, z).setColor(-1).setUv(1, 0);
+            vertexConsumer.addVertex(w, 0, z).setColor(-1).setUv(1, 1);
+        }
+
+        @Override
+        public @NotNull RenderPipeline pipeline() {
+            return RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA;
+        }
+
+        @Override
+        public @NotNull TextureSetup textureSetup() {
+            return TextureSetup.singleTexture(new FboTextureView(new FboTexture(
+                    15,
+                    "",
+                    TextureFormat.RGBA8,
+                    FrameBuffers.get1().getWidth(),
+                    FrameBuffers.get1().getHeight(),
+                    0,
+                    1,
+                    FrameBuffers.get1().getTextureId()
+            )));
+        }
+
+        @Nullable
+        @Override
+        public ScreenRectangle scissorArea() {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public ScreenRectangle bounds() {
+            return new ScreenRectangle(0, 0, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
+        }
+    }
 }

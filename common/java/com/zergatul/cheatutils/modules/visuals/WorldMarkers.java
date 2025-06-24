@@ -76,7 +76,7 @@ public class WorldMarkers implements FontBackendHolder {
         Camera camera = event.getCamera();
         Vec3 view = camera.getPosition();
 
-        int scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
+        int scale = mc.getWindow().getGuiScale();
         int scrWidth = mc.getWindow().getWidth();
         int scrHeight = mc.getWindow().getHeight();
         int halfScrWidth = scrWidth / 2;

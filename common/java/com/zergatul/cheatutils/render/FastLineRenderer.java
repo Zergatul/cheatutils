@@ -1,9 +1,11 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.gl.EspLinesProgram;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.opengl.GL30;
+
+import static org.lwjgl.opengl.GL11.*;
 
 public class FastLineRenderer implements LineRenderer {
 
@@ -44,21 +46,17 @@ public class FastLineRenderer implements LineRenderer {
     public void end() {
         if (program.buffer.vertices() > 0) {
             // set line settings
-            GL30.glEnable(GL30.GL_BLEND);
-            GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-            GL30.glEnable(GL30.GL_LINE_SMOOTH);
+            GlStateManager._enableBlend(); //glEnable(GL_BLEND);
+            GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
+            glEnable(GL_LINE_SMOOTH);
             if (depthTest) {
-                GL30.glEnable(GL30.GL_DEPTH_TEST);
+                GlStateManager._enableDepthTest(); //GL30.glEnable(GL30.GL_DEPTH_TEST);
             } else {
-                GL30.glDisable(GL30.GL_DEPTH_TEST);
+                GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
             }
 
             // draw with shader program
             program.draw(event.getMvp());
-
-            // reset settings
-            GL30.glDisable(GL30.GL_BLEND);
-            GL30.glEnable(GL30.GL_DEPTH_TEST);
         }
 
         // reset renderer state

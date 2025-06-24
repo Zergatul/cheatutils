@@ -29,19 +29,25 @@ public class RenderingContext {
     private final int scale;
     private final Font font;
     private final RenderBuffers buffers;
+    private final Runnable framebufferSetup;
 
     private List<ItemStackRenderEntry> itemStacksQueue;
 
     public RenderingContext(GuiGraphics graphics, Matrix4f matrix, int halfWidth, int halfHeight) {
+        this(graphics, matrix, halfWidth, halfHeight, RenderingContext::defaultFramebufferSetup);
+    }
+
+    public RenderingContext(GuiGraphics graphics, Matrix4f matrix, int halfWidth, int halfHeight, Runnable framebufferSetup) {
         this.graphics = graphics;
         this.matrix = matrix;
         this.halfWidth = halfWidth;
         this.halfHeight = halfHeight;
 
         Minecraft mc = Minecraft.getInstance();
-        this.scale = (int) mc.getWindow().getGuiScale(); // currently it is always integer
+        this.scale = mc.getWindow().getGuiScale();
         this.font = mc.font;
         this.buffers = new RenderBuffers();
+        this.framebufferSetup = framebufferSetup;
     }
 
     public GuiGraphics getGraphics() {
@@ -89,7 +95,7 @@ public class RenderingContext {
         reset();
         element.render(this);
 
-        buffers.render(matrix);
+        buffers.render(matrix, framebufferSetup);
 
         if (itemStacksQueue != null) {
            // GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
@@ -109,6 +115,10 @@ public class RenderingContext {
         if (itemStacksQueue != null) {
             itemStacksQueue.clear();
         }
+    }
+
+    private static void defaultFramebufferSetup() {
+        MainFrameBuffer.enter();
     }
 
     private record ItemStackRenderEntry(LivingEntity entity, ItemStack itemStack, int x, int y) {}

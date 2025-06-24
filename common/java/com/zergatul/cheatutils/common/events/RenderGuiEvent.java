@@ -6,10 +6,6 @@ import org.joml.Matrix4f;
 
 public record RenderGuiEvent(GuiGraphics graphics, RenderWorldLastEvent renderWorldLastEvent) {
 
-    public GuiGraphics getGuiGraphics() {
-        return graphics;
-    }
-
     public float getTickDelta() {
         return renderWorldLastEvent.getTickDelta();
     }

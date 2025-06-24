@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.render.gl.Position2dColorProgram;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL14.glBlendFuncSeparate;
 
 public class Color2dRenderer {
 
@@ -81,14 +80,12 @@ public class Color2dRenderer {
     }
 
     public void end(Matrix4f matrix) {
-        glEnable(GL_BLEND);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
+        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager._disableDepthTest(); //glDisable(GL_DEPTH_TEST);
+        GlStateManager._disableCull();      //glDisable(GL_CULL_FACE);
 
         program.draw(matrix);
-
-        glEnable(GL_DEPTH_TEST);
     }
 
     private void createGlObjectsIfRequired() {

@@ -1,11 +1,15 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.gl.BlockOverlayBufferProgram;
 import com.zergatul.cheatutils.render.gl.FrameBuffer;
 import com.zergatul.cheatutils.render.gl.OverlayDrawProgram;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL30;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_ZERO;
 
 public class BlockOverlayRenderer {
 
@@ -66,9 +70,9 @@ public class BlockOverlayRenderer {
         renderInFrameBuffer();
 
         // set line settings
-        GL30.glEnable(GL30.GL_BLEND);
-        GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-        GL30.glDisable(GL30.GL_DEPTH_TEST);
+        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
+        GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
 
         // draw with shader program
         drawProgram.buffer.add(-1);
@@ -109,54 +113,9 @@ public class BlockOverlayRenderer {
 
         drawProgram.draw(FrameBuffers.get1(), red, green, blue, alpha);
 
-        // reset settings
-        GL30.glDisable(GL30.GL_BLEND);
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
-
         // reset renderer state
         this.event = null;
         this.view = null;
-
-        // upload vertex data to buffer
-        /*GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, VBO);
-        GLNative.glBufferData(GL20.GL_ARRAY_BUFFER, glBuffer.size() * 4, glBuffer.get(), GL20.GL_DYNAMIC_DRAW);
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
-
-        // set draw settings
-        GL30.glEnable(GL30.GL_BLEND);
-        GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-        GL30.glDisable(GL30.GL_DEPTH_TEST);
-        GL30.glDisable(GL30.GL_CULL_FACE); // ?????
-
-        // prepare program
-        GL30.glUseProgram(framebufferProgram.getId());
-
-        float[] matrix = new float[16];
-        event.getPoseMatrix().get(matrix);
-        GL30.glUniformMatrix4fv(modelViewLocation, false, matrix);
-
-        matrix = new float[16];
-        event.getProjectionMatrix().get(matrix);
-        GL30.glUniformMatrix4fv(projectionLocation, false, matrix);
-
-        // draw triangles into framebuffer
-        int prevFBO = GL30.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, FBO);
-        GL30.glClearColor(0, 0, 0, 0);
-        GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
-        GL30.glBindVertexArray(VAO);
-        GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, triangles * 3);
-        GL30.glBindVertexArray(0);
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, prevFBO);
-
-        // reset settings
-        GL30.glDisable(GL30.GL_BLEND);
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
-        GL30.glEnable(GL30.GL_CULL_FACE); // ?????*/
-
-        // reset renderer state
-        /*this.view = null;
-        this.event = null;*/
     }
 
     public void close() {
@@ -168,22 +127,16 @@ public class BlockOverlayRenderer {
         FrameBuffer.push();
 
         // set draw settings
-        GL30.glEnable(GL30.GL_BLEND);
-        GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-        GL30.glDisable(GL30.GL_DEPTH_TEST);
-        //GL30.glDisable(GL30.GL_CULL_FACE); // ?????
-        GL30.glEnable(GL30.GL_CULL_FACE);
+        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
+        GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
+        GlStateManager._enableCull(); //GL30.glEnable(GL30.GL_CULL_FACE);
 
         // draw with shader program in framebuffer
         FrameBuffers.get1().bind();
         GL30.glClearColor(0, 0, 0, 0);
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
         bufferProgram.draw(event.getMvp());
-
-        // restore settings
-        GL30.glDisable(GL30.GL_BLEND);
-        GL30.glEnable(GL30.GL_DEPTH_TEST);
-        //GL30.glEnable(GL30.GL_CULL_FACE); // ?????
 
         FrameBuffer.pop();
     }
