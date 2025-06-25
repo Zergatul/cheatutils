@@ -12,10 +12,33 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Vector2ic;
 
 public class Events {
+    // to better understand sequence of events they are ordered in trigger order
+
+    // called once during loading
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
+
+    public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
+
     public static final SimpleEventHandler BeforeHandleKeyBindings = new SimpleEventHandler();
-    public static final SimpleEventHandler ClientTickBeforeHandleKeybindings = new SimpleEventHandler();
     public static final SimpleEventHandler AfterHandleKeyBindings = new SimpleEventHandler();
+
+    public static final SimpleEventHandler BeforeEntitiesTick = new SimpleEventHandler();
+
+    public static final SimpleEventHandler BeforePlayerAiStep = new SimpleEventHandler();
+    // player position is calculated here
+    public static final SimpleEventHandler AfterPlayerAiStep = new SimpleEventHandler();
+
+    public static final SimpleEventHandler BeforeSendPlayerPos = new SimpleEventHandler();
+    // send player position to the server
+    public static final SimpleEventHandler AfterSendPlayerPos = new SimpleEventHandler();
+
+    public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
+
+
+
+
+
+
     public static final ParameterizedEventHandler<Connection> ClientPlayerLoggingIn = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientPlayerLoggingOut = new SimpleEventHandler();
     public static final ParameterizedEventHandler<LevelChunk> RawChunkLoaded = new ParameterizedEventHandler<>();
@@ -24,8 +47,7 @@ public class Events {
     public static final ParameterizedEventHandler<SnapshotChunk> ChunkLoaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<ChunkPos> ChunkUnloaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockUpdateEvent> BlockUpdated = new ParameterizedEventHandler<>();
-    public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
-    public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
+
     public static final SimpleEventHandler BeforeRenderWorld = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> AfterRenderWorld = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderGuiOverlayEvent> PreRenderGuiOverlay = new CancelableEventHandler<>();
@@ -54,4 +76,7 @@ public class Events {
     public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
     public static final CancelableEventHandler<PlayerTurnByMouseEvent> PlayerTurnByMouse = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<PlayerInfoUpdateEvent> PlayerInfoUpdated = new ParameterizedEventHandler<>();
+
+
+
 }

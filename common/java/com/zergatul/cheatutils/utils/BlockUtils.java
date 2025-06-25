@@ -1,11 +1,11 @@
 package com.zergatul.cheatutils.utils;
 
+import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -83,10 +83,10 @@ public class BlockUtils {
     }
 
     public static void applyPlacingPlan(InteractionHand hand, PlaceBlockPlan plan, boolean useShift) {
-        placeBlock(hand, plan.destination, plan.direction, plan.neighbour, plan.target, plan.rotation, useShift);
+        placeBlock(hand, plan.direction, plan.neighbour, plan.target, plan.rotation, useShift);
     }
 
-    private static void placeBlock(InteractionHand hand, BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation, boolean useShift) {
+    private static void placeBlock(InteractionHand hand, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation, boolean useShift) {
         if (mc.player == null) {
             return;
         }

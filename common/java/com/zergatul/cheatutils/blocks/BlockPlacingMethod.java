@@ -1,28 +1,35 @@
-package com.zergatul.cheatutils.utils;
+package com.zergatul.cheatutils.blocks;
 
+import com.zergatul.cheatutils.utils.Rotation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 
 public enum BlockPlacingMethod {
-    ANY,
-    BOTTOM_SLAB,
-    TOP_SLAB,
-    FACING_TOP,
-    FACING_BOTTOM,
-    FACING_EAST,
-    FACING_WEST,
-    FACING_SOUTH,
-    FACING_NORTH,
-    FROM_TOP,
-    FROM_BOTTOM,
-    FROM_HORIZONTAL,
-    FROM_EAST,
-    FROM_WEST,
-    FROM_SOUTH,
-    FROM_NORTH,
-    ITEM_USE,
-    AIR_PLACE;
+    ANY("any"),
+    BOTTOM_SLAB("bottom-slab"),
+    TOP_SLAB("top-slab"),
+    FACING_TOP("facing-top"),
+    FACING_BOTTOM("facing-bottom"),
+    FACING_EAST("facing-east"),
+    FACING_WEST("facing-west"),
+    FACING_SOUTH("facing-south"),
+    FACING_NORTH("facing-north"),
+    FROM_TOP("from-top"),
+    FROM_BOTTOM("from-bottom"),
+    FROM_HORIZONTAL("from-horizontal"),
+    FROM_EAST("from-east"),
+    FROM_WEST("from-west"),
+    FROM_SOUTH("from-south"),
+    FROM_NORTH("from-north"),
+    ITEM_USE("item-use"),
+    AIR_PLACE("air-place");
+
+    private final String name;
+
+    BlockPlacingMethod(String name) {
+        this.name = name;
+    }
 
     public Vec3 getTarget(Vec3 playerPos, BlockPos blockPos, Direction direction, boolean airPlace) {
         return switch (this) {
@@ -66,6 +73,15 @@ public enum BlockPlacingMethod {
             case NORTH -> FACING_NORTH;
             case SOUTH -> FACING_SOUTH;
         };
+    }
+
+    public static BlockPlacingMethod parse(String value) {
+        for (BlockPlacingMethod method : values()) {
+            if (method.name.equals(value)) {
+                return method;
+            }
+        }
+        return ANY;
     }
 
     private static Vec3 getTargetDefault(Vec3 playerPos, BlockPos blockPos, Direction direction) {

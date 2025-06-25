@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.modules;
 
+import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
+import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.*;
@@ -18,6 +20,7 @@ public class Modules {
     private static final Logger LOGGER = LogManager.getLogger(Modules.class);
 
     public static void register() {
+        register(FakeRotation.instance);
         register(BlockEventsProcessor.instance);
         register(NetworkPacketsController.instance);
         register(SpeedCounterController.instance);
@@ -76,6 +79,10 @@ public class Modules {
         register(KillAura.instance);
 
         register(TickEndExecutor.instance);
+
+        // new order independent modules
+        register(AfterPlayerAiStepExecutor.instance);
+        register(AfterSendPlayerPosExecutor.instance);
 
         FontBackendHolders.add(StatusOverlay.instance);
         FontBackendHolders.add(EntityTitle.instance);

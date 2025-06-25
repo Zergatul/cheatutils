@@ -8,7 +8,7 @@ import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ItemStackPredicate;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
-import com.zergatul.cheatutils.utils.BlockPlacingMethod;
+import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -56,7 +56,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
     public void useItem(String itemId, String method) {
         Item item = Registries.ITEMS.safeParse(itemId);
         if (item != null) {
-            BlockAutomation.instance.useItem(stack -> stack.is(item), parseMethod(method));
+            BlockAutomation.instance.useItem(stack -> stack.is(item), BlockPlacingMethod.parse(method));
         }
     }
 
@@ -79,7 +79,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useItem(ItemStackPredicate predicate, String method) {
-        BlockAutomation.instance.useItem(stack -> predicate.test(new ItemStackWrapper(stack)), parseMethod(method));
+        BlockAutomation.instance.useItem(stack -> predicate.test(new ItemStackWrapper(stack)), BlockPlacingMethod.parse(method));
     }
 
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
@@ -89,7 +89,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
 
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useWithMainHand(String method) {
-        BlockAutomation.instance.useItem(InteractionHand.MAIN_HAND, parseMethod(method));
+        BlockAutomation.instance.useItem(InteractionHand.MAIN_HAND, BlockPlacingMethod.parse(method));
     }
 
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
@@ -99,7 +99,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
 
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useWithOffHand(String method) {
-        BlockAutomation.instance.useItem(InteractionHand.OFF_HAND, parseMethod(method));
+        BlockAutomation.instance.useItem(InteractionHand.OFF_HAND, BlockPlacingMethod.parse(method));
     }
 
     @MethodDescription("""
@@ -146,25 +146,6 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock(ItemStackPredicate predicate) {
         BlockAutomation.instance.breakBlock(stack -> predicate.test(new ItemStackWrapper(stack)));
-    }
-
-    private BlockPlacingMethod parseMethod(String value) {
-        return switch (value) {
-            case "bottom-slab" -> BlockPlacingMethod.BOTTOM_SLAB;
-            case "top-slab" -> BlockPlacingMethod.TOP_SLAB;
-            case "facing-top" -> BlockPlacingMethod.FACING_TOP;
-            case "facing-bottom" -> BlockPlacingMethod.FACING_BOTTOM;
-            case "facing-north" -> BlockPlacingMethod.FACING_NORTH;
-            case "facing-south" -> BlockPlacingMethod.FACING_SOUTH;
-            case "facing-east" -> BlockPlacingMethod.FACING_EAST;
-            case "facing-west" -> BlockPlacingMethod.FACING_WEST;
-            case "from-top" -> BlockPlacingMethod.FROM_TOP;
-            case "from-bottom" -> BlockPlacingMethod.FROM_BOTTOM;
-            case "from-horizontal" -> BlockPlacingMethod.FROM_HORIZONTAL;
-            case "item-use" -> BlockPlacingMethod.ITEM_USE;
-            case "air-place" -> BlockPlacingMethod.AIR_PLACE;
-            default -> BlockPlacingMethod.ANY;
-        };
     }
 
     @Override
