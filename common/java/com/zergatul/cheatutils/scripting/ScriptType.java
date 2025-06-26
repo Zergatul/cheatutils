@@ -36,6 +36,11 @@ public enum ScriptType {
             Runnable.class,
             "EventsScripting"),
 
+    BLOCK_ESP(
+            new ApiType[] { ApiType.CURRENT_BLOCK_ESP },
+            BlockEspConsumer.class,
+            "BlockEspScript"),
+
     ENTITY_ESP(
             new ApiType[] { ApiType.CURRENT_ENTITY_ESP },
             EntityEspConsumer.class,

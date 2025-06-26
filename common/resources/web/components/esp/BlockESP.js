@@ -1,6 +1,7 @@
 import * as FallbackLoader from '/fallback-loader.js'
 import { withCss } from '/components/Loader.js'
 import { BlockRenderingCanvas } from './BlockRenderer.js'
+import { formatCodeResponse } from '/components/MonacoEditor.js'
 import * as http from '/http.js'
 import { components } from '../../components.js'
 
@@ -28,6 +29,9 @@ export function createComponent(template) {
             const blocksConfigMap = ref(null);
             const selectedConfig = ref(null);
             const blockListFiltered = ref(null);
+            const showRefs = ref(false);
+            const refs = ref(null);
+            const code = ref(null);
 
             const blockRenderingKey = 'disableBlockRendering';
             const disableBlockRendering = ref(localStorage.getItem(blockRenderingKey) != null);
@@ -85,12 +89,16 @@ export function createComponent(template) {
                 if (blocksConfigMap.value[id]) {
                     selectedConfig.value = blocksConfigMap.value[id];
                     selectedConfig.value.expanded = false;
+                    showRefs.value = false;
+                    code.value = selectedConfig.value.code;
                 } else {
                     selectedConfig.value = null;
                     http.post('/api/blocks-add', id).then(response => {
                         selectedConfig.value = response;
                         blocksConfigList.value.push(selectedConfig.value);
                         blocksConfigMap.value[id] = selectedConfig.value;
+                        showRefs.value = false;
+                        code.value = null;
                     });
                 }
             };
@@ -172,6 +180,36 @@ export function createComponent(template) {
 
             const groupEditIsCheckboxDisabled = block => {
                 return selectedConfig.value.blocks.length == 1 && groupEditGetCheckboxSelected(block);
+            };
+
+            const showApiRef = () => {
+                if (showRefs.value) {
+                    showRefs.value = false;
+                } else {
+                    if (refs.value) {
+                        showRefs.value = true;
+                    } else {
+                        http.get('/api/scripts-doc/BLOCK_ESP').then(response => {
+                            showRefs.value = true;
+                            refs.value = response;
+                        });
+                    }
+                }
+            };
+
+            const saveCode = () => {
+                http.post('/api/block-esp-code', {
+                    block: selectedConfig.value.blocks[0],
+                    code: code.value
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Saved');
+                    } else {
+                        alert(formatCodeResponse(response));
+                    }
+                }, error => {
+                    alert(error.response);
+                });
             };
 
             let observer = null;
@@ -278,6 +316,9 @@ export function createComponent(template) {
                 selectedConfig,
                 blockListFiltered,
                 disableBlockRendering,
+                showRefs,
+                refs,
+                code,
 
                 backToList,
                 backToEdit,
@@ -294,7 +335,9 @@ export function createComponent(template) {
                 groupEditShouldShowCheckbox,
                 groupEditGetCheckboxSelected,
                 groupEditSetCheckboxSelected,
-                groupEditIsCheckboxDisabled
+                groupEditIsCheckboxDisabled,
+                showApiRef,
+                saveCode
             };
         }
     };
@@ -302,6 +345,7 @@ export function createComponent(template) {
     components.add(args, 'ColorBox');
     components.add(args, 'ColorPicker');
     components.add(args, 'SwitchCheckbox');
+    components.add(args, 'ScriptEditor');
 
     return withCss(import.meta.url, args);
 };

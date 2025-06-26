@@ -228,6 +228,33 @@
                         
                     </div>
                 </fieldset>
+                <fieldset style="flex-direction: column;">
+                    <legend>
+                        <switch-checkbox v-model="selectedConfig.scriptEnabled" @change="update(selectedConfig)">
+                            Custom Script
+                        </switch-checkbox>
+                    </legend>
+                    <template v-if="selectedConfig.scriptEnabled">
+                        <div class="section-description">
+                            Write script to add custom logic for each block position.<br>
+                            You can enable/disable tracer/BB/overlay for each block based on custom conditions.<br>
+                            You can't override status of tracer/BB/overlay outside of configured range.<br>
+                            Use <b>pos</b> variable to get current block position.<br>
+                            Use <b>event</b> variable to access methods that control visibility of the current block.<br>
+                            Use <b>game.blocks</b> API to get information about block by its position.<br>
+                            Warning! This script will run for every frame rendered, and for every matching block.<br>
+                            Make sure to not execute complex code here, since it can hurt your FPS.
+                        </div>
+                        <div class="actions">
+                            <button class="action" @click="saveCode()">Save</button>
+                            <button class="action" @click="showApiRef()">Show/Hide API Reference</button>
+                        </div>
+                        <script-editor v-model="code" :type="'BLOCK_ESP'" v-show="!showRefs"></script-editor>
+                        <ul class="refs" v-show="showRefs">
+                            <li v-for="item in refs" v-html="item"></li>
+                        </ul>
+                    </template>
+                </fieldset>
             </div>
         </template>
         <template v-if="state == 'edit-group'">
