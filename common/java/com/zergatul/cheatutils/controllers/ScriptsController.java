@@ -22,6 +22,7 @@ public class ScriptsController {
     private final Compiler blockAutomationCompiler = new Compiler(ScriptType.BLOCK_AUTOMATION.createParameters());
     private final Compiler villagerRollerCompiler = new Compiler(ScriptType.VILLAGER_ROLLER.createParameters());
     private final Compiler eventsCompiler = new Compiler(ScriptType.EVENTS.createParameters());
+    private final Compiler blockEspCompiler = new Compiler(ScriptType.BLOCK_ESP.createParameters());
     private final Compiler entityEspCompiler = new Compiler(ScriptType.ENTITY_ESP.createParameters());
     private final Compiler killAuraCompiler = new Compiler(ScriptType.KILL_AURA.createParameters());
     private final Compiler hitboxSizeCompiler = new Compiler(ScriptType.HITBOX_SIZE.createParameters());
@@ -166,6 +167,10 @@ public class ScriptsController {
 
     public CompilationResult compileEvents(String code) {
         return eventsCompiler.compile(code);
+    }
+
+    public CompilationResult compileBlockEsp(String code) {
+        return blockEspCompiler.compile(code);
     }
 
     public CompilationResult compileEntityEsp(String code) {

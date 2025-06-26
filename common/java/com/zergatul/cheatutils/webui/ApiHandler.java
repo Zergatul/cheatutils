@@ -68,6 +68,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new VillagerRollerStatusApi());
         apis.add(new EventsScriptingCodeApi());
         apis.add(new ModulesStatusApi());
+        apis.add(new BlockEspCodeApi());
         apis.add(new EntityEspCodeApi());
         apis.add(new ProfilesApi());
         apis.add(new DebuggingApi());

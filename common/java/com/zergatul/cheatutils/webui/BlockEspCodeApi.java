@@ -1,28 +1,29 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.scripting.compiler.CompilationResult;
+import net.minecraft.world.level.block.Block;
 
-public class EntityEspCodeApi extends ApiBase {
+public class BlockEspCodeApi extends ApiBase {
 
     @Override
     public String getRoute() {
-        return "entity-esp-code";
+        return "block-esp-code";
     }
 
     @Override
     public String post(String json) throws ApiException {
         Request request = gson.fromJson(json, Request.class);
+        if (request.block == null) {
+            return "{ \"error\": \"block is null\" }";
+        }
 
-        EntityEspConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
-                .filter(c -> c.clazz == request.clazz)
-                .findFirst()
-                .orElse(null);
+        BlockEspConfig config = ConfigStore.instance.getConfig().blocks.find(request.block);
         if (config == null) {
-            throw new ApiException("Cannot find entity config.", HttpResponseCodes.NOT_FOUND);
+            throw new ApiException("Cannot find block config.", HttpResponseCodes.NOT_FOUND);
         }
 
         if (request.code == null || request.code.isBlank()) {
@@ -34,7 +35,7 @@ public class EntityEspCodeApi extends ApiBase {
             return "{ \"ok\": true }";
         }
 
-        CompilationResult result = ScriptsController.instance.compileEntityEsp(request.code);
+        CompilationResult result = ScriptsController.instance.compileBlockEsp(request.code);
         if (result.getProgram() != null) {
             TickEndExecutor.instance.execute(() -> {
                 config.code = request.code;
@@ -47,5 +48,5 @@ public class EntityEspCodeApi extends ApiBase {
         }
     }
 
-    public record Request(Class<?> clazz, String code) {}
+    public record Request(Block block, String code) {}
 }

@@ -10,8 +10,6 @@ public enum ApiType {
     // in-game action leading to interaction with server
     ACTION,
 
-    CURRENT_BLOCK,
-
     BLOCK_AUTOMATION,
 
     VILLAGER_ROLLER,
@@ -20,5 +18,7 @@ public enum ApiType {
 
     EVENTS,
 
-    CURRENT_ENTITY_ESP
+    CURRENT_BLOCK_ESP,
+
+    CURRENT_ENTITY_ESP,
 }

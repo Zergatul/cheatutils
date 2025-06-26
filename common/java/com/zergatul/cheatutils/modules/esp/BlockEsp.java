@@ -6,12 +6,12 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
+import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BlockEsp {
 
@@ -62,22 +62,52 @@ public class BlockEsp {
             tracerList.clear();
             overlayList.clear();
 
-            for (BlockPos pos : set) {
-                double dx = pos.getX() - playerX;
-                double dy = pos.getY() - playerY;
-                double dz = pos.getZ() - playerZ;
-                double distanceSqr = dx * dx + dy * dy + dz * dz;
+            if (config.scriptEnabled && config.script != null) {
+                BlockScriptResult result = new BlockScriptResult();
+                BlockEspEvent blockEspEvent = new BlockEspEvent(result);
+                for (BlockPos pos : set) {
+                    double dx = pos.getX() - playerX;
+                    double dy = pos.getY() - playerY;
+                    double dz = pos.getZ() - playerZ;
+                    double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-                if (config.drawOutline && distanceSqr < outlineMaxDistanceSqr) {
-                    bbList.add(pos);
+                    if (distanceSqr >= outlineMaxDistanceSqr && distanceSqr >= tracerMaxDistanceSqr && distanceSqr >= overlayMaxDistanceSqr) {
+                        continue;
+                    }
+
+                    result.reset();
+                    config.script.accept(new BlockPosWrapper(pos), blockEspEvent);
+
+                    if (distanceSqr < outlineMaxDistanceSqr && result.shouldDrawOutline(config.drawOutline)) {
+                        bbList.add(pos);
+                    }
+
+                    if (distanceSqr < tracerMaxDistanceSqr && result.shouldDrawTracer(config.drawTracers)) {
+                        tracerList.add(pos);
+                    }
+
+                    if (distanceSqr < overlayMaxDistanceSqr && result.shouldDrawOverlay(config.drawOverlay)) {
+                        overlayList.add(pos);
+                    }
                 }
+            } else {
+                for (BlockPos pos : set) {
+                    double dx = pos.getX() - playerX;
+                    double dy = pos.getY() - playerY;
+                    double dz = pos.getZ() - playerZ;
+                    double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-                if (config.drawTracers && distanceSqr < tracerMaxDistanceSqr) {
-                    tracerList.add(pos);
-                }
+                    if (config.drawOutline && distanceSqr < outlineMaxDistanceSqr) {
+                        bbList.add(pos);
+                    }
 
-                if (config.drawOverlay && distanceSqr < overlayMaxDistanceSqr) {
-                    overlayList.add(pos);
+                    if (config.drawTracers && distanceSqr < tracerMaxDistanceSqr) {
+                        tracerList.add(pos);
+                    }
+
+                    if (config.drawOverlay && distanceSqr < overlayMaxDistanceSqr) {
+                        overlayList.add(pos);
+                    }
                 }
             }
 
@@ -193,5 +223,39 @@ public class BlockEsp {
                 x2, y2, z2,
                 x1, y2, z2,
                 x1, y1, z2);
+    }
+
+    public static class BlockScriptResult {
+
+        public int tracer;
+        public int outline;
+        public int overlay;
+
+        public void reset() {
+            tracer = -1;
+            outline = -1;
+            overlay = -1;
+        }
+
+        public boolean shouldDrawTracer(boolean setting) {
+            if (tracer == -1) {
+                return setting;
+            }
+            return tracer != 0;
+        }
+
+        public boolean shouldDrawOutline(boolean setting) {
+            if (outline == -1) {
+                return setting;
+            }
+            return outline != 0;
+        }
+
+        public boolean shouldDrawOverlay(boolean setting) {
+            if (overlay == -1) {
+                return setting;
+            }
+            return overlay != 0;
+        }
     }
 }
