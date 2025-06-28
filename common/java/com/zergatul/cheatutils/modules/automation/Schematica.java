@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.modules.automation;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -31,7 +32,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -551,9 +551,9 @@ public class Schematica {
                 (float) (create.getY2() + gap - view.y),
                 (float) (create.getZ2() + gap - view.z),
                 0.00f, 0.58f, 1.00f, 0.2f);
-        GL11.glDepthMask(false);
+        GlStateManager._depthMask(false);
         quadRenderer.end(event.getMvp());
-        GL11.glDepthMask(true);
+        GlStateManager._depthMask(true);
 
         LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
         lineRenderer.begin(event, true);
