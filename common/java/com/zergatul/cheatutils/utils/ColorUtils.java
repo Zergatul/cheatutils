@@ -98,6 +98,22 @@ public class ColorUtils {
         return null;
     }
 
+    public static float r(int color) {
+        return ((color >>> 16) & 0xFF) / 255F;
+    }
+
+    public static float g(int color) {
+        return ((color >>> 8) & 0xFF) / 255F;
+    }
+
+    public static float b(int color) {
+        return (color & 0xFF) / 255F;
+    }
+
+    public static float a(int color) {
+        return ((color >>> 24) & 0xFF) / 255F;
+    }
+
     public static Color inverse(Color color) {
         return new Color(
                 255 - color.getRed(),
