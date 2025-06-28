@@ -1,10 +1,9 @@
 package com.zergatul.cheatutils.blocks;
 
+import com.zergatul.cheatutils.utils.Rotation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public enum BlockPlacingMethod {
     ANY("any"),
@@ -40,15 +39,14 @@ public enum BlockPlacingMethod {
         };
     }
 
-    public List<RotationRange> getRotationRanges() {
-        final float step = 0.1f;
+    public Rotation getTargetRotation() {
         return switch (this) {
-            case FACING_TOP -> List.of(RotationRange.x(45, 90, step));
-            case FACING_BOTTOM -> List.of(RotationRange.x(-90, -45, step));
-            case FACING_EAST -> List.of(new RotationRange(-45, 45, 45, 135, step));
-            case FACING_WEST -> List.of(new RotationRange(-45, 45, -135, -45, step));
-            case FACING_SOUTH -> List.of(new RotationRange(-45, 45, -180, -135, step), new RotationRange(-45, 45, 135, 180, step));
-            case FACING_NORTH -> List.of(new RotationRange(-45, 45, -45, 45, step));
+            case FACING_TOP -> new Rotation(90, Float.NaN);
+            case FACING_BOTTOM -> new Rotation(-90, Float.NaN);
+            case FACING_EAST -> new Rotation(0, 90);
+            case FACING_WEST -> new Rotation(0, -90);
+            case FACING_SOUTH -> new Rotation(0, -180);
+            case FACING_NORTH -> new Rotation(0, 0);
             default -> null;
         };
     }
@@ -57,6 +55,18 @@ public enum BlockPlacingMethod {
         return switch (this) {
             case FACING_EAST, FACING_WEST, FACING_SOUTH, FACING_NORTH -> true;
             default -> false;
+        };
+    }
+
+    public Direction getTargetDirection() {
+        return switch (this) {
+            case FACING_TOP -> Direction.DOWN;
+            case FACING_BOTTOM -> Direction.UP;
+            case FACING_EAST -> Direction.WEST;
+            case FACING_WEST -> Direction.EAST;
+            case FACING_SOUTH -> Direction.NORTH;
+            case FACING_NORTH -> Direction.SOUTH;
+            default -> null;
         };
     }
 
