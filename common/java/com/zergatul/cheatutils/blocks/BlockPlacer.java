@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.blocks;
 
+import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
 import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.BlockPlacerConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -18,7 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.apache.logging.log4j.LogManager;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class BlockPlacer {
@@ -54,11 +58,11 @@ public class BlockPlacer {
                 if (!neighbourState.canBeReplaced()) {
                     Vec3 target = method.getTarget(player.getEyePosition(), pos, direction.getOpposite(), false);
                     if (target != null) {
-                        Rotation rotation = method.getRotation();
-                        if (rotation == null) {
+                        List<RotationRange> ranges = method.getRotationRanges();
+                        if (ranges == null) {
                             return createPlan(pos.getCenter(), neighbourPos, direction.getOpposite(), config);
                         } else {
-                            return null; // TODO
+                            return createPlan(pos.getCenter(), neighbourPos, direction.getOpposite(), ranges, method.isDelayedRotation(), config);
                         }
                     }
                 }
@@ -106,6 +110,77 @@ public class BlockPlacer {
                     return future;
                 }
             };
+        }
+    }
+
+    private static BlockPlacePlan createPlan(Vec3 target, BlockPos neighbourPos, Direction direction, List<RotationRange> ranges, boolean delayedRotation, BlockPlacerConfig config) {
+        assert mc.player != null;
+
+        if (config.autoRotate) {
+            return null; // TODO
+        } else {
+            if (delayedRotation) {
+                var logger = LogManager.getLogger(BlockPlacer.class);
+                return new BlockPlacePlan() {
+                    @Override
+                    public CompletableFuture<Void> apply() {
+                        //CompletableFuture<Void> future = new CompletableFuture<>();
+
+                        Rotation playerRot = new Rotation(mc.player.getXRot(), mc.player.getYRot());
+                        Rotation closest = RotationRange.findClosest(playerRot, ranges);
+                        Rotation rotation = closest != null ? closest : playerRot;
+
+                        return CompletableFuture.completedFuture(null)
+                                .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
+                                .thenRunAsync(() -> {}, TickEndExecutor.instance)
+                                .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
+                                .thenRunAsync(() -> {}, TickEndExecutor.instance)
+                                .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
+                                .thenRunAsync(() -> useItem(target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+
+//                        // rotation for current tick
+//                        logger.info("tick={} Setting fake rot={}", mc.player.level().getGameTime(), rotation);
+//                        FakeRotation.instance.setServerRotation(rotation);
+//                        AfterPlayerAiStepExecutor.instance.execute(() -> {
+//                            // rotation for the next tick
+//                            logger.info("tick={} Setting fake rot={}", mc.player.level().getGameTime(), rotation);
+//                            FakeRotation.instance.setServerRotation(rotation);
+//                            AfterPlayerAiStepExecutor.instance.execute(() -> {
+//                                // rotation for the next tick
+//                                logger.info("tick={} Setting fake rot={}", mc.player.level().getGameTime(), rotation);
+//                                FakeRotation.instance.setServerRotation(rotation);
+//                                AfterSendPlayerPosExecutor.instance.execute(() -> {
+//                                    // use item 2 position sent after
+//                                    logger.info("tick={} using item", mc.player.level().getGameTime());
+//                                    useItem(target, direction, neighbourPos, config);
+//                                    future.complete(null);
+//                                });
+//                            });
+//                        });
+//
+//                        return future;
+                    }
+                };
+            } else {
+                return new BlockPlacePlan() {
+                    @Override
+                    public CompletableFuture<Void> apply() {
+                        CompletableFuture<Void> future = new CompletableFuture<>();
+
+                        Rotation playerRot = new Rotation(mc.player.getXRot(), mc.player.getYRot());
+                        Rotation closest = RotationRange.findClosest(playerRot, ranges);
+                        if (closest != null) {
+                            FakeRotation.instance.setServerRotation(closest);
+                        }
+
+                        AfterSendPlayerPosExecutor.instance.execute(() -> {
+                            useItem(target, direction, neighbourPos, config);
+                            future.complete(null);
+                        });
+                        return future;
+                    }
+                };
+            }
         }
     }
 

@@ -1,9 +1,10 @@
 package com.zergatul.cheatutils.blocks;
 
-import com.zergatul.cheatutils.utils.Rotation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 public enum BlockPlacingMethod {
     ANY("any"),
@@ -39,15 +40,23 @@ public enum BlockPlacingMethod {
         };
     }
 
-    public Rotation getRotation() {
+    public List<RotationRange> getRotationRanges() {
+        final float step = 0.1f;
         return switch (this) {
-            case FACING_TOP -> new Rotation(90, Float.NaN);
-            case FACING_BOTTOM -> new Rotation(-90, Float.NaN);
-            case FACING_EAST -> new Rotation(Float.NaN, 90);
-            case FACING_WEST -> new Rotation(Float.NaN, -90);
-            case FACING_SOUTH -> new Rotation(Float.NaN, 180);
-            case FACING_NORTH -> new Rotation(Float.NaN, 0);
+            case FACING_TOP -> List.of(RotationRange.x(45, 90, step));
+            case FACING_BOTTOM -> List.of(RotationRange.x(-90, -45, step));
+            case FACING_EAST -> List.of(new RotationRange(-45, 45, 45, 135, step));
+            case FACING_WEST -> List.of(new RotationRange(-45, 45, -135, -45, step));
+            case FACING_SOUTH -> List.of(new RotationRange(-45, 45, -180, -135, step), new RotationRange(-45, 45, 135, 180, step));
+            case FACING_NORTH -> List.of(new RotationRange(-45, 45, -45, 45, step));
             default -> null;
+        };
+    }
+
+    public boolean isDelayedRotation() {
+        return switch (this) {
+            case FACING_EAST, FACING_WEST, FACING_SOUTH, FACING_NORTH -> true;
+            default -> false;
         };
     }
 

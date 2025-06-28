@@ -29,6 +29,10 @@ public class FakeRotation {
         setServerRotation(rotation.xRot(), rotation.yRot());
     }
 
+    public void setServerRotation(Rotation rotation) {
+        setServerRotation(rotation.xRot(), rotation.yRot());
+    }
+
     public void setServerRotation(float xRot, float yRot) {
         fake = true;
         serverXRot = xRot;

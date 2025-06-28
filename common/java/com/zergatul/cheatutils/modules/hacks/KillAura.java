@@ -105,7 +105,7 @@ public class KillAura implements Module {
 
                 if (config.maxHorizontalAngle != null) {
                     double targetYRot = Math.toDegrees(Math.atan2(diff.z, diff.x)) - 90F;
-                    double delta = MathUtils.deltaAngle180(targetYRot, player.getYRot());
+                    double delta = MathUtils.deltaAngle180((float) targetYRot, player.getYRot());
                     if (delta > config.maxHorizontalAngle) {
                         continue;
                     }
@@ -113,7 +113,7 @@ public class KillAura implements Module {
 
                 if (config.maxVerticalAngle != null) {
                     double targetXRot = Math.toDegrees(-Math.atan2(diff.y, diffXZ));
-                    double delta = MathUtils.deltaAngle180(targetXRot, player.getXRot());
+                    double delta = MathUtils.deltaAngle180((float) targetXRot, player.getXRot());
                     if (delta > config.maxVerticalAngle) {
                         continue;
                     }
