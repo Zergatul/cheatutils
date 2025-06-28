@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.esp.BlockEsp;
 import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
@@ -144,6 +145,44 @@ public class BlocksApi {
             """)
     public void clearBlackList() {
         BlockFinder.instance.blackList.clear();
+    }
+
+    @MethodDescription("""
+            Adds specified block position for ESP.
+            """)
+    public void addCustom(BlockPosWrapper pos, String color) {
+        addCustom(pos.getX(), pos.getY(), pos.getZ(), color);
+    }
+
+    @MethodDescription("""
+            Adds specified block position for ESP.
+            """)
+    public void addCustom(int x, int y, int z, String color) {
+        Integer colorInt = ColorUtils.parseColor(color);
+        if (colorInt != null) {
+            BlockEsp.instance.addCustom(new BlockPos(x, y, z), colorInt);
+        }
+    }
+
+    @MethodDescription("""
+            Adds specified block position for ESP.
+            """)
+    public void removeCustom(BlockPosWrapper pos) {
+        removeCustom(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    @MethodDescription("""
+            Adds specified block position for ESP.
+            """)
+    public void removeCustom(int x, int y, int z) {
+        BlockEsp.instance.removeCustom(new BlockPos(x, y, z));
+    }
+
+    @MethodDescription("""
+            Removes all custom block positions.
+            """)
+    public void clearCustom() {
+        BlockEsp.instance.clearCustom();
     }
 
     private BlockEspConfig getConfig(String blockId) {

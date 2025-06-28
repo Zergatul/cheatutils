@@ -46,6 +46,7 @@ public class Root {
     public static ShulkerTooltipApi shulkerTooltip = new ShulkerTooltipApi();
     public static ZoomApi zoom = new ZoomApi();
     public static FullBrightApi fullBright = new FullBrightApi();
+    public static MarkersApi markers = new MarkersApi();
 
     // scripting
     public static OverlayApi overlay = new OverlayApi();
