@@ -16,6 +16,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -67,7 +68,7 @@ public class BlockPlacer {
             }
         }
 
-        if (config.attachToAir) {
+        if (config.attachToAir && BlockPlacingMethod.canAirPlace(method)) {
             // replaceClicked from BlockPlaceContext
             Vec3 target = method.getTarget(player.getEyePosition(), pos, Direction.UP, true);
             if (target != null) {
@@ -76,6 +77,13 @@ public class BlockPlacer {
         }
 
         return null;
+    }
+
+    public static BlockPlacingMethod guessMethod(BlockState state) {
+        if (state.getBlock() instanceof DirectionalBlock) {
+            return BlockPlacingMethod.facing(state.getValue(DirectionalBlock.FACING));
+        }
+        return BlockPlacingMethod.ANY;
     }
 
     private static BlockPlacePlan createItemUsePlan(BlockPos pos, BlockPlacerConfig config) {

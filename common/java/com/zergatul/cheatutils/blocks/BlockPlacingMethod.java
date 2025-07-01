@@ -94,6 +94,13 @@ public enum BlockPlacingMethod {
         };
     }
 
+    public static boolean canAirPlace(BlockPlacingMethod method) {
+        return switch (method) {
+            case FACING_TOP, FACING_BOTTOM, FACING_EAST, FACING_WEST, FACING_SOUTH, FACING_NORTH -> false;
+            default -> true;
+        };
+    }
+
     public static BlockPlacingMethod parse(String value) {
         for (BlockPlacingMethod method : values()) {
             if (method.name.equals(value)) {

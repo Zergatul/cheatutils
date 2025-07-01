@@ -176,20 +176,35 @@
                         <div class="input-description">Separated by comma. Example: 6,7,8</div>
                     </td>
                 </tr>
+                <tr>
+                    <td colspan="3">
+                        <switch-checkbox v-model="config.useShift" @change="update()">
+                            Use Shift while placing blocks
+                        </switch-checkbox>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <switch-checkbox v-model="config.autoRotate" @change="update()">
+                            Auto Rotate
+                        </switch-checkbox>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <switch-checkbox v-model="config.attachToAir" @change="update()">
+                            Attach to Air
+                        </switch-checkbox>
+                    </td>
+                </tr>
             </table>
-            <div>
-                <switch-checkbox v-model="config.useShift" @change="update()">
-                    Use Shift while placing blocks
-                </switch-checkbox>
+
+            <div class="section-description">
+                <b>Max Build Distance</b> - distance between player eyes and center of block module will try to place.<br>
+                <b>Use Shift</b> - using shift may cause your character to randomly crouch for a fraction of a second.
             </div>
             <div class="section-description">
-                Max Build Distance - distance between player eyes and center of block module will try to place.<br>
-                Using shift may cause your character to randomly crouch for a fraction of a second.
-            </div>
-            <div>
-                <switch-checkbox v-model="config.attachToAir" @change="update()">
-                    Attach to Air
-                </switch-checkbox>
+                <b>Auto Rotate</b> - some anti-cheats prevent you from placing blocks if your character doesn't look in the proper direction.
             </div>
         </fieldset>
 
