@@ -50,7 +50,7 @@ public class BlockUtils {
                 if (!neighbourState.canBeReplaced()) {
                     Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, direction.getOpposite(), false);
                     if (target != null) {
-                        return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos, target, null/*method.getRotation()*/);
+                        return new PlaceBlockPlan(pos.immutable(), direction.getOpposite(), neighbourPos, target, method.getTargetRotation());
                     }
                 }
             }
@@ -60,7 +60,7 @@ public class BlockUtils {
             // replaceClicked from BlockPlaceContext
             Vec3 target = method.getTarget(mc.player.getEyePosition(), pos, Direction.UP, true);
             if (target != null) {
-                return new PlaceBlockPlan(pos.immutable(), Direction.UP, pos.immutable(), target, null/*method.getRotation()*/);
+                return new PlaceBlockPlan(pos.immutable(), Direction.UP, pos.immutable(), target, method.getTargetRotation());
             }
         }
 
