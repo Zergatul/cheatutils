@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.blocks;
 import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
 import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
-import com.zergatul.cheatutils.configs.BlockPlacerConfig;
+import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -16,11 +16,11 @@ public class BlockBreaker {
 
     private static final Minecraft mc = Minecraft.getInstance();
 
-    public static BlockBreakPlan createPlan(BlockPos pos, BlockPlacerConfig config) {
+    public static BlockBreakPlan createPlan(BlockPos pos, InteractionConfig config) {
         return createSimplePlan(pos.immutable(), config);
     }
 
-    private static BlockBreakPlan createSimplePlan(BlockPos pos, BlockPlacerConfig config) {
+    private static BlockBreakPlan createSimplePlan(BlockPos pos, InteractionConfig config) {
         return new BlockBreakPlan() {
             @Override
             public CompletableFuture<Void> apply() {
@@ -28,7 +28,7 @@ public class BlockBreaker {
                 if (!isInRange(pos, config)) {
                     future.complete(null);
                 } else {
-                    if (config.autoRotate) {
+                    if (config.shouldAutoRotate()) {
                         FakeRotation.instance.setServerRotation(pos.getCenter());
                     }
                     AfterSendPlayerPosExecutor.instance.execute(() -> {
@@ -56,9 +56,9 @@ public class BlockBreaker {
         };
     }
 
-    private static void queueCheckBreakingProgress(BlockPos pos, BlockPlacerConfig config, CompletableFuture<Void> future) {
+    private static void queueCheckBreakingProgress(BlockPos pos, InteractionConfig config, CompletableFuture<Void> future) {
         TickEndExecutor.instance.execute(() -> {
-            if (config.autoRotate) {
+            if (config.shouldAutoRotate()) {
                 AfterPlayerAiStepExecutor.instance.execute(() -> {
                     FakeRotation.instance.setServerRotation(pos.getCenter());
                 });
@@ -69,7 +69,7 @@ public class BlockBreaker {
         });
     }
 
-    private static void checkBreakingProgress(BlockPos pos, BlockPlacerConfig config, CompletableFuture<Void> future) {
+    private static void checkBreakingProgress(BlockPos pos, InteractionConfig config, CompletableFuture<Void> future) {
         assert mc.player != null;
         assert mc.gameMode != null;
 
@@ -97,9 +97,9 @@ public class BlockBreaker {
         }
     }
 
-    private static boolean isInRange(BlockPos pos, BlockPlacerConfig config) {
+    private static boolean isInRange(BlockPos pos, InteractionConfig config) {
         assert mc.player != null;
 
-        return pos.distToCenterSqr(mc.player.getEyePosition()) <= config.maxRange * config.maxRange;
+        return pos.distToCenterSqr(mc.player.getEyePosition()) <= config.getMaxRange() * config.getMaxRange();
     }
 }

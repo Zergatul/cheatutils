@@ -1,28 +1,17 @@
 package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockUtils {
 
     private static final Minecraft mc = Minecraft.getInstance();
-
-    public static PlaceBlockPlan getPlacingPlan(BlockPos pos, boolean attachToAir) {
-        return getPlacingPlan(pos, attachToAir, BlockPlacingMethod.ANY);
-    }
 
     public static PlaceBlockPlan getPlacingPlan(BlockPos pos, boolean attachToAir, BlockPlacingMethod method) {
         return getPlacingPlan(pos, attachToAir, method, Blocks.STONE.defaultBlockState());
@@ -78,79 +67,5 @@ public class BlockUtils {
         return null;
     }
 
-    public static void applyPlacingPlan(PlaceBlockPlan plan, boolean useShift) {
-        applyPlacingPlan(InteractionHand.MAIN_HAND, plan, useShift);
-    }
-
-    public static void applyPlacingPlan(InteractionHand hand, PlaceBlockPlan plan, boolean useShift) {
-        placeBlock(hand, plan.direction, plan.neighbour, plan.target, plan.rotation, useShift);
-    }
-
-    private static void placeBlock(InteractionHand hand, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation, boolean useShift) {
-        if (mc.player == null) {
-            return;
-        }
-
-        BlockHitResult hit = new BlockHitResult(target, direction, neighbour, false);
-
-        boolean emulateShift = useShift && !mc.player.isShiftKeyDown();
-
-        if (emulateShift) {
-            NetworkPacketsController.instance.sendPacket(new ServerboundPlayerInputPacket(new Input(
-                    mc.player.input.keyPresses.forward(),
-                    mc.player.input.keyPresses.backward(),
-                    mc.player.input.keyPresses.left(),
-                    mc.player.input.keyPresses.right(),
-                    mc.player.input.keyPresses.jump(),
-                    true,
-                    mc.player.input.keyPresses.sprint())));
-        }
-
-        if (rotation != null) {
-            // send correct rotation to server
-            //NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Rot(rotation.yRot(), rotation.xRot(), mc.player.onGround()));
-            float xRot = Float.isNaN(rotation.xRot()) ? mc.player.getXRot() : rotation.xRot();
-            float yRot = Float.isNaN(rotation.yRot()) ? mc.player.getYRot() : rotation.yRot();
-            mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(yRot, xRot, mc.player.onGround(), false));
-
-            // server uses yHeadRot, and it happens on the next tick
-            // this is temp hack!
-            if (!Float.isNaN(rotation.yRot())) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        InteractionResult result = mc.gameMode.useItemOn(mc.player, hand, hit);
-        if (result.consumesAction()) {
-            if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                mc.player.swing(hand);
-            }
-        }
-
-        if (emulateShift) {
-            NetworkPacketsController.instance.sendPacket(new ServerboundPlayerInputPacket(new Input(
-                    mc.player.input.keyPresses.forward(),
-                    mc.player.input.keyPresses.backward(),
-                    mc.player.input.keyPresses.left(),
-                    mc.player.input.keyPresses.right(),
-                    mc.player.input.keyPresses.jump(),
-                    false,
-                    mc.player.input.keyPresses.sprint())));
-        }
-    }
-
-    public record PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation) {
-
-        public PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour) {
-            this(destination, direction, neighbour, new Vec3(
-                    destination.getX() + 0.5f + direction.getOpposite().getStepX() * 0.5,
-                    destination.getY() + 0.5f + direction.getOpposite().getStepY() * 0.5,
-                    destination.getZ() + 0.5f + direction.getOpposite().getStepZ() * 0.5),
-                    null);
-        }
-    }
+    public record PlaceBlockPlan(BlockPos destination, Direction direction, BlockPos neighbour, Vec3 target, Rotation rotation) {}
 }

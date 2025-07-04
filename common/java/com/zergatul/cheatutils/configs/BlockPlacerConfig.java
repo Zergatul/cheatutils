@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BlockPlacerConfig extends ModuleConfig implements ValidatableConfig {
+public abstract class BlockPlacerConfig extends ModuleConfig implements InteractionConfig, ValidatableConfig {
 
     public double maxRange;
     public int[] autoSelectSlots;
@@ -28,6 +28,16 @@ public abstract class BlockPlacerConfig extends ModuleConfig implements Validata
         other.useShift = useShift;
         other.placementRate = placementRate;
         other.autoRotate = autoRotate;
+    }
+
+    @Override
+    public double getMaxRange() {
+        return maxRange;
+    }
+
+    @Override
+    public boolean shouldAutoRotate() {
+        return autoRotate;
     }
 
     @Override

@@ -758,7 +758,8 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(VillagerRollerConfig config) {
-                // do nothing
+                VillagerRollerConfig current = ConfigStore.instance.getConfig().villagerRollerConfig;
+                config.copyTo(current);
             }
         });
 

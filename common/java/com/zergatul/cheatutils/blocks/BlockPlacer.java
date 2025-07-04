@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
 import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.BlockPlacerConfig;
+import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.utils.Rotation;
@@ -28,7 +29,7 @@ public class BlockPlacer {
 
     private static final Minecraft mc = Minecraft.getInstance();
 
-    public static BlockPlacePlan createPlan(BlockState state, BlockPos pos, BlockPlacingMethod method, BlockPlacerConfig config) {
+    public static BlockPlacePlan createPlan(BlockState state, BlockPos pos, BlockPlacingMethod method, InteractionConfig config) {
         ClientLevel level = mc.level;
         LocalPlayer player = mc.player;
 
@@ -68,7 +69,7 @@ public class BlockPlacer {
             }
         }
 
-        if (config.attachToAir && BlockPlacingMethod.canAirPlace(method)) {
+        if (shouldAttachToAir(config) && BlockPlacingMethod.canAirPlace(method)) {
             // replaceClicked from BlockPlaceContext
             Vec3 target = method.getTarget(player.getEyePosition(), pos, Direction.UP, true);
             if (target != null) {
@@ -86,12 +87,12 @@ public class BlockPlacer {
         return BlockPlacingMethod.ANY;
     }
 
-    private static BlockPlacePlan createItemUsePlan(BlockPos pos, BlockPlacerConfig config) {
+    private static BlockPlacePlan createItemUsePlan(BlockPos pos, InteractionConfig config) {
         return createPlan(pos.getCenter(), pos, Direction.UP, config);
     }
 
-    private static BlockPlacePlan createPlan(Vec3 target, BlockPos neighbourPos, Direction direction, BlockPlacerConfig config) {
-        if (config.autoRotate) {
+    private static BlockPlacePlan createPlan(Vec3 target, BlockPos neighbourPos, Direction direction, InteractionConfig config) {
+        if (config.shouldAutoRotate()) {
             return new BlockPlacePlan() {
                 @Override
                 public CompletableFuture<Void> apply() {
@@ -111,10 +112,10 @@ public class BlockPlacer {
         }
     }
 
-    private static BlockPlacePlan createPlan(Vec3 target, BlockPos neighbourPos, Direction direction, Rotation rotation, boolean delayedRotation, Direction lookDirection, BlockPlacerConfig config) {
+    private static BlockPlacePlan createPlan(Vec3 target, BlockPos neighbourPos, Direction direction, Rotation rotation, boolean delayedRotation, Direction lookDirection, InteractionConfig config) {
         assert mc.player != null;
 
-        if (config.autoRotate) {
+        if (config.shouldAutoRotate()) {
             return null; // TODO
         } else {
             if (delayedRotation) {
@@ -154,7 +155,7 @@ public class BlockPlacer {
         }
     }
 
-    private static void useItem(Vec3 target, Direction direction, BlockPos neighbour, BlockPlacerConfig config) {
+    private static void useItem(Vec3 target, Direction direction, BlockPos neighbour, InteractionConfig config) {
         assert mc.player != null;
         assert mc.gameMode != null;
 
@@ -162,7 +163,7 @@ public class BlockPlacer {
 
         BlockHitResult hit = new BlockHitResult(target, direction, neighbour, false);
 
-        boolean emulateShift = config.useShift && !mc.player.isShiftKeyDown();
+        boolean emulateShift = shouldUseShift(config) && !mc.player.isShiftKeyDown();
 
         if (emulateShift) {
             NetworkPacketsController.instance.sendPacket(new ServerboundPlayerInputPacket(new Input(
@@ -191,6 +192,22 @@ public class BlockPlacer {
                     mc.player.input.keyPresses.jump(),
                     false,
                     mc.player.input.keyPresses.sprint())));
+        }
+    }
+
+    private static boolean shouldUseShift(InteractionConfig config) {
+        if (config instanceof BlockPlacerConfig blockPlacerConfig) {
+            return blockPlacerConfig.useShift;
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean shouldAttachToAir(InteractionConfig config) {
+        if (config instanceof BlockPlacerConfig blockPlacerConfig) {
+            return blockPlacerConfig.attachToAir;
+        } else {
+            return false;
         }
     }
 }
