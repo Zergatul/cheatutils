@@ -17,10 +17,6 @@ public class BlockBreaker {
     private static final Minecraft mc = Minecraft.getInstance();
 
     public static BlockBreakPlan createPlan(BlockPos pos, InteractionConfig config) {
-        return createSimplePlan(pos.immutable(), config);
-    }
-
-    private static BlockBreakPlan createSimplePlan(BlockPos pos, InteractionConfig config) {
         return new BlockBreakPlan() {
             @Override
             public CompletableFuture<Void> apply() {

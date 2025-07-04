@@ -7,16 +7,22 @@ import com.zergatul.cheatutils.configs.BlockPlacerConfig;
 import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.utils.Rotation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
+import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -74,6 +80,79 @@ public class BlockPlacer {
             Vec3 target = method.getTarget(player.getEyePosition(), pos, Direction.UP, true);
             if (target != null) {
                 return createPlan(target, pos, Direction.UP, config);
+            }
+        }
+
+        return null;
+    }
+
+    public static BlockPlacePlan createPacketPlan(BlockPos pos, BlockPlacingMethod method) {
+        ClientLevel level = mc.level;
+        LocalPlayer player = mc.player;
+
+        if (level == null || player == null) {
+            return null;
+        }
+
+        if (method == BlockPlacingMethod.ITEM_USE) {
+            return null; // TODO?
+        }
+        if (method == BlockPlacingMethod.AIR_PLACE) {
+            return null; // TODO?
+        }
+
+        BlockState currentState = level.getBlockState(pos);
+        if (!currentState.canBeReplaced()) {
+            return null;
+        }
+
+        CollisionContext collisioncontext = CollisionContext.of(player);
+        if (!level.isUnobstructed(Blocks.STONE.defaultBlockState(), pos, collisioncontext)) {
+            return null;
+        }
+
+        for (Direction direction : method.getAllowedDirections()) {
+            BlockPos neighbourPos = pos.relative(direction);
+            BlockState neighbourState = level.getBlockState(neighbourPos);
+            if (!neighbourState.canBeReplaced()) {
+                Vec3 target = method.getTarget(player.getEyePosition(), pos, direction.getOpposite(), false);
+                if (target != null) {
+                    Rotation rotation = method.getTargetRotation();
+                    if (rotation == null) {
+                        return new BlockPlacePlan() {
+                            @Override
+                            public CompletableFuture<Void> apply() {
+                                mc.player.connection.send(new ServerboundUseItemOnPacket(
+                                        InteractionHand.MAIN_HAND,
+                                        new BlockHitResult(pos.getCenter(), direction.getOpposite(), neighbourPos, false),
+                                        getSequenceNumber()));
+                                return CompletableFuture.completedFuture(null);
+                            }
+                        };
+                    } else {
+                        if (method.isDelayedRotation()) {
+                            return null; // not possible
+                        }
+                        return new BlockPlacePlan() {
+                            @Override
+                            public CompletableFuture<Void> apply() {
+                                Rotation playerRot = new Rotation(mc.player.getXRot(), mc.player.getYRot());
+                                Rotation closest = Rotation.findClosest(playerRot, rotation, method.getTargetDirection());
+
+                                mc.player.connection.send(new ServerboundMovePlayerPacket.Rot(
+                                        closest.yRot(),
+                                        closest.xRot(),
+                                        mc.player.onGround(),
+                                        false));
+                                mc.player.connection.send(new ServerboundUseItemOnPacket(
+                                        InteractionHand.MAIN_HAND,
+                                        new BlockHitResult(pos.getCenter(), direction.getOpposite(), neighbourPos, false),
+                                        getSequenceNumber()));
+                                return CompletableFuture.completedFuture(null);
+                            }
+                        };
+                    }
+                }
             }
         }
 
@@ -193,6 +272,16 @@ public class BlockPlacer {
                     false,
                     mc.player.input.keyPresses.sprint())));
         }
+    }
+
+    private static int getSequenceNumber() {
+        assert mc.level != null;
+
+        BlockStatePredictionHandler handler = ((ClientLevelAccessor) mc.level).getBlockStatePredictionHandler_CU();
+        handler.startPredicting();
+        int num = handler.currentSequence();
+        handler.close();
+        return num;
     }
 
     private static boolean shouldUseShift(InteractionConfig config) {
