@@ -17,7 +17,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
-import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -121,9 +120,9 @@ public class BlockPlacer {
                     if (rotation == null) {
                         return new BlockPlacePlan() {
                             @Override
-                            public CompletableFuture<Void> apply() {
+                            public CompletableFuture<Void> apply(InteractionHand hand) {
                                 mc.player.connection.send(new ServerboundUseItemOnPacket(
-                                        InteractionHand.MAIN_HAND,
+                                        hand,
                                         new BlockHitResult(pos.getCenter(), direction.getOpposite(), neighbourPos, false),
                                         getSequenceNumber()));
                                 return CompletableFuture.completedFuture(null);
@@ -135,7 +134,7 @@ public class BlockPlacer {
                         }
                         return new BlockPlacePlan() {
                             @Override
-                            public CompletableFuture<Void> apply() {
+                            public CompletableFuture<Void> apply(InteractionHand hand) {
                                 Rotation playerRot = new Rotation(mc.player.getXRot(), mc.player.getYRot());
                                 Rotation closest = Rotation.findClosest(playerRot, rotation, method.getTargetDirection());
 
@@ -145,7 +144,7 @@ public class BlockPlacer {
                                         mc.player.onGround(),
                                         false));
                                 mc.player.connection.send(new ServerboundUseItemOnPacket(
-                                        InteractionHand.MAIN_HAND,
+                                        hand,
                                         new BlockHitResult(pos.getCenter(), direction.getOpposite(), neighbourPos, false),
                                         getSequenceNumber()));
                                 return CompletableFuture.completedFuture(null);
@@ -174,18 +173,18 @@ public class BlockPlacer {
         if (config.shouldAutoRotate()) {
             return new BlockPlacePlan() {
                 @Override
-                public CompletableFuture<Void> apply() {
+                public CompletableFuture<Void> apply(InteractionHand hand) {
                     return CompletableFuture.completedFuture(null)
                             .thenRunAsync(() -> FakeRotation.instance.setServerRotation(target), AfterPlayerAiStepExecutor.instance)
-                            .thenRunAsync(() -> useItem(target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+                            .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
                 }
             };
         } else {
             return new BlockPlacePlan() {
                 @Override
-                public CompletableFuture<Void> apply() {
+                public CompletableFuture<Void> apply(InteractionHand hand) {
                     return CompletableFuture.completedFuture(null)
-                            .thenRunAsync(() -> useItem(target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+                            .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
                 }
             };
         }
@@ -200,7 +199,7 @@ public class BlockPlacer {
             if (delayedRotation) {
                 return new BlockPlacePlan() {
                     @Override
-                    public CompletableFuture<Void> apply() {
+                    public CompletableFuture<Void> apply(InteractionHand hand) {
                         Rotation playerRot = new Rotation(mc.player.getXRot(), mc.player.getYRot());
                         Rotation closest = Rotation.findClosest(playerRot, rotation, lookDirection);
                         Rotation rotation = closest != null ? closest : playerRot;
@@ -211,13 +210,13 @@ public class BlockPlacer {
                                 .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
                                 .thenRunAsync(() -> {}, TickEndExecutor.instance)
                                 .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
-                                .thenRunAsync(() -> useItem(target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+                                .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
                     }
                 };
             } else {
                 return new BlockPlacePlan() {
                     @Override
-                    public CompletableFuture<Void> apply() {
+                    public CompletableFuture<Void> apply(InteractionHand hand) {
                         Rotation playerRot = new Rotation(mc.player.getXRot(), mc.player.getYRot());
                         Rotation closest = Rotation.findClosest(playerRot, rotation, lookDirection);
 
@@ -227,18 +226,16 @@ public class BlockPlacer {
                                         FakeRotation.instance.setServerRotation(closest);
                                     }
                                 }, AfterPlayerAiStepExecutor.instance)
-                                .thenRunAsync(() -> useItem(target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+                                .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
                     }
                 };
             }
         }
     }
 
-    private static void useItem(Vec3 target, Direction direction, BlockPos neighbour, InteractionConfig config) {
+    private static void useItem(InteractionHand hand, Vec3 target, Direction direction, BlockPos neighbour, InteractionConfig config) {
         assert mc.player != null;
         assert mc.gameMode != null;
-
-        InteractionHand hand = InteractionHand.MAIN_HAND;
 
         BlockHitResult hit = new BlockHitResult(target, direction, neighbour, false);
 

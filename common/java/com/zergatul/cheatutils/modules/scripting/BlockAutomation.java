@@ -141,7 +141,7 @@ public class BlockAutomation {
                             //debugPlan = plan; // TODO: test after actions per tick change?
                         } else {
                             debugStep = false;
-                            applyFuture = placePlan.apply();
+                            applyFuture = placePlan.apply(hand);
                             actionPerformed = true;
                         }
                         break;
