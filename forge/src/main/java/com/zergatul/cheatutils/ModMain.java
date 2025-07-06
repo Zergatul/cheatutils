@@ -15,7 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @Mod(ModMain.MODID)
-public class ModMain {
+public final class ModMain {
 
     public static final String MODID = "cheatutils";
     public static final Logger LOGGER = LogManager.getLogger(ModMain.class);

@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;

@@ -16,8 +16,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.awt.*;
-
 @Mixin(GameRenderer.class)
 public abstract class MixinGameRenderer {
 

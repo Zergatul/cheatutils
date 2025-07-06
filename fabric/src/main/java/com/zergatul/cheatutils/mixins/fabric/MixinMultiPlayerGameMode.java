@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.mixins.fabric;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ReachConfig;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

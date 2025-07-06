@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.controllers.DisconnectController;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import org.spongepowered.asm.mixin.Final;

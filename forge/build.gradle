@@ -107,7 +107,7 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.8'
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.10'
 }
 
 mixin {

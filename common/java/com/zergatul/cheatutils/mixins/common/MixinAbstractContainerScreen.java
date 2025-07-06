@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.ScreenRenderEvent;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;

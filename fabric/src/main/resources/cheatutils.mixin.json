@@ -89,7 +89,6 @@
 
     "fnf.MixinGuiGraphics",
 
-    "fabric.MixinAbstractContainerScreen",
     "fabric.MixinGameRenderer",
     "fabric.MixinKeyboardHandler",
     "fabric.MixinLevelRenderer",

@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.hacks.HitboxSize;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
