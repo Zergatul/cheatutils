@@ -44,6 +44,10 @@ public class StylizedText {
         chunks.add(new StylizedTextChunk(value, color));
     }
 
+    public void append(StylizedText text) {
+        chunks.addAll(text.chunks);
+    }
+
     public IntStream chars() {
         return chunks.stream().map(StylizedTextChunk::text).flatMapToInt(String::chars);
     }

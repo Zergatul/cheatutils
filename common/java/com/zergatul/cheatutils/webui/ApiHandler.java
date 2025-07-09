@@ -909,6 +909,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().aimAssist = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("logout-spots", LogoutSpotsConfig.class) {
+            @Override
+            protected LogoutSpotsConfig getConfig() {
+                return ConfigStore.instance.getConfig().logoutSpots;
+            }
+
+            @Override
+            protected void setConfig(LogoutSpotsConfig config) {
+                ConfigStore.instance.getConfig().logoutSpots = config;
+            }
+        });
     }
 
     @Override

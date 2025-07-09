@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
 import com.zergatul.cheatutils.scripting.types.*;
+import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
@@ -505,16 +506,12 @@ public class GameApi {
             }, () -> new ItemStackWrapper(ItemStack.EMPTY));
         }
 
-        public String getNbt(int entityId) {
-            return getStringValue(entityId, entity -> {
+        public CompoundTagWrapper getNbt(int entityId) {
+            return getValue(entityId, (entity, factory) -> {
                 TagValueOutput valueOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, entity.level().registryAccess());
                 entity.saveWithoutId(valueOutput);
-                CompoundTag compound = valueOutput.buildResult();
-
-                StringTagVisitor visitor = new StringTagVisitor();
-                compound.accept(visitor);
-                return visitor.build();
-            });
+                return new CompoundTagWrapper(valueOutput.buildResult());
+            }, () -> new CompoundTagWrapper(new CompoundTag()));
         }
 
         public int getIntTag(int entityId, String tag) {

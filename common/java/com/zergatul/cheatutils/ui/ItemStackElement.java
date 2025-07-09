@@ -10,6 +10,11 @@ public class ItemStackElement implements Element {
     private int measuredWidth, measuredHeight;
     private int x, y;
 
+    public ItemStackElement(ItemStack itemStack) {
+        this.entity = null;
+        this.itemStack = itemStack;
+    }
+
     public ItemStackElement(LivingEntity entity, ItemStack itemStack) {
         this.entity = entity;
         this.itemStack = itemStack;

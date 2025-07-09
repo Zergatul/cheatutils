@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
+import com.zergatul.scripting.hover.Theme;
 import com.zergatul.scripting.lexer.TokenType;
 
 public class WhiteTheme extends Theme {
@@ -27,7 +28,7 @@ public class WhiteTheme extends Theme {
                  PIPE_EQUAL, EQUAL, EQUAL_EQUAL, EQUAL_GREATER, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, EXCLAMATION,
                  EXCLAMATION_EQUAL, QUESTION -> OPERATORS;
             case BOOLEAN, INT, INT32, INT64, LONG, CHAR, FLOAT, STRING, IF, ELSE, BREAK, CONTINUE, WHILE, FOR, FOREACH, FALSE, TRUE, IN,
-                 NEW, REF, RETURN, STATIC, VOID, ASYNC, AWAIT, LET -> KEYWORD;
+                 NEW, REF, RETURN, STATIC, VOID, ASYNC, AWAIT, LET, IS, AS, META_UNKNOWN, META_TYPE, META_TYPE_OF -> KEYWORD;
             case INTEGER_LITERAL, INTEGER64_LITERAL, FLOAT_LITERAL, INVALID_NUMBER -> NUMBERS;
             case CHAR_LITERAL, STRING_LITERAL -> STRINGS;
             case WHITESPACE, LINE_BREAK, END_OF_FILE, INVALID -> INVALID;
