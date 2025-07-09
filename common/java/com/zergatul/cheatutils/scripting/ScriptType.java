@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.scripting.types.*;
+import com.zergatul.cheatutils.scripting.types.nbt.*;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilationParametersBuilder;
 import com.zergatul.scripting.compiler.VisibilityChecker;
@@ -8,6 +9,7 @@ import com.zergatul.scripting.type.SType;
 import com.zergatul.scripting.type.SVoidType;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 public enum ScriptType {
     KEYBINDING(
@@ -96,6 +98,20 @@ public enum ScriptType {
                 .addCustomType(FormattedTextComponent.class)
                 .addCustomType(StyleWrapper.class)
                 .addCustomType(PlayerInfoWrapper.class)
+                .addCustomTypes(List.of(
+                        TagWrapper.class,
+                        MissingTagWrapper.class,
+                        ByteTagWrapper.class,
+                        ShortTagWrapper.class,
+                        IntTagWrapper.class,
+                        LongTagWrapper.class,
+                        FloatTagWrapper.class,
+                        DoubleTagWrapper.class,
+                        ByteArrayTagWrapper.class,
+                        StringTagWrapper.class,
+                        ListTagWrapper.class,
+                        CompoundTagWrapper.class
+                ))
                 .setInterface(funcInterface)
                 .setAsyncReturnType(asyncReturnType)
                 .setVisibilityChecker(new VisibilityChecker() {

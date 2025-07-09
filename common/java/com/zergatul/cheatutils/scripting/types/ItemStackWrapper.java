@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.types;
 
+import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.Lazy;
 import com.zergatul.scripting.type.CustomType;
@@ -7,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.StringTagVisitor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
@@ -73,18 +73,15 @@ public class ItemStackWrapper {
     }
 
     @Getter(name = "nbt")
-    public String getNbt() {
+    public CompoundTagWrapper getNbt() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
-            return "";
+            return new CompoundTagWrapper(new CompoundTag());
         }
 
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, mc.level.registryAccess());
         output.store(ItemStack.MAP_CODEC, inner);
-        CompoundTag compound = output.buildResult();
-        StringTagVisitor visitor = new StringTagVisitor();
-        compound.accept(visitor);
-        return visitor.build();
+        return new CompoundTagWrapper(output.buildResult());
     }
 
     public boolean hasEnchantment(String id) {
