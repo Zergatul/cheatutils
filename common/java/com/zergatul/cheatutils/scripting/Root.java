@@ -38,6 +38,7 @@ public class Root {
     public static HitboxSizeApi hitboxSize = new HitboxSizeApi();
     public static BedrockBreakerApi bedrockBreaker = new BedrockBreakerApi();
     public static AreaMineApi areaMine = new AreaMineApi();
+    public static StepUpApi stepUp = new StepUpApi();
     public static AimAssistApi aimAssist = new AimAssistApi();
 
     // visuals
