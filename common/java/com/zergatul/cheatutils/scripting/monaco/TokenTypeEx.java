@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
 import com.zergatul.scripting.InternalException;
+import com.zergatul.scripting.hover.Theme;
 import com.zergatul.scripting.lexer.TokenType;
 
 import java.util.ArrayList;

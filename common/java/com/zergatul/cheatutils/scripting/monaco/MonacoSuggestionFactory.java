@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
-import com.zergatul.scripting.InternalException;
 import com.zergatul.scripting.completion.SuggestionFactory;
 import com.zergatul.scripting.lexer.TokenType;
 import com.zergatul.scripting.symbols.DeclaredStaticVariable;
@@ -21,7 +20,11 @@ public class MonacoSuggestionFactory implements SuggestionFactory<Suggestion> {
 
     @Override
     public Suggestion getKeywordSuggestion(TokenType type) {
-        String text = type.toString().toLowerCase();
+        String text = switch (type) {
+            case META_TYPE -> "#type";
+            case META_TYPE_OF -> "#typeof";
+            default -> type.toString().toLowerCase();
+        };
         return new Suggestion(
                 text,
                 null,

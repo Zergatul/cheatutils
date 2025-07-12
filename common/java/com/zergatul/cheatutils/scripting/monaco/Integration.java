@@ -12,6 +12,8 @@ import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProvider;
+import com.zergatul.scripting.hover.HoverProvider;
+import com.zergatul.scripting.hover.Theme;
 import com.zergatul.scripting.lexer.*;
 import com.zergatul.scripting.parser.NodeType;
 import com.zergatul.scripting.parser.Parser;
@@ -25,7 +27,6 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.StreamSupport;
 
 public class Integration {
 
@@ -117,10 +118,9 @@ public class Integration {
                         Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
-                        List<BoundNode> chain = new ArrayList<>();
-                        findChain(chain, binderOutput.unit(), request.line, request.column);
-
-                        Json.sendResponse(exchange, new HoverProvider(theme.equals("light") ? light : dark, documentationProvider).get(chain));
+                        HoverProvider provider = new HoverProvider(theme.equals("light") ? light : dark);
+                        HoverProvider.HoverResponse response = provider.get(binderOutput, request.line, request.column);
+                        Json.sendResponse(exchange, response);
                     } else if (path.equals(prefix + "definition")) {
                         Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();

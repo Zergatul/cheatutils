@@ -96,7 +96,8 @@ const languageSettingsContructor = (async () => {
                     indentAction: monaco.languages.IndentAction.Indent
                 }
             }
-        ]
+        ],
+        wordPattern: /[A-Za-z0-9_#]+/
     });
 
     const tokenTypes = await http.get('/api/code/tokens');
