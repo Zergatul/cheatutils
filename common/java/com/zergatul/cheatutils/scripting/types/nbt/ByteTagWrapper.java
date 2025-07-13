@@ -9,7 +9,7 @@ public class ByteTagWrapper extends TagWrapper {
 
     private final ByteTag inner;
 
-    public ByteTagWrapper(ByteTag tag) {
+    ByteTagWrapper(ByteTag tag) {
         this.inner = tag;
     }
 

@@ -110,8 +110,11 @@ public enum ScriptType {
                         ByteArrayTagWrapper.class,
                         StringTagWrapper.class,
                         ListTagWrapper.class,
-                        CompoundTagWrapper.class
+                        CompoundTagWrapper.class,
+                        IntArrayTagWrapper.class,
+                        LongArrayTagWrapper.class
                 ))
+                .addCustomTypes(List.of(UUIDWrapper.class))
                 .setInterface(funcInterface)
                 .setAsyncReturnType(asyncReturnType)
                 .setVisibilityChecker(new VisibilityChecker() {

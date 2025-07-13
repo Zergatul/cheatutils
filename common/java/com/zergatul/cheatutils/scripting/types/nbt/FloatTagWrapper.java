@@ -9,7 +9,7 @@ public class FloatTagWrapper extends TagWrapper {
 
     private final FloatTag inner;
 
-    public FloatTagWrapper(FloatTag tag) {
+    FloatTagWrapper(FloatTag tag) {
         this.inner = tag;
     }
 

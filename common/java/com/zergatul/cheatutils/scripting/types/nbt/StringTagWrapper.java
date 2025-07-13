@@ -9,7 +9,7 @@ public class StringTagWrapper extends TagWrapper {
 
     private final StringTag inner;
 
-    public StringTagWrapper(StringTag tag) {
+    StringTagWrapper(StringTag tag) {
         this.inner = tag;
     }
 

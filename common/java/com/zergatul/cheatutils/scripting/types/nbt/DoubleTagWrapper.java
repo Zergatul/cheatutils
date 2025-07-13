@@ -9,7 +9,7 @@ public class DoubleTagWrapper extends TagWrapper {
 
     private final DoubleTag inner;
 
-    public DoubleTagWrapper(DoubleTag tag) {
+    DoubleTagWrapper(DoubleTag tag) {
         this.inner = tag;
     }
 

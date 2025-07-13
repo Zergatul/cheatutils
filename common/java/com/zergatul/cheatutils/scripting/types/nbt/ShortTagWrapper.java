@@ -9,7 +9,7 @@ public class ShortTagWrapper extends TagWrapper {
 
     private final ShortTag inner;
 
-    public ShortTagWrapper(ShortTag tag) {
+    ShortTagWrapper(ShortTag tag) {
         this.inner = tag;
     }
 

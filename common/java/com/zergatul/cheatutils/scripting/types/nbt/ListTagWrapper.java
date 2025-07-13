@@ -10,7 +10,7 @@ public class ListTagWrapper extends TagWrapper {
 
     private final ListTag inner;
 
-    public ListTagWrapper(ListTag tag) {
+    ListTagWrapper(ListTag tag) {
         this.inner = tag;
     }
 

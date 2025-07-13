@@ -9,7 +9,7 @@ public class LongTagWrapper extends TagWrapper {
 
     private final LongTag inner;
 
-    public LongTagWrapper(LongTag tag) {
+    LongTagWrapper(LongTag tag) {
         this.inner = tag;
     }
 

@@ -3,14 +3,14 @@ package com.zergatul.cheatutils.scripting.types.nbt;
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.IndexGetter;
 import com.zergatul.scripting.type.CustomType;
-import net.minecraft.nbt.ByteArrayTag;
+import net.minecraft.nbt.LongArrayTag;
 
-@CustomType(name = "ByteArrayTag")
-public class ByteArrayTagWrapper extends TagWrapper {
+@CustomType(name = "LongArrayTag")
+public class LongArrayTagWrapper extends TagWrapper {
 
-    private final ByteArrayTag inner;
+    private final LongArrayTag inner;
 
-    ByteArrayTagWrapper(ByteArrayTag tag) {
+    LongArrayTagWrapper(LongArrayTag tag) {
         this.inner = tag;
     }
 
@@ -20,8 +20,8 @@ public class ByteArrayTagWrapper extends TagWrapper {
     }
 
     @IndexGetter
-    public int indexer(int index) {
-        return inner.getAsByteArray()[index];
+    public long indexer(int index) {
+        return inner.getAsLongArray()[index];
     }
 
     @Override

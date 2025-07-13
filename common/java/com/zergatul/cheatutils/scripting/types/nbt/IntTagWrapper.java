@@ -9,7 +9,7 @@ public class IntTagWrapper extends TagWrapper {
 
     private final IntTag inner;
 
-    public IntTagWrapper(IntTag tag) {
+    IntTagWrapper(IntTag tag) {
         this.inner = tag;
     }
 
