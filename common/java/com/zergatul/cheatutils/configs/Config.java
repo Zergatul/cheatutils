@@ -70,6 +70,7 @@ public class Config {
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
     public StepUpConfig stepUp = new StepUpConfig();
     public AimAssistConfig aimAssist = new AimAssistConfig();
+    public LogoutSpotsConfig logoutSpots = new LogoutSpotsConfig();
 
     public Config() {
         esp = true;

@@ -103,7 +103,11 @@ public class RenderingContext {
             for (ItemStackRenderEntry entry : itemStacksQueue) {
                 graphics.pose().identity();
                 graphics.pose().translate(1f * (entry.x + halfWidth) / scale, 1f * (entry.y + halfHeight) / scale);
-                graphics.renderItem(entry.entity, entry.itemStack, 0, 0, 0);
+                if (entry.entity != null) {
+                    graphics.renderItem(entry.entity, entry.itemStack, 0, 0, 0);
+                } else {
+                    graphics.renderFakeItem(entry.itemStack, 0, 0,0);
+                }
                 graphics.renderItemDecorations(font, entry.itemStack, 0, 0);
             }
             graphics.pose().popMatrix();

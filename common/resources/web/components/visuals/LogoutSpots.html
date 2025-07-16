@@ -1,0 +1,13 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Displays location of players logging out spots.
+        <br>
+        If you enable <b>Custom Title System</b> for Player entities in <b>Entity ESP</b>, it can also show names, HP and equipment of disconnected players.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
+</div>

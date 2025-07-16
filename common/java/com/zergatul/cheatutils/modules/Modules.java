@@ -74,6 +74,7 @@ public class Modules {
         register(Schematica.instance);
         register(AimAssist.instance);
         register(LockInputs.instance);
+        register(LogoutSpots.instance);
 
         // should be after everything so "Don't Attack on Item Use" can work better
         register(KillAura.instance);

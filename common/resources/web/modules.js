@@ -440,6 +440,14 @@ module({
     path: 'fake-weather',
     tags: ['fake', 'weather']
 });
+module({
+    group: 'visuals',
+    name: 'Logout Spots',
+    component: 'LogoutSpots',
+    path: 'logout-spots',
+    tags: ['logout', 'spots']
+});
+
 
 module({
     group: 'scripting',
