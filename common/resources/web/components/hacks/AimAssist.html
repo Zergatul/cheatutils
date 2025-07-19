@@ -59,6 +59,14 @@
                     });
                 `' />
             </div>
+            <div style="padding-top: 0.5em;">
+                <div>
+                    <radio name="aim-assist-mode" :value="'AIM_ASSIST_CENTER'" v-model="config.aimAssistMode" @change="update()">Target Center</radio>
+                </div>
+                <div>
+                    <radio name="aim-assist-mode" :value="'AIM_ASSIST_HEAD'" v-model="config.aimAssistMode" @change="update()">Target Top</radio>
+                </div>
+            </div>
         </fieldset>
     </div>
 </div>

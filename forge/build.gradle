@@ -129,10 +129,6 @@ tasks.named('processResources', ProcessResources) {
     }
 }
 
-jar {
-    exclude("com/zergatul/cheatutils/utils/mappings/*")
-}
-
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar) {
     archiveFileName = "$mod_id-$mod_version-forge-${minecraft_version}.jar"

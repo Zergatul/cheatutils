@@ -98,6 +98,7 @@ public enum ScriptType {
                 .addCustomType(FormattedTextComponent.class)
                 .addCustomType(StyleWrapper.class)
                 .addCustomType(PlayerInfoWrapper.class)
+                .addCustomTypes(List.of(BlockWrapper.class, BlockStateWrapper.class))
                 .addCustomTypes(List.of(
                         TagWrapper.class,
                         MissingTagWrapper.class,

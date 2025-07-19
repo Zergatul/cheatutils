@@ -1,4 +1,5 @@
 import org.apache.tools.ant.taskdefs.condition.Os
+import net.fabricmc.loom.api.LoomGradleExtensionAPI
 
 plugins {
     id 'fabric-loom' version '1.11-SNAPSHOT'
@@ -57,6 +58,16 @@ sourceSets {
             srcDir '../common/resources'
         }
     }
+    codegen {
+        java {
+            srcDir '../common/codegen'
+        }
+    }
+}
+
+dependencies {
+    codegenImplementation "org.ow2.asm:asm:9.6"
+    codegenImplementation "org.ow2.asm:asm-tree:9.6"
 }
 
 processResources {
@@ -88,7 +99,6 @@ jar {
 
     exclude("net/caffeinemc/**")
     exclude("net/irisshaders/**")
-    exclude("com/zergatul/cheatutils/utils/mappings/**")
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -119,4 +129,25 @@ remapJar {
     afterEvaluate {
         archiveFileName = "$archives_base_name-$mod_version-fabric-${minecraft_version}.jar"
     }
+}
+
+tasks.register('compileCodegen', JavaCompile) {
+    source = sourceSets.codegen.java
+    classpath = sourceSets.codegen.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('classes/codegen')
+}
+
+tasks.register('generateMappings', JavaExec) {
+    group = 'codegen'
+    description = 'Creates mappings for Entity classes/interfaces'
+    dependsOn 'compileCodegen'
+
+    classpath = files(
+            layout.buildDirectory.dir('classes/codegen'),
+            sourceSets.codegen.compileClasspath)
+
+    mainClass = 'com.zergatul.cheatutils.codegen.MappingGenerator'
+
+    def loomExt = project.extensions.getByType(LoomGradleExtensionAPI)
+    args(loomExt.namedMinecraftJars.singleFile.toString(), loomExt.mappingsFile.toString())
 }

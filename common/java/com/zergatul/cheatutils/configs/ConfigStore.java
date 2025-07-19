@@ -158,7 +158,7 @@ public class ConfigStore {
                 //KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
                 KeyBindingsController.instance.assign(0, toggleEspName);
             } catch (Throwable e) {
-                logger.error(e);
+                logger.error("Toggle ESP script initialization failed", e);
             }
 
             final String toggleFreeCamName = "Toggle FreeCam";
@@ -167,7 +167,7 @@ public class ConfigStore {
                 KeyBindingsController.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
                 KeyBindingsController.instance.assign(1, toggleFreeCamName);
             } catch (Throwable e) {
-                logger.error(e);
+                logger.error("Toggle FreeCam script initialization failed", e);
             }
         } else {
             ArrayList<KeyBindingScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.keyBindingScriptsConfig.scripts);
@@ -176,7 +176,7 @@ public class ConfigStore {
                 try {
                     ScriptsController.instance.add(s.name, s.code, true);
                 } catch (Throwable e) {
-                    logger.error(e);
+                    logger.error("KeyBinding script '{}' initialization failed", s.name, e);
                 }
             });
 
@@ -197,7 +197,7 @@ public class ConfigStore {
                     result.getDiagnostics().forEach(m -> logger.error("Status Overlay: {}", m.message));
                 }
             } catch (Throwable e) {
-                logger.error(e);
+                logger.error("StatusOverlay script initialization failed", e);
             }
         }
 
@@ -210,7 +210,7 @@ public class ConfigStore {
                     result.getDiagnostics().forEach(m -> logger.error("Block Automation: {}", m.message));
                 }
             } catch (Throwable e) {
-                logger.error(e);
+                logger.error("BlockAutomation script initialization failed", e);
             }
         }
 
@@ -223,7 +223,7 @@ public class ConfigStore {
                     result.getDiagnostics().forEach(m -> logger.error("Villager Roller: {}", m.message));
                 }
             } catch (Throwable e) {
-                logger.error(e);
+                logger.error("VillagerRoller script initialization failed", e);
             }
         }
 
@@ -236,7 +236,7 @@ public class ConfigStore {
                     result.getDiagnostics().forEach(m -> logger.error("Events Scripting: {}", m.message));
                 }
             } catch (Throwable e) {
-                logger.error(e);
+                logger.error("EventScripting script initialization failed", e);
             }
         }
 
@@ -255,7 +255,7 @@ public class ConfigStore {
                             result.getDiagnostics().forEach(m -> logger.error("Block ESP for {}: {}", blockConfig.blocks.stream().findFirst().get().getName(), m.message));
                         }
                     } catch (Throwable e) {
-                        logger.error(e);
+                        logger.error("BlockESP script for '{}' initialization failed", blockConfig.blocks.stream().findFirst().get().getName(), e);
                     }
                 }
             }
@@ -276,7 +276,7 @@ public class ConfigStore {
                             result.getDiagnostics().forEach(m -> logger.error("Entity ESP for {}: {}", entityConfig.clazz.getName(), m.message));
                         }
                     } catch (Throwable e) {
-                        logger.error(e);
+                        logger.error("EntityESP script for {} initialization failed", entityConfig.clazz.getName(), e);
                     }
                 }
             }
@@ -291,7 +291,7 @@ public class ConfigStore {
                     result.getDiagnostics().forEach(m -> logger.error("Kill Aura: {}", m.message));
                 }
             } catch (Throwable e) {
-                logger.error(e);
+                logger.error("KillAura script initialization failed", e);
             }
         }
 
@@ -304,7 +304,7 @@ public class ConfigStore {
                     result.getDiagnostics().forEach(m -> logger.error("Hitbox Size: {}", m.message));
                 }
             } catch (Throwable e) {
-                logger.error(e);
+                logger.error("HitboxSize script initialization failed", e);
             }
         }
     }
