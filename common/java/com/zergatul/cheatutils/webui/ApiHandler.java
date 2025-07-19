@@ -61,7 +61,6 @@ public class ApiHandler implements HttpHandler {
         apis.add(new DimensionApi());
         apis.add(new CoordinatesApi());
         apis.add(new BlockAutomationCodeApi());
-        apis.add(new GenerateMappingApi());
         apis.add(new FakeWeatherSetTimeApi());
         apis.add(new FakeWeatherSetRainApi());
         apis.add(new VillagerRollerCodeApi());
