@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
+import com.zergatul.cheatutils.scripting.types.BlockStateWrapper;
 import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
@@ -19,7 +20,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
-import net.minecraft.nbt.StringTagVisitor;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,7 +34,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -737,6 +741,24 @@ public class GameApi {
     public static class BlocksApi {
 
         @MethodDescription("""
+                Returns BlockState at specified position
+                """)
+        public BlockStateWrapper get(BlockPosWrapper pos) {
+            return get(pos.getX(), pos.getY(), pos.getZ());
+        }
+
+        @MethodDescription("""
+                Returns BlockState at specified position
+                """)
+        public BlockStateWrapper get(int x, int y, int z) {
+            if (mc.level == null) {
+                return new BlockStateWrapper(Blocks.AIR.defaultBlockState());
+            }
+
+            return new BlockStateWrapper(mc.level.getBlockState(new BlockPos(x, y, z)));
+        }
+
+        @MethodDescription("""
                 Returns block id at specified coordinates. Example return value: "minecraft:stone"
                 """)
         public String getId(BlockPosWrapper pos) {
@@ -798,6 +820,20 @@ public class GameApi {
             return mc.level.getBrightness(LightLayer.SKY, new BlockPos(x, y, z));
         }
 
+        public boolean hasTag(BlockPosWrapper pos, String tag) {
+            return hasTag(pos.getX(), pos.getY(), pos.getZ(), tag);
+        }
+
+        public boolean hasTag(int x, int y, int z, String tag) {
+            if (mc.level == null) {
+                return false;
+            }
+
+            BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
+            return state.getValues().keySet().stream()
+                    .anyMatch(p -> p.getName().equals(tag));
+        }
+
         @MethodDescription("""
                 Returns integer tag of BlockState at specified coordinates.
                 For example you can check tag "age" for "minecraft:wheat" to see when crops are ready to be harvested.
@@ -817,7 +853,7 @@ public class GameApi {
 
             BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
             Property<?> property = state.getValues().keySet().stream()
-                    .filter(p -> p.getName().equals(tag) && p.getValueClass() == Integer.class)
+                    .filter(p -> p.getName().equals(tag) && p instanceof IntegerProperty)
                     .findFirst()
                     .orElse(null);
             if (property == null) {
@@ -825,6 +861,60 @@ public class GameApi {
             }
 
             return (Integer) state.getValue(property);
+        }
+
+        @MethodDescription("""
+                Returns enum tag of BlockState at specified coordinates.
+                """)
+        public String getEnumTag(BlockPosWrapper pos, String tag) {
+            return getEnumTag(pos.getX(), pos.getY(), pos.getZ(), tag);
+        }
+
+        @MethodDescription("""
+                Returns enum tag of BlockState at specified coordinates.
+                """)
+        public String getEnumTag(int x, int y, int z, String tag) {
+            if (mc.level == null) {
+                return "";
+            }
+
+            BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
+            Property<?> property = state.getValues().keySet().stream()
+                    .filter(p -> p.getName().equals(tag) && p instanceof EnumProperty)
+                    .findFirst()
+                    .orElse(null);
+            if (property == null) {
+                return "";
+            }
+
+            return state.getValue(property).toString();
+        }
+
+        @MethodDescription("""
+                Returns boolean tag of BlockState at specified coordinates.
+                """)
+        public boolean getBooleanTag(BlockPosWrapper pos, String tag) {
+            return getBooleanTag(pos.getX(), pos.getY(), pos.getZ(), tag);
+        }
+
+        @MethodDescription("""
+                Returns enum tag of BlockState at specified coordinates.
+                """)
+        public boolean getBooleanTag(int x, int y, int z, String tag) {
+            if (mc.level == null) {
+                return false;
+            }
+
+            BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
+            Property<?> property = state.getValues().keySet().stream()
+                    .filter(p -> p.getName().equals(tag) && p instanceof BooleanProperty)
+                    .findFirst()
+                    .orElse(null);
+            if (property == null) {
+                return false;
+            }
+
+            return (Boolean) state.getValue(property);
         }
     }
 }
