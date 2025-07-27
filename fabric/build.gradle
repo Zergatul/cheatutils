@@ -151,18 +151,3 @@ tasks.register('generateMappings', JavaExec) {
     def loomExt = project.extensions.getByType(LoomGradleExtensionAPI)
     args(loomExt.namedMinecraftJars.singleFile.toString(), loomExt.mappingsFile.toString())
 }
-
-tasks.register('generatePacketWrappers', JavaExec) {
-    group = 'codegen'
-    description = 'Creates packet wrapper classes for scripting'
-    dependsOn 'compileCodegen'
-
-    classpath = files(
-            layout.buildDirectory.dir('classes/codegen'),
-            sourceSets.codegen.compileClasspath)
-
-    mainClass = 'com.zergatul.cheatutils.codegen.PacketWrappersGenerator'
-
-    def loomExt = project.extensions.getByType(LoomGradleExtensionAPI)
-    args(loomExt.namedMinecraftJars.singleFile.toString(), loomExt.mappingsFile.toString())
-}

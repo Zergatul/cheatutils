@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.scripting.ItemStackPredicate;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
@@ -114,6 +115,38 @@ public class InventoryApi {
         }
 
         return false;
+    }
+
+    @MethodDescription("""
+            Loops over all items in your inventory, calls custom function to decide if current item is good, and moves it to hotbar.
+            Return false if no such item found.
+            """)
+    @ApiVisibility(ApiType.ACTION)
+    public boolean findAndMoveToHotbar(int slot, ItemStackPredicate predicate) {
+        if (mc.player == null) {
+            return false;
+        }
+
+        if (slot < 1 || slot > 9) {
+            return false;
+        }
+
+        Inventory inventory = mc.player.getInventory();
+        int index = -1;
+        ItemStack itemStack = null;
+        for (int i = 9; i < 36; i++) {
+            if (predicate.test(new ItemStackWrapper(inventory.getItem(i)))) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index < 0) {
+            return false;
+        }
+
+        InventoryUtils.moveItemStack(new InventorySlot(index), new InventorySlot(slot - 1));
+        return true;
     }
 
     @MethodDescription("""

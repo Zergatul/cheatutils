@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
+import com.zergatul.cheatutils.configs.AimAssistConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
@@ -131,7 +132,16 @@ public class AimAssist implements Module {
 
         if (targetLockEntity != null) {
             AABB box = targetLockEntity.getDimensions(targetLockEntity.getPose()).makeBoundingBox(targetLockEntity.getPosition(partialTicks));
-            Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(partialTicks), box.getCenter());
+
+            AimAssistConfig config = ConfigStore.instance.getConfig().aimAssist;
+            Vec3 target;
+            if (AimAssistConfig.AIM_ASSIST_HEAD.equals(config.aimAssistMode)) {
+                target = new Vec3(Mth.lerp(0.5, box.minX, box.maxX), box.maxY, Mth.lerp(0.5, box.minZ, box.maxZ));
+            } else {
+                target = box.getCenter();
+            }
+
+            Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(partialTicks), target);
             mc.player.setXRot(rotation.xRot());
             mc.player.setYRot(rotation.yRot());
         }
