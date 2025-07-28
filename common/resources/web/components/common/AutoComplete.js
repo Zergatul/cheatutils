@@ -3,7 +3,7 @@ import { withCss } from '/components/Loader.js'
 
 const { ref, toRefs, onMounted, onUnmounted } = await FallbackLoader.vue();
 
-const MaxItems = 50;
+const DefaultMaxItems = 50;
 
 export function createComponent(template) {
     const args = {
@@ -23,6 +23,7 @@ export function createComponent(template) {
             const { value, list } = toRefs(props);
 
             let currentValue;
+            let maxItems = DefaultMaxItems;
 
             const onDocumentClick = event => {
                 if (!ul.value.checkVisibility()) {
@@ -49,7 +50,7 @@ export function createComponent(template) {
                 const parts = text.split(/\s+/);
                 const filtered = [];
                 let i = 0;
-                while (i < list.value.length && filtered.length <= MaxItems) {
+                while (i < list.value.length && filtered.length <= maxItems) {
                     const item = list.value[i++];
                     const itemLower = item.toLowerCase();
                     if (parts.every(p => itemLower.includes(p))) {
@@ -60,7 +61,7 @@ export function createComponent(template) {
                 ul.value.innerHTML = '';
 
                 const hasNone = filtered.length == 0;
-                const hasMore = filtered.length > MaxItems;
+                const hasMore = filtered.length > maxItems;
 
                 if (hasNone) {
                     const li = document.createElement('li');
@@ -68,7 +69,7 @@ export function createComponent(template) {
                     ul.value.appendChild(li);
                 }
 
-                filtered.splice(MaxItems);
+                filtered.splice(maxItems);
                 filtered.forEach((item) => {
                     const li = document.createElement('li');
                     li.classList.add('item');
@@ -84,7 +85,14 @@ export function createComponent(template) {
 
                 if (hasMore) {
                     const li = document.createElement('li');
+                    li.classList.add('more');
                     li.textContent = '...';
+                    li.title = 'Show more';
+                    li.addEventListener('click', event => {
+                        event.stopPropagation(); // don't propagate to document.click
+                        maxItems *= 2;
+                        onInput();
+                    });
                     ul.value.appendChild(li);
                 }
 

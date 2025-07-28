@@ -25,11 +25,11 @@ div.autocomplete > ul {
     right: 0;
 }
 
-div.autocomplete > ul > li.item {
+div.autocomplete > ul > li {
     cursor: pointer;
     word-break: break-all;
 }
 
-div.autocomplete > ul > li.item:hover {
+div.autocomplete > ul > li:hover {
     background-color: #F0F0F0;
 }

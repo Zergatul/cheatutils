@@ -15,7 +15,7 @@ function getBlockStates() {
 function getBlockStatesFormatted() {
     if (blockStatesFormattedPromise == null) {
         blockStatesFormattedPromise = new Promise((resolve, reject) => {
-            getBlockStates().then(states => resolve(states.map(formatBlockState))).catch(reject);
+            getBlockStates().then(states => resolve(states.map(formatBlockState).sort())).catch(reject);
         });
     }
     return blockStatesFormattedPromise;
