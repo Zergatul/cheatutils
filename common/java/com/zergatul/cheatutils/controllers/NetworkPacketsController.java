@@ -25,9 +25,37 @@ public class NetworkPacketsController {
         }
     }
 
+    public void addServerPacketHandlerIfAbsent(Consumer<ServerPacketArgs> handler) {
+        synchronized (serverPacketHandlers) {
+            if (!serverPacketHandlers.contains(handler)) {
+                serverPacketHandlers.add(handler);
+            }
+        }
+    }
+
+    public void removeServerPacketHandler(Consumer<ServerPacketArgs> handler) {
+        synchronized (serverPacketHandlers) {
+            serverPacketHandlers.remove(handler);
+        }
+    }
+
     public void addClientPacketHandler(Consumer<ClientPacketArgs> handler) {
         synchronized (clientPacketHandlers) {
             clientPacketHandlers.add(handler);
+        }
+    }
+
+    public void addClientPacketHandlerIfAbsent(Consumer<ClientPacketArgs> handler) {
+        synchronized (clientPacketHandlers) {
+            if (!clientPacketHandlers.contains(handler)) {
+                clientPacketHandlers.add(handler);
+            }
+        }
+    }
+
+    public void removeClientPacketHandler(Consumer<ClientPacketArgs> handler) {
+        synchronized (clientPacketHandlers) {
+            clientPacketHandlers.remove(handler);
         }
     }
 

@@ -2,7 +2,9 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
+@SuppressWarnings("unused")
 public class VariablesApi {
 
     private final Map<String, Object> variables = new HashMap<>();
@@ -43,6 +45,11 @@ public class VariablesApi {
         }
     }
 
+    public Object getObject(String name) {
+        Object value = variables.get(name);
+        return Objects.requireNonNullElseGet(value, Object::new);
+    }
+
     public void setBoolean(String name, boolean value) {
         variables.put(name, value);
     }
@@ -56,10 +63,10 @@ public class VariablesApi {
     }
 
     public void setString(String name, String value) {
-        if (value != null && value.length() > 1000000) {
-            // prevent stupid scripts that can occupy all RAM
-            value = value.substring(0, 1000000);
-        }
+        variables.put(name, value);
+    }
+
+    public void setObject(String name, Object value) {
         variables.put(name, value);
     }
 }

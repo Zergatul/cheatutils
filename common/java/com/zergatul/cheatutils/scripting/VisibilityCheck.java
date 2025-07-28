@@ -12,7 +12,10 @@ public class VisibilityCheck {
             return false;
         }
 
-        if (method.getDeclaringClass().isAnnotationPresent(AdvancedApi.class)) {
+        boolean isAdvApi =
+                method.getDeclaringClass().isAnnotationPresent(AdvancedApi.class) ||
+                method.isAnnotationPresent(AdvancedApi.class);
+        if (isAdvApi) {
             return ConfigStore.instance.getConfig().coreConfig.advancedScripting;
         }
 

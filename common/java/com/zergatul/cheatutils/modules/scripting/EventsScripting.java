@@ -4,8 +4,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.*;
+import com.zergatul.cheatutils.scripting.modules.PacketEvent;
 import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
 import com.zergatul.cheatutils.scripting.types.PlayerInfoWrapper;
 import net.minecraft.client.Minecraft;
@@ -13,6 +15,7 @@ import net.minecraft.client.player.RemotePlayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class EventsScripting implements Module {
 
@@ -28,6 +31,11 @@ public class EventsScripting implements Module {
     private final List<ServerAddressConsumer> onJoinServer = new ArrayList<>();
     private final List<ContainerClickConsumer> onContainerMenuClick = new ArrayList<>();
     private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new ArrayList<>();
+    private final List<PacketEventConsumer> onC2SPacket = new ArrayList<>();
+    private final List<PacketEventConsumer> onS2CPacket = new ArrayList<>();
+
+    private final Consumer<NetworkPacketsController.ClientPacketArgs> onClientPacketHandler = this::onClientPacket;
+    private final Consumer<NetworkPacketsController.ServerPacketArgs> onServerPacketHandler = this::onServerPacket;
 
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
@@ -99,6 +107,13 @@ public class EventsScripting implements Module {
                 }
             }
         });
+
+        NetworkPacketsController.instance.addClientPacketHandler(args -> {
+
+        });
+        NetworkPacketsController.instance.addServerPacketHandler(args -> {
+
+        });
     }
 
     public void setScript(Runnable runnable) {
@@ -119,6 +134,11 @@ public class EventsScripting implements Module {
             onJoinServer.clear();
             onContainerMenuClick.clear();
             onPlayerInfoUpdate.clear();
+            onC2SPacket.clear();
+            onS2CPacket.clear();
+
+            NetworkPacketsController.instance.removeClientPacketHandler(onClientPacketHandler);
+            NetworkPacketsController.instance.removeServerPacketHandler(onServerPacketHandler);
         });
     }
 
@@ -156,6 +176,34 @@ public class EventsScripting implements Module {
 
     public void addOnPlayerInfoUpdate(PlayerInfoUpdateConsumer consumer) {
         onPlayerInfoUpdate.add(consumer);
+    }
+
+    public void addOnClientToServerPacket(PacketEventConsumer consumer) {
+        onC2SPacket.add(consumer);
+        NetworkPacketsController.instance.addClientPacketHandlerIfAbsent(onClientPacketHandler);
+    }
+
+    public void addOnServerToClientPacket(PacketEventConsumer consumer) {
+        onS2CPacket.add(consumer);
+        NetworkPacketsController.instance.addServerPacketHandlerIfAbsent(onServerPacketHandler);
+    }
+
+    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
+        if (canTrigger()) {
+            PacketEvent event = new PacketEvent(args.packet);
+            for (PacketEventConsumer consumer : onC2SPacket) {
+                consumer.accept(event);
+            }
+        }
+    }
+
+    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+        if (canTrigger()) {
+            PacketEvent event = new PacketEvent(args.packet);
+            for (PacketEventConsumer consumer : onS2CPacket) {
+                consumer.accept(event);
+            }
+        }
     }
 
     private boolean canTrigger() {
