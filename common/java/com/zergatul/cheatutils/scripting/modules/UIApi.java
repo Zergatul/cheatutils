@@ -49,6 +49,22 @@ public class UIApi {
     }
 
     @MethodDescription("""
+            Array length must be divisible by 2. Example: [color1, text1, color2, text2]
+            """)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
+    public void systemMessage(String[] parameters) {
+        showMessage(constructMessage(parameters), false);
+    }
+
+    @MethodDescription("""
+            Array length must be divisible by 2. Example: [color1, text1, color2, text2]
+            """)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
+    public void overlayMessage(String[] parameters) {
+        showMessage(constructMessage(parameters), true);
+    }
+
+    @MethodDescription("""
             Saves screenshot, like pressing F2
             """)
     @ApiVisibility(ApiType.ACTION)
