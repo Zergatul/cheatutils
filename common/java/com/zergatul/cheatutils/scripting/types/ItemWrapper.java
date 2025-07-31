@@ -29,6 +29,11 @@ public class ItemWrapper {
         return inner.getName(inner.getDefaultInstance()).getString();
     }
 
+    @Getter(name = "stackSize")
+    public int getStackSize() {
+        return inner.getDefaultMaxStackSize();
+    }
+
     @Getter(name = "tags")
     public String[] getTags() {
         return tags.value();

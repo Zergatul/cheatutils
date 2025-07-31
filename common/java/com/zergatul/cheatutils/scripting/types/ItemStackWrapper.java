@@ -67,6 +67,11 @@ public class ItemStackWrapper {
         return inner.isEmpty();
     }
 
+    @Getter(name = "stackSize")
+    public int getStackSize() {
+        return inner.getMaxStackSize();
+    }
+
     @Getter(name = "tooltip")
     public String[] getTooltip() {
         return tooltip.value();
