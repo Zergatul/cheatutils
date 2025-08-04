@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
+import com.zergatul.mixin.ExecuteAfterIfElseCondition;
 import com.zergatul.mixin.ModifyMethodReturnValue;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -25,8 +26,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     @Unique
     private boolean isInsideAiStep;
 
-    public MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_) {
-        super(p_234112_, p_234113_);
+    public MixinLocalPlayer(ClientLevel level, GameProfile profile) {
+        super(level, profile);
     }
 
     @Inject(at = @At("HEAD"), method = "sendPosition()V")
@@ -34,8 +35,10 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         Events.BeforeSendPlayerPos.trigger();
     }
 
-    @Inject(at = @At("TAIL"), method = "sendPosition()V")
-    private void onAfterSendPosition(CallbackInfo info) {
+    @ExecuteAfterIfElseCondition(
+            method = "tick",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z"))
+    private void onAfterSendPosition() {
         Events.AfterSendPlayerPos.trigger();
     }
 
