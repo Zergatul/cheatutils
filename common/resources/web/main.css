@@ -36,6 +36,10 @@ div.module-group > button {
     font-size: 1em;
 }
 
+div.module-group > button.external {
+    color: #74571C;
+}
+
 div.module-group > button.active {
     color: var(--color7);
 }

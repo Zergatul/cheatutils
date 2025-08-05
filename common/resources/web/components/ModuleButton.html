@@ -1,3 +1,10 @@
-<button @click="onClick(module)" :class="{ active: statuses[module.component], faded: !filtered[module.component] }">
+<button
+    @click="onClick(module)"
+    :class="{
+        external: !!module.onClick,
+        active: statuses[module.component],
+        faded: !filtered[module.component]
+    }"
+>
     {{ module.name }}
 </button>

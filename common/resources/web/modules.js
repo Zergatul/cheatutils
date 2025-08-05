@@ -512,6 +512,24 @@ module({
     path: 'editor-config',
     tags: ['script', 'editor', 'config', 'monaco']
 });
+module({
+    group: 'scripting',
+    name: 'Language Docs',
+    component: 'LanguageDocs',
+    tags: ['scripting', 'language', 'docs', 'documentation'],
+    onClick() {
+        window.open('https://github.com/Zergatul/java-scripting-language/blob/611fee9a0b19142deffc1f6545e17825b0b4b541/README.md', '_blank');
+    }
+});
+module({
+    group: 'scripting',
+    name: 'Script Examples',
+    component: 'Script Examples',
+    tags: ['script', 'examples', 'docs', 'documentation'],
+    onClick() {
+        window.open('https://github.com/Zergatul/cheatutils-examples/tree/master/v3', '_blank');
+    }
+});
 
 module({
     group: 'utility',
@@ -569,6 +587,15 @@ module({
     tags: ['matrix', 'discord'],
     onClick() {
         window.open('https://matrix.to/#/#cheatutils:matrix.org', '_blank');
+    }
+});
+module({
+    group: 'utility',
+    name: 'YouTube Tutorials',
+    component: 'YouTubeTutorials',
+    tags: ['youtube', 'video', 'tutorial', 'guide'],
+    onClick() {
+        window.open('https://www.youtube.com/playlist?list=PLG9SPA0O8HLSyHpxp-Y66ktVIAjQwWWk_', '_blank');
     }
 });
 
