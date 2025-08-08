@@ -6,48 +6,69 @@ div.modules {
     display: flex;
     gap: 1em;
     justify-content: center;
-    margin: 0.5em;
+    margin: 0.6em 0.5em 0 0.5em;
+}
+
+div.modules > .groupedModule {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 div.module-group {
-    background-color: var(--color3);
-    border-radius: 2em;
+    background-color: var(--boxColor);
+    border: 2px solid;
+    border-radius: 1em;
     display: flex;
-    justify-content: center;
     width: 8em;
-    padding: 1em;
+    height: min-content;
+    padding: 0.7em;
     flex-direction: column;
     justify-content: start;
-    gap: 0.15em;
+    gap: 0.2em;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
 }
 
 div.module-group-header {
-    color: var(--color8);
+    color: var(--moduleTypeColor);
     font-size: 1.5em;
     text-align: center;
 }
 
 div.module-group > button {
-    background-color: var(--color4);
-    border-width: 0;
-    border-radius: 0.5em;
-    color: var(--color1);
+    background-color: var(--boxColor);
+    border: 2px solid;
+    border-radius: 0.45em;
+    color: var(--moduleTextColor);
     font-family: var(--font);
     font-size: 1em;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
 }
 
 div.module-group > button.external {
-    color: #74571C;
+    color: var(--hrefButtonColor);
 }
 
 div.module-group > button.active {
-    color: var(--color7);
+    color: var(--activatedColor);
 }
 
 div.module-group > button:hover {
-    background-color: var(--color6);
+    background-color: var(--boxColorHover);
 }
 
 div.module-group > button.faded {
     opacity: 0.2;
+}
+
+div.module-sections .script-editor {
+    border: 1px solid;
+    border-radius: 0.6em;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
 }

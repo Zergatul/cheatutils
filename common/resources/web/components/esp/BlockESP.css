@@ -1,14 +1,18 @@
 div.block-list {
-    border: 0.2em solid var(--color1);
+    border: 0.1em solid;
     flex-grow: 1;
     flex-basis: 15em;
     overflow-y: auto;
     font-family: var(--font2);
+    border-color: var(--borderColorTop) var(--borderColorRight) var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
+    border-radius: 1em;
 }
 
 div.block-list > table {
     width: 100%;
     border-collapse: collapse;
+    color: var(--moduleTextColor);
 }
 
 div.block-list div.canvas {
@@ -17,7 +21,7 @@ div.block-list div.canvas {
 }
 
 div.block-list > table td {
-    border-bottom: 0.1em solid var(--color1);
+    border-bottom: 0.1em solid var(--borderColorTop);
 }
 
 div.block-esp td.icon {
@@ -27,7 +31,7 @@ div.block-esp td.icon {
 div.block-esp div.icon {
     width: 1em;
     height: 1em;
-    border: 0.1em solid var(--color1);
+    border: 0.1em solid var(--boxColor);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -54,6 +58,7 @@ div.block-list button.remove {
 
 table.block-info-table {
     font-family: var(--font2);
+    color: var(--moduleTextColor);
 }
 
 div.block-edit {

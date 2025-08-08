@@ -3,7 +3,7 @@
     border-width: 0.15em;
     border-style: solid;
     border-radius: 0.3em;
-    border-color: var(--color1);
+    border-color: var(--borderColorTop);
     padding: 0.4em;
 }
 

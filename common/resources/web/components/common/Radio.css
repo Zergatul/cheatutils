@@ -13,9 +13,9 @@ div.radio input[type=radio] + label {
 
 div.radio input[type=radio] + label::before {
     content: '';
-    background: var(--color2);
+    background: var(--boxColor);
     border-radius: 100%;
-    border: 1px solid darken(var(--color2), 25%);
+    border: 1px solid darken(var(--titleColor), 25%);
     display: inline-block;
     width: 1.4em;
     height: 1.4em;
@@ -26,22 +26,25 @@ div.radio input[type=radio] + label::before {
     cursor: pointer;
     text-align: center;
     transition: all 250ms ease;
+    border: 1px solid;
+    border-color: var(--borderColorTop) var(--borderColorRight) var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
 }
 
 div.radio input[type=radio]:checked + label::before {
-    background-color: var(--color7);
-    box-shadow: inset 0 0 0 4px var(--color2);
+    background-color: var(--activatedColor);
+    box-shadow: inset 0 0 0 4px var(--boxColor);
 }
 
 div.radio input[type=radio]:focus + label::before {
     outline: none;
-    border-color: var(--color7);
+    border-color: var(--activatedColor);
 }
 
 div.radio input[type=radio]:disabled + label::before {
-    box-shadow: inset 0 0 0 4px var(--color2);
-    border-color: darken(var(--color2), 25%);
-    background: darken(var(--color2), 25%);
+    box-shadow: inset 0 0 0 4px var(--titleColor);
+    border-color: darken(var(--titleColor), 25%);
+    background: darken(var(--titleColor), 25%);
 }
 
 div.radio input[type=radio] + label:empty::before {

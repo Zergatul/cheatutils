@@ -1,9 +1,12 @@
 div.scripts-list {
-    border: 0.2em solid var(--color1);
+    border: 1px solid;
     flex-grow: 1;
     flex-basis: 15em;
     overflow-y: auto;
     font-family: var(--font2);
+    border-color: var(--borderColorTop) var(--borderColorRight) var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: .1em .1em .6em black;
+    border-radius: 1em;
 }
 
 div.scripts-list > table {
@@ -12,8 +15,8 @@ div.scripts-list > table {
 }
 
 div.scripts-list > table td {
-    border-bottom: 0.1em solid var(--color1);
-    padding: 0.3em 0.5em;
+    border-bottom: 0.1em solid var(--borderColorTop);
+    padding: 0.5em 0.5em;
 }
 
 div.scripts-list td.script-name-cell {

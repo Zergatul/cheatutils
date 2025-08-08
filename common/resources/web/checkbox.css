@@ -1,11 +1,11 @@
 input[type=checkbox].cb {
-    --active: var(--color7);
-    --active-inner: #fff;
-    --border: #BBC1E1;
-    --border-hover: var(--color1);
-    --background: #fff;
-    --disabled: #F6F8FF;
-    --disabled-inner: #E1E6F9;
+    --active: var(--activatedColor);
+    --active-inner: #AAA;
+    --border: var(--borderColorTop);
+    --border-hover: #434750;
+    --background: var(--boxColor);
+    --disabled: var(--deactivatedColor);
+    --disabled-inner: var(--boxColorHover);
     appearance: none;
     width: 2em;
     height: 2em;
@@ -18,6 +18,7 @@ input[type=checkbox].cb {
     border: 1px solid var(--bc, var(--border));
     background: var(--b, var(--background));
     transition: background 0.3s, border-color 0.3s, box-shadow 0.2s;
+    box-shadow: .1em .1em .6em black;
 }
 
 input[type=checkbox].cb:after {

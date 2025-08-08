@@ -23,7 +23,7 @@ div.switch > div.checkbox > label {
     cursor: pointer;
     width: 100%;
     height: 100%;
-    background: var(--color1);
+    background: var(--boxColor);
     display: block;
     border-radius: calc(var(--height) * 0.5);
     position: relative;
@@ -37,18 +37,23 @@ div.switch > div.checkbox > label:after {
     left: var(--padding);
     width: var(--circle);
     height: var(--circle);
-    background: var(--color4);
+    background: var(--boxColor);
     border-radius: calc(var(--circle) * 0.5);
     transition: var(--delay);
 }
 
+div.switch > div.checkbox > input + label {
+    background: var(--deactivatedColor);
+    transition: background var(--delay);
+}
+
 div.switch > div.checkbox > input:checked + label {
-    background: var(--color7);
+    background: var(--activatedColor);
     transition: background var(--delay);
 }
 
 div.switch > div.checkbox > input:checked + label:after {
-    background: var(--color2);
+    background: var(--boxColor);
     left: calc(100% - var(--padding));
     transform: translateX(-100%);
 }
@@ -58,4 +63,5 @@ div.switch > label {
     padding-left: 0.2em;
     display: inline-flex;
     align-items: center;
+    color: var(--moduleTextColor);
 }

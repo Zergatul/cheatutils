@@ -15,9 +15,11 @@ export function createComponent(template) {
         },
         template,
         setup() {
+            const movement = ref(modules.movement);
             const automation = ref(modules.automation);
+            const world = ref(modules.world);
             const esp = ref(modules.esp);
-            const hacks = ref(modules.hacks);
+            const combat = ref(modules.combat);
             const visuals = ref(modules.visuals);
             const scripting = ref(modules.scripting);
             const utility = ref(modules.utility);
@@ -70,9 +72,11 @@ export function createComponent(template) {
             });
 
             return {
+                movement,
                 automation,
+                world,
                 esp,
-                hacks,
+                combat,
                 visuals,
                 scripting,
                 utility,

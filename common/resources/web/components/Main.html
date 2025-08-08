@@ -1,16 +1,24 @@
 <div class="main">
     <div class="modules">
         <div class="module-group">
+            <div class="module-group-header">Movement</div>
+            <module-button v-for="module in movement" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+        </div>
+        <div class="module-group">
             <div class="module-group-header">Automation</div>
             <module-button v-for="module in automation" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+        </div>
+        <div class="module-group">
+            <div class="module-group-header">World</div>
+            <module-button v-for="module in world" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
             <div class="module-group-header">ESP</div>
             <module-button v-for="module in esp" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
-            <div class="module-group-header">Hacks</div>
-            <module-button v-for="module in hacks" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+            <div class="module-group-header">Combat</div>
+            <module-button v-for="module in combat" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
             <div class="module-group-header">Visuals</div>

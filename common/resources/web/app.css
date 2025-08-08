@@ -1,21 +1,69 @@
+:root {
+    /*  color 1  */
+    --boxColor: #e8e3dd;
+    /*  color 2  */
+    --titleColor: #091120;
+    /*  color 3  */
+    /* --backgroundColor: #246673; --> backgroundColor*/
+    /*  color 4  */
+    /* --boxColor: #ABB5AC; --> boxColor */
+    /*  color 5  */
+    --backgroundColor: #edeae4;
+    /*  color 6  */
+    --boxColorHover: #d8cfc5;
+    /*  color 7  */
+    --activatedColor: #2dbd05;
+    /*  color 8  */
+    --moduleTypeColor: #d86564;
+    --deactivatedColor: #ce0b0b;
+
+    --borderColorTop: #dcd8cf;
+    --borderColorRight: #e2dfd6;
+    --borderColorBottom: #e5e2d9;
+    --borderColorLeft: #e1ded5;
+    --moduleTextColor: #7e7d73;
+
+    --apiRefColorClass: #28a0d4;
+    --apiRefColorMethod: #c28814;
+
+    --hrefButtonColor: #cc8900;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --boxColor: #171c22;
+
+        --titleColor: #f6eedf;
+
+        --backgroundColor: #12151b;
+        --boxColorHover: #27303a;
+
+        --activatedColor: #317f35;
+        --moduleTypeColor: #279a9b;
+        --deactivatedColor: #7f2222;
+
+        --borderColorTop: #232730;
+        --borderColorRight: #1d2029;
+        --borderColorBottom: #1a1d26;
+        --borderColorLeft: #1e212a;
+        --moduleTextColor: #81828c;
+
+        --apiRefColorClass: #daab66;
+        --apiRefColorMethod: #779ef1;
+
+        --hrefButtonColor: #74571c;
+    }
+}
+
 body {
-    --color1: #122741;
-    --color2: #F8FAEB;
-    --color3: #246673;
-    --color4: #ABB5AC;
-    --color5: #B79246;
-    --color6: #919992;
-    --color7: #317F35;
-    --color8: #000000;
-    --font: "New Amsterdam", sans-serif;
-    --font2: "Roboto", sans-serif;
-    background-color: var(--color5);
+    --font: 'New Amsterdam', sans-serif;
+    --font2: 'Roboto', sans-serif;
+    background-color: var(--backgroundColor);
     box-sizing: border-box;
     font-family: var(--font);
     font-size: 16pt;
     margin: 0;
 }
-
 /* main view */
 
 div#vue-app {
@@ -25,9 +73,15 @@ div#vue-app {
 }
 
 div.main-header {
-    background-color: var(--color1);
+    background-color: var(--boxColor);
     display: flex;
-    height: 4em;
+    height: 2.5em;
+    margin: 0.5em 1em 0 1em;
+    border: 2px solid;
+    border-radius: 0.8em;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
 }
 
 div.main-header > div {
@@ -37,33 +91,41 @@ div.main-header > div {
 }
 
 div.main-header > div.title {
-    color: var(--color2);
-    font-size: 2em;
-    padding-left: 1.5em;
+    color: var(--titleColor);
+    font-size: 1.8em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
 
 div.main-header > div.search {
     justify-content: right;
-    padding-right: 1.5em;
+    padding-right: 0.5em;
 }
 
 div.main-header div.title a,
 div.main-header div.title a:visited {
-    color: var(--color2);
+    color: var(--titleColor);
 }
 
 div.main-header > div.search > input {
-    border: 0;
-    border-radius: 0.6em;
+    border: 2px solid;
+    border-radius: 0.4em;
     font-family: var(--font);
-    font-size: 1.5em;
+    font-size: 1.2em;
     padding-left: 0.5em;
     padding-right: 0.5em;
     width: 20em;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    background-color: var(--boxColor);
+    box-shadow: 0.1em 0.1em 0.6em black;
+    color: var(--moduleTextColor);
+    outline: none;
 }
 
-a, a:visited {
-    color: var(--color1);
+a,
+a:visited {
+    color: var(--boxColor);
 }
 
 a:hover {
@@ -137,19 +199,28 @@ a:hover {
 /* modules */
 
 div.module-main {
-    background-color: var(--color4);
+    background-color: var(--boxColor);
     border-radius: 1em;
     display: inline-flex;
     padding: 1em;
     flex-direction: column;
     justify-content: start;
-    gap: 0.15em;
+    gap: 0.2em;
     text-align: left;
     margin-top: 1em;
     margin-bottom: 1em;
     flex-grow: 1;
     align-self: center;
     width: 48em;
+    border: 2px solid;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
+    color: var(--moduleTextColor);
+}
+
+div.module-main span {
+    color: var(--moduleTextColor);
 }
 
 div.module-sections {
@@ -160,7 +231,7 @@ div.module-sections {
 }
 
 div.description {
-    color: var(--color1);
+    color: var(--moduleTextColor);
     font-family: var(--font2);
     font-size: 0.8em;
     margin-bottom: 1em;
@@ -175,7 +246,7 @@ span.field-description {
 }
 
 div.section-description {
-    color: var(--color1);
+    color: var(--moduleTextColor);
     font-family: var(--font2);
     font-size: 0.8em;
 }
@@ -184,7 +255,7 @@ fieldset {
     border-width: 0.2em;
     border-style: solid;
     border-radius: 0.5em;
-    border-color: var(--color1);
+    border-color: var(--boxColor);
 }
 
 legend {
@@ -203,43 +274,54 @@ div.input-description {
 }
 
 kbd {
-    background-color: #EEEEEE;
-    border-color: #B4B4B4;
-    color: #333333;
+    background-color: var(--boxColor);
+    border: 1px solid;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
+    color: var(--moduleTextColor);
 }
 
 /* inputs */
 
-div.module-main input[type=text],
-div.module-main input[type=number],
+div.module-main input[type='text'],
+div.module-main input[type='number'],
 div.module-main select {
     border-width: 0.1em;
     border-style: solid;
-    border-radius: 0.2em;
-    border-color: black;
+    border-radius: 0.4em;
     font-family: var(--font2);
     font-size: 0.9em;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
+    background-color: var(--boxColor);
+    color: var(--moduleTextColor);
+    outline: none;
 }
 
-div.module-main input[type=text]:focus,
-div.module-main input[type=number]:focus,
+div.module-main input[type='text']:focus,
+div.module-main input[type='number']:focus,
 div.module-main select:focus {
-    outline: 0.12em solid var(--color7);
+    outline: 0.12em solid var(--activatedColor);
 }
 
 /* buttons */
 
 div.module-main button {
-    background-color: var(--color2);
-    border-width: 0;
-    border-radius: 0.5em;
-    color: var(--color1);
+    background-color: var(--boxColor);
+    border: 2px solid;
+    border-radius: 0.4em;
+    color: var(--moduleTextColor);
     font-family: var(--font);
     font-size: 1em;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
 }
 
 div.module-main button:hover:not(:disabled) {
-    background-color: var(--color5);
+    background-color: var(--backgroundColor);
 }
 
 div.module-main button:disabled {
@@ -262,7 +344,7 @@ ul.list-base {
     overflow-y: auto;
     border-width: 0.2em;
     border-style: solid;
-    border-color: var(--color1);
+    border-color: var(--boxColor);
     padding: 0;
     margin: 0;
 }
@@ -278,10 +360,10 @@ ul.list-base > li {
 ul.list-base > li {
     border-bottom-width: 0.1em;
     border-bottom-style: solid;
+    border-color: var(--borderColorTop);
 }
 
 /****************************************************************************/
-
 
 table.main-table > thead > tr > th {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -307,8 +389,6 @@ table.main-table > tbody > tr > td > button {
     font-size: 14px;
     height: 32px;
 }*/
-
-
 
 /*button + button {
     margin-left: 16px;
@@ -350,7 +430,7 @@ label.switch-label > span {
     margin: 4px 8px 8px 8px;
 }
 
-input[type=number] {
+input[type='number'] {
     border-width: 1px;
     border-style: solid;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -361,7 +441,6 @@ input.search {
     width: 300px;
 }
 
-
 h2.module-header {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -369,10 +448,7 @@ h2.module-header {
 
 /*****************/
 
-
 /* ColorPicker + */
-
-
 
 /* ColorPicker - */
 
@@ -418,7 +494,8 @@ li.left {
 }
 
 li.back {
-    transform: rotateY(30deg) rotateY(180deg) rotateX(90deg) translateY(50%) rotateX(-90deg);
+    transform: rotateY(30deg) rotateY(180deg) rotateX(90deg) translateY(50%)
+        rotateX(-90deg);
 }
 
 li.right {
@@ -439,6 +516,7 @@ li.bottom {
     from {
         transform: rotateY(0) rotateX(45deg);
     }
+
     to {
         transform: rotateY(359.99deg) rotateX(45deg);
     }
@@ -484,11 +562,14 @@ ul.refs {
     list-style: none;
     width: 1000px;
     height: 600px;
-    border: 4px solid rgb(0, 0, 0);
-    border-radius: 2px;
     padding: 0;
     font-family: monospace;
     font-size: 16px;
+    border: 2px solid;
+    border-radius: 0.8em;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
     overflow: auto;
 }
 
@@ -499,11 +580,11 @@ ul.refs > li {
 }
 
 ul.refs .method {
-    color: #00627A;
+    color: var(--apiRefColorMethod);
 }
 
 ul.refs .class {
-    color: #0033B3;
+    color: var(--apiRefColorClass);
 }
 
 ul.refs .comment {
@@ -511,7 +592,7 @@ ul.refs .comment {
 }
 
 div.debug-messages span.time {
-    color: #000CFF;
+    color: #000cff;
 }
 
 ul.item-list > li {
@@ -558,7 +639,7 @@ ul.marker-list div.coordinates {
 }
 
 div.debug-messages {
-    border: 4px solid #1E1F22;
+    border: 4px solid #1e1f22;
     font-family: 'Courier New', Courier, monospace;
     display: flex;
     flex-basis: 10em;
@@ -569,17 +650,21 @@ div.debug-messages {
 }
 
 pre {
-    background: #CDD8CE;
-    color:#000000;
+    background: var(--backgroundColor);
+    color: var(--moduleTextColor);
     font-size: 0.9em;
     margin: 0.5em 0;
     padding: 0.4em 1em;
-    border-radius: 4px;
+    border-radius: 1.5em;
     overflow-x: auto;
+    border: 1px solid;
+    border-color: var(--borderColorTop) var(--borderColorRight)
+        var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
 }
 
 span.hint {
-    color: var(--color1);
+    color: var(--boxColor);
     font-family: var(--font2);
     font-size: 0.7em;
 }

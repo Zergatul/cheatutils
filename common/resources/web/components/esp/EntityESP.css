@@ -1,9 +1,13 @@
 div.entity-list {
-    border: 0.2em solid var(--color1);
     flex-grow: 1;
     flex-basis: 15em;
+    border: 1px solid;
+    border-radius: 0.7em;
     overflow-y: auto;
     font-family: var(--font2);
+    border-color: var(--borderColorTop) var(--borderColorRight) var(--borderColorBottom) var(--borderColorLeft);
+    box-shadow: 0.1em 0.1em 0.6em black;
+    padding: 0.5em;
 }
 
 div.entity-list > table {
@@ -12,9 +16,8 @@ div.entity-list > table {
 }
 
 div.entity-list > table td {
-    border-bottom: 0.1em solid var(--color1);
-    padding-left: 0.1em;
-    padding-right: 0.1em;
+    border-bottom: 0.1em solid var(--borderColorTop);
+    padding: 0.3em 0.1em 0.4em 0.1em;
 }
 
 div.entity-esp div.checkboxes {
@@ -28,7 +31,6 @@ div.entity-esp div.v-buttons {
     gap: 0.15em;
 }
 
-
 div.entity-esp button.edit,
 div.entity-esp button.remove {
     width: 4em;
@@ -41,15 +43,15 @@ div.entity-info-row-1 {
 }
 
 div.entity-info-id {
-    color: #242583;
+    color: var(--moduleTypeColor);
 }
 
 div.entity-full-classname {
-    color: #781616;
+    color: var(--deactivatedColor);
 }
 
 div.entity-info-interface:after {
-    content: "[interface]";
+    content: '[interface]';
     color: #8A5F10;
     font-size: 0.75em;
 }
