@@ -2,10 +2,7 @@ package com.zergatul.cheatutils.scripting.monaco;
 
 import com.zergatul.scripting.completion.SuggestionFactory;
 import com.zergatul.scripting.lexer.TokenType;
-import com.zergatul.scripting.symbols.DeclaredStaticVariable;
-import com.zergatul.scripting.symbols.Function;
-import com.zergatul.scripting.symbols.LocalVariable;
-import com.zergatul.scripting.symbols.StaticFieldConstantStaticVariable;
+import com.zergatul.scripting.symbols.*;
 import com.zergatul.scripting.type.*;
 
 import java.util.List;
@@ -88,6 +85,16 @@ public class MonacoSuggestionFactory implements SuggestionFactory<Suggestion> {
     }
 
     @Override
+    public Suggestion getClassSuggestion(ClassSymbol clazz) {
+        return new Suggestion(
+                clazz.getName(),
+                null,
+                null,
+                clazz.getName(),
+                CompletionItemKind.CLASS);
+    }
+
+    @Override
     public Suggestion getPropertySuggestion(PropertyReference property) {
         return new Suggestion(
                 property.getName(),
@@ -157,6 +164,16 @@ public class MonacoSuggestionFactory implements SuggestionFactory<Suggestion> {
                 null,
                 function.getName(),
                 CompletionItemKind.FUNCTION);
+    }
+
+    @Override
+    public Suggestion getThisSuggestion(SDeclaredType type) {
+        return new Suggestion(
+                "this",
+                null,
+                null,
+                "this",
+                CompletionItemKind.KEYWORD);
     }
 
     @Override

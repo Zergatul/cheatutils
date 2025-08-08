@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.GsonSkip;
-import com.zergatul.cheatutils.scripting.BlockEspConsumer;
+import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import net.minecraft.world.level.block.Block;
 
 import java.awt.*;

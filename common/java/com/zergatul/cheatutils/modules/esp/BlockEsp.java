@@ -19,13 +19,22 @@ public class BlockEsp {
 
     public static final BlockEsp instance = new BlockEsp();
 
-    private List<CustomBlockPosEntry> customEntries = new ArrayList<>();
+    private final List<CustomBlockPosEntry> customEntries = new ArrayList<>();
     private final List<BlockPos> bbList = new ArrayList<>();
     private final List<BlockPos> tracerList = new ArrayList<>();
     private final List<BlockPos> overlayList = new ArrayList<>();
+    private boolean enabled = true;
 
     private BlockEsp() {
         Events.AfterRenderWorld.add(this::render);
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void toggle() {
+        enabled = !enabled;
     }
 
     public void addCustom(BlockPos pos, int color) {
@@ -42,7 +51,7 @@ public class BlockEsp {
     }
 
     private void render(RenderWorldLastEvent event) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!enabled || !ConfigStore.instance.getConfig().esp) {
             return;
         }
 

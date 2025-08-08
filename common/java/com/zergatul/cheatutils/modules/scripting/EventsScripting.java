@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils.modules.scripting;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.scripting.*;
+import com.zergatul.cheatutils.scripting.events.*;
 import com.zergatul.cheatutils.scripting.modules.PacketEvent;
+import com.zergatul.cheatutils.scripting.modules.PlayerMessageSendingEvent;
 import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
 import com.zergatul.cheatutils.scripting.types.PlayerInfoWrapper;
 import net.minecraft.client.Minecraft;
@@ -28,6 +28,7 @@ public class EventsScripting implements Module {
     private final List<EntityIdConsumer> onPlayerRemoved = new ArrayList<>();
     private final List<ComponentWrapperConsumer> onChatMessageRaw = new ArrayList<>();
     private final List<ChatMessageConsumer> onChatMessage = new ArrayList<>();
+    private final List<PlayerMessageSendingConsumer> onPlayerMessageSending = new ArrayList<>();
     private final List<ServerAddressConsumer> onJoinServer = new ArrayList<>();
     private final List<ContainerClickConsumer> onContainerMenuClick = new ArrayList<>();
     private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new ArrayList<>();
@@ -83,6 +84,19 @@ public class EventsScripting implements Module {
             }
         });
 
+        Events.SendChat.add(event -> {
+            if (canTrigger()) {
+                for (PlayerMessageSendingConsumer consumer : onPlayerMessageSending) {
+                    PlayerMessageSendingEvent sendingEvent = new PlayerMessageSendingEvent(event.getMessage());
+                    consumer.consume(sendingEvent);
+                    if (sendingEvent.cancel) {
+                        event.cancel();
+                        break;
+                    }
+                }
+            }
+        });
+
         Events.ClientPlayerLoggingIn.add(connection -> {
             if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
                 String address = connection == null ? "" : connection.getRemoteAddress().toString();
@@ -131,6 +145,7 @@ public class EventsScripting implements Module {
             onPlayerRemoved.clear();
             onChatMessageRaw.clear();
             onChatMessage.clear();
+            onPlayerMessageSending.clear();
             onJoinServer.clear();
             onContainerMenuClick.clear();
             onPlayerInfoUpdate.clear();
@@ -164,6 +179,10 @@ public class EventsScripting implements Module {
 
     public void addOnChatMessage(ChatMessageConsumer consumer) {
         onChatMessage.add(consumer);
+    }
+
+    public void addOnPlayerMessageSending(PlayerMessageSendingConsumer consumer) {
+        onPlayerMessageSending.add(consumer);
     }
 
     public void addOnJoinServer(ServerAddressConsumer consumer) {

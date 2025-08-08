@@ -84,4 +84,5 @@ public class Root {
     public static OsApi os = new OsApi();
     public static DebugApi debug = new DebugApi();
     public static RenderApi render = new RenderApi();
+    public static JsonConvertApi jsonConvert = new JsonConvertApi();
 }

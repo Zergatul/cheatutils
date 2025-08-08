@@ -13,7 +13,7 @@ public class DefinitionProvider {
         }
 
         if (node instanceof BoundNameExpressionNode name) {
-            Symbol symbol = name.symbol;
+            Symbol symbol = name.getSymbol();
             if (symbol == null) {
                 return null;
             }

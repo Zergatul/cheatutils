@@ -1,6 +1,9 @@
 package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
+import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
+import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import com.zergatul.cheatutils.scripting.modules.PacketEvent;
 import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.*;

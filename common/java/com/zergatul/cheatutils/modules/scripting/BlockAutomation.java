@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.BlockAutomationConfig;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
-import com.zergatul.cheatutils.scripting.BlockPosConsumer;
+import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.SlotSelector;

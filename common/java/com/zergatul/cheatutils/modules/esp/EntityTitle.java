@@ -104,7 +104,7 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EntityEsp.instance.isEnabled() || !ConfigStore.instance.getConfig().esp) {
             return;
         }
 
