@@ -363,6 +363,8 @@ public class EntityTitleController {
         }
 
         poseStack.popPose();
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
     private StylizedText getEntityText(EntityEntry entry) {
