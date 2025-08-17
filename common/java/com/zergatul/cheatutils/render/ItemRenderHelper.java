@@ -85,6 +85,7 @@ public class ItemRenderHelper {
             String s = String.valueOf(itemStack.getCount());
             posestack2.translate(0.0F, 0.0F, 200.0F);
             mc.font.drawInBatch(s, (float)(x + 19 - 2 - mc.font.width(s)), (float)(y + 6 + 3), 16777215, true, posestack2.last().pose(), multibuffersource$buffersource, Font.DisplayMode.NORMAL, 0, 15728880);
+            multibuffersource$buffersource.endBatch();
         }
 
         if (itemStack.isBarVisible()) {
