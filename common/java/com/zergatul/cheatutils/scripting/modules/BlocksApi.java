@@ -21,6 +21,21 @@ import java.util.Set;
 public class BlocksApi {
 
     @MethodDescription("""
+            Checks if Block ESP rendering is enabled
+            """)
+    public boolean isEnabled() {
+        return BlockEsp.instance.isEnabled();
+    }
+
+    @MethodDescription("""
+            Toggles Block ESP rendering
+            """)
+    @ApiVisibility(ApiType.UPDATE)
+    public void toggle() {
+        BlockEsp.instance.toggle();
+    }
+
+    @MethodDescription("""
             Checks if block is enabled. If block is part of a group, returns status of this group
             """)
     public boolean isEnabled(String blockId) {
