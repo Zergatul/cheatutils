@@ -12,6 +12,7 @@ import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
 import com.zergatul.cheatutils.scripting.types.PlayerInfoWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.server.IntegratedServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class EventsScripting implements Module {
     private final List<ComponentWrapperConsumer> onChatMessageRaw = new ArrayList<>();
     private final List<ChatMessageConsumer> onChatMessage = new ArrayList<>();
     private final List<PlayerMessageSendingConsumer> onPlayerMessageSending = new ArrayList<>();
-    private final List<ServerAddressConsumer> onJoinServer = new ArrayList<>();
+    private final List<ServerInformationConsumer> onJoinServer = new ArrayList<>();
     private final List<ContainerClickConsumer> onContainerMenuClick = new ArrayList<>();
     private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new ArrayList<>();
     private final List<PacketEventConsumer> onC2SPacket = new ArrayList<>();
@@ -98,10 +99,12 @@ public class EventsScripting implements Module {
         });
 
         Events.ClientPlayerLoggingIn.add(connection -> {
-            if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
+            if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled && !onJoinServer.isEmpty()) {
                 String address = connection == null ? "" : connection.getRemoteAddress().toString();
-                for (ServerAddressConsumer consumer : onJoinServer) {
-                    consumer.accept(address);
+                IntegratedServer integratedServer = mc.getSingleplayerServer();
+                ServerInformation info = new ServerInformation(address, integratedServer);
+                for (ServerInformationConsumer consumer : onJoinServer) {
+                    consumer.accept(info);
                 }
             }
         });
@@ -185,7 +188,7 @@ public class EventsScripting implements Module {
         onPlayerMessageSending.add(consumer);
     }
 
-    public void addOnJoinServer(ServerAddressConsumer consumer) {
+    public void addOnJoinServer(ServerInformationConsumer consumer) {
         onJoinServer.add(consumer);
     }
 

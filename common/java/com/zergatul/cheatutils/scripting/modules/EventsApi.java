@@ -92,12 +92,12 @@ public class EventsApi {
     @MethodDescription("""
             Triggers when you join any server.
             Example:
-            events.onJoinServer(address => {
-                // ...
+            events.onJoinServer(info => {
+                // fields: info.address, info.isSinglePlayer, info.singlePlayerWorldName, info.singlePlayerWorldPath
             });
             """)
     @ApiVisibility(ApiType.EVENTS)
-    public void onJoinServer(ServerAddressConsumer consumer) {
+    public void onJoinServer(ServerInformationConsumer consumer) {
         EventsScripting.instance.addOnJoinServer(consumer);
     }
 

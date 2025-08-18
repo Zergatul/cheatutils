@@ -118,7 +118,7 @@ public class Integration {
                         Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
-                        HoverProvider provider = new HoverProvider(theme.equals("light") ? light : dark);
+                        CustomHoverProvider provider = new CustomHoverProvider(theme.equals("light") ? light : dark);
                         HoverProvider.HoverResponse response = provider.get(binderOutput, request.line, request.column);
                         Json.sendResponse(exchange, response);
                     } else if (path.equals(prefix + "definition")) {
