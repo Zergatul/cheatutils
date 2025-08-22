@@ -285,7 +285,7 @@ div.module-main input[type='number'],
 div.module-main select {
     border-width: 0.1em;
     border-style: solid;
-    border-radius: 3px;
+    border-radius: 2px;
     font-family: var(--font2);
     font-size: 0.8em;
     box-shadow: 0.1em 0.1em 0.6em black;
