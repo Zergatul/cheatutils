@@ -219,10 +219,6 @@ div.module-main {
     color: var(--moduleTextColor);
 }
 
-div.module-main span {
-    color: var(--moduleTextColor);
-}
-
 div.module-sections {
     display: flex;
     flex-direction: column;
