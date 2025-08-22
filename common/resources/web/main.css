@@ -67,7 +67,6 @@ div.module-group > button.faded {
 
 div.module-sections .script-editor {
     border: 1px solid;
-    border-radius: 0.6em;
     border-color: var(--borderColorTop) var(--borderColorRight)
         var(--borderColorBottom) var(--borderColorLeft);
     box-shadow: 0.1em 0.1em 0.6em black;
