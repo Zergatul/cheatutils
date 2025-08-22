@@ -251,7 +251,7 @@ fieldset {
     border-width: 0.2em;
     border-style: solid;
     border-radius: 0.5em;
-    border-color: var(--boxColor);
+    border-color: var(--boxColorHover);
 }
 
 legend {
