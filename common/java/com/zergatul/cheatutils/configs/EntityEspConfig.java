@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.configs.adapters.GsonSkip;
-import com.zergatul.cheatutils.scripting.EntityEspConsumer;
+import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import net.minecraft.world.entity.Entity;
 
 import java.awt.*;

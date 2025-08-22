@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.scripting.*;
+import com.zergatul.cheatutils.scripting.events.*;
 import com.zergatul.scripting.MethodDescription;
 
 @SuppressWarnings("unused")
@@ -50,7 +51,7 @@ public class EventsApi {
     }
 
     @MethodDescription("""
-            Triggers when new message appears on chat.
+            Triggers when new message appears in the chat.
             Message may come from the server, from cheatutils, or from another mod.
             Example:
             events.onChatMessage(text => {
@@ -63,7 +64,7 @@ public class EventsApi {
     }
 
     @MethodDescription("""
-            Triggers when new message appears on chat.
+            Triggers when new message appears in the chat.
             Message may come from the server, from cheatutils, or from another mod.
             This event provides low level access to internal message structure, like styles, links, hover messages.
             Example:
@@ -75,16 +76,28 @@ public class EventsApi {
     public void onChatMessageRaw(ComponentWrapperConsumer consumer) {
         EventsScripting.instance.addOnChatMessageRaw(consumer);
     }
+    @MethodDescription("""
+            Triggers when you are trying to send something to the server.
+            You can see the message you are going to send, and cancel sending.
+            Example:
+            events.onPlayerMessageSending(event => {
+                if (event.message.startsWith("y")) event.cancel = true;
+            });
+            """)
+    @ApiVisibility(ApiType.EVENTS)
+    public void onPlayerMessageSending(PlayerMessageSendingConsumer consumer) {
+        EventsScripting.instance.addOnPlayerMessageSending(consumer);
+    }
 
     @MethodDescription("""
             Triggers when you join any server.
             Example:
-            events.onJoinServer(address => {
-                // ...
+            events.onJoinServer(info => {
+                // fields: info.address, info.isSinglePlayer, info.singlePlayerWorldName, info.singlePlayerWorldPath
             });
             """)
     @ApiVisibility(ApiType.EVENTS)
-    public void onJoinServer(ServerAddressConsumer consumer) {
+    public void onJoinServer(ServerInformationConsumer consumer) {
         EventsScripting.instance.addOnJoinServer(consumer);
     }
 

@@ -41,10 +41,19 @@ public class EntityEsp implements Module {
     private final Map<EntityEspConfig, List<BufferedVerticesEntry>> overlayBufferedVertices = new HashMap<>();
     private final Map<EntityEspConfig, List<BufferedVerticesEntry>> outlineBufferedVertices = new HashMap<>();
     private final Map<EntityScriptResultKey, EntityScriptResult> scriptResults = new HashMap<>();
+    private boolean enabled = true;
 
     private EntityEsp() {
         Events.BeforeRenderWorld.add(this::onBeforeRender);
         Events.AfterRenderWorld.add(this::render);
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void toggle() {
+        enabled = !enabled;
     }
 
     private void onBeforeRender() {
@@ -81,7 +90,7 @@ public class EntityEsp implements Module {
     }
 
     public boolean shouldEntityGlow(Entity entity) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!enabled || !ConfigStore.instance.getConfig().esp) {
             return false;
         }
         if (mc.player == null) {
@@ -123,7 +132,7 @@ public class EntityEsp implements Module {
     private void render(RenderWorldLastEvent event) {
         assert mc.player != null;
 
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!enabled || !ConfigStore.instance.getConfig().esp) {
             return;
         }
 

@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.utils.ColorUtils;
@@ -13,6 +14,21 @@ import java.awt.*;
 
 @SuppressWarnings("unused")
 public class EntitiesApi {
+
+    @MethodDescription("""
+            Checks if Entity ESP rendering is enabled
+            """)
+    public boolean isEnabled() {
+        return EntityEsp.instance.isEnabled();
+    }
+
+    @MethodDescription("""
+            Toggles Entity ESP rendering
+            """)
+    @ApiVisibility(ApiType.UPDATE)
+    public void toggle() {
+        EntityEsp.instance.toggle();
+    }
 
     @MethodDescription("""
             Checks if Entity ESP is enabled for specified entity class

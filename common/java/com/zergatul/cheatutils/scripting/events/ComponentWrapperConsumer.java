@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting;
+package com.zergatul.cheatutils.scripting.events;
 
 import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
 

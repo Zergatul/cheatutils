@@ -116,6 +116,8 @@ public class ScriptsDocsApi extends ApiBase {
             shouldWrap = false;
         } else if (clazz.getName().startsWith("com.zergatul.cheatutils.scripting.modules.")) {
             name = clazz.getName().substring("com.zergatul.cheatutils.scripting.modules.".length());
+        } else if (clazz.getName().startsWith("com.zergatul.cheatutils.scripting.events.")) {
+            name = clazz.getName().substring("com.zergatul.cheatutils.scripting.events.".length());
         } else if (clazz.isAnnotationPresent(CustomType.class)) {
             name = clazz.getAnnotation(CustomType.class).name();
         } else {

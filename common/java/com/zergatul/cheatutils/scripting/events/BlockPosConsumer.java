@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting;
+package com.zergatul.cheatutils.scripting.events;
 
 @FunctionalInterface
 public interface BlockPosConsumer {
