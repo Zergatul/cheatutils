@@ -10,7 +10,7 @@
     /*  color 5  */
     --backgroundColor: #edeae4;
     /*  color 6  */
-    --boxColorHover: #d8cfc5;
+    --boxColorHover: #c3c0b7;
     /*  color 7  */
     --activatedColor: #2dbd05;
     /*  color 8  */
@@ -36,7 +36,7 @@
         --titleColor: #f6eedf;
 
         --backgroundColor: #12151b;
-        --boxColorHover: #27303a;
+        --boxColorHover: #2a333e;
 
         --activatedColor: #317f35;
         --moduleTypeColor: #279a9b;
