@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
+import com.zergatul.cheatutils.modules.automation.AutoTool;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,7 +32,10 @@ public class BlockBreaker {
                         assert mc.player != null;
                         assert mc.gameMode != null;
 
+                        AutoTool.instance.enterSkipMode();
                         mc.gameMode.startDestroyBlock(pos, Direction.UP);
+                        AutoTool.instance.exitSkipMode();
+
                         boolean instamined = !mc.gameMode.isDestroying();
 
                         // if we call continueDestroyBlock after we block is destroyed

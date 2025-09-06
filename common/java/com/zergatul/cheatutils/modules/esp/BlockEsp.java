@@ -51,7 +51,7 @@ public class BlockEsp {
     }
 
     private void render(RenderWorldLastEvent event) {
-        if (!enabled || !ConfigStore.instance.getConfig().esp) {
+        if (!enabled || !EspGlobal.enabled) {
             return;
         }
 

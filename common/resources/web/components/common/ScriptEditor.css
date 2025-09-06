@@ -1,5 +1,6 @@
 div.script-editor {
     flex-basis: 28em;
     flex-grow: 1;
+    font-size: initial;
     overflow-y: hidden;
 }

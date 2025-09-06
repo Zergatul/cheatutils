@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
 public class Config {
-    public boolean esp;
     public FullBrightConfig fullBrightConfig = new FullBrightConfig();
     public AutoFishConfig autoFishConfig = new AutoFishConfig();
     public ArmorOverlayConfig armorOverlayConfig = new ArmorOverlayConfig();
@@ -71,8 +70,5 @@ public class Config {
     public StepUpConfig stepUp = new StepUpConfig();
     public AimAssistConfig aimAssist = new AimAssistConfig();
     public LogoutSpotsConfig logoutSpots = new LogoutSpotsConfig();
-
-    public Config() {
-        esp = true;
-    }
+    public AutoToolConfig autoTool = new AutoToolConfig();
 }

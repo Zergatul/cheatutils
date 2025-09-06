@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
 import com.zergatul.cheatutils.font.*;
+import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.ui.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -40,7 +41,7 @@ public class WorldMarkers implements FontBackendHolder {
     }
 
     private void onPreRenderGui(RenderGuiEvent event) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 

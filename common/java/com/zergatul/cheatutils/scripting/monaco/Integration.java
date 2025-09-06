@@ -12,6 +12,7 @@ import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProvider;
+import com.zergatul.scripting.completion.CompletionProviderFactory;
 import com.zergatul.scripting.hover.HoverProvider;
 import com.zergatul.scripting.hover.Theme;
 import com.zergatul.scripting.lexer.*;
@@ -37,7 +38,7 @@ public class Integration {
         Theme light = new WhiteTheme();
         DocumentationProvider documentationProvider = new DocumentationProvider();
         DefinitionProvider definitionProvider = new DefinitionProvider();
-        CompletionProvider<Suggestion> completionProvider = new CompletionProvider<>(new MonacoSuggestionFactory(documentationProvider));
+        CompletionProviderFactory<Suggestion> completionProviderFactory = new CompletionProviderFactory<>(new MonacoSuggestionFactory(documentationProvider));
 
         Pattern regex = Pattern.compile("Java<com\\.zergatul\\.cheatutils\\.scripting\\.modules\\.(.+)>");
 
@@ -173,7 +174,7 @@ public class Integration {
                             Binder binder = new Binder(parserOutput, parameters);
                             BinderOutput binderOutput = binder.bind();
 
-                            Json.sendResponse(exchange, completionProvider.get(parameters, binderOutput, request.line, request.column));
+                            Json.sendResponse(exchange, completionProviderFactory.getSuggestions(parameters, binderOutput, request.line, request.column));
                         }
                     } else {
                         exchange.sendResponseHeaders(404, 0);

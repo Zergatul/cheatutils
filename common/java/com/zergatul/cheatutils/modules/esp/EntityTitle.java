@@ -104,7 +104,7 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        if (!EntityEsp.instance.isEnabled() || !ConfigStore.instance.getConfig().esp) {
+        if (!EntityEsp.instance.isEnabled() || !EspGlobal.enabled) {
             return;
         }
 
@@ -169,7 +169,7 @@ public class EntityTitle implements FontBackendHolder {
     }
 
     private void onRenderGui(RenderGuiEvent event) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 

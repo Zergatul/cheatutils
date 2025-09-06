@@ -26,7 +26,7 @@ public class EndCityChunks {
 
     private void render(RenderWorldLastEvent event) {
         Config config = ConfigStore.instance.getConfig();
-        if (!config.esp || !config.endCityChunksConfig.enabled) {
+        if (!EspGlobal.enabled || !config.endCityChunksConfig.enabled) {
             return;
         }
 

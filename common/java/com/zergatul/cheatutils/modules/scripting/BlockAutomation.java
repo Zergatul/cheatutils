@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.BlockAutomationConfig;
+import com.zergatul.cheatutils.modules.automation.AutoTool;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
@@ -35,6 +36,7 @@ public class BlockAutomation {
     private BlockPlacingMethod method;
     private boolean breakCurrentBlock;
     private Predicate<ItemStack> breakItemPredicate;
+    private boolean breakWithAutoTool;
     private BlockBreakPlan breakPlan;
     private BlockPlacePlan placePlan;
     private volatile boolean debugStep;
@@ -65,6 +67,13 @@ public class BlockAutomation {
     public void breakBlock(Predicate<ItemStack> predicate) {
         this.breakCurrentBlock = true;
         this.breakItemPredicate = predicate;
+        this.breakWithAutoTool = false;
+    }
+
+    public void breakBlockAutoTool() {
+        this.breakCurrentBlock = true;
+        this.breakItemPredicate = null;
+        this.breakWithAutoTool = true;
     }
 
     public void placeOne() {
@@ -127,14 +136,27 @@ public class BlockAutomation {
                 hand = null;
                 breakCurrentBlock = false;
                 breakItemPredicate = null;
+                breakWithAutoTool = false;
                 script.accept(pos.getX(), pos.getY(), pos.getZ());
 
-                if (breakCurrentBlock && !mc.level.isEmptyBlock(pos) && selectItemForBlockBreak(config)) {
-                    breakPlan = BlockBreaker.createPlan(pos, config);
-                    applyFuture = breakPlan.apply();
-                    actionPerformed = true;
-                    break;
-                } else if (hand != null) {
+                if (breakCurrentBlock && !mc.level.isEmptyBlock(pos)) {
+                    boolean proceed;
+                    if (breakWithAutoTool) {
+                        AutoTool.instance.selectToolFor(pos);
+                        proceed = true;
+                    } else {
+                        proceed = selectItemForBlockBreak(config);
+                    }
+
+                    if (proceed) {
+                        breakPlan = BlockBreaker.createPlan(pos, config);
+                        applyFuture = breakPlan.apply();
+                        actionPerformed = true;
+                        break;
+                    }
+                }
+
+                if (hand != null) {
                     placePlan = BlockPlacer.createPlan(Blocks.STONE.defaultBlockState(), pos, method, config);
                     if (placePlan != null) {
                         if (config.debugMode && !debugStep) {

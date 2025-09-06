@@ -101,6 +101,13 @@ module({
     path: 'auto-hotbar',
     tags: ['auto', 'hotbar']
 });
+module({
+    group: 'automation',
+    name: 'Auto Tool',
+    component: 'AutoTool',
+    path: 'auto-tool',
+    tags: ['auto', 'tool']
+});
 
 module({
     group: 'esp',
@@ -518,7 +525,7 @@ module({
     component: 'LanguageDocs',
     tags: ['scripting', 'language', 'docs', 'documentation'],
     onClick() {
-        window.open('https://github.com/Zergatul/java-scripting-language/blob/c096c28b5c2b849d0c9b39f5592ea2b6244ed8b0/README.md', '_blank');
+        window.open('https://github.com/Zergatul/java-scripting-language/blob/7aa5e54ef11be42058e926a753bd39f8de5176b3/README.md', '_blank');
     }
 });
 module({

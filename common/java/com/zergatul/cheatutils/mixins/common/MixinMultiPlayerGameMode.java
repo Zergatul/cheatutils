@@ -56,6 +56,11 @@ public abstract class MixinMultiPlayerGameMode {
         Events.EntityInteract.trigger(entity);
     }
 
+    @Inject(at = @At("HEAD"), method = "startDestroyBlock")
+    private void onBeforeStartDestroyBlock(BlockPos blockPos, Direction direction, CallbackInfoReturnable<Boolean> info) {
+        Events.StartDestroyBlock.trigger(blockPos);
+    }
+
     @Inject(at = @At("HEAD"), method = "continueDestroyBlock")
     private void onContinueDestroyBlock(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> info) {
         FastBreakConfig config = ConfigStore.instance.getConfig().fastBreakConfig;

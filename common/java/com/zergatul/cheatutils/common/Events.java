@@ -20,6 +20,7 @@ public class Events {
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
 
     public static final SimpleEventHandler BeforeHandleKeyBindings = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<BlockPos> StartDestroyBlock = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler AfterHandleKeyBindings = new SimpleEventHandler();
 
     public static final SimpleEventHandler BeforeEntitiesTick = new SimpleEventHandler();

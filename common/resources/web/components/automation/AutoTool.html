@@ -1,0 +1,51 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Automatically switches to the best tool right before you start breaking block.<br>
+        "Best" tool is determined by best mining speed. If there is no such tool, it switches to any non-damageable item.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+        <fieldset>
+            <legend>
+                Mode
+            </legend>
+            <div>
+                <radio name="mode" value="HOTBAR" v-model="config.mode" @change="update()">
+                    Search for tools on hotbar
+                </radio>
+            </div>
+            <div>
+                <radio name="mode" value="INVENTORY" v-model="config.mode" @change="update()">
+                    Search for tools in inventory
+                </radio>
+            </div>
+        </fieldset>
+
+        <fieldset v-if="config.mode == 'INVENTORY'">
+            <legend>
+                Hotbar Slot
+            </legend>
+            <div class="flex-row">
+                <input type="number" min="1" max="9" class="w4" v-model="config.slot" @change="update()">
+            </div>
+            <div class="section-description">
+                When in inventory mode, module brings best tool to this slot on hotbar, and doesn't touch other slots.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Min Durability
+            </legend>
+            <div class="flex-row">
+                <input type="text" class="w4" v-model="config.minDurability" @change="update()">
+            </div>
+            <div class="section-description">
+                Don't select tools which durability is less than specified value.
+            </div>
+        </fieldset>
+    </div>
+</div>

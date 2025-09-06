@@ -142,7 +142,8 @@ public enum ScriptType {
                 })
                 .setClassNamePrefix(name)
                 .setSourceFile("<" + name + ">")
-                .setLineNumbers(true)
+                .emitLineNumbers(true)
+                .emitVariableNames(true)
                 .build();
     }
 }

@@ -148,6 +148,15 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
         BlockAutomation.instance.breakBlock(stack -> predicate.test(new ItemStackWrapper(stack)));
     }
 
+    @MethodDescription("""
+            Breaks block with tool selected by Auto Tool module.
+            Auto Tool module may be disabled, it will still work. Uses current settings of Auto Tool module.
+            """)
+    @ApiVisibility(ApiType.BLOCK_AUTOMATION)
+    public void breakBlockAutoTool() {
+        BlockAutomation.instance.breakBlockAutoTool();
+    }
+
     @Override
     protected BlockAutomationConfig getConfig() {
         return ConfigStore.instance.getConfig().blockAutomationConfig;

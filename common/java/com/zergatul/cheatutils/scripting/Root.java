@@ -14,6 +14,7 @@ public class Root {
     public static AutoCraftApi autoCraft = new AutoCraftApi();
     public static AutoBucketApi autoBucket = new AutoBucketApi();
     public static AutoHotbarApi autoHotbar = new AutoHotbarApi();
+    public static AutoToolApi autoTool = new AutoToolApi();
 
     // ESP
     public static BlocksApi blocks = new BlocksApi();

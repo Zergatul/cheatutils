@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
+import com.zergatul.cheatutils.modules.automation.AutoTool;
 import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
@@ -918,6 +919,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(LogoutSpotsConfig config) {
                 ConfigStore.instance.getConfig().logoutSpots = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("auto-tool", AutoToolConfig.class) {
+            @Override
+            protected AutoToolConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoTool;
+            }
+
+            @Override
+            protected void setConfig(AutoToolConfig config) {
+                ConfigStore.instance.getConfig().autoTool = config;
             }
         });
     }

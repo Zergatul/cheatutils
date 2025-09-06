@@ -52,7 +52,7 @@ public class ProjectilePath {
             return;
         }
 
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 
