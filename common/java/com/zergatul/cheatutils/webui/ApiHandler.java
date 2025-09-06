@@ -933,6 +933,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().autoTool = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("block-entity-distance", BlockEntityDistanceConfig.class) {
+            @Override
+            protected BlockEntityDistanceConfig getConfig() {
+                return ConfigStore.instance.getConfig().blockEntityDistance;
+            }
+
+            @Override
+            protected void setConfig(BlockEntityDistanceConfig config) {
+                ConfigStore.instance.getConfig().blockEntityDistance = config;
+            }
+        });
     }
 
     @Override

@@ -44,6 +44,7 @@
     "common.MixinAbstractContainerMenu",
     "common.MixinAbstractContainerScreen",
     "common.MixinBlockBehaviourBlockStateBase",
+    "common.MixinBlockEntityRenderer",
     "common.MixinCamera",
     "common.MixinChatComponent",
     "common.MixinChatScreen",

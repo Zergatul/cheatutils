@@ -454,7 +454,13 @@ module({
     path: 'logout-spots',
     tags: ['logout', 'spots']
 });
-
+module({
+    group: 'visuals',
+    name: 'Block Entity',
+    component: 'BlockEntityDistance',
+    path: 'block-entity',
+    tags: ['block', 'entity', 'chest', 'render']
+});
 
 module({
     group: 'scripting',

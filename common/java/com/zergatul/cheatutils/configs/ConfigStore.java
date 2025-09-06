@@ -141,6 +141,7 @@ public class ConfigStore {
         config.areaMineConfig.validate();
         config.hitboxSizeConfig.validate();
         config.coreConfig.validate();
+        config.blockEntityDistance.validate();
 
         config.blocks.refreshMap();
 

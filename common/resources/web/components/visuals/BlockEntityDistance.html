@@ -1,0 +1,15 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Render distance for most block entities (chests, signs, beds, banners, etc). By default it is fixed at 64 blocks.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+        <div class="flex-row">
+            <span class="field-description">Render Distance (in blocks):</span>
+            <input type="text" class="w4" v-model="config.viewDistance" @change="update()">
+        </div>
+    </div>
+</div>
