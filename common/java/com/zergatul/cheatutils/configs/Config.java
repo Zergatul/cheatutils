@@ -71,4 +71,5 @@ public class Config {
     public AimAssistConfig aimAssist = new AimAssistConfig();
     public LogoutSpotsConfig logoutSpots = new LogoutSpotsConfig();
     public AutoToolConfig autoTool = new AutoToolConfig();
+    public BlockEntityDistanceConfig blockEntityDistance = new BlockEntityDistanceConfig();
 }

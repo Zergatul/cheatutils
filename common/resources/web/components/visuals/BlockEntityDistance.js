@@ -1,5 +1,5 @@
 import { createSimpleComponent } from '/components/SimpleModule.js'
 
 export function createComponent(template) {
-    return createSimpleComponent('/api/fog', template);
+    return createSimpleComponent('/api/block-entity-distance', template);
 }
