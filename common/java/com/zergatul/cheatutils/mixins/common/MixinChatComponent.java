@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ChatUtilitiesConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.utils.TimeWrappedComponent;
+import net.minecraft.client.GuiMessage;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
@@ -11,11 +11,22 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.Style;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 @Mixin(ChatComponent.class)
 public abstract class MixinChatComponent {
+
+    @Unique
+    private final Map<GuiMessage, LocalDateTime> messageTimeMap = new WeakHashMap<>();
+
+    @Unique
+    private GuiMessage currentProcessingMessage;
 
     @ModifyConstant(
             method = "addMessageToQueue",
@@ -35,40 +46,44 @@ public abstract class MixinChatComponent {
 
     @ModifyVariable(
             method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
-            at = @At("HEAD"),
-            ordinal = 0,
-            argsOnly = true)
-    private Component onModifyMessageComponent(Component component) {
-        return new TimeWrappedComponent(component);
+            at = @At(value = "STORE"))
+    private GuiMessage onGuiMessageCreated(GuiMessage message) {
+        messageTimeMap.put(message, LocalDateTime.now());
+        return message;
+    }
+
+    @Inject(method = "addMessageToDisplayQueue", at = @At("HEAD"))
+    private void onAddMessageToDisplayQueue(GuiMessage message, CallbackInfo info) {
+        currentProcessingMessage = message;
     }
 
     @ModifyArg(
-            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/GuiMessage;<init>(ILnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V"))
-    private Component onModifyWrapComponents(Component component) {
-        ChatUtilitiesConfig config = ConfigStore.instance.getConfig().chatUtilitiesConfig;
-        if (config.showTime) {
-            if (component instanceof TimeWrappedComponent wrapped) {
-                component = Component.literal("") // to keep Style.EMPTY for chat message
-                        .append(Component.literal(wrapped.getTime().format(config.getFormatter())).withStyle(Style.EMPTY.withColor(0xFF808080)))
-                        .append(Component.literal(" "))
-                        .append(wrapped.unwrap());
-            }
-        } else {
-            if (component instanceof TimeWrappedComponent wrapped) {
-                component = wrapped.unwrap();
-            }
+            method = "addMessageToDisplayQueue",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ComponentRenderUtils;wrapComponents(Lnet/minecraft/network/chat/FormattedText;ILnet/minecraft/client/gui/Font;)Ljava/util/List;"),
+            index = 0)
+    private FormattedText onModifyWrapComponents(FormattedText text) {
+        if (currentProcessingMessage == null) {
+            return text;
         }
 
-        return component;
+        LocalDateTime time = messageTimeMap.get(currentProcessingMessage);
+        if (time == null) {
+            return text;
+        }
+
+        ChatUtilitiesConfig config = ConfigStore.instance.getConfig().chatUtilitiesConfig;
+        if (config.showTime) {
+            return Component.literal("") // to keep Style.EMPTY for chat message
+                    .append(Component.literal(time.format(config.getFormatter())).withStyle(Style.EMPTY.withColor(0xFF808080)))
+                    .append(Component.literal(" "))
+                    .append(currentProcessingMessage.content());
+        } else {
+            return text;
+        }
     }
 
     @Inject(at = @At("HEAD"), method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V")
     private void onAddMessage(Component component, MessageSignature signature, GuiMessageTag tag, CallbackInfo info) {
-        if (component instanceof TimeWrappedComponent wrapped) {
-            Events.ChatMessageAdded.trigger(wrapped.unwrap());
-        } else {
-            Events.ChatMessageAdded.trigger(component);
-        }
+        Events.ChatMessageAdded.trigger(component);
     }
 }

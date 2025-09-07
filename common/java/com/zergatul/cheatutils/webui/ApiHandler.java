@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
@@ -733,7 +734,7 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().chatUtilitiesConfig = config;
 
                 if (oldConfig.showTime != config.showTime || !Objects.equals(oldConfig.timeFormat, config.timeFormat)) {
-                    Minecraft.getInstance().gui.getChat().rescaleChat();
+                    TickEndExecutor.instance.execute(() -> Minecraft.getInstance().gui.getChat().rescaleChat());
                 }
             }
         });
