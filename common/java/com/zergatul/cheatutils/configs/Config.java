@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
 public class Config {
-    public boolean esp;
     public FullBrightConfig fullBrightConfig = new FullBrightConfig();
     public AutoFishConfig autoFishConfig = new AutoFishConfig();
     public ArmorOverlayConfig armorOverlayConfig = new ArmorOverlayConfig();
@@ -70,8 +69,4 @@ public class Config {
     public AntiHungerConfig antiHungerConfig = new AntiHungerConfig();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
     public StepUpConfig stepUp = new StepUpConfig();
-
-    public Config() {
-        esp = true;
-    }
 }

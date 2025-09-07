@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.wrappers.PickRange;
@@ -35,7 +36,7 @@ public class AreaMine implements Module {
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 

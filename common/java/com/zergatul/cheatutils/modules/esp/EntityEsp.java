@@ -51,7 +51,7 @@ public class EntityEsp implements Module {
     }
 
     public MultiBufferSource onRenderEntityModifyBufferSource(Entity entity, MultiBufferSource bufferSource) {
-        if (mc.player != null && ConfigStore.instance.getConfig().esp) {
+        if (mc.player != null && EspGlobal.enabled) {
             for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
                 if (!config.enabled) {
                     continue;
@@ -80,7 +80,7 @@ public class EntityEsp implements Module {
     }
 
     public boolean shouldEntityGlow(Entity entity) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return false;
         }
         if (mc.player == null) {
@@ -95,7 +95,7 @@ public class EntityEsp implements Module {
     }
 
     public Integer getGlowColor(Entity entity) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return null;
         }
         for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
@@ -122,7 +122,7 @@ public class EntityEsp implements Module {
     private void render(RenderWorldLastEvent event) {
         assert mc.player != null;
 
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 

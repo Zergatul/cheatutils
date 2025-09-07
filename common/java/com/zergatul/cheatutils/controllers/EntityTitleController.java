@@ -17,6 +17,7 @@ import com.zergatul.cheatutils.font.StylizedTextChunk;
 import com.zergatul.cheatutils.font.TextBounds;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -109,7 +110,7 @@ public class EntityTitleController {
             return;
         }
 
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 
@@ -175,7 +176,7 @@ public class EntityTitleController {
             return;
         }
 
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 
