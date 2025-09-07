@@ -595,6 +595,14 @@ module({
 });
 module({
     group: 'utility',
+    name: 'Reset',
+    component: 'Reset',
+    path: 'reset',
+    tags: ['reset', 'config'],
+    dangerous: true
+});
+module({
+    group: 'utility',
     name: 'Matrix Server',
     component: 'MatrixServer',
     tags: ['matrix', 'discord'],

@@ -40,6 +40,10 @@ div.module-group > button.external {
     color: #74571C;
 }
 
+div.module-group > button.dangerous {
+    color: #951600;
+}
+
 div.module-group > button.active {
     color: var(--color7);
 }

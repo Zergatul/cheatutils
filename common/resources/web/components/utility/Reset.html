@@ -1,0 +1,16 @@
+<div class="module-main">
+    <div class="description">
+        This button allows you to reset mod config.
+        Basically it deletes all cheatutils related config files, and prevents from recreating them in current session.
+        You have to manually exit Minecraft after this.
+        If you have some useful configurations or scripts, you can backup config files manually by copying them from <b>config</b> directory inside your Minecraft installation.
+        You can also delete config files manually if you want.
+        <br>
+        Remember to always restart Minecraft after this, so mod will start with fresh config.
+        <br>
+        "Reinstalling" mod can't fix any problem. Mod JAR file is static and never changes.
+    </div>
+    <div>
+        <button class="w8" @click="reset()">Reset mod config</button>
+    </div>
+</div>
