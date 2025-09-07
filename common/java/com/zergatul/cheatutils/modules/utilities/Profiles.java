@@ -22,11 +22,16 @@ public class Profiles implements Module {
     public static final Profiles instance = new Profiles();
 
     private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
+    private static final String OLD_CONFIG_FILE_NAME = "zergatulcheatutils.json";
+    private static final String PROFILE_CONFIG_FILE_NAME = "cheatutils-profile.json";
+    private static final String DEFAULT_CONFIG_FILE_NAME = "cheatutils.json";
+    private static final String CONFIG_FILE_NAME = "cheatutils.%s.json";
 
     private final Logger logger = LogManager.getLogger(Profiles.class);
     private final char[] invalidChars = new char[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' };
     private final Pattern pattern = Pattern.compile("^cheatutils\\.(.+)\\.json$");
     private String current;
+    private volatile boolean isInResetState = false;
 
     private Profiles() {
         current = "";
@@ -163,6 +168,52 @@ public class Profiles implements Module {
         executeInRenderThread(() -> ConfigStore.instance.read(getProfileFile("")));
     }
 
+    public boolean isInResetState() {
+        return isInResetState;
+    }
+
+    public String[] reset() {
+        isInResetState = true;
+        ConfigWriterQueue.instance.clear();
+
+        // remove files
+        String[] files = getConfigDirectory().list();
+        if (files == null) {
+            return new String[] { "Cannot get list of files in config directory" };
+        }
+
+        List<String> errors = new ArrayList<>();
+        for (String name : files) {
+            boolean shouldDelete = false;
+
+            Matcher matcher = pattern.matcher(name);
+            if (matcher.find()) {
+                shouldDelete = true;
+            }
+
+            if (name.equalsIgnoreCase(OLD_CONFIG_FILE_NAME)) {
+                shouldDelete = true;
+            }
+
+            if (name.equalsIgnoreCase(PROFILE_CONFIG_FILE_NAME)) {
+                shouldDelete = true;
+            }
+
+            if (name.equalsIgnoreCase(DEFAULT_CONFIG_FILE_NAME)) {
+                shouldDelete = true;
+            }
+
+            if (shouldDelete) {
+                File file = new File(getConfigDirectory(), name);
+                if (!file.delete()) {
+                    errors.add(String.format("Cannot delete profile file '%s'", file.getAbsolutePath()));
+                }
+            }
+        }
+
+        return errors.toArray(String[]::new);
+    }
+
     private void executeInRenderThread(Runnable runnable) {
         if (RenderSystem.isOnRenderThread()) {
             runnable.run();
@@ -190,14 +241,14 @@ public class Profiles implements Module {
     }
 
     private File getProfileConfigFile() {
-        return new File(getConfigDirectory(), "cheatutils-profile.json");
+        return new File(getConfigDirectory(), PROFILE_CONFIG_FILE_NAME);
     }
 
     private File getProfileFile(String name) {
         if (name.isEmpty()) {
-            return new File(getConfigDirectory(), "cheatutils.json");
+            return new File(getConfigDirectory(), DEFAULT_CONFIG_FILE_NAME);
         } else {
-            return new File(getConfigDirectory(), "cheatutils." + name + ".json");
+            return new File(getConfigDirectory(), String.format(CONFIG_FILE_NAME, name));
         }
     }
 
@@ -212,7 +263,7 @@ public class Profiles implements Module {
     }
 
     private void migration1() {
-        File old = new File(getConfigDirectory(), "zergatulcheatutils.json");
+        File old = new File(getConfigDirectory(), OLD_CONFIG_FILE_NAME);
         if (old.exists()) {
             if (!old.renameTo(getProfileFile(""))) {
                 logger.error("Cannot rename old config file");

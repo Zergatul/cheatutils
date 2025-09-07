@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.utils.MathUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +30,16 @@ public class ConfigWriterQueue {
         Events.Close.add(this::onClose);
     }
 
+    public void clear() {
+        synchronized (queue) {
+            queue.clear();
+        }
+    }
+
     public void queue(File file, long timeout, Runnable runnable) {
+        if (Profiles.instance.isInResetState()) {
+            return;
+        }
         synchronized (queue) {
             queue.add(new Entry(file, System.nanoTime() + timeout, runnable));
         }
