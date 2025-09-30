@@ -42,9 +42,9 @@ function isDark() {
 
 function applyTheme() {
     if (isDark()) {
-        monaco.editor.setTheme('cheatutils-scripting-language-dark');
+        monaco.editor.setTheme('scripting-language-dark');
     } else {
-        monaco.editor.setTheme('cheatutils-scripting-language-light');
+        monaco.editor.setTheme('scripting-language-light');
     }
 }
 
@@ -55,7 +55,7 @@ if (window.matchMedia) {
     });
 }
 
-const languageSettingsContructor = (async () => {
+const languageSettingsConstructor = (async () => {
     monaco.languages.register({ id: languageId });
 
     monaco.languages.setLanguageConfiguration(languageId, {
@@ -297,21 +297,84 @@ const languageSettingsContructor = (async () => {
         }
     });
 
-    monaco.editor.defineTheme('cheatutils-scripting-language-light', {
+    monaco.editor.defineTheme('scripting-language-light', {
         base: 'vs',
         inherit: true,
         colors: {},
-        rules: await http.get('/api/code/token-rules/light')
+        rules: [{
+            type: 'keyword',
+            foreground: '0000FF'
+        }, {
+            type: 'method',
+            foreground: '795E26'
+        }, {
+            type: 'property',
+            foreground: '001080'
+        }, {
+            type: 'variable',
+            foreground: '001080'
+        }, {
+            type: 'type',
+            foreground: '267F99'
+        }, {
+            type: 'delimiter',
+            foreground: '000000'
+        }, {
+            type: 'operator',
+            foreground: '000000'
+        },{
+            type: 'number',
+            foreground: '098658'
+        }, {
+            type: 'string',
+            foreground: 'A31515'
+        }, {
+            type: 'comment',
+            foreground: '008000'
+        }]
     });
 
-    monaco.editor.defineTheme('cheatutils-scripting-language-dark', {
+    console.log(tokenTypes);
+
+    monaco.editor.defineTheme('scripting-language-dark', {
         base: 'vs-dark',
         inherit: true,
         colors: {},
-        rules: await http.get('/api/code/token-rules/dark')
+        rules: [{
+            token: 'keyword',
+            foreground: 'C586C0'
+        }, {
+            token: 'method',
+            foreground: 'CBDBAB'
+        }, {
+            token: 'property',
+            foreground: 'DBCBAB'
+        }, {
+            token: 'variable',
+            foreground: 'DCDCAA'
+        }, {
+            token: 'type',
+            foreground: '4EC9B0'
+        }, {
+            token: 'delimiter',
+            foreground: 'D4D4D4'
+        }, {
+            token: 'operator',
+            foreground: 'D4D4D4'
+        },{
+            token: 'number',
+            foreground: 'B5CEA8'
+        }, {
+            token: 'string',
+            foreground: 'CE9178'
+        }, {
+            token: 'comment',
+            foreground: '6A9955'
+        }],
     });
 
     applyTheme();
+
 })();
 
 export function createComponent(template) {
@@ -323,7 +386,7 @@ export function createComponent(template) {
         ],
         emits: ['update:modelValue'],
         async mounted() {
-            await languageSettingsContructor;
+            await languageSettingsConstructor;
 
             let settings = await http.get('/api/monaco-editor-settings');
             if (settings.json) {

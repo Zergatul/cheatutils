@@ -14,6 +14,7 @@ import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
 import com.zergatul.scripting.highlighting.HighlightingProvider;
+import com.zergatul.scripting.highlighting.SemanticToken;
 import com.zergatul.scripting.highlighting.SemanticTokenType;
 import com.zergatul.scripting.hover.HoverProvider;
 import com.zergatul.scripting.hover.Theme;
@@ -61,7 +62,7 @@ public class Integration {
                         BinderOutput binderOutput = new Binder(parserOutput, resolver.resolve(request.type)).bind();
                         HighlightingProvider provider = new HighlightingProvider(lexerOutput, binderOutput);
 
-                        Json.sendResponse(exchange, provider.get().stream().map(t -> new MonacoSemanticToken(t.type().ordinal(), t.range())).toList());
+                        Json.sendResponse(exchange, provider.get().stream().map(MonacoSemanticToken::new).filter(t -> t.type >= 0).toList());
                     } else if (path.equals(prefix + "color-strings")) {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         String code = gson.fromJson(new String(data, Charset.defaultCharset()), String.class);
@@ -109,15 +110,7 @@ public class Integration {
                                 })
                                 .toArray());
                     } else if (path.equals(prefix + "tokens")) {
-                        Json.sendResponse(exchange, SemanticTokenType.values());
-                    } else if (path.equals(prefix + "token-rules/light")) {
-                        Json.sendResponse(exchange, Arrays.stream(SemanticTokenType.values())
-                                .map(type -> new TokenRule(type, light.getTokenColor(type)))
-                                .toArray());
-                    } else if (path.equals(prefix + "token-rules/dark")) {
-                        Json.sendResponse(exchange, Arrays.stream(SemanticTokenType.values())
-                                .map(type -> new TokenRule(type, dark.getTokenColor(type)))
-                                .toArray());
+                        Json.sendResponse(exchange, monacoTokenList);
                     } else if (path.startsWith(prefix + "hover/")) {
                         String theme = path.substring(path.indexOf("/hover/") + 7);
 
@@ -194,7 +187,25 @@ public class Integration {
         }
     }
 
-    public record TokenRule(SemanticTokenType token, String foreground) {}
+    private final String[] monacoTokenList = new String[] {
+            "keyword", "method", "property", "variable", "type", "delimiter", "operator", "number", "string", "comment"
+    };
+
+    private static int toMonacoTokenIndex(SemanticTokenType type) {
+        return switch (type) {
+            case KEYWORD -> 0;
+            case METHOD -> 1;
+            case PROPERTY -> 2;
+            case IDENTIFIER -> 3;
+            case TYPE -> 4;
+            case BRACKET -> -1;
+            case SEPARATOR -> 5;
+            case OPERATOR, ARROW -> 6;
+            case NUMBER -> 7;
+            case STRING -> 8;
+            case COMMENT -> 9;
+        };
+    }
 
     public record TokenizeRequest(String code, String type) {}
 
@@ -206,7 +217,11 @@ public class Integration {
 
     public record CompletionRequest(String code, String type, int line, int column) {}
 
-    public record MonacoSemanticToken(int type, TextRange range) {}
+    public record MonacoSemanticToken(int type, TextRange range) {
+        public MonacoSemanticToken(SemanticToken token) {
+            this(toMonacoTokenIndex(token.type()), token.range());
+        }
+    }
 
     public record MonacoColor(float red, float green, float blue, float alpha) {}
 

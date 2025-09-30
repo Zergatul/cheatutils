@@ -14,12 +14,13 @@ public class WhiteTheme extends Theme {
     private static final String NUMBERS = "000000";
     private static final String STRINGS = "A31515";
     private static final String COMMENTS = "008000";
-    private static final String INVALID = "FF0000";
 
     @Override
     public String getTokenColor(SemanticTokenType type) {
         return switch (type) {
             case KEYWORD -> KEYWORD;
+            case METHOD -> "000000";
+            case PROPERTY -> "000000";
             case IDENTIFIER -> IDENTIFIER;
             case TYPE -> TYPES;
             case BRACKET -> BRACKETS;

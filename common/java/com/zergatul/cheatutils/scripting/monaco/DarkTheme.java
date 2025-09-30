@@ -6,6 +6,8 @@ import com.zergatul.scripting.hover.Theme;
 public class DarkTheme extends Theme {
 
     private static final String KEYWORD = "569CD6";
+    private static final String METHOD = "56A8F5";
+    private static final String PROPERTY = "C77DBB";
     private static final String IDENTIFIER = "DCDCAA";
     private static final String TYPES = "4EC9B0";
     private static final String BRACKETS = "FFD700";
@@ -20,6 +22,8 @@ public class DarkTheme extends Theme {
     public String getTokenColor(SemanticTokenType type) {
         return switch (type) {
             case KEYWORD -> KEYWORD;
+            case METHOD -> METHOD;
+            case PROPERTY -> PROPERTY;
             case IDENTIFIER -> IDENTIFIER;
             case TYPE -> TYPES;
             case BRACKET -> BRACKETS;
