@@ -42,9 +42,9 @@ function isDark() {
 
 function applyTheme() {
     if (isDark()) {
-        monaco.editor.setTheme('cheatutils-scripting-language-dark');
+        monaco.editor.setTheme('scripting-language-dark');
     } else {
-        monaco.editor.setTheme('cheatutils-scripting-language-light');
+        monaco.editor.setTheme('scripting-language-light');
     }
 }
 
@@ -55,7 +55,7 @@ if (window.matchMedia) {
     });
 }
 
-const languageSettingsContructor = (async () => {
+const languageSettingsConstructor = (async () => {
     monaco.languages.register({ id: languageId });
 
     monaco.languages.setLanguageConfiguration(languageId, {
@@ -100,8 +100,8 @@ const languageSettingsContructor = (async () => {
         wordPattern: /[A-Za-z0-9_#]+/
     });
 
-    const tokenTypes = await http.get('/api/code/tokens');
-    const nodes = await http.get('/api/code/nodes');
+    const tokenTypes = await http.get('/api/code/token-types');
+    const tokenModifiers = await http.get('/api/code/token-modifiers');
 
     const setDiagnostics = async (model) => {
         let diagnostics = await http.post('/api/code/diagnostics', {
@@ -155,37 +155,30 @@ const languageSettingsContructor = (async () => {
         getLegend() {
             return {
                 tokenTypes: tokenTypes,
-                tokenModifiers: [],
+                tokenModifiers: tokenModifiers,
             };
         },
         async provideDocumentSemanticTokens(model, lastResultId, token) {
-            let tokenize = http.post('/api/code/tokenize', model.getValue());
+            let tokenize = http.post('/api/code/tokenize', {
+                code: model.getValue(),
+                type: getSettingsByModel(model).type
+            });
             setDiagnostics(model);
 
             let tokens = await tokenize;
             let result = [];
             let prevToken = { range: { line1: 1, column1: 1, length: 0 } };
             for (let token of tokens) {
-                let type = tokenTypes[token.type];
-                if (type == 'WHITESPACE' || type == 'LINE_BREAK') {
-                    continue;
-                }
                 if (token.range.length == 0) {
                     continue;
                 }
-                /*
-                    Line number (0-indexed, and offset from the previous line)
-                    Column position (0-indexed, and offset from the previous column, unless this is the beginning of a new line)
-                    Token length
-                    Token type index (0-indexed into the tokenTypes array defined in getLegend)
-                    Modifier index (0-indexed into the tokenModifiers array defined in getLegend)
-                */
+
                 result.push(
                     token.range.line1 - prevToken.range.line1,
                     token.range.line1 == prevToken.range.line1 ? token.range.column1 - (prevToken.range.column1) : token.range.column1 - 1,
                     token.range.length,
                     token.type,
-                    0);
+                    token.modifiers);
     
                 prevToken = token;
             }
@@ -200,8 +193,7 @@ const languageSettingsContructor = (async () => {
 
     monaco.languages.registerHoverProvider(languageId, {
         async provideHover(model, position) {
-            const theme = isDark() ? 'dark' : 'light';
-            const hover = await http.post(`/api/code/hover/${theme}`, {
+            const hover = await http.post('/api/code/hover', {
                 code: model.getValue(),
                 type: getSettingsByModel(model).type,
                 line: position.lineNumber,
@@ -294,63 +286,133 @@ const languageSettingsContructor = (async () => {
                 }];
             }
         },
-        async provideDocumentColors(model, token) {
-            let result = [];
-            let tokens = await http.post('/api/code/tokenize', model.getValue());
-            for (let token of tokens) {
-                if (token.range.line1 == token.range.line2 && tokenTypes[token.type] == 'STRING_LITERAL') {
-                    let line = model.getLineContent(token.range.line1);
-                    let value = line.substring(token.range.column1 - 1, token.range.column2 - 1);
-                    if (value.match(/^"#[0-9a-fA-F]{6}"$/)) {
-                        let r = parseInt(value.substring(2, 4), 16) / 255;
-                        let g = parseInt(value.substring(4, 6), 16) / 255;
-                        let b = parseInt(value.substring(6, 8), 16) / 255;
-                        result.push({
-                            color: { red: r, blue: b, green: g, alpha: 1 },
-                            range: {
-                                startLineNumber: token.range.line1,
-                                startColumn: token.range.column1,
-                                endLineNumber: token.range.line2,
-                                endColumn: token.range.column2
-                            }
-                        });
-                    }
-                    if (value.match(/^"#[0-9a-fA-F]{8}"$/)) {
-                        let r = parseInt(value.substring(2, 4), 16) / 255;
-                        let g = parseInt(value.substring(4, 6), 16) / 255;
-                        let b = parseInt(value.substring(6, 8), 16) / 255;
-                        let a = parseInt(value.substring(8, 10), 16) / 255;
-                        result.push({
-                            color: { red: r, blue: b, green: g, alpha: a },
-                            range: {
-                                startLineNumber: token.range.line1,
-                                startColumn: token.range.column1,
-                                endLineNumber: token.range.line2,
-                                endColumn: token.range.column2
-                            }
-                        });
-                    }
-                }
-            }
-            return result;
+        async provideDocumentColors(model) {
+            return await http.post('/api/code/color-strings', model.getValue());
         }
     });
 
-    monaco.editor.defineTheme('cheatutils-scripting-language-light', {
+    monaco.editor.defineTheme('scripting-language-light', {
         base: 'vs',
         inherit: true,
         colors: {},
-        rules: await http.get('/api/code/token-rules/light')
+        rules: [{
+            token: 'KEYWORD',
+            foreground: 'AF00DB'
+        }, {
+            token: 'METHOD',
+            foreground: '795E26'
+        }, {
+            token: 'PROPERTY',
+            foreground: '19007F'
+        }, {
+            token: 'IDENTIFIER',
+            foreground: '001080'
+        }, {
+            token: 'TYPE',
+            foreground: '267F99'
+        }, {
+            token: 'BRACKET'
+        }, {
+            token: 'SEPARATOR',
+            foreground: '000000'
+        }, {
+            token: 'OPERATOR',
+            foreground: '000000'
+        },{
+            token: 'NUMBER',
+            foreground: '098658'
+        }, {
+            token: 'STRING',
+            foreground: 'A31515'
+        }, {
+            token: 'COMMENT',
+            foreground: '008000'
+        }, {
+            token: 'KEYWORD.PREDEFINED_TYPE',
+            foreground: '0000FF'
+        }, {
+            token: 'KEYWORD.ASYNC',
+            foreground: '0000FF'
+        }, {
+            token: 'KEYWORD.OPERATOR_LIKE',
+            foreground: '0000FF'
+        }, {
+            token: 'KEYWORD.VALUE',
+            foreground: '0000FF'
+        }, {
+            token: 'IDENTIFIER.EXTERNAL',
+            fontStyle: 'underline'
+        }, {
+            token: 'IDENTIFIER.STATIC',
+            fontStyle: 'bold'
+        }, {
+            token: 'IDENTIFIER.FUNCTION',
+            fontStyle: 'italic'
+        }]
     });
 
-    monaco.editor.defineTheme('cheatutils-scripting-language-dark', {
+    monaco.editor.defineTheme('scripting-language-dark', {
         base: 'vs-dark',
         inherit: true,
         colors: {},
-        rules: await http.get('/api/code/token-rules/dark')
+        rules: [{
+            token: 'KEYWORD',
+            foreground: 'C586C0'
+        }, {
+            token: 'METHOD',
+            foreground: 'CBDBAB'
+        }, {
+            token: 'PROPERTY',
+            foreground: 'DBCBAB'
+        }, {
+            token: 'IDENTIFIER',
+            foreground: 'DCDCAA'
+        }, {
+            token: 'TYPE',
+            foreground: '4EC9B0'
+        }, {
+            token: 'BRACKET'
+        }, {
+            token: 'SEPARATOR',
+            foreground: 'D4D4D4'
+        }, {
+            token: 'OPERATOR',
+            foreground: 'D4D4D4'
+        },{
+            token: 'NUMBER',
+            foreground: 'B5CEA8'
+        }, {
+            token: 'STRING',
+            foreground: 'CE9178'
+        }, {
+            token: 'COMMENT',
+            foreground: '6A9955'
+        }, {
+            token: 'KEYWORD.PREDEFINED_TYPE',
+            foreground: '569CD6'
+        }, {
+            token: 'KEYWORD.ASYNC',
+            foreground: '569CD6'
+        }, {
+            token: 'KEYWORD.OPERATOR_LIKE',
+            foreground: '569CD6'
+        }, {
+            token: 'KEYWORD.VALUE',
+            foreground: '569CD6'
+        }, {
+            token: 'IDENTIFIER.EXTERNAL',
+            fontStyle: 'underline'
+        }, {
+            token: 'IDENTIFIER.STATIC',
+            fontStyle: 'bold'
+        }, {
+            token: 'IDENTIFIER.FUNCTION',
+            fontStyle: 'italic'
+        }],
     });
 
     applyTheme();
+
 })();
 
 export function createComponent(template) {
@@ -362,7 +424,7 @@ export function createComponent(template) {
         ],
         emits: ['update:modelValue'],
         async mounted() {
-            await languageSettingsContructor;
+            await languageSettingsConstructor;
 
             let settings = await http.get('/api/monaco-editor-settings');
             if (settings.json) {

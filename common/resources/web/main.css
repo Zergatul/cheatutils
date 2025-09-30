@@ -1,5 +1,6 @@
 div.main {
     flex-grow: 1;
+    position: relative;
 }
 
 div.modules {
@@ -54,4 +55,17 @@ div.module-group > button:hover {
 
 div.module-group > button.faded {
     opacity: 0.2;
+}
+
+div.information {
+    color: #404040;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    text-align: right;
+    font-size: 0.7em;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: -0.03em;
+    margin: 0.5em;
 }

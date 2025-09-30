@@ -76,6 +76,7 @@ public class EventsApi {
     public void onChatMessageRaw(ComponentWrapperConsumer consumer) {
         EventsScripting.instance.addOnChatMessageRaw(consumer);
     }
+
     @MethodDescription("""
             Triggers when you are trying to send something to the server.
             You can see the message you are going to send, and cancel sending.

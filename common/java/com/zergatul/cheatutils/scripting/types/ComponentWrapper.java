@@ -13,6 +13,8 @@ import java.util.Optional;
 @CustomType(name = "FormattedText")
 public class ComponentWrapper {
 
+    static final ComponentWrapper EMPTY = new ComponentWrapper(Component.empty());
+
     private final Component inner;
     private final Lazy<FormattedTextComponent[]> components;
 
