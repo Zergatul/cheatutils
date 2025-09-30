@@ -4,11 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.zergatul.cheatutils.scripting.monaco.adapters.ClassTypeAdapterFactory;
-import com.zergatul.cheatutils.scripting.monaco.adapters.NodeTypeAdapter;
 import com.zergatul.cheatutils.scripting.monaco.adapters.TextRangeTypeAdapterFactory;
 import com.zergatul.cheatutils.scripting.monaco.adapters.TokenTypeAdapter;
 import com.zergatul.scripting.lexer.TokenType;
-import com.zergatul.scripting.parser.NodeType;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -20,7 +18,6 @@ public class Json {
             .registerTypeAdapterFactory(new TextRangeTypeAdapterFactory())
             .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
             .registerTypeAdapter(TokenType.class, new TokenTypeAdapter())
-            .registerTypeAdapter(NodeType.class, new NodeTypeAdapter())
             .create();
 
     public static byte[] toJson(Object object) {

@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
+import com.zergatul.scripting.highlighting.SemanticTokenType;
 import com.zergatul.scripting.hover.Theme;
-import com.zergatul.scripting.lexer.TokenType;
 
 public class DarkTheme extends Theme {
 
@@ -11,27 +11,23 @@ public class DarkTheme extends Theme {
     private static final String BRACKETS = "FFD700";
     private static final String OPERATORS = "D4D4D4";
     private static final String SEPARATORS = "CCCCCC";
+    private static final String ARROW = "75BE76";
     private static final String NUMBERS = "B5CEA8";
     private static final String STRINGS = "CE9178";
     private static final String COMMENTS = "6A9955";
-    private static final String INVALID = "FF0000";
 
     @Override
-    public String getTokenColor(TokenType type) {
+    public String getTokenColor(SemanticTokenType type) {
         return switch (type) {
+            case KEYWORD -> KEYWORD;
             case IDENTIFIER -> IDENTIFIER;
-            case LEFT_PARENTHESES, LEFT_CURLY_BRACKET, LEFT_SQUARE_BRACKET, RIGHT_PARENTHESES, RIGHT_CURLY_BRACKET,
-                 RIGHT_SQUARE_BRACKET -> BRACKETS;
-            case DOT, DOLLAR, COMMA, SEMICOLON, COLON -> SEPARATORS;
-            case PLUS, PLUS_PLUS, PLUS_EQUAL, MINUS, MINUS_MINUS, MINUS_EQUAL, ASTERISK, ASTERISK_EQUAL, SLASH,
-                 SLASH_EQUAL, PERCENT, PERCENT_EQUAL, AMPERSAND, AMPERSAND_AMPERSAND, AMPERSAND_EQUAL, PIPE, PIPE_PIPE,
-                 PIPE_EQUAL, EQUAL, EQUAL_EQUAL, EQUAL_GREATER, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, EXCLAMATION,
-                 EXCLAMATION_EQUAL, QUESTION -> OPERATORS;
-            case BOOLEAN, INT8, INT16, INT, INT32, INT64, LONG, CHAR, FLOAT32, FLOAT, FLOAT64, STRING, IF, ELSE, BREAK, CONTINUE, WHILE, FOR, FOREACH, FALSE, TRUE, IN,
-                 NEW, REF, RETURN, STATIC, VOID, ASYNC, AWAIT, LET, IS, AS, META_UNKNOWN, META_TYPE, META_TYPE_OF, CLASS, CONSTRUCTOR, THIS -> KEYWORD;
-            case INTEGER_LITERAL, INTEGER64_LITERAL, FLOAT_LITERAL, INVALID_NUMBER -> NUMBERS;
-            case CHAR_LITERAL, STRING_LITERAL -> STRINGS;
-            case WHITESPACE, LINE_BREAK, END_OF_FILE, INVALID -> INVALID;
+            case TYPE -> TYPES;
+            case BRACKET -> BRACKETS;
+            case SEPARATOR -> SEPARATORS;
+            case OPERATOR -> OPERATORS;
+            case ARROW -> ARROW;
+            case NUMBER -> NUMBERS;
+            case STRING -> STRINGS;
             case COMMENT -> COMMENTS;
         };
     }

@@ -11,12 +11,12 @@ import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.compiler.CompilationParameters;
-import com.zergatul.scripting.completion.CompletionProvider;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
+import com.zergatul.scripting.highlighting.HighlightingProvider;
+import com.zergatul.scripting.highlighting.SemanticTokenType;
 import com.zergatul.scripting.hover.HoverProvider;
 import com.zergatul.scripting.hover.Theme;
 import com.zergatul.scripting.lexer.*;
-import com.zergatul.scripting.parser.NodeType;
 import com.zergatul.scripting.parser.Parser;
 import com.zergatul.scripting.parser.ParserOutput;
 import com.zergatul.scripting.parser.ParserTreeVisitor;
@@ -50,18 +50,15 @@ public class Integration {
                     if (path.equals(prefix + "tokenize")) {
                         Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
-                        String request = new String(data, Charset.defaultCharset());
-                        String code = gson.fromJson(request, String.class);
+                        TokenizeRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), TokenizeRequest.class);
 
-                        Lexer lexer = new Lexer(new LexerInput(code));
+                        Lexer lexer = new Lexer(new LexerInput(request.code));
                         LexerOutput lexerOutput = lexer.lex();
-                        List<Token> tokens = new ArrayList<>();
-                        lexerOutput.tokens().iterator().forEachRemaining(tokens::add);
+                        ParserOutput parserOutput = new Parser(lexerOutput).parse();
+                        BinderOutput binderOutput = new Binder(parserOutput, resolver.resolve(request.type)).bind();
+                        HighlightingProvider provider = new HighlightingProvider(lexerOutput, binderOutput);
 
-                        Parser parser = new Parser(lexerOutput);
-                        ParserOutput parserOutput = parser.parse();
-
-                        Json.sendResponse(exchange, createTokens(tokens, parserOutput.unit()));
+                        Json.sendResponse(exchange, provider.get().stream().map(t -> new MonacoSemanticToken(t.type().ordinal(), t.range())).toList());
                     } else if (path.equals(prefix + "diagnostics")) {
                         Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
@@ -91,16 +88,14 @@ public class Integration {
                                 })
                                 .toArray());
                     } else if (path.equals(prefix + "tokens")) {
-                        Json.sendResponse(exchange, TokenTypeEx.VALUES);
-                    } else if (path.equals(prefix + "nodes")) {
-                        Json.sendResponse(exchange, Arrays.stream(NodeType.values()).map(Enum::name).toArray());
+                        Json.sendResponse(exchange, SemanticTokenType.values());
                     } else if (path.equals(prefix + "token-rules/light")) {
-                        Json.sendResponse(exchange, Arrays.stream(TokenTypeEx.VALUES)
-                                .map(type -> new TokenRule(type, TokenTypeEx.getTokenColor(type, light)))
+                        Json.sendResponse(exchange, Arrays.stream(SemanticTokenType.values())
+                                .map(type -> new TokenRule(type, light.getTokenColor(type)))
                                 .toArray());
                     } else if (path.equals(prefix + "token-rules/dark")) {
-                        Json.sendResponse(exchange, Arrays.stream(TokenTypeEx.VALUES)
-                                .map(type -> new TokenRule(type, TokenTypeEx.getTokenColor(type, dark)))
+                        Json.sendResponse(exchange, Arrays.stream(SemanticTokenType.values())
+                                .map(type -> new TokenRule(type, dark.getTokenColor(type)))
                                 .toArray());
                     } else if (path.startsWith(prefix + "hover/")) {
                         String theme = path.substring(path.indexOf("/hover/") + 7);
@@ -148,7 +143,7 @@ public class Integration {
                         Lexer lexer = new Lexer(lexerInput);
                         LexerOutput lexerOutput = lexer.lex();
 
-                        boolean sent = false;
+                        /*boolean sent = false;
                         for (Token token : lexerOutput.tokens()) {
                             if (token.type == TokenType.COMMENT) {
                                 CommentToken comment = (CommentToken) token;
@@ -164,9 +159,9 @@ public class Integration {
                                     break;
                                 }
                             }
-                        }
+                        }*/
 
-                        if (!sent) {
+                        /*if (!sent)*/ {
                             Parser parser = new Parser(lexerOutput);
                             ParserOutput parserOutput = parser.parse();
 
@@ -242,32 +237,9 @@ public class Integration {
         }
     }
 
-    private static List<TokenEx> createTokens(List<Token> tokens, CompilationUnitNode unit) {
-        Queue<CustomTypeNode> nodes = new ArrayDeque<>();
-        unit.accept(new ParserTreeVisitor() {
-            @Override
-            public void visit(CustomTypeNode node) {
-                nodes.add(node);
-            }
-        });
+    public record TokenRule(SemanticTokenType token, String foreground) {}
 
-        List<TokenEx> result = new ArrayList<>();
-        for (Token token : tokens) {
-            if (!nodes.isEmpty() && token instanceof IdentifierToken) {
-                if (nodes.peek().getRange().equals(token.getRange())) {
-                    nodes.poll();
-                    result.add(new TokenEx(TokenTypeEx.CUSTOM_TYPE_INDEX, token.getRange()));
-                    continue;
-                }
-            }
-
-            result.add(new TokenEx(token.type.ordinal(), token.getRange()));
-        }
-
-        return result;
-    }
-
-    public record TokenRule(String token, String foreground) {}
+    public record TokenizeRequest(String code, String type) {}
 
     public record DiagnosticsRequest(String code, String type) {}
 
@@ -277,5 +249,5 @@ public class Integration {
 
     public record CompletionRequest(String code, String type, int line, int column) {}
 
-    public record TokenEx(int type, TextRange range) {}
+    public record MonacoSemanticToken(int type, TextRange range) {}
 }
