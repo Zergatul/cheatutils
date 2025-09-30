@@ -275,67 +275,27 @@ const languageSettingsContructor = (async () => {
         }
     }
 
-    // monaco.languages.registerColorProvider(languageId, {
-    //     provideColorPresentations(model, colorInfo) {
-    //         let color = colorInfo.color;
-    //         let r = Math.round(color.red * 255);
-    //         let g = Math.round(color.green * 255);
-    //         let b = Math.round(color.blue * 255);
-    //         if (color.alpha == 1) {
-    //             return [{
-    //                 label: `"#${hex(r)}${hex(g)}${hex(b)}"`
-    //             }]
-    //         } else {
-    //             let a = Math.round(color.alpha * 255);
-    //             return [{
-    //                 label: `"#${hex(r)}${hex(g)}${hex(b)}${hex(a)}"`
-    //             }];
-    //         }
-    //     },
-    //     async provideDocumentColors(model, token) {
-    //         let result = [];
-    //         let tokens = await http.post('/api/code/tokenize', {
-    //             code: model.getValue(),
-    //             type: getSettingsByModel(model).type
-    //         });
-    //         for (let token of tokens) {
-    //             if (token.range.line1 == token.range.line2 && tokenTypes[token.type] == 'STRING_LITERAL') {
-    //                 let line = model.getLineContent(token.range.line1);
-    //                 let value = line.substring(token.range.column1 - 1, token.range.column2 - 1);
-    //                 if (value.match(/^"#[0-9a-fA-F]{6}"$/)) {
-    //                     let r = parseInt(value.substring(2, 4), 16) / 255;
-    //                     let g = parseInt(value.substring(4, 6), 16) / 255;
-    //                     let b = parseInt(value.substring(6, 8), 16) / 255;
-    //                     result.push({
-    //                         color: { red: r, blue: b, green: g, alpha: 1 },
-    //                         range: {
-    //                             startLineNumber: token.range.line1,
-    //                             startColumn: token.range.column1,
-    //                             endLineNumber: token.range.line2,
-    //                             endColumn: token.range.column2
-    //                         }
-    //                     });
-    //                 }
-    //                 if (value.match(/^"#[0-9a-fA-F]{8}"$/)) {
-    //                     let r = parseInt(value.substring(2, 4), 16) / 255;
-    //                     let g = parseInt(value.substring(4, 6), 16) / 255;
-    //                     let b = parseInt(value.substring(6, 8), 16) / 255;
-    //                     let a = parseInt(value.substring(8, 10), 16) / 255;
-    //                     result.push({
-    //                         color: { red: r, blue: b, green: g, alpha: a },
-    //                         range: {
-    //                             startLineNumber: token.range.line1,
-    //                             startColumn: token.range.column1,
-    //                             endLineNumber: token.range.line2,
-    //                             endColumn: token.range.column2
-    //                         }
-    //                     });
-    //                 }
-    //             }
-    //         }
-    //         return result;
-    //     }
-    // });
+    monaco.languages.registerColorProvider(languageId, {
+        provideColorPresentations(model, colorInfo) {
+            let color = colorInfo.color;
+            let r = Math.round(color.red * 255);
+            let g = Math.round(color.green * 255);
+            let b = Math.round(color.blue * 255);
+            if (color.alpha == 1) {
+                return [{
+                    label: `"#${hex(r)}${hex(g)}${hex(b)}"`
+                }]
+            } else {
+                let a = Math.round(color.alpha * 255);
+                return [{
+                    label: `"#${hex(r)}${hex(g)}${hex(b)}${hex(a)}"`
+                }];
+            }
+        },
+        async provideDocumentColors(model) {
+            return await http.post('/api/code/color-strings', model.getValue());
+        }
+    });
 
     monaco.editor.defineTheme('cheatutils-scripting-language-light', {
         base: 'vs',

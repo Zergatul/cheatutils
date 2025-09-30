@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.TextRange;
 import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
@@ -19,13 +20,12 @@ import com.zergatul.scripting.hover.Theme;
 import com.zergatul.scripting.lexer.*;
 import com.zergatul.scripting.parser.Parser;
 import com.zergatul.scripting.parser.ParserOutput;
-import com.zergatul.scripting.parser.ParserTreeVisitor;
-import com.zergatul.scripting.parser.nodes.CompilationUnitNode;
-import com.zergatul.scripting.parser.nodes.CustomTypeNode;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +41,10 @@ public class Integration {
         CompletionProviderFactory<Suggestion> completionProviderFactory = new CompletionProviderFactory<>(new MonacoSuggestionFactory(documentationProvider));
 
         Pattern regex = Pattern.compile("Java<com\\.zergatul\\.cheatutils\\.scripting\\.modules\\.(.+)>");
+        Pattern rgbRegex = Pattern.compile("^#[0-9a-fA-F]{6}$");
+        Pattern rgbaRegex = Pattern.compile("^#[0-9a-fA-F]{8}$");
+
+        Gson gson = new GsonBuilder().create();
 
         server.createContext(prefix, new HttpHandler() {
             @Override
@@ -48,7 +52,6 @@ public class Integration {
                 try {
                     String path = exchange.getRequestURI().getPath();
                     if (path.equals(prefix + "tokenize")) {
-                        Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         TokenizeRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), TokenizeRequest.class);
 
@@ -59,8 +62,26 @@ public class Integration {
                         HighlightingProvider provider = new HighlightingProvider(lexerOutput, binderOutput);
 
                         Json.sendResponse(exchange, provider.get().stream().map(t -> new MonacoSemanticToken(t.type().ordinal(), t.range())).toList());
+                    } else if (path.equals(prefix + "color-strings")) {
+                        byte[] data = exchange.getRequestBody().readAllBytes();
+                        String code = gson.fromJson(new String(data, Charset.defaultCharset()), String.class);
+
+                        Lexer lexer = new Lexer(new LexerInput(code));
+                        LexerOutput lexerOutput = lexer.lex();
+
+                        List<MonacoColoredTokenEntry> entries = new ArrayList<>();
+                        for (Token token : lexerOutput.tokens()) {
+                            if (token.is(TokenType.STRING_LITERAL)) {
+                                ValueToken strToken = (ValueToken) token;
+                                if (rgbRegex.matcher(strToken.value).matches() || rgbaRegex.matcher(strToken.value).matches()) {
+                                    Color color = ColorUtils.parseColor2(strToken.value);
+                                    entries.add(new MonacoColoredTokenEntry(color, token.getRange()));
+                                }
+                            }
+                        }
+
+                        Json.sendResponse(exchange, entries);
                     } else if (path.equals(prefix + "diagnostics")) {
-                        Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         DiagnosticsRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), DiagnosticsRequest.class);
 
@@ -100,7 +121,6 @@ public class Integration {
                     } else if (path.startsWith(prefix + "hover/")) {
                         String theme = path.substring(path.indexOf("/hover/") + 7);
 
-                        Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         HoverRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), HoverRequest.class);
 
@@ -118,7 +138,6 @@ public class Integration {
                         HoverProvider.HoverResponse response = provider.get(binderOutput, request.line, request.column);
                         Json.sendResponse(exchange, response);
                     } else if (path.equals(prefix + "definition")) {
-                        Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         HoverRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), HoverRequest.class);
 
@@ -135,7 +154,6 @@ public class Integration {
                         BoundNode node = find(binderOutput.unit(), request.line, request.column);
                         Json.sendResponse(exchange, definitionProvider.get(node), TextRange.class);
                     } else if (path.equals(prefix + "completion")) {
-                        Gson gson = new GsonBuilder().create();
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         CompletionRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), CompletionRequest.class);
 
@@ -143,34 +161,14 @@ public class Integration {
                         Lexer lexer = new Lexer(lexerInput);
                         LexerOutput lexerOutput = lexer.lex();
 
-                        /*boolean sent = false;
-                        for (Token token : lexerOutput.tokens()) {
-                            if (token.type == TokenType.COMMENT) {
-                                CommentToken comment = (CommentToken) token;
-                                boolean inside;
-                                if (comment.ending) {
-                                    inside = comment.getRange().containsOrEnds(request.line, request.column);
-                                } else {
-                                    inside = comment.getRange().contains(request.line, request.column);
-                                }
-                                if (inside) {
-                                    sent = true;
-                                    Json.sendResponse(exchange, List.of());
-                                    break;
-                                }
-                            }
-                        }*/
+                        Parser parser = new Parser(lexerOutput);
+                        ParserOutput parserOutput = parser.parse();
 
-                        /*if (!sent)*/ {
-                            Parser parser = new Parser(lexerOutput);
-                            ParserOutput parserOutput = parser.parse();
+                        CompilationParameters parameters = resolver.resolve(request.type);
+                        Binder binder = new Binder(parserOutput, parameters);
+                        BinderOutput binderOutput = binder.bind();
 
-                            CompilationParameters parameters = resolver.resolve(request.type);
-                            Binder binder = new Binder(parserOutput, parameters);
-                            BinderOutput binderOutput = binder.bind();
-
-                            Json.sendResponse(exchange, completionProviderFactory.getSuggestions(parameters, binderOutput, request.line, request.column));
-                        }
+                        Json.sendResponse(exchange, completionProviderFactory.getSuggestions(parameters, binderOutput, request.line, request.column));
                     } else {
                         exchange.sendResponseHeaders(404, 0);
                     }
@@ -181,36 +179,6 @@ public class Integration {
                 }
             }
         });
-
-        /*server.createContext("/", new HttpHandler() {
-            @Override
-            public void handle(HttpExchange exchange) throws IOException {
-                String path = exchange.getRequestURI().getPath();
-                if (path.equals("/")) {
-                    path = "/index.html";
-                }
-
-                Path filepath = Path.of(".\\src\\main\\resources\\web", path);
-                if (Files.exists(filepath)) {
-                    if (path.endsWith(".js")) {
-                        exchange.getResponseHeaders().add("Content-Type", "text/javascript");
-                    } else if (path.endsWith(".html")) {
-                        exchange.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
-                    } else if (path.endsWith(".ttf")) {
-                        exchange.getResponseHeaders().add("Content-Type", "font/ttf");
-                    }
-
-                    long size = Files.size(filepath);
-                    exchange.sendResponseHeaders(200, size);
-                    byte[] data = Files.readAllBytes(filepath);
-                    exchange.getResponseBody().write(data);
-                } else {
-                    exchange.sendResponseHeaders(404, 0);
-                }
-
-                exchange.close();
-            }
-        });*/
     }
 
     private static BoundNode find(BoundNode node, int line, int column) {
@@ -223,17 +191,6 @@ public class Integration {
             return node;
         } else {
             return null;
-        }
-    }
-
-    private static void findChain(List<BoundNode> chain, BoundNode node, int line, int column) {
-        if (node.getRange().contains(line, column)) {
-            for (BoundNode child : node.getChildren()) {
-                if (child.getRange().contains(line, column)) {
-                    findChain(chain, child, line, column);
-                }
-            }
-            chain.add(node);
         }
     }
 
@@ -250,4 +207,16 @@ public class Integration {
     public record CompletionRequest(String code, String type, int line, int column) {}
 
     public record MonacoSemanticToken(int type, TextRange range) {}
+
+    public record MonacoColor(float red, float green, float blue, float alpha) {}
+
+    public record MonacoRange(int startLineNumber, int startColumn, int endLineNumber, int endColumn) {}
+
+    public record MonacoColoredTokenEntry(MonacoColor color, MonacoRange range) {
+        public MonacoColoredTokenEntry(Color color, TextRange range) {
+            this(
+                    new MonacoColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f),
+                    new MonacoRange(range.getLine1(), range.getColumn1(), range.getLine2(), range.getColumn2()));
+        }
+    }
 }
