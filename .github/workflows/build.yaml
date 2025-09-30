@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - '1.21.[0-9]'
+      - '1.21.7-temp'
 
 jobs:
   build:

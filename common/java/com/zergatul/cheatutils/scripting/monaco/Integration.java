@@ -11,7 +11,6 @@ import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.compiler.CompilationParameters;
-import com.zergatul.scripting.completion.CompletionProvider;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
 import com.zergatul.scripting.hover.HoverProvider;
 import com.zergatul.scripting.hover.Theme;
