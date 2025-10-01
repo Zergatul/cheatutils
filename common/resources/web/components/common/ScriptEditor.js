@@ -193,8 +193,7 @@ const languageSettingsConstructor = (async () => {
 
     monaco.languages.registerHoverProvider(languageId, {
         async provideHover(model, position) {
-            const theme = isDark() ? 'dark' : 'light';
-            const hover = await http.post(`/api/code/hover/${theme}`, {
+            const hover = await http.post('/api/code/hover', {
                 code: model.getValue(),
                 type: getSettingsByModel(model).type,
                 line: position.lineNumber,

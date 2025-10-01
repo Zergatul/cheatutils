@@ -7,7 +7,6 @@ import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.modules.automation.AutoTool;
 import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
@@ -77,6 +76,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new HitboxSizeCodeApi());
         apis.add(new FontsApi());
         apis.add(new ResetConfigApi());
+        apis.add(new GeneralInformationApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override

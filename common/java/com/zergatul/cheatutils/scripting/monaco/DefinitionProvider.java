@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
 import com.zergatul.scripting.TextRange;
+import com.zergatul.scripting.binding.nodes.BoundFunctionReferenceNode;
 import com.zergatul.scripting.binding.nodes.BoundNameExpressionNode;
 import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.symbols.Symbol;
@@ -18,8 +19,16 @@ public class DefinitionProvider {
                 return null;
             }
             return symbol.getDefinition();
-        } else {
-            return null;
         }
+
+        if (node instanceof BoundFunctionReferenceNode functionReference) {
+            Symbol symbol = functionReference.getFunction();
+            if (symbol == null) {
+                return null;
+            }
+            return symbol.getDefinition();
+        }
+
+        return null;
     }
 }

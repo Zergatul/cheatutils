@@ -131,6 +131,8 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     //annotationProcessor files('../annotation-processor/build/libs/annotation-processor.jar')
+
+    compileOnly("org.jspecify:jspecify:1.0.0")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

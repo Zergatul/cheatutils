@@ -44,6 +44,8 @@ dependencies {
     // modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 
     annotationProcessor files('../mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
+
+    compileOnly("org.jspecify:jspecify:1.0.0")
 }
 
 sourceSets {

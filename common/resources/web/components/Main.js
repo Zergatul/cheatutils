@@ -22,6 +22,7 @@ export function createComponent(template) {
             const scripting = ref(modules.scripting);
             const utility = ref(modules.utility);
             const statuses = ref({});
+            const generalInfo = ref({});
             const filtered = ref({});
 
             const onFilter = value => {
@@ -61,6 +62,9 @@ export function createComponent(template) {
                 http.get('/api/modules-status').then(response => {
                     statuses.value = response;
                 });
+                http.get('/api/general-information').then(response => {
+                    generalInfo.value = response;
+                });
                 events.trigger({
                     type: 'focus-filter'
                 });
@@ -77,6 +81,7 @@ export function createComponent(template) {
                 scripting,
                 utility,
                 statuses,
+                generalInfo,
                 filtered,
 
                 onModuleClick

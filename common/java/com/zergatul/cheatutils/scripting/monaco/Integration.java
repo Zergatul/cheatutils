@@ -18,7 +18,6 @@ import com.zergatul.scripting.highlighting.SemanticToken;
 import com.zergatul.scripting.highlighting.SemanticTokenModifier;
 import com.zergatul.scripting.highlighting.SemanticTokenType;
 import com.zergatul.scripting.hover.HoverProvider;
-import com.zergatul.scripting.hover.Theme;
 import com.zergatul.scripting.lexer.*;
 import com.zergatul.scripting.parser.Parser;
 import com.zergatul.scripting.parser.ParserOutput;
@@ -36,8 +35,6 @@ public class Integration {
     public void attach(HttpServer server, String prefix) {
         CompilationParametersResolver resolver = type -> ScriptType.valueOf(type).createParameters();
 
-        Theme dark = new DarkTheme();
-        Theme light = new WhiteTheme();
         DocumentationProvider documentationProvider = new DocumentationProvider();
         DefinitionProvider definitionProvider = new DefinitionProvider();
         CompletionProviderFactory<Suggestion> completionProviderFactory = new CompletionProviderFactory<>(new MonacoSuggestionFactory(documentationProvider));
@@ -114,9 +111,7 @@ public class Integration {
                         Json.sendResponse(exchange, SemanticTokenType.values());
                     } else if (path.equals(prefix + "token-modifiers")) {
                         Json.sendResponse(exchange, SemanticTokenModifier.values());
-                    } else if (path.startsWith(prefix + "hover/")) {
-                        String theme = path.substring(path.indexOf("/hover/") + 7);
-
+                    } else if (path.equals(prefix + "hover")) {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         HoverRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), HoverRequest.class);
 
@@ -130,7 +125,7 @@ public class Integration {
                         Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
-                        CustomHoverProvider provider = new CustomHoverProvider(theme.equals("light") ? light : dark);
+                        CustomHoverProvider provider = new CustomHoverProvider();
                         HoverProvider.HoverResponse response = provider.get(binderOutput, request.line, request.column);
                         Json.sendResponse(exchange, response);
                     } else if (path.equals(prefix + "definition")) {

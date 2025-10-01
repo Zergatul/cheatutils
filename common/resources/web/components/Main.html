@@ -25,4 +25,10 @@
             <module-button v-for="module in utility" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
     </div>
+    <div class="information">
+        <div>{{ generalInfo.gameVersion }}</div>
+        <div>{{ generalInfo.modLoaderVersion }}</div>
+        <div>{{ generalInfo.modCount }}</div>
+        <div>{{ generalInfo.modVersion }}</div>
+    </div>
 </div>
