@@ -100,7 +100,8 @@ const languageSettingsConstructor = (async () => {
         wordPattern: /[A-Za-z0-9_#]+/
     });
 
-    const tokenTypes = await http.get('/api/code/tokens');
+    const tokenTypes = await http.get('/api/code/token-types');
+    const tokenModifiers = await http.get('/api/code/token-modifiers');
 
     const setDiagnostics = async (model) => {
         let diagnostics = await http.post('/api/code/diagnostics', {
@@ -154,7 +155,7 @@ const languageSettingsConstructor = (async () => {
         getLegend() {
             return {
                 tokenTypes: tokenTypes,
-                tokenModifiers: [],
+                tokenModifiers: tokenModifiers,
             };
         },
         async provideDocumentSemanticTokens(model, lastResultId, token) {
@@ -171,19 +172,13 @@ const languageSettingsConstructor = (async () => {
                 if (token.range.length == 0) {
                     continue;
                 }
-                /*
-                    Line number (0-indexed, and offset from the previous line)
-                    Column position (0-indexed, and offset from the previous column, unless this is the beginning of a new line)
-                    Token length
-                    Token type index (0-indexed into the tokenTypes array defined in getLegend)
-                    Modifier index (0-indexed into the tokenModifiers array defined in getLegend)
-                */
+
                 result.push(
                     token.range.line1 - prevToken.range.line1,
                     token.range.line1 == prevToken.range.line1 ? token.range.column1 - (prevToken.range.column1) : token.range.column1 - 1,
                     token.range.length,
                     token.type,
-                    0);
+                    token.modifiers);
     
                 prevToken = token;
             }
@@ -302,74 +297,118 @@ const languageSettingsConstructor = (async () => {
         inherit: true,
         colors: {},
         rules: [{
-            type: 'keyword',
-            foreground: '0000FF'
+            token: 'KEYWORD',
+            foreground: 'AF00DB'
         }, {
-            type: 'method',
+            token: 'METHOD',
             foreground: '795E26'
         }, {
-            type: 'property',
+            token: 'PROPERTY',
+            foreground: '19007F'
+        }, {
+            token: 'IDENTIFIER',
             foreground: '001080'
         }, {
-            type: 'variable',
-            foreground: '001080'
-        }, {
-            type: 'type',
+            token: 'TYPE',
             foreground: '267F99'
         }, {
-            type: 'delimiter',
+            token: 'BRACKET'
+        }, {
+            token: 'SEPARATOR',
             foreground: '000000'
         }, {
-            type: 'operator',
+            token: 'OPERATOR',
             foreground: '000000'
         },{
-            type: 'number',
+            token: 'NUMBER',
             foreground: '098658'
         }, {
-            type: 'string',
+            token: 'STRING',
             foreground: 'A31515'
         }, {
-            type: 'comment',
+            token: 'COMMENT',
             foreground: '008000'
+        }, {
+            token: 'KEYWORD.PREDEFINED_TYPE',
+            foreground: '0000FF'
+        }, {
+            token: 'KEYWORD.ASYNC',
+            foreground: '0000FF'
+        }, {
+            token: 'KEYWORD.OPERATOR_LIKE',
+            foreground: '0000FF'
+        }, {
+            token: 'KEYWORD.VALUE',
+            foreground: '0000FF'
+        }, {
+            token: 'IDENTIFIER.EXTERNAL',
+            fontStyle: 'underline'
+        }, {
+            token: 'IDENTIFIER.STATIC',
+            fontStyle: 'bold'
+        }, {
+            token: 'IDENTIFIER.FUNCTION',
+            fontStyle: 'italic'
         }]
     });
-
-    console.log(tokenTypes);
 
     monaco.editor.defineTheme('scripting-language-dark', {
         base: 'vs-dark',
         inherit: true,
         colors: {},
         rules: [{
-            token: 'keyword',
+            token: 'KEYWORD',
             foreground: 'C586C0'
         }, {
-            token: 'method',
+            token: 'METHOD',
             foreground: 'CBDBAB'
         }, {
-            token: 'property',
+            token: 'PROPERTY',
             foreground: 'DBCBAB'
         }, {
-            token: 'variable',
+            token: 'IDENTIFIER',
             foreground: 'DCDCAA'
         }, {
-            token: 'type',
+            token: 'TYPE',
             foreground: '4EC9B0'
         }, {
-            token: 'delimiter',
+            token: 'BRACKET'
+        }, {
+            token: 'SEPARATOR',
             foreground: 'D4D4D4'
         }, {
-            token: 'operator',
+            token: 'OPERATOR',
             foreground: 'D4D4D4'
         },{
-            token: 'number',
+            token: 'NUMBER',
             foreground: 'B5CEA8'
         }, {
-            token: 'string',
+            token: 'STRING',
             foreground: 'CE9178'
         }, {
-            token: 'comment',
+            token: 'COMMENT',
             foreground: '6A9955'
+        }, {
+            token: 'KEYWORD.PREDEFINED_TYPE',
+            foreground: '569CD6'
+        }, {
+            token: 'KEYWORD.ASYNC',
+            foreground: '569CD6'
+        }, {
+            token: 'KEYWORD.OPERATOR_LIKE',
+            foreground: '569CD6'
+        }, {
+            token: 'KEYWORD.VALUE',
+            foreground: '569CD6'
+        }, {
+            token: 'IDENTIFIER.EXTERNAL',
+            fontStyle: 'underline'
+        }, {
+            token: 'IDENTIFIER.STATIC',
+            fontStyle: 'bold'
+        }, {
+            token: 'IDENTIFIER.FUNCTION',
+            fontStyle: 'italic'
         }],
     });
 

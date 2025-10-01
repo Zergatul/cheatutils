@@ -29,7 +29,6 @@ public class DarkTheme extends Theme {
             case BRACKET -> BRACKETS;
             case SEPARATOR -> SEPARATORS;
             case OPERATOR -> OPERATORS;
-            case ARROW -> ARROW;
             case NUMBER -> NUMBERS;
             case STRING -> STRINGS;
             case COMMENT -> COMMENTS;

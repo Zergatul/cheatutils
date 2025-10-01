@@ -26,7 +26,6 @@ public class WhiteTheme extends Theme {
             case BRACKET -> BRACKETS;
             case SEPARATOR -> SEPARATORS;
             case OPERATOR -> OPERATORS;
-            case ARROW -> "FF4444";
             case NUMBER -> NUMBERS;
             case STRING -> STRINGS;
             case COMMENT -> COMMENTS;

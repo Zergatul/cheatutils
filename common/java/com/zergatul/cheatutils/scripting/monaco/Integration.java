@@ -15,6 +15,7 @@ import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
 import com.zergatul.scripting.highlighting.HighlightingProvider;
 import com.zergatul.scripting.highlighting.SemanticToken;
+import com.zergatul.scripting.highlighting.SemanticTokenModifier;
 import com.zergatul.scripting.highlighting.SemanticTokenType;
 import com.zergatul.scripting.hover.HoverProvider;
 import com.zergatul.scripting.hover.Theme;
@@ -62,7 +63,7 @@ public class Integration {
                         BinderOutput binderOutput = new Binder(parserOutput, resolver.resolve(request.type)).bind();
                         HighlightingProvider provider = new HighlightingProvider(lexerOutput, binderOutput);
 
-                        Json.sendResponse(exchange, provider.get().stream().map(MonacoSemanticToken::new).filter(t -> t.type >= 0).toList());
+                        Json.sendResponse(exchange, provider.get().stream().map(MonacoSemanticToken::new).toList());
                     } else if (path.equals(prefix + "color-strings")) {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         String code = gson.fromJson(new String(data, Charset.defaultCharset()), String.class);
@@ -109,8 +110,10 @@ public class Integration {
                                     return new DiagnosticsResponseItem(d.range, sb.toString());
                                 })
                                 .toArray());
-                    } else if (path.equals(prefix + "tokens")) {
-                        Json.sendResponse(exchange, monacoTokenList);
+                    } else if (path.equals(prefix + "token-types")) {
+                        Json.sendResponse(exchange, SemanticTokenType.values());
+                    } else if (path.equals(prefix + "token-modifiers")) {
+                        Json.sendResponse(exchange, SemanticTokenModifier.values());
                     } else if (path.startsWith(prefix + "hover/")) {
                         String theme = path.substring(path.indexOf("/hover/") + 7);
 
@@ -187,26 +190,6 @@ public class Integration {
         }
     }
 
-    private final String[] monacoTokenList = new String[] {
-            "keyword", "method", "property", "variable", "type", "delimiter", "operator", "number", "string", "comment"
-    };
-
-    private static int toMonacoTokenIndex(SemanticTokenType type) {
-        return switch (type) {
-            case KEYWORD -> 0;
-            case METHOD -> 1;
-            case PROPERTY -> 2;
-            case IDENTIFIER -> 3;
-            case TYPE -> 4;
-            case BRACKET -> -1;
-            case SEPARATOR -> 5;
-            case OPERATOR, ARROW -> 6;
-            case NUMBER -> 7;
-            case STRING -> 8;
-            case COMMENT -> 9;
-        };
-    }
-
     public record TokenizeRequest(String code, String type) {}
 
     public record DiagnosticsRequest(String code, String type) {}
@@ -217,9 +200,18 @@ public class Integration {
 
     public record CompletionRequest(String code, String type, int line, int column) {}
 
-    public record MonacoSemanticToken(int type, TextRange range) {
+    public record MonacoSemanticToken(int type, int modifiers, TextRange range) {
+
         public MonacoSemanticToken(SemanticToken token) {
-            this(toMonacoTokenIndex(token.type()), token.range());
+            this(token.type().ordinal(), toModifierFlags(token.modifiers()), token.range());
+        }
+
+        private static int toModifierFlags(List<SemanticTokenModifier> modifiers) {
+            int flags = 0;
+            for (SemanticTokenModifier modifier : modifiers) {
+                flags |= (1 << modifier.ordinal());
+            }
+            return flags;
         }
     }
 
