@@ -3,22 +3,25 @@ import { components } from '/components.js'
 import { withCss } from '/components/Loader.js'
 
 let blockStatesPromise = null;
-let blockStatesFormattedPromise = null;
 
 function getBlockStates() {
     if (blockStatesPromise == null) {
-        blockStatesPromise = http.get('/api/block-state');
+        blockStatesPromise = http.get('/api/block-state')
+            .then(states => {
+                const pairs = states.map(state => ({
+                    state: state,
+                    formatted: formatBlockState(state)
+                }));
+                pairs.sort((p1, p2) => p1.formatted.localeCompare(p2.formatted));
+                const sortedStates = pairs.map(p => p.state);
+                const sortedFormatted = pairs.map(p => p.formatted);
+                return {
+                    states: sortedStates,
+                    formatted: sortedFormatted
+                };
+            });
     }
     return blockStatesPromise;
-}
-
-function getBlockStatesFormatted() {
-    if (blockStatesFormattedPromise == null) {
-        blockStatesFormattedPromise = new Promise((resolve, reject) => {
-            getBlockStates().then(states => resolve(states.map(formatBlockState).sort())).catch(reject);
-        });
-    }
-    return blockStatesFormattedPromise;
 }
 
 function formatBlockState(state) {
@@ -71,14 +74,13 @@ export function createComponent(template) {
             };
         },
         methods: {
-            beginEdit(item) {
-                getBlockStatesFormatted().then(states => {
-                    if (this.blockStatesFormatted == null) {
-                        this.blockStatesFormatted = states;
-                    }
-                    item.editing = true;
-                    item.editText = item.stateFormatted;
-                });
+            async beginEdit(item) {
+                const { formatted } = await getBlockStates()
+                if (this.blockStatesFormatted == null) {
+                    this.blockStatesFormatted = formatted;
+                }
+                item.editing = true;
+                item.editText = item.stateFormatted;
             },
             getFile() {
                 return new Promise((resolve) => {
@@ -146,8 +148,7 @@ export function createComponent(template) {
                 this.update();
             },
             async onItemEditApply(item, state) {
-                const states = await getBlockStates();
-                const formatted = await getBlockStatesFormatted();
+                const { states, formatted } = await getBlockStates();
                 const index = formatted.indexOf(state);
                 if (index < 0) {
                     alert('Cannot find matching block state');

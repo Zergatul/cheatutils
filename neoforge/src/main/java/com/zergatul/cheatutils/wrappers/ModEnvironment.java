@@ -7,7 +7,7 @@ import net.neoforged.neoforge.internal.versions.neoforge.NeoForgeVersion;
 
 public class ModEnvironment {
 
-    public static final boolean isProduction = FMLEnvironment.production;
+    public static final boolean isProduction = FMLEnvironment.isProduction();
 
     public static String getModLoaderVersion() {
         return "NeoForge: " + NeoForgeVersion.getVersion();

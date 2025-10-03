@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.WeatherEffectRenderer;
+import net.minecraft.client.renderer.state.WeatherRenderState;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,9 +15,9 @@ public abstract class MixinWeatherEffectRenderer {
 
     @Inject(
             at = @At("HEAD"),
-            method = "render(Lnet/minecraft/world/level/Level;Lnet/minecraft/client/renderer/MultiBufferSource;IFLnet/minecraft/world/phys/Vec3;)V",
+            method = "extractRenderState",
             cancellable = true)
-    private void onBeforeRender(Level level, MultiBufferSource buffers, int p_365872_, float p_365795_, Vec3 p_361547_, CallbackInfo info) {
+    private void onBeforeRender(Level level, int i, float f, Vec3 p_361547_, WeatherRenderState state, CallbackInfo info) {
         if (ConfigStore.instance.getConfig().noWeatherConfig.enabled) {
             info.cancel();
         }

@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
+import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.TransferState;
 import net.minecraft.network.Connection;
@@ -20,7 +21,18 @@ import java.util.function.Consumer;
 public abstract class MixinClientHandshakePacketListenerImpl {
 
     @Inject(at = @At("RETURN"), method = "<init>")
-    private void onInit(Connection connection, Minecraft mc, ServerData data, Screen screen, boolean newWorld, Duration duration, Consumer<Component> consumer, TransferState state, CallbackInfo info) {
+    private void onInit(
+            Connection connection,
+            Minecraft mc,
+            ServerData data,
+            Screen screen,
+            boolean newWorld,
+            Duration duration,
+            Consumer<Component> consumer,
+            LevelLoadTracker levelLoadTracker,
+            TransferState state,
+            CallbackInfo info
+    ) {
         NetworkPacketsController.instance.onConnect(connection);
     }
 }

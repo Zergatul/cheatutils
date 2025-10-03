@@ -80,12 +80,12 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     }
 
     @Override
-    public void lerpMotion(double dx, double dy, double dz) {
+    public void lerpMotion(Vec3 movement) {
         MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
         if (config.antiKnockback) {
             return;
         }
-        super.lerpMotion(dx, dy, dz);
+        super.lerpMotion(movement);
     }
 
     @Override

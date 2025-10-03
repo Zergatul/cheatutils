@@ -40,7 +40,7 @@ public abstract class MixinMultiPlayerGameMode {
     @Inject(at = @At("HEAD"), method = "useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;", cancellable = true)
     private void onUseItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> info) {
         if (ConfigStore.instance.getConfig().antiRespawnResetConfig.enabled) {
-            BlockState state = player.clientLevel.getBlockState(hitResult.getBlockPos());
+            BlockState state = player.level().getBlockState(hitResult.getBlockPos());
             if (state.getBlock() instanceof BedBlock) {
                 info.setReturnValue(InteractionResult.FAIL);
                 return;

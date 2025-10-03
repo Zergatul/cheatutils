@@ -368,13 +368,13 @@ public class FreeCam implements Module {
         }
     }
 
-    public void onRenderDebugScreenLeft(List<String> list) {
+    /*public void onRenderDebugScreenLeft(List<String> list) {
         if (active) {
             list.add("");
             String coordinates = String.format(Locale.ROOT, "Free Cam XYZ: %.3f / %.5f / %.3f", x, y, z);
             list.add(coordinates);
         }
-    }
+    }*/
 
     public HitResult getHitResult() {
         if (!active || mc.player == null) {
@@ -396,7 +396,7 @@ public class FreeCam implements Module {
         }
     }
 
-    public void onDebugScreenGetSystemInformation(List<String> list) {
+    /*public void onDebugScreenGetSystemInformation(List<String> list) {
         HitResult hit = getHitResult();
         if (hit == null) {
             return;
@@ -415,7 +415,7 @@ public class FreeCam implements Module {
 
             state.getTags().map(tag -> "#" + tag.location()).forEach(list::add);
         }
-    }
+    }*/
 
     public void onBeforeGameRendererPick() {
         gameRendererPicking = true;

@@ -21,13 +21,13 @@ public abstract class MixinOptions {
     @Final
     private OptionInstance<Integer> renderDistance;
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/client/Options;load()V")
+    @Inject(at = @At("TAIL"), method = "load()V")
     private void onLoad(CallbackInfo info) {
         MixinOptionsHelper.onOptionsLoad.forEach(Runnable::run);
         MixinOptionsHelper.onOptionsLoad.clear();
     }
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/Options;getEffectiveRenderDistance()I", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "getEffectiveRenderDistance()I", cancellable = true)
     private void onGetEffectiveRenderDistance(CallbackInfoReturnable<Integer> info) {
         ChunksConfig config = ConfigStore.instance.getConfig().chunksConfig;
         if (config.ignoreServerViewDistance) {

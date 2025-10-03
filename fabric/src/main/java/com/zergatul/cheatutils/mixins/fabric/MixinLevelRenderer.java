@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
@@ -32,7 +33,7 @@ public abstract class MixinLevelRenderer {
     @Final
     private Minecraft minecraft;
 
-    @Shadow
+    /*@Shadow
     protected abstract void renderEntity(Entity p_109518_, double p_109519_, double p_109520_, double p_109521_, float p_109522_, PoseStack p_109523_, MultiBufferSource p_109524_);
 
     @Inject(
@@ -41,8 +42,7 @@ public abstract class MixinLevelRenderer {
             require = 0)
     private void onAfterRenderEntities(
             GpuBufferSlice gpuBufferSlice,
-            DeltaTracker deltaTracker,
-            Camera camera,
+            LevelRenderState levelRenderState,
             ProfilerFiller profilerFiller,
             Matrix4f pose,
             ResourceHandle<?> handle1,
@@ -53,6 +53,6 @@ public abstract class MixinLevelRenderer {
             ResourceHandle<?> handle4,
             CallbackInfo ci
     ) {
-        FakePlayer.render(this.minecraft, camera, renderBuffers, this::renderEntity);
-    }
+        FakePlayer.render(this.minecraft, renderBuffers, this::renderEntity);
+    }*/
 }

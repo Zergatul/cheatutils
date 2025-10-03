@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.*;
+import com.zergatul.cheatutils.utils.DebugScreenExtensions;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -31,6 +32,7 @@ public class ModMain {
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         Modules.register();
         NeoForge.EVENT_BUS.register(new NeoForgeEvents());
+        DebugScreenExtensions.register();
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {

@@ -13,17 +13,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ParticleEngine.class)
 public abstract class MixinParticleEngine {
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/particle/ParticleEngine;destroy(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V", cancellable = true)
-    private void onDestroy(BlockPos p_107356_, BlockState p_107357_, CallbackInfo info) {
-        if (ConfigStore.instance.getConfig().particlesConfig.disableBlockDestroyed) {
-            info.cancel();
-        }
-    }
-
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/client/particle/ParticleEngine;crack(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V", cancellable = true)
-    private void onCrack(BlockPos p_107368_, Direction p_107369_, CallbackInfo info) {
-        if (ConfigStore.instance.getConfig().particlesConfig.disableBlockBreaking) {
-            info.cancel();
-        }
-    }
+//    @Inject(at = @At("HEAD"), method = "destroy(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V", cancellable = true)
+//    private void onDestroy(BlockPos p_107356_, BlockState p_107357_, CallbackInfo info) {
+//        if (ConfigStore.instance.getConfig().particlesConfig.disableBlockDestroyed) {
+//            info.cancel();
+//        }
+//    }
+//
+//    @Inject(at = @At("HEAD"), method = "crack(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V", cancellable = true)
+//    private void onCrack(BlockPos p_107368_, Direction p_107369_, CallbackInfo info) {
+//        if (ConfigStore.instance.getConfig().particlesConfig.disableBlockBreaking) {
+//            info.cancel();
+//        }
+//    }
 }

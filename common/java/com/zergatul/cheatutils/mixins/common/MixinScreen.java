@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Screen.class)
 public abstract class MixinScreen {
 
-    @Inject(method = "renderWithTooltip", at = @At("TAIL"))
+    @Inject(method = "renderWithTooltipAndSubtitles", at = @At("TAIL"))
     private void onAfterRender(GuiGraphics guiGraphics, int x, int y, float partialTicks, CallbackInfo info) {
         Events.AfterScreenRendered.trigger(new ScreenRenderEvent(guiGraphics, x, y));
     }

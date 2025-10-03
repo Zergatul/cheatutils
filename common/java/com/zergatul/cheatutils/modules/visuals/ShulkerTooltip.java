@@ -98,7 +98,7 @@ public class ShulkerTooltip {
 
     private void onAfterScreenRendered(ScreenRenderEvent event) {
         if (locked) {
-            if (Screen.hasControlDown()) {
+            if (mc.hasControlDown()) {
                 Matrix3x2fStack poseStack = event.getGuiGraphics().pose();
 
                 poseStack.pushMatrix();
@@ -147,7 +147,7 @@ public class ShulkerTooltip {
             }
         }
 
-        if (Screen.hasControlDown()) {
+        if (mc.hasControlDown()) {
             locked = true;
             lockedStack = currentEvent.getItemStack();
             lockedX = x;

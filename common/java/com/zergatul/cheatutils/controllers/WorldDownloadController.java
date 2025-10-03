@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
-import com.zergatul.cheatutils.mixins.common.accessors.SerializableChunkDataAccessor;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -16,6 +15,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
@@ -171,15 +171,15 @@ public class WorldDownloadController {
         chunkNbt.putLong("InhabitedTime", chunk.getInhabitedTime());
         chunkNbt.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(chunk.getPersistedStatus()).toString());
 
-        Registry<Biome> registry = level.registryAccess().lookupOrThrow(Registries.BIOME);
-        Codec<PalettedContainerRO<Holder<Biome>>> codec = makeBiomeCodec(registry);
+        Codec<PalettedContainer<BlockState>> blockStateCodec = level.palettedContainerFactory().blockStatesContainerCodec();
+        Codec<PalettedContainerRO<Holder<Biome>>> biomeCodec = level.palettedContainerFactory().biomeContainerCodec();
 
         ListTag sectionsNbt = new ListTag();
         for (int i = 0; i < chunk.getSectionsCount(); i++) {
             LevelChunkSection section = chunk.getSection(i);
             CompoundTag sectionNbt = new CompoundTag();
-            sectionNbt.put("block_states", SerializableChunkDataAccessor.getBlockStateCodec_CU().encodeStart(NbtOps.INSTANCE, section.getStates()).getOrThrow());
-            sectionNbt.put("biomes", codec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow());
+            sectionNbt.store("block_states", blockStateCodec, section.getStates());
+            sectionNbt.store("biomes", biomeCodec, section.getBiomes());
             sectionNbt.putByte("Y", (byte)(i + chunk.getMinSectionY()));
             sectionsNbt.add(sectionNbt);
         }
@@ -196,10 +196,6 @@ public class WorldDownloadController {
         chunkNbt.put("block_entities", blockEntitiesNbt);
 
         return chunkNbt;
-    }
-
-    private Codec<PalettedContainerRO<Holder<Biome>>> makeBiomeCodec(Registry<Biome> registry) {
-        return PalettedContainer.codecRO(registry.asHolderIdMap(), registry.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, registry.getOrThrow(Biomes.PLAINS));
     }
 
     private void closeAccess() {

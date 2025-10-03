@@ -17,12 +17,12 @@ public class PlayerInfoWrapper {
 
     @Getter(name = "profileId")
     public String getProfileId() {
-        return info.getProfile().getId().toString();
+        return info.getProfile().id().toString();
     }
 
     @Getter(name = "profileName")
     public String getProfileName() {
-        return info.getProfile().getName();
+        return info.getProfile().name();
     }
 
     @Getter(name = "displayName")

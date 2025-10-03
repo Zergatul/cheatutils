@@ -29,7 +29,7 @@
   "key.zergatul.cheatutils.reserved27": "Reserved 27",
   "key.zergatul.cheatutils.reserved28": "Reserved 28",
   "key.zergatul.cheatutils.reserved29": "Reserved 29",
-  "category.zergatul.cheatutils": "CheatUtils",
+  "key.category.cheatutils.common": "CheatUtils",
   "button.take.all": "Take All",
   "button.smart.put": "Smart Put",
   "button.drop.all": "Drop All"

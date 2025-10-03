@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
+import com.zergatul.cheatutils.utils.DebugScreenExtensions;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
@@ -29,6 +30,7 @@ public final class ModMain {
 
         Modules.registerKeyBindings();
         Modules.register();
+        DebugScreenExtensions.register();
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {

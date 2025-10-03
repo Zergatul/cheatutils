@@ -191,9 +191,9 @@ class BlockRenderingCanvas {
         const time = performance.now();
         const cameraDistance = 5;
         let angle = time / 1000 % (2 * Math.PI);
-        let x = cameraDistance * Math.sin(angle) + 0.5;
-        let z = cameraDistance * Math.cos(angle) + 0.5;
-        mat4.lookAt(this.modelViewMatrix, [x, cameraDistance / 2 + 0.5, z], [0.5, 0.5, 0.5], [0, 1, 0]);
+        let x = cameraDistance * Math.sin(angle);
+        let z = cameraDistance * Math.cos(angle);
+        mat4.lookAt(this.modelViewMatrix, [x, cameraDistance / 2, z], [0, 0, 0], [0, 1, 0]);
         mat4.multiply(this.modelViewProjectionMatrix, this.projectionMatrix, this.modelViewMatrix);
     }
 

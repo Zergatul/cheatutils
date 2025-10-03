@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
+import com.zergatul.cheatutils.utils.DebugScreenExtensions;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -25,5 +26,6 @@ public class ModMain implements ClientModInitializer {
         Modules.registerKeyBindings();
         Modules.register();
         Events.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
+        DebugScreenExtensions.register();
     }
 }

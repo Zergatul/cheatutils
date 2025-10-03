@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -37,6 +36,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
+
+import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class LightLevel implements Module {
 
@@ -147,7 +148,7 @@ public class LightLevel implements Module {
             }
         }
 
-        int textureId = ((GlTexture) mc.getTextureManager().getTexture(texture).getTexture()).glId();
+        int textureId = getGlTexture(mc.getTextureManager().getTexture(texture).getTexture()).glId();
         renderer1.end(event.getMvp(), textureId);
 
         Vec3 tracerCenter = event.getTracerCenter();

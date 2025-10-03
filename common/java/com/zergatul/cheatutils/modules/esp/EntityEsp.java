@@ -21,7 +21,6 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -29,17 +28,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Predicate;
+
+import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class EntityEsp implements Module {
 
     public static final EntityEsp instance = new EntityEsp();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Map<EntityEspConfig, List<BufferedVerticesEntry>> overlayBufferedVertices = new HashMap<>();
-    private final Map<EntityEspConfig, List<BufferedVerticesEntry>> outlineBufferedVertices = new HashMap<>();
+    private final Map<EntityEspConfig, List<EntityTypeVertexConsumerEntry>> outlineVertexConsumers = new HashMap<>();
+    private final Map<EntityEspConfig, List<EntityTypeVertexConsumerEntry>> overlayVertexConsumers = new HashMap<>();
     private final Map<EntityScriptResultKey, EntityScriptResult> scriptResults = new HashMap<>();
     private boolean enabled = true;
 
@@ -60,33 +62,104 @@ public class EntityEsp implements Module {
         scriptResults.clear();
     }
 
-    public MultiBufferSource onRenderEntityModifyBufferSource(Entity entity, MultiBufferSource bufferSource) {
-        if (mc.player != null && EspGlobal.enabled) {
-            for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
-                if (!config.enabled) {
-                    continue;
-                }
+    public EntityRenderParameters getEntityRenderParameters(Entity entity) {
+        if (mc.player == null || !EspGlobal.enabled) {
+            return EntityRenderParameters.EMPTY;
+        }
 
-                if (!config.isValidEntity(entity)) {
-                    continue;
-                }
+        EntityEspConfig outlineConfig = null;
+        EntityEspConfig overlayConfig = null;
 
-                boolean drawOverlay =
-                        config.drawOverlay &&
-                        entity.distanceToSqr(mc.player) < config.getOverlayMaxDistanceSqr() &&
-                        !isOverlayDisabledFromScript(config, entity);
-                boolean drawOutline =
-                        config.useModOutline() &&
+        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
+            if (!config.enabled) {
+                continue;
+            }
+
+            if (!config.isValidEntity(entity)) {
+                continue;
+            }
+
+            if (outlineConfig == null) {
+                boolean drawOutline = config.useModOutline() &&
                         entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr() &&
                         !isOutlineDisabledFromScript(config, entity);
-                if (drawOverlay || drawOutline) {
-                    // TODO: cache wrappers? each entity = new wrapper!
-                    return new EntityEsp.MultiBufferSourceWrapper(config, bufferSource, drawOverlay, drawOutline);
+                if (drawOutline) {
+                    outlineConfig = config;
+                }
+            }
+
+            if (overlayConfig == null) {
+                boolean drawOverlay = config.drawOverlay &&
+                        entity.distanceToSqr(mc.player) < config.getOverlayMaxDistanceSqr() &&
+                        !isOverlayDisabledFromScript(config, entity);
+                if (drawOverlay) {
+                    overlayConfig = config;
                 }
             }
         }
 
-        return bufferSource;
+        if (outlineConfig != null || overlayConfig != null) {
+            return new EntityRenderParameters(outlineConfig, overlayConfig);
+        } else {
+            return EntityRenderParameters.EMPTY;
+        }
+    }
+
+    public Optional<ResourceLocation> getTextureFromRenderType(RenderType renderType) {
+        // for Iris compatibility
+        if (renderType instanceof WrappedRenderType wrapped) {
+            renderType = wrapped.unwrap();
+        }
+        if (renderType instanceof CompositeRenderTypeAccessor accessor) {
+            RenderType.CompositeState state = accessor.getState_CU();
+            RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
+            if (shard instanceof RenderStateShard.TextureStateShard textureStateShard) {
+                return ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
+            }
+        }
+        return Optional.empty();
+    }
+
+    public boolean isGoodRenderTypeForOverlays(RenderType renderType) {
+        if (renderType.outline().isEmpty()) {
+            return false;
+        }
+        if (renderType.mode() != VertexFormat.Mode.QUADS) {
+            return false;
+        }
+        if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.POSITION)) {
+            return false;
+        }
+        if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.UV)) {
+            return false;
+        }
+        return true;
+    }
+
+    public VertexConsumer getOutlineVertexConsumer(EntityEspConfig config, ResourceLocation texture) {
+        List<EntityTypeVertexConsumerEntry> entries = outlineVertexConsumers.computeIfAbsent(config, c -> new ArrayList<>());
+        for (EntityTypeVertexConsumerEntry entry : entries) {
+            if (entry.texture.equals(texture)) {
+                return entry.consumer;
+            }
+        }
+
+        BufferVertexConsumer consumer = new BufferVertexConsumer();
+        entries.add(new EntityTypeVertexConsumerEntry(texture, consumer));
+        return consumer;
+    }
+
+    public VertexConsumer getOverlayVertexConsumer(EntityEspConfig config, ResourceLocation texture) {
+        List<EntityTypeVertexConsumerEntry> entries = overlayVertexConsumers.computeIfAbsent(config, c -> new ArrayList<>());
+        for (EntityTypeVertexConsumerEntry entry : entries) {
+            if (entry.texture.equals(texture)) {
+                return entry.consumer;
+            }
+        }
+
+        BufferVertexConsumer consumer = new BufferVertexConsumer();
+        entries.add(new EntityTypeVertexConsumerEntry(texture, consumer));
+        return consumer;
     }
 
     public boolean shouldEntityGlow(Entity entity) {
@@ -130,7 +203,7 @@ public class EntityEsp implements Module {
     }
 
     private void render(RenderWorldLastEvent event) {
-        assert mc.player != null;
+        assert mc.level != null && mc.player != null;
 
         if (!enabled || !EspGlobal.enabled) {
             return;
@@ -155,7 +228,7 @@ public class EntityEsp implements Module {
         thickLineRenderer.begin(event, false);
 
         ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
-        for (Entity entity : mc.player.clientLevel.entitiesForRendering()) {
+        for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity instanceof LocalPlayer) {
                 continue;
             }
@@ -233,12 +306,12 @@ public class EntityEsp implements Module {
 
     private void drawOverlays(RenderWorldLastEvent event) {
         EntityOverlayRenderer renderer = RenderUtilities.instance.getEntityOverlayRenderer();
-        for (EntityEspConfig config: overlayBufferedVertices.keySet()) {
+        for (EntityEspConfig config: overlayVertexConsumers.keySet()) {
             renderer.begin();
 
-            List<BufferedVerticesEntry> entries = overlayBufferedVertices.get(config);
-            for (BufferedVerticesEntry entry: entries) {
-                FloatList list = entry.list;
+            List<EntityTypeVertexConsumerEntry> entries = overlayVertexConsumers.get(config);
+            for (EntityTypeVertexConsumerEntry entry: entries) {
+                FloatList list = entry.consumer.list;
                 if (list.size() == 0) {
                     continue;
                 }
@@ -278,7 +351,7 @@ public class EntityEsp implements Module {
                 }
 
                 AbstractTexture texture = mc.getTextureManager().getTexture(entry.texture);
-                renderer.renderBuffer(event.getMvp(), ((GlTexture) texture.getTexture()).glId());
+                renderer.renderBuffer(event.getMvp(), getGlTexture(texture.getTexture()).glId());
             }
 
             renderer.end(
@@ -288,16 +361,16 @@ public class EntityEsp implements Module {
                     config.overlayColor.getAlpha() / 255f);
         }
 
-        overlayBufferedVertices.clear();
+        overlayVertexConsumers.clear();
     }
 
     private void drawOutlines(RenderWorldLastEvent event) {
         EntityOutlineRenderer renderer = RenderUtilities.instance.getEntityOutlineRenderer();
-        for (EntityEspConfig config: outlineBufferedVertices.keySet()) {
+        for (EntityEspConfig config: outlineVertexConsumers.keySet()) {
             renderer.begin();
 
-            for (BufferedVerticesEntry entry : outlineBufferedVertices.get(config)) {
-                FloatList list = entry.list;
+            for (EntityTypeVertexConsumerEntry entry : outlineVertexConsumers.get(config)) {
+                FloatList list = entry.consumer.list;
                 if (list.size() == 0) {
                     continue;
                 }
@@ -333,7 +406,7 @@ public class EntityEsp implements Module {
                 }
 
                 AbstractTexture texture = mc.getTextureManager().getTexture(entry.texture);
-                renderer.renderBuffer(event.getMvp(), ((GlTexture) texture.getTexture()).glId());
+                renderer.renderBuffer(event.getMvp(), getGlTexture(texture.getTexture()).glId());
             }
 
             renderer.end(
@@ -343,7 +416,7 @@ public class EntityEsp implements Module {
                     config.glowColor.getAlpha() / 255f);
         }
 
-        outlineBufferedVertices.clear();
+        outlineVertexConsumers.clear();
     }
 
     private boolean isCollisionBoxDisabledFromScript(EntityEspConfig config, Entity entity) {
@@ -382,167 +455,6 @@ public class EntityEsp implements Module {
         scriptResults.put(new EntityScriptResultKey(entity.getId(), config), result);
         config.script.accept(entity.getId(), new EntityEspEvent(result));
         return result;
-    }
-
-    public static class MultiBufferSourceWrapper implements MultiBufferSource {
-
-        private final EntityEspConfig config;
-        private final MultiBufferSource source;
-        private final boolean overlay;
-        private final boolean outline;
-
-        public MultiBufferSourceWrapper(EntityEspConfig config, MultiBufferSource source, boolean overlay, boolean outline) {
-            this.config = config;
-            this.source = source;
-            this.overlay = overlay;
-            this.outline = outline;
-        }
-
-        @Override
-        public VertexConsumer getBuffer(RenderType renderType) {
-            if (isGoodRenderType(renderType)) {
-                // for Iris compatibility
-                if (renderType instanceof WrappedRenderType wrapped) {
-                    renderType = wrapped.unwrap();
-                }
-                if (renderType instanceof CompositeRenderTypeAccessor accessor) {
-                    RenderType.CompositeState state = accessor.getState_CU();
-                    RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
-                    if (shard instanceof RenderStateShard.TextureStateShard textureStateShard) {
-                        Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
-                        if (texture.isPresent()) {
-                            VertexConsumer inner = source.getBuffer(renderType);
-                            if (inner instanceof VertexConsumerWrapper) {
-                                return inner;
-                            } else {
-                                return new VertexConsumerWrapper(config, texture.get(), source.getBuffer(renderType), overlay, outline);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return source.getBuffer(renderType);
-        }
-
-        private static boolean isGoodRenderType(RenderType renderType) {
-            if (renderType.outline().isEmpty()) {
-                return false;
-            }
-            if (renderType.mode() != VertexFormat.Mode.QUADS) {
-                return false;
-            }
-            if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.POSITION)) {
-                return false;
-            }
-            if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.UV)) {
-                return false;
-            }
-            return true;
-        }
-    }
-
-    public static class VertexConsumerWrapper implements VertexConsumer {
-
-        private final VertexConsumer consumer;
-        private FloatList overlayList;
-        private FloatList outlineList;
-
-        public VertexConsumerWrapper(
-                EntityEspConfig config,
-                ResourceLocation texture,
-                VertexConsumer consumer,
-                boolean overlay,
-                boolean outline
-        ) {
-            this.consumer = consumer;
-
-            if (overlay) {
-                List<BufferedVerticesEntry> entries = EntityEsp.instance.overlayBufferedVertices.computeIfAbsent(config, c -> new ArrayList<>());
-                for (BufferedVerticesEntry entry : entries) {
-                    if (entry.texture.equals(texture)) {
-                        overlayList = entry.list;
-                        break;
-                    }
-                }
-
-                if (overlayList == null) {
-                    BufferedVerticesEntry entry = new BufferedVerticesEntry(texture, new FloatList());
-                    entries.add(entry);
-                    overlayList = entry.list;
-                }
-            }
-
-            if (outline) {
-                List<BufferedVerticesEntry> entries = EntityEsp.instance.outlineBufferedVertices.computeIfAbsent(config, c -> new ArrayList<>());
-                for (BufferedVerticesEntry entry : entries) {
-                    if (entry.texture.equals(texture)) {
-                        outlineList = entry.list;
-                        break;
-                    }
-                }
-
-                if (outlineList == null) {
-                    BufferedVerticesEntry entry = new BufferedVerticesEntry(texture, new FloatList());
-                    entries.add(entry);
-                    outlineList = entry.list;
-                }
-            }
-        }
-
-        @Override
-        public VertexConsumer addVertex(float x, float y, float z) {
-            if (overlayList != null) {
-                overlayList.add(x);
-                overlayList.add(y);
-                overlayList.add(z);
-            }
-            if (outlineList != null) {
-                outlineList.add(x);
-                outlineList.add(y);
-                outlineList.add(z);
-            }
-            consumer.addVertex(x, y, z);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setColor(int r, int g, int b, int a) {
-            consumer.setColor(r, g, b, a);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv(float x, float y) {
-            if (overlayList != null) {
-                overlayList.add(x);
-                overlayList.add(y);
-            }
-            if (outlineList != null) {
-                outlineList.add(x);
-                outlineList.add(y);
-            }
-            consumer.setUv(x, y);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int x, int y) {
-            consumer.setUv1(x, y);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int x, int y) {
-            consumer.setUv2(x, y);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z) {
-            consumer.setNormal(x, y, z);
-            return this;
-        }
     }
 
     private record BufferedVerticesEntry(ResourceLocation texture, FloatList list) {}
@@ -587,4 +499,54 @@ public class EntityEsp implements Module {
             return 31 * id + config.hashCode();
         }
     }
+
+    private static class BufferVertexConsumer implements VertexConsumer {
+
+        private final FloatList list;
+
+        public BufferVertexConsumer() {
+            this.list = new FloatList();
+        }
+
+        @Override
+        public @NotNull VertexConsumer addVertex(float x, float y, float z) {
+            list.add(x);
+            list.add(y);
+            list.add(z);
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setColor(int i, int j, int k, int l) {
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setUv(float u, float v) {
+            list.add(u);
+            list.add(v);
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setUv1(int i, int j) {
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setUv2(int i, int j) {
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setNormal(float f, float g, float h) {
+            return this;
+        }
+    }
+
+    public record EntityRenderParameters(EntityEspConfig outlineConfig, EntityEspConfig overlayConfig) {
+        public static final EntityRenderParameters EMPTY = new EntityRenderParameters(null, null);
+    }
+
+    public record EntityTypeVertexConsumerEntry(ResourceLocation texture, BufferVertexConsumer consumer) {}
 }

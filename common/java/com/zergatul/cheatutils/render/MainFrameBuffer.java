@@ -1,14 +1,13 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
 import org.lwjgl.opengl.GL30;
+
+import static com.zergatul.cheatutils.render.GlHelper.*;
 
 public class MainFrameBuffer {
 
@@ -18,7 +17,7 @@ public class MainFrameBuffer {
         RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
         GpuTexture colorTexture = target.getColorTexture();
         GpuTexture depthTexture = target.getDepthTexture();
-        lastFrameBufferObject = ((GlTexture) colorTexture).getFbo(((GlDevice) RenderSystem.getDevice()).directStateAccess(), depthTexture);
+        lastFrameBufferObject = getGlTexture(colorTexture).getFbo(getGlDevice(RenderSystem.getDevice()).directStateAccess(), getGlTexture(depthTexture));
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, lastFrameBufferObject);
     }
 

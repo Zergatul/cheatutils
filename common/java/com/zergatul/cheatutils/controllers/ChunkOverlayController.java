@@ -22,6 +22,8 @@ import org.joml.Quaternionf;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
+
 public class ChunkOverlayController {
 
     public static final ChunkOverlayController instance = new ChunkOverlayController();
@@ -68,7 +70,7 @@ public class ChunkOverlayController {
             return;
         }
 
-        if (Screen.hasAltDown()) {
+        if (mc.hasAltDown()) {
             return;
         }
 
@@ -113,7 +115,7 @@ public class ChunkOverlayController {
                 Texture2dRenderer renderer = RenderUtilities.instance.getTexture2dRenderer();
                 renderer.begin();
                 renderer.rect(x, y, scale, scale);
-                renderer.end(matrix, ((GlTexture) segment.texture.getTexture()).glId());
+                renderer.end(matrix, getGlTexture(segment.texture.getTexture()).glId());
             }
         }
 
@@ -130,7 +132,7 @@ public class ChunkOverlayController {
             if (noOverlaysEnabled()) {
                 return;
             }
-            if (Screen.hasAltDown()) {
+            if (mc.hasAltDown()) {
                 return;
             }
             event.cancel();

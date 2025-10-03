@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.Window;
 import com.zergatul.cheatutils.mixins.common.accessors.MouseHandlerAccessor;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.MouseButtonInfo;
 
 @SuppressWarnings("unused")
 public class WindowApi {
@@ -43,7 +44,7 @@ public class WindowApi {
             """)
     public void emulateMouseMove(int x, int y) {
         MouseHandlerAccessor handler = (MouseHandlerAccessor) mc.mouseHandler;
-        handler.onMove_CU(window.getWindow(), x, y);
+        handler.onMove_CU(window.handle(), x, y);
     }
 
     @MethodDescription("""
@@ -52,6 +53,6 @@ public class WindowApi {
             """)
     public void emulateMouseButtonEvent(int button, boolean pressed) {
         MouseHandlerAccessor handler = (MouseHandlerAccessor) mc.mouseHandler;
-        handler.onPress_CU(window.getWindow(), button, pressed ? 1 : 0, 0);
+        handler.onButton_CU(window.handle(), new MouseButtonInfo(button, 0), pressed ? 1 : 0);
     }
 }

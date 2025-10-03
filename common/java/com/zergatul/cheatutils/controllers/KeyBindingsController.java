@@ -1,14 +1,15 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.common.IKeyBindingRegistry;
-import com.zergatul.cheatutils.modules.scripting.ScriptingExceptions;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -29,9 +30,11 @@ public class KeyBindingsController {
     private final Optional<CompletableFuture<?>>[] futures = new Optional[KeyBindingsConfig.KeysCount];
 
     private KeyBindingsController() {
+        KeyMapping.Category category = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "common"));
+
         keys = new KeyMapping[KeyBindingsConfig.KeysCount];
         for (int i = 0; i < keys.length; i++) {
-            keys[i] = new KeyMapping("key.zergatul.cheatutils.reserved" + i, InputConstants.UNKNOWN.getValue(), "category.zergatul.cheatutils");
+            keys[i] = new KeyMapping("key.zergatul.cheatutils.reserved" + i, InputConstants.UNKNOWN.getValue(), category);
         }
 
         Arrays.setAll(actions, i -> Optional.empty());

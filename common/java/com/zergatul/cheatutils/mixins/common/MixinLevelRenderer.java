@@ -2,17 +2,14 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
-import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,8 +23,8 @@ public abstract class MixinLevelRenderer {
 
     @ModifyArg(
             method = "renderLevel",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;setupRender(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;ZZ)V"),
-            index = 3)
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;cullTerrain(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;Z)V"),
+            index = 2)
     private boolean onCallSetupRender(boolean isSpectator) {
         if (FreeCam.instance.isActive()) {
             return true;
@@ -44,6 +41,7 @@ public abstract class MixinLevelRenderer {
             Camera camera,
             Matrix4f pose,
             Matrix4f projection,
+            Matrix4f matrix,
             GpuBufferSlice gpuBufferSlice,
             Vector4f vector4f,
             boolean b,
@@ -60,6 +58,7 @@ public abstract class MixinLevelRenderer {
             Camera camera,
             Matrix4f pose,
             Matrix4f projection,
+            Matrix4f matrix,
             GpuBufferSlice gpuBufferSlice,
             Vector4f vector4f,
             boolean b,
@@ -70,15 +69,5 @@ public abstract class MixinLevelRenderer {
         Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(pose, projection, delta));
         MainFrameBuffer.exit();
         GlStateTracker.restore();
-    }
-
-    @Inject(at = @At("HEAD"), method = "renderEntity")
-    private void onBeforeRenderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo info) {
-        MixinLevelRendererHelper.current = entity;
-    }
-
-    @Inject(at = @At("TAIL"), method = "renderEntity")
-    private void onAfterRenderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo info) {
-        MixinLevelRendererHelper.current = null;
     }
 }

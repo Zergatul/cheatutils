@@ -41,20 +41,19 @@ public class RenderWorldLastEvent {
         double deltaZRot = 0;
         double translateX = 0;
         double translateY = 0;
-        if (mc.options.bobView().get() && mc.getCameraEntity() instanceof LocalPlayer) {
-            LocalPlayer player = (LocalPlayer) mc.getCameraEntity();
-            float f = player.walkDist - player.walkDistO;
-            float f1 = -(player.walkDist + f * tickDelta);
-            float f2 = Mth.lerp(tickDelta, player.oBob, player.bob);
-            //p_228383_1_.translate((double)(MathHelper.sin(f1 * (float)Math.PI) * f2 * 0.5F), (double)(-Math.abs(MathHelper.cos(f1 * (float)Math.PI) * f2)), 0.0D);
-            //p_228383_1_.mulPose(Vector3f.ZP.rotationDegrees(MathHelper.sin(f1 * (float)Math.PI) * f2 * 3.0F));
-            //p_228383_1_.mulPose(Vector3f.XP.rotationDegrees(Math.abs(MathHelper.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F));
-            translateX = (double)(Mth.sin(f1 * (float)Math.PI) * f2 * 0.5F);
-            translateY = (double)(-Math.abs(Mth.cos(f1 * (float)Math.PI) * f2));
-            deltaZRot = Mth.sin(f1 * (float)Math.PI) * f2 * 3.0F;
-            deltaXRot = Math.abs(Mth.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F;
-        }
-        double drawBeforeCameraDist = 64;
+//        if (mc.options.bobView().get() && mc.getCameraEntity() instanceof LocalPlayer) {
+//            LocalPlayer player = (LocalPlayer) mc.getCameraEntity();
+//            float f1 = player.avatarState().getInterpolatedWalkDistance(tickDelta);
+//            float f2 = player.avatarState().getInterpolatedBob(tickDelta);
+//            //p_228383_1_.translate((double)(MathHelper.sin(f1 * (float)Math.PI) * f2 * 0.5F), (double)(-Math.abs(MathHelper.cos(f1 * (float)Math.PI) * f2)), 0.0D);
+//            //p_228383_1_.mulPose(Vector3f.ZP.rotationDegrees(MathHelper.sin(f1 * (float)Math.PI) * f2 * 3.0F));
+//            //p_228383_1_.mulPose(Vector3f.XP.rotationDegrees(Math.abs(MathHelper.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F));
+//            translateX = (double)(Mth.sin(f1 * (float)Math.PI) * f2 * 0.5F);
+//            translateY = (double)(-Math.abs(Mth.cos(f1 * (float)Math.PI) * f2));
+//            deltaZRot = Mth.sin(f1 * (float)Math.PI) * f2 * 3.0F;
+//            deltaXRot = Math.abs(Mth.cos(f1 * (float)Math.PI - 0.2F) * f2) * 5.0F;
+//        }
+        double drawBeforeCameraDist = 1024;
         double yaw = yRot * Math.PI / 180;
         double pitch = (xRot + deltaXRot) * Math.PI / 180;
 

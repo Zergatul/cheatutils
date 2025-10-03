@@ -248,8 +248,8 @@ public class StatusOverlay implements Module, FontBackendHolder {
 
     private static class FboGuiRenderElement implements GuiElementRenderState {
         @Override
-        public void buildVertices(VertexConsumer vertexConsumer, float f) {
-            final float z = f + 0.1f;
+        public void buildVertices(VertexConsumer vertexConsumer) {
+            final float z = 0.1f;
             final Window window = mc.getWindow();
             final float w = 1f * window.getWidth() / window.getGuiScale();
             final float h = 1f * window.getHeight() / window.getGuiScale();

@@ -24,35 +24,35 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LevelRenderer.class)
 public abstract class MixinLevelRenderer {
 
-    @Shadow
-    @Final
-    private RenderBuffers renderBuffers;
-
-    @Shadow
-    @Final
-    private Minecraft minecraft;
-
-    @Shadow
-    protected abstract void renderEntity(Entity p_109518_, double p_109519_, double p_109520_, double p_109521_, float p_109522_, PoseStack p_109523_, MultiBufferSource p_109524_);
-
-    @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V", ordinal = 0),
-            method = "lambda$addMainPass$2",
-            require = 0)
-    private void onAfterRenderEntities(
-            GpuBufferSlice p_407574_,
-            DeltaTracker deltaTracker,
-            Camera camera,
-            ProfilerFiller profiler,
-            Matrix4f p_361439_,
-            ResourceHandle<?> handle1,
-            ResourceHandle<?> handle2,
-            Frustum frustum,
-            boolean p_362593_,
-            ResourceHandle<?> handle3,
-            ResourceHandle<?> handle4,
-            CallbackInfo info
-    ) {
-        FakePlayer.render(this.minecraft, camera, renderBuffers, this::renderEntity);
-    }
+//    @Shadow
+//    @Final
+//    private RenderBuffers renderBuffers;
+//
+//    @Shadow
+//    @Final
+//    private Minecraft minecraft;
+//
+//    @Shadow
+//    protected abstract void renderEntity(Entity p_109518_, double p_109519_, double p_109520_, double p_109521_, float p_109522_, PoseStack p_109523_, MultiBufferSource p_109524_);
+//
+//    @Inject(
+//            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V", ordinal = 0),
+//            method = "lambda$addMainPass$2",
+//            require = 0)
+//    private void onAfterRenderEntities(
+//            GpuBufferSlice p_407574_,
+//            DeltaTracker deltaTracker,
+//            Camera camera,
+//            ProfilerFiller profiler,
+//            Matrix4f p_361439_,
+//            ResourceHandle<?> handle1,
+//            ResourceHandle<?> handle2,
+//            Frustum frustum,
+//            boolean p_362593_,
+//            ResourceHandle<?> handle3,
+//            ResourceHandle<?> handle4,
+//            CallbackInfo info
+//    ) {
+//        FakePlayer.render(this.minecraft, camera, renderBuffers, this::renderEntity);
+//    }
 }

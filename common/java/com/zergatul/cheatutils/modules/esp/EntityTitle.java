@@ -53,11 +53,11 @@ public class EntityTitle implements FontBackendHolder {
                 @Override
                 public Optional<String> load(UUID uuid) {
                     CompletableFuture.runAsync(() -> {
-                        ProfileResult result = Minecraft.getInstance().getMinecraftSessionService().fetchProfile(uuid, false);
+                        ProfileResult result = Minecraft.getInstance().services().sessionService().fetchProfile(uuid, false);
                         if (result == null) {
                             usernameCache.put(uuid, Optional.of(uuid.toString()));
                         } else {
-                            usernameCache.put(uuid, Optional.of(result.profile().getName()));
+                            usernameCache.put(uuid, Optional.of(result.profile().name()));
                         }
                     });
                     return Optional.of("loading...");

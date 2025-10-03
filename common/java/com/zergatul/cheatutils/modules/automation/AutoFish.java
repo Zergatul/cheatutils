@@ -39,7 +39,7 @@ public class AutoFish implements Module {
     }
 
     private void onClientTickEnd() {
-        if (mc.player == null) {
+        if (mc.level == null || mc.player == null) {
             state = State.NONE;
             return;
         }
@@ -63,14 +63,14 @@ public class AutoFish implements Module {
                         mc.player.getX() + 100,
                         mc.player.getY() + 100,
                         mc.player.getZ() + 100);
-                List<FishingHook> bobbers = mc.player.clientLevel.getEntitiesOfClass(FishingHook.class, box);
+                List<FishingHook> bobbers = mc.level.getEntitiesOfClass(FishingHook.class, box);
                 bobber = bobbers.stream().filter(b -> b.getPlayerOwner() == mc.player).findFirst();
                 if (bobber.isPresent()) {
                     state = State.WAITING_FOR_SOUND;
                 }
             }
             case WAITING_FOR_SOUND -> {
-                if (mc.player.clientLevel.getEntity(bobber.get().getId()) == null) {
+                if (mc.level.getEntity(bobber.get().getId()) == null) {
                     // bobber disappeared
                     state = State.WAITING_FOR_BOBBER;
                     break;

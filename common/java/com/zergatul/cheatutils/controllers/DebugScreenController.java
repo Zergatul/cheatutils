@@ -28,10 +28,5 @@ public class DebugScreenController {
                 executor.getRejected(),
                 format.format(executor.getBusyPercentage()) + "%"));
 
-        FreeCam.instance.onRenderDebugScreenLeft(list);
-    }
-
-    public void onGetSystemInformation(List<String> list) {
-        FreeCam.instance.onDebugScreenGetSystemInformation(list);
     }
 }

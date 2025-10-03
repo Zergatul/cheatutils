@@ -69,7 +69,7 @@ public class LogoutSpots implements Module {
     private void onPlayerInfoUpdated(PlayerInfoUpdateEvent event) {
         assert mc.level != null;
 
-        UUID uuid = event.info().getProfile().getId();
+        UUID uuid = event.info().getProfile().id();
         if (event.type() == PlayerInfoUpdateType.REMOVE) {
             CachedPlayerEntry entry = cachedPlayers.get(uuid);
             if (entry != null) {
@@ -97,7 +97,7 @@ public class LogoutSpots implements Module {
 
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity instanceof RemotePlayer player) {
-                UUID uuid = player.getGameProfile().getId();
+                UUID uuid = player.getGameProfile().id();
                 CachedPlayerEntry entry = cachedPlayers.get(uuid);
                 if (entry != null) {
                     entry.refreshTicks();
@@ -161,7 +161,7 @@ public class LogoutSpots implements Module {
         public final EntityLike entity;
 
         public LogoutSpotEntry(RemotePlayer player) {
-            profileId = player.getGameProfile().getId();
+            profileId = player.getGameProfile().id();
             dimension = player.level().dimension().location();
             pos = player.position();
             width = player.getBbWidth();

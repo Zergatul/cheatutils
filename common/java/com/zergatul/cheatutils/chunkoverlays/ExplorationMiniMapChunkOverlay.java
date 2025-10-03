@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -22,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
@@ -80,7 +81,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                     -ImageSize / 2f + ((float) marker.x - xc) * multiplier,
                     -ImageSize / 2f + ((float) marker.z - zc) * multiplier,
                     ImageSize, ImageSize);
-            renderer.end(matrix, ((GlTexture) mc.getTextureManager().getTexture(MarkerTexture).getTexture()).glId());
+            renderer.end(matrix, getGlTexture(mc.getTextureManager().getTexture(MarkerTexture).getTexture()).glId());
         }
 
         double distanceToPlayer = Math.sqrt((xp - xc) * (xp - xc) + (zp - zc) * (zp - zc));
@@ -90,7 +91,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                     -ImageSize / 2f,
                     -ImageSize / 2f,
                     ImageSize, ImageSize);
-            renderer.end(matrix, ((GlTexture) mc.getTextureManager().getTexture(CenterPosTexture).getTexture()).glId());
+            renderer.end(matrix, getGlTexture(mc.getTextureManager().getTexture(CenterPosTexture).getTexture()).glId());
         }
 
         renderer.begin();
@@ -98,7 +99,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                 -ImageSize / 2f + (xp - xc) * multiplier,
                 -ImageSize / 2f + (zp - zc) * multiplier,
                 ImageSize, ImageSize);
-        renderer.end(matrix, ((GlTexture) mc.getTextureManager().getTexture(PlayerPosTexture).getTexture()).glId());
+        renderer.end(matrix, getGlTexture(mc.getTextureManager().getTexture(PlayerPosTexture).getTexture()).glId());
     }
 
     @Override

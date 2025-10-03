@@ -131,7 +131,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
 
         List<ContainerSummaryController.ItemDrawable> list = ContainerSummaryController.instance.groupItems(items);
 
-        boolean group = !Screen.hasAltDown();
+        boolean group = !Minecraft.getInstance().hasAltDown();
 
         list.forEach(d -> d.initDraw(this.font, group));
         List<ContainerSummaryController.ItemsColumn> columns = ContainerSummaryController.instance.split(list);

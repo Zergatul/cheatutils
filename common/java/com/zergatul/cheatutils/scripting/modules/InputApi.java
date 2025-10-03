@@ -29,15 +29,15 @@ public class InputApi {
     }
 
     public boolean isShiftDown() {
-        return Screen.hasShiftDown();
+        return mc.hasShiftDown();
     }
 
     public boolean isControlDown() {
-        return Screen.hasControlDown();
+        return mc.hasControlDown();
     }
 
     public boolean isAltDown() {
-        return Screen.hasAltDown();
+        return mc.hasAltDown();
     }
 
     @MethodDescription("""
@@ -53,7 +53,7 @@ public class InputApi {
             return false;
         }
         if (inputKey.getType() == InputConstants.Type.KEYSYM) {
-            return InputConstants.isKeyDown(mc.getWindow().getWindow(), inputKey.getValue());
+            return InputConstants.isKeyDown(mc.getWindow(), inputKey.getValue());
         }
 
         return false;

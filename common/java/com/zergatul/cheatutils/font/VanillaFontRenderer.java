@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.font;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
@@ -22,6 +21,8 @@ import org.joml.Matrix4f;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class VanillaFontRenderer extends FontRenderer {
 
@@ -108,7 +109,7 @@ public class VanillaFontRenderer extends FontRenderer {
 
                     Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
                     AbstractTexture t = mc.getTextureManager().getTexture(texture.get());
-                    int id = ((GlTexture) t.getTexture()).glId();
+                    int id = getGlTexture(t.getTexture()).glId();
 
                     TextureColor2dRenderBuffer buffer = buffers.getTexColor2d(id);
                     if (dropShadow) {

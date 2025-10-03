@@ -154,11 +154,11 @@ public class AimAssist implements Module {
     }
 
     private Entity findTarget(Rotation playerRot) {
-        assert mc.player != null;
+        assert mc.level != null && mc.player != null;
 
         Entity target = null;
         double bestDeltaAngleSqr = Double.MAX_VALUE;
-        for (Entity entity : mc.player.clientLevel.entitiesForRendering()) {
+        for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity == mc.player) {
                 continue;
             }

@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public abstract class MixinKeyBindingListKeyEntry {
 
     @ModifyArg(
-            method = "render(Lnet/minecraft/client/gui/GuiGraphics;IIIIIIIZF)V",
+            method = "renderContent",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"))
     private Component onRenderKeyName(Component component) {
         if (component instanceof MutableComponent mutable) {

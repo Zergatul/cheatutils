@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.render.gl;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
@@ -10,6 +9,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+
+import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class TextureUtils {
 
@@ -21,7 +22,7 @@ public class TextureUtils {
     }
 
     public static byte[] toPng(AbstractTexture texture) throws IOException {
-        return toPng(((GlTexture) texture.getTexture()).glId());
+        return toPng(getGlTexture(texture.getTexture()).glId());
     }
 
     public static byte[] toPng(int id) throws IOException {

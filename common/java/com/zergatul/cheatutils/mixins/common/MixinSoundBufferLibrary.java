@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.audio.SoundBuffer;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.sound.SoundLibrary;
 import net.minecraft.client.sounds.JOrbisAudioStream;
 import net.minecraft.client.sounds.SoundBufferLibrary;
@@ -25,7 +26,7 @@ public abstract class MixinSoundBufferLibrary {
 
     @Inject(at = @At("HEAD"), method = "getCompleteBuffer", cancellable = true)
     private void onGetCompleteBuffer(ResourceLocation location, CallbackInfoReturnable<CompletableFuture<SoundBuffer>> info) {
-        if (location.getNamespace().equals("cheatutils") && location.getPath().startsWith("sounds/dynamic/")) {
+        if (location.getNamespace().equals(ModMain.MODID) && location.getPath().startsWith("sounds/dynamic/")) {
             var future = dynamicSoundsMap.get(location);
             if (future != null) {
                 info.setReturnValue(future);

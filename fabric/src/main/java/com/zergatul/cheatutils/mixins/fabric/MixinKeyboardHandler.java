@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(KeyboardHandler.class)
 public abstract class MixinKeyboardHandler {
 
-    @Redirect(
-            method = "keyPress(JIIII)V",
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 2))
-    private Screen onCheckScreenPassEvents(Minecraft mc) {
-        return InvMove.instance.overrideGetScreen(mc);
-    }
+//    @Redirect(
+//            method = "keyPress(JIIII)V",
+//            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 2))
+//    private Screen onCheckScreenPassEvents(Minecraft mc) {
+//        return InvMove.instance.overrideGetScreen(mc);
+//    }
 
     /*@Inject(
             method = "method_1454(ILnet/minecraft/client/gui/screens/Screen;[ZIII)V",

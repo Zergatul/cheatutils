@@ -31,7 +31,6 @@
     "common.accessors.MouseHandlerAccessor",
     "common.accessors.MultiPlayerGameModeAccessor",
     "common.accessors.ProjectileAccessor",
-    "common.accessors.SerializableChunkDataAccessor",
     "common.accessors.ScreenAccessor",
     "common.accessors.TextureStateShardAccessor",
     "common.accessors.WalkAnimationStateAccessor",
@@ -57,10 +56,9 @@
     "common.MixinClientCommonPacketListenerImpl",
     "common.MixinConnection",
     "common.MixinDeathScreen",
-    "common.MixinDebugScreenOverlay",
     "common.MixinEntity",
     "common.MixinEntityRenderer",
-    "common.MixinEntityRendererDispatcher",
+    "common.MixinEntityRenderState",
     "common.MixinFramerateLimitTracker",
     "common.MixinGameRenderer",
     "common.MixinGui",
@@ -73,6 +71,7 @@
     "common.MixinLivingEntity",
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
+    "common.MixinModelFeatureRenderer",
     "common.MixinMouseHandler",
     "common.MixinMouseHandlerFreeCam",
     "common.MixinMouseHandlerZoom",
@@ -86,6 +85,8 @@
     "common.MixinSoundBufferLibrary",
     "common.MixinSlimeBlock",
     "common.MixinSoundManager",
+    "common.MixinSubmitNodeCollection",
+    "common.MixinSubmitNodeStorageModelSubmit",
     "common.MixinUser",
     "common.MixinWeatherEffectRenderer",
 
@@ -97,8 +98,6 @@
     "fabric.MixinMultiPlayerGameMode",
     "fabric.MixinScreen",
 
-    "fabric.compatibility.iris.MixinOuterWrappedRenderType",
-    "fabric.compatibility.sodium.MixinBlockModelApiMemoryVertexConsumer",
-    "fabric.compatibility.sodium.MixinEntityEspVertexConsumerWrapper"
+    "fabric.compatibility.iris.MixinOuterWrappedRenderType"
   ]
 }

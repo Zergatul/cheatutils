@@ -4,7 +4,6 @@ import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
-import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -34,6 +33,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.chunk.Strategy;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -846,6 +846,8 @@ public class Schematica {
 
     private static class ChunkSection {
 
+        private static final Strategy<BlockState> STRATEGY = Strategy.createForBlockStates(Block.BLOCK_STATE_REGISTRY);
+
         private final int minX;
         private final int minY;
         private final int minZ;
@@ -857,7 +859,7 @@ public class Schematica {
             minX = x;
             minY = y;
             minZ = z;
-            states = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
+            states = new PalettedContainer<>(Blocks.AIR.defaultBlockState(), STRATEGY);
         }
 
         public int getSectionX() {
