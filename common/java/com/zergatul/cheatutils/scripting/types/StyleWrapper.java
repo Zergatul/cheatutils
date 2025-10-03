@@ -5,6 +5,7 @@ import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.StringUtil;
 
@@ -27,6 +28,11 @@ public class StyleWrapper {
         return inner.getClickEvent() != null;
     }
 
+    @Getter(name = "hasHoverEvent")
+    public boolean hasHoverEvent() {
+        return inner.getHoverEvent() != null;
+    }
+
     @Getter(name = "clickEventType")
     public String getClickEventType() {
         ClickEvent event = inner.getClickEvent();
@@ -34,6 +40,30 @@ public class StyleWrapper {
             return "";
         }
         return event.action().toString();
+    }
+
+    @Getter(name = "hoverEventType")
+    public String getHoverEventType() {
+        HoverEvent event = inner.getHoverEvent();
+        if (event == null) {
+            return "";
+        }
+
+        return event.action().toString();
+    }
+
+    @Getter(name = "hoverText")
+    public ComponentWrapper getHoverText() {
+        HoverEvent event = inner.getHoverEvent();
+        if (event == null) {
+            return ComponentWrapper.EMPTY;
+        }
+        if (event.action() == HoverEvent.Action.SHOW_TEXT) {
+            HoverEvent.ShowText showText = (HoverEvent.ShowText) event;
+            return new ComponentWrapper(showText.value());
+        } else {
+            return ComponentWrapper.EMPTY;
+        }
     }
 
     @MethodDescription("""
