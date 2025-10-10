@@ -96,8 +96,6 @@
     "fabric.MixinKeyboardHandler",
     "fabric.MixinLevelRenderer",
     "fabric.MixinMultiPlayerGameMode",
-    "fabric.MixinScreen",
-
-    "fabric.compatibility.iris.MixinOuterWrappedRenderType"
+    "fabric.MixinScreen"
   ]
 }

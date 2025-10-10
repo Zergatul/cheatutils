@@ -4,18 +4,24 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.extensions.EntityRenderStateExtension;
+import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
@@ -69,5 +75,27 @@ public abstract class MixinLevelRenderer {
         Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(pose, projection, delta));
         MainFrameBuffer.exit();
         GlStateTracker.restore();
+    }
+
+    @Unique
+    private Entity currentRenderedEntity_CU;
+
+    @ModifyArg(
+            method = "extractVisibleEntities",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;extractEntity(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"),
+            index = 0)
+    private Entity onStoreEntityBeforeCalculatingRenderState(Entity entity) {
+        currentRenderedEntity_CU = entity;
+        return entity;
+    }
+
+    @ModifyVariable(
+            method = "extractVisibleEntities",
+            at = @At(value = "STORE"),
+            ordinal = 0)
+    private EntityRenderState onModifyEntityRenderState(EntityRenderState state) {
+        ((EntityRenderStateExtension) state).setParameters_CU(EntityEsp.instance.getEntityRenderParameters(currentRenderedEntity_CU));
+        currentRenderedEntity_CU = null;
+        return state;
     }
 }

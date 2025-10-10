@@ -1,13 +1,11 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.zergatul.cheatutils.collections.FloatList;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.compatibility.WrappedRenderType;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.StylizedText;
@@ -106,10 +104,6 @@ public class EntityEsp implements Module {
     }
 
     public Optional<ResourceLocation> getTextureFromRenderType(RenderType renderType) {
-        // for Iris compatibility
-        if (renderType instanceof WrappedRenderType wrapped) {
-            renderType = wrapped.unwrap();
-        }
         if (renderType instanceof CompositeRenderTypeAccessor accessor) {
             RenderType.CompositeState state = accessor.getState_CU();
             RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();

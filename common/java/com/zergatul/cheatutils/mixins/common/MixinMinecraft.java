@@ -120,7 +120,16 @@ public abstract class MixinMinecraft {
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;onDisconnected()V", shift = At.Shift.AFTER),
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V")
-    private void onClearLevel(Screen screen, boolean b, CallbackInfo info) {
+    private void onClearDisconnect(Screen screen, boolean b, CallbackInfo info) {
+        if (this.level != null) {
+            Events.LevelUnload.trigger();
+        }
+    }
+
+    @Inject(
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;onDisconnected()V"),
+            method = "clearClientLevel")
+    private void onClearClientLevel(Screen screen, CallbackInfo info) {
         if (this.level != null) {
             Events.LevelUnload.trigger();
         }
