@@ -13,6 +13,7 @@ import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ConfigStore {
 
@@ -33,6 +35,7 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
+            .registerTypeAdapter(BlockTracerConfig.class, new BlockTracerConfigTypeAdapter())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
@@ -141,6 +144,12 @@ public class ConfigStore {
 
     private void onConfigLoaded() {
         LightLevel.instance.onChanged();
+
+        // remove blocks that can't get deserialized, probably from removed mod
+        config.blocks.configs = config.blocks.configs
+                .removeIf(Objects::isNull)
+                .removeIf(c -> c.block == null)
+                .removeIf(c -> c.block == Blocks.AIR);
         config.blocks.apply();
 
         // clazz==null can occur after removing mod with custom entities
