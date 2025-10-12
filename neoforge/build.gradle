@@ -172,6 +172,11 @@ tasks.named('jar', org.gradle.jvm.tasks.Jar).configure {
     archiveFileName = "cheatutils-$mod_version-neoforge-${minecraft_version}.jar"
 }
 
+tasks.named('jar', Jar) {
+    includeEmptyDirs = false
+    exclude('net/irisshaders/**')
+}
+
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
     module {

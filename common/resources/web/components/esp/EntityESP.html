@@ -8,11 +8,11 @@
                 <table>
                     <tr v-for="item in entitiesConfigList" :key="item.clazz">
                         <td>
-                            <div class="entity-info-row-1" :class="{ 'entity-info-interface': entitiesMap[item.clazz].isInterface }">
+                            <div class="entity-info-header" :class="{ 'entity-info-interface': entitiesMap[item.clazz].isInterface }">
                                 <div class="entity-info-classname">{{ entitiesMap[item.clazz].simpleName }}</div>
                                 <div class="smaller entity-info-id" v-if="entitiesMap[item.clazz].id">{{ entitiesMap[item.clazz].id }}</div>
                             </div>
-                            <div class="smaller" v-if="!entitiesMap[item.clazz].isInterface">
+                            <div class="entity-info-hierarchy smaller" v-if="!entitiesMap[item.clazz].isInterface">
                                 <span v-for="clazz in entitiesMap[item.clazz].baseClasses">
                                     🠞 {{ entitiesMap[clazz].simpleName }}
                                 </span>
@@ -20,7 +20,7 @@
                                     ⊕ {{ entitiesMap[interface].simpleName }}
                                 </span>
                             </div>
-                            <div class="smaller entity-full-classname">{{ item.clazz }}</div>
+                            <div class="entity-info-full-classname smaller">{{ item.clazz }}</div>
                         </td>
                         <td>
                             <div>
@@ -71,11 +71,11 @@
                 <table>
                     <tr v-for="item in entityListFiltered" :key="item.clazz">
                         <td>
-                            <div class="entity-info-row-1" :class="{ 'entity-info-interface': item.isInterface }">
+                            <div class="entity-info-header" :class="{ 'entity-info-interface': item.isInterface }">
                                 <div class="entity-info-classname">{{ item.simpleName }}</div>
                                 <div class="smaller entity-info-id" v-if="item.id">{{ item.id }}</div>
                             </div>
-                            <div class="smaller" v-if="!item.isInterface">
+                            <div class="entity-info-hierarchy smaller" v-if="!item.isInterface">
                                 <span class="entity-tree" v-for="clazz in item.baseClasses">
                                     🠞 {{ entitiesMap[clazz].simpleName }}
                                 </span>
@@ -83,7 +83,7 @@
                                     ⊕ {{ entitiesMap[interface].simpleName }}
                                 </span>
                             </div>
-                            <div class="smaller entity-full-classname">{{ item.clazz }}</div>
+                            <div class="entity-info-full-classname smaller">{{ item.clazz }}</div>
                         </td>
                         <td class="last-cell">
                             <button class="edit" @click="openEdit(item.clazz)">

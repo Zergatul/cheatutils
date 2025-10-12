@@ -18,6 +18,10 @@ public class ImmutableList<E> implements Iterable<E> {
         this(collection.toArray());
     }
 
+    public static <E> ImmutableList<E> empty() {
+        return new ImmutableList<>();
+    }
+
     @SafeVarargs
     public static <E> ImmutableList<E> from(E... items) {
         return new ImmutableList<>(items);

@@ -52,12 +52,13 @@ sourceSets {
     main {
         java {
             srcDir '../common/java'
-            srcDir '../common/forge-and-fabric'
+            srcDir '../common/forge-and-fabric/java'
             srcDir '../java-scripting-language/src/main/java'
             srcDir '../mixin-plugin/common/java'
         }
         resources {
             srcDir '../common/resources'
+            srcDir '../common/forge-and-fabric/resources'
         }
     }
     codegen {

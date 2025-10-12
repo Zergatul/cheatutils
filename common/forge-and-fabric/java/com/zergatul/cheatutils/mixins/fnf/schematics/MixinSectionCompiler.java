@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.mixins.common.schematics;
+package com.zergatul.cheatutils.mixins.fnf.schematics;
 
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.zergatul.cheatutils.modules.automation.Schematica;

@@ -1,19 +1,13 @@
 package com.zergatul.cheatutils.entities;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.mixins.common.accessors.LivingEntityAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.WalkAnimationStateAccessor;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -100,31 +94,8 @@ public class FakePlayer extends RemotePlayer {
         list.remove(this);
     }
 
-    public static void render(Minecraft mc, RenderBuffers renderBuffers, RenderEntityCallback callback) {
-        if (list.isEmpty()) {
-            return;
-        }
-        LocalPlayer player = mc.player;
-        if (player == null) {
-            return;
-        }
-
-        MultiBufferSource.BufferSource source = renderBuffers.bufferSource();
-        Vec3 view = mc.gameRenderer.getMainCamera().getPosition();
-        double x = view.x;
-        double y = view.y;
-        double z = view.z;
-        for (FakePlayer fake : list) {
-            if (fake.distanceToSqr(player) > 1) {
-                // is new PoseStack good for compatibility?
-                callback.renderEntity(fake, x, y, z, 1, new PoseStack(), source);
-            }
-        }
-    }
-
-    @FunctionalInterface
-    public interface RenderEntityCallback {
-        void renderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack pose, MultiBufferSource.BufferSource source);
+    public static List<FakePlayer> getList() {
+        return list;
     }
 
     private static class SnapshotClientAvatarState extends ClientAvatarState {

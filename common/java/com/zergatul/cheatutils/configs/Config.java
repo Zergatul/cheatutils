@@ -38,7 +38,6 @@ public class Config {
     public StatusEffectsConfig statusEffectsConfig = new StatusEffectsConfig();
     public AutoEatConfig autoEatConfig = new AutoEatConfig();
     public NoFallConfig noFallConfig = new NoFallConfig();
-    public ParticlesConfig particlesConfig = new ParticlesConfig();
     public AntiRespawnResetConfig antiRespawnResetConfig = new AntiRespawnResetConfig();
     public FastBreakConfig fastBreakConfig = new FastBreakConfig();
     public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();

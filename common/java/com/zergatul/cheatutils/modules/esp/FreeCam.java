@@ -12,6 +12,7 @@ import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -227,6 +228,15 @@ public class FreeCam implements Module {
             return true;
         } else {
             return cameraType.isFirstPerson();
+        }
+    }
+
+    public boolean isCameraDetached(boolean value) {
+        FreeCamConfig config = getConfig();
+        if (active && config.renderHands && !cameraLock && !eyeLock && !followCamera) {
+            return false;
+        } else {
+            return value;
         }
     }
 

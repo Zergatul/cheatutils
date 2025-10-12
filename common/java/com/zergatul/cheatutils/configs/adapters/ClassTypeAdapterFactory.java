@@ -8,6 +8,8 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
@@ -23,6 +25,8 @@ public class ClassTypeAdapterFactory implements TypeAdapterFactory {
     }
 
     private static class ClassTypeAdapter extends TypeAdapter<Class<?>> {
+
+        private static final Logger LOGGER = LogManager.getLogger(ClassTypeAdapter.class);
 
         @Override
         public void write(JsonWriter out, Class<?> value) throws IOException {
@@ -41,9 +45,8 @@ public class ClassTypeAdapterFactory implements TypeAdapterFactory {
             } else {
                 try {
                     return ClassUtils.forName(ClassRemapper.toObf(value));
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
+                } catch (Throwable e) {
+                    LOGGER.warn(String.format("Can't parse class from '%s'", value), e);
                     return null;
                 }
             }

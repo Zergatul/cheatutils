@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 public class ResourceHelper {
 
     public static InputStream get(String path) {
-        return ModEnvironment.isProduction ? getProduction(path) : getDevelopment(path);
+        return ModEnvironment.IS_PRODUCTION ? getProduction(path) : getDevelopment(path);
     }
 
     private static InputStream getDevelopment(String filename) {

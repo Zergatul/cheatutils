@@ -2,9 +2,11 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.extensions.EntityRenderStateExtension;
+import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
@@ -13,6 +15,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -63,8 +66,8 @@ public abstract class MixinLevelRenderer {
             boolean renderBlockOutline,
             Camera camera,
             Matrix4f pose,
-            Matrix4f projection,
-            Matrix4f matrix,
+            Matrix4f projectionWithBob,
+            Matrix4f projectionForCulling,
             GpuBufferSlice gpuBufferSlice,
             Vector4f vector4f,
             boolean b,
@@ -72,7 +75,7 @@ public abstract class MixinLevelRenderer {
     ) {
         GlStateTracker.save();
         MainFrameBuffer.enter();
-        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(pose, projection, delta));
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(camera, pose, projectionWithBob, delta));
         MainFrameBuffer.exit();
         GlStateTracker.restore();
     }
@@ -97,5 +100,21 @@ public abstract class MixinLevelRenderer {
         ((EntityRenderStateExtension) state).setParameters_CU(EntityEsp.instance.getEntityRenderParameters(currentRenderedEntity_CU));
         currentRenderedEntity_CU = null;
         return state;
+    }
+
+    @ModifyArg(
+            method = "submitEntities",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V"),
+            index = 0)
+    private EntityRenderState onStoreCurrentEntitySubmit(EntityRenderState state) {
+        MixinLevelRendererHelper.CURRENT_SUBMIT_ENTITY_RENDER_PARAMETERS = ((EntityRenderStateExtension) state).getParameters_CU();
+        return state;
+    }
+
+    @Inject(
+            method = "submitEntities",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V", shift = At.Shift.AFTER))
+    private void onAfterSubmittingEntityState(PoseStack poseStack, LevelRenderState levelRenderState, SubmitNodeCollector submitNodeCollector, CallbackInfo info) {
+        MixinLevelRendererHelper.CURRENT_SUBMIT_ENTITY_RENDER_PARAMETERS = null;
     }
 }

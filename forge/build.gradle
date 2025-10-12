@@ -45,7 +45,10 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
-            arg "-mixin.config=cheatutils.mixin.json"
+            arg "-mixin.config=cheatutils.common.mixins.json"
+            arg "-mixin.config=cheatutils.iris.mixins.json"
+            arg "-mixin.config=cheatutils.fnf.mixins.json"
+            arg "-mixin.config=cheatutils.forge.mixins.json"
             property 'forge.logging.console.level', 'debug'
         }
     }
@@ -55,12 +58,13 @@ sourceSets {
     main {
         java {
             srcDir '../common/java'
-            srcDir '../common/forge-and-fabric'
+            srcDir '../common/forge-and-fabric/java'
             srcDir '../java-scripting-language/src/main/java'
             srcDir '../mixin-plugin/common/java'
         }
         resources {
             srcDir '../common/resources'
+            srcDir '../common/forge-and-fabric/resources'
         }
     }
 }
@@ -110,10 +114,6 @@ dependencies {
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.10'
 }
 
-mixin {
-    add sourceSets.main, "cheatutils.mixin-refmap.json"
-}
-
 tasks.named('processResources', ProcessResources) {
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
@@ -133,6 +133,10 @@ tasks.named('processResources', ProcessResources) {
 tasks.named('jar', Jar) {
     archiveFileName = "$mod_id-$mod_version-forge-${minecraft_version}.jar"
 
+    includeEmptyDirs = false
+    exclude("net/caffeinemc/**")
+    exclude("net/irisshaders/**")
+
     manifest {
         attributes([
                 "Specification-Title"     : mod_id,
@@ -141,7 +145,7 @@ tasks.named('jar', Jar) {
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
                 "Implementation-Vendor"   : mod_authors,
-                "MixinConfigs"            : 'cheatutils.mixin.json'
+                "MixinConfigs"            : 'cheatutils.common.mixins.json,cheatutils.iris.mixins.json,cheatutils.fnf.mixins.json,cheatutils.forge.mixins.json'
         ])
     }
 }

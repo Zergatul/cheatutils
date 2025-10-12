@@ -400,13 +400,6 @@ module({
 });
 module({
     group: 'visuals',
-    name: 'Particles',
-    component: 'Particles',
-    path: 'particles',
-    tags: ['particles']
-});
-module({
-    group: 'visuals',
     name: 'Zoom',
     component: 'Zoom',
     path: 'zoom',

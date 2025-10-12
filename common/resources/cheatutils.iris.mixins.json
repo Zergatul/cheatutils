@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8.2",
+  "package": "com.zergatul.cheatutils.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "com.zergatul.cheatutils.compatibility.IrisMixinPlugin",
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "mixinPriority": 500,
+  "client": [
+    "common.iris.MixinHandRenderer"
+  ]
+}

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.zergatul.cheatutils.extensions.SubmitNodeStorageModelSubmitExtension;
+import com.zergatul.cheatutils.extensions.ParametrizedSubmit;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.OutlineBufferSource;
@@ -27,7 +27,7 @@ public abstract class MixinModelFeatureRenderer {
     @Inject(
             method = "renderModel",
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
-    private void onRenderCustomBuffers(
+    private void onRenderEntityEspBuffers(
             SubmitNodeStorage.ModelSubmit<?> modelSubmission,
             RenderType renderType,
             VertexConsumer vertexConsumer,
@@ -35,7 +35,7 @@ public abstract class MixinModelFeatureRenderer {
             MultiBufferSource.BufferSource bufferSource,
             CallbackInfo ci
     ) {
-        SubmitNodeStorageModelSubmitExtension extension = (SubmitNodeStorageModelSubmitExtension) (Object) modelSubmission;
+        ParametrizedSubmit extension = (ParametrizedSubmit) (Object) modelSubmission;
         EntityEsp.EntityRenderParameters parameters = extension.getParameters_CU();
         if (parameters == null) {
             return;

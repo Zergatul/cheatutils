@@ -34,7 +34,7 @@ div.entity-esp button.remove {
     width: 4em;
 }
 
-div.entity-info-row-1 {
+div.entity-info-header {
     align-items: center;
     display: flex;
     gap: 0.5em;
@@ -44,7 +44,11 @@ div.entity-info-id {
     color: #242583;
 }
 
-div.entity-full-classname {
+div.entity-info-hierarchy {
+    overflow-wrap: anywhere;
+}
+
+div.entity-info-full-classname {
     color: #781616;
 }
 
