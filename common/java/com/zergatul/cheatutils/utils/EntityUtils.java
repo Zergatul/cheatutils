@@ -143,7 +143,7 @@ public class EntityUtils {
         }
 
         try {
-            return Optional.of(Class.forName(element.getClassName()));
+            return Optional.of(ClassUtils.forName(element.getClassName()));
         } catch (ClassNotFoundException ex) {
             logger.warn("Cannot get Class object for {}.", element.getClassName());
             logger.warn("Exception", ex);
@@ -159,7 +159,7 @@ public class EntityUtils {
 
             Class<?> clazz;
             try {
-                clazz = Class.forName(element.getClassName());
+                clazz = ClassUtils.forName(element.getClassName());
             } catch (ClassNotFoundException ex) {
                 logger.warn("Cannot get Class object for {}.", element.getClassName());
                 logger.warn("Exception", ex);

@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
+import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.Minecraft;
 import org.apache.http.HttpException;
@@ -19,7 +20,7 @@ public class ClassNameApi extends ApiBase {
         }
 
         try {
-            Class.forName(className, false, Minecraft.class.getClassLoader());
+            ClassUtils.forName(className);
         }
         catch (ClassNotFoundException e) {
             throw new NotFoundHttpException("Class not found");

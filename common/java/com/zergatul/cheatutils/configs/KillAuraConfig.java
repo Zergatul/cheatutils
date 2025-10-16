@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.player.RemotePlayer;
@@ -148,7 +149,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
         public static CustomPriorityEntry create(String name, String description, String className) {
             Class<?> clazz;
             try {
-                clazz = Class.forName(ClassRemapper.toObf(className));
+                clazz = ClassUtils.forName(ClassRemapper.toObf(className));
             } catch (ClassNotFoundException e) {
                 return null;
             }
