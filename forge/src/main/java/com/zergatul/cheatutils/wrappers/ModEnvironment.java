@@ -8,7 +8,6 @@ import net.minecraftforge.versions.forge.ForgeVersion;
 public class ModEnvironment {
 
     public static final boolean IS_PRODUCTION = FMLEnvironment.production;
-    public static final boolean IRIS_LOADED = ModList.get().isLoaded("iris");
 
     public static String getModLoaderVersion() {
         return "Forge: " + ForgeVersion.getVersion();

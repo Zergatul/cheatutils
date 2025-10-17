@@ -25,7 +25,7 @@ public final class ModMain {
         BusGroup modBusGroup = context.getModBusGroup();
 
         FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::onCommonSetup);
-        RegisterKeyMappingsEvent.getBus(modBusGroup).addListener(this::onRegisterKeyMappings);
+        RegisterKeyMappingsEvent.BUS.addListener(this::onRegisterKeyMappings);
         FMLLoadCompleteEvent.getBus(modBusGroup).addListener(this::onLoadComplete);
 
         Modules.registerKeyBindings();

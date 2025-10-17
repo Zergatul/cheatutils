@@ -1,14 +1,19 @@
 package com.zergatul.cheatutils.compatibility;
 
-import com.zergatul.cheatutils.wrappers.ModEnvironment;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
+import org.spongepowered.asm.service.MixinService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
 public class IrisMixinPlugin implements IMixinConfigPlugin {
+
+    private final Logger logger = LogManager.getLogger(IrisMixinPlugin.class);
 
     @Override
     public void onLoad(String s) {}
@@ -20,11 +25,18 @@ public class IrisMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return ModEnvironment.IRIS_LOADED;
+        try {
+            MixinService.getService().getBytecodeProvider().getClassNode(targetClassName);
+            logger.info("Applying Iris mixin {}", mixinClassName);
+            return true;
+        } catch (ClassNotFoundException | IOException e) {
+            logger.info("Skipping Iris mixin {}", mixinClassName);
+            return false;
+        }
     }
 
     @Override
-    public void acceptTargets(Set<String> set, Set<String> set1) {}
+    public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {}
 
     @Override
     public List<String> getMixins() {
@@ -32,8 +44,8 @@ public class IrisMixinPlugin implements IMixinConfigPlugin {
     }
 
     @Override
-    public void preApply(String s, ClassNode classNode, String s1, IMixinInfo iMixinInfo) {}
+    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
 
     @Override
-    public void postApply(String s, ClassNode classNode, String s1, IMixinInfo iMixinInfo) {}
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
 }

@@ -6,7 +6,6 @@ import net.fabricmc.loader.api.FabricLoader;
 public class ModEnvironment {
 
     public static final boolean IS_PRODUCTION = !FabricLoader.getInstance().isDevelopmentEnvironment();
-    public static final boolean IRIS_LOADED = FabricLoader.getInstance().isModLoaded("iris");
 
     public static String getModLoaderVersion() {
         return "Fabric: " + FabricLoader.getInstance().getModContainer("fabricloader").orElseThrow().getMetadata().getVersion().getFriendlyString();

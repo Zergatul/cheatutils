@@ -9,7 +9,6 @@ import net.neoforged.neoforge.internal.versions.neoforge.NeoForgeVersion;
 public class ModEnvironment {
 
     public static final boolean IS_PRODUCTION = FMLEnvironment.isProduction();
-    public static final boolean IRIS_LOADED = FMLLoader.getCurrent().getGameLayer().findModule("iris").isPresent(); //ModList.get().isLoaded("iris");
 
     public static String getModLoaderVersion() {
         return "NeoForge: " + NeoForgeVersion.getVersion();
