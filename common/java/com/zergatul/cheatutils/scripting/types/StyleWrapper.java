@@ -4,6 +4,7 @@ import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
@@ -67,7 +68,7 @@ public class StyleWrapper {
     }
 
     @MethodDescription("""
-            If click event type is RUN_COMMAND, sends this command to server.
+            If click event type is RUN_COMMAND or SUGGEST_COMMAND, sends this command to server.
             Other click event types are ignored.
             Returns true on success.
             """)
@@ -77,20 +78,19 @@ public class StyleWrapper {
             return false;
         }
 
-        if (event.action() == ClickEvent.Action.RUN_COMMAND) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player == null) {
-                return false;
-            }
-            String command = StringUtil.filterText(((ClickEvent.RunCommand) event).command());
-            if (command.startsWith("/")) {
-                mc.player.connection.sendUnattendedCommand(command.substring(1), null);
-                return true;
-            } else {
-                return false;
-            }
-        } else {
+        return switch (event.action()) {
+            case RUN_COMMAND -> executeCommand(((ClickEvent.RunCommand) event).command());
+            case SUGGEST_COMMAND -> executeCommand(((ClickEvent.SuggestCommand) event).command());
+            default -> false;
+        };
+    }
+
+    private boolean executeCommand(String command) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
             return false;
         }
+        mc.player.connection.sendUnattendedCommand(Commands.trimOptionalPrefix(command), null);
+        return true;
     }
 }
