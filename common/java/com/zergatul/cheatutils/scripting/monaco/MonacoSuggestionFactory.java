@@ -167,7 +167,17 @@ public class MonacoSuggestionFactory implements SuggestionFactory<Suggestion> {
     }
 
     @Override
-    public Suggestion getThisSuggestion(SDeclaredType type) {
+    public Suggestion getBaseSuggestion(SType type) {
+        return new Suggestion(
+                "base",
+                null,
+                null,
+                "base",
+                CompletionItemKind.KEYWORD);
+    }
+
+    @Override
+    public Suggestion getThisSuggestion(SType type) {
         return new Suggestion(
                 "this",
                 null,

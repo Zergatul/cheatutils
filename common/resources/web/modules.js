@@ -524,7 +524,7 @@ module({
     component: 'LanguageDocs',
     tags: ['scripting', 'language', 'docs', 'documentation'],
     onClick() {
-        window.open('https://github.com/Zergatul/java-scripting-language/blob/80d275c71434d819e182b473d9537cc5ff327971/README.md', '_blank');
+        window.open('https://github.com/Zergatul/java-scripting-language/blob/111381a39232651bf9805eaceddb819900024111/README.md', '_blank');
     }
 });
 module({
