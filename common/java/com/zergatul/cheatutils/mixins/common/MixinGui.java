@@ -54,7 +54,8 @@ public abstract class MixinGui {
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "render")
+    // inject at RETURN required for Forge
+    @Inject(at = @At("RETURN"), method = "render")
     private void onAfterRender(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
         if (RenderWorldLastEvent.last != null) {
             Events.PostRenderGui.trigger(new RenderGuiEvent(graphics, RenderWorldLastEvent.last));
