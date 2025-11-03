@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting;
 
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
@@ -138,6 +139,11 @@ public enum ScriptType {
                     @Override
                     public String getJavaTypeUsageError() {
                         return "Java<…> types are not permitted. Enable Advanced Scripting to use Java interop";
+                    }
+
+                    @Override
+                    public ClassLoader getClassLoader() {
+                        return ModMain.class.getClassLoader();
                     }
                 })
                 .setClassNamePrefix(name)

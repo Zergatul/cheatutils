@@ -6,6 +6,8 @@ pluginManagement {
             url = 'https://maven.minecraftforge.net/'
         }
     }
+
+    includeBuild('../common/build')
 }
 
 plugins {

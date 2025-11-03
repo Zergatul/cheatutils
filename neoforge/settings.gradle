@@ -4,6 +4,8 @@ pluginManagement {
         gradlePluginPortal()
         maven { url = 'https://maven.neoforged.net/releases' }
     }
+
+    includeBuild('../common/build')
 }
 
 plugins {

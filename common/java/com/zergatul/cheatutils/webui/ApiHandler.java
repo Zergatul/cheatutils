@@ -77,6 +77,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new FontsApi());
         apis.add(new ResetConfigApi());
         apis.add(new GeneralInformationApi());
+        apis.add(new CommitsApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override

@@ -18,13 +18,12 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0.36,6.2)'
+    id 'cheatutils'
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-def commonProperties = new Properties()
-file('../common/gradle.properties').withInputStream { commonProperties.load(it) }
-def mod_version = commonProperties['mod_version']
+def mod_version = cheatutils.getModVersion()
 
 version = mod_version
 group = mod_group_id

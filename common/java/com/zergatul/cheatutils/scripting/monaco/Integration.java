@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.utils.ColorUtils;
+import com.zergatul.cheatutils.webui.WebHelper;
 import com.zergatul.scripting.TextRange;
 import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
@@ -164,9 +165,8 @@ public class Integration {
                         exchange.sendResponseHeaders(404, 0);
                     }
                     exchange.close();
-                } catch (Throwable e) {
-                    exchange.sendResponseHeaders(503, 0);
-                    exchange.close();
+                } catch (Throwable throwable) {
+                    WebHelper.sendException(exchange, throwable);
                 }
             }
         });

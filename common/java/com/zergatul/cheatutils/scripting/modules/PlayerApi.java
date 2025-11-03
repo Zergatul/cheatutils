@@ -56,7 +56,7 @@ public class PlayerApi {
             """)
     @ApiVisibility(ApiType.ACTION)
     public void chat(String text) {
-        LocalPlayer player = Minecraft.getInstance().player;
+        LocalPlayer player = mc.player;
         if (player != null) {
             player.connection.sendChat(text);
         }
@@ -68,10 +68,22 @@ public class PlayerApi {
     @ApiVisibility(ApiType.ACTION)
     public void command(String text) {
         if (text != null && text.startsWith("/")) {
-            LocalPlayer player = Minecraft.getInstance().player;
+            LocalPlayer player = mc.player;
             if (player != null) {
                 player.connection.sendCommand(text.substring(1));
             }
+        }
+    }
+
+    @MethodDescription("""
+            Returns entity id of player
+            """)
+    public int getId() {
+        LocalPlayer player = mc.player;
+        if (player != null) {
+            return player.getId();
+        } else {
+            return Integer.MIN_VALUE;
         }
     }
 

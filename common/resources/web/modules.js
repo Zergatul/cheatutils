@@ -1,3 +1,4 @@
+import * as http from '/http.js'
 import { getComponent } from '/components/Loader.js'
 
 const modules = {
@@ -524,7 +525,16 @@ module({
     component: 'LanguageDocs',
     tags: ['scripting', 'language', 'docs', 'documentation'],
     onClick() {
-        window.open('https://github.com/Zergatul/java-scripting-language/blob/111381a39232651bf9805eaceddb819900024111/README.md', '_blank');
+        const fallback = 'https://github.com/Zergatul/java-scripting-language';
+        http.get('/api/commits').then(commits => {
+            if (commits['java-scripting-language']) {
+                window.open(`https://github.com/Zergatul/java-scripting-language/blob/${commits['java-scripting-language']}/README.md`, '_blank');
+            } else {
+                window.open(fallback, '_blank');
+            }
+        }).catch(() => {
+            window.open(fallback, '_blank');
+        });
     }
 });
 module({
