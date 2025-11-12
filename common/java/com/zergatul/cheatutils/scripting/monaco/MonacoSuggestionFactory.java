@@ -95,6 +95,16 @@ public class MonacoSuggestionFactory implements SuggestionFactory<Suggestion> {
     }
 
     @Override
+    public Suggestion getTypeAliasSuggestion(SAliasType type) {
+        return new Suggestion(
+                type.toString(),
+                null,
+                null,
+                type.toString(),
+                CompletionItemKind.CLASS);
+    }
+
+    @Override
     public Suggestion getPropertySuggestion(PropertyReference property) {
         return new Suggestion(
                 property.getName(),

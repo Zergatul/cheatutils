@@ -9,9 +9,9 @@ import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.webui.WebHelper;
 import com.zergatul.scripting.TextRange;
+import com.zergatul.scripting.analysis.definition.DefinitionProvider;
 import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
-import com.zergatul.scripting.binding.nodes.BoundNode;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
 import com.zergatul.scripting.highlighting.HighlightingProvider;
@@ -37,7 +37,6 @@ public class Integration {
         CompilationParametersResolver resolver = type -> ScriptType.valueOf(type).createParameters();
 
         DocumentationProvider documentationProvider = new DocumentationProvider();
-        DefinitionProvider definitionProvider = new DefinitionProvider();
         CompletionProviderFactory<Suggestion> completionProviderFactory = new CompletionProviderFactory<>(new MonacoSuggestionFactory(documentationProvider));
 
         Pattern regex = Pattern.compile("Java<com\\.zergatul\\.cheatutils\\.scripting\\.modules\\.(.+)>");
@@ -143,8 +142,7 @@ public class Integration {
                         Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
                         BinderOutput binderOutput = binder.bind();
 
-                        BoundNode node = find(binderOutput.unit(), request.line, request.column);
-                        Json.sendResponse(exchange, definitionProvider.get(node), TextRange.class);
+                        Json.sendResponse(exchange, new DefinitionProvider().get(binderOutput, request.line, request.column), TextRange.class);
                     } else if (path.equals(prefix + "completion")) {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         CompletionRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), CompletionRequest.class);
@@ -170,19 +168,6 @@ public class Integration {
                 }
             }
         });
-    }
-
-    private static BoundNode find(BoundNode node, int line, int column) {
-        if (node.getRange().contains(line, column)) {
-            for (BoundNode child : node.getChildren()) {
-                if (child.getRange().contains(line, column)) {
-                    return find(child, line, column);
-                }
-            }
-            return node;
-        } else {
-            return null;
-        }
     }
 
     public record TokenizeRequest(String code, String type) {}
