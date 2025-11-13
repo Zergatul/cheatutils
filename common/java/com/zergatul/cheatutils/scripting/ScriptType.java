@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
 import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import com.zergatul.cheatutils.scripting.modules.PacketEvent;
 import com.zergatul.cheatutils.scripting.types.*;
+import com.zergatul.cheatutils.scripting.types.json.*;
 import com.zergatul.cheatutils.scripting.types.nbt.*;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilationParametersBuilder;
@@ -121,6 +122,16 @@ public enum ScriptType {
                         IntArrayTagWrapper.class,
                         LongArrayTagWrapper.class
                 ))
+                .addCustomTypes(List.of(
+                        JsonElementWrapper.class,
+                        JsonInvalidWrapper.class,
+                        JsonNullWrapper.class,
+                        JsonBooleanWrapper.class,
+                        JsonNumberWrapper.class,
+                        JsonStringWrapper.class,
+                        JsonArrayWrapper.class,
+                        JsonObjectWrapper.class
+                ))
                 .addCustomTypes(List.of(UUIDWrapper.class))
                 .addCustomType(PacketEvent.class)
                 .setInterface(funcInterface)
@@ -146,7 +157,7 @@ public enum ScriptType {
                         return ModMain.class.getClassLoader();
                     }
                 })
-                .setClassNamePrefix(name)
+                .setMainClassName(name)
                 .setSourceFile("<" + name + ">")
                 .emitLineNumbers(true)
                 .emitVariableNames(true)

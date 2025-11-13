@@ -1,20 +1,26 @@
 package com.zergatul.cheatutils.scripting.types.json;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.type.CustomType;
 
 @CustomType(name = "JsonBoolean")
 public class JsonBooleanWrapper extends JsonElementWrapper {
 
-    private static final JsonBooleanWrapper FALSE = new JsonBooleanWrapper(false);
-    private static final JsonBooleanWrapper TRUE = new JsonBooleanWrapper(true);
-
     private final boolean value;
 
-    private JsonBooleanWrapper(boolean value) {
+    public JsonBooleanWrapper(boolean value) {
         this.value = value;
     }
 
-    public static JsonBooleanWrapper from(boolean value) {
-        return value ? TRUE : FALSE;
+    @Getter(name = "value")
+    public boolean getValue() {
+        return value;
+    }
+
+    @Override
+    protected JsonElement unwrap() {
+        return new JsonPrimitive(value);
     }
 }

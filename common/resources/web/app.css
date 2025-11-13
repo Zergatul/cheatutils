@@ -566,6 +566,7 @@ div.debug-messages {
     flex-grow: 1;
     margin-top: 12px;
     overflow: scroll;
+    white-space: pre;
 }
 
 pre {
