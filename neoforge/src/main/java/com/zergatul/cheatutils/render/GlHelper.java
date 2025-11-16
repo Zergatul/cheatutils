@@ -10,10 +10,18 @@ import net.neoforged.neoforge.client.blaze3d.validation.ValidationGpuTexture;
 public class GlHelper {
 
     public static GlDevice getGlDevice(GpuDevice device) {
-        return (GlDevice) ((ValidationGpuDevice) device).getRealDevice();
+        if (device instanceof GlDevice glDevice) {
+            return glDevice;
+        } else {
+            return (GlDevice) ((ValidationGpuDevice) device).getRealDevice();
+        }
     }
 
     public static GlTexture getGlTexture(GpuTexture texture) {
-        return (GlTexture) ((ValidationGpuTexture) texture).getRealTexture();
+        if (texture instanceof GlTexture glTexture) {
+            return glTexture;
+        } else {
+            return (GlTexture) ((ValidationGpuTexture) texture).getRealTexture();
+        }
     }
 }

@@ -3,13 +3,13 @@ package com.zergatul.cheatutils.wrappers;
 import com.zergatul.cheatutils.ModMain;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.neoforge.internal.versions.neoforge.NeoForgeVersion;
+import net.neoforged.neoforge.common.NeoForgeVersion;
 
 public class ModEnvironment {
 
     public static final boolean IS_PRODUCTION = FMLEnvironment.isProduction();
 
+    @SuppressWarnings("UnstableApiUsage")
     public static String getModLoaderVersion() {
         return "NeoForge: " + NeoForgeVersion.getVersion();
     }

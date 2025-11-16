@@ -3,7 +3,9 @@ name: Build
 on:
   push:
     branches:
-      - '1.21.[0-9]'
+      - '1.21'
+      - '1.21.[1-9]'
+      - '1.21.1[0-9]'
 
 jobs:
   build:
