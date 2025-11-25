@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.compatibility;
 
-public class IrisMixinPlugin extends OptionalMixinPlugin {
+public class SodiumMixinPlugin extends OptionalMixinPlugin {
 
     @Override
     protected String getModName() {
-        return "Iris";
+        return "Sodium";
     }
 }
