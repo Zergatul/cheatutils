@@ -158,7 +158,7 @@ public class FreeCam implements Module {
         }
 
         Entity entity = mc.getCameraEntity();
-        if (entity == null) {
+        if (mc.player == null || entity == null) {
             return;
         }
 
@@ -326,7 +326,10 @@ public class FreeCam implements Module {
             while (mc.options.keyTogglePerspective.consumeClick()) {
                 // consume clicks
             }
-            playerInput.tick();
+            if (mc.player != null && mc.player.input != playerInput) {
+                // don't tick here, since vanilla code will run tick during LocalPlayer.aiStep
+                playerInput.tick();
+            }
         }
     }
 

@@ -9,6 +9,7 @@
   },
   "mixinPriority": 500,
   "client": [
-    "common.sodium.MixinChunkBuilderMeshingTask"
+    "common.sodium.MixinChunkBuilderMeshingTask",
+    "common.sodium.MixinLevelSlice"
   ]
 }
