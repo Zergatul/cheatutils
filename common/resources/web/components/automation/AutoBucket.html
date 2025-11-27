@@ -29,8 +29,13 @@
             <legend>
                 Items to Use
             </legend>
-            <div>
+            <div class="flex-column">
                 <switch-checkbox v-model="config.useWaterBucket" @change="update()">Water Bucket</switch-checkbox>
+                <switch-checkbox v-model="config.usePowderSnowBucket" @change="update()">Powder Snow Bucket</switch-checkbox>
+                <switch-checkbox v-model="config.useSlimeBlock" @change="update()">Slime Block</switch-checkbox>
+                <switch-checkbox v-model="config.useHoneyBlock" @change="update()">Honey Block</switch-checkbox>
+                <switch-checkbox v-model="config.useCobweb" @change="update()">Cobweb</switch-checkbox>
+                <switch-checkbox v-model="config.useHayBale" @change="update()">Hay Block</switch-checkbox>
             </div>
         </fieldset>
 

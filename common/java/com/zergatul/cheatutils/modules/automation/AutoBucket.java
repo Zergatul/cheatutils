@@ -16,8 +16,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -36,11 +38,18 @@ public class AutoBucket implements Module {
     public static final AutoBucket instance = new AutoBucket();
 
     private final Minecraft mc = Minecraft.getInstance();
-    //private final Logger logger = LogManager.getLogger(AutoBucketController.class);
-    private volatile boolean waterPlaced;
-    private volatile long waterPlacedTime;
-    private volatile BlockPos apprWaterPlacedPos;
-    private volatile BlockPos realWaterPlacedPos;
+    private final NoFallMethod[] methods = new NoFallMethod[] {
+            new WaterBucketMethod(),
+            new PowderSnowMethod(),
+            new SlimeBlockMethod(),
+            new HoneyBlockMethod(),
+            new CobwebBlockMethod(),
+            new HayBlockMethod(),
+    };
+    private NoFallMethod currentMethod;
+    private long itemAppliedTime;
+    private BlockPos itemAppliedPos;
+    private BlockPos itemAppliedRealPos;
 
     private AutoBucket() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
@@ -67,38 +76,92 @@ public class AutoBucket implements Module {
 
         Vec3 speed = mc.player.getDeltaMovement();
         if (speed.y > -config.speedThreshold / 20) {
-            if (realWaterPlacedPos != null) {
-                // not more than 4 sec
-                if (System.nanoTime() - waterPlacedTime < 4000000000L) {
-                    Vec3 blockCenter = new Vec3(
-                            realWaterPlacedPos.getX() + 0.5,
-                            realWaterPlacedPos.getY() + 0.5,
-                            realWaterPlacedPos.getZ() + 0.5);
-                    double d2 = mc.player.getPosition(1).distanceToSqr(blockCenter);
-                    if (d2 < config.reachDistance * config.reachDistance) {
-                        // try to pickup water
-                        Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), blockCenter);
-                        float oldXRot = mc.player.getXRot();
-                        float oldYRot = mc.player.getYRot();
-                        mc.player.setXRot(rotation.xRot());
-                        mc.player.setYRot(rotation.yRot());
-                        mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
-                        mc.player.setXRot(oldXRot);
-                        mc.player.setYRot(oldYRot);
-                    }
-                }
-
-                realWaterPlacedPos = null;
-            }
+            tryPickUp(config);
             return;
         }
+
+        BlockPos collisionPos = predictCollisionBlockPos();
+        if (collisionPos == null) {
+            return;
+        }
+
+        NoFallMethod method = chooseMethod(mc.level, config);
+        if (method == null) {
+            return;
+        }
+
+        BlockPos appliedPos = method.tryApply(mc, collisionPos, config);
+        if (appliedPos == null) {
+            return;
+        }
+
+        currentMethod = method;
+        itemAppliedTime = System.nanoTime();
+        itemAppliedPos = appliedPos;
+        itemAppliedRealPos = null;
+    }
+
+    private void onBlockUpdated(BlockUpdateEvent event) {
+        if (currentMethod != null && itemAppliedRealPos == null) {
+            // wait not more than 3 sec
+            if (System.nanoTime() - itemAppliedTime > 3000000000L) {
+                resetState();
+                return;
+            }
+
+            // check if distance to block update <=3
+            if (event.pos().distManhattan(itemAppliedPos) > 3) {
+                return;
+            }
+
+            if (currentMethod.blockUpdateMatch(event.state())) {
+                itemAppliedRealPos = event.pos();
+            }
+        }
+    }
+
+    private NoFallMethod chooseMethod(ClientLevel level, AutoBucketConfig config) {
+        assert mc.player != null;
+
+        Inventory inventory = mc.player.getInventory();
+        for (NoFallMethod method : methods) {
+            for (int i = 0; i < 9; i++) {
+                if (method.isEnabled(config) && method.match(inventory.getItem(i)) && method.checkLevel(level)) {
+                    inventory.setSelectedSlot(i);
+                    return method;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isOkToFallOn(BlockState state) {
+        if (state.getBlock() == Blocks.SLIME_BLOCK) {
+            return true;
+        }
+        if (state.getBlock() == Blocks.COBWEB) {
+            return true;
+        }
+        if (state.getBlock() == Blocks.WATER) {
+            return true;
+        }
+        if (state.getBlock() == Blocks.POWDER_SNOW) {
+            return true;
+        }
+        return false;
+    }
+
+    private BlockPos predictCollisionBlockPos() {
+        assert mc.level != null;
+        assert mc.player != null;
 
         // predict next 4 ticks, with 10 steps per tick
         int stepsPerTick = 10;
         int ticks = 4;
         int steps = ticks * stepsPerTick;
         double multiplier = 1d / stepsPerTick;
-        Vec3 speedPerStep = speed.multiply(multiplier, multiplier, multiplier);
+        Vec3 speedPerStep = mc.player.getDeltaMovement().multiply(multiplier, multiplier, multiplier);
         double hw = mc.player.getBbWidth() / 2;
         double px = mc.player.getX();
         double px1 = px - hw;
@@ -109,9 +172,8 @@ public class AutoBucket implements Module {
         double pz2 = pz + hw;
         Set<BlockPos> checked = new HashSet<>();
         List<Long> covered = new ArrayList<>(); // covered XZ by negate fall dmg block
-        BlockPos collisionPos = null;
         EntityDimensions dimensions = mc.player.getDimensions(mc.player.getPose());
-        stepsLoop:
+
         for (int i = 0; i < steps; i++) {
             px += speedPerStep.x;
             px1 += speedPerStep.x;
@@ -150,132 +212,328 @@ public class AutoBucket implements Module {
                     VoxelShape shape = state.getCollisionShape(mc.level, pos);
                     if (!shape.isEmpty()) {
                         if (VoxelShapeUtils.intersects(pos, shape, dimensions.makeBoundingBox(px, py, pz))) {
-                            collisionPos = pos;
-                            break stepsLoop;
+                            return pos;
                         }
                     }
                 }
             }
         }
 
-        if (collisionPos == null) {
+        return null;
+    }
+
+    private void tryPickUp(AutoBucketConfig config) {
+        assert mc.player != null;
+        assert mc.gameMode != null;
+
+        if (currentMethod == null) {
             return;
         }
 
-        ItemStack stack = findItemStackToUse(mc.level, config);
-        if (stack == null) {
+        if (!config.autoPickUp) {
+            resetState();
             return;
         }
 
-        //logger.info("Collision pos = " + collisionPos);
+        if (itemAppliedRealPos != null) {
+            // not more than 4 sec
+            if (System.nanoTime() - itemAppliedTime < 4000000000L) {
+                Vec3 blockCenter = itemAppliedRealPos.getCenter();
+                double d2 = mc.player.getPosition(1).distanceToSqr(blockCenter);
+                if (d2 < config.reachDistance * config.reachDistance) {
+                    if (currentMethod.tryPickUp(mc, blockCenter, config)) {
+                        resetState();
+                    }
+                }
+            } else {
+                // time out
+                resetState();
+            }
+        }
+    }
 
-        if (stack.getItem() instanceof BlockItem) {
-//            BlockUtils.PlaceBlockPlan plan = BlockUtils.getPlacingPlan(collisionPos.above(), false);
-//            if (plan == null) {
-//                return;
-//            }
-//            double d2 = plan.destination().distToCenterSqr(mc.player.position());
-//            if (d2 < 16) {
-//                BlockUtils.applyPlacingPlan(plan, true);
-//            }
-        } else {
+    private void resetState() {
+        currentMethod = null;
+        itemAppliedPos = null;
+        itemAppliedRealPos = null;
+    }
+
+    private long toLong(BlockPos pos) {
+        return ((long)pos.getX() << 32) | pos.getZ();
+    }
+
+    private interface NoFallMethod {
+        boolean isEnabled(AutoBucketConfig config);
+        boolean match(ItemStack stack);
+        boolean checkLevel(Level level);
+        BlockPos tryApply(Minecraft mc, BlockPos collisionPos, AutoBucketConfig config);
+        boolean blockUpdateMatch(BlockState state);
+        boolean tryPickUp(Minecraft mc, Vec3 blockCenter, AutoBucketConfig config);
+    }
+
+    private static class WaterBucketMethod implements NoFallMethod {
+
+        @Override
+        public boolean isEnabled(AutoBucketConfig config) {
+            return config.useWaterBucket;
+        }
+
+        @Override
+        public boolean match(ItemStack stack) {
+            return stack.is(Items.WATER_BUCKET);
+        }
+
+        @Override
+        public boolean checkLevel(Level level) {
+            return !level.dimensionType().ultraWarm();
+        }
+
+        @Override
+        public BlockPos tryApply(Minecraft mc, BlockPos collisionPos, AutoBucketConfig config) {
+            assert mc.player != null;
+            assert mc.gameMode != null;
+
             Vec3 lookAt = new Vec3(
                     collisionPos.getX() + 0.5,
                     collisionPos.getY() + 1,
                     collisionPos.getZ() + 0.5);
             Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), lookAt);
-            //logger.info("Rotate x=" + rotation.xRot() + " y=" + rotation.yRot());
+
             float oldXRot = mc.player.getXRot();
             float oldYRot = mc.player.getYRot();
             mc.player.setXRot(rotation.xRot());
             mc.player.setYRot(rotation.yRot());
+
             HitResult result = mc.player.pick(config.reachDistance, 1, true);
+            BlockPos appliedAtPos;
             if (result instanceof BlockHitResult blockHitResult && result.getType() != HitResult.Type.MISS) {
                 mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
-                if (config.autoPickUp) {
-                    waterPlaced = true;
-                    waterPlacedTime = System.nanoTime();
-                    apprWaterPlacedPos = blockHitResult.getBlockPos();
-                }
+                appliedAtPos = blockHitResult.getBlockPos();
+            } else {
+                appliedAtPos = null;
             }
+
             mc.player.setXRot(oldXRot);
             mc.player.setYRot(oldYRot);
+
+            return appliedAtPos;
         }
-    }
 
-    private void onBlockUpdated(BlockUpdateEvent event) {
-        if (waterPlaced) {
-            // wait not more than 3 sec
-            if (System.nanoTime() - waterPlacedTime > 3000000000L) {
-                waterPlaced = false;
-                return;
+        @Override
+        public boolean blockUpdateMatch(BlockState state) {
+            if (state.is(Blocks.WATER) && state.getFluidState().isSource()) {
+                return true;
             }
 
-            // check if distance to block update <=3
-            if (event.pos().distManhattan(apprWaterPlacedPos) > 3) {
-                return;
-            }
-
-            if (event.state().is(Blocks.WATER) && event.state().getFluidState().isSource()) {
-                waterPlaced = false;
-                realWaterPlacedPos = event.pos();
-                return;
-            }
-
-            if (event.state().hasProperty(BlockStateProperties.WATERLOGGED) && event.state().getValue(BlockStateProperties.WATERLOGGED)) {
-                waterPlaced = false;
-                realWaterPlacedPos = event.pos();
-            }
+            return state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED);
         }
-    }
 
-    private ItemStack findItemStackToUse(ClientLevel level, AutoBucketConfig config) {
-        assert mc.player != null;
+        @Override
+        public boolean tryPickUp(Minecraft mc, Vec3 blockCenter, AutoBucketConfig config) {
+            assert mc.player != null;
+            assert mc.gameMode != null;
 
-        // search for 0 fall damage items
-        // check hotbar
-        Inventory inventory = mc.player.getInventory();
-        if (config.useWaterBucket && !level.dimensionType().ultraWarm()) {
-            for (int i = 0; i < 9; i++) {
-                if (inventory.getItem(i).getItem() == Items.WATER_BUCKET) {
-                    inventory.setSelectedSlot(i);
-                    return inventory.getItem(i);
-                }
-            }
-        }
-        if (config.useSlimeBlock) {
-            for (int i = 0; i < 9; i++) {
-                if (inventory.getItem(i).getItem() == Items.SLIME_BLOCK) {
-                    inventory.setSelectedSlot(i);
-                    return inventory.getItem(i);
-                }
-            }
-        }
-        if (config.useCobweb) {
-            for (int i = 0; i < 9; i++) {
-                if (inventory.getItem(i).getItem() == Items.COBWEB) {
-                    inventory.setSelectedSlot(i);
-                    return inventory.getItem(i);
-                }
-            }
-        }
-        return null;
-    }
+            Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), blockCenter);
+            float oldXRot = mc.player.getXRot();
+            float oldYRot = mc.player.getYRot();
+            mc.player.setXRot(rotation.xRot());
+            mc.player.setYRot(rotation.yRot());
+            mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
+            mc.player.setXRot(oldXRot);
+            mc.player.setYRot(oldYRot);
 
-    private boolean isOkToFallOn(BlockState state) {
-        if (state.getBlock() == Blocks.SLIME_BLOCK) {
             return true;
         }
-        if (state.getBlock() == Blocks.COBWEB) {
-            return true;
-        }
-        if (state.getBlock() == Blocks.WATER) {
-            return true;
-        }
-        return false;
     }
 
-    private long toLong(BlockPos pos) {
-        return ((long)pos.getX() << 32) | pos.getZ();
+    private static class PowderSnowMethod implements NoFallMethod {
+
+        @Override
+        public boolean isEnabled(AutoBucketConfig config) {
+            return config.usePowderSnowBucket;
+        }
+
+        @Override
+        public boolean match(ItemStack stack) {
+            return stack.is(Items.POWDER_SNOW_BUCKET);
+        }
+
+        @Override
+        public boolean checkLevel(Level level) {
+            return true;
+        }
+
+        @Override
+        public BlockPos tryApply(Minecraft mc, BlockPos collisionPos, AutoBucketConfig config) {
+            assert mc.player != null;
+            assert mc.gameMode != null;
+
+            Vec3 lookAt = new Vec3(
+                    collisionPos.getX() + 0.5,
+                    collisionPos.getY() + 1,
+                    collisionPos.getZ() + 0.5);
+            Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), lookAt);
+
+            float oldXRot = mc.player.getXRot();
+            float oldYRot = mc.player.getYRot();
+            mc.player.setXRot(rotation.xRot());
+            mc.player.setYRot(rotation.yRot());
+
+            HitResult result = mc.player.pick(config.reachDistance, 1, true);
+            BlockPos appliedAtPos;
+            if (result instanceof BlockHitResult blockHitResult && result.getType() != HitResult.Type.MISS) {
+                mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, blockHitResult);
+                appliedAtPos = blockHitResult.getBlockPos();
+            } else {
+                appliedAtPos = null;
+            }
+
+            mc.player.setXRot(oldXRot);
+            mc.player.setYRot(oldYRot);
+
+            return appliedAtPos;
+        }
+
+        @Override
+        public boolean blockUpdateMatch(BlockState state) {
+            return state.is(Blocks.POWDER_SNOW);
+        }
+
+        @Override
+        public boolean tryPickUp(Minecraft mc, Vec3 blockCenter, AutoBucketConfig config) {
+            assert mc.player != null;
+            assert mc.gameMode != null;
+
+            Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), blockCenter);
+            float oldXRot = mc.player.getXRot();
+            float oldYRot = mc.player.getYRot();
+            mc.player.setXRot(rotation.xRot());
+            mc.player.setYRot(rotation.yRot());
+            mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
+            mc.player.setXRot(oldXRot);
+            mc.player.setYRot(oldYRot);
+
+            return true;
+        }
+    }
+
+    private static abstract class AbstractBlockMethod implements NoFallMethod {
+
+        protected abstract BlockItem getItem();
+
+        @Override
+        public boolean match(ItemStack stack) {
+            return stack.is(getItem());
+        }
+
+        @Override
+        public boolean checkLevel(Level level) {
+            return true;
+        }
+
+        @Override
+        public BlockPos tryApply(Minecraft mc, BlockPos collisionPos, AutoBucketConfig config) {
+            assert mc.player != null;
+            assert mc.gameMode != null;
+
+            Vec3 lookAt = new Vec3(
+                    collisionPos.getX() + 0.5,
+                    collisionPos.getY() + 1,
+                    collisionPos.getZ() + 0.5);
+            Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), lookAt);
+
+            float oldXRot = mc.player.getXRot();
+            float oldYRot = mc.player.getYRot();
+            mc.player.setXRot(rotation.xRot());
+            mc.player.setYRot(rotation.yRot());
+
+            HitResult result = mc.player.pick(config.reachDistance, 1, true);
+            BlockPos appliedAtPos;
+            if (result instanceof BlockHitResult blockHitResult && result.getType() != HitResult.Type.MISS) {
+                mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, blockHitResult);
+                appliedAtPos = blockHitResult.getBlockPos();
+            } else {
+                appliedAtPos = null;
+            }
+
+            mc.player.setXRot(oldXRot);
+            mc.player.setYRot(oldYRot);
+
+            return appliedAtPos;
+        }
+
+        @Override
+        public boolean blockUpdateMatch(BlockState state) {
+            return state.is(getItem().getBlock());
+        }
+
+        @Override
+        public boolean tryPickUp(Minecraft mc, Vec3 blockCenter, AutoBucketConfig config) {
+            assert mc.player != null;
+            assert mc.gameMode != null;
+
+            /*Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), blockCenter);
+            float oldXRot = mc.player.getXRot();
+            float oldYRot = mc.player.getYRot();
+            mc.player.setXRot(rotation.xRot());
+            mc.player.setYRot(rotation.yRot());
+            mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
+            mc.player.setXRot(oldXRot);
+            mc.player.setYRot(oldYRot);*/
+
+            return true;
+        }
+    }
+
+    private static class SlimeBlockMethod extends AbstractBlockMethod {
+
+        @Override
+        public boolean isEnabled(AutoBucketConfig config) {
+            return config.useSlimeBlock;
+        }
+
+        @Override
+        protected BlockItem getItem() {
+            return (BlockItem) Items.SLIME_BLOCK;
+        }
+    }
+
+    private static class HoneyBlockMethod extends AbstractBlockMethod {
+
+        @Override
+        public boolean isEnabled(AutoBucketConfig config) {
+            return config.useHoneyBlock;
+        }
+
+        @Override
+        protected BlockItem getItem() {
+            return (BlockItem) Items.HONEY_BLOCK;
+        }
+    }
+
+    private static class CobwebBlockMethod extends AbstractBlockMethod {
+
+        @Override
+        public boolean isEnabled(AutoBucketConfig config) {
+            return config.useCobweb;
+        }
+
+        @Override
+        protected BlockItem getItem() {
+            return (BlockItem) Items.COBWEB;
+        }
+    }
+
+    private static class HayBlockMethod extends AbstractBlockMethod {
+
+        @Override
+        public boolean isEnabled(AutoBucketConfig config) {
+            return config.useHayBale;
+        }
+
+        @Override
+        protected BlockItem getItem() {
+            return (BlockItem) Items.HAY_BLOCK;
+        }
     }
 }
