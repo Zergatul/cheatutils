@@ -51,9 +51,6 @@
             <legend>
                 <switch-checkbox v-model="config.renderHands" @change="update()">Render hands</switch-checkbox>
             </legend>
-            <div class="section-description">
-                Doesn't work with OptiFine
-            </div>
         </fieldset>
 
         <fieldset>
@@ -74,6 +71,16 @@
             </div>
             <div>
                 <radio name="method" :value="true" v-model="config.spectatorFlight" @change="update()">Creative</radio>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.rememberInputState" @change="update()">Remember Input State</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Remembers state of WASD/Jump/Crouch keys when you activate FreeCam.
+                For example: you can hold Crouch while entering FreeCam, and character will stay in crouched state for entire FreeCam duration.
             </div>
         </fieldset>
 
