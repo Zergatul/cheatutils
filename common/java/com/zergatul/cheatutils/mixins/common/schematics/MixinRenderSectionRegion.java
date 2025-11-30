@@ -35,14 +35,18 @@ public abstract class MixinRenderSectionRegion implements RenderSectionRegionExt
     @Unique
     private SchematicaSectionCopy[] schematicaSections_CU;
 
+    @Unique
+    private boolean schematicaShadeBlocks_CU;
+
     @Override
-    public void setSchematicaSections_CU(SchematicaSectionCopy[] schematicaSections) {
+    public void setSchematicaSections_CU(SchematicaSectionCopy[] schematicaSections, boolean shade) {
         this.schematicaSections_CU = schematicaSections;
+        this.schematicaShadeBlocks_CU = shade;
     }
 
     @Override
     public boolean hasSchematicaBlockAt_CU(BlockPos pos) {
-        if (schematicaSections_CU == null) {
+        if (schematicaSections_CU == null || !schematicaShadeBlocks_CU) {
             return false;
         }
 

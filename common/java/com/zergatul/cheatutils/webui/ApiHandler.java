@@ -577,7 +577,9 @@ public class ApiHandler implements HttpHandler {
 
                 boolean oldBlockRenderingState = oldConfig.enabled && oldConfig.renderBlocks;
                 boolean newBlockRenderingState = config.enabled && config.renderBlocks;
-                if (oldBlockRenderingState != newBlockRenderingState) {
+                boolean oldShadeBlocksState = oldBlockRenderingState && oldConfig.shadeBlocks;
+                boolean newShadeBlocksState = newBlockRenderingState && config.shadeBlocks;
+                if (oldBlockRenderingState != newBlockRenderingState || oldShadeBlocksState != newShadeBlocksState) {
                     Schematica.instance.onBlockRenderingStateChanged();
                 }
             }

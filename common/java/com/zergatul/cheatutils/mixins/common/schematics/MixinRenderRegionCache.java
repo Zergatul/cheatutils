@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.common.schematics;
 
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
 import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.schematics.SchematicaSectionCopy;
@@ -19,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinRenderRegionCache {
 
     @Unique
-    private final Long2ObjectMap<SchematicaSectionCopy> schematicaSectionCopyCache = new Long2ObjectOpenHashMap<>();
+    private final Long2ObjectMap<SchematicaSectionCopy> schematicaSectionCopyCache_CU = new Long2ObjectOpenHashMap<>();
 
     @Inject(at = @At("RETURN"), method = "createRegion")
     private void onExtendRegionCopy(Level level, long index, CallbackInfoReturnable<RenderSectionRegion> info) {
@@ -59,11 +60,11 @@ public abstract class MixinRenderRegionCache {
             for (int y = ys1; y <= ys2; y++) {
                 for (int z = zs1; z <= zs2; z++) {
                     int i = RenderSectionRegion.index(xs1, ys1, zs1, x, y, z);
-                    copies[i] = schematicaSectionCopyCache.computeIfAbsent(SectionPos.asLong(x, y, z), schematica::createSectionCopy);
+                    copies[i] = schematicaSectionCopyCache_CU.computeIfAbsent(SectionPos.asLong(x, y, z), schematica::createSectionCopy);
                 }
             }
         }
 
-        ((RenderSectionRegionExtension) info.getReturnValue()).setSchematicaSections_CU(copies);
+        ((RenderSectionRegionExtension) info.getReturnValue()).setSchematicaSections_CU(copies, ConfigStore.instance.getConfig().schematicaConfig.shadeBlocks);
     }
 }
