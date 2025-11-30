@@ -21,10 +21,12 @@ import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -32,10 +34,13 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class FreeCam implements Module {
 
     public static final FreeCam instance = new FreeCam();
+
+    private final static int REMEMBER_STATE_DELAY_MS = 400;
 
     private final Minecraft mc = Minecraft.getInstance();
     private final Quaternionf rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
@@ -61,6 +66,7 @@ public class FreeCam implements Module {
     private boolean gameRendererPicking;
     private boolean moveAlongPath;
     private long pathStartTime;
+    private long doNotMoveFreeCamBefore;
 
     private FreeCam() {
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
@@ -168,10 +174,14 @@ public class FreeCam implements Module {
         followCamera = false;
         oldCameraType = mc.options.getCameraType();
         playerInput = new KeyboardInput(mc.options); //mc.player.input; // changed for baritone compat
-        mc.player.input = freecamInput = new ClientInput();
+        mc.player.input = freecamInput = createFreeCamInput(mc.player.input);
         mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         if (oldCameraType.isFirstPerson() != mc.options.getCameraType().isFirstPerson()) {
             mc.gameRenderer.checkEntityPostEffect(mc.options.getCameraType().isFirstPerson() ? mc.getCameraEntity() : null);
+        }
+
+        if (getConfig().rememberInputState) {
+            doNotMoveFreeCamBefore = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(REMEMBER_STATE_DELAY_MS);
         }
 
         float frameTime = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
@@ -313,9 +323,11 @@ public class FreeCam implements Module {
                 dy *= factor;
                 dz *= factor;
             }
-            x += dx;
-            y += dy;
-            z += dz;
+            if (!config.rememberInputState || doNotMoveFreeCamBefore < currTime) {
+                x += dx;
+                y += dy;
+                z += dz;
+            }
         }
 
         applyEyeLock(delta.getGameTimeDeltaPartialTick(true));
@@ -435,6 +447,21 @@ public class FreeCam implements Module {
         gameRendererPicking = false;
     }
 
+    private ClientInput createFreeCamInput(ClientInput playerInput) {
+        if (getConfig().rememberInputState) {
+            return new FreeCamInput(new Input(
+                    playerInput.keyPresses.forward(),
+                    playerInput.keyPresses.backward(),
+                    playerInput.keyPresses.left(),
+                    playerInput.keyPresses.right(),
+                    playerInput.keyPresses.jump(),
+                    playerInput.keyPresses.shift(),
+                    playerInput.keyPresses.sprint()));
+        } else {
+            return new ClientInput();
+        }
+    }
+
     private void applyEyeLock(float partialTicks) {
         if (!eyeLock) {
             return;
@@ -495,5 +522,23 @@ public class FreeCam implements Module {
 
     private FreeCamConfig getConfig() {
         return ConfigStore.instance.getConfig().freeCamConfig;
+    }
+
+    private static class FreeCamInput extends ClientInput {
+
+        public FreeCamInput(Input input) {
+            this.keyPresses = input;
+            this.moveVector = new Vec2(
+                    calcImpulse(input.left(), input.right()),
+                    calcImpulse(input.forward(), input.backward())).normalized();
+        }
+
+        private static float calcImpulse(boolean b1, boolean b2) {
+            if (b1 == b2) {
+                return 0.0F;
+            } else {
+                return b1 ? 1.0F : -1.0F;
+            }
+        }
     }
 }
