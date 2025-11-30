@@ -53,6 +53,11 @@
             <div class="section-description">
                 Render schematica in your world.
             </div>
+            <div class="flex-row">
+                <switch-checkbox v-model="config.shadeBlocks" @change="update()">
+                    Shade Blocks
+                </switch-checkbox>
+            </div>
         </fieldset>
 
         <fieldset>

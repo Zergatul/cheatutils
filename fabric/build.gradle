@@ -47,7 +47,7 @@ dependencies {
     compileOnly("org.jspecify:jspecify:1.0.0")
 
     // temp
-    modRuntimeOnly(files("C:/Users/Zergatul/source/repos/sodium/build/mods/sodium-fabric-0.7.3-snapshot+mc1.21.10-local.jar"))
+    //modRuntimeOnly(files("C:/Users/Zergatul/source/repos/sodium/build/mods/sodium-fabric-0.7.3-snapshot+mc1.21.10-local.jar"))
 }
 
 sourceSets {

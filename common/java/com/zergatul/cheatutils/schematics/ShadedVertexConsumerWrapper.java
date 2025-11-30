@@ -1,0 +1,56 @@
+package com.zergatul.cheatutils.schematics;
+
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
+public class ShadedVertexConsumerWrapper implements VertexConsumer {
+
+    private final VertexConsumer inner;
+    private final float shadeR;
+    private final float shadeG;
+    private final float shadeB;
+    private final float shadeA;
+
+    public ShadedVertexConsumerWrapper(VertexConsumer inner, float r, float g, float b, float a) {
+        this.inner = inner;
+        this.shadeR = r;
+        this.shadeG = g;
+        this.shadeB = b;
+        this.shadeA = a;
+    }
+
+    @Override
+    public VertexConsumer addVertex(float x, float y, float z) {
+        inner.addVertex(x, y, z);
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setColor(int r, int g, int b, int a) {
+        inner.setColor(Math.round(shadeR * r), Math.round(shadeG * g), Math.round(shadeB * g), Math.round(shadeA * a));
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setUv(float u, float v) {
+        inner.setUv(u, v);
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setUv1(int u, int v) {
+        inner.setUv1(u, v);
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setUv2(int u, int v) {
+        inner.setUv2(u, v);
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setNormal(float x, float y, float z) {
+        inner.setNormal(x, y, z);
+        return this;
+    }
+}

@@ -35,7 +35,9 @@
     "common.accessors.TextureStateShardAccessor",
     "common.accessors.WalkAnimationStateAccessor",
 
+    "common.schematics.MixinRenderRegionCache",
     "common.schematics.MixinRenderSectionRegion",
+    "common.schematics.MixinSectionCompiler",
     "common.schematics.MixinSectionOcclusionGraph",
 
     "common.MixinAbstractBoat",

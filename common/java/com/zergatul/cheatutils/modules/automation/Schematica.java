@@ -47,6 +47,8 @@ public class Schematica {
 
     public static final Schematica instance = new Schematica();
 
+    private static final Strategy<BlockState> STRATEGY = Strategy.createForBlockStates(Block.BLOCK_STATE_REGISTRY);
+
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();
     private final SlotSelector slotSelector = new SlotSelector();
@@ -107,8 +109,30 @@ public class Schematica {
         return lookup.get(pos.asLong());
     }
 
+    public boolean hasBlocksAtSection(int x, int y, int z) {
+        return hasBlocksAtSection(SectionPos.asLong(x, y, z));
+    }
+
     public boolean hasBlocksAtSection(long index) {
         return lookup.containsKey(index);
+    }
+
+    public SchematicaSectionCopy createSectionCopy(long index) {
+        SectionInfo info = lookup.get(index);
+        if (info == null) {
+            return SchematicaSectionCopy.EMPTY;
+        }
+
+        PalettedContainer<BlockState> states = new PalettedContainer<>(Blocks.AIR.defaultBlockState(), STRATEGY);
+        for (int x = 0; x < 16; x++) {
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++) {
+                    states.set(x, y, z, info.getBlockState(x, y, z));
+                }
+            }
+        }
+
+        return SchematicaSectionCopy.from(states);
     }
 
     public void onBlockRenderingStateChanged() {
@@ -845,8 +869,6 @@ public class Schematica {
     }
 
     private static class ChunkSection {
-
-        private static final Strategy<BlockState> STRATEGY = Strategy.createForBlockStates(Block.BLOCK_STATE_REGISTRY);
 
         private final int minX;
         private final int minY;
