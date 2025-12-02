@@ -86,6 +86,15 @@ public class BlockPosWrapper {
         return relative(Direction.WEST, offset);
     }
 
+    public String toShortString() {
+        return x + ", " + y + ", " + z;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("x=%s y=%s z=%s", x, y, z);
+    }
+
     private BlockPosWrapper relative(Direction direction) {
         return relative(direction, 1);
     }

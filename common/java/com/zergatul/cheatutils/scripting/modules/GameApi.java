@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
 import com.zergatul.cheatutils.scripting.types.BlockStateWrapper;
 import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
@@ -15,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
@@ -43,6 +45,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -123,6 +126,20 @@ public class GameApi {
             return new PlayerInfoWrapper[0];
         }
         return listener.getOnlinePlayers().stream().map(PlayerInfoWrapper::new).toArray(PlayerInfoWrapper[]::new);
+    }
+
+    public HitResultWrapper rayCast(int entityId, double maxRange) {
+        if (mc.level == null) {
+            return new HitResultWrapper();
+        }
+
+        Entity entity = mc.level.getEntity(entityId);
+        if (entity == null) {
+            return new HitResultWrapper();
+        }
+
+        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, maxRange, maxRange, partialTicks));
     }
 
     public static class DimensionApi {

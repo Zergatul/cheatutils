@@ -2,9 +2,12 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.controllers.DisconnectController;
 import com.zergatul.cheatutils.controllers.SpeedCounterController;
+import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.Root;
+import com.zergatul.cheatutils.scripting.types.HitResultWrapper;
 import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.InputBuilder;
@@ -518,6 +521,15 @@ public class PlayerApi {
             } else {
                 return new BlockPosWrapper(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
             }
+        }
+
+        public HitResultWrapper rayCast(double maxRange) {
+            if (mc.player == null) {
+                return new HitResultWrapper();
+            }
+
+            float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+            return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(mc.player, maxRange, maxRange, partialTicks));
         }
     }
 

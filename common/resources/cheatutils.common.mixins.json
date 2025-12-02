@@ -20,6 +20,7 @@
     "common.accessors.CrossbowItemAccessor",
     "common.accessors.EntityTypeAccessor",
     "common.accessors.FogRendererAccessor",
+    "common.accessors.GameRendererAccessor",
     "common.accessors.GuiAccessor",
     "common.accessors.GuiGraphicsAccessor",
     "common.accessors.HeightmapAccessor",
