@@ -24,6 +24,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
@@ -485,6 +486,26 @@ public class GameApi {
 
         public ItemStackWrapper getEquippedOffHandItem(int entityId) {
             return getValue(entityId, getEquippedItem(EquipmentSlot.OFFHAND), () -> new ItemStackWrapper(ItemStack.EMPTY));
+        }
+
+        public boolean isUsingItemWithMainHand(int entityId) {
+            return getBooleanValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    return living.isUsingItem() && living.getUsedItemHand() == InteractionHand.MAIN_HAND;
+                } else {
+                    return false;
+                }
+            });
+        }
+
+        public boolean isUsingItemWithOffHand(int entityId) {
+            return getBooleanValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    return living.isUsingItem() && living.getUsedItemHand() == InteractionHand.OFF_HAND;
+                } else {
+                    return false;
+                }
+            });
         }
 
         public int getHealth(int entityId) {
