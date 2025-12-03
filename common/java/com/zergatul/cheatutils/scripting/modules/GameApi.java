@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
+import com.zergatul.cheatutils.utils.RayCast;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
@@ -140,6 +141,10 @@ public class GameApi {
 
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
         return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, maxRange, maxRange, partialTicks));
+    }
+
+    public RayCastEntityResult rayCastClosestEntity(Position3d origin, Position3d dir, double range) {
+        return new RayCastEntityResult(RayCast.findClosestEntity(origin.asVec3(), dir.asVec3(), range));
     }
 
     public static class DimensionApi {

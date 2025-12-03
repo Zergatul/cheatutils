@@ -98,6 +98,31 @@ public class PlayerApi {
         return new Position3d(entity.getX(), entity.getY(), entity.getZ());
     }
 
+    public Position3d getEyePosition() {
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return new Position3d(0, 0, 0);
+        }
+
+        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        return new Position3d(entity.getEyePosition(partialTicks));
+    }
+
+    @MethodDescription("""
+            Returns unit vector, not position
+            """)
+    public Position3d getLookDirection() {
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return new Position3d(0, 0, 0);
+        }
+
+        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        float xRot = entity.getXRot(partialTicks);
+        float yRot = entity.getYRot(partialTicks);
+        return new Position3d(Vec3.directionFromRotation(xRot, yRot));
+    }
+
     @MethodDescription("""
             Returns formatted X/Y/Z player coordinates
             """)

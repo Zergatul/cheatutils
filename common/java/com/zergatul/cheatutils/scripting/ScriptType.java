@@ -93,7 +93,7 @@ public enum ScriptType {
                 .addCustomType(ItemWrapper.class)
                 .addCustomType(Position3d.class)
                 .addCustomType(BlockPosWrapper.class)
-                .addCustomType(HitResultWrapper.class)
+                .addCustomTypes(List.of(HitResultWrapper.class, RayCastEntityResult.class))
                 .addCustomType(HttpRequestWrapper.class)
                 .addCustomType(HttpRequestBuilderWrapper.class)
                 .addCustomType(HttpResponseWrapper.class)
