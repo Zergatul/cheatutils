@@ -1,49 +1,46 @@
 package com.zergatul.cheatutils.mixins.common.sodium;
 
+import com.zergatul.cheatutils.extensions.BlockRendererExtension;
+import com.zergatul.cheatutils.extensions.LevelSliceExtension;
+import com.zergatul.mixin.LiteInject;
+import com.zergatul.mixin.LocalVariable;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
+import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.tasks.ChunkBuilderTask;
+import net.caffeinemc.mods.sodium.client.world.LevelSlice;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(ChunkBuilderMeshingTask.class)
-public abstract class MixinChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
+@Mixin(value = ChunkBuilderMeshingTask.class, remap = false)
+public abstract class MixinChunkBuilderMeshingTask {
 
-//    @Unique
-//    private SectionCompileInfo sectionCompileInfo_CU;
-//
-//    @Inject(at = @At("HEAD"), method = "execute", remap = false)
-//    private void onBeforeExecute(ChunkBuildContext buildContext, CancellationToken cancellationToken, CallbackInfoReturnable<ChunkBuildOutput> info) {
-//        sectionCompileInfo_CU = new SectionCompileInfo();
-//        sectionCompileInfo_CU.sectionPos = SectionPos.of(this.render.getChunkX(), this.render.getChunkY(), this.render.getChunkZ());
-//        if (Schematica.instance.isBlockRenderingEnabled()) {
-//            Schematica.SectionInfo schematicaSectionInfo = Schematica.instance.getSectionInfo(sectionCompileInfo_CU.sectionPos);
-//            if (schematicaSectionInfo != null) {
-//                sectionCompileInfo_CU.schematicaSectionInfo = schematicaSectionInfo;
-//                sectionCompileInfo_CU.shouldRenderSchematicaGhostBlocks = true;
-//            } else {
-//                sectionCompileInfo_CU.shouldRenderSchematicaGhostBlocks = false;
-//            }
-//        } else {
-//            sectionCompileInfo_CU.shouldRenderSchematicaGhostBlocks = false;
+//    @LiteInject(
+//            method = "execute(Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/ChunkBuildContext;Lnet/caffeinemc/mods/sodium/client/util/task/CancellationToken;)Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/ChunkBuildOutput;",
+//            at = @At(
+//                    value = "INVOKE",
+//                    target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/BlockRenderer;renderModel(Lnet/minecraft/client/renderer/block/model/BlockStateModel;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)V",
+//                    shift = At.Shift.BEFORE))
+//    private void onBeforeCallRenderModel(
+//            @LocalVariable(ordinal = 0) LevelSlice slice,
+//            @LocalVariable(ordinal = 0) BlockRenderer blockRenderer,
+//            @LocalVariable(ordinal = 8) int x,
+//            @LocalVariable(ordinal = 6) int y,
+//            @LocalVariable(ordinal = 7) int z
+//    ) {
+//        if (((LevelSliceExtension) slice).hasSchematicaBlockAt_CU(x, y, z)) {
+//            ((BlockRendererExtension) blockRenderer).setSchematicaShadeMode_CU(true);
 //        }
 //    }
 //
-//    @Redirect(
-//            method = "execute",
-//            at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;getBlockState(III)Lnet/minecraft/world/level/block/state/BlockState;"))
-//    private BlockState onGetBlockState(LevelSlice slice, int blockX, int blockY, int blockZ) {
-//        BlockState original = slice.getBlockState(blockX, blockY, blockZ);
-//        if (original.isAir()) {
-//            if (sectionCompileInfo_CU.shouldRenderSchematicaGhostBlocks) {
-//                BlockPos pos = new BlockPos(blockX, blockY, blockZ);
-//                BlockState state = sectionCompileInfo_CU.schematicaSectionInfo.contains(pos) ?
-//                        sectionCompileInfo_CU.schematicaSectionInfo.getBlockState(pos) :
-//                        Schematica.instance.getBlockState(pos);
-//                if (!state.isAir()) {
-//                    return state;
-//                }
-//            }
-//        }
-//        return original;
+//    @LiteInject(
+//            method = "execute(Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/ChunkBuildContext;Lnet/caffeinemc/mods/sodium/client/util/task/CancellationToken;)Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/ChunkBuildOutput;",
+//            at = @At(
+//                    value = "INVOKE",
+//                    target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/BlockRenderer;renderModel(Lnet/minecraft/client/renderer/block/model/BlockStateModel;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)V"))
+//    private void onAfterCallRenderModel(
+//            @LocalVariable(ordinal = 0) BlockRenderer blockRenderer
+//    ) {
+//        ((BlockRendererExtension) blockRenderer).setSchematicaShadeMode_CU(false);
 //    }
 }
