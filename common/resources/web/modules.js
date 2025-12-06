@@ -30,7 +30,7 @@ module({
     name: 'Auto Bucket',
     component: 'AutoBucket',
     path: 'auto-bucket',
-    tags: ['auto', 'bucket', 'mlg']
+    tags: ['auto', 'bucket', 'mlg', 'nofall', 'no', 'fall']
 });
 module({
     group: 'automation',

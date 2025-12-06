@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 public class SchematicaConfig extends BlockPlacerConfig implements ValidatableConfig {
 
     public boolean renderBlocks;
+    public boolean shadeBlocks;
     public boolean showMissingBlockTracers;
     public double missingBlockTracersMaxDistance;
     public boolean showMissingBlockCubes;
@@ -22,6 +23,7 @@ public class SchematicaConfig extends BlockPlacerConfig implements ValidatableCo
         super();
 
         renderBlocks = true;
+        shadeBlocks = true;
 
         showMissingBlockTracers = false;
         missingBlockTracersMaxDistance = 30;

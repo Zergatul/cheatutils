@@ -2,9 +2,12 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.controllers.DisconnectController;
 import com.zergatul.cheatutils.controllers.SpeedCounterController;
+import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.Root;
+import com.zergatul.cheatutils.scripting.types.HitResultWrapper;
 import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.InputBuilder;
@@ -93,6 +96,31 @@ public class PlayerApi {
             return new Position3d(0, 0, 0);
         }
         return new Position3d(entity.getX(), entity.getY(), entity.getZ());
+    }
+
+    public Position3d getEyePosition() {
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return new Position3d(0, 0, 0);
+        }
+
+        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        return new Position3d(entity.getEyePosition(partialTicks));
+    }
+
+    @MethodDescription("""
+            Returns unit vector, not position
+            """)
+    public Position3d getLookDirection() {
+        Entity entity = mc.getCameraEntity();
+        if (entity == null) {
+            return new Position3d(0, 0, 0);
+        }
+
+        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        float xRot = entity.getXRot(partialTicks);
+        float yRot = entity.getYRot(partialTicks);
+        return new Position3d(Vec3.directionFromRotation(xRot, yRot));
     }
 
     @MethodDescription("""
@@ -518,6 +546,15 @@ public class PlayerApi {
             } else {
                 return new BlockPosWrapper(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
             }
+        }
+
+        public HitResultWrapper rayCast(double maxRange) {
+            if (mc.player == null) {
+                return new HitResultWrapper();
+            }
+
+            float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+            return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(mc.player, maxRange, maxRange, partialTicks));
         }
     }
 

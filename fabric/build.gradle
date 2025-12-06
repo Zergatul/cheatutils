@@ -45,6 +45,9 @@ dependencies {
     annotationProcessor files('../mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
 
     compileOnly("org.jspecify:jspecify:1.0.0")
+
+    // to run with Sodium
+    //modRuntimeOnly(files("C:/Users/Zergatul/source/repos/sodium/build/mods/sodium-fabric-0.7.3-snapshot+mc1.21.10-local.jar"))
 }
 
 sourceSets {

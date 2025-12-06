@@ -89,8 +89,6 @@ sourceSets {
             srcDir '../common/java'
             srcDir '../java-scripting-language/src/main/java'
             srcDir '../mixin-plugin/common/java'
-            exclude 'com/zergatul/cheatutils/mixins/common/schematics/MixinRenderRegionCache.java'
-            exclude 'com/zergatul/cheatutils/mixins/common/schematics/MixinSectionCompiler.java'
         }
         resources {
             srcDir '../common/resources'
@@ -173,6 +171,7 @@ tasks.named('jar', org.gradle.jvm.tasks.Jar).configure {
 
 tasks.named('jar', Jar) {
     includeEmptyDirs = false
+    exclude("net/caffeinemc/**")
     exclude('net/irisshaders/**')
 }
 

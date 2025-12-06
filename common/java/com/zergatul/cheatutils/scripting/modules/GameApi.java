@@ -3,11 +3,13 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
 import com.zergatul.cheatutils.scripting.types.BlockStateWrapper;
 import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
+import com.zergatul.cheatutils.utils.RayCast;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
@@ -15,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
@@ -24,6 +27,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
@@ -42,6 +46,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -122,6 +127,24 @@ public class GameApi {
             return new PlayerInfoWrapper[0];
         }
         return listener.getOnlinePlayers().stream().map(PlayerInfoWrapper::new).toArray(PlayerInfoWrapper[]::new);
+    }
+
+    public HitResultWrapper rayCast(int entityId, double maxRange) {
+        if (mc.level == null) {
+            return new HitResultWrapper();
+        }
+
+        Entity entity = mc.level.getEntity(entityId);
+        if (entity == null) {
+            return new HitResultWrapper();
+        }
+
+        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, maxRange, maxRange, partialTicks));
+    }
+
+    public RayCastEntityResult rayCastClosestEntity(Position3d origin, Position3d dir, double range) {
+        return new RayCastEntityResult(RayCast.findClosestEntity(origin.asVec3(), dir.asVec3(), range));
     }
 
     public static class DimensionApi {
@@ -485,6 +508,26 @@ public class GameApi {
 
         public ItemStackWrapper getEquippedOffHandItem(int entityId) {
             return getValue(entityId, getEquippedItem(EquipmentSlot.OFFHAND), () -> new ItemStackWrapper(ItemStack.EMPTY));
+        }
+
+        public boolean isUsingItemWithMainHand(int entityId) {
+            return getBooleanValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    return living.isUsingItem() && living.getUsedItemHand() == InteractionHand.MAIN_HAND;
+                } else {
+                    return false;
+                }
+            });
+        }
+
+        public boolean isUsingItemWithOffHand(int entityId) {
+            return getBooleanValue(entityId, entity -> {
+                if (entity instanceof LivingEntity living) {
+                    return living.isUsingItem() && living.getUsedItemHand() == InteractionHand.OFF_HAND;
+                } else {
+                    return false;
+                }
+            });
         }
 
         public int getHealth(int entityId) {
