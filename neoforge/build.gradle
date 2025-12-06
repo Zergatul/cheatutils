@@ -171,6 +171,7 @@ tasks.named('jar', org.gradle.jvm.tasks.Jar).configure {
 
 tasks.named('jar', Jar) {
     includeEmptyDirs = false
+    exclude("net/caffeinemc/**")
     exclude('net/irisshaders/**')
 }
 
