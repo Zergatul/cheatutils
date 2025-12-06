@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.mixins.common.schematics;
+package com.zergatul.cheatutils.mixins.forge.schematica;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;

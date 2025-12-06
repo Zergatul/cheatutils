@@ -8,6 +8,8 @@
   },
   "mixinPriority": 500,
   "client": [
+    "forge.schematica.MixinSectionCompiler",
+
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
     "forge.MixinLevelRenderer",
