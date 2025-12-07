@@ -55,7 +55,12 @@ public class InputApi {
         if (inputKey.getType() == InputConstants.Type.KEYSYM) {
             return InputConstants.isKeyDown(mc.getWindow(), inputKey.getValue());
         }
+        if (inputKey.getType() == InputConstants.Type.MOUSE) {
+            return InputConstants.isMouseButtonDown(mc.getWindow(), inputKey.getValue());
+        }
+
 
         return false;
     }
+
 }
