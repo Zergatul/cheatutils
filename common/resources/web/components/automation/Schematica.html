@@ -53,14 +53,18 @@
             <div class="section-description">
                 Render schematica in your world.
             </div>
-            <div class="flex-column" style="margin-top: 1em;">
+            <div class="flex-row" style="margin-top: 1em;">
                 <switch-checkbox v-model="config.shadeBlocks" @change="update()">
                     Shade Blocks
                 </switch-checkbox>
                 <div class="section-description">
-                    Shade schematica blocks in darker bluish color<br>
-                    Shading doesn't work with Sodium because Sodium = TRASH. Guys gained +1 FPS, and broke all possible compatibility
+                    Shade schematica blocks in darker bluish color
                 </div>
+            </div>
+            <div class="section-description" style="margin-top: 1em;">
+                Render Blocks feature doesn't work with Sodium.
+                All questions to Sodium devs.
+                They stopped caring about compatibility.
             </div>
         </fieldset>
 

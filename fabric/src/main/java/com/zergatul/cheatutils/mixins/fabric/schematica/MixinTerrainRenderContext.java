@@ -35,11 +35,11 @@ public abstract class MixinTerrainRenderContext extends AbstractTerrainRenderCon
     @ModifyMethodReturnValue(
             method = "getVertexConsumer",
             at = @At(value = "INVOKE", target = "Ljava/util/function/Function;apply(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private VertexConsumer onOverrideVertexConsumer(VertexConsumer consumer) {
+    private Object onOverrideVertexConsumer(Object result) {
         if (((RenderSectionRegionExtension) this.blockInfo.blockView).hasSchematicaBlockAt_CU(currentBlockPos_CU)) {
-            return new ShadedVertexConsumerWrapper(consumer, 0.5f, 0.8f, 1.0f, 0.6f);
+            return new ShadedVertexConsumerWrapper((VertexConsumer) result, 0.5f, 0.8f, 1.0f, 0.6f);
         } else {
-            return consumer;
+            return result;
         }
     }
 }

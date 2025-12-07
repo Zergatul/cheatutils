@@ -23,6 +23,7 @@ export function createComponent(template) {
             }
         }
     };
+    components.add(args, 'CodeBlock');
     components.add(args, 'ItemList');
     return withCss(import.meta.url, args);;
 }
