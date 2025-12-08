@@ -146,7 +146,7 @@ public class GameApi {
         return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, maxRange, maxRange, partialTicks));
     }
 
-    public HitResultWrapper rayCast(int entityId, Position3d dir, double range){
+    public HitResultWrapper rayCast(int entityId, Vec3 dir, double range){
         if (mc.level == null) {
             return new HitResultWrapper();
         }
@@ -159,7 +159,7 @@ public class GameApi {
         float initialX = entity.getViewXRot(entityId);
         float initialY = entity.getViewYRot(entityId);
 
-        Rotation rotation = RotationUtils.getRotation(new Vec3(0,0,0), dir.asVec3());
+        Rotation rotation = RotationUtils.getRotation(new Vec3(0,0,0), dir);
         entity.setYRot(rotation.yRot());
         entity.setXRot(rotation.xRot());       
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);

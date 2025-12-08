@@ -14,6 +14,7 @@ import com.zergatul.cheatutils.utils.InputBuilder;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
+import com.zergatul.cheatutils.scripting.modules.GameApi;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -35,12 +36,14 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-
+import net.minecraft.world.phys.AABB;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -128,7 +131,8 @@ public class PlayerApi {
             """)
     public String getCoordinatesFormatted() {
         if (mc.getCameraEntity() != null) {
-            return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
+            return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(),
+                    mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
         } else {
             return "";
         }
@@ -139,7 +143,8 @@ public class PlayerApi {
         if (mc.level == null || mc.level.dimension() == Level.NETHER || mc.getCameraEntity() == null) {
             return "";
         }
-        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() / 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() / 8);
+        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() / 8,
+                mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() / 8);
     }
 
     @MethodDescription("If you are in the Nether, returns calculated coordinates in the Overworld")
@@ -147,7 +152,8 @@ public class PlayerApi {
         if (mc.level == null || mc.level.dimension() == Level.OVERWORLD || mc.getCameraEntity() == null) {
             return "";
         }
-        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() * 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() * 8);
+        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() * 8,
+                mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() * 8);
     }
 
     public String getBlockCoordinatesFormatted() {
@@ -236,7 +242,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setXRot((float)value);
+        mc.player.setXRot((float) value);
     }
 
     @ApiVisibility(ApiType.ACTION)
@@ -244,7 +250,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setYRot((float)value);
+        mc.player.setYRot((float) value);
     }
 
     public int getHealth() {
@@ -371,6 +377,78 @@ public class PlayerApi {
     }
 
     @ApiVisibility(ApiType.ACTION)
+
+    public boolean vanillaAttack(int entityId, double reach) {
+        if (mc.level == null) {
+            return false;
+        }
+        if (mc.player == null) {
+            return false;
+        }
+        if (mc.gameMode == null) {
+            return false;
+        }
+
+        Entity entity = mc.level.getEntity(entityId);
+        if (entity == null) {
+            return false;
+        }
+        // If the closest point on the hitbox is out of range, no need to check anything
+        // else, can return here.
+        if (Math.sqrt(entity.getBoundingBox().distanceToSqr(mc.player.getEyePosition())) > reach) {
+            return false;
+        }
+        AABB box = entity.getBoundingBox();
+        Vec3 Eye = mc.player.getEyePosition();
+
+        double buffer = 0.02;// Defines how precicely to attack the hitbox
+        Vec3 closestPoint = new Vec3(
+                Math.clamp(Eye.x, box.minX + buffer, box.maxX - buffer),
+                Math.clamp(Eye.y, box.minY + buffer, box.maxY - buffer),
+                Math.clamp(Eye.z, box.minZ + buffer, box.maxZ - buffer));
+
+        HitResultWrapper closest = Root.game.rayCast(mc.player.getId(), closestPoint.subtract(Eye), reach);
+
+        if (closest.getEntityId() == entityId
+                && Root.player.getEyePosition().distanceTo(closest.getLocation()) < reach) {
+
+            Position3d prevPos = Root.player.getLookDirection().add(getEyePosition());
+            Root.player.lookAt(closest.getLocation().getX(), closest.getLocation().getY(),
+                    closest.getLocation().getZ());
+
+            mc.gameMode.attack(mc.player, entity);
+            mc.player.swing(InteractionHand.MAIN_HAND);
+            Root.player.lookAt(prevPos.getX(), prevPos.getY(), prevPos.getZ());
+            return true;
+        }
+        // There has to be a better way to do this faster
+        // Brute force ray checks on bounding box
+        /*
+         * final double step = 0.2;
+         * final double SamplesPerAxis = 5;
+         * 
+         * for (int dx = 0; dx < SamplesPerAxis; dx++) {
+         * for (int dy = 0; dy < SamplesPerAxis; dy++) {
+         * for (int dz = 0; dz < SamplesPerAxis; dz++) {
+         * HitResultWrapper ray = Root.game.rayCast(mc.player.getId(),
+         * closestPoint.subtract(Eye), reach);
+         * 
+         * if (ray.getEntityId() == entityId) {
+         * Root.player.lookAt(
+         * box.minX + box.getXsize() * step * dx,
+         * box.minY + box.getYsize() * step * dy,
+         * box.minZ + box.getZsize() * step * dz);
+         * mc.gameMode.attack(mc.player, entity);
+         * mc.player.swing(InteractionHand.MAIN_HAND);
+         * return true;
+         * }
+         * }
+         * }
+         * }
+         */
+        return false;
+    }
+
     public boolean attack(int entityId) {
         if (mc.level == null) {
             return false;
@@ -554,7 +632,8 @@ public class PlayerApi {
             }
 
             float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-            return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(mc.player, maxRange, maxRange, partialTicks));
+            return new HitResultWrapper(
+                    ((GameRendererAccessor) mc.gameRenderer).pick_CU(mc.player, maxRange, maxRange, partialTicks));
         }
     }
 
@@ -571,7 +650,8 @@ public class PlayerApi {
 
             HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
             ResourceLocation location = ResourceLocation.parse(id);
-            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location))
+                    .findFirst().orElse(null);
             if (holder == null) {
                 return Integer.MIN_VALUE;
             }
@@ -595,7 +675,8 @@ public class PlayerApi {
 
             HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
             ResourceLocation location = ResourceLocation.parse(id);
-            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location))
+                    .findFirst().orElse(null);
             if (holder == null) {
                 return -1;
             }
@@ -641,7 +722,7 @@ public class PlayerApi {
                         .map(e -> (ChestBoat) e);
                 double minDistance = Double.MAX_VALUE;
                 ChestBoat target = null;
-                for (ChestBoat boat: boats.toList()) {
+                for (ChestBoat boat : boats.toList()) {
                     double d2 = mc.player.distanceToSqr(boat);
                     if (d2 < minDistance) {
                         minDistance = d2;
