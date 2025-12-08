@@ -55,6 +55,11 @@ public class InputApi {
         if (inputKey.getType() == InputConstants.Type.KEYSYM) {
             return InputConstants.isKeyDown(mc.getWindow(), inputKey.getValue());
         }
+        if (inputKey.getType() == InputConstants.Type.MOUSE){
+            long handle = mc.getWindow().handle();// Need to get the handle first because the method was removed in 1.19 
+            //Can still access it via mc.getWindow()
+            return org.lwjgl.glfw.GLFW.glfwGetMouseButton(handle, inputKey.getValue()) == 1;
+            }
 
         return false;
     }
