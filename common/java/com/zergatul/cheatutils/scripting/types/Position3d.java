@@ -45,6 +45,14 @@ public class Position3d {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
+    public Position3d add(Position3d other){
+        return new Position3d(x+other.x, y+other.y, z+other.z);
+    }
+
+    public Position3d subtract(Position3d other){
+        return new Position3d(x-other.x, y-other.y, z-other.z);
+    }
+
     @HiddenMethod
     public Vec3 asVec3() {
         return new Vec3(x, y, z);

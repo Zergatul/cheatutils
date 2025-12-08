@@ -4,18 +4,20 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
-import com.zergatul.cheatutils.scripting.types.BlockStateWrapper;
 import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.utils.RayCast;
+import com.zergatul.cheatutils.utils.Rotation;
+import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -33,6 +35,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -141,6 +144,29 @@ public class GameApi {
 
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
         return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, maxRange, maxRange, partialTicks));
+    }
+
+    public HitResultWrapper rayCast(int entityId, Position3d dir, double range){
+        if (mc.level == null) {
+            return new HitResultWrapper();
+        }
+        
+        Entity entity = mc.level.getEntity(entityId);
+
+        if(entity == null){
+            return new HitResultWrapper();
+        }
+        float initialX = entity.getViewXRot(entityId);
+        float initialY = entity.getViewYRot(entityId);
+
+        Rotation rotation = RotationUtils.getRotation(new Vec3(0,0,0), dir.asVec3());
+        entity.setYRot(rotation.yRot());
+        entity.setXRot(rotation.xRot());       
+        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        HitResultWrapper output = new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, range, range, partialTicks));
+        entity.setYRot(initialY);
+        entity.setXRot(initialX);
+        return output;
     }
 
     public RayCastEntityResult rayCastClosestEntity(Position3d origin, Position3d dir, double range) {
