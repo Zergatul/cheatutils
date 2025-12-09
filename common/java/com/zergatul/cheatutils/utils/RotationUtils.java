@@ -8,8 +8,16 @@ public class RotationUtils {
     public static Rotation getRotation(Vec3 source, Vec3 target) {
         Vec3 diff = target.subtract(source);
         double diffXZ = Math.sqrt(diff.x * diff.x + diff.z * diff.z);
-        float xRot = (float)Math.toDegrees(-Math.atan2(diff.y, diffXZ));
-        float yRot = (float)Math.toDegrees(Math.atan2(diff.z, diff.x)) - 90F;
+        float xRot = (float) Math.toDegrees(-Math.atan2(diff.y, diffXZ));
+        float yRot = (float) Math.toDegrees(Math.atan2(diff.z, diff.x)) - 90F;
+        xRot = Mth.clamp(xRot, -90, 90);
+        return new Rotation(xRot, yRot);
+    }
+
+    public static Rotation getRotation(Vec3 direction) {
+        double diffXZ = Math.sqrt(direction.x * direction.x + direction.z * direction.z);
+        float xRot = (float) Math.toDegrees(-Math.atan2(direction.y, diffXZ));
+        float yRot = (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90F;
         xRot = Mth.clamp(xRot, -90, 90);
         return new Rotation(xRot, yRot);
     }

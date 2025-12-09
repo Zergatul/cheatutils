@@ -28,6 +28,7 @@ import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
@@ -159,9 +160,10 @@ public class GameApi {
         float initialX = entity.getViewXRot(entityId);
         float initialY = entity.getViewYRot(entityId);
 
-        Rotation rotation = RotationUtils.getRotation(new Vec3(0,0,0), dir);
-        entity.setYRot(rotation.yRot());
-        entity.setXRot(rotation.xRot());       
+        Rotation lookAngle = RotationUtils.getRotation(dir);
+        entity.setYRot(lookAngle.yRot());
+        entity.setXRot(lookAngle.xRot());
+
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
         HitResultWrapper output = new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, range, range, partialTicks));
         entity.setYRot(initialY);
