@@ -55,6 +55,9 @@ public class InputApi {
         if (inputKey.getType() == InputConstants.Type.KEYSYM) {
             return InputConstants.isKeyDown(mc.getWindow(), inputKey.getValue());
         }
+        if (inputKey.getType() == InputConstants.Type.MOUSE){
+            return org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), inputKey.getValue()) == 1;
+        }
 
         return false;
     }
