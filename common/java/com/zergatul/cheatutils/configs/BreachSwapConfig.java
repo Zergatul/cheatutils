@@ -8,7 +8,5 @@ public class BreachSwapConfig extends ModuleConfig implements ValidatableConfig 
     @Override
     public void validate() {
         return;
-    }
-
-    
+    }    
 }
