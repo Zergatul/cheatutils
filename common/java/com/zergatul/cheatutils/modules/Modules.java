@@ -62,6 +62,7 @@ public class Modules {
         register(ArmorOverlay.instance);
         register(Fog.instance);
         register(AutoAttack.instance);
+        register(BreachSwap.instance);
         register(Exec.instance);
         register(VillagerRoller.instance);
         register(AutoHotbar.instance);
