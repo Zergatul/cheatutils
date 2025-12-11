@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.AutoAttackConfig;
+import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.wrappers.AttackRange;
@@ -28,6 +29,12 @@ public class AutoAttack implements Module {
 
         AutoAttackConfig config = ConfigStore.instance.getConfig().autoAttackConfig;
         if (!config.enabled) {
+            return;
+        }
+        
+        boolean breachSwap = ConfigStore.instance.getConfig().breachSwapConfig.enabled;
+
+        if(breachSwap){//Breach swap should take priority if both modules are enabled.
             return;
         }
 
