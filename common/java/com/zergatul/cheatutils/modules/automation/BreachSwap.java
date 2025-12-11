@@ -18,8 +18,10 @@ import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 public class BreachSwap implements Module {
 
     public static final BreachSwap instance = new BreachSwap();
+    
 
     private final Minecraft mc = Minecraft.getInstance();
+    public boolean attacked;
 
     private BreachSwap() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
@@ -36,6 +38,7 @@ public class BreachSwap implements Module {
         }
 
         if(!Root.input.isKeyDown(config.triggerKey)){
+            attacked = false;
             return;
         }
         if (mc.hitResult == null) {
@@ -46,7 +49,11 @@ public class BreachSwap implements Module {
             return;
         }
 
-        if (mc.player.getAttackStrengthScale((float) 0) != 1) {
+        if(attacked && !config.autoHit){//Only check for cooldown if auto hit is enabled
+            return;
+        }
+
+        else if(mc.player.getAttackStrengthScale((float) 0) != 1) {
             return;
         }
 
@@ -92,6 +99,7 @@ public class BreachSwap implements Module {
                     weapon = axe;
                 }
             }
+            attacked = true;
             invent.setSelectedSlot(mace);
             mc.gameMode.attack(mc.player, entity);
             mc.player.swing(InteractionHand.MAIN_HAND);
