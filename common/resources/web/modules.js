@@ -90,6 +90,13 @@ module({
 });
 module({
     group: 'automation',
+    name: 'Breach Swap',
+    component: 'BreachSwap',
+    path: 'breach-swap',
+    tags: ['auto', 'attack']
+});
+module({
+    group: 'automation',
     name: 'Schematica',
     component: 'Schematica',
     path: 'schematica',

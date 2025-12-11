@@ -1,0 +1,13 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Breach Swap makes it so that holding the attack button swaps sword and mace to performa Breach Swap attack,
+        Penetrating armor with breach while using base damage and cooldown of a sword or axe.
+        Each swing is done right after the attack cooldown is done and thus will always do max possible damage.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
+</div>
