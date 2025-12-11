@@ -61,9 +61,4 @@ public class InputApi {
 
         return false;
     }
-
-    public boolean isValidKey(String key){
-        InputConstants.Key inputKey = keyMap.get(key);
-        return inputKey.getType() == InputConstants.Type.KEYSYM || inputKey.getType() == InputConstants.Type.MOUSE;
-    }
 }

@@ -7,7 +7,6 @@ import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.modules.automation.BreachSwap;
 import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
@@ -688,18 +687,6 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(AutoAttackConfig config) {
                 ConfigStore.instance.getConfig().autoAttackConfig = config;
-            }
-        });
-        
-        apis.add(new SimpleConfigApi<>("breach-swap", BreachSwapConfig.class) {
-            @Override
-            protected BreachSwapConfig getConfig() {
-                return ConfigStore.instance.getConfig().breachSwapConfig;
-            }
-
-            @Override
-            protected void setConfig(BreachSwapConfig config) {
-                ConfigStore.instance.getConfig().breachSwapConfig = config;
             }
         });
 
