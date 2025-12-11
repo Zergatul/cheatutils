@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import com.zergatul.cheatutils.scripting.Root;
 
 import net.minecraft.world.entity.player.Inventory;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
@@ -34,14 +35,12 @@ public class BreachSwap implements Module {
             return;
         }
 
-        if (!mc.options.keyAttack.isDown()) {
+        if(!Root.input.isKeyDown(config.triggerKey)){
             return;
         }
-
         if (mc.hitResult == null) {
             return;
         }
-        
 
         if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
             return;
@@ -93,7 +92,6 @@ public class BreachSwap implements Module {
                     weapon = axe;
                 }
             }
-
             invent.setSelectedSlot(mace);
             mc.gameMode.attack(mc.player, entity);
             mc.player.swing(InteractionHand.MAIN_HAND);

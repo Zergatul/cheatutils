@@ -689,7 +689,17 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().autoAttackConfig = config;
             }
         });
+        apis.add(new SimpleConfigApi<>("breach-swap", BreachSwapConfig.class) {
+            @Override
+            protected BreachSwapConfig getConfig() {
+                return ConfigStore.instance.getConfig().breachSwapConfig;
+            }
 
+            @Override
+            protected void setConfig(BreachSwapConfig config) {
+                ConfigStore.instance.getConfig().breachSwapConfig = config;
+            }
+        });
         apis.add(new SimpleConfigApi<>("no-weather", NoWeatherConfig.class) {
             @Override
             protected NoWeatherConfig getConfig() {

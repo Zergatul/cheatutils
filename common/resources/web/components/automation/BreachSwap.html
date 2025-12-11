@@ -15,6 +15,7 @@
             </legend>
             <div class="flex-column">
                 <switch-checkbox v-model="config.useAxe" @change="update()">Prefer Axe</switch-checkbox>
+                <switch-checkbox v-model="config.autoHit" @change="update()">Attack again automatically on cooldown end</switch-checkbox>
             </div>            
         </fieldset>
     </div>
