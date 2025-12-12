@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.Color2dRenderer;
@@ -8,14 +7,13 @@ import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import com.zergatul.cheatutils.utils.ItemUtils;
-import jdk.jfr.Frequency;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -183,7 +181,7 @@ public class ContainerSummaryController {
 
         private static final int MAX_ROWS = 10;
         private static final int H_PADDING = 2;
-        private static final ResourceLocation CONTAINER_TEXTURE = ResourceLocation.parse("textures/gui/container/generic_54.png");
+        private static final Identifier CONTAINER_TEXTURE = Identifier.parse("textures/gui/container/generic_54.png");
 
         public List<ItemDrawable> list;
         public int width;

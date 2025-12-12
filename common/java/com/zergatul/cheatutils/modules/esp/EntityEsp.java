@@ -9,9 +9,8 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.StylizedText;
-import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.TextureStateShardAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
@@ -19,10 +18,10 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -103,15 +102,15 @@ public class EntityEsp implements Module {
         }
     }
 
-    public Optional<ResourceLocation> getTextureFromRenderType(RenderType renderType) {
-        if (renderType instanceof CompositeRenderTypeAccessor accessor) {
-            RenderType.CompositeState state = accessor.getState_CU();
-            RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
-            if (shard instanceof RenderStateShard.TextureStateShard textureStateShard) {
-                return ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
-            }
+    public Optional<Identifier> getTextureFromRenderType(RenderType renderType) {
+        RenderSetup setup = ((RenderTypeAccessor) renderType).getState_CU();
+        Map<String, RenderSetup.TextureBinding> textures = ((RenderSetupAccessor) (Object) setup).getTextures_CU();
+        RenderSetup.TextureBinding binding = textures.get("Sampler0");
+        if (binding == null) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        return Optional.of(binding.location());
     }
 
     public boolean isGoodRenderTypeForOverlays(RenderType renderType) {
@@ -130,7 +129,7 @@ public class EntityEsp implements Module {
         return true;
     }
 
-    public VertexConsumer getOutlineVertexConsumer(EntityEspConfig config, ResourceLocation texture) {
+    public VertexConsumer getOutlineVertexConsumer(EntityEspConfig config, Identifier texture) {
         List<EntityTypeVertexConsumerEntry> entries = outlineVertexConsumers.computeIfAbsent(config, c -> new ArrayList<>());
         for (EntityTypeVertexConsumerEntry entry : entries) {
             if (entry.texture.equals(texture)) {
@@ -143,7 +142,7 @@ public class EntityEsp implements Module {
         return consumer;
     }
 
-    public VertexConsumer getOverlayVertexConsumer(EntityEspConfig config, ResourceLocation texture) {
+    public VertexConsumer getOverlayVertexConsumer(EntityEspConfig config, Identifier texture) {
         List<EntityTypeVertexConsumerEntry> entries = overlayVertexConsumers.computeIfAbsent(config, c -> new ArrayList<>());
         for (EntityTypeVertexConsumerEntry entry : entries) {
             if (entry.texture.equals(texture)) {
@@ -451,7 +450,7 @@ public class EntityEsp implements Module {
         return result;
     }
 
-    private record BufferedVerticesEntry(ResourceLocation texture, FloatList list) {}
+    private record BufferedVerticesEntry(Identifier texture, FloatList list) {}
 
     public static class EntityScriptResult {
 
@@ -511,6 +510,11 @@ public class EntityEsp implements Module {
         }
 
         @Override
+        public @NotNull VertexConsumer setColor(int i) {
+            return this;
+        }
+
+        @Override
         public @NotNull VertexConsumer setColor(int i, int j, int k, int l) {
             return this;
         }
@@ -536,11 +540,16 @@ public class EntityEsp implements Module {
         public @NotNull VertexConsumer setNormal(float f, float g, float h) {
             return this;
         }
+
+        @Override
+        public @NotNull VertexConsumer setLineWidth(float f) {
+            return this;
+        }
     }
 
     public record EntityRenderParameters(EntityEspConfig outlineConfig, EntityEspConfig overlayConfig) {
         public static final EntityRenderParameters EMPTY = new EntityRenderParameters(null, null);
     }
 
-    public record EntityTypeVertexConsumerEntry(ResourceLocation texture, BufferVertexConsumer consumer) {}
+    public record EntityTypeVertexConsumerEntry(Identifier texture, BufferVertexConsumer consumer) {}
 }

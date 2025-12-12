@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.utils;
 import com.zergatul.cheatutils.common.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class BlockStateMapper {
 
@@ -61,7 +60,7 @@ public class BlockStateMapper {
     }
 
     public static BlockState map(String id, Map<String, String> properties) {
-        Block block = Registries.BLOCKS.getValue(ResourceLocation.parse(id));
+        Block block = Registries.BLOCKS.getValue(Identifier.parse(id));
 
         return block.getStateDefinition().getPossibleStates().stream().filter(state -> {
             Map<Property<?>, Comparable<?>> currentProperties = state.getValues();

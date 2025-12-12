@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.SlimeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,7 +24,7 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
 
     @Inject(at = @At("HEAD"), method = "fallOn", cancellable = true)
     private void onFallOn(Level level, BlockState state, BlockPos pos, Entity entity, double p_154571_, CallbackInfo info) {
-        if (shouldFallback(entity)) {
+        if (shouldFallback_CU(entity)) {
             entity.causeFallDamage(p_154571_, 1.0F, level.damageSources().fall());
             info.cancel();
         }
@@ -31,7 +32,7 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
 
     @Inject(at = @At("HEAD"), method = "updateEntityMovementAfterFallOn", cancellable = true)
     private void onUpdateEntityAfterFallOn(BlockGetter p_56406_, Entity entity, CallbackInfo info) {
-        if (shouldFallback(entity)) {
+        if (shouldFallback_CU(entity)) {
             entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
             entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
             info.cancel();
@@ -40,7 +41,7 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
 
     @Inject(at = @At("HEAD"), method = "stepOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/Entity;)V", cancellable = true)
     private void onStepOn(Level level, BlockPos pos, BlockState state, Entity entity, CallbackInfo info) {
-        if (shouldFallback(entity)) {
+        if (shouldFallback_CU(entity)) {
             info.cancel();
         }
     }
@@ -54,7 +55,8 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
         }
     }
 
-    private boolean shouldFallback(Entity entity) {
+    @Unique
+    private boolean shouldFallback_CU(Entity entity) {
         return entity.level().isClientSide() &&
                 Minecraft.getInstance().player == entity &&
                 ConfigStore.instance.getConfig().movementHackConfig.disableSlimePhysics;

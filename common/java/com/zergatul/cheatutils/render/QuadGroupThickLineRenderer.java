@@ -32,7 +32,7 @@ public class QuadGroupThickLineRenderer implements GroupThickLineRenderer {
         }
 
         this.event = event;
-        this.view = event.getCamera().getPosition();
+        this.view = event.getCamera().position();
 
         if (program == null) {
             program = new EspGroupTrianglesProgram();

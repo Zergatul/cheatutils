@@ -23,6 +23,7 @@
       "com.zergatul.cheatutils.ModMain"
     ]
   },
+  "accessWidener": "cheatutils.classtweaker",
   "mixins": [
     "cheatutils.common.mixins.json",
     "cheatutils.sodium.mixins.json",
@@ -32,10 +33,10 @@
   ],
 
   "depends": {
-    "fabricloader": ">=0.16.7",
-    "fabric": "*",
-    "minecraft": "~1.21.4",
-    "java": ">=21"
+    "fabricloader": ">=0.18.2",
+    "minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
   },
   "suggests": {
     "another-mod": "*"

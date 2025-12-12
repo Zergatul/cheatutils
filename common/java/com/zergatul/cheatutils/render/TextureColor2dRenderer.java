@@ -114,8 +114,6 @@ public class TextureColor2dRenderer {
 
         GlStateManager._disableDepthTest(); //glDisable(GL_DEPTH_TEST);
         GlStateManager._disableCull();      //glDisable(GL_CULL_FACE);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         program.draw(matrix, textureId);
     }

@@ -7,21 +7,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -47,7 +48,7 @@ public class BlockModelApi extends ApiBase {
 
     @Override
     public String get(String id) throws ApiException {
-        ResourceLocation loc = ResourceLocation.parse(id);
+        Identifier loc = Identifier.parse(id);
         Block block = Registries.BLOCKS.getValue(loc);
         if (block == null) {
             throw new ApiException("Cannot find block by id.", HttpResponseCodes.NOT_FOUND);
@@ -180,11 +181,6 @@ public class BlockModelApi extends ApiBase {
         }
 
         @Override
-        public void submitHitbox(PoseStack poseStack, EntityRenderState entityRenderState, HitboxesRenderState hitboxesRenderState) {
-            throw new AssertionError();
-        }
-
-        @Override
         public void submitShadow(PoseStack poseStack, float f, List<EntityRenderState.ShadowPiece> list) {
             throw new AssertionError();
         }
@@ -277,48 +273,43 @@ public class BlockModelApi extends ApiBase {
         public Quad(BakedQuad quad, BlockState state) {
             this.location = quad.sprite().atlasLocation().toString();
 
-            int[] values = quad.vertices();
             this.vertices = new Vertex[4];
             for (int i = 0; i < 4; i++) {
-                int offset = i * 8;
                 this.vertices[i] = new Vertex();
-                this.vertices[i].x = Float.intBitsToFloat(values[offset]) - 0.5f;
-                this.vertices[i].y = Float.intBitsToFloat(values[offset + 1]) - 0.5f;
-                this.vertices[i].z = Float.intBitsToFloat(values[offset + 2]) - 0.5f;
+                this.vertices[i].x = quad.position(i).x() - 0.5f;
+                this.vertices[i].y = quad.position(i).y() - 0.5f;
+                this.vertices[i].z = quad.position(i).z() - 0.5f;
 
                 int color = quad.isTinted() ?
                         Minecraft.getInstance().getBlockColors().getColor(state, null, null, 0) :
-                        values[offset + 3];
+                        -1;
                 this.vertices[i].r = color & 0xFF;
                 this.vertices[i].g = (color >> 8) & 0xFF;
                 this.vertices[i].b = (color >> 16) & 0xFF;
                 this.vertices[i].a = quad.isTinted() ? 255 : (color >> 24) & 0xFF;
 
-                this.vertices[i].u = Float.intBitsToFloat(values[offset + 4]);
-                this.vertices[i].v = Float.intBitsToFloat(values[offset + 5]);
+                this.vertices[i].u = UVPair.unpackU(quad.packedUV(i));
+                this.vertices[i].v = UVPair.unpackV(quad.packedUV(i));
             }
         }
 
         public Quad(BakedQuad quad) {
             this.location = quad.sprite().atlasLocation().toString();
 
-            int[] values = quad.vertices();
             this.vertices = new Vertex[4];
             for (int i = 0; i < 4; i++) {
-                int offset = i * 8;
                 this.vertices[i] = new Vertex();
-                this.vertices[i].x = Float.intBitsToFloat(values[offset]) - 0.5f;
-                this.vertices[i].y = Float.intBitsToFloat(values[offset + 1]) - 0.5f;
-                this.vertices[i].z = Float.intBitsToFloat(values[offset + 2]) - 0.5f;
+                this.vertices[i].x = quad.position(i).x() - 0.5f;
+                this.vertices[i].y = quad.position(i).y() - 0.5f;
+                this.vertices[i].z = quad.position(i).z() - 0.5f;
 
-                int color = values[offset + 3];
-                this.vertices[i].r = color & 0xFF;
-                this.vertices[i].g = (color >> 8) & 0xFF;
-                this.vertices[i].b = (color >> 16) & 0xFF;
-                this.vertices[i].a = (color >> 24) & 0xFF;
+                this.vertices[i].r = 255;
+                this.vertices[i].g = 255;
+                this.vertices[i].b = 255;
+                this.vertices[i].a = 255;
 
-                this.vertices[i].u = Float.intBitsToFloat(values[offset + 4]);
-                this.vertices[i].v = Float.intBitsToFloat(values[offset + 5]);
+                this.vertices[i].u = UVPair.unpackU(quad.packedUV(i));
+                this.vertices[i].v = UVPair.unpackV(quad.packedUV(i));
             }
         }
 

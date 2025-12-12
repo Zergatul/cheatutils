@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.LocalPlayerAccessor;
 import com.zergatul.cheatutils.scripting.types.BlockStateWrapper;
 import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
@@ -17,7 +17,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
@@ -25,7 +24,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
@@ -46,7 +45,6 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -140,7 +138,7 @@ public class GameApi {
         }
 
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-        return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, maxRange, maxRange, partialTicks));
+        return new HitResultWrapper(LocalPlayerAccessor.pick_CU(entity, maxRange, maxRange, partialTicks));
     }
 
     public RayCastEntityResult rayCastClosestEntity(Position3d origin, Position3d dir, double range) {
@@ -153,7 +151,7 @@ public class GameApi {
             if (mc.level == null) {
                 return "";
             }
-            return mc.level.dimension().location().toString();
+            return mc.level.dimension().identifier().toString();
         }
 
         public boolean isOverworld() {
@@ -208,7 +206,7 @@ public class GameApi {
                 Gets entity count by Minecraft id in render distance
                 """)
         public int getCountById(String id) {
-            ResourceLocation location = ResourceLocation.parse(id);
+            Identifier location = Identifier.parse(id);
             EntityType<?> type = Registries.ENTITY_TYPES.getValue(location);
             if (type == null) {
                 return Integer.MIN_VALUE;
@@ -237,7 +235,7 @@ public class GameApi {
                 return Integer.MIN_VALUE;
             }
 
-            EntityType<?> type = Registries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
+            EntityType<?> type = Registries.ENTITY_TYPES.getValue(Identifier.parse(id));
             if (type == null) {
                 return Integer.MIN_VALUE;
             }
@@ -456,7 +454,7 @@ public class GameApi {
                 assert mc.level != null;
 
                 if (entity instanceof LivingEntityExtension living) {
-                    ResourceLocation location = ResourceLocation.parse(effectId);
+                    Identifier location = Identifier.parse(effectId);
                     MobEffect effect = Registries.MOB_EFFECTS.getValue(location);
                     if (effect == null) {
                         return false;
@@ -621,7 +619,7 @@ public class GameApi {
                 return new int[0];
             }
 
-            EntityType<?> type = Registries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
+            EntityType<?> type = Registries.ENTITY_TYPES.getValue(Identifier.parse(id));
             if (type == null) {
                 return new int[0];
             }

@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.Lazy;
 import com.zergatul.scripting.type.CustomType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 @SuppressWarnings("unused")
@@ -40,7 +40,7 @@ public class ItemWrapper {
     }
 
     public boolean hasTag(String tag) {
-        ResourceLocation location = ResourceLocation.tryParse(tag);
+        Identifier location = Identifier.tryParse(tag);
         if (location == null) {
             return false;
         }
