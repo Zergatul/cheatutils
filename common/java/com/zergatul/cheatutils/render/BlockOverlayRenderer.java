@@ -70,9 +70,9 @@ public class BlockOverlayRenderer {
         renderInFrameBuffer();
 
         // set line settings
-        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
-        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-        GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager._disableDepthTest();
 
         // draw with shader program
         drawProgram.buffer.add(-1);
@@ -127,10 +127,10 @@ public class BlockOverlayRenderer {
         FrameBuffer.push();
 
         // set draw settings
-        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
-        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-        GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
-        GlStateManager._enableCull(); //GL30.glEnable(GL30.GL_CULL_FACE);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager._disableDepthTest();
+        GlStateManager._enableCull();
 
         // draw with shader program in framebuffer
         FrameBuffers.get1().bind();

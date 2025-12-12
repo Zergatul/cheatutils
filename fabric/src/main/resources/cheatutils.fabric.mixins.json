@@ -10,6 +10,7 @@
   "client": [
     "fabric.schematica.MixinSectionCompiler",
 
+    "fabric.MixinGuiGraphics",
     "fabric.MixinGameRenderer",
     "fabric.MixinKeyboardHandler",
     "fabric.MixinLevelRenderer",

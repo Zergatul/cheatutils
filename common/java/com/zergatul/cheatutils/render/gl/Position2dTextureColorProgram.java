@@ -32,10 +32,8 @@ public class Position2dTextureColorProgram extends Program {
         GL30.glUseProgram(id);
 
         GL30.glActiveTexture(GL30.GL_TEXTURE0 + unit);
-        //GL33.glBindSampler(unit, 0);
+        GL33.glBindSampler(unit, Sampler.DEFAULT.getId());
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, texture);
-        GL30.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        GL30.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         GL30.glUniform1i(textureUniform, unit);
 
         GL30.glUniformMatrix4fv(mvpUniform, false, mvp.get(new float[16]));

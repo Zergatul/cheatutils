@@ -7,7 +7,5 @@
     "defaultRequire": 0
   },
   "mixinPriority": 500,
-  "client": [
-    "fnf.MixinGuiGraphics"
-  ]
+  "client": []
 }

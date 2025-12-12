@@ -80,10 +80,10 @@ public class Color2dRenderer {
     }
 
     public void end(Matrix4f matrix) {
-        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
-        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-        GlStateManager._disableDepthTest(); //glDisable(GL_DEPTH_TEST);
-        GlStateManager._disableCull();      //glDisable(GL_CULL_FACE);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager._disableDepthTest();
+        GlStateManager._disableCull();
 
         program.draw(matrix);
     }
