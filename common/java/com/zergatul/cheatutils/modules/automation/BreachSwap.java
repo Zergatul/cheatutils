@@ -99,6 +99,20 @@ public class BreachSwap implements Module {
                     weapon = axe;
                 }
             }
+
+            if(config.breakShield){
+                if(Root.game.entities.isUsingItemWithOffHand(entity.getId()) && Root.game.entities.getEquippedOffHandItem(entity.getId()).getItem().getId().equals("minecraft:shield")){
+
+                    if(axe != -1){
+                        invent.setSelectedSlot(axe);
+                        mc.gameMode.attack(mc.player, entity);
+                        mc.player.swing(InteractionHand.MAIN_HAND);
+                    }
+
+                }
+
+            }
+
             attacked = true;
             invent.setSelectedSlot(mace);
             mc.gameMode.attack(mc.player, entity);

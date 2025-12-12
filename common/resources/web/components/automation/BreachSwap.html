@@ -4,7 +4,6 @@
         Penetrating armor with breach while using base damage and cooldown of a sword or axe.
         Each swing is done right after the attack cooldown is done and thus will always do max possible damage.
     </div>
-
     <div class="module-sections">
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
@@ -18,18 +17,14 @@
                 <span>
                     <input type="text" class="w12" v-model="config.triggerKey" @change="update()">Trigger Key
                 </span>
-
                 <div class="section-description">
                     Enter the name of the trigger key. Use the EXCACT same name as what you see in the Key Bindings in Controls.
                     <br>Example: "R" -> keyboard R key. "Left Button" -> left mouse button
                     
                 </div>
-
+                <switch-checkbox v-model="config.breakShield" @change="update()">Break shield automatically</switch-checkbox>
                 <switch-checkbox v-model="config.autoHit" @change="update()">Attack again automatically on cooldown end</switch-checkbox>
-                
-
             </div>            
         </fieldset>
     </div>
-
 </div>
