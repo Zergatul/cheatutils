@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.controllers.SpeedCounterController;
 import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.scripting.types.HitResultWrapper;
@@ -12,6 +13,7 @@ import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.InputBuilder;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
+import com.zergatul.cheatutils.utils.RayCast;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.scripting.modules.GameApi;
@@ -393,61 +395,21 @@ public class PlayerApi {
         if (entity == null) {
             return false;
         }
-        // If the closest point on the hitbox is out of range, no need to check anything
-        // else, can return here.
-        if (Math.sqrt(entity.getBoundingBox().distanceToSqr(mc.player.getEyePosition())) > reach) {
+        
+        Vec3 point = target.findValidTargetPoint(entityId, reach).asVec3();
+        if(point.x == 0 && point.y == 0 && point.z == 0){
             return false;
         }
-        AABB box = entity.getBoundingBox();
-        Vec3 Eye = mc.player.getEyePosition();
 
-        double buffer = 0.02;// Defines how precicely to attack the hitbox
-        Vec3 closestPoint = new Vec3(
-                Math.clamp(Eye.x, box.minX + buffer, box.maxX - buffer),
-                Math.clamp(Eye.y, box.minY + buffer, box.maxY - buffer),
-                Math.clamp(Eye.z, box.minZ + buffer, box.maxZ - buffer));
-
-        HitResultWrapper closest = Root.game.rayCast(mc.player.getId(), closestPoint.subtract(Eye), reach);
-
-        if (closest.getEntityId() == entityId
-                && Root.player.getEyePosition().distanceTo(closest.getLocation()) < reach) {
-
-            Position3d prevPos = Root.player.getLookDirection().add(getEyePosition());
-            Root.player.lookAt(closest.getLocation().getX(), closest.getLocation().getY(),
-                    closest.getLocation().getZ());
-
-            mc.gameMode.attack(mc.player, entity);
-            mc.player.swing(InteractionHand.MAIN_HAND);
-            Root.player.lookAt(prevPos.getX(), prevPos.getY(), prevPos.getZ());
-            return true;
-        }
-        // There has to be a better way to do this faster
-        // Brute force ray checks on bounding box
-        /*
-         * final double step = 0.2;
-         * final double SamplesPerAxis = 5;
-         * 
-         * for (int dx = 0; dx < SamplesPerAxis; dx++) {
-         * for (int dy = 0; dy < SamplesPerAxis; dy++) {
-         * for (int dz = 0; dz < SamplesPerAxis; dz++) {
-         * HitResultWrapper ray = Root.game.rayCast(mc.player.getId(),
-         * closestPoint.subtract(Eye), reach);
-         * 
-         * if (ray.getEntityId() == entityId) {
-         * Root.player.lookAt(
-         * box.minX + box.getXsize() * step * dx,
-         * box.minY + box.getYsize() * step * dy,
-         * box.minZ + box.getZsize() * step * dz);
-         * mc.gameMode.attack(mc.player, entity);
-         * mc.player.swing(InteractionHand.MAIN_HAND);
-         * return true;
-         * }
-         * }
-         * }
-         * }
-         */
-        return false;
+        lookAt(point.x, point.y, point.z);
+        mc.gameMode.attack(mc.player, entity);
+        mc.player.swing(InteractionHand.MAIN_HAND);
+        return true;
     }
+    @MethodDescription("""
+            Finds a valid point on the target hitbox within the given range
+            Then looks at that point before attacking
+            """)
 
     public boolean attack(int entityId) {
         if (mc.level == null) {
@@ -514,9 +476,43 @@ public class PlayerApi {
                 .stream()
                 .map(BlockPosWrapper::new)
                 .toArray(BlockPosWrapper[]::new);
-    }
 
+                
+    }
+    public boolean vanillaAttack(int targetId){
+            if(mc.player == null){
+                return false;
+            }
+            if(mc.level == null){
+                return false;
+            }
+            Entity entity = mc.level.getEntity(targetId);
+            Vec3 point = RayCast.closestValidPoint(entity, 3.0);
+            
+            if(point == null){
+                return false;
+            }
+            lookAt(point.x, point.y, point.z);
+            attack(targetId);
+            return true;
+
+        }
     public static class TargetApi {
+
+
+        public Position3d findValidTargetPoint(int targetId, double range){
+            Vec3 point = new Vec3(0, 0, 0);
+            if(mc.player == null || mc.level == null){
+                return new Position3d(point.x, point.y, point.z);
+            }
+
+            Entity entity = mc.level.getEntity(targetId);
+            point =  RayCast.closestValidPoint(entity, range);
+            if(point == null){
+                point = new Vec3(0, 0, 0);
+            }
+            return new Position3d(point.x, point.y, point.z);
+        }
 
         public boolean hasBlock() {
             if (mc.hitResult == null) {
