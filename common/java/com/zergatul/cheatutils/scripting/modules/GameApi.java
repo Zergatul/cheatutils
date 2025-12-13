@@ -147,30 +147,6 @@ public class GameApi {
         return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, maxRange, maxRange, partialTicks));
     }
 
-    public HitResultWrapper rayCast(int entityId, Vec3 dir, double range){
-        if (mc.level == null) {
-            return new HitResultWrapper();
-        }
-        
-        Entity entity = mc.level.getEntity(entityId);
-
-        if(entity == null){
-            return new HitResultWrapper();
-        }
-        float initialX = entity.getViewXRot(entityId);
-        float initialY = entity.getViewYRot(entityId);
-
-        Rotation lookAngle = RotationUtils.getRotation(dir);
-        entity.setYRot(lookAngle.yRot());
-        entity.setXRot(lookAngle.xRot());
-
-        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-        HitResultWrapper output = new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, range, range, partialTicks));
-        entity.setYRot(initialY);
-        entity.setXRot(initialX);
-        return output;
-    }
-
     public RayCastEntityResult rayCastClosestEntity(Position3d origin, Position3d dir, double range) {
         return new RayCastEntityResult(RayCast.findClosestEntity(origin.asVec3(), dir.asVec3(), range));
     }
