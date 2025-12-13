@@ -16,6 +16,7 @@ import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.RayCast;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
+import com.zergatul.cheatutils.wrappers.AttackRange;
 import com.zergatul.cheatutils.scripting.modules.GameApi;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
@@ -380,7 +381,7 @@ public class PlayerApi {
 
     @ApiVisibility(ApiType.ACTION)
 
-    public boolean vanillaAttack(int entityId, double reach) {
+    public boolean vanillaAttack() {
         if (mc.level == null) {
             return false;
         }
@@ -390,25 +391,18 @@ public class PlayerApi {
         if (mc.gameMode == null) {
             return false;
         }
-
-        Entity entity = mc.level.getEntity(entityId);
-        if (entity == null) {
-            return false;
-        }
-        
-        Vec3 point = target.findValidTargetPoint(entityId, reach).asVec3();
-        if(point.x == 0 && point.y == 0 && point.z == 0){
+        Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
+        if(entity == null || !AttackRange.canHit(entity)){
             return false;
         }
 
-        lookAt(point.x, point.y, point.z);
         mc.gameMode.attack(mc.player, entity);
         mc.player.swing(InteractionHand.MAIN_HAND);
         return true;
     }
     @MethodDescription("""
-            Finds a valid point on the target hitbox within the given range
-            Then looks at that point before attacking
+            Checks if the player is looking at an attackable target
+            If the target is within attack range, it hits the target
             """)
 
     public boolean attack(int entityId) {
@@ -500,7 +494,9 @@ public class PlayerApi {
     public static class TargetApi {
 
 
-        public Position3d findValidTargetPoint(int targetId, double range){
+        public Position3d findValidTargetPoint(int targetId){
+            double range = AttackRange.get();
+            
             Vec3 point = new Vec3(0, 0, 0);
             if(mc.player == null || mc.level == null){
                 return new Position3d(point.x, point.y, point.z);
