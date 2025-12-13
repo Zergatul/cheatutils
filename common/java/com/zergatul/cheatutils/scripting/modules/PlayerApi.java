@@ -5,7 +5,6 @@ import com.zergatul.cheatutils.controllers.SpeedCounterController;
 import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
-import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.scripting.types.HitResultWrapper;
@@ -606,8 +605,7 @@ public class PlayerApi {
             }
 
             float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-            return new HitResultWrapper(
-                    ((GameRendererAccessor) mc.gameRenderer).pick_CU(mc.player, maxRange, maxRange, partialTicks));
+            return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(mc.player, maxRange, maxRange, partialTicks));
         }
     }
 
@@ -624,8 +622,7 @@ public class PlayerApi {
 
             HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
             ResourceLocation location = ResourceLocation.parse(id);
-            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location))
-                    .findFirst().orElse(null);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
             if (holder == null) {
                 return Integer.MIN_VALUE;
             }
@@ -649,8 +646,7 @@ public class PlayerApi {
 
             HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
             ResourceLocation location = ResourceLocation.parse(id);
-            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location))
-                    .findFirst().orElse(null);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
             if (holder == null) {
                 return -1;
             }
