@@ -8,7 +8,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.util.StringUtil;
 
 @CustomType(name = "TextStyle")
 public class StyleWrapper {
@@ -65,6 +64,20 @@ public class StyleWrapper {
         } else {
             return ComponentWrapper.EMPTY;
         }
+    }
+
+    @Getter(name = "clickCommand")
+    public String getClickCommand() {
+        ClickEvent event = inner.getClickEvent();
+        if (event == null) {
+            return "";
+        }
+
+        return switch (event.action()) {
+            case RUN_COMMAND -> ((ClickEvent.RunCommand) event).command();
+            case SUGGEST_COMMAND -> ((ClickEvent.SuggestCommand) event).command();
+            default -> "";
+        };
     }
 
     @MethodDescription("""
