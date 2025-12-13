@@ -469,8 +469,6 @@ public class PlayerApi {
                 .stream()
                 .map(BlockPosWrapper::new)
                 .toArray(BlockPosWrapper[]::new);
-
-                
     }
     public static class TargetApi {
 
