@@ -473,30 +473,12 @@ public class PlayerApi {
 
                 
     }
-    public boolean vanillaAttack(int targetId){
-            if(mc.player == null){
-                return false;
-            }
-            if(mc.level == null){
-                return false;
-            }
-            Entity entity = mc.level.getEntity(targetId);
-            Vec3 point = RayCast.closestValidPoint(entity, 3.0);
-            
-            if(point == null){
-                return false;
-            }
-            lookAt(point.x, point.y, point.z);
-            attack(targetId);
-            return true;
-
-        }
     public static class TargetApi {
 
 
         public Position3d findValidTargetPoint(int targetId){
             double range = AttackRange.get();
-            
+
             Vec3 point = new Vec3(0, 0, 0);
             if(mc.player == null || mc.level == null){
                 return new Position3d(point.x, point.y, point.z);
