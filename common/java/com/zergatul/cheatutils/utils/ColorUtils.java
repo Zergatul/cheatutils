@@ -114,6 +114,10 @@ public class ColorUtils {
         return ((color >>> 24) & 0xFF) / 255F;
     }
 
+    public static String asHexRGB(int color) {
+        return String.format("#%06X", color);
+    }
+
     public static Color inverse(Color color) {
         return new Color(
                 255 - color.getRed(),
