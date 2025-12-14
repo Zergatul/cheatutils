@@ -335,6 +335,13 @@ module({
     path: 'aim-assist',
     tags: ['aim', 'bow', 'assist']
 });
+module({
+    group: 'hacks',
+    name: 'Air Place',
+    component: 'AirPlace',
+    path: 'air-place',
+    tags: ['air', 'place', 'airplace', 'scaffold']
+});
 
 module({
     group: 'visuals',

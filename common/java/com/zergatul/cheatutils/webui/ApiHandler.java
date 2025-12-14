@@ -938,6 +938,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().blockEntityDistance = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("air-place", AirPlaceConfig.class) {
+            @Override
+            protected AirPlaceConfig getConfig() {
+                return ConfigStore.instance.getConfig().airPlaceConfig;
+            }
+
+            @Override
+            protected void setConfig(AirPlaceConfig config) {
+                ConfigStore.instance.getConfig().airPlaceConfig = config;
+            }
+        });
     }
 
     @Override

@@ -71,4 +71,5 @@ public class Config {
     public LogoutSpotsConfig logoutSpots = new LogoutSpotsConfig();
     public AutoToolConfig autoTool = new AutoToolConfig();
     public BlockEntityDistanceConfig blockEntityDistance = new BlockEntityDistanceConfig();
+    public AirPlaceConfig airPlaceConfig = new AirPlaceConfig();
 }

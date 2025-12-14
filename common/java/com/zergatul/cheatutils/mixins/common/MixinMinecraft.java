@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.hacks.AirPlace;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
@@ -157,5 +158,10 @@ public abstract class MixinMinecraft {
     @Inject(at = @At(value = "TAIL"), method = "resizeDisplay()V")
     private void onResize(CallbackInfo info) {
         Events.WindowResize.trigger();
+    }
+
+    @Inject(method = "startUseItem", at = @At("HEAD"))
+    private void onBeforeStartUseItem(CallbackInfo info) {
+        AirPlace.instance.onBeforeStartUseItem();
     }
 }

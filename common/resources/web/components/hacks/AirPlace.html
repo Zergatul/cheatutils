@@ -1,0 +1,46 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Allows you to place blocks in the air, not attached to other blocks.<br>
+        Draws cube at the potential location of the block.<br>
+        While module is active use scroll to adjust range.<br>
+        Min/Max range can be configured below.
+    </div>
+
+    <div class="module-sections">
+        <div class="description">
+            To make module active only when you hold some key, use <b>Events Scripting</b> module and script like this:
+            <CodeBlock :code='`
+                events.onHandleKeys(() => {
+                    if (input.isKeyDown("X")) {
+                        airPlace.enable();
+                    } else {
+                        airPlace.disable();
+                    }
+                });
+            `' />
+        </div>
+        <div class="description">
+            To make module switch states by simple key press use <b>Key Bindings</b> module and script like this:
+            <CodeBlock :code='`
+                airPlace.toggle();
+                ui.overlayMessage("Air Place " + (airPlace.isEnabled() ? "ON" : "OFF"));
+            `' />
+        </div>
+
+        <fieldset>
+            <legend>
+                Range
+            </legend>
+            <div class="flex-vertical">
+                <div class="flex-horizontal">
+                    <div>Min Range:</div>
+                    <input type="text" class="w3" v-model="config.minRange" @change="update()">
+                </div>
+                <div class="flex-horizontal">
+                    <div>Max Range:</div>
+                    <input type="text" class="w3" v-model="config.maxRange" @change="update()">
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>
