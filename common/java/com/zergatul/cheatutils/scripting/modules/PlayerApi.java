@@ -44,6 +44,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -241,7 +242,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setXRot((float)value);
+        mc.player.setXRot((float) value);
     }
 
     @ApiVisibility(ApiType.ACTION)
@@ -249,7 +250,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setYRot((float)value);
+        mc.player.setYRot((float) value);
     }
 
     public int getHealth() {
@@ -376,6 +377,10 @@ public class PlayerApi {
     }
 
     @ApiVisibility(ApiType.ACTION)
+    @MethodDescription("""
+            Checks if the player is looking at an attackable target
+            If the target is within attack range, it hits the target
+            """)
 
     public boolean vanillaAttack() {
         if (mc.level == null) {
@@ -388,7 +393,7 @@ public class PlayerApi {
             return false;
         }
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
-        if(entity == null || !AttackRange.canHit(entity)){
+        if (entity == null || !AttackRange.canHit(entity)) {
             return false;
         }
 
@@ -396,10 +401,6 @@ public class PlayerApi {
         mc.player.swing(InteractionHand.MAIN_HAND);
         return true;
     }
-    @MethodDescription("""
-            Checks if the player is looking at an attackable target
-            If the target is within attack range, it hits the target
-            """)
 
     public boolean attack(int entityId) {
         if (mc.level == null) {
@@ -474,13 +475,13 @@ public class PlayerApi {
             double range = AttackRange.get();
 
             Vec3 point = new Vec3(0, 0, 0);
-            if(mc.player == null || mc.level == null) {
+            if (mc.player == null || mc.level == null) {
                 return new Position3d(point.x, point.y, point.z);
             }
 
             Entity entity = mc.level.getEntity(targetId);
-            point =  RayCast.closestValidPoint(entity, range);
-            if(point == null) {
+            point = RayCast.closestValidPoint(entity, range);
+            if (point == null) {
                 point = new Vec3(0, 0, 0);
             }
             return new Position3d(point.x, point.y, point.z);
@@ -687,7 +688,7 @@ public class PlayerApi {
                         .map(e -> (ChestBoat) e);
                 double minDistance = Double.MAX_VALUE;
                 ChestBoat target = null;
-                for (ChestBoat boat: boats.toList()) {
+                for (ChestBoat boat : boats.toList()) {
                     double d2 = mc.player.distanceToSqr(boat);
                     if (d2 < minDistance) {
                         minDistance = d2;

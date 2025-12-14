@@ -195,7 +195,7 @@ public class GameApi {
             }
 
             int count = 0;
-            for (Entity entity: level.entitiesForRendering()) {
+            for (Entity entity : level.entitiesForRendering()) {
                 if (info.clazz.isAssignableFrom(entity.getClass())) {
                     count++;
                 }
@@ -220,7 +220,7 @@ public class GameApi {
             }
 
             int count = 0;
-            for (Entity entity: level.entitiesForRendering()) {
+            for (Entity entity : level.entitiesForRendering()) {
                 if (entity.getType() == type) {
                     count++;
                 }

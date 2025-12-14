@@ -46,11 +46,11 @@ public class Position3d {
     }
 
     public Position3d add(Position3d other) {
-        return new Position3d(x+other.x, y+other.y, z+other.z);
+        return new Position3d(x + other.x, y + other.y, z + other.z);
     }
 
     public Position3d subtract(Position3d other) {
-        return new Position3d(x-other.x, y-other.y, z-other.z);
+        return new Position3d(x - other.x, y - other.y, z - other.z);
     }
 
     @HiddenMethod

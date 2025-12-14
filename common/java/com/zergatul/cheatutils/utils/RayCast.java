@@ -20,81 +20,81 @@ public class RayCast {
 
     @Nullable
     public static Vec3 closestValidPoint(Entity target, double range) {
-        if(mc.level == null) {
+        if (mc.level == null) {
             return null;
         }
-        if(target == null) {
+        if (target == null) {
             return null;
         }
 
         //Static variables that do not change based on the point
-        double  rangeSqr = range*range;
+        double rangeSqr = range * range;
         AABB box = target.getBoundingBox();
         Vec3 origin = mc.player.getEyePosition();
 
         //If eye position is inside the target hitbox, any look angle is fine so just return the current look position
-        if(box.contains(origin)) {
+        if (box.contains(origin)) {
             return mc.player.getLookAngle().add(origin);
         }
 
         Vec3 closestPoint = new Vec3(
-                    clamp(origin.x, box.minX, box.maxX),
-                    clamp(origin.y, box.minY, box.maxY),
-                    clamp(origin.z, box.minZ, box.maxZ)
-                );
-        
+                clamp(origin.x, box.minX, box.maxX),
+                clamp(origin.y, box.minY, box.maxY),
+                clamp(origin.z, box.minZ, box.maxZ)
+        );
+
         //We do not need to check any further if the closest point is already too far away
-        if(origin.distanceToSqr(closestPoint) > rangeSqr) {
+        if (origin.distanceToSqr(closestPoint) > rangeSqr) {
             return null;
-            
+
         }
 
-        if(isValidPosition(target, range, origin, closestPoint)) {
+        if (isValidPosition(target, range, origin, closestPoint)) {
             return closestPoint;
         }
 
 
         ArrayList<Vec3> pointsToCheck = new ArrayList<>();
-    
-    // Determine which faces are facing the player
-    // Only add points from that face to the list
 
-    // X-Y face: (side face)
-    double Z = Math.abs(origin.z - box.minZ) < Math.abs(origin.z - box.maxZ) ? box.minZ : box.maxZ;
-    for(double x = box.minX; x <= box.maxX; x += step) {
-        for(double y = box.minY; y <= box.maxY; y += step) {
-            Vec3 temp = new Vec3(x, y, Z);
-            if(temp.distanceToSqr(origin) < rangeSqr) {
-                pointsToCheck.add(new Vec3(x, y, Z));
+        // Determine which faces are facing the player
+        // Only add points from that face to the list
+
+        // X-Y face: (side face)
+        double Z = Math.abs(origin.z - box.minZ) < Math.abs(origin.z - box.maxZ) ? box.minZ : box.maxZ;
+        for (double x = box.minX; x <= box.maxX; x += step) {
+            for (double y = box.minY; y <= box.maxY; y += step) {
+                Vec3 temp = new Vec3(x, y, Z);
+                if (temp.distanceToSqr(origin) < rangeSqr) {
+                    pointsToCheck.add(new Vec3(x, y, Z));
+                }
             }
         }
-    }
-    // X-Z face: (top/bottom face)
-    double Y = Math.abs(origin.y - box.minY) < Math.abs(origin.y - box.maxY) ? box.minY : box.maxY;
-    for(double x = box.minX; x <= box.maxX; x += step) {
-        for(double z = box.minZ; z <= box.maxZ; z += step) {
-            Vec3 temp = new Vec3(x, Y, z);
-            if(temp.distanceToSqr(origin) < rangeSqr) {
-                pointsToCheck.add(temp);
+        // X-Z face: (top/bottom face)
+        double Y = Math.abs(origin.y - box.minY) < Math.abs(origin.y - box.maxY) ? box.minY : box.maxY;
+        for (double x = box.minX; x <= box.maxX; x += step) {
+            for (double z = box.minZ; z <= box.maxZ; z += step) {
+                Vec3 temp = new Vec3(x, Y, z);
+                if (temp.distanceToSqr(origin) < rangeSqr) {
+                    pointsToCheck.add(temp);
+                }
             }
         }
-    }
-    // Y-Z face: (side face)
-    double X = Math.abs(origin.x - box.minX) < Math.abs(origin.x - box.maxX) ? box.minX : box.maxX;
-    for(double y = box.minY; y <= box.maxY; y += step) {
-        for(double z = box.minZ; z <= box.maxZ; z += step) {
+        // Y-Z face: (side face)
+        double X = Math.abs(origin.x - box.minX) < Math.abs(origin.x - box.maxX) ? box.minX : box.maxX;
+        for (double y = box.minY; y <= box.maxY; y += step) {
+            for (double z = box.minZ; z <= box.maxZ; z += step) {
                 Vec3 temp = new Vec3(X, y, z);
-                if(temp.distanceToSqr(origin) < rangeSqr) {
+                if (temp.distanceToSqr(origin) < rangeSqr) {
                     pointsToCheck.add(temp);
                 }
             }
         }
 
-    // Sort points by distance to player to try closest first
-    pointsToCheck.sort(Comparator.comparingDouble(p -> p.distanceToSqr(origin)));
+        // Sort points by distance to player to try closest first
+        pointsToCheck.sort(Comparator.comparingDouble(p -> p.distanceToSqr(origin)));
 
-        for(Vec3 point : pointsToCheck ){
-            if(isValidPosition(target, range, origin, point)) {
+        for (Vec3 point : pointsToCheck) {
+            if (isValidPosition(target, range, origin, point)) {
                 return point;
             }
         }
@@ -102,44 +102,44 @@ public class RayCast {
     }
 
     private static boolean isValidPosition(Entity target, double range, Vec3 origin, Vec3 point) {
-        
-        double maxDistSqr = range*range;
-        
+
+        double maxDistSqr = range * range;
+
         ClipContext levelClip = new ClipContext(
-                    origin,
-                    point,
-                    ClipContext.Block.COLLIDER,
-                    ClipContext.Fluid.NONE,
-                    mc.player
-            );
+                origin,
+                point,
+                ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE,
+                mc.player
+        );
 
         HitResult blockHit = mc.level.clip(levelClip);
 
-        if(blockHit.getType() != Type.MISS) {
+        if (blockHit.getType() != Type.MISS) {
             maxDistSqr = blockHit.getLocation().distanceToSqr(origin);//Limit max range after
         }                                                             //to compare with entity hit test
 
         Vec3 end = point.subtract(origin).normalize().scale(range).add(origin);//Calculate a ray in that direction, with length range
         //This is required, otherwise point remains on entity surface and never contains the target entity in searchBox
-        
+
         AABB searchBox = new AABB(origin, end);
-    
+
         EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
-            mc.player,
-            origin,
-            end,
-            searchBox,
-            e -> e != mc.player && e != mc.player.getVehicle(),
-            range
+                mc.player,
+                origin,
+                end,
+                searchBox,
+                e -> e != mc.player && e != mc.player.getVehicle(),
+                range
         );
 
-        if(entityHit == null) {
+        if (entityHit == null) {
             return false;
         }
 
-        if(entityHit.getEntity() == target) {
+        if (entityHit.getEntity() == target) {
             //Only accept point if block collision is further then entity collision
-            if(entityHit.getLocation().distanceToSqr(origin) <= maxDistSqr) {
+            if (entityHit.getLocation().distanceToSqr(origin) <= maxDistSqr) {
                 return true;
             }
         }
