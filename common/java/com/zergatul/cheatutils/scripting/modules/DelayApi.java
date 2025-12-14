@@ -8,7 +8,8 @@ import java.util.concurrent.CompletableFuture;
 public class DelayApi {
 
     @MethodDescription("""
-            Stops script execution for specified amount of ticks
+            Stops script execution for specified amount of ticks.
+            Continuation may run while no world is loaded
             """)
     public CompletableFuture<Void> ticks(int ticks) {
         if (ticks <= 0) {

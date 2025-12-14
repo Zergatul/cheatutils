@@ -31,9 +31,6 @@ public abstract class MixinMinecraft {
     public ClientLevel level;
 
     @Shadow
-    public abstract boolean isWindowActive();
-
-    @Shadow
     protected abstract void continueAttack(boolean p_91387_);
 
     @Shadow
