@@ -20,7 +20,7 @@ public class RayCast {
 
     @Nullable
     public static Vec3 closestValidPoint(Entity target, double range) {
-        if (mc.level == null) {
+        if (mc.level == null || mc.player == null) {
             return null;
         }
         if (target == null) {
@@ -46,13 +46,11 @@ public class RayCast {
         //We do not need to check any further if the closest point is already too far away
         if (origin.distanceToSqr(closestPoint) > rangeSqr) {
             return null;
-
         }
 
         if (isValidPosition(target, range, origin, closestPoint)) {
             return closestPoint;
         }
-
 
         ArrayList<Vec3> pointsToCheck = new ArrayList<>();
 
@@ -102,6 +100,8 @@ public class RayCast {
     }
 
     private static boolean isValidPosition(Entity target, double range, Vec3 origin, Vec3 point) {
+        assert mc.level != null;
+        assert mc.player != null;
 
         double maxDistSqr = range * range;
 

@@ -375,12 +375,11 @@ public class PlayerApi {
         }
     }
 
-    @ApiVisibility(ApiType.ACTION)
     @MethodDescription("""
             Checks if the player is looking at an attackable target
             If the target is within attack range, it hits the target
             """)
-
+    @ApiVisibility(ApiType.ACTION)
     public boolean vanillaAttack() {
         if (mc.level == null) {
             return false;
@@ -391,8 +390,15 @@ public class PlayerApi {
         if (mc.gameMode == null) {
             return false;
         }
+        if (mc.hitResult == null) {
+            return false;
+        }
+        if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
+            return false;
+        }
+
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
-        if (entity == null || !AttackRange.canHit(entity)) {
+        if (!AttackRange.canHit(entity)) {
             return false;
         }
 
@@ -401,6 +407,12 @@ public class PlayerApi {
         return true;
     }
 
+    @MethodDescription("""
+            Performs raw attack for specified entity.
+            No look direction checks or distance checks are performed.
+            Basically it sends attack packet if entity with specified id exists.
+            """)
+    @ApiVisibility(ApiType.ACTION)
     public boolean attack(int entityId) {
         if (mc.level == null) {
             return false;
@@ -470,16 +482,20 @@ public class PlayerApi {
 
     public static class TargetApi {
 
+        @MethodDescription("""
+                Searches for the closest point on target entity hitbox, that is visible from the player eyes perspective.
+                Takes into account surrounding blocks geometry and attack range.
+                Returns (0, 0, 0) when no such point exists.
+                """)
         public Position3d findValidTargetPoint(int targetId) {
-            double range = AttackRange.get();
-
-            Vec3 point = new Vec3(0, 0, 0);
             if (mc.player == null || mc.level == null) {
-                return new Position3d(point.x, point.y, point.z);
+                return new Position3d(0, 0, 0);
             }
 
+            double range = AttackRange.get();
+
             Entity entity = mc.level.getEntity(targetId);
-            point = RayCast.closestValidPoint(entity, range);
+            Vec3 point = RayCast.closestValidPoint(entity, range);
             if (point == null) {
                 point = new Vec3(0, 0, 0);
             }
