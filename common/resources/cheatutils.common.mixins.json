@@ -58,6 +58,7 @@
     "common.MixinConnection",
     "common.MixinDeathScreen",
     "common.MixinEntity",
+    "common.MixinEntityHitboxDebugRenderer",
     "common.MixinEntityRenderer",
     "common.MixinEntityRenderState",
     "common.MixinFramerateLimitTracker",
