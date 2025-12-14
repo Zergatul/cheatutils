@@ -249,7 +249,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setYRot((float) value);
+        mc.player.setYRot((float)value);
     }
 
     public int getHealth() {
@@ -470,7 +470,7 @@ public class PlayerApi {
 
     public static class TargetApi {
 
-        public Position3d findValidTargetPoint(int targetId){
+        public Position3d findValidTargetPoint(int targetId) {
             double range = AttackRange.get();
 
             Vec3 point = new Vec3(0, 0, 0);
