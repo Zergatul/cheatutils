@@ -41,9 +41,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -255,7 +255,7 @@ public class GameApi {
             }
 
             int count = 0;
-            for (Entity entity: level.entitiesForRendering()) {
+            for (Entity entity : level.entitiesForRendering()) {
                 if (info.clazz.isAssignableFrom(entity.getClass())) {
                     count++;
                 }
@@ -280,7 +280,7 @@ public class GameApi {
             }
 
             int count = 0;
-            for (Entity entity: level.entitiesForRendering()) {
+            for (Entity entity : level.entitiesForRendering()) {
                 if (entity.getType() == type) {
                     count++;
                 }

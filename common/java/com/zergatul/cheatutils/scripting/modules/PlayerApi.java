@@ -11,8 +11,11 @@ import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.InputBuilder;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
+import com.zergatul.cheatutils.utils.RayCast;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
+import com.zergatul.cheatutils.wrappers.AttackRange;
+import com.zergatul.cheatutils.scripting.modules.GameApi;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -34,12 +37,15 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -235,7 +241,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setXRot((float)value);
+        mc.player.setXRot((float) value);
     }
 
     @ApiVisibility(ApiType.ACTION)
@@ -243,7 +249,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setYRot((float)value);
+        mc.player.setYRot((float) value);
     }
 
     public int getHealth() {
@@ -370,6 +376,31 @@ public class PlayerApi {
     }
 
     @ApiVisibility(ApiType.ACTION)
+    @MethodDescription("""
+            Checks if the player is looking at an attackable target
+            If the target is within attack range, it hits the target
+            """)
+
+    public boolean vanillaAttack() {
+        if (mc.level == null) {
+            return false;
+        }
+        if (mc.player == null) {
+            return false;
+        }
+        if (mc.gameMode == null) {
+            return false;
+        }
+        Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
+        if (entity == null || !AttackRange.canHit(entity)) {
+            return false;
+        }
+
+        mc.gameMode.attack(mc.player, entity);
+        mc.player.swing(InteractionHand.MAIN_HAND);
+        return true;
+    }
+
     public boolean attack(int entityId) {
         if (mc.level == null) {
             return false;
@@ -438,6 +469,22 @@ public class PlayerApi {
     }
 
     public static class TargetApi {
+
+        public Position3d findValidTargetPoint(int targetId) {
+            double range = AttackRange.get();
+
+            Vec3 point = new Vec3(0, 0, 0);
+            if (mc.player == null || mc.level == null) {
+                return new Position3d(point.x, point.y, point.z);
+            }
+
+            Entity entity = mc.level.getEntity(targetId);
+            point = RayCast.closestValidPoint(entity, range);
+            if (point == null) {
+                point = new Vec3(0, 0, 0);
+            }
+            return new Position3d(point.x, point.y, point.z);
+        }
 
         public boolean hasBlock() {
             if (mc.hitResult == null) {
@@ -640,7 +687,7 @@ public class PlayerApi {
                         .map(e -> (ChestBoat) e);
                 double minDistance = Double.MAX_VALUE;
                 ChestBoat target = null;
-                for (ChestBoat boat: boats.toList()) {
+                for (ChestBoat boat : boats.toList()) {
                     double d2 = mc.player.distanceToSqr(boat);
                     if (d2 < minDistance) {
                         minDistance = d2;
