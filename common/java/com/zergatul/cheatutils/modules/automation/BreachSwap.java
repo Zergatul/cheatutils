@@ -19,7 +19,7 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 public class BreachSwap implements Module {
 
     public static final BreachSwap instance = new BreachSwap();
-    
+
 
     private final Minecraft mc = Minecraft.getInstance();
     public boolean attacked;
@@ -38,7 +38,7 @@ public class BreachSwap implements Module {
             return;
         }
 
-        if(!Root.input.isKeyDown(config.triggerKey)) {
+        if (!Root.input.isKeyDown(config.triggerKey)) {
             attacked = false;
             return;
         }
@@ -50,15 +50,12 @@ public class BreachSwap implements Module {
             return;
         }
 
-        if(attacked && !config.autoHit){//Only check for cooldown if auto hit is enabled
+        if (attacked && !config.autoHit) {//Only check for cooldown if auto hit is enabled
+            return;
+        } else if (mc.player.getAttackStrengthScale((float) 0) != 1) {
             return;
         }
 
-        else if(mc.player.getAttackStrengthScale((float) 0) != 1) {
-            return;
-        }
-
-        
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         if (AttackRange.canHit(entity)) {
@@ -70,42 +67,40 @@ public class BreachSwap implements Module {
             int weapon;
             Inventory inventory = mc.player.getInventory();
 
-            for(int i = 0; i < 9; i++) {
+            for (int i = 0; i < 9; i++) {
                 ItemStack item = inventory.getItem(i);
-                if(item.getTags().anyMatch(tag -> tag == ItemTags.SWORDS))sword = i; 
-                else if(item.getTags().anyMatch(tag -> tag == ItemTags.AXES))axe = i;
-                else if(item.getEnchantments().keySet().stream().anyMatch(enchantment -> enchantment.value().effects().keySet().contains(EnchantmentEffectComponents.ARMOR_EFFECTIVENESS)))mace = i;
+                if (item.getTags().anyMatch(tag -> tag == ItemTags.SWORDS)) sword = i;
+                else if (item.getTags().anyMatch(tag -> tag == ItemTags.AXES)) axe = i;
+                else if (item.getEnchantments().keySet().stream().anyMatch(enchantment -> enchantment.value().effects().keySet().contains(EnchantmentEffectComponents.ARMOR_EFFECTIVENESS)))
+                    mace = i;
             }
 
-            if(mace == -1) {
+            if (mace == -1) {
                 return;
             }
 
-            if(axe == -1 && sword == -1) {
+            if (axe == -1 && sword == -1) {
                 return;
             }
 
-            if(config.useAxe) {//Prefer Axe over sword
-                if(axe != -1) {
+            if (config.useAxe) {//Prefer Axe to sword
+                if (axe != -1) {
                     weapon = axe;
-                }
-                else {
+                } else {
                     weapon = sword;
                 }
-            }
-            else {
-                if(sword != -1) {
+            } else {//Prefer sword to axe
+                if (sword != -1) {
                     weapon = sword;
-                }
-                else {
+                } else {
                     weapon = axe;
                 }
             }
 
-            if(config.breakShield) {
-                if(Root.game.entities.isUsingItemWithOffHand(entity.getId()) && Root.game.entities.getEquippedOffHandItem(entity.getId()).getItem().getId().equals("minecraft:shield")){
+            if (config.breakShield) {
+                if (Root.game.entities.isUsingItemWithOffHand(entity.getId()) && Root.game.entities.getEquippedOffHandItem(entity.getId()).getItem().getId().equals("minecraft:shield")) {
 
-                    if(axe != -1) {
+                    if (axe != -1) {
                         inventory.setSelectedSlot(axe);
                         mc.gameMode.attack(mc.player, entity);
                         mc.player.swing(InteractionHand.MAIN_HAND);

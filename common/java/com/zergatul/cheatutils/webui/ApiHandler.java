@@ -987,11 +987,9 @@ public class ApiHandler implements HttpHandler {
                     processDelete(parts, api.get(), exchange);
                     break;
             }
-        }
-        catch (ApiException e) {
+        } catch (ApiException e) {
             WebHelper.sendException(exchange, e.getCode(), e);
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             WebHelper.sendException(exchange, HttpResponseCodes.INTERNAL_SERVER_ERROR, e);
         }
     }
