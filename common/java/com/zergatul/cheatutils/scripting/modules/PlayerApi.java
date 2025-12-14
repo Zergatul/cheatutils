@@ -133,8 +133,7 @@ public class PlayerApi {
             """)
     public String getCoordinatesFormatted() {
         if (mc.getCameraEntity() != null) {
-            return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(),
-                    mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
+            return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
         } else {
             return "";
         }
@@ -145,8 +144,7 @@ public class PlayerApi {
         if (mc.level == null || mc.level.dimension() == Level.NETHER || mc.getCameraEntity() == null) {
             return "";
         }
-        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() / 8,
-                mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() / 8);
+        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() / 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() / 8);
     }
 
     @MethodDescription("If you are in the Nether, returns calculated coordinates in the Overworld")
@@ -154,8 +152,7 @@ public class PlayerApi {
         if (mc.level == null || mc.level.dimension() == Level.OVERWORLD || mc.getCameraEntity() == null) {
             return "";
         }
-        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() * 8,
-                mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() * 8);
+        return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX() * 8, mc.getCameraEntity().getY(), mc.getCameraEntity().getZ() * 8);
     }
 
     public String getBlockCoordinatesFormatted() {
@@ -244,7 +241,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setXRot((float) value);
+        mc.player.setXRot((float)value);
     }
 
     @ApiVisibility(ApiType.ACTION)
@@ -470,20 +467,20 @@ public class PlayerApi {
                 .map(BlockPosWrapper::new)
                 .toArray(BlockPosWrapper[]::new);
     }
-    public static class TargetApi {
 
+    public static class TargetApi {
 
         public Position3d findValidTargetPoint(int targetId){
             double range = AttackRange.get();
 
             Vec3 point = new Vec3(0, 0, 0);
-            if(mc.player == null || mc.level == null){
+            if(mc.player == null || mc.level == null) {
                 return new Position3d(point.x, point.y, point.z);
             }
 
             Entity entity = mc.level.getEntity(targetId);
             point =  RayCast.closestValidPoint(entity, range);
-            if(point == null){
+            if(point == null) {
                 point = new Vec3(0, 0, 0);
             }
             return new Position3d(point.x, point.y, point.z);
@@ -690,7 +687,7 @@ public class PlayerApi {
                         .map(e -> (ChestBoat) e);
                 double minDistance = Double.MAX_VALUE;
                 ChestBoat target = null;
-                for (ChestBoat boat : boats.toList()) {
+                for (ChestBoat boat: boats.toList()) {
                     double d2 = mc.player.distanceToSqr(boat);
                     if (d2 < minDistance) {
                         minDistance = d2;
