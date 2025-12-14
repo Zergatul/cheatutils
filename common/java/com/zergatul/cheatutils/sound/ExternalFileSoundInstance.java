@@ -4,7 +4,7 @@ import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.valueproviders.ConstantFloat;
 
@@ -14,13 +14,13 @@ public class ExternalFileSoundInstance implements SoundInstance {
 
     private static int counter = 1;
     private final String filename;
-    private final Identifier location;
+    private final ResourceLocation location;
     private final Sound sound;
     private float volume = 1;
 
     private ExternalFileSoundInstance(String filename) {
         this.filename = filename;
-        this.location = Identifier.fromNamespaceAndPath("cheatutils", "dynamic/" + (counter++));
+        this.location = ResourceLocation.fromNamespaceAndPath("cheatutils", "dynamic/" + (counter++));
         this.sound = new Sound(
                 location,
                 ConstantFloat.of(1),
@@ -50,7 +50,7 @@ public class ExternalFileSoundInstance implements SoundInstance {
     }
 
     @Override
-    public Identifier getIdentifier() {
+    public ResourceLocation getLocation() {
         return location;
     }
 

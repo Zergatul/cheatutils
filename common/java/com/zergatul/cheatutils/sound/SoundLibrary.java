@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.sound;
 
 import net.minecraft.client.resources.sounds.Sound;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Map;
 public class SoundLibrary {
 
     private static final Map<String, ExternalFileSoundInstance> sounds = new HashMap<>();
-    private static final Map<Identifier, String> fileMap = new HashMap<>();
+    private static final Map<ResourceLocation, String> fileMap = new HashMap<>();
     private static String lastError;
 
     public static ExternalFileSoundInstance get(String filename) {
@@ -21,8 +21,8 @@ public class SoundLibrary {
         try {
             instance = ExternalFileSoundInstance.fromFile(filename);
             sounds.put(filename, instance);
-            fileMap.put(instance.getIdentifier(), filename);
-            fileMap.put(Sound.SOUND_LISTER.idToFile(instance.getIdentifier()), filename);
+            fileMap.put(instance.getLocation(), filename);
+            fileMap.put(Sound.SOUND_LISTER.idToFile(instance.getLocation()), filename);
             return instance;
         } catch (Throwable e) {
             lastError = e.getMessage();
@@ -30,7 +30,7 @@ public class SoundLibrary {
         }
     }
 
-    public static String getFileFromLocation(Identifier location) {
+    public static String getFileFromLocation(ResourceLocation location) {
         return fileMap.get(location);
     }
 

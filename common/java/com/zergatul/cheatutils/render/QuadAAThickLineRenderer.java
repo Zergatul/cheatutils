@@ -37,7 +37,7 @@ public class QuadAAThickLineRenderer implements ThickLineRenderer {
         }
 
         this.event = event;
-        this.view = event.getCamera().position();
+        this.view = event.getCamera().getPosition();
 
         if (program == null) {
             program = new EspTrianglesAAProgram();
@@ -96,8 +96,8 @@ public class QuadAAThickLineRenderer implements ThickLineRenderer {
     public void end() {
         if (program.buffer.vertices() > 0) {
             // set line settings
-            GlStateManager._enableBlend();
-            GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+            GlStateManager._enableBlend(); //glEnable(GL_BLEND);
+            GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
             GlStateManager._disableDepthTest();
             GlStateManager._disableCull();
 

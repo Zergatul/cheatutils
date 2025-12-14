@@ -25,7 +25,6 @@ public class EventsScripting implements Module {
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Runnable> onHandleKeys = new ArrayList<>();
     private final List<Runnable> onTickEnd = new ArrayList<>();
-    private final List<Runnable> onMenuTickEnd = new ArrayList<>();
     private final List<EntityIdConsumer> onPlayerAdded = new ArrayList<>();
     private final List<EntityIdConsumer> onPlayerRemoved = new ArrayList<>();
     private final List<ComponentWrapperConsumer> onChatMessageRaw = new ArrayList<>();
@@ -52,14 +51,6 @@ public class EventsScripting implements Module {
         Events.ClientTickEnd.add(() -> {
             if (canTrigger()) {
                 for (Runnable handler : onTickEnd) {
-                    handler.run();
-                }
-            }
-        });
-
-        Events.ClientTickEnd.add(() -> {
-            if (mc.player == null && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
-                for (Runnable handler : onMenuTickEnd) {
                     handler.run();
                 }
             }
@@ -153,7 +144,6 @@ public class EventsScripting implements Module {
         TickEndExecutor.instance.execute(() -> {
             onHandleKeys.clear();
             onTickEnd.clear();
-            onMenuTickEnd.clear();
             onPlayerAdded.clear();
             onPlayerRemoved.clear();
             onChatMessageRaw.clear();
@@ -176,10 +166,6 @@ public class EventsScripting implements Module {
 
     public void addOnTickEnd(Runnable action) {
         onTickEnd.add(action);
-    }
-
-    public void addOnMenuTickEnd(Runnable action) {
-        onMenuTickEnd.add(action);
     }
 
     public void addOnPlayerAdded(EntityIdConsumer consumer) {

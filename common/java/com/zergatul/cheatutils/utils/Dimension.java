@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.utils;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -11,7 +11,7 @@ import java.util.Map;
 
 public final class Dimension {
 
-    private static Map<Identifier, Dimension> dimensions = new HashMap<>();
+    private static Map<ResourceLocation, Dimension> dimensions = new HashMap<>();
 
     private final ResourceKey<Level> key;
     private final DimensionType type;
@@ -22,19 +22,19 @@ public final class Dimension {
     }
 
     public static Dimension get(ClientLevel level) {
-        Dimension existing = dimensions.get(level.dimension().identifier());
+        Dimension existing = dimensions.get(level.dimension().location());
         if (existing != null) {
             return existing;
         }
 
         Dimension dimension = new Dimension(level.dimension(), level.dimensionType());
-        dimensions.put(level.dimension().identifier(), dimension);
+        dimensions.put(level.dimension().location(), dimension);
         return dimension;
     }
 
     @Override
     public int hashCode() {
-        return key.identifier().hashCode();
+        return key.location().hashCode();
     }
 
     @Override
@@ -52,8 +52,8 @@ public final class Dimension {
         }
     }
 
-    public Identifier getId() {
-        return key.identifier();
+    public ResourceLocation getId() {
+        return key.location();
     }
 
     public int getMinY() {

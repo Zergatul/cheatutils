@@ -75,7 +75,7 @@ public class WorldMarkers implements FontBackendHolder {
         MainFrameBuffer.enter();*/
 
         Camera camera = event.getCamera();
-        Vec3 view = camera.position();
+        Vec3 view = camera.getPosition();
 
         int scale = mc.getWindow().getGuiScale();
         int scrWidth = mc.getWindow().getWidth();
@@ -88,7 +88,7 @@ public class WorldMarkers implements FontBackendHolder {
 
         RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
 
-        String dimension = mc.level.dimension().identifier().toString();
+        String dimension = mc.level.dimension().location().toString();
         for (WorldMarkersConfig.Entry entry : config.entries) {
             if (!entry.enabled) {
                 continue;

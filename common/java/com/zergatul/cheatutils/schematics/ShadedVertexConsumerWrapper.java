@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.schematics;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.jetbrains.annotations.NotNull;
 
 public class ShadedVertexConsumerWrapper implements VertexConsumer {
 
@@ -20,48 +19,38 @@ public class ShadedVertexConsumerWrapper implements VertexConsumer {
     }
 
     @Override
-    public @NotNull VertexConsumer addVertex(float x, float y, float z) {
+    public VertexConsumer addVertex(float x, float y, float z) {
         inner.addVertex(x, y, z);
         return this;
     }
 
     @Override
-    public @NotNull VertexConsumer setColor(int c) {
-        return this.setColor((c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF, c >> 24);
-    }
-
-    @Override
-    public @NotNull VertexConsumer setColor(int r, int g, int b, int a) {
+    public VertexConsumer setColor(int r, int g, int b, int a) {
         inner.setColor(Math.round(shadeR * r), Math.round(shadeG * g), Math.round(shadeB * g), Math.round(shadeA * a));
         return this;
     }
 
     @Override
-    public @NotNull VertexConsumer setUv(float u, float v) {
+    public VertexConsumer setUv(float u, float v) {
         inner.setUv(u, v);
         return this;
     }
 
     @Override
-    public @NotNull VertexConsumer setUv1(int u, int v) {
+    public VertexConsumer setUv1(int u, int v) {
         inner.setUv1(u, v);
         return this;
     }
 
     @Override
-    public @NotNull VertexConsumer setUv2(int u, int v) {
+    public VertexConsumer setUv2(int u, int v) {
         inner.setUv2(u, v);
         return this;
     }
 
     @Override
-    public @NotNull VertexConsumer setNormal(float x, float y, float z) {
+    public VertexConsumer setNormal(float x, float y, float z) {
         inner.setNormal(x, y, z);
-        return this;
-    }
-
-    @Override
-    public @NotNull VertexConsumer setLineWidth(float f) {
         return this;
     }
 }

@@ -2,8 +2,9 @@ package com.zergatul.cheatutils.font;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.TextureStateShardAccessor;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import com.zergatul.cheatutils.render.buffers.TextureColor2dRenderBuffer;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -11,14 +12,15 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
@@ -73,8 +75,7 @@ public class VanillaFontRenderer extends FontRenderer {
 
             mc.font.drawInBatch(
                     chunk.text(),
-                    0, 0,
-                    chunk.color(),
+                    0, 0, chunk.color(),
                     false, // drawShadow
                     new Matrix4f(),
                     bufferSource,
@@ -92,10 +93,13 @@ public class VanillaFontRenderer extends FontRenderer {
                         continue;
                     }
 
-                    RenderSetup setup = ((RenderTypeAccessor) type).getState_CU();
-                    Map<String, RenderSetup.TextureBinding> textures = ((RenderSetupAccessor) (Object) setup).getTextures_CU();
-                    RenderSetup.TextureBinding binding = textures.get("Sampler0");
-                    if (binding == null) {
+                    if (!(type instanceof CompositeRenderTypeAccessor accessor)) {
+                        continue;
+                    }
+
+                    RenderType.CompositeState state = accessor.getState_CU();
+                    RenderStateShard.EmptyTextureStateShard shard = ((CompositeStateAccessor) (Object) state).getTextureState_CU();
+                    if (!(shard instanceof RenderStateShard.TextureStateShard textureStateShard)) {
                         continue;
                     }
 
@@ -103,8 +107,9 @@ public class VanillaFontRenderer extends FontRenderer {
                         continue;
                     }
 
-                    AbstractTexture texture = mc.getTextureManager().getTexture(binding.location());
-                    int id = getGlTexture(texture.getTexture()).glId();
+                    Optional<ResourceLocation> texture = ((TextureStateShardAccessor) textureStateShard).getTexture_CU();
+                    AbstractTexture t = mc.getTextureManager().getTexture(texture.get());
+                    int id = getGlTexture(t.getTexture()).glId();
 
                     TextureColor2dRenderBuffer buffer = buffers.getTexColor2d(id);
                     if (dropShadow) {
@@ -168,7 +173,7 @@ public class VanillaFontRenderer extends FontRenderer {
 
     private int getScale() {
         if (scale == 0) {
-            return mc.getWindow().getGuiScale();
+            return (int) mc.getWindow().getGuiScale();
         } else {
             return scale;
         }
@@ -193,7 +198,7 @@ public class VanillaFontRenderer extends FontRenderer {
         }
 
         @Override
-        public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
+        public VertexConsumer getBuffer(RenderType renderType) {
             if (map.containsKey(renderType)) {
                 return map.get(renderType);
             } else {
@@ -219,7 +224,7 @@ public class VanillaFontRenderer extends FontRenderer {
         }
 
         @Override
-        public @NotNull VertexConsumer addVertex(float x, float y, float z) {
+        public VertexConsumer addVertex(float x, float y, float z) {
             index = list.size();
             for (int i = 0; i < 8; i++) {
                 list.add(0);
@@ -230,12 +235,7 @@ public class VanillaFontRenderer extends FontRenderer {
         }
 
         @Override
-        public @NotNull VertexConsumer setColor(int c) {
-            return setColor((c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF, (c >> 24) & 0xFF);
-        }
-
-        @Override
-        public @NotNull VertexConsumer setColor(int r, int g, int b, int a) {
+        public VertexConsumer setColor(int r, int g, int b, int a) {
             list.set(index + 4, r / 255f);
             list.set(index + 5, g / 255f);
             list.set(index + 6, b / 255f);
@@ -244,29 +244,24 @@ public class VanillaFontRenderer extends FontRenderer {
         }
 
         @Override
-        public @NotNull VertexConsumer setUv(float u, float v) {
+        public VertexConsumer setUv(float u, float v) {
             list.set(index + 2, u);
             list.set(index + 3, v);
             return this;
         }
 
         @Override
-        public @NotNull VertexConsumer setUv1(int i, int j) {
+        public VertexConsumer setUv1(int i, int j) {
             return this;
         }
 
         @Override
-        public @NotNull VertexConsumer setUv2(int i, int j) {
+        public VertexConsumer setUv2(int i, int j) {
             return this;
         }
 
         @Override
-        public @NotNull VertexConsumer setNormal(float f, float g, float h) {
-            return this;
-        }
-
-        @Override
-        public @NotNull VertexConsumer setLineWidth(float f) {
+        public VertexConsumer setNormal(float f, float g, float h) {
             return this;
         }
     }

@@ -2,8 +2,7 @@ import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
-    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
-    //id 'fabric-loom' version "${loom_version}"
+    id 'fabric-loom' version '1.11-SNAPSHOT'
     id 'maven-publish'
     id 'cheatutils'
 }
@@ -26,11 +25,7 @@ repositories {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/cheatutils.classtweaker")
-
-    mixin {
-        useLegacyMixinAp = true
-    }
+    accessWidenerPath = file("src/main/resources/cheatutils.accesswidener")
 }
 
 dependencies {

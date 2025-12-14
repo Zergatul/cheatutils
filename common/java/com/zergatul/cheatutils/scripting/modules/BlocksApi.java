@@ -11,7 +11,7 @@ import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
 import java.awt.*;
@@ -120,7 +120,7 @@ public class BlocksApi {
             Returns blocks count which are tracked by Block ESP. If block is part of a group, returns count of entire group
             """)
     public int getCount(String blockId) {
-        Identifier location = Identifier.parse(blockId);
+        ResourceLocation location = ResourceLocation.parse(blockId);
         Block block = Registries.BLOCKS.getValue(location);
         if (block == null) {
             return Integer.MIN_VALUE;
@@ -201,7 +201,7 @@ public class BlocksApi {
     }
 
     private BlockEspConfig getConfig(String blockId) {
-        Identifier location = Identifier.parse(blockId);
+        ResourceLocation location = ResourceLocation.parse(blockId);
         Block block = Registries.BLOCKS.getValue(location);
         if (block == null) {
             return null;

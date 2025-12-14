@@ -1,12 +1,9 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.LocalPlayerAccessor;
-import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
 import com.zergatul.cheatutils.scripting.types.BlockStateWrapper;
 import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
@@ -17,23 +14,18 @@ import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ConnectScreen;
-import net.minecraft.client.gui.screens.LevelLoadingScreen;
-import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
@@ -54,10 +46,13 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -90,61 +85,6 @@ public class GameApi {
             """)
     public String getUserName() {
         return mc.getUser().getName();
-    }
-
-    @MethodDescription("""
-            Connects to specified server. Return Future with boolean result you can await.
-            When true - everything was ok.
-            You can invoke it while in the menu, or while connected to another server.
-            """)
-    @ApiVisibility(ApiType.ACTION)
-    public CompletableFuture<Boolean> connect(String server) {
-        if (!ServerAddress.isValidAddress(server)) {
-            return CompletableFuture.completedFuture(false);
-        }
-        if (mc.screen instanceof ConnectScreen) {
-            return CompletableFuture.completedFuture(false);
-        }
-
-        Connection connection;
-        if (mc.getConnection() != null) {
-            connection = mc.getConnection().getConnection();
-        } else {
-            connection = null;
-        }
-
-        if (connection != null) {
-            connection.disconnect(Component.literal("Connection requested from script"));
-            connection.setReadOnly();
-            connection.handleDisconnection();
-        }
-
-        ServerAddress address = ServerAddress.parseString(server);
-        ConnectScreen.startConnecting(
-                mc.screen instanceof TitleScreen ? mc.screen : new TitleScreen(),
-                mc,
-                address,
-                new ServerData("Minecraft Server", address.getHost(), ServerData.Type.OTHER),
-                false,
-                null);
-
-        CompletableFuture<Boolean> result = new CompletableFuture<>();
-
-        class ScreenCheck implements Runnable {
-            @Override
-            public void run() {
-                boolean shouldWait = mc.screen instanceof ConnectScreen || mc.screen instanceof LevelLoadingScreen;
-                if (shouldWait) {
-                    TickEndExecutor.instance.waitTicks(1, this);
-                } else {
-                    result.complete(true);
-                }
-            }
-        }
-
-        TickEndExecutor.instance.execute(new ScreenCheck());
-
-        return result;
     }
 
     @MethodDescription("""
@@ -200,7 +140,7 @@ public class GameApi {
         }
 
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-        return new HitResultWrapper(LocalPlayerAccessor.pick_CU(entity, maxRange, maxRange, partialTicks));
+        return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(entity, maxRange, maxRange, partialTicks));
     }
 
     public RayCastEntityResult rayCastClosestEntity(Position3d origin, Position3d dir, double range) {
@@ -213,7 +153,7 @@ public class GameApi {
             if (mc.level == null) {
                 return "";
             }
-            return mc.level.dimension().identifier().toString();
+            return mc.level.dimension().location().toString();
         }
 
         public boolean isOverworld() {
@@ -268,7 +208,7 @@ public class GameApi {
                 Gets entity count by Minecraft id in render distance
                 """)
         public int getCountById(String id) {
-            Identifier location = Identifier.parse(id);
+            ResourceLocation location = ResourceLocation.parse(id);
             EntityType<?> type = Registries.ENTITY_TYPES.getValue(location);
             if (type == null) {
                 return Integer.MIN_VALUE;
@@ -297,7 +237,7 @@ public class GameApi {
                 return Integer.MIN_VALUE;
             }
 
-            EntityType<?> type = Registries.ENTITY_TYPES.getValue(Identifier.parse(id));
+            EntityType<?> type = Registries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
             if (type == null) {
                 return Integer.MIN_VALUE;
             }
@@ -516,7 +456,7 @@ public class GameApi {
                 assert mc.level != null;
 
                 if (entity instanceof LivingEntityExtension living) {
-                    Identifier location = Identifier.parse(effectId);
+                    ResourceLocation location = ResourceLocation.parse(effectId);
                     MobEffect effect = Registries.MOB_EFFECTS.getValue(location);
                     if (effect == null) {
                         return false;
@@ -681,7 +621,7 @@ public class GameApi {
                 return new int[0];
             }
 
-            EntityType<?> type = Registries.ENTITY_TYPES.getValue(Identifier.parse(id));
+            EntityType<?> type = Registries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
             if (type == null) {
                 return new int[0];
             }

@@ -57,7 +57,7 @@ public class BlockEsp {
 
         if (!customEntries.isEmpty()) {
             final float shift = 0.01f;
-            Vec3 view = event.getCamera().position();
+            Vec3 view = event.getCamera().getPosition();
             Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
             renderer.begin();
             for (CustomBlockPosEntry entry : customEntries) {

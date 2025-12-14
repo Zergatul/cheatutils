@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.sound.SoundLibrary;
 import net.minecraft.client.sounds.JOrbisAudioStream;
 import net.minecraft.client.sounds.SoundBufferLibrary;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,10 +22,10 @@ import java.util.concurrent.CompletableFuture;
 public abstract class MixinSoundBufferLibrary {
 
     @Unique
-    private final Map<Identifier, CompletableFuture<SoundBuffer>> dynamicSoundsMap = new HashMap<>();
+    private final Map<ResourceLocation, CompletableFuture<SoundBuffer>> dynamicSoundsMap = new HashMap<>();
 
     @Inject(at = @At("HEAD"), method = "getCompleteBuffer", cancellable = true)
-    private void onGetCompleteBuffer(Identifier location, CallbackInfoReturnable<CompletableFuture<SoundBuffer>> info) {
+    private void onGetCompleteBuffer(ResourceLocation location, CallbackInfoReturnable<CompletableFuture<SoundBuffer>> info) {
         if (location.getNamespace().equals(ModMain.MODID) && location.getPath().startsWith("sounds/dynamic/")) {
             var future = dynamicSoundsMap.get(location);
             if (future != null) {

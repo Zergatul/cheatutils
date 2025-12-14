@@ -185,7 +185,7 @@ public class ContainersApi {
     private String[] getEnchantmentIds(ItemEnchantments enchantments) {
         List<String> ids = new ArrayList<>();
         for (Holder<Enchantment> holder : enchantments.keySet()) {
-            holder.unwrapKey().ifPresent(enchantment -> ids.add(enchantment.identifier().toString()));
+            holder.unwrapKey().ifPresent(enchantment -> ids.add(enchantment.location().toString()));
             return ids.toArray(String[]::new);
         }
         return new String[0];

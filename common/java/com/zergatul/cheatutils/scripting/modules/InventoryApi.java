@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
@@ -197,7 +197,7 @@ public class InventoryApi {
             return 0;
         }
 
-        Item item = Registries.ITEMS.getValue(Identifier.parse(itemId));
+        Item item = Registries.ITEMS.getValue(ResourceLocation.parse(itemId));
         if (item == null) {
             return -1;
         }
@@ -249,7 +249,7 @@ public class InventoryApi {
             return -1;
         }
 
-        Item item = Registries.ITEMS.getValue(Identifier.parse(itemId));
+        Item item = Registries.ITEMS.getValue(ResourceLocation.parse(itemId));
         if (item == null) {
             return -1;
         }
@@ -278,7 +278,7 @@ public class InventoryApi {
             return false;
         }
 
-        Item item = Registries.ITEMS.getValue(Identifier.parse(itemId));
+        Item item = Registries.ITEMS.getValue(ResourceLocation.parse(itemId));
         if (item == null) {
             return false;
         }

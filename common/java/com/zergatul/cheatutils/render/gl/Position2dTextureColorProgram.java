@@ -2,10 +2,6 @@ package com.zergatul.cheatutils.render.gl;
 
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL33;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_NEAREST;
 
 public class Position2dTextureColorProgram extends Program {
 
@@ -30,12 +26,9 @@ public class Position2dTextureColorProgram extends Program {
         buffer.upload();
 
         GL30.glUseProgram(id);
-
-        GL30.glActiveTexture(GL30.GL_TEXTURE0 + unit);
-        GL33.glBindSampler(unit, Sampler.DEFAULT.getId());
+        GL30.glUniform1i(textureUniform, 0);
+        GL30.glActiveTexture(GL30.GL_TEXTURE0);
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, texture);
-        GL30.glUniform1i(textureUniform, unit);
-
         GL30.glUniformMatrix4fv(mvpUniform, false, mvp.get(new float[16]));
 
         buffer.VAO.bind();

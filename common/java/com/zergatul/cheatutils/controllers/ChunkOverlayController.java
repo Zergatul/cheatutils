@@ -84,9 +84,9 @@ public class ChunkOverlayController {
         float frameTime = event.getTickDelta();
         float xp = (float) Mth.lerp(frameTime, mc.player.xo, mc.player.getX());
         float zp = (float) Mth.lerp(frameTime, mc.player.zo, mc.player.getZ());
-        float xc = (float) mc.gameRenderer.getMainCamera().position().x;
-        float zc = (float) mc.gameRenderer.getMainCamera().position().z;
-        float yRot = mc.gameRenderer.getMainCamera().yRot();
+        float xc = (float) mc.gameRenderer.getMainCamera().getPosition().x;
+        float zc = (float) mc.gameRenderer.getMainCamera().getPosition().z;
+        float yRot = mc.gameRenderer.getMainCamera().getYRot();
 
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(

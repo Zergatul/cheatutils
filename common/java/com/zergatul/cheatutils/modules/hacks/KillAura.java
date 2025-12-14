@@ -17,7 +17,6 @@ import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -206,12 +205,6 @@ public class KillAura implements Module {
 
     private boolean shouldAttackNow(KillAuraConfig config) {
         assert mc.player != null;
-
-        ItemStack stack = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
-        // but server uses threshold 5?
-        if (mc.player.cannotAttackWithItem(stack, 0)) {
-            return false;
-        }
 
         if (config.doNotAttackOnItemUse && mc.player.isUsingItem()) {
             return false;

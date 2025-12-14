@@ -8,8 +8,7 @@ import com.zergatul.scripting.MethodDescription;
 public class DelayedApi {
 
     @MethodDescription("""
-            Runs actions after some amount of ticks passed.
-            Action may run while no world is loaded
+            Runs actions after some amount of ticks passed
             """)
     @ApiVisibility(ApiType.ACTION)
     public void run(int ticks, Runnable action) {

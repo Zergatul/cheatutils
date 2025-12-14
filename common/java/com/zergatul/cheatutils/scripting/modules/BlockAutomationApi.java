@@ -10,7 +10,7 @@ import com.zergatul.cheatutils.scripting.ItemStackPredicate;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.scripting.MethodDescription;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 
@@ -128,13 +128,13 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
     public void breakBlock(String itemId, String enchantmentId) {
         Item item = Registries.ITEMS.safeParse(itemId);
         if (item != null) {
-            Identifier enchantment = Identifier.tryParse(enchantmentId);
+            ResourceLocation enchantment = ResourceLocation.tryParse(enchantmentId);
             if (enchantment != null) {
                 BlockAutomation.instance.breakBlock(stack -> {
                     if (!stack.is(item)) {
                         return false;
                     }
-                    return stack.getEnchantments().entrySet().stream().anyMatch(holder -> holder.getKey().unwrapKey().get().identifier().equals(enchantment));
+                    return stack.getEnchantments().entrySet().stream().anyMatch(holder -> holder.getKey().unwrapKey().get().location().equals(enchantment));
                 });
             }
         }

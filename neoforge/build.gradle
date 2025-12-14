@@ -2,9 +2,10 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
     id 'java-library'
+    id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.123'
+    id 'net.neoforged.moddev' version '2.0.110'
     id 'cheatutils'
 }
 

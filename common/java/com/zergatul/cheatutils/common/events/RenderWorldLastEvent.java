@@ -24,7 +24,7 @@ public class RenderWorldLastEvent {
         this.tickDelta = delta.getGameTimeDeltaPartialTick(true);
         this.mvp = new Matrix4f(projection).mul(pose);
         this.tracerCenter = calculateTracerCenter();
-        this.playerPos = camera.entity().getPosition(tickDelta);
+        this.playerPos = camera.getEntity().getPosition(tickDelta);
 
         last = this;
     }
@@ -74,7 +74,7 @@ public class RenderWorldLastEvent {
         Quaternionf rotation = camera.rotation();
         Vector3f directionWorld = new Matrix3f().rotation(rotation).transform(directionView, new Vector3f());
 
-        Vec3 camPos = camera.position();
+        Vec3 camPos = camera.getPosition();
 
         final double distance = 1024;
         double cx = camPos.x + directionWorld.x * distance;

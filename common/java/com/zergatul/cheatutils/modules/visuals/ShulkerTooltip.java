@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ShulkerTooltipConfig;
 import com.zergatul.cheatutils.utils.ItemUtils;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,8 +17,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.Util;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector2ic;
@@ -26,12 +26,12 @@ public class ShulkerTooltip {
 
     public static ShulkerTooltip instance = new ShulkerTooltip();
 
-    private static final Identifier CONTAINER_TEXTURE = Identifier.parse("textures/gui/container/shulker_box.png");
+    private static final ResourceLocation CONTAINER_TEXTURE = ResourceLocation.parse("textures/gui/container/shulker_box.png");
     private static final int ImageWidth = 176;
     //private static final int ImageHeight = 166;
 
-    private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_back");
-    private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_front");
+    private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_back");
+    private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_front");
 
     private final Minecraft mc = Minecraft.getInstance();
     private boolean locked = false;

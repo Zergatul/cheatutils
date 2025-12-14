@@ -5,8 +5,6 @@ import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.opengl.GlTextureView;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.zergatul.cheatutils.common.Events;
@@ -277,7 +275,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
                     0,
                     1,
                     FrameBuffers.get1().getTextureId()
-            )), RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST));
+            )));
         }
 
         @Nullable

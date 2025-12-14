@@ -31,6 +31,9 @@ public abstract class MixinMinecraft {
     public ClientLevel level;
 
     @Shadow
+    public abstract boolean isWindowActive();
+
+    @Shadow
     protected abstract void continueAttack(boolean p_91387_);
 
     @Shadow
@@ -91,8 +94,8 @@ public abstract class MixinMinecraft {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetData()V", shift = At.Shift.AFTER),
-            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")
-    private void onPlayerLoggingOut(Screen screen, boolean b1, boolean b2, CallbackInfo info) {
+            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V")
+    private void onPlayerLoggingOut(Screen screen, boolean b, CallbackInfo info) {
         Events.ClientPlayerLoggingOut.trigger();
     }
 
@@ -116,8 +119,8 @@ public abstract class MixinMinecraft {
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;onDisconnected()V", shift = At.Shift.AFTER),
-            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")
-    private void onClearDisconnect(Screen screen, boolean b1, boolean b2, CallbackInfo info) {
+            method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V")
+    private void onClearDisconnect(Screen screen, boolean b, CallbackInfo info) {
         if (this.level != null) {
             Events.LevelUnload.trigger();
         }

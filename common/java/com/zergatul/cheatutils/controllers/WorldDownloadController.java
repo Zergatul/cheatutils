@@ -1,23 +1,26 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
-import com.zergatul.cheatutils.mixins.common.accessors.RegionalFileStorageAccessor;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
-import net.minecraft.world.level.chunk.storage.RegionFileStorage;
+import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
-
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.storage.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,13 +36,13 @@ public class WorldDownloadController {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final Logger logger = LogManager.getLogger(WorldDownloadController.class);
-    private Map<ResourceKey<Level>, RegionFileStorage> storages;
+    private Map<ResourceKey<Level>, ChunkStorage> chunkStorages;
     private LevelStorageSource.LevelStorageAccess access;
 
     public WorldDownloadController() {}
 
     public boolean isActive() {
-        return storages != null;
+        return chunkStorages != null;
     }
 
     public void start(String name) {
@@ -54,7 +57,7 @@ public class WorldDownloadController {
                 }
 
                 access = mc.getLevelSource().createAccess(name);
-                storages = new HashMap<>();
+                chunkStorages = new HashMap<>();
                 ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).onEnabledChanged();
             } catch (Throwable e) {
                 logger.error("Cannot start World Download", e);
@@ -104,10 +107,10 @@ public class WorldDownloadController {
 
     private void stopInternal() {
         try {
-            if (storages != null) {
-                for (RegionFileStorage storage : storages.values()) {
+            if (chunkStorages != null) {
+                for (ChunkStorage storage : chunkStorages.values()) {
                     try {
-                        // storage.flushWorker(); // needed?
+                        storage.flushWorker();
                         storage.close();
                     } catch (IOException e) {
                         logger.error("Cannot save ChunkStorage", e);
@@ -120,7 +123,7 @@ public class WorldDownloadController {
                 playerDataStorage.save(mc.player);
             }
 
-            storages = null;
+            chunkStorages = null;
 
             closeAccess();
 
@@ -136,20 +139,20 @@ public class WorldDownloadController {
             ClientLevel level = (ClientLevel) chunk.getLevel();
             Dimension dimension = Dimension.get(level);
             ResourceKey<Level> levelDimension = level.dimension();
-
-            RegionFileStorage storage;
-            if (storages.containsKey(levelDimension)) {
-                storage = storages.get(levelDimension);
+            ChunkStorage storage;
+            if (chunkStorages.containsKey(levelDimension)) {
+                storage = chunkStorages.get(levelDimension);
             } else {
-                storage = new RegionFileStorage(
+                storage = new ChunkStorage(
                         new RegionStorageInfo(access.getLevelId(), levelDimension, "chunk"),
                         access.getDimensionPath(levelDimension).resolve("region"),
+                        null, // data fixer
                         true); // sync
-                storages.put(levelDimension, storage);
+                chunkStorages.put(levelDimension, storage);
             }
 
             CompoundTag compoundtag = write(level, chunk);
-            ((RegionalFileStorageAccessor) (Object) storage).write_CU(chunk.getPos(), compoundtag);
+            storage.write(chunk.getPos(), () -> compoundtag);
 
             ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).notifyChunkSaved(
                     dimension, chunk.getPos().x, chunk.getPos().z);

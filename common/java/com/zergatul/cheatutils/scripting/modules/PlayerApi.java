@@ -2,10 +2,11 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.controllers.DisconnectController;
 import com.zergatul.cheatutils.controllers.SpeedCounterController;
-import com.zergatul.cheatutils.mixins.common.accessors.LocalPlayerAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.scripting.types.HitResultWrapper;
 import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
@@ -24,15 +25,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Input;
-import net.minecraft.world.entity.vehicle.boat.ChestBoat;
+import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -188,7 +189,7 @@ public class PlayerApi {
         }
         BlockPos blockPos = mc.getCameraEntity().blockPosition();
         Holder<Biome> holder = mc.level.getBiome(blockPos);
-        return holder.unwrap().map(id -> id.identifier().toString(), biome -> "[unregistered " + biome + "]");
+        return holder.unwrap().map(id -> id.location().toString(), biome -> "[unregistered " + biome + "]");
     }
 
     @MethodDescription("Measured in 0.5 sec window.")
@@ -600,7 +601,7 @@ public class PlayerApi {
             }
 
             float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-            return new HitResultWrapper(LocalPlayerAccessor.pick_CU(mc.player, maxRange, maxRange, partialTicks));
+            return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(mc.player, maxRange, maxRange, partialTicks));
         }
     }
 
@@ -616,8 +617,8 @@ public class PlayerApi {
             }
 
             HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
-            Identifier location = Identifier.parse(id);
-            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().identifier().equals(location)).findFirst().orElse(null);
+            ResourceLocation location = ResourceLocation.parse(id);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
             if (holder == null) {
                 return Integer.MIN_VALUE;
             }
@@ -640,8 +641,8 @@ public class PlayerApi {
             }
 
             HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
-            Identifier location = Identifier.parse(id);
-            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().identifier().equals(location)).findFirst().orElse(null);
+            ResourceLocation location = ResourceLocation.parse(id);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
             if (holder == null) {
                 return -1;
             }

@@ -13,7 +13,7 @@ public class CameraApi {
         }
 
         Camera camera = mc.gameRenderer.getMainCamera();
-        return camera.position().x;
+        return camera.getPosition().x;
     }
 
     public double getY() {
@@ -22,7 +22,7 @@ public class CameraApi {
         }
 
         Camera camera = mc.gameRenderer.getMainCamera();
-        return camera.position().y;
+        return camera.getPosition().y;
     }
 
     public double getZ() {
@@ -31,7 +31,7 @@ public class CameraApi {
         }
 
         Camera camera = mc.gameRenderer.getMainCamera();
-        return camera.position().z;
+        return camera.getPosition().z;
     }
 
     public double getXRot() {
@@ -40,7 +40,7 @@ public class CameraApi {
         }
 
         Camera camera = mc.gameRenderer.getMainCamera();
-        return camera.xRot();
+        return camera.getXRot();
     }
 
     public double getYRot() {
@@ -49,6 +49,6 @@ public class CameraApi {
         }
 
         Camera camera = mc.gameRenderer.getMainCamera();
-        return camera.yRot();
+        return camera.getYRot();
     }
 }

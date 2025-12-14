@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.mixins.common.accessors;
 
 import net.minecraft.client.gui.Gui;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -9,12 +9,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface GuiAccessor {
 
     @Accessor("EFFECT_BACKGROUND_AMBIENT_SPRITE")
-    static Identifier getEffectBackgroundAmbientSprite_CU() {
+    static ResourceLocation getEffectBackgroundAmbientSprite_CU() {
         throw new AssertionError();
     }
 
     @Accessor("EFFECT_BACKGROUND_SPRITE")
-    static Identifier getEffectBackgroundSprite_CU() {
+    static ResourceLocation getEffectBackgroundSprite_CU() {
         throw new AssertionError();
     }
 }

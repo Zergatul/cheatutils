@@ -8,8 +8,7 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -55,7 +54,7 @@ public abstract class MixinItemFeatureRenderer {
             return;
         }
 
-        Identifier texture = EntityEsp.instance.getTextureFromRenderType(renderType).orElse(null);
+        ResourceLocation texture = EntityEsp.instance.getTextureFromRenderType(renderType).orElse(null);
         if (texture == null) {
             return;
         }

@@ -30,7 +30,7 @@ public class EntityInteraction {
                         future,
                         AfterPlayerAiStepExecutor.instance,
                         result -> {
-                            if (!mc.player.isWithinEntityInteractionRange(entity, 3.0)) {
+                            if (!mc.player.canInteractWithEntity(entity, 3.0)) {
                                 return EntityInteractionResult.failed("Out of range");
                             } else {
                                 if (config.shouldAutoRotate()) {

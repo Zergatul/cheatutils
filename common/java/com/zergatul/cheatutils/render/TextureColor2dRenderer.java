@@ -105,15 +105,17 @@ public class TextureColor2dRenderer {
     }
 
     public void end(Matrix4f matrix, int textureId, boolean premultiplied) {
-        GlStateManager._enableBlend();
+        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
         if (premultiplied) {
-            GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         } else {
-            GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+            GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         }
 
-        GlStateManager._disableDepthTest();
-        GlStateManager._disableCull();
+        GlStateManager._disableDepthTest(); //glDisable(GL_DEPTH_TEST);
+        GlStateManager._disableCull();      //glDisable(GL_CULL_FACE);
+        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         program.draw(matrix, textureId);
     }

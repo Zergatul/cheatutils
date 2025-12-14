@@ -5,7 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -25,13 +25,13 @@ public abstract class MixinGuiGraphics {
     @Unique
     private TaggedArrayList<Component, ItemStack> cheatutils$storedComponents;
 
-    @Inject(at = @At("HEAD"), method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V")
+    @Inject(at = @At("HEAD"), method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/ResourceLocation;)V")
     private void onBeforeSetTooltipForNextFrame(
             Font font,
             List<Component> components,
             Optional<TooltipComponent> optional,
             int x, int y,
-            @Nullable Identifier location,
+            @Nullable ResourceLocation location,
             CallbackInfo info
     ) {
         if (components instanceof TaggedArrayList<?,?>) {
@@ -40,8 +40,8 @@ public abstract class MixinGuiGraphics {
     }
 
     @ModifyArg(
-            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;setTooltipForNextFrameInternal(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V"))
+            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/ResourceLocation;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;setTooltipForNextFrameInternal(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/ResourceLocation;Z)V"))
     private List<ClientTooltipComponent> onModifyComponentsList(List<ClientTooltipComponent> components) {
         if (cheatutils$storedComponents != null) {
             return new TaggedArrayList<>(components, cheatutils$storedComponents.getTag());
@@ -50,13 +50,13 @@ public abstract class MixinGuiGraphics {
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V")
+    @Inject(at = @At("TAIL"), method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/ResourceLocation;)V")
     private void onAfterSetTooltipForNextFrame(
             Font font,
             List<Component> components,
             Optional<TooltipComponent> optional,
             int x, int y,
-            @Nullable Identifier location,
+            @Nullable ResourceLocation location,
             CallbackInfo info
     ) {
         cheatutils$storedComponents = null;

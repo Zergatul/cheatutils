@@ -4,10 +4,8 @@ import org.lwjgl.opengl.GL30;
 
 public abstract class Program {
 
-    public final AbstractVertexData buffer;
-
     protected int id;
-    protected int unit;
+    public final AbstractVertexData buffer;
 
     protected Program(String name, AbstractVertexData buffer) {
         Shader vertexShader = new Shader(name + ".vert", Shader.Type.VERTEX);
@@ -28,8 +26,6 @@ public abstract class Program {
 
         vertexShader.delete();
         fragmentShader.delete();
-
-        this.unit = Math.min(7, GL30.glGetInteger(GL30.GL_MAX_TEXTURE_IMAGE_UNITS));
 
         this.buffer = buffer;
     }

@@ -13,7 +13,7 @@ import com.zergatul.cheatutils.render.LineRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.Connection;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
@@ -50,7 +50,7 @@ public class LogoutSpots implements Module {
 
         players.clear();
         for (LogoutSpotEntry entry : entries) {
-            if (entry.dimension.equals(mc.level.dimension().identifier())) {
+            if (entry.dimension.equals(mc.level.dimension().location())) {
                 players.add(entry.entity);
             }
         }
@@ -118,7 +118,7 @@ public class LogoutSpots implements Module {
         LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
         renderer.begin(event, true);
         for (LogoutSpotEntry entry : entries) {
-            if (entry.dimension.equals(mc.level.dimension().identifier())) {
+            if (entry.dimension.equals(mc.level.dimension().location())) {
                 renderer.cuboid(
                         entry.pos.x - entry.width / 2,
                         entry.pos.y,
@@ -154,7 +154,7 @@ public class LogoutSpots implements Module {
     private static class LogoutSpotEntry {
 
         public final UUID profileId;
-        public final Identifier dimension;
+        public final ResourceLocation dimension;
         public final Vec3 pos;
         public final double width;
         public final double height;
@@ -162,7 +162,7 @@ public class LogoutSpots implements Module {
 
         public LogoutSpotEntry(RemotePlayer player) {
             profileId = player.getGameProfile().id();
-            dimension = player.level().dimension().identifier();
+            dimension = player.level().dimension().location();
             pos = player.position();
             width = player.getBbWidth();
             height = player.getBbHeight();

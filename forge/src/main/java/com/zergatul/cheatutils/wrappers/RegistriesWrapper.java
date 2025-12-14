@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.wrappers;
 
 import com.zergatul.cheatutils.common.WrappedRegistry;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -32,12 +32,12 @@ public class RegistriesWrapper {
     private record ForgeWrappedRegistry<T>(IForgeRegistry<T> registry) implements WrappedRegistry<T> {
 
         @Override
-        public Identifier getKey(T value) {
+        public ResourceLocation getKey(T value) {
             return registry.getKey(value);
         }
 
         @Override
-        public T getValue(Identifier id) {
+        public T getValue(ResourceLocation id) {
             return registry.getValue(id);
         }
 

@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.render.Texture2dRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.LevelChunkUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -26,9 +26,9 @@ import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
-    private static final Identifier PlayerPosTexture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-player.png");
-    private static final Identifier CenterPosTexture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-center.png");
-    private static final Identifier MarkerTexture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-marker.png");
+    private static final ResourceLocation PlayerPosTexture = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-player.png");
+    private static final ResourceLocation CenterPosTexture = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-center.png");
+    private static final ResourceLocation MarkerTexture = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-marker.png");
 
     private final Map<Dimension, List<Marker>> markers = new HashMap<>();
 

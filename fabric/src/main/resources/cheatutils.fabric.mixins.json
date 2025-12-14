@@ -8,9 +8,8 @@
   },
   "mixinPriority": 500,
   "client": [
-    "fabric.schematica.MixinSectionCompiler",
+    "fabric.schematica.MixinTerrainRenderContext",
 
-    "fabric.MixinGuiGraphics",
     "fabric.MixinGameRenderer",
     "fabric.MixinKeyboardHandler",
     "fabric.MixinLevelRenderer",

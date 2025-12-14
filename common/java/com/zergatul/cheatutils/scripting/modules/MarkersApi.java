@@ -27,7 +27,7 @@ public class MarkersApi {
 
         WorldMarkersConfig.Entry entry = new WorldMarkersConfig.Entry();
         entry.name = name;
-        entry.dimension = mc.level.dimension().identifier().toString();
+        entry.dimension = mc.level.dimension().location().toString();
         entry.x = x;
         entry.y = y;
         entry.z = z;
