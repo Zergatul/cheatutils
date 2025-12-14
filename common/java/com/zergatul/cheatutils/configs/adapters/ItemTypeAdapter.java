@@ -4,7 +4,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.zergatul.cheatutils.common.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class ItemTypeAdapter extends TypeAdapter<Item> {
         if (value == null) {
             return null;
         } else {
-            return Registries.ITEMS.getValue(ResourceLocation.parse(value));
+            return Registries.ITEMS.getValue(Identifier.parse(value));
         }
     }
 }

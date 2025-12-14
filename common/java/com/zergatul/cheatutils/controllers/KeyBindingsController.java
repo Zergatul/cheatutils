@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.common.IKeyBindingRegistry;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -30,7 +30,7 @@ public class KeyBindingsController {
     private final Optional<CompletableFuture<?>>[] futures = new Optional[KeyBindingsConfig.KeysCount];
 
     private KeyBindingsController() {
-        KeyMapping.Category category = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "common"));
+        KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(ModMain.MODID, "common"));
 
         keys = new KeyMapping[KeyBindingsConfig.KeysCount];
         for (int i = 0; i < keys.length; i++) {

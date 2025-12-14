@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
@@ -10,21 +9,14 @@ import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.GroupLineRenderer;
 import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
-import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.KeyboardInput;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Input;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -32,8 +24,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class FreeCam implements Module {
@@ -362,7 +352,6 @@ public class FreeCam implements Module {
         GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
         renderer.begin(event);
 
-        Vec3 view = event.getCamera().getPosition();
         for (int i = 1; i < path.size(); i++) {
             FreeCamPath.Entry e1 = path.get(i - 1);
             FreeCamPath.Entry e2 = path.get(i);
@@ -508,19 +497,6 @@ public class FreeCam implements Module {
             velocity *= slowdown;
         }
         return velocity;
-    }
-
-    private String getPropertyValueString(Map.Entry<Property<?>, Comparable<?>> p_94072_) {
-        Property<?> property = p_94072_.getKey();
-        Comparable<?> comparable = p_94072_.getValue();
-        String s = Util.getPropertyName(property, comparable);
-        if (Boolean.TRUE.equals(comparable)) {
-            s = ChatFormatting.GREEN + s;
-        } else if (Boolean.FALSE.equals(comparable)) {
-            s = ChatFormatting.RED + s;
-        }
-
-        return property.getName() + ": " + s;
     }
 
     private FreeCamConfig getConfig() {

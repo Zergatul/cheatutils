@@ -29,10 +29,10 @@ public class EntityOutlineRenderer {
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
 
         // setup render parameters once
-        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
-        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
-        GlStateManager._disableCull(); //GL30.glDisable(GL30.GL_CULL_FACE);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        GlStateManager._disableDepthTest();
+        GlStateManager._disableCull();
     }
 
     public void quad(
@@ -84,10 +84,10 @@ public class EntityOutlineRenderer {
         FrameBuffer.pop();
 
         // set draw settings
-        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
-        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
-        GlStateManager._enableCull(); // GL30.glEnable(GL30.GL_CULL_FACE);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        GlStateManager._disableDepthTest();
+        GlStateManager._enableCull();
 
         // draw with shader program
         drawProgram.buffer.add(-1);

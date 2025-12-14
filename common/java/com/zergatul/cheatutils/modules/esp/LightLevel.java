@@ -18,7 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
@@ -44,7 +44,7 @@ public class LightLevel implements Module {
     public static final LightLevel instance = new LightLevel();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/light-level.png");
+    private final Identifier texture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/light-level.png");
     private final TextureLocation[] numbers = new TextureLocation[16];
     private final HashMap<ChunkPos, HashSet<BlockPos>> chunks = new HashMap<>();
     private final List<BlockPos> listForRendering = new ArrayList<>();
@@ -107,9 +107,9 @@ public class LightLevel implements Module {
         }
 
         Camera camera = mc.gameRenderer.getMainCamera();
-        Vec3 view = camera.getPosition();
+        Vec3 view = camera.position();
 
-        Direction direction = Direction.fromYRot(camera.getYRot());
+        Direction direction = Direction.fromYRot(camera.yRot());
         RotationIndexes rot = rotations.get(direction);
 
         double maxDistance2 = config.maxDistance * config.maxDistance;

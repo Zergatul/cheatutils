@@ -20,7 +20,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
@@ -342,7 +342,7 @@ public class BedrockBreaker implements Module {
         if (mc.level.getBlockState(bedrockPos).isAir() && !mc.level.getBlockState(pistonPos.relative(pistonDirection)).is(Blocks.MOVING_PISTON)) {
             BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
             if (config.replace) {
-                Item item = Registries.ITEMS.getValue(ResourceLocation.parse(config.replaceBlockId));
+                Item item = Registries.ITEMS.getValue(Identifier.parse(config.replaceBlockId));
                 if (item == null) {
                     reset(config.replaceBlockId + " is not valid block ID");
                     return;

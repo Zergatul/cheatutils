@@ -30,7 +30,8 @@ public abstract class MixinRenderSectionRegion implements RenderSectionRegionExt
     @Final
     private int minSectionZ;
 
-    @Shadow protected abstract SectionCopy getSection(int p_406718_, int p_406216_, int p_406392_);
+    @Shadow
+    protected abstract SectionCopy getSection(int p_406718_, int p_406216_, int p_406392_);
 
     @Unique
     private SchematicaSectionCopy[] schematicaSections_CU;

@@ -32,7 +32,7 @@ public class QuadGroupThickLineRenderer implements GroupThickLineRenderer {
         }
 
         this.event = event;
-        this.view = event.getCamera().getPosition();
+        this.view = event.getCamera().position();
 
         if (program == null) {
             program = new EspGroupTrianglesProgram();
@@ -81,9 +81,9 @@ public class QuadGroupThickLineRenderer implements GroupThickLineRenderer {
     @Override
     public void end(float r, float g, float b, float a) {
         // set line settings
-        GlStateManager._enableBlend(); //glEnable(GL_BLEND);
-        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO); //GL30.glBlendFuncSeparate(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA, GL30.GL_ONE, GL30.GL_ZERO);
-        GlStateManager._disableDepthTest(); //GL30.glDisable(GL30.GL_DEPTH_TEST);
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager._disableDepthTest();
         GlStateManager._disableCull();
 
         // draw with shader program

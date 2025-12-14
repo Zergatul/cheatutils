@@ -10,6 +10,7 @@
   "client": [
     "forge.schematica.MixinSectionCompiler",
 
+    "forge.MixinGuiGraphics",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
     "forge.MixinLevelRenderer",

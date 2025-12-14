@@ -17,7 +17,7 @@ public class DimensionApi extends ApiBase {
             if (mc.level == null) {
                 return null;
             }
-            return mc.level.dimension().location().toString();
+            return mc.level.dimension().identifier().toString();
         }, 1000));
     }
 }

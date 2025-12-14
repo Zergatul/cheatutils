@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import net.minecraft.client.gui.components.debug.DebugScreenDisplayer;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DebugScreenExtensions {
 
-    private static final ResourceLocation COMMON = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, ModMain.MODID);
+    private static final Identifier COMMON = Identifier.fromNamespaceAndPath(ModMain.MODID, ModMain.MODID);
 
     public static void register() {
         DebugScreenEntries.register(COMMON, new CommonDebugScreenEntry());

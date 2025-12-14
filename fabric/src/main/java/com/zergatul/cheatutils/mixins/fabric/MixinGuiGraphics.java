@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.mixins.fnf;
+package com.zergatul.cheatutils.mixins.fabric;
 
 import com.zergatul.cheatutils.collections.TaggedArrayList;
 import com.zergatul.cheatutils.common.Events;
@@ -8,7 +8,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2ic;
@@ -22,13 +22,16 @@ import java.util.List;
 @Mixin(GuiGraphics.class)
 public abstract class MixinGuiGraphics {
 
-    @Inject(at = @At("HEAD"), method = "renderTooltip", cancellable = true)
+    @Inject(
+            at = @At("HEAD"),
+            method = "renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;)V",
+            cancellable = true)
     private void onBeforeRenderTooltip(
             Font font,
             List<ClientTooltipComponent> components,
             int x, int y,
             ClientTooltipPositioner positioner,
-            @Nullable ResourceLocation location,
+            @Nullable Identifier location,
             CallbackInfo info
     ) {
         if (components.isEmpty()) {
@@ -44,20 +47,22 @@ public abstract class MixinGuiGraphics {
     }
 
     @ModifyMethodReturnValue(
-            method = "renderTooltip",
+            method = "renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;positionTooltip(IIIIII)Lorg/joml/Vector2ic;"))
     private static Vector2ic onTooltipPositioned(Vector2ic position) {
         Events.TooltipPositioned.trigger(position);
         return position;
     }
 
-    @Inject(at = @At("TAIL"), method = "renderTooltip")
+    @Inject(
+            at = @At("TAIL"),
+            method = "renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;)V")
     private void onAfterRenderTooltipInternal(
             Font font,
             List<ClientTooltipComponent> components,
             int x, int y,
             ClientTooltipPositioner positioner,
-            @Nullable ResourceLocation location,
+            @Nullable Identifier location,
             CallbackInfo info
     ) {
         if (components.isEmpty()) {
