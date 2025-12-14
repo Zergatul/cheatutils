@@ -14,7 +14,6 @@ import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.RayCast;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
-import com.zergatul.cheatutils.wrappers.AttackRange;
 import com.zergatul.cheatutils.scripting.modules.GameApi;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
@@ -398,10 +397,6 @@ public class PlayerApi {
         }
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
-        if (!AttackRange.canHit(entity)) {
-            return false;
-        }
-
         mc.gameMode.attack(mc.player, entity);
         mc.player.swing(InteractionHand.MAIN_HAND);
         return true;
@@ -492,10 +487,8 @@ public class PlayerApi {
                 return new Position3d(0, 0, 0);
             }
 
-            double range = AttackRange.get();
-
             Entity entity = mc.level.getEntity(targetId);
-            Vec3 point = RayCast.closestValidPoint(entity, range);
+            Vec3 point = RayCast.closestValidPoint(entity, mc.player.entityInteractionRange());
             if (point == null) {
                 point = new Vec3(0, 0, 0);
             }

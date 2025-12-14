@@ -8,7 +8,6 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.KillAuraFunction;
 import com.zergatul.cheatutils.utils.MathUtils;
-import com.zergatul.cheatutils.wrappers.AttackRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -200,7 +199,9 @@ public class KillAura implements Module {
     }
 
     private double getRangeSquared(KillAuraConfig config) {
-        double range = config.overrideAttackRange ? config.maxRange : AttackRange.get();
+        assert mc.player != null;
+
+        double range = config.overrideAttackRange ? config.maxRange : mc.player.entityInteractionRange();
         return range * range;
     }
 
