@@ -2,8 +2,10 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
+import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FastBreakConfig;
+import com.zergatul.cheatutils.modules.automation.BreachSwap;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -68,4 +70,17 @@ public abstract class MixinMultiPlayerGameMode {
             this.destroyDelay = 0;
         }
     }
+
+    @Inject(at = @At("HEAD"), method = "attack", cancellable = true)
+    private void onAttack(Player player, Entity entity, CallbackInfo ci) {
+        BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
+        if (config.enabled && BreachSwap.instance.handling) {
+            BreachSwap.instance.handling = false;
+            BreachSwap.instance.run(config.useAxe, config.breakShield);
+            BreachSwap.instance.handling = true;
+            ci.cancel();
+        }
+    }
+
 }
+

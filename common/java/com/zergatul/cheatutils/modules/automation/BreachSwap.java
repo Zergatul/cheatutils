@@ -1,13 +1,10 @@
 package com.zergatul.cheatutils.modules.automation;
 
-import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.wrappers.AttackRange;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,71 +16,34 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class BreachSwap implements Module {
     public static final BreachSwap instance = new BreachSwap();
     private final Minecraft mc = Minecraft.getInstance();
 
-    private List<ServerboundInteractPacket> processed = new ArrayList<>();
-
     private BreachSwap() {
-        handling = false;
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
-        //Events.ClientTickEnd.add(this::onClientTickEnd);
+        handling = true;
     }
 
-    private boolean handling;
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
-        if(config.isEnabled()) {
-            if(args.packet instanceof ServerboundInteractPacket packet) {
-                if (processed.contains(packet)) {
-                    processed.remove(packet);
-                    return;
-                }
+    public boolean handling;
 
-                packet.dispatch(new ServerboundInteractPacket.Handler() {
-                    @Override
-                    public void onInteraction(InteractionHand p_179643_) {
+    public boolean run(boolean useAxe, boolean breakShield) {
 
-                    }
-
-                    @Override
-                    public void onInteraction(InteractionHand p_179644_, Vec3 p_179645_) {
-
-                    }
-                    @Override
-                    public void onAttack(){
-                        if(handling) {return;}
-                        args.skip = true;
-                        processed.add(packet);
-                        handling = true;
-                        instance.run(config.useAxe, config.breakShield);
-                        handling = false;
-                    }
-                });
-            }
-        }
-    }
-
-    public boolean run(boolean useAxe, boolean breakShield){
-
-        if(mc.player == null){
+        if (mc.player == null) {
             return false;
         }
 
-        if(mc.hitResult == null){
+        if (mc.hitResult == null) {
             return false;
         }
 
-        if(mc.hitResult.getType() != HitResult.Type.ENTITY){
+        if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
             return false;
         }
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         if (AttackRange.canHit(entity)) {
+
+
             //Find position of axe, sword and mace
             //Should only run when inventory is updated ideally
             int axe = -1;
@@ -96,7 +56,8 @@ public class BreachSwap implements Module {
                 ItemStack item = inventory.getItem(i);
                 if (item.getTags().anyMatch(tag -> tag == ItemTags.SWORDS)) sword = i;
                 else if (item.getTags().anyMatch(tag -> tag == ItemTags.AXES)) axe = i;
-                else if (item.getEnchantments().keySet().stream().anyMatch(enchantment -> enchantment.value().effects().keySet().contains(EnchantmentEffectComponents.ARMOR_EFFECTIVENESS)))
+                else if (item.getEnchantments().keySet().stream().anyMatch(enchantment ->
+                        enchantment.value().effects().keySet().contains(EnchantmentEffectComponents.ARMOR_EFFECTIVENESS)))
                     mace = i;
             }
 
@@ -133,6 +94,7 @@ public class BreachSwap implements Module {
                     }
                 }
 
+
                 if (isUsingShield) {
                     if (axe != -1) {
                         inventory.setSelectedSlot(axe);
@@ -152,12 +114,14 @@ public class BreachSwap implements Module {
     }
 
 
-    private void onClientTickEnd(){
+    private void onClientTickEnd() {
         BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
-        if(config.isEnabled()){
-            if(mc.player == null){return;}
+        if (config.isEnabled()) {
+            if (mc.player == null) {
+                return;
+            }
 
-            if(mc.player.getAttackStrengthScale(0) != 1){
+            if (mc.player.getAttackStrengthScale(0) != 1) {
                 return;
             }
             instance.run(config.useAxe, config.breakShield);
