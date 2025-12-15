@@ -30,13 +30,6 @@ public class AutoAttack implements Module {
             return;
         }
 
-        boolean breachSwap = ConfigStore.instance.getConfig().breachSwapConfig.enabled;
-
-        //Breach swap should take priority if both modules are enabled.
-        if (breachSwap) {
-            return;
-        }
-
         if (!mc.options.keyAttack.isDown()) {
             return;
         }
