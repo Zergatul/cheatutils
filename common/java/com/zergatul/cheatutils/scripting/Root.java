@@ -42,6 +42,7 @@ public class Root {
     public static AreaMineApi areaMine = new AreaMineApi();
     public static StepUpApi stepUp = new StepUpApi();
     public static AimAssistApi aimAssist = new AimAssistApi();
+    public static BreachSwapApi breachSwap = new BreachSwapApi();
     public static AirPlaceApi airPlace = new AirPlaceApi();
 
     // visuals
