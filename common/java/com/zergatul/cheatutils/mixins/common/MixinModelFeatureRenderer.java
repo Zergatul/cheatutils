@@ -6,10 +6,10 @@ import com.zergatul.cheatutils.extensions.ParametrizedSubmit;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.OutlineBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -45,7 +45,7 @@ public abstract class MixinModelFeatureRenderer {
             return;
         }
 
-        ResourceLocation texture;
+        Identifier texture;
         if (modelSubmission.sprite() != null) {
             texture = modelSubmission.sprite().atlasLocation();
         } else {

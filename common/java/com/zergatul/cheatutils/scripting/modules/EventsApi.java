@@ -18,11 +18,21 @@ public class EventsApi {
     }
 
     @MethodDescription("""
-            Triggers at the end of every client tick
+            Runs at the end of each client tick while the player is in a world.
+            Not called in the main menu.
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onTickEnd(Runnable action) {
         EventsScripting.instance.addOnTickEnd(action);
+    }
+
+    @MethodDescription("""
+            Runs at the end of each client tick while no world is loaded
+            (main menu, disconnect screen, server list).
+            """)
+    @ApiVisibility(ApiType.EVENTS)
+    public void onMenuTickEnd(Runnable action) {
+        EventsScripting.instance.addOnMenuTickEnd(action);
     }
 
     @MethodDescription("""

@@ -9,7 +9,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -90,11 +90,11 @@ public class ItemStackWrapper {
     }
 
     public boolean hasEnchantment(String id) {
-        ResourceLocation location = ResourceLocation.tryParse(id);
+        Identifier location = Identifier.tryParse(id);
         if (location == null) {
             return false;
         }
-        return getItemEnchantments().keySet().stream().anyMatch(holder -> holder.unwrapKey().get().location().equals(location));
+        return getItemEnchantments().keySet().stream().anyMatch(holder -> holder.unwrapKey().get().identifier().equals(location));
     }
 
     private EnchantmentWrapper[] getEnchantmentsInternal() {

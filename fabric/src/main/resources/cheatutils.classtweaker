@@ -1,0 +1,5 @@
+classTweaker v1 named
+accessible class net/minecraft/client/multiplayer/ClientChunkCache$Storage
+accessible class net/minecraft/client/renderer/chunk/SectionCopy
+accessible class net/minecraft/client/renderer/rendertype/RenderSetup$TextureBinding
+accessible method net/minecraft/world/level/chunk/storage/RegionFileStorage <init> (Lnet/minecraft/world/level/chunk/storage/RegionStorageInfo;Ljava/nio/file/Path;Z)V

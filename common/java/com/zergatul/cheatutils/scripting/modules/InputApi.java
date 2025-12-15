@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.mixins.common.accessors.InputConstantsKeyAccessor;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +17,7 @@ public class InputApi {
     private final Map<String, InputConstants.Key> keyMap = new HashMap<>();
 
     public InputApi() {
-        for (InputConstants.Key key: InputConstantsKeyAccessor.getNameMap().values()) {
+        for (InputConstants.Key key : InputConstantsKeyAccessor.getNameMap().values()) {
             StringBuilder sb = new StringBuilder();
             key.getDisplayName().visit(cc -> {
                 sb.append(cc);
@@ -55,7 +54,7 @@ public class InputApi {
         if (inputKey.getType() == InputConstants.Type.KEYSYM) {
             return InputConstants.isKeyDown(mc.getWindow(), inputKey.getValue());
         }
-        if (inputKey.getType() == InputConstants.Type.MOUSE){
+        if (inputKey.getType() == InputConstants.Type.MOUSE) {
             return org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), inputKey.getValue()) == 1;
         }
 

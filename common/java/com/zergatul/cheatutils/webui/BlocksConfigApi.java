@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.BlocksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.esp.BlockFinder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class BlocksConfigApi extends ApiBase {
     @Override
     public synchronized String get() {
         Object[] result;
-        var list = ConfigStore.instance.getConfig().blocks.getBlockConfigs();
+        ImmutableList<BlockEspConfig> list = ConfigStore.instance.getConfig().blocks.getBlockConfigs();
         result = list.stream().toArray();
         return gson.toJson(result);
     }
@@ -74,7 +74,7 @@ public class BlocksConfigApi extends ApiBase {
 
     @Override
     public synchronized String delete(String id) throws ApiException {
-        ResourceLocation loc = ResourceLocation.parse(id);
+        Identifier loc = Identifier.parse(id);
         Block block = Registries.BLOCKS.getValue(loc);
         if (block == null) {
             throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);
@@ -103,7 +103,7 @@ public class BlocksConfigApi extends ApiBase {
         @Override
         public String post(String body) throws ApiException {
             String id = gson.fromJson(body, String.class);
-            ResourceLocation loc = ResourceLocation.parse(id);
+            Identifier loc = Identifier.parse(id);
             Block block = Registries.BLOCKS.getValue(loc);
             if (block == null) {
                 throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);

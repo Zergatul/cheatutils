@@ -2,18 +2,20 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.controllers.DisconnectController;
 import com.zergatul.cheatutils.controllers.SpeedCounterController;
-import com.zergatul.cheatutils.mixins.common.accessors.GameRendererAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.LocalPlayerAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.scripting.types.HitResultWrapper;
 import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.InputBuilder;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
+import com.zergatul.cheatutils.utils.RayCast;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
+import com.zergatul.cheatutils.wrappers.AttackRange;
+import com.zergatul.cheatutils.scripting.modules.GameApi;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -22,25 +24,28 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Input;
-import net.minecraft.world.entity.vehicle.ChestBoat;
+import net.minecraft.world.entity.vehicle.boat.ChestBoat;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -183,7 +188,7 @@ public class PlayerApi {
         }
         BlockPos blockPos = mc.getCameraEntity().blockPosition();
         Holder<Biome> holder = mc.level.getBiome(blockPos);
-        return holder.unwrap().map(id -> id.location().toString(), biome -> "[unregistered " + biome + "]");
+        return holder.unwrap().map(id -> id.identifier().toString(), biome -> "[unregistered " + biome + "]");
     }
 
     @MethodDescription("Measured in 0.5 sec window.")
@@ -236,7 +241,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setXRot((float)value);
+        mc.player.setXRot((float) value);
     }
 
     @ApiVisibility(ApiType.ACTION)
@@ -244,7 +249,7 @@ public class PlayerApi {
         if (mc.player == null) {
             return;
         }
-        mc.player.setYRot((float)value);
+        mc.player.setYRot((float) value);
     }
 
     public int getHealth() {
@@ -370,6 +375,43 @@ public class PlayerApi {
         }
     }
 
+    @MethodDescription("""
+            Checks if the player is looking at an attackable target
+            If the target is within attack range, it hits the target
+            """)
+    @ApiVisibility(ApiType.ACTION)
+    public boolean vanillaAttack() {
+        if (mc.level == null) {
+            return false;
+        }
+        if (mc.player == null) {
+            return false;
+        }
+        if (mc.gameMode == null) {
+            return false;
+        }
+        if (mc.hitResult == null) {
+            return false;
+        }
+        if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
+            return false;
+        }
+
+        Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
+        if (!AttackRange.canHit(entity)) {
+            return false;
+        }
+
+        mc.gameMode.attack(mc.player, entity);
+        mc.player.swing(InteractionHand.MAIN_HAND);
+        return true;
+    }
+
+    @MethodDescription("""
+            Performs raw attack for specified entity.
+            No look direction checks or distance checks are performed.
+            Basically it sends attack packet if entity with specified id exists.
+            """)
     @ApiVisibility(ApiType.ACTION)
     public boolean attack(int entityId) {
         if (mc.level == null) {
@@ -439,6 +481,26 @@ public class PlayerApi {
     }
 
     public static class TargetApi {
+
+        @MethodDescription("""
+                Searches for the closest point on target entity hitbox, that is visible from the player eyes perspective.
+                Takes into account surrounding blocks geometry and attack range.
+                Returns (0, 0, 0) when no such point exists.
+                """)
+        public Position3d findValidTargetPoint(int targetId) {
+            if (mc.player == null || mc.level == null) {
+                return new Position3d(0, 0, 0);
+            }
+
+            double range = AttackRange.get();
+
+            Entity entity = mc.level.getEntity(targetId);
+            Vec3 point = RayCast.closestValidPoint(entity, range);
+            if (point == null) {
+                point = new Vec3(0, 0, 0);
+            }
+            return new Position3d(point.x, point.y, point.z);
+        }
 
         public boolean hasBlock() {
             if (mc.hitResult == null) {
@@ -554,7 +616,7 @@ public class PlayerApi {
             }
 
             float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-            return new HitResultWrapper(((GameRendererAccessor) mc.gameRenderer).pick_CU(mc.player, maxRange, maxRange, partialTicks));
+            return new HitResultWrapper(LocalPlayerAccessor.pick_CU(mc.player, maxRange, maxRange, partialTicks));
         }
     }
 
@@ -570,8 +632,8 @@ public class PlayerApi {
             }
 
             HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
-            ResourceLocation location = ResourceLocation.parse(id);
-            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
+            Identifier location = Identifier.parse(id);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().identifier().equals(location)).findFirst().orElse(null);
             if (holder == null) {
                 return Integer.MIN_VALUE;
             }
@@ -594,8 +656,8 @@ public class PlayerApi {
             }
 
             HolderLookup<MobEffect> lookup = mc.level.holderLookup(Registries.MOB_EFFECT);
-            ResourceLocation location = ResourceLocation.parse(id);
-            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().location().equals(location)).findFirst().orElse(null);
+            Identifier location = Identifier.parse(id);
+            Holder<MobEffect> holder = lookup.listElements().filter(ref -> ref.key().identifier().equals(location)).findFirst().orElse(null);
             if (holder == null) {
                 return -1;
             }
@@ -641,7 +703,7 @@ public class PlayerApi {
                         .map(e -> (ChestBoat) e);
                 double minDistance = Double.MAX_VALUE;
                 ChestBoat target = null;
-                for (ChestBoat boat: boats.toList()) {
+                for (ChestBoat boat : boats.toList()) {
                     double d2 = mc.player.distanceToSqr(boat);
                     if (d2 < minDistance) {
                         minDistance = d2;

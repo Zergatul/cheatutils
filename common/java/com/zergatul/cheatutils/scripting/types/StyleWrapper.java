@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.types;
 
+import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
@@ -8,7 +9,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.util.StringUtil;
+import net.minecraft.network.chat.TextColor;
 
 @CustomType(name = "TextStyle")
 public class StyleWrapper {
@@ -24,9 +25,34 @@ public class StyleWrapper {
         return inner.isBold();
     }
 
+    @Getter(name = "isItalic")
+    public boolean isItalic() {
+        return inner.isItalic();
+    }
+
+    @Getter(name = "isStrikethrough")
+    public boolean isStrikethrough() {
+        return inner.isStrikethrough();
+    }
+
+    @Getter(name = "isUnderlined")
+    public boolean isUnderlined() {
+        return inner.isUnderlined();
+    }
+
+    @Getter(name = "isObfuscated")
+    public boolean isObfuscated() {
+        return inner.isObfuscated();
+    }
+
     @Getter(name = "hasClickEvent")
     public boolean hasClickEvent() {
         return inner.getClickEvent() != null;
+    }
+
+    @Getter(name = "hasColor")
+    public boolean hasColor() {
+        return inner.getColor() != null;
     }
 
     @Getter(name = "hasHoverEvent")
@@ -41,6 +67,15 @@ public class StyleWrapper {
             return "";
         }
         return event.action().toString();
+    }
+
+    @Getter(name = "color")
+    public String getColor() {
+        TextColor color = inner.getColor();
+        if (color == null) {
+            return "";
+        }
+        return ColorUtils.asHexRGB(color.getValue());
     }
 
     @Getter(name = "hoverEventType")
@@ -65,6 +100,26 @@ public class StyleWrapper {
         } else {
             return ComponentWrapper.EMPTY;
         }
+    }
+
+    @Getter(name = "clickCommand")
+    public String getClickCommand() {
+        ClickEvent event = inner.getClickEvent();
+        if (event == null) {
+            return "";
+        }
+
+        return switch (event.action()) {
+            case RUN_COMMAND -> ((ClickEvent.RunCommand) event).command();
+            case SUGGEST_COMMAND -> ((ClickEvent.SuggestCommand) event).command();
+            default -> "";
+        };
+    }
+
+    @Getter(name = "insertion")
+    public String getInsertion() {
+        String insertion = inner.getInsertion();
+        return insertion != null ? insertion : "";
     }
 
     @MethodDescription("""

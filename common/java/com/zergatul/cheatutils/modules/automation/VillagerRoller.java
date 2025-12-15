@@ -22,8 +22,8 @@ import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Items;
@@ -309,7 +309,7 @@ public class VillagerRoller implements Module {
                     HolderLookup<Enchantment> lookup = mc.level.holderLookup(Registries.ENCHANTMENT);
                     Holder.Reference<Enchantment> holder = lookup.listElements().filter(ref -> ref.value() == enchantment).findFirst().get();
 
-                    this.enchantmentId = holder.key().location().toString();
+                    this.enchantmentId = holder.key().identifier().toString();
                     this.enchantmentName = enchantment.description().getString();
                     this.level = enchantments.getLevel(holder);
                     this.price = offer.getBaseCostA().getCount();

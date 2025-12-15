@@ -41,7 +41,7 @@ public class EndCityChunks {
         Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
         renderer.begin();
 
-        Vec3 view = event.getCamera().getPosition();
+        Vec3 view = event.getCamera().position();
 
         AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
         for (int i = 0; i < chunks.length(); i++) {

@@ -1,16 +1,16 @@
 package com.zergatul.cheatutils.common;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Collection;
 
 public interface WrappedRegistry<T> {
-    ResourceLocation getKey(T value);
-    T getValue(ResourceLocation id) ;
+    Identifier getKey(T value);
+    T getValue(Identifier id) ;
     Collection<T> getValues();
 
     default T safeParse(String id) {
-        ResourceLocation location = ResourceLocation.tryParse(id);
+        Identifier location = Identifier.tryParse(id);
         if (location == null) {
             return null;
         }
