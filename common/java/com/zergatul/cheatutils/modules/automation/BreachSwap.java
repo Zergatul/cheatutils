@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils.modules.automation;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.mixins.common.accessors.InputConstantsKeyAccessor;
+import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.wrappers.AttackRange;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,85 +19,72 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BreachSwap implements Module {
     public static final BreachSwap instance = new BreachSwap();
     private final Minecraft mc = Minecraft.getInstance();
-    private final float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-    public boolean attacked;
 
-
-    private final Map<String, InputConstants.Key> keyMap = new HashMap<>();
-
-    private boolean isKeyDown(String key) {
-        if (!mc.isWindowActive()) {
-            return false;
-        }
-
-        InputConstants.Key inputKey = keyMap.get(key);
-        if (inputKey == null) {
-            return false;
-        }
-        if (inputKey.getType() == InputConstants.Type.KEYSYM) {
-            return InputConstants.isKeyDown(mc.getWindow(), inputKey.getValue());
-        }
-        if (inputKey.getType() == InputConstants.Type.MOUSE) {
-            return org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), inputKey.getValue()) == 1;
-        }
-
-        return false;
-    }
-
+    private List<ServerboundInteractPacket> processed = new ArrayList<>();
 
     private BreachSwap() {
-
-        for (InputConstants.Key key : InputConstantsKeyAccessor.getNameMap().values()) {
-            StringBuilder sb = new StringBuilder();
-            key.getDisplayName().visit(cc -> {
-                sb.append(cc);
-                return Optional.empty();
-            });
-            keyMap.put(sb.toString(), key);
-        }
-
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        handling = false;
+        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+        //Events.ClientTickEnd.add(this::onClientTickEnd);
     }
 
-    private void onClientTickEnd() {
-        if (mc.player == null) {
-            return;
-        }
-
+    private boolean handling;
+    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
         BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
-        if (!config.enabled) {
-            return;
+        if(config.isEnabled()) {
+            if(args.packet instanceof ServerboundInteractPacket packet) {
+                if (processed.contains(packet)) {
+                    processed.remove(packet);
+                    return;
+                }
+
+                packet.dispatch(new ServerboundInteractPacket.Handler() {
+                    @Override
+                    public void onInteraction(InteractionHand p_179643_) {
+
+                    }
+
+                    @Override
+                    public void onInteraction(InteractionHand p_179644_, Vec3 p_179645_) {
+
+                    }
+                    @Override
+                    public void onAttack(){
+                        if(handling) {return;}
+                        args.skip = true;
+                        processed.add(packet);
+                        handling = true;
+                        instance.run(config.useAxe, config.breakShield);
+                        handling = false;
+                    }
+                });
+            }
+        }
+    }
+
+    public boolean run(boolean useAxe, boolean breakShield){
+
+        if(mc.player == null){
+            return false;
         }
 
-        if (isKeyDown(config.triggerKey)) {
-            attacked = false;
-            return;
-        }
-        if (mc.hitResult == null) {
-            return;
+        if(mc.hitResult == null){
+            return false;
         }
 
-        if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
-            return;
+        if(mc.hitResult.getType() != HitResult.Type.ENTITY){
+            return false;
         }
-
-        if (attacked && !config.autoHit) {//Only check for cooldown if auto hit is enabled
-            return;
-        } else if (mc.player.getAttackStrengthScale((float) 0) != 1) {
-            return;
-        }
-
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         if (AttackRange.canHit(entity)) {
-            //Find position of axe, mace and mace
+            //Find position of axe, sword and mace
             //Should only run when inventory is updated ideally
             int axe = -1;
             int sword = -1;
@@ -114,14 +101,14 @@ public class BreachSwap implements Module {
             }
 
             if (mace == -1) {
-                return;
+                return false;
             }
 
             if (axe == -1 && sword == -1) {
-                return;
+                return false;
             }
 
-            if (config.useAxe) {//Prefer Axe to sword
+            if (useAxe) {//Prefer Axe to sword
                 if (axe != -1) {
                     weapon = axe;
                 } else {
@@ -135,35 +122,45 @@ public class BreachSwap implements Module {
                 }
             }
 
-
-            if (config.breakShield) {
+            if (breakShield) {
                 boolean isUsingShield = false;
                 if (entity instanceof LivingEntity living) {
-                    if(living.isBlocking()) {
-                        Vec3 targetLookAngle = living.getViewVector(partialTicks);
-                        Vec3 playerAngle = mc.player.getEyePosition(partialTicks).subtract(living.getEyePosition(partialTicks)).normalize();
+                    if (living.isBlocking()) {
+                        Vec3 targetLookAngle = living.getLookAngle();
+                        Vec3 playerAngle = mc.player.getEyePosition().subtract(living.getEyePosition()).normalize();
                         double dotProduct = targetLookAngle.dot(playerAngle);
                         isUsingShield = dotProduct < 0;
                     }
                 }
 
-
                 if (isUsingShield) {
-
                     if (axe != -1) {
                         inventory.setSelectedSlot(axe);
                         mc.gameMode.attack(mc.player, entity);
                         mc.player.swing(InteractionHand.MAIN_HAND);
                     }
                 }
-
             }
 
-            attacked = true;
             inventory.setSelectedSlot(mace);
             mc.gameMode.attack(mc.player, entity);
             mc.player.swing(InteractionHand.MAIN_HAND);
             inventory.setSelectedSlot(weapon);
+        }
+
+        return true;
+    }
+
+
+    private void onClientTickEnd(){
+        BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
+        if(config.isEnabled()){
+            if(mc.player == null){return;}
+
+            if(mc.player.getAttackStrengthScale(0) != 1){
+                return;
+            }
+            instance.run(config.useAxe, config.breakShield);
         }
     }
 }
