@@ -93,7 +93,7 @@ module({
     name: 'Breach Swap',
     component: 'BreachSwap',
     path: 'breach-swap',
-    tags: ['auto', 'attack']
+    tags: ['auto', 'attack', 'breach', 'mace', 'swap']
 });
 module({
     group: 'automation',

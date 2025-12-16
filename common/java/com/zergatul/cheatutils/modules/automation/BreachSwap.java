@@ -6,7 +6,6 @@ import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,7 +27,7 @@ public class BreachSwap implements Module {
     }
 
 
-    public boolean handling;
+    private boolean handling;
 
     public void onBeforeAttack(BeforeAttackEvent event) {
         if (handling) {
@@ -40,6 +39,7 @@ public class BreachSwap implements Module {
             event.cancel();
         }
     }
+
     public boolean attack(boolean useAxe, boolean breakShield) {
         handling = true;
         boolean returnVal = run(useAxe, breakShield);
@@ -48,26 +48,21 @@ public class BreachSwap implements Module {
     }
 
     private boolean run(boolean useAxe, boolean breakShield) {
-        handling = true;
         if (mc.player == null) {
-            handling = false;
             return false;
         }
 
         if (mc.hitResult == null) {
-            handling = false;
             return false;
         }
 
         if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
-            handling = false;
             return false;
         }
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         double reach = mc.player.entityInteractionRange();
         if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) {
-            handling = false;
             return false;
         }
         //Find position of axe, sword and mace
@@ -88,12 +83,10 @@ public class BreachSwap implements Module {
         }
 
         if (mace == -1) {
-            handling = false;
             return false;
         }
 
         if (axe == -1 && sword == -1) {
-            handling = false;
             return false;
         }
 
@@ -115,20 +108,21 @@ public class BreachSwap implements Module {
             boolean isUsingShield = false;
             if (entity instanceof LivingEntity living) {
                 if (living.isBlocking()) {
+                    // Calculate if target is looking at us
+                    // Shields only block a 180 degree slice of a sphere
                     Vec3 targetLookAngle = living.getLookAngle();
                     Vec3 playerAngle = mc.player.getEyePosition().subtract(living.getEyePosition()).normalize();
                     double dotProduct = targetLookAngle.dot(playerAngle);
-                    isUsingShield = dotProduct < 0;
+                    isUsingShield = dotProduct < 0; // Uses A→.B→ / |A|*|B| = cos(ʘ) since |A| and |B| = 1, we are essentially comparing value of cos(ʘ)
+                    //Cos 90 = 0, cos(0) to cos(90) is all positive, hence if cos(x) is negative, we don't need to break shield since it will not block player attack
                 }
             }
 
 
-            if (isUsingShield) {
-                if (axe != -1) {
+            if (isUsingShield && axe != -1) {
                     inventory.setSelectedSlot(axe);
                     mc.gameMode.attack(mc.player, entity);
                     mc.player.swing(InteractionHand.MAIN_HAND);
-                }
             }
         }
 
@@ -137,7 +131,6 @@ public class BreachSwap implements Module {
         mc.player.swing(InteractionHand.MAIN_HAND);
         inventory.setSelectedSlot(weapon);
 
-        handling = false;
         return true;
 
     }

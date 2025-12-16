@@ -108,12 +108,6 @@ public class EventsScripting implements Module {
             }
         });
 
-        Events.BeforeAttack.add(event -> {
-           if(!canTrigger()) {
-                return;
-           }
-        });
-
         Events.ClientPlayerLoggingIn.add(connection -> {
             if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled && !onJoinServer.isEmpty()) {
                 String address = connection == null ? "" : connection.getRemoteAddress().toString();
