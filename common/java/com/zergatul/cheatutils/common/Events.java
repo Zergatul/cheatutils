@@ -74,6 +74,7 @@ public class Events {
     public static final SimpleEventHandler PostRenderTooltip = new SimpleEventHandler();
     public static final ParameterizedEventHandler<ScreenRenderEvent> AfterScreenRendered = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<SendChatEvent> SendChat = new CancelableEventHandler<>();
+    public static final CancelableEventHandler<BeforeAttackEvent> BeforeAttack = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<Entity> EntityInteract = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockPos> BeforeInstaMine = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler WindowResize = new SimpleEventHandler();

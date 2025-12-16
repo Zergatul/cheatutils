@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -73,13 +74,7 @@ public abstract class MixinMultiPlayerGameMode {
 
     @Inject(at = @At("HEAD"), method = "attack", cancellable = true)
     private void onAttack(Player player, Entity entity, CallbackInfo ci) {
-        BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
-        if (config.enabled && BreachSwap.instance.handling) {
-            BreachSwap.instance.handling = false;
-            BreachSwap.instance.run(config.useAxe, config.breakShield);
-            BreachSwap.instance.handling = true;
-            ci.cancel();
-        }
+        Events.BeforeAttack.trigger(new BeforeAttackEvent(ci));
     }
 
 }

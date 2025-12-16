@@ -1,7 +1,12 @@
 package com.zergatul.cheatutils.modules.automation;
 
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
+import com.zergatul.cheatutils.configs.BreachSwapConfig;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,28 +23,44 @@ public class BreachSwap implements Module {
     private final Minecraft mc = Minecraft.getInstance();
 
     private BreachSwap() {
-        handling = true;
+        Events.BeforeAttack.add(this::onBeforeAttack);
+        handling = false;
     }
+
 
     public boolean handling;
 
-    public boolean run(boolean useAxe, boolean breakShield) {
+    public void onBeforeAttack() {
+        if (handling) {
+            return;
+        }
+        BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
+        if (config.enabled) {
+            run(config.useAxe, config.breakShield);
+        }
+    }
 
+    public boolean run(boolean useAxe, boolean breakShield) {
+        handling = true;
         if (mc.player == null) {
+            handling = false;
             return false;
         }
 
         if (mc.hitResult == null) {
+            handling = false;
             return false;
         }
 
         if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
+            handling = false;
             return false;
         }
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         double reach = mc.player.entityInteractionRange();
         if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) {
+            handling = false;
             return false;
         }
         //Find position of axe, sword and mace
@@ -60,10 +81,12 @@ public class BreachSwap implements Module {
         }
 
         if (mace == -1) {
+            handling = false;
             return false;
         }
 
         if (axe == -1 && sword == -1) {
+            handling = false;
             return false;
         }
 
@@ -106,6 +129,8 @@ public class BreachSwap implements Module {
         mc.gameMode.attack(mc.player, entity);
         mc.player.swing(InteractionHand.MAIN_HAND);
         inventory.setSelectedSlot(weapon);
+
+        handling = false;
         return true;
 
     }
