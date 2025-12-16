@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.hacks.AutoCriticals;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -35,14 +36,14 @@ public class BreachSwap implements Module {
         }
         BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
         if (config.enabled) {
-            attack(config.useAxe, config.breakShield);
+            instance.attack(config.useAxe, config.breakShield);
             event.cancel();
         }
     }
 
     public boolean attack(boolean useAxe, boolean breakShield) {
         handling = true;
-        boolean returnVal = run(useAxe, breakShield);
+        boolean returnVal = instance.run(useAxe, breakShield);
         handling = false;
         return returnVal;
     }
@@ -113,16 +114,17 @@ public class BreachSwap implements Module {
                     Vec3 targetLookAngle = living.getLookAngle();
                     Vec3 playerAngle = mc.player.getEyePosition().subtract(living.getEyePosition()).normalize();
                     double dotProduct = targetLookAngle.dot(playerAngle);
-                    isUsingShield = dotProduct < 0; // Uses A→.B→ / |A|*|B| = cos(ʘ) since |A| and |B| = 1, we are essentially comparing value of cos(ʘ)
-                    //Cos 90 = 0, cos(0) to cos(90) is all positive, hence if cos(x) is negative, we don't need to break shield since it will not block player attack
+                    isUsingShield = dotProduct >= 0;
                 }
             }
 
 
             if (isUsingShield && axe != -1) {
-                    inventory.setSelectedSlot(axe);
-                    mc.gameMode.attack(mc.player, entity);
-                    mc.player.swing(InteractionHand.MAIN_HAND);
+                AutoCriticals.instance.skipAttack();
+                inventory.setSelectedSlot(axe);
+                mc.gameMode.attack(mc.player, entity);
+                mc.player.swing(InteractionHand.MAIN_HAND);
+
             }
         }
 
