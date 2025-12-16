@@ -73,7 +73,6 @@ public abstract class MixinMultiPlayerGameMode {
 
     @Inject(at = @At("HEAD"), method = "attack", cancellable = true)
     private void onAttack(Player player, Entity entity, CallbackInfo ci) {
-        Root.debug.write("Ran 'OnAttack'");
         if(Events.BeforeAttack.trigger(new BeforeAttackEvent())){
             ci.cancel();
         }

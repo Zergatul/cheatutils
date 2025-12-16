@@ -109,8 +109,8 @@ public class EventsScripting implements Module {
         });
 
         Events.BeforeAttack.add(event -> {
-           if(canTrigger()) {
-                
+           if(!canTrigger()) {
+                return;
            }
         });
 
