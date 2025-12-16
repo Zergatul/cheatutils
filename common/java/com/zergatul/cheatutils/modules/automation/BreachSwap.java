@@ -30,17 +30,24 @@ public class BreachSwap implements Module {
 
     public boolean handling;
 
-    public void onBeforeAttack() {
+    public void onBeforeAttack(BeforeAttackEvent event) {
         if (handling) {
             return;
         }
         BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
         if (config.enabled) {
-            run(config.useAxe, config.breakShield);
+            attack(config.useAxe, config.breakShield);
+            event.cancel();
         }
     }
+    public boolean attack(boolean useAxe, boolean breakShield) {
+        handling = true;
+        boolean returnVal = run(useAxe, breakShield);
+        handling = false;
+        return returnVal;
+    }
 
-    public boolean run(boolean useAxe, boolean breakShield) {
+    private boolean run(boolean useAxe, boolean breakShield) {
         handling = true;
         if (mc.player == null) {
             handling = false;

@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.scripting;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -109,7 +110,9 @@ public class EventsScripting implements Module {
 
         Events.BeforeAttack.add(event -> {
            if(canTrigger()) {
-
+                if(Events.BeforeAttack.trigger(new BeforeAttackEvent(event))) {
+                    event.cancel();
+                }
            }
         });
 
