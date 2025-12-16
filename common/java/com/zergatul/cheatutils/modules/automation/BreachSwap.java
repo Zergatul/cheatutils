@@ -28,7 +28,7 @@ public class BreachSwap implements Module {
     }
 
 
-    private boolean handling;
+    private static boolean handling;
 
     public void onBeforeAttack(BeforeAttackEvent event) {
         if (handling) {
