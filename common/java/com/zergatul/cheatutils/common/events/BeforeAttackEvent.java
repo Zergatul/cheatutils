@@ -4,7 +4,7 @@ public class BeforeAttackEvent implements CancelableEvent {
 
     private boolean canceled;
 
-    public BeforeAttackEvent(BeforeAttackEvent event){
+    public BeforeAttackEvent(){
         canceled = false;
     }
 

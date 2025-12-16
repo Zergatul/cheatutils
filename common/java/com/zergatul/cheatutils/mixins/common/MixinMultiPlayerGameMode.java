@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FastBreakConfig;
+import com.zergatul.cheatutils.scripting.Root;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -72,6 +73,7 @@ public abstract class MixinMultiPlayerGameMode {
 
     @Inject(at = @At("HEAD"), method = "attack", cancellable = true)
     private void onAttack(Player player, Entity entity, CallbackInfo ci) {
+        Root.debug.write("Ran 'OnAttack'");
         if(Events.BeforeAttack.trigger(new BeforeAttackEvent())){
             ci.cancel();
         }

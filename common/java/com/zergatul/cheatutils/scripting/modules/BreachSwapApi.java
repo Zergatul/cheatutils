@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.scripting.ApiVisibility;
 public class BreachSwapApi extends ModuleApi<BreachSwapConfig> {
     @ApiVisibility(ApiType.ACTION)
     public void attack(boolean useAxe, boolean breakShield) {
-        BreachSwap.instance.run(useAxe, breakShield);
+        BreachSwap.instance.attack(useAxe, breakShield);
     }
 
     @Override
