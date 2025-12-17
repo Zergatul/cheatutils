@@ -6,13 +6,9 @@ import com.zergatul.cheatutils.configs.AutoCriticalsConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class AutoCriticals {
 
@@ -57,9 +53,6 @@ public class AutoCriticals {
 
             if (mc.player.isSprinting()) {
                 mc.player.setSprinting(false);
-                mc.execute(() -> {
-                    mc.player.setSprinting(true);
-                });
             }
             if (mc.player.fallDistance > 0.1D || mc.player.isFallFlying()) {//If player already falling
                 return;
