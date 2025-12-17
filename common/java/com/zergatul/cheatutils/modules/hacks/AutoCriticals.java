@@ -52,7 +52,7 @@ public class AutoCriticals {
                 return;
             }
 
-            if (mc.player.fallDistance > 0.1D || mc.player.isFallFlying()) {//If player already falling
+            if (mc.player.fallDistance != 0 || mc.player.isFallFlying()) {//If player already falling
                 return;
             }
 
