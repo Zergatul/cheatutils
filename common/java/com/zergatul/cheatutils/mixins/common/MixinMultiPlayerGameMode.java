@@ -77,7 +77,7 @@ public abstract class MixinMultiPlayerGameMode {
             ci.cancel();
         }
     }
-    @Inject(at = @At("HEAD"), method = "attack", cancellable = true)
+    @Inject(at = @At("RETURN"), method = "attack", cancellable = true)
     private void AfterAttack(Player player, Entity entity, CallbackInfo ci) {
         if (Events.AfterAttack.trigger(new AfterAttackEvent())) {
             ci.cancel();

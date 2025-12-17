@@ -27,7 +27,6 @@ public class AutoCriticals {
         Events.BeforeAttack.add(this::onBeforeAttack);
     }
 
-
     private void onBeforeAttack(BeforeAttackEvent event) {
         AutoCriticalsConfig config = ConfigStore.instance.getConfig().autoCriticalsConfig;
 
@@ -45,15 +44,14 @@ public class AutoCriticals {
                 return;
             }
 
-
             if (config.onlyOnGround && !mc.player.onGround()) {
                 return;
             }
 
-
-            if (mc.player.isSprinting()) {
-                mc.player.setSprinting(false);
+            if (mc.player.isSprinting()) {// This will not critical anyways, so don't interfere
+                return;
             }
+
             if (mc.player.fallDistance > 0.1D || mc.player.isFallFlying()) {//If player already falling
                 return;
             }
