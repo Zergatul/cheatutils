@@ -110,11 +110,12 @@ public class BreachSwap implements Module {
             if (entity instanceof LivingEntity living) {
                 if (living.isBlocking()) {
                     // Calculate if target is looking at us
-                    // Shields only block a 180 degree slice of a sphere
-                    Vec3 targetLookAngle = living.getLookAngle();
-                    Vec3 playerAngle = mc.player.getEyePosition().subtract(living.getEyePosition()).normalize();
-                    double dotProduct = targetLookAngle.dot(playerAngle);
-                    isUsingShield = dotProduct >= 0;
+                    // Shields only block a 180 degree slice of a cylinder
+                   Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
+                   Vec3 player = mc.player.position().subtract(living.position());
+                   player = (new Vec3(player.x, 0D, player.z)).normalize();
+                   double dotProduct = player.dot(shield);
+                   isUsingShield = dotProduct >= 0;
                 }
             }
 
