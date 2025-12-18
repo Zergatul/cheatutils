@@ -7,15 +7,15 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.hacks.AutoCriticals;
 import net.minecraft.client.Minecraft;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class BreachSwap implements Module {
@@ -36,8 +36,9 @@ public class BreachSwap implements Module {
         }
         BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
         if (config.enabled) {
-            instance.attack(config.useAxe, config.breakShield);
-            event.cancel();
+            if (instance.attack(config.useAxe, config.breakShield)) {
+                event.cancel();
+            }
         }
     }
 
@@ -111,11 +112,11 @@ public class BreachSwap implements Module {
                 if (living.isBlocking()) {
                     // Calculate if target is looking at us
                     // Shields only block a 180 degree slice of a cylinder
-                   Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
-                   Vec3 player = mc.player.position().subtract(living.position());
-                   player = (new Vec3(player.x, 0D, player.z)).normalize();
-                   double dotProduct = player.dot(shield);
-                   isUsingShield = dotProduct >= 0;
+                    Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
+                    Vec3 player = mc.player.position().subtract(living.position());
+                    player = (new Vec3(player.x, 0D, player.z)).normalize();
+                    double dotProduct = player.dot(shield);
+                    isUsingShield = dotProduct >= 0;
                 }
             }
 
