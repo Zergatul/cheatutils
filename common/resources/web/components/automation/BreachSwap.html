@@ -16,6 +16,14 @@
                 <switch-checkbox v-model="config.breakShield" @change="update()">Break shield automatically
                 </switch-checkbox>
             </div>
+            <div class="section-description">
+                Use Axe option tells module to prefer using axe or sword.
+                Module always chooses valid weapon closest to the right of the taskbar.<br>
+                If the preferred weapon is not in hotbar, module uses the other weapon if available.<br>
+                If no weapons are present or no mace (with breach) is present, module does nothing<br>
+                Break Shield option allows module to automatically break a shield if your attack would be blocked by its shield.
+                This allows you to do damage while falling, even if target uses their shield.
+            </div>
         </fieldset>
     </div>
 </div>
