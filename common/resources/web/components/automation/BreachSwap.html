@@ -17,12 +17,20 @@
                 </switch-checkbox>
             </div>
             <div class="section-description">
+                <br>
                 Use Axe option tells module to prefer using axe or sword.
                 Module always chooses valid weapon closest to the right of the taskbar.<br>
                 If the preferred weapon is not in hotbar, module uses the other weapon if available.<br>
+                Example: When "Prefer Axe" option is true but you do not have an axe in the hotbar, the module will
+                automatically use a sword instead.<br>
                 If no weapons are present or no mace (with breach) is present, module does nothing<br>
-                Break Shield option allows module to automatically break a shield if your attack would be blocked by its shield.
+                Break Shield option allows module to automatically break a shield if your attack would be blocked by its
+                shield.
                 This allows you to do damage while falling, even if target uses their shield.
+                <br>
+                <br>
+                Module can also be run from code. Here is a simple example to use with keybinds:<br>
+                <pre>breachSwap.attack(boolean UseAxe, boolean breakShield)</pre>
             </div>
         </fieldset>
     </div>
