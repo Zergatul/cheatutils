@@ -1,71 +1,67 @@
 package com.zergatul.cheatutils.modules.hacks;
 
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
+import com.zergatul.cheatutils.configs.AutoCriticalsConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class AutoCriticals {
 
     public static final AutoCriticals instance = new AutoCriticals();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private List<ServerboundInteractPacket> processed = new ArrayList<>();
+    private boolean skip;
+
+    public void skipAttack() {
+        skip = true;
+    }
+
 
     private AutoCriticals() {
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+        skip = false;
+        Events.BeforeAttack.add(this::onBeforeAttack);
     }
 
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (ConfigStore.instance.getConfig().autoCriticalsConfig.enabled) {
-            if (args.packet instanceof ServerboundInteractPacket packet) {
-                if (processed.contains(packet)) {
-                    processed.remove(packet);
-                    return;
-                }
+    private void onBeforeAttack(BeforeAttackEvent event) {
+        AutoCriticalsConfig config = ConfigStore.instance.getConfig().autoCriticalsConfig;
 
-                packet.dispatch(new ServerboundInteractPacket.Handler() {
-                    @Override
-                    public void onInteraction(InteractionHand p_179643_) {
-
-                    }
-
-                    @Override
-                    public void onInteraction(InteractionHand p_179644_, Vec3 p_179645_) {
-
-                    }
-
-                    @Override
-                    public void onAttack() {
-                        if (ConfigStore.instance.getConfig().autoCriticalsConfig.onlyOnGround && !mc.player.onGround()) {
-                            return;
-                        }
-
-                        args.skip = true;
-                        processed.add(packet);
-
-                        double x = mc.player.getX();
-                        double y = mc.player.getY();
-                        double z = mc.player.getZ();
-
-                        sendPositionPacket(x, y + 0.0625D, z, true);
-                        sendPositionPacket(x, y, z, false);
-                        sendPositionPacket(x, y + 1.1E-5D, z, false);
-                        sendPositionPacket(x, y, z, false);
-                        NetworkPacketsController.instance.sendPacket(packet);
-                    }
-                });
-            }
+        //This needs to come before enable check, else it will queue this for future situation incorrectly
+        if (skip) {
+            skip = false;
+            return;
         }
-    }
 
-    private void sendPositionPacket(double x, double y, double z, boolean isOnGround) {
-        NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(x, y, z, isOnGround, false));
+        if (config.enabled) {
+            if (mc.level == null) {
+                return;
+            }
+            if (mc.player == null) {
+                return;
+            }
+
+            if (config.onlyOnGround && !mc.player.onGround()) {
+                return;
+            }
+
+            if (mc.player.isSprinting()) {// This will not critical anyways, so don't interfere
+                return;
+            }
+
+            if (mc.player.fallDistance != 0 || mc.player.isFallFlying()) {//If player already falling
+                return;
+            }
+
+            Vec3 PrevPos = mc.player.position();
+
+            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false));
+            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
+            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false));
+            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
+        }
     }
 }

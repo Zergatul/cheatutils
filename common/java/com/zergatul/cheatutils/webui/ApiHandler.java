@@ -689,7 +689,17 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().autoAttackConfig = config;
             }
         });
+        apis.add(new SimpleConfigApi<>("breach-swap", BreachSwapConfig.class) {
+            @Override
+            protected BreachSwapConfig getConfig() {
+                return ConfigStore.instance.getConfig().breachSwapConfig;
+            }
 
+            @Override
+            protected void setConfig(BreachSwapConfig config) {
+                ConfigStore.instance.getConfig().breachSwapConfig = config;
+            }
+        });
         apis.add(new SimpleConfigApi<>("no-weather", NoWeatherConfig.class) {
             @Override
             protected NoWeatherConfig getConfig() {
@@ -989,11 +999,9 @@ public class ApiHandler implements HttpHandler {
                     processDelete(parts, api.get(), exchange);
                     break;
             }
-        }
-        catch (ApiException e) {
+        } catch (ApiException e) {
             WebHelper.sendException(exchange, e.getCode(), e);
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             WebHelper.sendException(exchange, HttpResponseCodes.INTERNAL_SERVER_ERROR, e);
         }
     }

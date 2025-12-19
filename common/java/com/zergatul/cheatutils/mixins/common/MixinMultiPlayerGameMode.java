@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FastBreakConfig;
@@ -68,4 +69,12 @@ public abstract class MixinMultiPlayerGameMode {
             this.destroyDelay = 0;
         }
     }
+
+    @Inject(at = @At("HEAD"), method = "attack", cancellable = true)
+    private void onAttack(Player player, Entity entity, CallbackInfo ci) {
+        if (Events.BeforeAttack.trigger(new BeforeAttackEvent())) {
+            ci.cancel();
+        }
+    }
 }
+
