@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,11 +23,15 @@ public abstract class MixinEntityRenderer {
         if (!this.shouldShowName(entity)) {
             return false;
         }
-        for (EntityEspConfig entityConfig : ConfigStore.instance.getConfig().entities.configs) {
-            if (entityConfig.enabled && entityConfig.drawTitles && entityConfig.isValidEntity(entity)) {
-                return false;
+
+        if (EspGlobal.enabled) {
+            for (EntityEspConfig entityConfig : ConfigStore.instance.getConfig().entities.configs) {
+                if (entityConfig.enabled && entityConfig.drawTitles && entityConfig.isValidEntity(entity)) {
+                    return false;
+                }
             }
         }
+
         return true;
     }
 }
