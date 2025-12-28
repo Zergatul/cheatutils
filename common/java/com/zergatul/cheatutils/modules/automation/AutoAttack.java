@@ -46,6 +46,10 @@ public class AutoAttack implements Module {
             return;
         }
 
+        if (config.limitRange && mc.hitResult.getLocation().distanceToSqr(mc.player.getEyePosition()) > config.maxRange * config.maxRange) {
+            return;
+        }
+
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         mc.gameMode.attack(mc.player, entity);
         mc.player.swing(InteractionHand.MAIN_HAND);
