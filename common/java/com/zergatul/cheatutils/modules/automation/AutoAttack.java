@@ -47,6 +47,10 @@ public class AutoAttack implements Module {
             return;
         }
 
+        if (config.limitRange && mc.hitResult.getLocation().distanceToSqr(mc.player.getEyePosition()) > config.maxRange * config.maxRange) {
+            return;
+        }
+
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         if (AttackRange.canHit(entity)) {
             mc.gameMode.attack(mc.player, entity);
