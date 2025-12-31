@@ -15,6 +15,7 @@ public class AutoAttack implements Module {
     public static final AutoAttack instance = new AutoAttack();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private int nextExtraTicks = Integer.MIN_VALUE;
 
     private AutoAttack() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
@@ -42,7 +43,9 @@ public class AutoAttack implements Module {
             return;
         }
 
-        if (mc.player.getAttackStrengthScale((float) -config.extraTicks) != 1) {
+        calculateNextExtraTicksIfRequired(config);
+
+        if (mc.player.getAttackStrengthScale(-nextExtraTicks) != 1) {
             return;
         }
 
@@ -50,8 +53,16 @@ public class AutoAttack implements Module {
             return;
         }
 
+        nextExtraTicks = Integer.MIN_VALUE;
+
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         mc.gameMode.attack(mc.player, entity);
         mc.player.swing(InteractionHand.MAIN_HAND);
+    }
+
+    private void calculateNextExtraTicksIfRequired(AutoAttackConfig config) {
+        if (nextExtraTicks == Integer.MIN_VALUE) {
+            nextExtraTicks = config.extraTicksMin + (int) Math.floor(Math.random() * (config.extraTicksMax - config.extraTicksMin + 1));
+        }
     }
 }

@@ -6,15 +6,19 @@ public class AutoAttackConfig extends ModuleConfig implements ValidatableConfig 
 
     public boolean limitRange;
     public double maxRange;
-    public double extraTicks;
+    public int extraTicksMin;
+    public int extraTicksMax;
 
     public AutoAttackConfig() {
         maxRange = 2.5;
+        extraTicksMin = 0;
+        extraTicksMax = 0;
     }
 
     @Override
     public void validate() {
         maxRange = MathUtils.clamp(maxRange, 0, 10);
-        extraTicks = MathUtils.clamp(extraTicks, -10, 10);
+        extraTicksMin = MathUtils.clamp(extraTicksMin, -10, 10);
+        extraTicksMax = MathUtils.clamp(extraTicksMax, extraTicksMin, 10);
     }
 }
