@@ -122,7 +122,6 @@ public class BreachSwap implements Module {
 
 
             if (isUsingShield && axe != -1) {
-                AutoCriticals.instance.skipAttack();
                 inventory.setSelectedSlot(axe);
                 mc.gameMode.attack(mc.player, entity);
                 mc.player.swing(InteractionHand.MAIN_HAND);

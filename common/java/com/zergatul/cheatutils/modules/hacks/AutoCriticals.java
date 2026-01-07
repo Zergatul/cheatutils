@@ -15,26 +15,13 @@ public class AutoCriticals {
     public static final AutoCriticals instance = new AutoCriticals();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private boolean skip;
-
-    public void skipAttack() {
-        skip = true;
-    }
-
 
     private AutoCriticals() {
-        skip = false;
         Events.BeforeAttack.add(this::onBeforeAttack);
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
         AutoCriticalsConfig config = ConfigStore.instance.getConfig().autoCriticalsConfig;
-
-        //This needs to come before enable check, else it will queue this for future situation incorrectly
-        if (skip) {
-            skip = false;
-            return;
-        }
 
         if (config.enabled) {
             if (mc.level == null) {
@@ -47,14 +34,15 @@ public class AutoCriticals {
             if (config.onlyOnGround && !mc.player.onGround()) {
                 return;
             }
+            // Hard Conditions not met, cannot do anything about it
+            if (!((mc.player.getAttackStrengthScale(0.5F) > 0.9F) &&
+                    (!mc.player.onClimbable()
+                            && !mc.player.isInWater() && !mc.player.isMobilityRestricted() && !mc.player.isPassenger()
+                            && mc.player.getLivingEntity().isAlive() && !mc.player.isSprinting()))
+            ) return;
 
-            if (mc.player.isSprinting()) {// This will not critical anyways, so don't interfere
-                return;
-            }
-
-            if (mc.player.fallDistance != 0 || mc.player.isFallFlying()) {//If player already falling
-                return;
-            }
+            // Soft Conditions we can cheat to validate, do nothing if its already valid case
+            if (!(mc.player.fallDistance > 0 && !mc.player.onGround())) return;
 
             Vec3 PrevPos = mc.player.position();
 
