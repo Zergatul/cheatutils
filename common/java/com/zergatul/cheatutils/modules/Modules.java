@@ -63,6 +63,7 @@ public class Modules {
         register(Fog.instance);
         register(AutoAttack.instance);
         register(BreachSwap.instance);
+        register(SpearRange.instance);
         register(Exec.instance);
         register(VillagerRoller.instance);
         register(AutoHotbar.instance);

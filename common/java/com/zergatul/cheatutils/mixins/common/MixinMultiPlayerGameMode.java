@@ -76,5 +76,9 @@ public abstract class MixinMultiPlayerGameMode {
             ci.cancel();
         }
     }
+    @Inject(at = @At("TAIL"), method = "attack", cancellable = false)
+    private void afterAttack(Player player, Entity entity, CallbackInfo ci){
+        Events.AfterAttack.trigger();
+    }
 }
 

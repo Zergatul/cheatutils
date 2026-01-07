@@ -20,6 +20,13 @@ const module = (params) => {
 
 module({
     group: 'automation',
+    name: 'Spear Range',
+    component: 'SpearRange',
+    path: 'spear-range',
+    tags: ['spear', 'reach', 'range']
+});
+module({
+    group: 'automation',
     name: 'Auto Disconnect',
     component: 'AutoDisconnect',
     path: 'auto-disconnect',

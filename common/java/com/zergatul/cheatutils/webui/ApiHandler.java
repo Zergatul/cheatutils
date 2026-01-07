@@ -712,6 +712,18 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
+        apis.add(new SimpleConfigApi<>("spear-range", SpearRangeConfig.class) {
+            @Override
+            protected SpearRangeConfig getConfig() {
+                return ConfigStore.instance.getConfig().spearRangeConfig;
+            }
+
+            @Override
+            protected void setConfig(SpearRangeConfig config) {
+                ConfigStore.instance.getConfig().spearRangeConfig = config;
+            }
+        });
+
         apis.add(new SimpleConfigApi<>("fake-weather", FakeWeatherConfig.class) {
             @Override
             protected FakeWeatherConfig getConfig() {
