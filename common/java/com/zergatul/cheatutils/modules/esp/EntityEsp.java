@@ -214,6 +214,8 @@ public class EntityEsp implements Module {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
+        MainFrameBuffer.bind();
+
         LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
         ThickLineRenderer thickLineRenderer = RenderUtilities.instance.getThickLineRenderer();
 
@@ -293,8 +295,6 @@ public class EntityEsp implements Module {
 
         drawOverlays(event);
         drawOutlines(event);
-
-        TextureStateTracker.restore();
     }
 
     private void drawOverlays(RenderWorldLastEvent event) {

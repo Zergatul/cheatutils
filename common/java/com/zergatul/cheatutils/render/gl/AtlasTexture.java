@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.render.gl;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.render.gl.images.ImageSource;
 
 import java.util.ArrayList;
@@ -90,14 +91,12 @@ public class AtlasTexture {
         lines = new ArrayList<>();
         lines.add(new Line(0, 0, 0));
 
-        GlStateTracker.save(GlStateTracker.FRAMEBUFFER);
-
-        int srcFBO = glGenFramebuffers();
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
+        int srcFBO = GlStateManager.glGenFramebuffers();
+        GlStateManager._glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
         glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, oldTexture.getId(), 0);
 
-        int destFBO = glGenFramebuffers();
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destFBO);
+        int dstFBO = GlStateManager.glGenFramebuffers();
+        GlStateManager._glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
 
         for (Line line : oldLines) {
@@ -114,11 +113,8 @@ public class AtlasTexture {
             }
         }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDeleteFramebuffers(srcFBO);
-        glDeleteFramebuffers(destFBO);
-
-        GlStateTracker.restore(GlStateTracker.FRAMEBUFFER);
+        GlStateManager._glDeleteFramebuffers(srcFBO);
+        GlStateManager._glDeleteFramebuffers(dstFBO);
     }
 
     private void copyToLine(Line line, Item item) {

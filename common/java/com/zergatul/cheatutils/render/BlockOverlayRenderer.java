@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.render;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.gl.BlockOverlayBufferProgram;
-import com.zergatul.cheatutils.render.gl.FrameBuffer;
 import com.zergatul.cheatutils.render.gl.OverlayDrawProgram;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL30;
@@ -69,6 +68,8 @@ public class BlockOverlayRenderer {
     public void end(float red, float green, float blue, float alpha) {
         renderInFrameBuffer();
 
+        MainFrameBuffer.bind();
+
         // set line settings
         GlStateManager._enableBlend();
         GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
@@ -124,8 +125,6 @@ public class BlockOverlayRenderer {
     }
 
     private void renderInFrameBuffer() {
-        FrameBuffer.push();
-
         // set draw settings
         GlStateManager._enableBlend();
         GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
@@ -137,8 +136,6 @@ public class BlockOverlayRenderer {
         GL30.glClearColor(0, 0, 0, 0);
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
         bufferProgram.draw(event.getMvp());
-
-        FrameBuffer.pop();
     }
 
     private void createGlObjectsIfRequired() {

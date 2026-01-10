@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.render.gl;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL33;
 
 public class OutlineDrawProgram extends Program {
 
@@ -37,9 +39,12 @@ public class OutlineDrawProgram extends Program {
         buffer.upload();
 
         GL30.glUseProgram(id);
-        GL30.glUniform1i(textureUniform, 0);
-        GL30.glActiveTexture(GL30.GL_TEXTURE0);
+
+        GlStateManager._activeTexture(GL30.GL_TEXTURE0 + unit);
         fb.bindTexture();
+        GL33.glBindSampler(unit, Sampler.DEFAULT.getId());
+
+        GL30.glUniform1i(textureUniform, unit);
         GL30.glUniform1f(pixelWidthUniform, fb.getPixelWidth());
         GL30.glUniform1f(pixelHeightUniform, fb.getPixelHeight());
         GL30.glUniform4f(overlayColorUniform, r, g, b, a);
@@ -47,10 +52,6 @@ public class OutlineDrawProgram extends Program {
         buffer.VAO.bind();
         GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, buffer.vertices());
         buffer.VAO.unbind();
-    }
-
-    public void unbind() {
-        GL30.glBindTexture(GL30.GL_TEXTURE_2D, 0);
     }
 
     @Override

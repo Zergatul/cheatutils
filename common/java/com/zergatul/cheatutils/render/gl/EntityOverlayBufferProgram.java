@@ -1,8 +1,9 @@
 package com.zergatul.cheatutils.render.gl;
 
-import com.zergatul.cheatutils.render.TextureStateTracker;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL33;
 
 public class EntityOverlayBufferProgram extends Program {
 
@@ -27,12 +28,13 @@ public class EntityOverlayBufferProgram extends Program {
         buffer.upload();
 
         GL30.glUseProgram(id);
-        GL30.glUniformMatrix4fv(mvpUniform, false, mvp.get(new float[16]));
-        GL30.glUniform1i(textureUniform, 0);
-        GL30.glActiveTexture(GL30.GL_TEXTURE0);
-        GL30.glBindTexture(GL30.GL_TEXTURE_2D, textureId);
 
-        TextureStateTracker.setTextureMinFilter(textureId, GL30.GL_NEAREST);
+        GlStateManager._activeTexture(GL30.GL_TEXTURE0 + unit);
+        GlStateManager._bindTexture(textureId);
+        GL33.glBindSampler(unit, Sampler.DEFAULT.getId());
+
+        GL30.glUniformMatrix4fv(mvpUniform, false, mvp.get(new float[16]));
+        GL30.glUniform1i(textureUniform, unit);
 
         buffer.VAO.bind();
         GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, buffer.vertices());

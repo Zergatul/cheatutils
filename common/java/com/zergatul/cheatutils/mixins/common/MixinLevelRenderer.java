@@ -9,8 +9,6 @@ import com.zergatul.cheatutils.extensions.EntityRenderStateExtension;
 import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
@@ -19,6 +17,7 @@ import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.GL20;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -73,11 +72,9 @@ public abstract class MixinLevelRenderer {
             boolean b,
             CallbackInfo info
     ) {
-        GlStateTracker.save();
-        MainFrameBuffer.enter();
+        int program = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(camera, pose, projectionWithBob, delta));
-        MainFrameBuffer.exit();
-        GlStateTracker.restore();
+        GL20.glUseProgram(program);
     }
 
     @Unique

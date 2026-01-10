@@ -11,18 +11,14 @@ import static com.zergatul.cheatutils.render.GlHelper.*;
 
 public class MainFrameBuffer {
 
-    private static int lastFrameBufferObject;
+    public static void bind() {
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, getFBO());
+    }
 
-    public static void enter() {
+    private static int getFBO() {
         RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
         GpuTexture colorTexture = target.getColorTexture();
         GpuTexture depthTexture = target.getDepthTexture();
-        lastFrameBufferObject = getGlTexture(colorTexture).getFbo(getGlDevice(RenderSystem.getDevice()).directStateAccess(), getGlTexture(depthTexture));
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, lastFrameBufferObject);
-    }
-
-    public static void exit() {
-        // TODO: the same frame buffer restored???
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, lastFrameBufferObject);
+        return getGlTexture(colorTexture).getFbo(getGlDevice(RenderSystem.getDevice()).directStateAccess(), getGlTexture(depthTexture));
     }
 }

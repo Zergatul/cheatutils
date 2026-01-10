@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.render.gl;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.render.gl.images.ImageSource;
 
 import static org.lwjgl.opengl.GL30.*;
@@ -20,15 +21,9 @@ public class Texture {
     public static Texture empty(int width, int height) {
         int id = glGenTextures();
 
-        glActiveTexture(GL_TEXTURE0);
-        int prevTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
-        glBindTexture(GL_TEXTURE_2D, id);
+        GlStateManager._activeTexture(GL_TEXTURE0);
+        GlStateManager._bindTexture(id);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        if (prevTexture != id) {
-            glBindTexture(GL_TEXTURE_2D, prevTexture);
-        }
 
         return new Texture(id, width, height);
     }
@@ -51,13 +46,9 @@ public class Texture {
         glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
 
-        glActiveTexture(GL_TEXTURE0);
-        int prevTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
-        glBindTexture(GL_TEXTURE_2D, id);
+        GlStateManager._activeTexture(GL_TEXTURE0);
+        GlStateManager._bindTexture(id);
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, image.getWidth(), image.getHeight(), GL_RGBA, GL_UNSIGNED_BYTE, image.getARGB());
-        if (prevTexture != id) {
-            glBindTexture(GL_TEXTURE_2D, prevTexture);
-        }
     }
 
     public void dispose() {

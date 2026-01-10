@@ -56,13 +56,6 @@ public class Texture3dRenderer {
         program.buffer.add(z4);
         program.buffer.add(u4);
         program.buffer.add(v4);
-
-
-    }
-
-    public void end(int width, int height, int textureId) {
-        Matrix4f matrix = new Matrix4f().ortho(0, width, height, 0, -1, 1);
-        end(matrix, textureId);
     }
 
     public void end(Matrix4f matrix, int textureId) {
@@ -70,8 +63,6 @@ public class Texture3dRenderer {
         GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager._enableDepthTest();
         GlStateManager._enableCull();
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         program.draw(matrix, textureId);
     }

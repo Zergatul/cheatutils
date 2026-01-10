@@ -66,14 +66,20 @@ class CheatUtilsGradlePlugin : Plugin<Project> {
         }
 
         project.tasks.register("generateCommitsJson") {
-            val outputFile: Provider<RegularFile> = generatedResourcesDir.map { it.file("commits.json") }
+            val cuCommitProvider = ext.getCommitByPath("..")
+            val jslCommitProvider = ext.getCommitByPath("../java-scripting-language")
+
+            inputs.property("cuCommit", cuCommitProvider)
+            inputs.property("jslCommit", jslCommitProvider)
+
+            val outputFile = generatedResourcesDir.map { it.file("commits.json") }
             outputs.file(outputFile)
 
             doLast {
                 val file = outputFile.get().asFile
                 file.parentFile.mkdirs()
-                val cuCommit = ext.getCommitByPath("..").get()
-                val jslCommit = ext.getCommitByPath("../java-scripting-language").get()
+                val cuCommit = cuCommitProvider.get()
+                val jslCommit = jslCommitProvider.get()
                 file.writeText("""{"cheatutils":"$cuCommit","java-scripting-language":"$jslCommit"}""")
             }
         }

@@ -68,18 +68,11 @@ public class Texture2dRenderer {
         program.buffer.add(v3);
     }
 
-    public void end(int width, int height, int textureId) {
-        Matrix4f matrix = new Matrix4f().ortho(0, width, height, 0, -1, 1);
-        end(matrix, textureId);
-    }
-
     public void end(Matrix4f matrix, int textureId) {
         GlStateManager._enableBlend();
         GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         GlStateManager._disableDepthTest();
         GlStateManager._disableCull();
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        GlStateManager._texParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         program.draw(matrix, textureId);
     }

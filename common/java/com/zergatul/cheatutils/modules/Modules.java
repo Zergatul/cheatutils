@@ -9,12 +9,8 @@ import com.zergatul.cheatutils.font.FontBackendHolders;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
-import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
-import com.zergatul.cheatutils.modules.scripting.Containers;
-import com.zergatul.cheatutils.modules.scripting.Exec;
-import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
-import com.zergatul.cheatutils.modules.utilities.LockInputs;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.modules.scripting.*;
+import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.modules.visuals.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -88,6 +84,7 @@ public class Modules {
         register(LogoutSpots.instance);
         register(AutoTool.instance);
         register(AirPlace.instance);
+        register(ContainerSummary.instance);
 
 
         register(TickEndExecutor.instance);

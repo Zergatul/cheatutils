@@ -2,13 +2,10 @@ package com.zergatul.cheatutils.render.buffers;
 
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.Color2dRenderer;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.TextureColor2dRenderer;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import org.joml.Matrix4f;
 
 public class RenderBuffers {
@@ -40,7 +37,6 @@ public class RenderBuffers {
         }
 
         framebufferSetup.run();
-        GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
 
         if (color2d != null) {
             Color2dRenderer renderer = RenderUtilities.instance.getColor2dRenderer();
@@ -62,8 +58,6 @@ public class RenderBuffers {
                 buffer.clear();
             }
         }
-
-        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
     }
 
     private boolean isEmpty() {

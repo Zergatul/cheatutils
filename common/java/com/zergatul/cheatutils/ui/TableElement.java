@@ -94,7 +94,7 @@ public class TableElement implements Element {
     @Override
     public void render(RenderingContext context) {
         if (borderWidth > 0) {
-            MainFrameBuffer.enter();
+            MainFrameBuffer.bind();
             Color2dRenderer renderer = RenderUtilities.instance.getColor2dRenderer();
             renderer.begin();
 

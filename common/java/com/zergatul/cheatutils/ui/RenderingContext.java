@@ -1,15 +1,7 @@
 package com.zergatul.cheatutils.ui;
 
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Color2dRenderer;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
-import com.zergatul.cheatutils.render.TextureColor2dRenderer;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -34,7 +26,7 @@ public class RenderingContext {
     private List<ItemStackRenderEntry> itemStacksQueue;
 
     public RenderingContext(GuiGraphics graphics, Matrix4f matrix, int halfWidth, int halfHeight) {
-        this(graphics, matrix, halfWidth, halfHeight, RenderingContext::defaultFramebufferSetup);
+        this(graphics, matrix, halfWidth, halfHeight, MainFrameBuffer::bind);
     }
 
     public RenderingContext(GuiGraphics graphics, Matrix4f matrix, int halfWidth, int halfHeight, Runnable framebufferSetup) {
@@ -98,7 +90,6 @@ public class RenderingContext {
         buffers.render(matrix, framebufferSetup);
 
         if (itemStacksQueue != null) {
-           // GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
             graphics.pose().pushMatrix();
             for (ItemStackRenderEntry entry : itemStacksQueue) {
                 graphics.pose().identity();
@@ -111,7 +102,6 @@ public class RenderingContext {
                 graphics.renderItemDecorations(font, entry.itemStack, 0, 0);
             }
             graphics.pose().popMatrix();
-            // GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
         }
     }
 
@@ -119,10 +109,6 @@ public class RenderingContext {
         if (itemStacksQueue != null) {
             itemStacksQueue.clear();
         }
-    }
-
-    private static void defaultFramebufferSetup() {
-        MainFrameBuffer.enter();
     }
 
     private record ItemStackRenderEntry(LivingEntity entity, ItemStack itemStack, int x, int y) {}

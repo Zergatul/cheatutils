@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.render.gl.EntityOverlayBufferProgram;
-import com.zergatul.cheatutils.render.gl.FrameBuffer;
 import com.zergatul.cheatutils.render.gl.OverlayDrawProgram;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
@@ -21,18 +20,10 @@ public class EntityOverlayRenderer {
         bufferProgram.buffer.clear();
         drawProgram.buffer.clear();
 
-        FrameBuffer.push();
-
         // clear framebuffer
         FrameBuffers.get1().bind();
         GL30.glClearColor(0, 0, 0, 0);
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
-
-        // set draw settings once
-        GlStateManager._enableBlend();
-        GlStateManager._blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager._disableDepthTest();
-        GlStateManager._disableCull();
     }
 
     public void quad(
@@ -81,7 +72,7 @@ public class EntityOverlayRenderer {
     }
 
     public void end(float red, float green, float blue, float alpha) {
-        FrameBuffer.pop();
+        MainFrameBuffer.bind();
 
         // set draw settings
         GlStateManager._enableBlend();
@@ -127,7 +118,6 @@ public class EntityOverlayRenderer {
         drawProgram.buffer.add(0);
 
         drawProgram.draw(FrameBuffers.get1(), red, green, blue, alpha);
-        //drawProgram.unbind();
     }
 
     public void close() {

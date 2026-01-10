@@ -2,23 +2,16 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
+import com.zergatul.cheatutils.common.events.ContainerScreenRenderEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
-import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
 import com.zergatul.cheatutils.controllers.ContainerButtonsController;
-import com.zergatul.cheatutils.controllers.ContainerSummaryController;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.*;
-import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,9 +19,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMenu> extends Screen {
@@ -91,57 +81,15 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
-    private void onRender(GuiGraphics graphics, int slotIndex, int k, float l1, CallbackInfo info) {
-        ContainerSummaryConfig config = ConfigStore.instance.getConfig().containerSummaryConfig;
-        if (!config.enabled) {
-            return;
-        }
-
-        NonNullList<Slot> slots = this.menu.slots;
-        if (slots.isEmpty()) {
-            return;
-        }
-
-        List<ItemStack> items = new ArrayList<>();
-        if (slots.get(0).container instanceof SimpleContainer container) {
-            for (int i = 0; i < container.getContainerSize(); i++) {
-                ItemStack itemStack = container.getItem(i);
-                if (!itemStack.isEmpty()) {
-                    items.add(itemStack);
-                }
-            }
-        } else {
-            if (config.showForInventory) {
-                Screen screen = this;
-                if (screen instanceof InventoryScreen inventory) {
-                    for (Slot slot : slots) {
-                        if (slot.container instanceof ResultContainer) {
-                            continue;
-                        }
-                        items.add(slot.getItem());
-                    }
-                }
-            }
-        }
-
-        if (items.isEmpty()) {
-            return;
-        }
-
-        List<ContainerSummaryController.ItemDrawable> list = ContainerSummaryController.instance.groupItems(items);
-
-        boolean group = !Minecraft.getInstance().hasAltDown();
-
-        list.forEach(d -> d.initDraw(this.font, group));
-        List<ContainerSummaryController.ItemsColumn> columns = ContainerSummaryController.instance.split(list);
-        columns.forEach(ContainerSummaryController.ItemsColumn::calculateWidth);
-
-        int cursor = this.leftPos + this.imageWidth + 2;
-        ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
-        for (ContainerSummaryController.ItemsColumn column: columns) {
-            cursor += column.draw(graphics, this.font, renderer, this.minecraft.player, cursor, this.topPos);
-        }
+    @Inject(at = @At("TAIL"), method = "renderContents")
+    private void onAfterRenderContents(GuiGraphics graphics, int slotIndex, int p_408205_, float p_408282_, CallbackInfo ci) {
+        Events.ContainerScreenAfterRenderContents.trigger(
+                new ContainerScreenRenderEvent(
+                        (AbstractContainerScreen<?>) (Object) this,
+                        graphics,
+                        leftPos,
+                        topPos,
+                        imageWidth));
     }
 
     private void onTakeAllPress(Button button) {

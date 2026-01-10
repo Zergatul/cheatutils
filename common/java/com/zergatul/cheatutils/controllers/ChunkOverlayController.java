@@ -1,19 +1,16 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.zergatul.cheatutils.chunkoverlays.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.Texture2dRenderer;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
-import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.MouseScrollEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Matrix4f;
@@ -78,8 +75,7 @@ public class ChunkOverlayController {
             return;
         }
 
-        GlStateTracker.save();
-        MainFrameBuffer.enter();
+        MainFrameBuffer.bind();
 
         float frameTime = event.getTickDelta();
         float xp = (float) Mth.lerp(frameTime, mc.player.xo, mc.player.getX());
@@ -122,9 +118,6 @@ public class ChunkOverlayController {
         for (AbstractChunkOverlay overlay: overlays) {
             overlay.onPostDrawSegments(dimension, matrix, xp, zp, xc, zc, multiplier);
         }
-
-        MainFrameBuffer.exit();
-        GlStateTracker.restore();
     }
 
     private void onPreRenderGameOverlay(PreRenderGuiOverlayEvent event) {

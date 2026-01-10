@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.render.gl;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
@@ -26,9 +27,8 @@ public class TextureUtils {
     }
 
     public static byte[] toPng(int id) throws IOException {
-        GlStateTracker.save(GlStateTracker.TEXTURE);
+        GlStateManager._bindTexture(id);
 
-        GL30.glBindTexture(GL30.GL_TEXTURE_2D, id);
         int width = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_WIDTH);
         int height = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_HEIGHT);
         int format = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_INTERNAL_FORMAT);
@@ -55,8 +55,6 @@ public class TextureUtils {
         } else {
             throw new IOException("Pixel format is not supported.");
         }
-
-        GlStateTracker.restore(GlStateTracker.TEXTURE);
 
         return result;
     }

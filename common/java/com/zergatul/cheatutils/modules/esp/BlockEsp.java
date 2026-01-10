@@ -55,6 +55,8 @@ public class BlockEsp {
             return;
         }
 
+        MainFrameBuffer.bind();
+
         if (!customEntries.isEmpty()) {
             final float shift = 0.01f;
             Vec3 view = event.getCamera().position();

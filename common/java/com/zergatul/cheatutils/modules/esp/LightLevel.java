@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.GroupLineRenderer;
+import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.Texture3dRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
@@ -116,6 +117,8 @@ public class LightLevel implements Module {
         double xc = config.useFreeCamPosition ? view.x : mc.player.getX();
         double yc = config.useFreeCamPosition ? view.y : mc.player.getY();
         double zc = config.useFreeCamPosition ? view.z : mc.player.getZ();
+
+        MainFrameBuffer.bind();
 
         Texture3dRenderer renderer1 = RenderUtilities.instance.getTexture3dRenderer();
         renderer1.begin();

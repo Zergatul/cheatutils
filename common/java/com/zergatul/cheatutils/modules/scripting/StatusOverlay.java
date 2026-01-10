@@ -142,7 +142,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
 
         GlStateManager._colorMask(true, true, true, true);
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, FrameBuffers.get1().getFramebufferId());
+        FrameBuffers.get1().bind();
         GL30.glClearColor(0, 0, 0, 0);
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
 
@@ -268,16 +268,18 @@ public class StatusOverlay implements Module, FontBackendHolder {
 
         @Override
         public @NotNull TextureSetup textureSetup() {
-            return TextureSetup.singleTexture(new FboTextureView(new FboTexture(
-                    15,
-                    "",
-                    TextureFormat.RGBA8,
-                    FrameBuffers.get1().getWidth(),
-                    FrameBuffers.get1().getHeight(),
-                    0,
-                    1,
-                    FrameBuffers.get1().getTextureId()
-            )), RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST));
+            return TextureSetup.singleTexture(
+                    new FboTextureView(
+                            new FboTexture(
+                                    15,
+                                    "",
+                                    TextureFormat.RGBA8,
+                                    FrameBuffers.get1().getWidth(),
+                                    FrameBuffers.get1().getHeight(),
+                                    0,
+                                    1,
+                                    FrameBuffers.get1().getTextureId())),
+                    RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST));
         }
 
         @Nullable
