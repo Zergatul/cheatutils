@@ -23,11 +23,11 @@ public class SpearRange implements Module {
 
     public void onBeforeAttack(BeforeAttackEvent event) {
         if (!ConfigStore.instance.getConfig().spearRangeConfig.enabled) return;
+        prevSelectedSlot = -1;
         if (mc.player == null) return;
         if (mc.player.isSpectator()) return;
         inventory = mc.player.getInventory();
 
-        prevSelectedSlot = inventory.getSelectedSlot();
         int spear = -1;
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
@@ -39,11 +39,13 @@ public class SpearRange implements Module {
         if (spear == -1) return;
         if (spear == prevSelectedSlot) return;
 
-
+        prevSelectedSlot = inventory.getSelectedSlot();
         inventory.setSelectedSlot(spear);
     }
 
     private void onAfterAttack() {
+        if (!ConfigStore.instance.getConfig().spearRangeConfig.enabled) return;
+        if (prevSelectedSlot == -1) return;
         inventory.setSelectedSlot(prevSelectedSlot);
     }
 }

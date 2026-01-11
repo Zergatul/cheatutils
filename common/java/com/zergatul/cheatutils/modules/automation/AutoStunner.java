@@ -1,0 +1,81 @@
+package com.zergatul.cheatutils.modules.automation;
+
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
+import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.Module;
+import net.minecraft.client.Minecraft;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+
+public class AutoStunner implements Module {
+    public static final AutoStunner instance = new AutoStunner();
+    private final Minecraft mc = Minecraft.getInstance();
+    private Inventory inventory;
+    private static int prevSelectedSlot = -1;
+    int axe = -1;
+
+    AutoStunner() {
+        Events.BeforeAttack.add(this::onBeforeAttack);
+        Events.AfterAttack.add(this::onAfterAttack);
+    }
+
+    private boolean isUsingShield(Entity entity) {
+        if (entity instanceof LivingEntity living) {
+            if (living.isBlocking()) {
+                // Calculate if target is looking at us
+                // Shields only block a 180 degree slice of a cylinder
+                Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
+                Vec3 player = mc.player.position().subtract(living.position());
+                player = (new Vec3(player.x, 0D, player.z)).normalize();
+                double dotProduct = player.dot(shield);
+                return dotProduct >= 0;
+            }
+        }
+        return false;
+    }
+
+    private void onBeforeAttack(BeforeAttackEvent event) {
+        if (!ConfigStore.instance.getConfig().autoStunnerConfig.enabled) return;
+        prevSelectedSlot = -1;
+
+        if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
+            return;
+        }
+        Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
+        double reach = mc.player.entityInteractionRange();
+
+        if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) {
+            return;
+        }
+
+        if (!isUsingShield(entity)) {
+            return;
+        }
+
+        inventory = mc.player.getInventory();
+        prevSelectedSlot = inventory.getSelectedSlot();
+
+        for (int i = 0; i < 9; i++) {
+            ItemStack item = inventory.getItem(i);
+            if (item.getTags().anyMatch(tag -> tag == ItemTags.AXES)) {
+                axe = i;
+                break;
+            }
+        }
+        inventory.setSelectedSlot(axe);
+    }
+
+    private void onAfterAttack() {
+        if (!ConfigStore.instance.getConfig().autoStunnerConfig.enabled) return;
+        if (prevSelectedSlot == -1) return;
+        inventory.setSelectedSlot(prevSelectedSlot);
+    }
+
+}

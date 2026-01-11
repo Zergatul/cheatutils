@@ -17,13 +17,21 @@ const module = (params) => {
     params.componentRef = getComponent(`${params.group}/${params.component}`);
     modules[params.group][params.component] = params;
 };
-
+//Automation Modules =================
 module({
     group: 'automation',
     name: 'Spear Range',
     component: 'SpearRange',
     path: 'spear-range',
     tags: ['spear', 'reach', 'range']
+});
+
+module({
+    group: 'automation',
+    name: 'Shield breaker',
+    component: 'AutoStunner',
+    path: 'auto-stunner',
+    tags: ['stun', 'shield', 'break', 'auto']
 });
 module({
     group: 'automation',
@@ -124,6 +132,8 @@ module({
     tags: ['auto', 'tool']
 });
 
+//ESP modules ======================
+
 module({
     group: 'esp',
     name: 'Block ESP',
@@ -187,6 +197,8 @@ module({
     path: 'entity-titles',
     tags: ['entity', 'title', 'health']
 });
+
+// Hacks Modules ==========================
 
 module({
     group: 'hacks',
@@ -357,6 +369,8 @@ module({
     tags: ['air', 'place', 'airplace', 'scaffold']
 });
 
+//Visuals Modules ============================
+
 module({
     group: 'visuals',
     name: 'Full Bright',
@@ -476,6 +490,8 @@ module({
     path: 'block-entity',
     tags: ['block', 'entity', 'chest', 'render']
 });
+
+//Scripting Modules ======================
 
 module({
     group: 'scripting',

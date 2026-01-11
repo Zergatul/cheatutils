@@ -1,8 +1,12 @@
 <div class="module-main" v-if="config">
     <div class="description">
-        Looks for a breach mace in your hotbar, if you have a breach mace, it will perform an attribute swap with your currently held item and the breach mace
+        Automatically disables shield if you have an axe available and the target is holding a shield that would block your attack
+        Module accounts for target look direction
     </div>
+
     <div class="module-sections">
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
 </div>

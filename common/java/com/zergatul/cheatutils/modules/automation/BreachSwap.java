@@ -2,139 +2,77 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
-import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.hacks.AutoCriticals;
 import net.minecraft.client.Minecraft;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 
 public class BreachSwap implements Module {
     public static final BreachSwap instance = new BreachSwap();
     private final Minecraft mc = Minecraft.getInstance();
+    private Inventory inventory;
+
+    private static int prevSelectedSlot = -1;
 
     private BreachSwap() {
+
         Events.BeforeAttack.add(this::onBeforeAttack);
-        handling = false;
+        Events.AfterAttack.add(this::onAfterAttack);
     }
 
+    private void onBeforeAttack(BeforeAttackEvent event) {
 
-    private static boolean handling;
-
-    public void onBeforeAttack(BeforeAttackEvent event) {
-        if (handling) {
+        if (!ConfigStore.instance.getConfig().breachSwapConfig.enabled) {
             return;
         }
-        BreachSwapConfig config = ConfigStore.instance.getConfig().breachSwapConfig;
-        if (config.enabled) {
-            if (instance.attack(config.useAxe, config.breakShield)) {
-                event.cancel();
-            }
-        }
-    }
-
-    public boolean attack(boolean useAxe, boolean breakShield) {
-        handling = true;
-        boolean returnVal = instance.run(useAxe, breakShield);
-        handling = false;
-        return returnVal;
-    }
-
-    private boolean run(boolean useAxe, boolean breakShield) {
+        prevSelectedSlot = -1;
         if (mc.player == null) {
-            return false;
+            return;
         }
 
         if (mc.hitResult == null) {
-            return false;
+            return;
         }
 
         if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
-            return false;
+            return;
         }
 
-        Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         double reach = mc.player.entityInteractionRange();
+
         if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) {
-            return false;
+            return;
         }
-        //Find position of axe, sword and mace
-        //Should only run when inventory is updated ideally
-        int axe = -1;
-        int sword = -1;
+
+
         int mace = -1;
-        int weapon;
-        Inventory inventory = mc.player.getInventory();
+        inventory = mc.player.getInventory();
+
 
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
-            if (item.getTags().anyMatch(tag -> tag == ItemTags.SWORDS)) sword = i;
-            else if (item.getTags().anyMatch(tag -> tag == ItemTags.AXES)) axe = i;
-            else if (item.getEnchantments().keySet().stream().anyMatch(enchantment ->
+
+            if (item.getEnchantments().keySet().stream().anyMatch(enchantment ->
                     enchantment.value().effects().keySet().contains(EnchantmentEffectComponents.ARMOR_EFFECTIVENESS)))
                 mace = i;
         }
 
         if (mace == -1) {
-            return false;
+            return;
         }
-
-        if (axe == -1 && sword == -1) {
-            return false;
-        }
-
-        if (useAxe) {//Prefer Axe to sword
-            if (axe != -1) {
-                weapon = axe;
-            } else {
-                weapon = sword;
-            }
-        } else {//Prefer sword to axe
-            if (sword != -1) {
-                weapon = sword;
-            } else {
-                weapon = axe;
-            }
-        }
-
-        if (breakShield) {
-            boolean isUsingShield = false;
-            if (entity instanceof LivingEntity living) {
-                if (living.isBlocking()) {
-                    // Calculate if target is looking at us
-                    // Shields only block a 180 degree slice of a cylinder
-                    Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
-                    Vec3 player = mc.player.position().subtract(living.position());
-                    player = (new Vec3(player.x, 0D, player.z)).normalize();
-                    double dotProduct = player.dot(shield);
-                    isUsingShield = dotProduct >= 0;
-                }
-            }
-
-
-            if (isUsingShield && axe != -1) {
-                inventory.setSelectedSlot(axe);
-                mc.gameMode.attack(mc.player, entity);
-                mc.player.swing(InteractionHand.MAIN_HAND);
-
-            }
-        }
-
+        prevSelectedSlot = inventory.getSelectedSlot();
         inventory.setSelectedSlot(mace);
-        mc.gameMode.attack(mc.player, entity);
-        mc.player.swing(InteractionHand.MAIN_HAND);
-        inventory.setSelectedSlot(weapon);
-
-        return true;
 
     }
+
+    private void onAfterAttack() {
+        if (!ConfigStore.instance.getConfig().breachSwapConfig.enabled) return;
+        if (prevSelectedSlot == -1) return;
+        inventory.setSelectedSlot(prevSelectedSlot);
+    }
+
+
 }

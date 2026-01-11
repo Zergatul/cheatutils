@@ -53,6 +53,7 @@ public class Config {
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
     public BreachSwapConfig breachSwapConfig = new BreachSwapConfig();
     public SpearRangeConfig spearRangeConfig = new SpearRangeConfig();
+    public AutoStunnerConfig autoStunnerConfig = new AutoStunnerConfig();
     public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
     public FakeWeatherConfig fakeWeatherConfig = new FakeWeatherConfig();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
