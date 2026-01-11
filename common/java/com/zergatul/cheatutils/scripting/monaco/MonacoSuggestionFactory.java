@@ -18,6 +18,7 @@ public class MonacoSuggestionFactory implements SuggestionFactory<Suggestion> {
     @Override
     public Suggestion getKeywordSuggestion(TokenType type) {
         String text = switch (type) {
+            case META_CAST -> "#cast";
             case META_TYPE -> "#type";
             case META_TYPE_OF -> "#typeof";
             default -> type.toString().toLowerCase();
@@ -62,7 +63,7 @@ public class MonacoSuggestionFactory implements SuggestionFactory<Suggestion> {
                             "int64",
                             CompletionItemKind.CLASS));
         }
-        if (type instanceof SPredefinedType) {
+        if (type.isPredefined()) {
             return List.of(new Suggestion(
                     type.toString(),
                     null,
