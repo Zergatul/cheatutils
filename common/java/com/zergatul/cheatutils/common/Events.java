@@ -86,7 +86,4 @@ public class Events {
     public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
     public static final CancelableEventHandler<PlayerTurnByMouseEvent> PlayerTurnByMouse = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<PlayerInfoUpdateEvent> PlayerInfoUpdated = new ParameterizedEventHandler<>();
-
-
-
 }

@@ -11,6 +11,10 @@ public class ShadedVertexConsumerWrapper implements VertexConsumer {
     private final float shadeB;
     private final float shadeA;
 
+    public ShadedVertexConsumerWrapper(VertexConsumer inner) {
+        this(inner, 0.5f, 0.8f, 1.0f, 0.6f);
+    }
+
     public ShadedVertexConsumerWrapper(VertexConsumer inner, float r, float g, float b, float a) {
         this.inner = inner;
         this.shadeR = r;
