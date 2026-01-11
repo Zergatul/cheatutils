@@ -8,46 +8,12 @@
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
         </div>
-
-        <fieldset>
-            <legend>
-                <switch-checkbox v-model="config.limitRange" @change="update()">Limit Range</switch-checkbox>
-            </legend>
-            <div class="flex-row">
-                <span class="field-description">Max Range:</span>
-                <input type="text" class="w3" v-model="config.maxRange" @change="update()">
+        <div class="flex-row">
+            <span class="field-description">Extra Ticks:</span>
+            <input type="text" class="w3" v-model="config.extraTicks" @change="update()">
+            <div class="section-description">
+                Wait additional ticks once cooldown passed. Can be negative, in this case module will attack before cooldown.
             </div>
-            <div class="section-description margin-vertical">
-                Don't auto attack if target is further than specified distance. May help with some anticheats.
-            </div>
-        </fieldset>
-
-        <fieldset>
-            <legend>
-                Extra Delay
-            </legend>
-            <table>
-                <tr>
-                    <td>
-                        <span class="field-description">Extra Ticks Min:</span>
-                    </td>
-                    <td>
-                        <input type="number" class="w3" v-model="config.extraTicksMin" @change="update()">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <span class="field-description">Extra Ticks Max:</span>
-                    </td>
-                    <td>
-                        <input type="number" class="w3" v-model="config.extraTicksMax" @change="update()">
-                    </td>
-                </tr>
-            </table>
-            <div class="section-description margin-vertical">
-                Wait additional random ticks amount in [min..max] range once cooldown passed.
-                Values can be negative, in this case module will attack before cooldown.
-            </div>
-        </fieldset>
+        </div>
     </div>
 </div>

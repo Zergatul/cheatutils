@@ -40,7 +40,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // Uncomment the following line to enable the deprecated Fabric API modules. 
     // These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
@@ -50,6 +50,9 @@ dependencies {
     annotationProcessor files('../mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
 
     compileOnly("org.jspecify:jspecify:1.0.0")
+
+    // to run with Sodium
+    //modRuntimeOnly(files("C:/Users/Zergatul/source/repos/sodium/build/mods/sodium-fabric-0.7.3-snapshot+mc1.21.10-local.jar"))
 }
 
 sourceSets {

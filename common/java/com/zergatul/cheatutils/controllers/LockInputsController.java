@@ -19,10 +19,6 @@ public class LockInputsController {
     }
 
     private void onClientTickStart() {
-        if (mc.player == null) {
-            return;
-        }
-
         LockInputsConfig config = ConfigStore.instance.getConfig().lockInputsConfig;
 
         if (config.holdForward) {

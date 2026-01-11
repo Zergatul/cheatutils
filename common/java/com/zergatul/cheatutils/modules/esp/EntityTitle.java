@@ -463,7 +463,6 @@ public class EntityTitle implements FontBackendHolder {
                 Map.entry(Enchantments.DENSITY.identifier(), new EnchantmentDisplayEntry("Dn")),
                 Map.entry(Enchantments.BREACH.identifier(), new EnchantmentDisplayEntry("Br")),
                 Map.entry(Enchantments.WIND_BURST.identifier(), new EnchantmentDisplayEntry("Wi")),
-                Map.entry(Enchantments.LUNGE.identifier(), new EnchantmentDisplayEntry("Lu")),
 
                 Map.entry(Enchantments.SILK_TOUCH.identifier(), new EnchantmentDisplayEntry("Si")),
                 Map.entry(Enchantments.FORTUNE.identifier(), new EnchantmentDisplayEntry("Fo")),

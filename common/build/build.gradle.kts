@@ -4,8 +4,6 @@ plugins {
 
 repositories { mavenCentral() }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-
 gradlePlugin {
     plugins {
         create("cheatutils") {

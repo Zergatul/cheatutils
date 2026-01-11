@@ -48,7 +48,6 @@
     "common.MixinCamera",
     "common.MixinChatComponent",
     "common.MixinChatScreen",
-    "common.MixinChunkBorderRenderer",
     "common.MixinClientboundDisconnectPacket",
     "common.MixinClientboundPlayerInfoRemovePacket",
     "common.MixinClientboundPlayerInfoUpdatePacket",

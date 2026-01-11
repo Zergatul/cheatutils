@@ -1,0 +1,35 @@
+<div>
+    <div>
+        <button style="width: 200px;" @click="$emit('back')">Back</button>
+    </div>
+    <fieldset style="padding-top: 16px;" v-if="config">
+        <legend>Hold Key</legend>
+        <div class="description">
+            Emulate holding keys.
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.enabled"
+                    @change="update()">
+                <span>Enabled</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.holdUp"
+                    @change="update()">
+                <span>Hold Up</span>
+            </label>
+        </div>
+        <div>
+            <label class="switch-label">
+                <input type="checkbox" class="switch"
+                    v-model="config.holdUse"
+                    @change="update()">
+                <span>Hold Use</span>
+            </label>
+        </div>
+    </fieldset>
+</div>
