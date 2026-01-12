@@ -11,6 +11,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Vector2ic;
 
+import java.util.function.Consumer;
+
 public class Events {
     // to better understand sequence of events they are ordered in trigger order
 
@@ -45,10 +47,6 @@ public class Events {
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
 
 
-
-
-
-
     public static final ParameterizedEventHandler<Connection> ClientPlayerLoggingIn = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientPlayerLoggingOut = new SimpleEventHandler();
     public static final ParameterizedEventHandler<LevelChunk> RawChunkLoaded = new ParameterizedEventHandler<>();
@@ -57,7 +55,6 @@ public class Events {
     public static final ParameterizedEventHandler<SnapshotChunk> ChunkLoaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<ChunkPos> ChunkUnloaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockUpdateEvent> BlockUpdated = new ParameterizedEventHandler<>();
-
 
 
     public static final CancelableEventHandler<PreRenderGuiOverlayEvent> PreRenderGuiOverlay = new CancelableEventHandler<>();
@@ -86,4 +83,21 @@ public class Events {
     public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
     public static final CancelableEventHandler<PlayerTurnByMouseEvent> PlayerTurnByMouse = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<PlayerInfoUpdateEvent> PlayerInfoUpdated = new ParameterizedEventHandler<>();
+
+    /**
+     * binds 2 functions to the beforeAttack and afterAttack event respectively.
+     * Tries to ensure that the order of module execution is preserved <br>
+     * Example: <br>
+     * if there are 2 actions bound:
+     * <p>
+     * breachSwap and criticals, it should function like this:
+     * <p>
+     * {@code BreachSwapBefore -> CriticalsBefore -> Vanilla code -> CriticalsAfter -> BreachSwapAfter} <br>
+     * This ensures that the cleanup for each module always gets the same state as its initial condition
+     */
+
+    public static void AttackEventHandler(Consumer<BeforeAttackEvent> beforeAttackFunction, Runnable afterAttackFunction, int priority) {
+        BeforeAttack.add(beforeAttackFunction, priority);
+        AfterAttack.add(afterAttackFunction, -priority);
+    }
 }

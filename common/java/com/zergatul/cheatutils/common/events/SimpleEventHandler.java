@@ -16,6 +16,16 @@ public class SimpleEventHandler {
         add(handler, 0);
     }
 
+    /**
+     *
+     * @param handler  Passed function that is added to the Event list
+     * @param priority Defaults to 0 when not passed.
+     *                 Events are executed in ascending order of their priority.
+     *                 If multiple functions have the same priority, it follows the order it was added <br>
+     *                 <br>
+     *                 Example execution order:
+     *                 {@code Priority 1 -> Priority 2}
+     */
     public void add(Runnable handler, int priority) {
         entries.add(new Entry(handler, priority, counter++));
         Collections.sort(entries);
@@ -25,14 +35,14 @@ public class SimpleEventHandler {
     }
 
     public void trigger() {
-        for (Runnable handler: handlers) {
+        for (Runnable handler : handlers) {
             handler.run();
         }
     }
 
     private record Entry(Runnable handler, int priority1, int priority2) implements Comparable<Entry> {
         @Override
-        public int compareTo(@NotNull SimpleEventHandler.Entry other) {
+        public int compareTo(@NotNull Entry other) {
             int result = Integer.compare(priority1, other.priority1);
             if (result != 0) {
                 return result;

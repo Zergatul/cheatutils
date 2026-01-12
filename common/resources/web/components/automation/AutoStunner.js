@@ -1,5 +1,5 @@
 import { createSimpleComponent } from '/components/SimpleModule.js';
 
 export function createComponent(template) {
-    return createSimpleComponent('/api/auto-hotbar', template);
+    return createSimpleComponent('/api/auto-stunner', template);
 }

@@ -3,7 +3,9 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.extensions.MultiPlayerGameModeExtension;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.scripting.Root;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Entity;
@@ -22,8 +24,7 @@ public class AutoStunner implements Module {
     int axe = -1;
 
     AutoStunner() {
-        Events.BeforeAttack.add(this::onBeforeAttack);
-        Events.AfterAttack.add(this::onAfterAttack);
+        Events.AttackEventHandler(this::onBeforeAttack, this::onAfterAttack, 1);
     }
 
     private boolean isUsingShield(Entity entity) {
@@ -48,6 +49,7 @@ public class AutoStunner implements Module {
         if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
             return;
         }
+
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         double reach = mc.player.entityInteractionRange();
 
@@ -60,7 +62,6 @@ public class AutoStunner implements Module {
         }
 
         inventory = mc.player.getInventory();
-        prevSelectedSlot = inventory.getSelectedSlot();
 
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
@@ -69,13 +70,25 @@ public class AutoStunner implements Module {
                 break;
             }
         }
+        if (axe == -1) return;
+
+        prevSelectedSlot = inventory.getSelectedSlot();
+
         inventory.setSelectedSlot(axe);
+        ((MultiPlayerGameModeExtension) mc.gameMode).attackClone_CU(mc.player, entity);
+
     }
 
     private void onAfterAttack() {
         if (!ConfigStore.instance.getConfig().autoStunnerConfig.enabled) return;
         if (prevSelectedSlot == -1) return;
         inventory.setSelectedSlot(prevSelectedSlot);
+    }
+    private void func1(BeforeAttackEvent event){
+        Root.debug.write("Func 1 run");
+    }
+    private void func2(BeforeAttackEvent event){
+        Root.debug.write("Func 2 run");
     }
 
 }
