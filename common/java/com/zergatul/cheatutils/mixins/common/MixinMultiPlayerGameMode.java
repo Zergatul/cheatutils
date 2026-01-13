@@ -61,6 +61,7 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
      **/
     public void attackClone_CU(Player player, Entity entity) {
         this.ensureHasSentCarriedItem();
+
         this.connection.send(ServerboundInteractPacket.createAttackPacket(entity, player.isShiftKeyDown()));
         if (this.localPlayerMode != GameType.SPECTATOR) {
             player.attack(entity);

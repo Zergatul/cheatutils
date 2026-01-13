@@ -5,7 +5,6 @@ import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.extensions.MultiPlayerGameModeExtension;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.scripting.Root;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Entity;
@@ -19,12 +18,10 @@ import net.minecraft.world.phys.Vec3;
 public class AutoStunner implements Module {
     public static final AutoStunner instance = new AutoStunner();
     private final Minecraft mc = Minecraft.getInstance();
-    private Inventory inventory;
-    private static int prevSelectedSlot = -1;
     int axe = -1;
 
     AutoStunner() {
-        Events.AttackEventHandler(this::onBeforeAttack, this::onAfterAttack, 1);
+        Events.BeforeAttack.add(this::onBeforeAttack, 1);
     }
 
     private boolean isUsingShield(Entity entity) {
@@ -44,7 +41,7 @@ public class AutoStunner implements Module {
 
     private void onBeforeAttack(BeforeAttackEvent event) {
         if (!ConfigStore.instance.getConfig().autoStunnerConfig.enabled) return;
-        prevSelectedSlot = -1;
+        int prevSelectedSlot = -1;
 
         if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
             return;
@@ -61,7 +58,7 @@ public class AutoStunner implements Module {
             return;
         }
 
-        inventory = mc.player.getInventory();
+        Inventory inventory = mc.player.getInventory();
 
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
@@ -76,19 +73,6 @@ public class AutoStunner implements Module {
 
         inventory.setSelectedSlot(axe);
         ((MultiPlayerGameModeExtension) mc.gameMode).attackClone_CU(mc.player, entity);
-
-    }
-
-    private void onAfterAttack() {
-        if (!ConfigStore.instance.getConfig().autoStunnerConfig.enabled) return;
-        if (prevSelectedSlot == -1) return;
         inventory.setSelectedSlot(prevSelectedSlot);
     }
-    private void func1(BeforeAttackEvent event){
-        Root.debug.write("Func 1 run");
-    }
-    private void func2(BeforeAttackEvent event){
-        Root.debug.write("Func 2 run");
-    }
-
 }

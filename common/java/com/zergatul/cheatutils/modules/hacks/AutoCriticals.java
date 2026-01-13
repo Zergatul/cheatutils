@@ -17,7 +17,7 @@ public class AutoCriticals {
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoCriticals() {
-        Events.BeforeAttack.add(this::onBeforeAttack);
+        Events.BeforeAttack.add(this::onBeforeAttack, -1);
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {

@@ -17,8 +17,7 @@ public class SpearRange implements Module {
     int prevSelectedSlot = -1;
 
     private SpearRange() {
-        Events.BeforeAttack.add(this::onBeforeAttack);
-        Events.AfterAttack.add(this::onAfterAttack);
+        Events.AttackEventHandler(this::onBeforeAttack, this::onAfterAttack, 0);
     }
 
     public void onBeforeAttack(BeforeAttackEvent event) {

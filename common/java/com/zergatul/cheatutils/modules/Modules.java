@@ -25,11 +25,9 @@ public class Modules {
 
     public static void register() {
 
-        //Order dependent modules
+        //Order dependent modules -> legacy method, use Event.event.add(function, priority) for new modules, use the priority value instead
         //==========================
-        register(SpearRange.instance);
-        register(AutoStunner.instance);
-        register(BreachSwap.instance);
+
         //===========================
 
         register(FakeRotation.instance);
@@ -91,8 +89,6 @@ public class Modules {
         register(AutoTool.instance);
         register(AirPlace.instance);
 
-        // should be after everything so "Don't Attack on Item Use" can work better
-        register(KillAura.instance);
 
         register(TickEndExecutor.instance);
 
@@ -100,10 +96,15 @@ public class Modules {
         //==========================================
         register(AfterPlayerAiStepExecutor.instance);
         register(AfterSendPlayerPosExecutor.instance);
+        register(KillAura.instance);
 
         FontBackendHolders.add(StatusOverlay.instance);
         FontBackendHolders.add(EntityTitle.instance);
         FontBackendHolders.add(WorldMarkers.instance);
+
+        register(SpearRange.instance);
+        register(AutoStunner.instance);
+        register(BreachSwap.instance);
         //===========================================
     }
 

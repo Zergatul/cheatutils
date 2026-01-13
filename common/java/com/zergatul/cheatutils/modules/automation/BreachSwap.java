@@ -18,9 +18,7 @@ public class BreachSwap implements Module {
     private static int prevSelectedSlot = -1;
 
     private BreachSwap() {
-
-        Events.BeforeAttack.add(this::onBeforeAttack);
-        Events.AfterAttack.add(this::onAfterAttack);
+        Events.AttackEventHandler(this::onBeforeAttack, this::onAfterAttack, 2);
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
