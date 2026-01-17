@@ -30,6 +30,7 @@ public class AutoStunner implements Module {
                 // Calculate if target is looking at us
                 // Shields only block a 180 degree slice of a cylinder
                 Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
+                assert mc.player != null;
                 Vec3 player = mc.player.position().subtract(living.position());
                 player = (new Vec3(player.x, 0D, player.z)).normalize();
                 double dotProduct = player.dot(shield);
@@ -41,22 +42,18 @@ public class AutoStunner implements Module {
 
     private void onBeforeAttack(BeforeAttackEvent event) {
         if (!ConfigStore.instance.getConfig().autoStunnerConfig.enabled) return;
-        int prevSelectedSlot = -1;
 
-        if (mc.hitResult.getType() != HitResult.Type.ENTITY) {
-            return;
-        }
+        if (mc.hitResult == null) return;
+
+        if (mc.hitResult.getType() != HitResult.Type.ENTITY) return;
+
+        assert mc.player != null;
+        final double reach = 3;
+        if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) return;
+
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
-        double reach = mc.player.entityInteractionRange();
-
-        if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) {
-            return;
-        }
-
-        if (!isUsingShield(entity)) {
-            return;
-        }
+        if (!isUsingShield(entity)) return;
 
         Inventory inventory = mc.player.getInventory();
 
@@ -69,10 +66,12 @@ public class AutoStunner implements Module {
         }
         if (axe == -1) return;
 
-        prevSelectedSlot = inventory.getSelectedSlot();
-
+        int prevSelectedSlot = inventory.getSelectedSlot();
         inventory.setSelectedSlot(axe);
+
+        assert mc.gameMode != null;
         ((MultiPlayerGameModeExtension) mc.gameMode).attackClone_CU(mc.player, entity);
+
         inventory.setSelectedSlot(prevSelectedSlot);
     }
 }

@@ -2,7 +2,10 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.MovementHackConfig;
+import com.zergatul.cheatutils.configs.ReachConfig;
+import com.zergatul.cheatutils.configs.StepUpConfig;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
 import com.zergatul.mixin.ExecuteAfterIfElseCondition;
 import com.zergatul.mixin.ModifyMethodReturnValue;
@@ -147,9 +150,13 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
         if (config.overrideAttackRange) {
             return config.attackRange;
-        } else {
-            return super.entityInteractionRange();
         }
+
+        if (ConfigStore.instance.getConfig().spearRangeConfig.isEnabled()) {
+            return 4.5;
+        }
+
+        return super.entityInteractionRange();
     }
 
     @Override

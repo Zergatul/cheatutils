@@ -138,7 +138,7 @@ public class RayCast {
         }
 
         if (entityHit.getEntity() == target) {
-            //Only accept point if block collision is further then entity collision
+            //Only accept point if block collision is further than entity collision
             if (entityHit.getLocation().distanceToSqr(origin) <= maxDistSqr) {
                 return true;
             }

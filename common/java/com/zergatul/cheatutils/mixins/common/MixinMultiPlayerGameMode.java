@@ -53,7 +53,7 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
      * {@code void attack(Player player, Entity entity)}
      * method.<br>
      * This method will NOT trigger automations / events from the regular method.<br>
-     * intended to only be used internally to make modules that trigger on beforeAttackMethod
+     * intended to only be used internally to make modules that trigger on beforeAttackMethod.<br>
      * Should be used in this format:<br>
      *  {@code ((MultiPlayerGameModeExtension) mc.gameMode).attackClone(mc.player, entity);}
      *  <br><br>

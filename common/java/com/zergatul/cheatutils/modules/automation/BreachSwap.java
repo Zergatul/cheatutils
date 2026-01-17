@@ -39,7 +39,7 @@ public class BreachSwap implements Module {
             return;
         }
 
-        double reach = mc.player.entityInteractionRange();
+        final double reach = 3;
 
         if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) {
             return;
