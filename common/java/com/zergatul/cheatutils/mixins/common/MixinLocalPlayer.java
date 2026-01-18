@@ -150,13 +150,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
         if (config.overrideAttackRange) {
             return config.attackRange;
+        } else {
+            return super.entityInteractionRange();
         }
-
-        if (ConfigStore.instance.getConfig().spearRangeConfig.isEnabled()) {
-            return 4.5;
-        }
-
-        return super.entityInteractionRange();
     }
 
     @Override

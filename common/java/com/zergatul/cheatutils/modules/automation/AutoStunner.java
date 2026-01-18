@@ -32,7 +32,7 @@ public class AutoStunner implements Module {
                 Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
                 assert mc.player != null;
                 Vec3 player = mc.player.position().subtract(living.position());
-                player = (new Vec3(player.x, 0D, player.z)).normalize();
+                player = (new Vec3(player.x, 0D, player.z));
                 double dotProduct = player.dot(shield);
                 return dotProduct >= 0;
             }
@@ -46,11 +46,6 @@ public class AutoStunner implements Module {
         if (mc.hitResult == null) return;
 
         if (mc.hitResult.getType() != HitResult.Type.ENTITY) return;
-
-        assert mc.player != null;
-        final double reach = 3;
-        if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) return;
-
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         if (!isUsingShield(entity)) return;

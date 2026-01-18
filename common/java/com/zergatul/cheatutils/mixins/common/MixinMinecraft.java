@@ -37,6 +37,16 @@ public abstract class MixinMinecraft {
     @Shadow
     public abstract boolean isGameLoadFinished();
 
+    @Inject(at = @At("HEAD"), method = "startAttack")
+    private void onBeforeStartAttack(CallbackInfoReturnable<Boolean> cir) {
+        Events.BeforeStartAttack.trigger();
+    }
+    @Inject(at = @At("RETURN"), method = "startAttack")
+    private void onAfterStartAttack(CallbackInfoReturnable<Boolean> cir) {
+        Events.AfterStartAttack.trigger();
+    }
+
+
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
         if (EntityEsp.instance.shouldEntityGlow(entity)) {
@@ -66,6 +76,8 @@ public abstract class MixinMinecraft {
             info.setReturnValue(Minecraft.getInstance().getUser().getName() + " - " + info.getReturnValue());
         }
     }
+
+
 
     @Inject(at = @At("HEAD"), method = "tick()V")
     private void onBeforeTick(CallbackInfo info) {

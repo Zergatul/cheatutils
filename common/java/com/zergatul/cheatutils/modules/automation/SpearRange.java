@@ -1,15 +1,12 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.extensions.MultiPlayerGameModeExtension;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
 import static net.minecraft.core.component.DataComponents.ATTACK_RANGE;
 
@@ -36,36 +33,31 @@ public class SpearRange implements Module {
     }
 
     private SpearRange() {
-        Events.BeforeAttack.add(this::onBeforeAttack, 0);
+        Events.BeforeStartAttack.add(this::onBeforeStartAttack, 0);
+        Events.AfterStartAttack.add(this::onAfterStartAttack, 0);
     }
 
-    public void onBeforeAttack(BeforeAttackEvent event) {
+    public void onBeforeStartAttack() {
         if (!ConfigStore.instance.getConfig().spearRangeConfig.enabled) return;
         prevSelectedSlot = -1;
         if (mc.player == null) return;
         if (mc.player.isSpectator()) return;
+        if (mc.hitResult.getType() == HitResult.Type.ENTITY) return;
+
         Inventory inventory = mc.player.getInventory();
-
-
-        //If already in range normally, do nothing
-        assert mc.hitResult != null;
-        final double reach = 3;
-        if (reach * reach > mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) return;
-
         int spear = spearPos(inventory);
-
         if (spear == -1) return;
-        if (spear == prevSelectedSlot) return;
+        if (spear == inventory.getSelectedSlot()) return;
 
         prevSelectedSlot = inventory.getSelectedSlot();
         inventory.setSelectedSlot(spear);
+    }
 
-        assert mc.gameMode != null;
-        ((MultiPlayerGameModeExtension) mc.gameMode).attackClone_CU(mc.player, ((EntityHitResult) mc.hitResult).getEntity());
-        mc.player.swing(InteractionHand.MAIN_HAND);
-
-        inventory.setSelectedSlot(prevSelectedSlot);
-
-        event.cancel();
+    public void onAfterStartAttack() {
+        if (mc.player == null) return;
+        if (!ConfigStore.instance.getConfig().spearRangeConfig.enabled) return;
+        if (prevSelectedSlot == -1) return;
+        mc.player.getInventory().setSelectedSlot(prevSelectedSlot);
+        prevSelectedSlot = -1;
     }
 }

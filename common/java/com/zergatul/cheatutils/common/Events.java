@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.common;
 
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
+import net.minecraft.WorldVersion;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
@@ -73,6 +74,9 @@ public class Events {
     public static final CancelableEventHandler<SendChatEvent> SendChat = new CancelableEventHandler<>();
     public static final CancelableEventHandler<BeforeAttackEvent> BeforeAttack = new CancelableEventHandler<>();
     public static final SimpleEventHandler AfterAttack = new SimpleEventHandler();
+    public static final SimpleEventHandler BeforeStartAttack = new SimpleEventHandler();
+    public static final SimpleEventHandler AfterStartAttack = new SimpleEventHandler();
+
     public static final ParameterizedEventHandler<Entity> EntityInteract = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockPos> BeforeInstaMine = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler WindowResize = new SimpleEventHandler();

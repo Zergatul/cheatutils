@@ -55,6 +55,8 @@ public class AutoAttack implements Module {
 
         nextExtraTicks = Integer.MIN_VALUE;
 
+
+
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         mc.gameMode.attack(mc.player, entity);
         mc.player.swing(InteractionHand.MAIN_HAND);

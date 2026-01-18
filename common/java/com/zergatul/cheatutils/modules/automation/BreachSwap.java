@@ -39,13 +39,6 @@ public class BreachSwap implements Module {
             return;
         }
 
-        final double reach = 3;
-
-        if (reach * reach < mc.player.getEyePosition().distanceToSqr(mc.hitResult.getLocation())) {
-            return;
-        }
-
-
         int mace = -1;
         inventory = mc.player.getInventory();
 
