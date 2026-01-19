@@ -3,6 +3,8 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.AutoAttackConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.extensions.MinecraftExtension;
+import com.zergatul.cheatutils.mixins.common.MixinMinecraft;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
@@ -55,11 +57,7 @@ public class AutoAttack implements Module {
 
         nextExtraTicks = Integer.MIN_VALUE;
 
-
-
-        Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
-        mc.gameMode.attack(mc.player, entity);
-        mc.player.swing(InteractionHand.MAIN_HAND);
+        ((MinecraftExtension) mc).runStartAttack_CU();
     }
 
     private void calculateNextExtraTicksIfRequired(AutoAttackConfig config) {
