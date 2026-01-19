@@ -35,6 +35,8 @@ public class AutoCriticals {
                 return;
             }
             // Hard Conditions not met, cannot do anything about it
+            // Refer to `Player.class` -> boolean canCriticalAttack(Entity entity)
+            // Refer to `Player.class` -> void attack(Entity entity)
             if (!((mc.player.getAttackStrengthScale(0.5F) > 0.9F) &&
                     (!mc.player.onClimbable()
                             && !mc.player.isInWater() && !mc.player.isMobilityRestricted() && !mc.player.isPassenger()

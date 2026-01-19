@@ -18,26 +18,10 @@ import net.minecraft.world.phys.Vec3;
 public class AutoStunner implements Module {
     public static final AutoStunner instance = new AutoStunner();
     private final Minecraft mc = Minecraft.getInstance();
-    int axe = -1;
+    private int axe = -1;
 
     AutoStunner() {
         Events.BeforeAttack.add(this::onBeforeAttack, 1);
-    }
-
-    private boolean isUsingShield(Entity entity) {
-        if (entity instanceof LivingEntity living) {
-            if (living.isBlocking()) {
-                // Calculate if target is looking at us
-                // Shields only block a 180 degree slice of a cylinder
-                Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
-                assert mc.player != null;
-                Vec3 player = mc.player.position().subtract(living.position());
-                player = (new Vec3(player.x, 0D, player.z));
-                double dotProduct = player.dot(shield);
-                return dotProduct >= 0;
-            }
-        }
-        return false;
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
@@ -68,5 +52,22 @@ public class AutoStunner implements Module {
         ((MultiPlayerGameModeExtension) mc.gameMode).attackClone_CU(mc.player, entity);
 
         inventory.setSelectedSlot(prevSelectedSlot);
+    }
+
+
+    private boolean isUsingShield(Entity entity) {
+        if (entity instanceof LivingEntity living) {
+            if (living.isBlocking()) {
+                // Calculate if target is looking at us
+                // Shields only block a 180 degree slice of a cylinder
+                Vec3 shield = living.calculateViewVector(0.0F, living.getYHeadRot());
+                assert mc.player != null;
+                Vec3 player = mc.player.position().subtract(living.position());
+                player = (new Vec3(player.x, 0D, player.z));
+                double dotProduct = player.dot(shield);
+                return dotProduct >= 0;
+            }
+        }
+        return false;
     }
 }

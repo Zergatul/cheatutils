@@ -1,4 +1,4 @@
-# Zergatul Cheat Utils
+# Cheat Utils
 
 ## Warning
 
@@ -89,10 +89,10 @@ public class ClassNameConfig extends ModuleConfig implements ValidatableConfig {
 add your config validation inside the `validate()` function, this is where you will add limits to your variables, for example clampign the range of a value.
 If your API will be accessible from the scripting, it is highly recomended to include validation for any variables.
 
-##### Note:-
-
-* in case if your module does not require validation, you can skip `implements ValidatableConfig` and the overriden `public void validate()` function. When doing this, also skip adding validation to [`Root.java`](#adding-a-module-to-the-mod--)
-* If your module does not require enable / disable, you can skip `extends ModuleConfig` as well. This also means you cannot use the `enabled` boolean or the `isEnabled()`  inherited functions. Keep this in mind when creating the website / code for it.
+>[!NOTE]
+> In case if your module does not require validation, you can skip `implements ValidatableConfig` and the overriden `public void validate()` function. When doing this, also skip adding validation to [`Root.java`](#adding-a-module-to-the-mod--)
+>
+> If your module does not require enable / disable, you can skip `extends ModuleConfig` as well. This also means you cannot use the `enabled` boolean or the `isEnabled()`  inherited functions. Keep this in mind when creating the website / code for it.
 
 you can also add any more functions or values to change here.
 for example:
@@ -119,7 +119,7 @@ Add your config to the class
     public ClassNameConfig classNameConfig = new ClassNameConfig();
 ```
 
-##### Now, navigate to `configStore.java`, located in the same directory and add this line
+Now, navigate to `configStore.java`, located in the same directory and add these lines
 
 ```java
     private void onConfigLoaded() {

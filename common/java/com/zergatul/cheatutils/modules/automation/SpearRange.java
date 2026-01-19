@@ -13,14 +13,14 @@ import static net.minecraft.core.component.DataComponents.ATTACK_RANGE;
 public class SpearRange implements Module {
     public static final SpearRange instance = new SpearRange();
     private final Minecraft mc = Minecraft.getInstance();
-    int prevSelectedSlot = -1;
+    private int prevSelectedSlot = -1;
 
     /**
      *
      * @param inventory player inventory
      * @return returns position of spear in the hotbar. If no spear is present, returns -1
      */
-    public final int spearPos(Inventory inventory) {
+    private int spearPos(Inventory inventory) {
         int spear = -1;
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
@@ -31,6 +31,7 @@ public class SpearRange implements Module {
         }
         return spear;
     }
+
 
     private SpearRange() {
         Events.BeforeStartAttack.add(this::onBeforeStartAttack, 0);
