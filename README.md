@@ -33,15 +33,18 @@ This is where most of your modules code will be written.
 
 First, navigate to the modules folder located in `common/java/com/zergatul/cheatutils/modules`.
 Select the folder that best fits your module type.
-Create a new  file : `"ClassName.java"`.
+from here on, we will refer to a theoretical module named "AutoPearl", however you should follow the same naming conventions
+
+Create a new  file : `"AutoPearl.java"`.
+
 the class should be in this format:
 
 ```java
 import com.zergatul.cheatutils.modules.Module;
 
-public class ClassName implements Module {
-    public static final ClassName instance = new ClassName();
-    ClassName(){
+public class AutoPearl implements Module {
+    public static final AutoPearl instance = new AutoPearl();
+    AutoPearl(){
 
     }
 }
@@ -49,14 +52,14 @@ public class ClassName implements Module {
 
 #### Step 2
 
-For the purposes of this explaination, it is assumed your mod is named as "ClassName"
+For the purposes of this explaination, it is assumed your module is named as "AutoPearl"
 Register your module in the mod.
 Navigate to `Modules.java` in the same directory.
 Add your module to the following function
 
 ```java
 public static void register() {
-    register(ClassName.instance);
+    register(AutoPearl.instance);
 }
 ```
 
@@ -68,14 +71,14 @@ Add your configuration class
 
 Navigate to `common/java/com/zergatul/cheatutils/configs`
 
-create a new file `ClassNameConfig.java`
+create a new file `AutoPearlConfig.java`
 
 ```java
 package com.zergatul.cheatutils.configs;
 
-public class ClassNameConfig extends ModuleConfig implements ValidatableConfig {
+public class AutoPearlConfig extends ModuleConfig implements ValidatableConfig {
 
-    ClassNameConfig() {
+    AutoPearlConfig() {
 
     }
 
@@ -108,7 +111,7 @@ The  API directly changes variables.
 an example of a minimal config which does not need validation or enable variable:
 
 ```java
-    public class ClassNameConfig {}
+    public class AutoPearlConfig {}
 ```
 
 Next, navigate to `Config.java`, located in the same directory.
@@ -116,7 +119,7 @@ Next, navigate to `Config.java`, located in the same directory.
 Add your config to the class
 
 ```java
-    public ClassNameConfig classNameConfig = new ClassNameConfig();
+    public AutoPearlConfig classNameConfig = new AutoPearlConfig();
 ```
 
 Now, navigate to `configStore.java`, located in the same directory and add these lines
@@ -130,21 +133,21 @@ Now, navigate to `configStore.java`, located in the same directory and add these
 
 Adding the module API for the website  to work with.
 Navigate to `common/java/com/zergatul/cheatutils/scripting/modules/`
-make a new file `ClassNameConfig.java`
+make a new file `AutoPearlConfig.java`
 
 add these lines
 
 ```java
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ClassNameConfig;
+import com.zergatul.cheatutils.configs.AutoPearlConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 
-public class ClassNameApi extends ModuleApi<ClassNameConfig> {
+public class AutoPearlApi extends ModuleApi<AutoPearlConfig> {
 
 
     @Override
-    protected ClassNameConfig getConfig() {
+    protected AutoPearlConfig getConfig() {
         return ConfigStore.instance.getConfig().classNameconfig;
     }
 }
@@ -159,7 +162,7 @@ Navigate to `common/java/com/zergatul/cheatutils/scripting/Root.java`
 Add the following lines inside the Root class.
 
 ```java
-public static ClassNameApi className = new ClassNameApi();
+public static AutoPearlApi className = new AutoPearlApi();
 ```
 
 This step is OPTIONAL and not required for module to function.
@@ -178,7 +181,7 @@ Add your module under line 21 with the following format:
 module({
     group: 'automation',
     name: 'Display Name',
-    component: 'ClassName',
+    component: 'AutoPearl',
     path: 'class-name',
     tags: ['search', 'terms', 'identifers']
 });
@@ -203,8 +206,8 @@ next, navigate to the relevant folder for your module from the available folders
 
 Create 2 new files:
 
-* ClassName.js
-* ClassName.html
+* AutoPearl.js
+* AutoPearl.html
 
 inside the javascript file, add the following:
 
