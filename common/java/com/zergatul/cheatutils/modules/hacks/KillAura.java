@@ -37,7 +37,7 @@ public class KillAura implements Module {
     private KillAura() {
 
         // should be after everything so "Don't Attack on Item Use" can work better
-        int priority = Integer.MAX_VALUE;
+        int priority = 1000;
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep, priority);
         Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos, priority);
         Events.ClientTickStart.add(this::onClientTickStart, priority);

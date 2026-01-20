@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.extensions.MinecraftExtension;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.AirPlace;
@@ -24,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Minecraft.class)
-public abstract class MixinMinecraft implements MinecraftExtension {
+public abstract class MixinMinecraft {
 
     @Shadow
     public LocalPlayer player;
@@ -38,18 +37,6 @@ public abstract class MixinMinecraft implements MinecraftExtension {
     @Shadow
     public abstract boolean isGameLoadFinished();
 
-    @Shadow
-    protected abstract boolean startAttack();
-
-    /**
-     * This method will trigger automations / events from the regular method.<br>
-     * intended to only be used internally to make modules that trigger on beforeAttackStartMethod.<br>
-     * Should be used in this format:<br>
-     *  {@code ((MinecraftExtension) mc).runStartAttack_CU();}
-     **/
-    public void runStartAttack_CU() {
-        this.startAttack();
-    }
 
     //Start Attack method, event triggers ==================================
     @Inject(at = @At("HEAD"), method = "startAttack")

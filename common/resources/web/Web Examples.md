@@ -24,4 +24,4 @@
 <input type="text" class="w3" v-model="config.speedThreshold" @change="update()">
 ```
 
-#### typecast output to the variable type
+#### Parses output to the variable type
