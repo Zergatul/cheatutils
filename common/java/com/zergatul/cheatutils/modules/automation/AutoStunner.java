@@ -27,6 +27,8 @@ public class AutoStunner implements Module {
     private void onBeforeAttack(BeforeAttackEvent event) {
         if (!ConfigStore.instance.getConfig().autoStunnerConfig.enabled) return;
 
+        if (mc.player == null) return;
+
         if (mc.hitResult == null) return;
 
         if (mc.hitResult.getType() != HitResult.Type.ENTITY) return;
@@ -35,6 +37,7 @@ public class AutoStunner implements Module {
         if (!isUsingShield(entity)) return;
 
         Inventory inventory = mc.player.getInventory();
+
 
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
@@ -52,6 +55,7 @@ public class AutoStunner implements Module {
         ((MultiPlayerGameModeExtension) mc.gameMode).attackClone_CU(mc.player, entity);
 
         inventory.setSelectedSlot(prevSelectedSlot);
+        axe = -1;
     }
 
 

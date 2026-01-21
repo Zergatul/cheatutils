@@ -15,7 +15,7 @@ public class BreachSwap implements Module {
     private final Minecraft mc = Minecraft.getInstance();
     private Inventory inventory;
 
-    private static int prevSelectedSlot = -1;
+    private int prevSelectedSlot = -1;
 
     private BreachSwap() {
         Events.AttackEventHandler(this::onBeforeAttack, this::onAfterAttack, 2);

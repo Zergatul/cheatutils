@@ -25,7 +25,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -55,9 +54,9 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
      * This method will NOT trigger automations / events from the regular method.<br>
      * intended to only be used internally to make modules that trigger on beforeAttackMethod.<br>
      * Should be used in this format:<br>
-     *  {@code ((MultiPlayerGameModeExtension) mc.gameMode).attackClone(mc.player, entity);}
-     *  <br><br>
-     *  <B>If you see this comment, you are not using the correct syntax. Make sure to cast the call first!</B>
+     * {@code ((MultiPlayerGameModeExtension) mc.gameMode).attackClone(mc.player, entity);}
+     * <br><br>
+     * <B>If you see this comment, you are not using the correct syntax. Make sure to cast the call first!</B>
      **/
     public void attackClone_CU(Player player, Entity entity) {
         this.ensureHasSentCarriedItem();

@@ -43,6 +43,7 @@ public class SpearRange implements Module {
         prevSelectedSlot = -1;
         if (mc.player == null) return;
         if (mc.player.isSpectator()) return;
+        if (mc.hitResult == null) return;
         if (mc.hitResult.getType() == HitResult.Type.ENTITY) return;
 
         Inventory inventory = mc.player.getInventory();
@@ -55,8 +56,8 @@ public class SpearRange implements Module {
     }
 
     public void onAfterStartAttack() {
-        if (mc.player == null) return;
         if (!ConfigStore.instance.getConfig().spearRangeConfig.enabled) return;
+        if (mc.player == null) return;
         if (prevSelectedSlot == -1) return;
         mc.player.getInventory().setSelectedSlot(prevSelectedSlot);
         prevSelectedSlot = -1;
