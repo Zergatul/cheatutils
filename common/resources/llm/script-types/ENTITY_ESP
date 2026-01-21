@@ -1,0 +1,7 @@
+This script runs every frame for every entity for corresponding Entity ESP config.
+You can change this on per entity basis:
+- Disable Tracer/Outline/Overlay/Collision Box
+- Change text displayed in the title
+Use `id` variable of type `int` to get id of current entity.
+Use `event` variable of type `EntityEspEvent` to disable ESP things for current entity.
+Use `game.entities` API to get information about entity by its id.

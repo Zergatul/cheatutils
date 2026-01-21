@@ -7,15 +7,19 @@ public class ModEnvironment {
 
     public static final boolean IS_PRODUCTION = !FabricLoader.getInstance().isDevelopmentEnvironment();
 
+    public static String getModLoader() {
+        return "Fabric";
+    }
+
     public static String getModLoaderVersion() {
-        return "Fabric: " + FabricLoader.getInstance().getModContainer("fabricloader").orElseThrow().getMetadata().getVersion().getFriendlyString();
+        return FabricLoader.getInstance().getModContainer("fabricloader").orElseThrow().getMetadata().getVersion().getFriendlyString();
     }
 
     public static String getModVersion() {
-        return ModMain.MODID + ": " + FabricLoader.getInstance().getModContainer(ModMain.MODID).orElseThrow().getMetadata().getVersion().getFriendlyString();
+        return FabricLoader.getInstance().getModContainer(ModMain.MODID).orElseThrow().getMetadata().getVersion().getFriendlyString();
     }
 
-    public static String getModCount() {
-        return "Mods: " + FabricLoader.getInstance().getAllMods().size();
+    public static int getModCount() {
+        return FabricLoader.getInstance().getAllMods().size();
     }
 }

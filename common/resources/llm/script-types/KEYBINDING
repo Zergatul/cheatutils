@@ -1,0 +1,2 @@
+Script that can be bound to key via in-game keybindings menu.
+Allows using of await expressions in the main script body.

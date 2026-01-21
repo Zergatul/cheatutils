@@ -1,0 +1,6 @@
+This script runs every frame for every block that was found by block ESP module.
+You can enable/disable tracer/BB/overlay for each block based on custom conditions.
+You can't override status of tracer/BB/overlay outside of configured range.
+Use `pos` variable of type `BlockPos` to get current block position.
+Use `event` variable of type `BlockEspEvent` to access methods that control visibility of the current block.
+Use `game.blocks` API to get information about block by its position.

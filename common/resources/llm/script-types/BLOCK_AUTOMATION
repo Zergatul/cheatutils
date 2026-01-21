@@ -1,0 +1,7 @@
+This script can be used to automatically place/break blocks, or use items on blocks
+Every game tick module runs this script for all blocks in range.
+You can get current block coordinates from x, y, z variables.
+If script calls `blockAutomation.useItem(...)` or `blockAutomation.breakBlock(...)` module will use item and place block, or break block at current coordinates.
+Some items require player to look in the correct direction to be used.
+These items send another packet to the server and are not supported by block automation.
+Example: filling/emptying bucket or glass bottle.

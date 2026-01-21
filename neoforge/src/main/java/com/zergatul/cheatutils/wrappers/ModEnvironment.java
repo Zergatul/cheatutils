@@ -9,16 +9,20 @@ public class ModEnvironment {
 
     public static final boolean IS_PRODUCTION = FMLEnvironment.isProduction();
 
+    public static String getModLoader() {
+        return "NeoForge";
+    }
+
     @SuppressWarnings("UnstableApiUsage")
     public static String getModLoaderVersion() {
-        return "NeoForge: " + NeoForgeVersion.getVersion();
+        return NeoForgeVersion.getVersion();
     }
 
     public static String getModVersion() {
-        return ModMain.MODID + ": " + ModList.get().getModFileById(ModMain.MODID).getMods().getFirst().getVersion().toString();
+        return ModList.get().getModFileById(ModMain.MODID).getMods().getFirst().getVersion().toString();
     }
 
-    public static String getModCount() {
-        return "Mods: " + ModList.get().size();
+    public static int getModCount() {
+        return ModList.get().size();
     }
 }

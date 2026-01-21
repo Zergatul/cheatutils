@@ -9,15 +9,19 @@ public class ModEnvironment {
 
     public static final boolean IS_PRODUCTION = FMLEnvironment.production;
 
+    public static String getModLoader() {
+        return "Forge";
+    }
+
     public static String getModLoaderVersion() {
-        return "Forge: " + ForgeVersion.getVersion();
+        return ForgeVersion.getVersion();
     }
 
     public static String getModVersion() {
-        return ModMain.MODID + ": " + ModList.get().getModFileById(ModMain.MODID).getMods().getFirst().getVersion().toString();
+        return ModList.get().getModFileById(ModMain.MODID).getMods().getFirst().getVersion().toString();
     }
 
-    public static String getModCount() {
-        return "Mods: " + ModList.get().size();
+    public static int getModCount() {
+        return ModList.get().size();
     }
 }

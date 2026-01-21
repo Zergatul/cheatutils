@@ -1,0 +1,2 @@
+This script runs once. It should attach events by using `events` API.
+Every time script is saved on UI, old events are getting detached.

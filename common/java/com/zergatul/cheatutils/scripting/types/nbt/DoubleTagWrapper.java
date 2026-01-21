@@ -4,7 +4,7 @@ import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.type.CustomType;
 import net.minecraft.nbt.DoubleTag;
 
-@CustomType(name = "FloatTag")
+@CustomType(name = "DoubleTag")
 public class DoubleTagWrapper extends TagWrapper {
 
     private final DoubleTag inner;

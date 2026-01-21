@@ -1,0 +1,4 @@
+Script that runs every frame to collects different strings, with positioning and coloring, to display on the screen.
+Think of it as F3 screen, but customizable.
+Use `overlay` API to add strings or position them.
+You can't use any action-like API methods from this script, only readonly methods are allowed.

@@ -558,6 +558,24 @@ module({
 });
 module({
     group: 'scripting',
+    name: 'LLM Guide.md',
+    component: 'LLM-guide.md',
+    tags: ['llm', 'guide', 'docs', 'documentation'],
+    onClick() {
+        window.open('/llm/cheatutils-llm-guide.md', '_blank');
+    }
+});
+module({
+    group: 'scripting',
+    name: 'LLM API.txt',
+    component: 'LLM-API.txt',
+    tags: ['llm', 'api', 'docs', 'documentation'],
+    onClick() {
+        window.open('/llm/cheatutils-api.txt', '_blank');
+    }
+});
+module({
+    group: 'scripting',
     name: 'Language Docs',
     component: 'LanguageDocs',
     tags: ['scripting', 'language', 'docs', 'documentation'],

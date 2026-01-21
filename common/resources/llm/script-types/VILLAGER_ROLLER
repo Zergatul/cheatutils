@@ -1,0 +1,4 @@
+When Villager Roller module is active, it runs this script every time for new enchanted book trade.
+Use `villagerRoller` API to see information about current enchanted book trade.
+Call `villagerRoller.stop()` to stop the module once you get the trade you want.
+From other scripts you can call `villagerRoller.getState()` to see current state: manual setup stages, placing lectern, breaking lectern, waiting for profession gain, etc.

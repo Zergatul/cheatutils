@@ -1,9 +1,11 @@
 package com.zergatul.cheatutils.scripting.events;
 
 import com.zergatul.cheatutils.mixins.common.accessors.MinecraftServerAccessor;
+import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.world.level.storage.LevelStorageSource;
 
+@CustomType(name = "ServerInformation")
 public class ServerInformation {
 
     public final String address;

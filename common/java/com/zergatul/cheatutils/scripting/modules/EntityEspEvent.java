@@ -5,9 +5,11 @@ import com.zergatul.cheatutils.font.StylizedTextChunk;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
+import com.zergatul.scripting.type.CustomType;
 import net.minecraft.network.chat.Style;
 
 @SuppressWarnings("unused")
+@CustomType(name = "EntityEspEvent")
 public class EntityEspEvent {
 
     private final EntityEsp.EntityScriptResult result;

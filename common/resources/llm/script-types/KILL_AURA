@@ -1,0 +1,4 @@
+This script decides if Kill Aura should target specific entity.
+Use `id` variable of type `int` to see id of the current entity.
+Return `true` if it is ok to target current entity, return `false` if it is not.
+This scripts run every time Kill Aura module selects specified entity as a valid target.

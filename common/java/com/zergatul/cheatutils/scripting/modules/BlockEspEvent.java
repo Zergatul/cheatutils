@@ -1,8 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.modules.esp.BlockEsp;
+import com.zergatul.scripting.type.CustomType;
 
 @SuppressWarnings("unused")
+@CustomType(name = "BlockEspEvent")
 public class BlockEspEvent {
 
     private final BlockEsp.BlockScriptResult result;
