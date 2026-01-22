@@ -119,18 +119,18 @@ public class RayCast {
             maxDistSqr = blockHit.getLocation().distanceToSqr(origin);//Limit max range after
         }                                                             //to compare with entity hit test
 
-        Vec3 end = point.subtract(origin).normalize().scale(range).add(origin);//Calculate a ray in that direction, with length range
+        Vec3 end = point.subtract(origin).normalize().scale(range);//Calculate a ray in that direction, with length range
         //This is required, otherwise point remains on entity surface and never contains the target entity in searchBox
 
-        AABB searchBox = new AABB(origin, end);
+        AABB searchBox = mc.player.getBoundingBox().expandTowards(end).inflate(1);
 
         EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
                 mc.player,
                 origin,
-                end,
+                end.add(origin),
                 searchBox,
                 e -> e != mc.player && e != mc.player.getVehicle(),
-                range
+                maxDistSqr
         );
 
         if (entityHit == null) {
@@ -138,10 +138,7 @@ public class RayCast {
         }
 
         if (entityHit.getEntity() == target) {
-            //Only accept point if block collision is further than entity collision
-            if (entityHit.getLocation().distanceToSqr(origin) <= maxDistSqr) {
-                return true;
-            }
+            return true;
         }
         return false;
     }

@@ -4,7 +4,8 @@
     </div>
     <div class="module-sections">
         <div>
-            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox><br>
+            <switch-checkbox v-model="config.lungeWithoutTarget" @change="update()">Lunge Without Target?</switch-checkbox>
         </div>
     </div>
 </div>

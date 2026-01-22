@@ -18,7 +18,6 @@ import net.minecraft.world.phys.Vec3;
 public class AutoStunner implements Module {
     public static final AutoStunner instance = new AutoStunner();
     private final Minecraft mc = Minecraft.getInstance();
-    private int axe = -1;
 
     AutoStunner() {
         Events.BeforeAttack.add(this::onBeforeAttack, 1);
@@ -38,7 +37,7 @@ public class AutoStunner implements Module {
 
         Inventory inventory = mc.player.getInventory();
 
-
+        int axe = -1;
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
             if (item.getTags().anyMatch(tag -> tag == ItemTags.AXES)) {
@@ -55,7 +54,6 @@ public class AutoStunner implements Module {
         ((MultiPlayerGameModeExtension) mc.gameMode).attackClone_CU(mc.player, entity);
 
         inventory.setSelectedSlot(prevSelectedSlot);
-        axe = -1;
     }
 
 

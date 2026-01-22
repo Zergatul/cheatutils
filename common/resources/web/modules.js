@@ -20,21 +20,6 @@ const module = (params) => {
 //Automation Modules =================
 module({
     group: 'automation',
-    name: 'Spear Range',
-    component: 'SpearRange',
-    path: 'spear-range',
-    tags: ['spear', 'reach', 'range']
-});
-
-module({
-    group: 'automation',
-    name: 'Shield breaker',
-    component: 'AutoStunner',
-    path: 'auto-stunner',
-    tags: ['stun', 'shield', 'break', 'auto']
-});
-module({
-    group: 'automation',
     name: 'Auto Disconnect',
     component: 'AutoDisconnect',
     path: 'auto-disconnect',
@@ -130,6 +115,21 @@ module({
     component: 'AutoTool',
     path: 'auto-tool',
     tags: ['auto', 'tool']
+});
+module({
+    group: 'automation',
+    name: 'Spear Range',
+    component: 'SpearRange',
+    path: 'spear-range',
+    tags: ['spear', 'reach', 'range']
+});
+
+module({
+    group: 'automation',
+    name: 'Shield breaker',
+    component: 'AutoStunner',
+    path: 'auto-stunner',
+    tags: ['stun', 'shield', 'break', 'auto']
 });
 
 //ESP modules ======================

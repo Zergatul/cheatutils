@@ -18,7 +18,7 @@ public interface MinecraftAccessor {
      * {@code ((MinecraftExtension) mc).runStartAttack_CU();}
      **/
     @Invoker("startAttack")
-    boolean runStartAttack_CU();
+    boolean startAttack_CU();
 
     @Accessor("clientTickCount")
     long getClientTickCount_CU();

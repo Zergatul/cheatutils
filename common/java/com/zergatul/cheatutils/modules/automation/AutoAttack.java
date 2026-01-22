@@ -53,7 +53,7 @@ public class AutoAttack implements Module {
 
         nextExtraTicks = Integer.MIN_VALUE;
 
-        ((MinecraftAccessor) mc).runStartAttack_CU();
+        ((MinecraftAccessor) mc).startAttack_CU();
     }
 
     private void calculateNextExtraTicksIfRequired(AutoAttackConfig config) {
