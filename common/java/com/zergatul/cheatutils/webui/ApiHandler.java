@@ -700,6 +700,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().breachSwapConfig = config;
             }
         });
+        apis.add(new SimpleConfigApi<>("auto-stunner", AutoStunnerConfig.class) {
+            @Override
+            protected AutoStunnerConfig getConfig() {
+                return ConfigStore.instance.getConfig().autoStunnerConfig;
+            }
+
+            @Override
+            protected void setConfig(AutoStunnerConfig config) {
+                ConfigStore.instance.getConfig().autoStunnerConfig = config;
+            }
+        });
+
         apis.add(new SimpleConfigApi<>("no-weather", NoWeatherConfig.class) {
             @Override
             protected NoWeatherConfig getConfig() {
@@ -709,6 +721,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(NoWeatherConfig config) {
                 ConfigStore.instance.getConfig().noWeatherConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("spear-range", SpearRangeConfig.class) {
+            @Override
+            protected SpearRangeConfig getConfig() {
+                return ConfigStore.instance.getConfig().spearRangeConfig;
+            }
+
+            @Override
+            protected void setConfig(SpearRangeConfig config) {
+                ConfigStore.instance.getConfig().spearRangeConfig = config;
             }
         });
 

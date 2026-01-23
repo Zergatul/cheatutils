@@ -2,11 +2,11 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.modules.hacks.AirPlace;
-import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.modules.hacks.AirPlace;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -37,6 +37,19 @@ public abstract class MixinMinecraft {
     @Shadow
     public abstract boolean isGameLoadFinished();
 
+
+    //Start Attack method, event triggers ==================================
+    @Inject(at = @At("HEAD"), method = "startAttack")
+    private void onBeforeStartAttack(CallbackInfoReturnable<Boolean> cir) {
+        Events.BeforeStartAttack.trigger();
+    }
+
+    @Inject(at = @At("RETURN"), method = "startAttack")
+    private void onAfterStartAttack(CallbackInfoReturnable<Boolean> cir) {
+        Events.AfterStartAttack.trigger();
+    }
+    //========================================================================
+
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
         if (EntityEsp.instance.shouldEntityGlow(entity)) {
@@ -66,6 +79,7 @@ public abstract class MixinMinecraft {
             info.setReturnValue(Minecraft.getInstance().getUser().getName() + " - " + info.getReturnValue());
         }
     }
+
 
     @Inject(at = @At("HEAD"), method = "tick()V")
     private void onBeforeTick(CallbackInfo info) {

@@ -9,8 +9,12 @@ import com.zergatul.cheatutils.font.FontBackendHolders;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
-import com.zergatul.cheatutils.modules.scripting.*;
-import com.zergatul.cheatutils.modules.utilities.*;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
+import com.zergatul.cheatutils.modules.scripting.Containers;
+import com.zergatul.cheatutils.modules.scripting.Exec;
+import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.modules.utilities.LockInputs;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.modules.visuals.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +24,12 @@ public class Modules {
     private static final Logger LOGGER = LogManager.getLogger(Modules.class);
 
     public static void register() {
+
+        //Order dependent modules -> legacy method, use Event.event.add(function, priority) for new modules, use the priority value instead
+        //==========================
+
+        //===========================
+
         register(FakeRotation.instance);
         register(BlockEventsProcessor.instance);
         register(NetworkPacketsController.instance);
@@ -62,7 +72,7 @@ public class Modules {
         register(ArmorOverlay.instance);
         register(Fog.instance);
         register(AutoAttack.instance);
-        register(BreachSwap.instance);
+
         register(Exec.instance);
         register(VillagerRoller.instance);
         register(AutoHotbar.instance);
@@ -79,18 +89,23 @@ public class Modules {
         register(AutoTool.instance);
         register(AirPlace.instance);
 
-        // should be after everything so "Don't Attack on Item Use" can work better
-        register(KillAura.instance);
 
         register(TickEndExecutor.instance);
 
         // new order independent modules
+        //==========================================
         register(AfterPlayerAiStepExecutor.instance);
         register(AfterSendPlayerPosExecutor.instance);
+        register(KillAura.instance);
 
         FontBackendHolders.add(StatusOverlay.instance);
         FontBackendHolders.add(EntityTitle.instance);
         FontBackendHolders.add(WorldMarkers.instance);
+
+        register(SpearRange.instance);
+        register(AutoStunner.instance);
+        register(BreachSwap.instance);
+        //===========================================
     }
 
     public static void registerKeyBindings() {

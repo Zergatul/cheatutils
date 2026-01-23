@@ -16,6 +16,9 @@ public class Root {
     public static AutoHotbarApi autoHotbar = new AutoHotbarApi();
     public static AutoToolApi autoTool = new AutoToolApi();
     public static AutoAttackApi autoAttack = new AutoAttackApi();
+    public static AutoStunnerApi autoStunner = new AutoStunnerApi();
+    public static BreachSwapApi breachSwap = new BreachSwapApi();
+    public static SpearRangeApi spearRange = new SpearRangeApi();
 
     // ESP
     public static BlocksApi blocks = new BlocksApi();
@@ -43,7 +46,6 @@ public class Root {
     public static AreaMineApi areaMine = new AreaMineApi();
     public static StepUpApi stepUp = new StepUpApi();
     public static AimAssistApi aimAssist = new AimAssistApi();
-    public static BreachSwapApi breachSwap = new BreachSwapApi();
     public static AirPlaceApi airPlace = new AirPlaceApi();
 
     // visuals
