@@ -26,7 +26,6 @@ public class BreachSwap implements Module {
         if (!ConfigStore.instance.getConfig().breachSwapConfig.enabled) {
             return;
         }
-        prevSelectedSlot = -1;
         if (mc.player == null) {
             return;
         }
@@ -63,7 +62,7 @@ public class BreachSwap implements Module {
         if (!ConfigStore.instance.getConfig().breachSwapConfig.enabled) return;
         if (prevSelectedSlot == -1) return;
         inventory.setSelectedSlot(prevSelectedSlot);
+        prevSelectedSlot = -1;
     }
-
 
 }

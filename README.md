@@ -238,7 +238,7 @@ export function createComponent(template) {
 
 This guide will focus on the working, for style and other formatting / component usage, look at the html of other modules already implemented
 
-your html file should look like this:
+your barebones html file should look like this:
 
 ```html
 <div class="module-main" v-if="config">
