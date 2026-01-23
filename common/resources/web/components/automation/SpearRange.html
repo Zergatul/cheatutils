@@ -5,7 +5,14 @@
     <div class="module-sections">
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox><br>
-            <switch-checkbox v-model="config.lungeWithoutTarget" @change="update()">Lunge Without Target?</switch-checkbox>
         </div>
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.lungeWithoutTarget" @change="update()">Lunge Without Target</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                When Enabled, allows you to use the spear to lunge without having a target. This allows bypassing the cooldown of the spear.
+            </div>
+        </fieldset>
     </div>
 </div>

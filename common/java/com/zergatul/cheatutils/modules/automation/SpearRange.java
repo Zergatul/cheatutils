@@ -34,7 +34,6 @@ public class SpearRange implements Module {
         Inventory inventory = mc.player.getInventory();
         int spear = spearPos(inventory);
         if (spear == -1) return;
-        if (spear == inventory.getSelectedSlot()) return;
 
         //Check for valid target before executing
         if (!ConfigStore.instance.getConfig().spearRangeConfig.lungeWithoutTarget) {
@@ -61,10 +60,13 @@ public class SpearRange implements Module {
      * @return returns position of spear in the hotbar. If no spear is present, returns -1
      */
     private int spearPos(Inventory inventory) {
+        if (inventory.getSelectedItem().getComponents().has(ATTACK_RANGE)) {
+            return -1;
+        }
         int spear = -1;
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
-            if (item.getComponents().stream().anyMatch(component -> component.type() == ATTACK_RANGE)) {
+            if (item.getComponents().has(ATTACK_RANGE)) {
                 spear = i;
                 break;
             }
