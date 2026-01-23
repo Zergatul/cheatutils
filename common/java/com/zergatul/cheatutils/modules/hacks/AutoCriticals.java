@@ -30,10 +30,6 @@ public class AutoCriticals {
             if (mc.player == null) {
                 return;
             }
-
-            if (config.onlyOnGround && !mc.player.onGround()) {
-                return;
-            }
             // Hard Conditions not met, cannot do anything about it
             // Refer to `Player.class` -> boolean canCriticalAttack(Entity entity)
             // Refer to `Player.class` -> void attack(Entity entity)
@@ -44,7 +40,7 @@ public class AutoCriticals {
             ) return;
 
             // Soft Conditions we can cheat to validate, do nothing if its already valid case
-            if (!(mc.player.fallDistance > 0 && !mc.player.onGround())) return;
+            if (mc.player.fallDistance > 0 && !mc.player.onGround()) return;
 
             Vec3 PrevPos = mc.player.position();
 
