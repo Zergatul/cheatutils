@@ -37,7 +37,11 @@ div.module-group > button {
     font-size: 1em;
 }
 
-div.module-group > button.external {
+div.module-group > button.local-link {
+    color: #4070BF;
+}
+
+div.module-group > button.external-link {
     color: #74571C;
 }
 

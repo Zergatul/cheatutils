@@ -36,6 +36,17 @@ public class BlocksApi {
     }
 
     @MethodDescription("""
+            Returns all block ids you have configured for Block ESP. Does not skip disabled ones.
+            If entry is a group entry - only first block from group will be present in the result.
+            """)
+    public String[] getEntries() {
+        return ConfigStore.instance.getConfig().blocks.getBlockConfigs().stream()
+                .map(c -> c.blocks.stream().findFirst().orElseThrow())
+                .map(b -> Registries.BLOCKS.getKey(b).toString())
+                .toArray(String[]::new);
+    }
+
+    @MethodDescription("""
             Checks if block is enabled. If block is part of a group, returns status of this group
             """)
     public boolean isEnabled(String blockId) {

@@ -1,6 +1,6 @@
 import * as FallbackLoader from '/fallback-loader.js'
 
-const { toRefs } = await FallbackLoader.vue();
+const { computed } = await FallbackLoader.vue();
 
 export function createComponent(template) {
     return {
@@ -20,7 +20,18 @@ export function createComponent(template) {
             }
         },
         setup(props) {
-            const onClick = module => {
+            const classes = computed(() => {
+                return {
+                    'local-link': !!props.module.localLink,
+                    'external-link': !!props.module.externalLink,
+                    'dangerous': !!props.module.dangerous,
+                    'active': props.statuses[props.module.component],
+                    'faded': !props.filtered[props.module.component]
+                };
+            });
+
+            const onClick = () => {
+                const module = props.module;
                 if (module.onClick) {
                     module.onClick();
                 } else {
@@ -29,7 +40,7 @@ export function createComponent(template) {
             };
 
             return {
-                ...toRefs(props),
+                classes,
                 onClick
             }
         }

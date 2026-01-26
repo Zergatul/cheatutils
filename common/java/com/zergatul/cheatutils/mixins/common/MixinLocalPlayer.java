@@ -17,7 +17,6 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -25,9 +24,6 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(LocalPlayer.class)
 public abstract class MixinLocalPlayer extends AbstractClientPlayer {
-
-    @Unique
-    private boolean isInsideAiStep;
 
     public MixinLocalPlayer(ClientLevel level, GameProfile profile) {
         super(level, profile);
@@ -47,22 +43,18 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Inject(at = @At("HEAD"), method = "aiStep()V")
     private void onBeforeAiStep(CallbackInfo info) {
-        isInsideAiStep = true;
         Events.BeforePlayerAiStep.trigger();
     }
 
     @Inject(at = @At("TAIL"), method = "aiStep()V")
     private void onAfterAiStep(CallbackInfo info) {
         Events.AfterPlayerAiStep.trigger();
-        isInsideAiStep = false;
     }
 
-    @Inject(at = @At("HEAD"), method = "isUsingItem()Z", cancellable = true)
-    private void onIsUsingItem(CallbackInfoReturnable<Boolean> info) {
-        if (isInsideAiStep) {
-            if (ConfigStore.instance.getConfig().movementHackConfig.disableSlowdownOnUseItem) {
-                info.setReturnValue(false);
-            }
+    @Inject(at = @At("HEAD"), method = "itemUseSpeedMultiplier", cancellable = true)
+    private void onBeforeGetItemUseSpeedMultiplier(CallbackInfoReturnable<Float> info) {
+        if (ConfigStore.instance.getConfig().movementHackConfig.disableSlowdownOnUseItem) {
+            info.setReturnValue(1f);
         }
     }
 

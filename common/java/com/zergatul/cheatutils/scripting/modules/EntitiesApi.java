@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
@@ -28,6 +29,15 @@ public class EntitiesApi {
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
         EntityEsp.instance.toggle();
+    }
+
+    @MethodDescription("""
+            Returns all entity class names you have configured for Entity ESP. Does not skip disabled ones.
+            """)
+    public String[] getEntries() {
+        return ConfigStore.instance.getConfig().entities.configs.stream()
+                .map(c -> ClassRemapper.fromObf(c.clazz.getName()))
+                .toArray(String[]::new);
     }
 
     @MethodDescription("""

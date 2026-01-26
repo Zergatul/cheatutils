@@ -17,7 +17,9 @@ const module = (params) => {
     params.componentRef = getComponent(`${params.group}/${params.component}`);
     modules[params.group][params.component] = params;
 };
-//Automation Modules =================
+
+// Automation Modules =================
+
 module({
     group: 'automation',
     name: 'Auto Disconnect',
@@ -123,7 +125,6 @@ module({
     path: 'spear-range',
     tags: ['spear', 'reach', 'range']
 });
-
 module({
     group: 'automation',
     name: 'Shield breaker',
@@ -132,7 +133,7 @@ module({
     tags: ['stun', 'shield', 'break', 'auto']
 });
 
-//ESP modules ======================
+// ESP modules ======================
 
 module({
     group: 'esp',
@@ -369,7 +370,7 @@ module({
     tags: ['air', 'place', 'airplace', 'scaffold']
 });
 
-//Visuals Modules ============================
+// Visuals Modules ============================
 
 module({
     group: 'visuals',
@@ -491,7 +492,7 @@ module({
     tags: ['block', 'entity', 'chest', 'render']
 });
 
-//Scripting Modules ======================
+// Scripting Modules ======================
 
 module({
     group: 'scripting',
@@ -559,8 +560,9 @@ module({
 module({
     group: 'scripting',
     name: 'LLM Guide.md',
-    component: 'LLM-guide.md',
+    component: 'LLM-Guide',
     tags: ['llm', 'guide', 'docs', 'documentation'],
+    localLink: true,
     onClick() {
         window.open('/llm/cheatutils-llm-guide.md', '_blank');
     }
@@ -568,8 +570,9 @@ module({
 module({
     group: 'scripting',
     name: 'LLM API.txt',
-    component: 'LLM-API.txt',
+    component: 'LLM-API',
     tags: ['llm', 'api', 'docs', 'documentation'],
+    localLink: true,
     onClick() {
         window.open('/llm/cheatutils-api.txt', '_blank');
     }
@@ -579,6 +582,7 @@ module({
     name: 'Language Docs',
     component: 'LanguageDocs',
     tags: ['scripting', 'language', 'docs', 'documentation'],
+    externalLink: true,
     onClick() {
         const fallback = 'https://github.com/Zergatul/java-scripting-language';
         http.get('/api/commits').then(commits => {
@@ -597,17 +601,20 @@ module({
     name: 'Script Examples',
     component: 'Script Examples',
     tags: ['script', 'examples', 'docs', 'documentation'],
+    externalLink: true,
     onClick() {
         window.open('https://github.com/Zergatul/cheatutils-examples/tree/master/v3', '_blank');
     }
 });
+
+// Utility Modules =================
 
 module({
     group: 'utility',
     name: 'Core Config',
     component: 'Core',
     path: 'core',
-    tags: ['core', 'port']
+    tags: ['core', 'port', 'advanced', 'scripting']
 });
 module({
     group: 'utility',
@@ -664,6 +671,7 @@ module({
     name: 'Matrix Server',
     component: 'MatrixServer',
     tags: ['matrix', 'discord'],
+    externalLink: true,
     onClick() {
         window.open('https://matrix.to/#/#cheatutils:matrix.org', '_blank');
     }
@@ -672,7 +680,8 @@ module({
     group: 'utility',
     name: 'YouTube Tutorials',
     component: 'YouTubeTutorials',
-    tags: ['youtube', 'video', 'tutorial', 'guide'],
+    tags: ['youtube', 'video', 'tutorial', 'guide', 'docs', 'documentation'],
+    externalLink: true,
     onClick() {
         window.open('https://www.youtube.com/playlist?list=PLG9SPA0O8HLSyHpxp-Y66ktVIAjQwWWk_', '_blank');
     }

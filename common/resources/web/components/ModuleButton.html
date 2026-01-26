@@ -1,11 +1,3 @@
-<button
-    @click="onClick(module)"
-    :class="{
-        external: !!module.onClick,
-        dangerous: !!module.dangerous,
-        active: statuses[module.component],
-        faded: !filtered[module.component]
-    }"
->
+<button :class="classes" @click="onClick()">
     {{ module.name }}
 </button>

@@ -86,7 +86,6 @@ public class Modules {
         register(AirPlace.instance);
         register(ContainerSummary.instance);
 
-
         register(TickEndExecutor.instance);
 
         // new order independent modules
@@ -95,14 +94,14 @@ public class Modules {
         register(AfterSendPlayerPosExecutor.instance);
         register(KillAura.instance);
 
-        FontBackendHolders.add(StatusOverlay.instance);
-        FontBackendHolders.add(EntityTitle.instance);
-        FontBackendHolders.add(WorldMarkers.instance);
-
         register(SpearRange.instance);
         register(AutoStunner.instance);
         register(BreachSwap.instance);
         //===========================================
+
+        FontBackendHolders.add(StatusOverlay.instance);
+        FontBackendHolders.add(EntityTitle.instance);
+        FontBackendHolders.add(WorldMarkers.instance);
     }
 
     public static void registerKeyBindings() {

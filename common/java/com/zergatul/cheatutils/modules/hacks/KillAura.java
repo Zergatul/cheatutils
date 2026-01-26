@@ -35,14 +35,11 @@ public class KillAura implements Module {
     private KillAuraFunction script;
 
     private KillAura() {
-
-        // should be after everything so "Don't Attack on Item Use" can work better
-        int priority = 1000;
-        Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep, priority);
-        Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos, priority);
-        Events.ClientTickStart.add(this::onClientTickStart, priority);
-        Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn, priority);
-        Events.DimensionChange.add(this::onDimensionChange, priority);
+        Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
+        Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos);
+        Events.ClientTickStart.add(this::onClientTickStart);
+        Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
+        Events.DimensionChange.add(this::onDimensionChange);
     }
 
     public void onEnabled() {
