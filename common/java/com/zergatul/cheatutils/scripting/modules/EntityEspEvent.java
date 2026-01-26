@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.font.StylizedText;
-import com.zergatul.cheatutils.font.StylizedTextChunk;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
-import net.minecraft.network.chat.Style;
 
 @SuppressWarnings("unused")
 @CustomType(name = "EntityEspEvent")
@@ -16,6 +14,13 @@ public class EntityEspEvent {
 
     public EntityEspEvent(EntityEsp.EntityScriptResult result) {
         this.result = result;
+    }
+
+    @MethodDescription("""
+            Overrides tracer color for current entity
+            """)
+    public void setTracerColor(String color) {
+        result.tracerColorOverride = ColorUtils.parseColor(color);
     }
 
     @MethodDescription("""

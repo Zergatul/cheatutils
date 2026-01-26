@@ -16,6 +16,7 @@ import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -274,10 +275,20 @@ public class EntityEsp implements Module {
                             distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
             if (config != null && !isTracerDisabledFromScript(config, entity)) {
-                float r = config.tracerColor.getRed() / 255f;
-                float g = config.tracerColor.getGreen() / 255f;
-                float b = config.tracerColor.getBlue() / 255f;
-                float a = config.tracerColor.getAlpha() / 255f;
+                Integer colorOverrideBoxed = getTracerColorOverride(config, entity);
+                float r, g, b, a;
+                if (colorOverrideBoxed == null) {
+                    r = config.tracerColor.getRed() / 255f;
+                    g = config.tracerColor.getGreen() / 255f;
+                    b = config.tracerColor.getBlue() / 255f;
+                    a = config.tracerColor.getAlpha() / 255f;
+                } else {
+                    int color = colorOverrideBoxed;
+                    r = ColorUtils.r(color);
+                    g = ColorUtils.g(color);
+                    b = ColorUtils.b(color);
+                    a = ColorUtils.a(color);
+                }
 
                 Vec3 pos = entity.getPosition(event.getTickDelta());
                 final int lineWidth = config.tracerWidth;
@@ -428,6 +439,19 @@ public class EntityEsp implements Module {
         return getBooleanFromScript(config, entity, result -> result.outlineDisabled);
     }
 
+    private Integer getTracerColorOverride(EntityEspConfig config, Entity entity) {
+        if (!config.scriptEnabled || config.script == null) {
+            return null;
+        }
+
+        EntityScriptResult result = scriptResults.get(new EntityScriptResultKey(entity.getId(), config));
+        if (result != null) {
+            return result.tracerColorOverride;
+        } else {
+            return executeScript(config, entity).tracerColorOverride;
+        }
+    }
+
     private boolean getBooleanFromScript(EntityEspConfig config, Entity entity, Predicate<EntityScriptResult> predicate) {
         if (!config.scriptEnabled || config.script == null) {
             return false;
@@ -450,8 +474,6 @@ public class EntityEsp implements Module {
         return result;
     }
 
-    private record BufferedVerticesEntry(Identifier texture, FloatList list) {}
-
     public static class EntityScriptResult {
 
         public final int id;
@@ -461,6 +483,7 @@ public class EntityEsp implements Module {
         public boolean overlayDisabled;
         public boolean collisionBoxDisabled;
         public StylizedText title;
+        public Integer tracerColorOverride;
 
         public EntityScriptResult(int id, EntityEspConfig config) {
             this.id = id;
