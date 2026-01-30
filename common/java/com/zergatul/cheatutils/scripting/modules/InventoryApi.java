@@ -47,6 +47,21 @@ public class InventoryApi {
     }
 
     @MethodDescription("""
+            Returns ItemStack based on index. Index should be in range [0..36)
+            """)
+    public ItemStackWrapper getItem(int index) {
+        if (mc.player == null) {
+            return new ItemStackWrapper(ItemStack.EMPTY);
+        }
+
+        if (index < 0 || index >= 36) {
+            return new ItemStackWrapper(ItemStack.EMPTY);
+        }
+
+        return new ItemStackWrapper(mc.player.getInventory().getItem(index));
+    }
+
+    @MethodDescription("""
             Slot parameters should be 1..9 range
             """)
     public ItemStackWrapper getHotbarItem(int slot) {
@@ -90,6 +105,25 @@ public class InventoryApi {
             EquipmentSlot slot = mc.player.getEquipmentSlotForItem(itemStack);
             return slot == EquipmentSlot.MAINHAND ? null : slot;
         });
+    }
+
+    @MethodDescription("""
+            Equips item by its index to corresponding slot
+            """)
+    @ApiVisibility(ApiType.ACTION)
+    public boolean equip(int index) {
+        if (mc.player == null) {
+            return false;
+        }
+
+        ItemStack itemStack = mc.player.getInventory().getItem(index);
+        EquipmentSlot slot = mc.player.getEquipmentSlotForItem(itemStack);
+        if (slot == EquipmentSlot.MAINHAND) {
+            return false;
+        }
+
+        InventoryUtils.moveItemStack(new InventorySlot(index), new InventorySlot(slot));
+        return true;
     }
 
     @MethodDescription("""

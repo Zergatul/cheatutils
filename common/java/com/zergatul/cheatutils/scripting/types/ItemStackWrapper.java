@@ -13,6 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.storage.TagValueOutput;
 
@@ -75,6 +76,20 @@ public class ItemStackWrapper {
     @Getter(name = "tooltip")
     public String[] getTooltip() {
         return tooltip.value();
+    }
+
+    @Getter(name = "attributeModifiers")
+    public AttributeModifier[] getAttributeModifiers() {
+        ItemAttributeModifiers modifiers = inner.getComponents().get(DataComponents.ATTRIBUTE_MODIFIERS);
+        if (modifiers == null) {
+            return new AttributeModifier[0];
+        }
+
+        AttributeModifier[] result = new AttributeModifier[modifiers.modifiers().size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = new AttributeModifier(modifiers.modifiers().get(i));
+        }
+        return result;
     }
 
     @Getter(name = "nbt")

@@ -112,7 +112,7 @@ public enum ScriptType {
         return new CompilationParametersBuilder()
                 .setRoot(Root.class)
                 .addCustomType(EnchantmentWrapper.class)
-                .addCustomType(ItemStackWrapper.class)
+                .addCustomTypes(List.of(ItemStackWrapper.class, AttributeModifier.class))
                 .addCustomType(ItemWrapper.class)
                 .addCustomType(Position3d.class)
                 .addCustomType(BlockPosWrapper.class)
