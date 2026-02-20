@@ -1,7 +1,12 @@
+import * as FallbackLoader from '/fallback-loader.js'
 import { withCss } from '/components/Loader.js'
 import { formatCodeResponse } from '/components/MonacoEditor.js'
-import * as http from '/http.js';
-import { components } from '../../components.js';
+import * as http from '/http.js'
+import { components } from '../../components.js'
+import { PrioritySearchSession } from '../../common/PrioritySearchSession.js'
+import { useIncrementalSearch } from '../../common/IncrementalSearch.js'
+
+const { ref } = await FallbackLoader.vue();
 
 const entityInfoPromise = http.get('/api/entity-info').then(entitiesList => {
     const entitiesMap = {};
@@ -15,98 +20,45 @@ const entityInfoPromise = http.get('/api/entity-info').then(entitiesList => {
 export function createComponent(template) {
     const args = {
         template: template,
-        created() {
-            entityInfoPromise.then(info => {
-                this.entitiesList = info.entitiesList;
-                this.entitiesMap = info.entitiesMap;
+        setup() {
+            const state = ref('list');
+            const search = ref('');
+            const entitiesList = ref(null);
+            const entitiesMap = ref(null);
+            const entitiesConfigList = ref(null);
+            const entitiesConfigMap = ref(null);
+            const selectedConfig = ref(null);
+            const code = ref(null);
+            const refs = ref(null);
+            const showRefs = ref(false);
+
+            const entityListDiv = ref(null);
+            const visibleItems = ref([]);
+            const session = new PrioritySearchSession(entitiesList, [
+                (entity, query) => query == '',
+                (entity, query) => entity.simpleName && entity.simpleName.toLocaleLowerCase().indexOf(query) == 0,
+                (entity, query) => entity.simpleName && entity.simpleName.toLocaleLowerCase().indexOf(query) > 0,
+                (entity, query) => entity.id && entity.id.indexOf(query) == 0,
+                (entity, query) => entity.id && entity.id.indexOf(query) > 0,
+                (entity, query) => entity.baseClasses && entity.baseClasses.some(clazz => clazz.toLocaleLowerCase().indexOf(query) == 0),
+                (entity, query) => entity.baseClasses && entity.baseClasses.some(clazz => clazz.toLocaleLowerCase().indexOf(query) > 0),
+                (entity, query) => entity.interfaces && entity.interfaces.some(iface => iface.toLocaleLowerCase().indexOf(query) == 0),
+                (entity, query) => entity.interfaces && entity.interfaces.some(iface => iface.toLocaleLowerCase().indexOf(query) > 0),
+            ]);
+
+            const restartSearch = useIncrementalSearch({
+                queryRef: search,
+                itemsRef: visibleItems,
+                scrollRootRef: entityListDiv,
+                session,
+                batchSize: 20
             });
-            this.loadEntityConfigs();
-        },
-        data() {
-            return {
-                state: 'list',
-                search: '',
-                entitiesList: null,
-                entitiesMap: null,
-                entitiesConfigList: null,
-                entitiesConfigMap: null,
-                selectedConfig: null,
-                entityListFiltered: null,
-                code: null,
-                refs: null,
-                showRefs: false
+
+            const backToList = () => {
+                state.value = 'list';
             };
-        },
-        methods: {
-            backToList() {
-                this.state = 'list';
-            },
-            filterEntityList() {
-                let search = this.search.toLocaleLowerCase();
-                if (search == '') {
-                    this.entityListFiltered = this.entitiesList.slice(0);
-                    return;
-                }
 
-                let entries = [];
-                this.entitiesList.forEach(entity => {
-                    if (entity.simpleName) {
-                        let name = entity.simpleName.toLocaleLowerCase();
-                        let index = name.indexOf(search);
-                        if (index >= 0) {
-                            entries.push({
-                                info: entity,
-                                priority: index == 0 ? 100 : 99
-                            });
-                            return;
-                        }
-                    }
-                    if (entity.id) {
-                        let index = entity.id.indexOf(search);
-                        if (index >= 0) {
-                            entries.push({
-                                info: entity,
-                                priority: index == 0 ? 90 : 89
-                            });
-                            return;
-                        }
-                    }
-                    if (entity.baseClasses) {
-                        for (let i = 0; i < entity.baseClasses.length; i++) {
-                            let index = entity.baseClasses[i].toLocaleLowerCase().indexOf(search);
-                            if (index >= 0) {
-                                entries.push({
-                                    info: entity,
-                                    priority: index == 0 ? 80 : 79
-                                });
-                                return;
-                            }
-                        }
-                    }
-                    if (entity.interfaces) {
-                        for (let i = 0; i < entity.interfaces.length; i++) {
-                            let index = entity.interfaces[i].toLocaleLowerCase().indexOf(search);
-                            if (index >= 0) {
-                                entries.push({
-                                    info: entity,
-                                    priority: index == 0 ? 70 : 69
-                                });
-                                return;
-                            }
-                        }
-                    }
-                });
-
-                this.entityListFiltered = entries.sort((e1, e2) => e2.priority - e1.priority).map(e => e.info);
-            },
-            loadEntityConfigs() {
-                http.get('/api/entities').then(response => {
-                    this.entitiesConfigList = response;
-                    this.entitiesConfigMap = {};
-                    this.entitiesConfigList.forEach(c => this.entitiesConfigMap[c.clazz] = c);
-                });
-            },
-            moveDown(config) {
+            const moveDown = (config) => {
                 http.post('/api/entities-move', {
                     direction: 'down',
                     clazz: config.clazz
@@ -115,11 +67,12 @@ export function createComponent(template) {
                     if (!response.ok) {
                         alert(response.message);
                     } else {
-                        this.loadEntityConfigs();
+                        loadEntityConfigs();
                     }
                 });
-            },
-            moveUp(config) {
+            };
+
+            const moveUp = (config) => {
                 http.post('/api/entities-move', {
                     direction: 'up',
                     clazz: config.clazz
@@ -127,58 +80,63 @@ export function createComponent(template) {
                     if (!response.ok) {
                         alert(response.message);
                     } else {
-                        this.loadEntityConfigs();
+                        loadEntityConfigs();
                     }
                 });
-            },
-            openAdd() {
-                this.state = 'add';
-                this.search = '';
-                this.filterEntityList();
-            },
-            openEdit(clazz) {
-                this.state = 'edit';
-                let setupCode = () => {
-                    this.code = this.selectedConfig.code || '';
-                    this.showRefs = false;
+            };
+
+            const openAdd = () => {
+                state.value = 'add';
+                search.value = '';
+                restartSearch();
+            };
+
+            const openEdit = (clazz) => {
+                state.value = 'edit';
+                const setupCode = () => {
+                    code.value = selectedConfig.value.code || '';
+                    showRefs.value = false;
                 };
-                if (this.entitiesConfigMap[clazz]) {
-                    this.selectedConfig = this.entitiesConfigMap[clazz];
+                if (entitiesConfigMap.value[clazz]) {
+                    selectedConfig.value = entitiesConfigMap.value[clazz];
                     setupCode();
                 } else {
-                    this.selectedConfig = null;
+                    selectedConfig.value = null;
                     http.post('/api/entities', { clazz: clazz }).then(response => {
-                        this.selectedConfig = response;
-                        this.entitiesConfigList.push(this.selectedConfig);
-                        this.entitiesConfigMap[clazz] = this.selectedConfig;
+                        selectedConfig.value = response;
+                        entitiesConfigList.value.push(response);
+                        entitiesConfigMap.value[clazz] = response;
                         setupCode();
                     });
                 }
-            },
-            remove() {
-                if (this.selectedConfig) {
-                    http.delete('/api/entities/' + this.selectedConfig.clazz).then(() => {
-                        let clazz = this.selectedConfig.clazz;
-                        let index = this.entitiesConfigList.indexOf(this.selectedConfig);
+            };
+
+            const remove = () => {
+                if (selectedConfig.value) {
+                    http.delete('/api/entities/' + selectedConfig.value.clazz).then(() => {
+                        const clazz = selectedConfig.value.clazz;
+                        const index = entitiesConfigList.value.indexOf(selectedConfig.value);
                         if (index >= 0) {
-                            this.entitiesConfigList.splice(index, 1);
+                            entitiesConfigList.value.splice(index, 1);
                         }
-                        this.selectedConfig = null;
-                        delete this.entitiesConfigMap[clazz];
-                        this.backToList();
+                        selectedConfig.value = null;
+                        delete entitiesConfigMap.value[clazz];
+                        backToList();
                     });
                 }
-            },
-            removeByClass(clazz) {
+            };
+
+            const removeByClass = (clazz) => {
                 http.delete('/api/entities/' + clazz).then(() => {
-                    let index = this.entitiesConfigList.findIndex(e => e.clazz == clazz);
+                    const index = entitiesConfigList.value.findIndex(e => e.clazz == clazz);
                     if (index >= 0) {
-                        this.entitiesConfigList.splice(index, 1);
+                        entitiesConfigList.value.splice(index, 1);
                     }
-                    delete this.entitiesConfigMap[clazz];
+                    delete entitiesConfigMap.value[clazz];
                 });
-            },
-            update(config) {
+            };
+
+            const update = (config) => {
                 if (config.tracerMaxDistance == '') {
                     config.tracerMaxDistance = null;
                 }
@@ -189,25 +147,27 @@ export function createComponent(template) {
                     config.outlineMaxDistance = null;
                 }
                 http.put('/api/entities/' + config.clazz, config);
-            },
-            showApiRef() {
-                if (this.showRefs) {
-                    this.showRefs = false;
+            };
+
+            const showApiRef = () => {
+                if (showRefs.value) {
+                    showRefs.value = false;
                 } else {
-                    if (this.refs) {
-                        this.showRefs = true;
+                    if (refs.value) {
+                        showRefs.value = true;
                     } else {
                         http.get('/api/scripts-doc/ENTITY_ESP').then(response => {
-                            this.showRefs = true;
-                            this.refs = response;
+                            showRefs.value = true;
+                            refs.value = response;
                         });
                     }
                 }
-            },
-            saveCode() {
+            };
+
+            const saveCode = () => {
                 http.post('/api/entity-esp-code', {
-                    clazz: this.selectedConfig.clazz,
-                    code: this.code
+                    clazz: selectedConfig.value.clazz,
+                    code: code.value
                 }).then(response => {
                     if (response.ok) {
                         alert('Saved');
@@ -217,7 +177,50 @@ export function createComponent(template) {
                 }, error => {
                     alert(error.response);
                 });
-            }
+            };
+
+            entityInfoPromise.then(info => {
+                entitiesList.value = info.entitiesList;
+                entitiesMap.value = info.entitiesMap;
+            });
+
+            const loadEntityConfigs = () => {
+                http.get('/api/entities').then(response => {
+                    entitiesConfigList.value = response;
+                    const map = {};
+                    response.forEach(c => map[c.clazz] = c);
+                    entitiesConfigMap.value = map;
+                });
+            };
+
+            loadEntityConfigs();
+
+            return {
+                state,
+                search,
+                entitiesList,
+                entitiesMap,
+                entitiesConfigList,
+                entitiesConfigMap,
+                selectedConfig,
+                code,
+                refs,
+                showRefs,
+                entityListDiv,
+                visibleItems,
+                session,
+
+                backToList,
+                moveUp,
+                moveDown,
+                openAdd,
+                openEdit,
+                remove,
+                removeByClass,
+                update,
+                showApiRef,
+                saveCode,
+            };
         }
     };
 

@@ -63,13 +63,11 @@
             </div>
             <div class="filter">
                 <span class="text">Filter:</span>
-                <input type="text" class="search"
-                    v-model="search"
-                    @input="filterEntityList()">
+                <input type="text" class="search" v-model="search">
             </div>
-            <div class="entity-list">
+            <div class="entity-list" ref="entityListDiv">
                 <table>
-                    <tr v-for="item in entityListFiltered" :key="item.clazz">
+                    <tr v-for="item in visibleItems" :key="item.clazz">
                         <td>
                             <div class="entity-info-header" :class="{ 'entity-info-interface': item.isInterface }">
                                 <div class="entity-info-classname">{{ item.simpleName }}</div>

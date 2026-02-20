@@ -77,13 +77,11 @@
             </div>
             <div class="filter">
                 <span>Filter:</span>
-                <input type="text" class="search"
-                    v-model="search"
-                    @input="filterBlockList()">
+                <input type="text" class="search" v-model="search">
             </div>
-            <div class="block-list">
+            <div class="block-list" ref="blockListDiv1">
                 <table>
-                    <tr v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
+                    <tr v-for="item in visibleItems" :key="item.id" v-bind="{ 'data-id': item.id }">
                         <td class="pad-cell">
                             <div class="canvas"></div>
                         </td>
@@ -263,13 +261,11 @@
             </div>
             <div class="filter">
                 <span>Filter:</span>
-                <input type="text" class="search"
-                    v-model="search"
-                    @input="filterBlockList()">
+                <input type="text" class="search" v-model="search">
             </div>
-            <div class="block-list">
+            <div class="block-list" ref="blockListDiv2">
                 <table>
-                    <tr v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
+                    <tr v-for="item in visibleItems" :key="item.id" v-bind="{ 'data-id': item.id }">
                         <td class="pad-cell">
                             <input type="checkbox" class="cb"
                                 v-if="groupEditShouldShowCheckbox(item)"

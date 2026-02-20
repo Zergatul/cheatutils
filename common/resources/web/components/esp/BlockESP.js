@@ -4,6 +4,8 @@ import { BlockRenderingCanvas } from './BlockRenderer.js'
 import { formatCodeResponse } from '/components/MonacoEditor.js'
 import * as http from '/http.js'
 import { components } from '../../components.js'
+import { SearchSession } from '../../common/SearchSession.js'
+import { useIncrementalSearch } from '../../common/IncrementalSearch.js'
 
 const { ref, nextTick, onMounted, onUnmounted } = await FallbackLoader.vue();
 
@@ -32,6 +34,46 @@ export function createComponent(template) {
             const showRefs = ref(false);
             const refs = ref(null);
             const code = ref(null);
+
+            const blockListDiv1 = ref(null);
+            const blockListDiv2 = ref(null);
+            const visibleItems = ref([]);
+            const session = new SearchSession(blocksList, (block, query) => {
+                if (query == '') {
+                    return true;
+                }
+                if (block.name != null) {
+                    let name = block.name.toLocaleLowerCase();
+                    if (name.indexOf(query) >= 0) {
+                        return true;
+                    }
+                }
+                if (block.id != null) {
+                    let id = block.id.toLocaleLowerCase();
+                    if (id.indexOf(query) >= 0) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            const restartAddNewSearch = useIncrementalSearch({
+                queryRef: search,
+                itemsRef: visibleItems,
+                scrollRootRef: blockListDiv1,
+                session,
+                onNewItemsAdded: () => nextTick(() => setupObserver()),
+                batchSize: 20
+            });
+
+            const restartEditGroupSearch = useIncrementalSearch({
+                queryRef: search,
+                itemsRef: visibleItems,
+                scrollRootRef: blockListDiv2,
+                session,
+                onNewItemsAdded: () => nextTick(() => setupObserver()),
+                batchSize: 20
+            });
 
             const blockRenderingKey = 'disableBlockRendering';
             const disableBlockRendering = ref(localStorage.getItem(blockRenderingKey) != null);
@@ -81,7 +123,7 @@ export function createComponent(template) {
             const openAdd = () => {
                 state.value = 'add';
                 search.value = '';
-                filterBlockList();
+                restartAddNewSearch();
             };
 
             const openEdit = id => {
@@ -105,7 +147,7 @@ export function createComponent(template) {
 
             const editGroup = () => {
                 state.value = 'edit-group';
-                filterBlockList();
+                restartEditGroupSearch();
             };
 
             const remove = () => {
@@ -319,6 +361,11 @@ export function createComponent(template) {
                 showRefs,
                 refs,
                 code,
+                search,
+                session,
+                blockListDiv1,
+                blockListDiv2,
+                visibleItems,
 
                 backToList,
                 backToEdit,
@@ -348,4 +395,4 @@ export function createComponent(template) {
     components.add(args, 'ScriptEditor');
 
     return withCss(import.meta.url, args);
-};
+}
