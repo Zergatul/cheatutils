@@ -97,7 +97,7 @@ const languageSettingsConstructor = (async () => {
                 }
             }
         ],
-        wordPattern: /[A-Za-z0-9_#]+/
+        //wordPattern: /[A-Za-z0-9_#]+/
     });
 
     const tokenTypes = await http.get('/api/code/token-types');
@@ -242,7 +242,7 @@ const languageSettingsConstructor = (async () => {
     });
 
     monaco.languages.registerCompletionItemProvider(languageId, {
-        triggerCharacters: ['.'],
+        triggerCharacters: ['.', '#'],
         async provideCompletionItems(model, position, context, token) {
             const suggestions = await http.post('/api/code/completion', {
                 code: model.getValue(),
@@ -250,6 +250,21 @@ const languageSettingsConstructor = (async () => {
                 line: position.lineNumber,
                 column: position.column
             });
+
+            const word = model.getWordUntilPosition(position);
+            const line = model.getLineContent(position.lineNumber);
+            const hasHash = word.startColumn > 1 && line[word.startColumn - 2] == '#';
+
+            if (hasHash) {
+                // '#' character is not word-like character
+                // so we have to truncate it to not create '##' for #typeof/#cast/etc items
+                for (const suggestion of suggestions) {
+                    if (suggestion.insertText.startsWith('#')) {
+                        suggestion.insertText = suggestion.insertText.substr(1);
+                    }
+                }
+            }
+
             return {
                 suggestions: suggestions.map(s => {
                     return {
