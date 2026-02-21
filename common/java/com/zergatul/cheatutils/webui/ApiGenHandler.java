@@ -145,7 +145,7 @@ public class ApiGenHandler implements HttpHandler {
                         baseClass != null && baseClass != Object.class ? " : " + formatType(SType.fromJavaType(type.getJavaClass().getSuperclass())) : ""));
 
         for (PropertyReference property : type.getStaticProperties()) {
-            lines.add(String.format("\tstatic %s %s { %s%s }", property.getType(), property.getName(), property.canGet() ? "get;" : "", property.canSet() ? "set;" : ""));
+            lines.add(String.format("\tstatic %s %s { %s%s }", property.getType(), property.getName(), property.canLoad() ? "get;" : "", property.canStore() ? "set;" : ""));
         }
         for (MethodReference method : type.getStaticMethods()) {
             formatMethod(lines, "static ", method);
@@ -154,7 +154,7 @@ public class ApiGenHandler implements HttpHandler {
             lines.add(String.format("\tconstructor(%s);", formatParameters(constructor.getParameters())));
         }
         for (PropertyReference property : type.getInstanceProperties()) {
-            lines.add(String.format("\t%s %s { %s%s }", formatType(property.getType()), property.getName(), property.canGet() ? "get;" : "", property.canSet() ? "set;" : ""));
+            lines.add(String.format("\t%s %s { %s%s }", formatType(property.getType()), property.getName(), property.canLoad() ? "get;" : "", property.canStore() ? "set;" : ""));
         }
         for (MethodReference method : type.getDeclaredInstanceMethods()) {
             formatMethod(lines, "", method);

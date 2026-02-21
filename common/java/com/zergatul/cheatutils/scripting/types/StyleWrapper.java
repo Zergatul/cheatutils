@@ -10,6 +10,9 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.UUID;
 
 @CustomType(name = "TextStyle")
 public class StyleWrapper {
@@ -94,12 +97,37 @@ public class StyleWrapper {
         if (event == null) {
             return ComponentWrapper.EMPTY;
         }
-        if (event.action() == HoverEvent.Action.SHOW_TEXT) {
-            HoverEvent.ShowText showText = (HoverEvent.ShowText) event;
-            return new ComponentWrapper(showText.value());
-        } else {
-            return ComponentWrapper.EMPTY;
+
+        return switch (event.action()) {
+            case SHOW_TEXT -> new ComponentWrapper(((HoverEvent.ShowText) event).value());
+            default -> ComponentWrapper.EMPTY;
+        };
+    }
+
+    @Getter(name = "hoverItem")
+    public ItemStackWrapper getHoverItem() {
+        HoverEvent event = inner.getHoverEvent();
+        if (event == null) {
+            return new ItemStackWrapper(ItemStack.EMPTY);
         }
+
+        return switch (event.action()) {
+            case SHOW_ITEM -> new ItemStackWrapper(((HoverEvent.ShowItem) event).item());
+            default -> new ItemStackWrapper(ItemStack.EMPTY);
+        };
+    }
+
+    @Getter(name = "hoverEntity")
+    public UUIDWrapper getHoverEntity() {
+        HoverEvent event = inner.getHoverEvent();
+        if (event == null) {
+            return null;
+        }
+
+        return switch (event.action()) {
+            case SHOW_ENTITY -> new UUIDWrapper(((HoverEvent.ShowEntity) event).entity().uuid);
+            default -> null;
+        };
     }
 
     @Getter(name = "clickCommand")
@@ -110,8 +138,11 @@ public class StyleWrapper {
         }
 
         return switch (event.action()) {
+            case OPEN_URL -> ((ClickEvent.OpenUrl) event).uri().toString();
+            case OPEN_FILE -> ((ClickEvent.OpenFile) event).path();
             case RUN_COMMAND -> ((ClickEvent.RunCommand) event).command();
             case SUGGEST_COMMAND -> ((ClickEvent.SuggestCommand) event).command();
+            case COPY_TO_CLIPBOARD -> ((ClickEvent.CopyToClipboard) event).value();
             default -> "";
         };
     }

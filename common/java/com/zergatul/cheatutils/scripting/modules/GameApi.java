@@ -351,6 +351,23 @@ public class GameApi {
             return target == null ? Integer.MIN_VALUE : target.getId();
         }
 
+        @MethodDescription("""
+                Returns integer entity id by its UUID
+                """)
+        public int findByUuid(UUIDWrapper uuid) {
+            if (mc.level == null || mc.player == null) {
+                return Integer.MIN_VALUE;
+            }
+
+            for (Entity entity : mc.level.entitiesForRendering()) {
+                if (entity.getUUID().equals(uuid.getRaw())) {
+                    return entity.getId();
+                }
+            }
+
+            return Integer.MIN_VALUE;
+        }
+
         public Position3d getPosition(int entityId) {
             return getValue(
                     entityId,
