@@ -18,6 +18,7 @@ import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
+import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -137,7 +138,7 @@ public class GameApi {
                 if (shouldWait) {
                     TickEndExecutor.instance.waitTicks(1, this);
                 } else {
-                    result.complete(true);
+                    result.complete(!(mc.screen instanceof DisconnectedScreen));
                 }
             }
         }
@@ -349,6 +350,23 @@ public class GameApi {
             }
 
             return target == null ? Integer.MIN_VALUE : target.getId();
+        }
+
+        @MethodDescription("""
+                Returns integer entity id by its UUID
+                """)
+        public int findByUuid(UUIDWrapper uuid) {
+            if (mc.level == null || mc.player == null) {
+                return Integer.MIN_VALUE;
+            }
+
+            for (Entity entity : mc.level.entitiesForRendering()) {
+                if (entity.getUUID().equals(uuid.getRaw())) {
+                    return entity.getId();
+                }
+            }
+
+            return Integer.MIN_VALUE;
         }
 
         public Position3d getPosition(int entityId) {

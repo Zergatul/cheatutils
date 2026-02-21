@@ -5,11 +5,13 @@ import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.*;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
+import java.util.UUID;
 
 @CustomType(name = "TextStyle")
 public class StyleWrapper {
@@ -94,12 +96,57 @@ public class StyleWrapper {
         if (event == null) {
             return ComponentWrapper.EMPTY;
         }
-        if (event.action() == HoverEvent.Action.SHOW_TEXT) {
-            HoverEvent.ShowText showText = (HoverEvent.ShowText) event;
-            return new ComponentWrapper(showText.value());
-        } else {
-            return ComponentWrapper.EMPTY;
+
+        return switch (event.action()) {
+            case SHOW_TEXT -> new ComponentWrapper(((HoverEvent.ShowText) event).value());
+            default -> ComponentWrapper.EMPTY;
+        };
+    }
+
+    @Getter(name = "hoverTooltip")
+    public ComponentWrapper[] getHoverTooltip() {
+        HoverEvent event = inner.getHoverEvent();
+        if (event == null) {
+            return new ComponentWrapper[0];
         }
+
+        return switch (event.action()) {
+            case SHOW_TEXT -> new ComponentWrapper[] { new ComponentWrapper(((HoverEvent.ShowText) event).value()) };
+            case SHOW_ITEM -> {
+                List<Component> components = Screen.getTooltipFromItem(Minecraft.getInstance(), ((HoverEvent.ShowItem) event).item());
+                yield components.stream().map(ComponentWrapper::new).toArray(ComponentWrapper[]::new);
+            }
+            case SHOW_ENTITY -> {
+                List<Component> components = ((HoverEvent.ShowEntity) event).entity().getTooltipLines();
+                yield components.stream().map(ComponentWrapper::new).toArray(ComponentWrapper[]::new);
+            }
+        };
+    }
+
+    @Getter(name = "hoverItem")
+    public ItemStackWrapper getHoverItem() {
+        HoverEvent event = inner.getHoverEvent();
+        if (event == null) {
+            return new ItemStackWrapper(ItemStack.EMPTY);
+        }
+
+        return switch (event.action()) {
+            case SHOW_ITEM -> new ItemStackWrapper(((HoverEvent.ShowItem) event).item());
+            default -> new ItemStackWrapper(ItemStack.EMPTY);
+        };
+    }
+
+    @Getter(name = "hoverEntity")
+    public UUIDWrapper getHoverEntity() {
+        HoverEvent event = inner.getHoverEvent();
+        if (event == null) {
+            return null;
+        }
+
+        return switch (event.action()) {
+            case SHOW_ENTITY -> new UUIDWrapper(((HoverEvent.ShowEntity) event).entity().uuid);
+            default -> null;
+        };
     }
 
     @Getter(name = "clickCommand")
@@ -110,8 +157,11 @@ public class StyleWrapper {
         }
 
         return switch (event.action()) {
+            case OPEN_URL -> ((ClickEvent.OpenUrl) event).uri().toString();
+            case OPEN_FILE -> ((ClickEvent.OpenFile) event).path();
             case RUN_COMMAND -> ((ClickEvent.RunCommand) event).command();
             case SUGGEST_COMMAND -> ((ClickEvent.SuggestCommand) event).command();
+            case COPY_TO_CLIPBOARD -> ((ClickEvent.CopyToClipboard) event).value();
             default -> "";
         };
     }

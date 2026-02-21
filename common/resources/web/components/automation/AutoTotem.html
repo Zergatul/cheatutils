@@ -7,5 +7,14 @@
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
         </div>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.skipIfUsingItem" @change="update()">Don't activate when using items</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Don't active auto totem if you are currently using item: consuming food, loading bow, etc.
+            </div>
+        </fieldset>
     </div>
 </div>
