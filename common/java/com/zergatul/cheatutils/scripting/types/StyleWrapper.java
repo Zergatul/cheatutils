@@ -5,13 +5,12 @@ import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.*;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.List;
 import java.util.UUID;
 
 @CustomType(name = "TextStyle")
@@ -101,6 +100,26 @@ public class StyleWrapper {
         return switch (event.action()) {
             case SHOW_TEXT -> new ComponentWrapper(((HoverEvent.ShowText) event).value());
             default -> ComponentWrapper.EMPTY;
+        };
+    }
+
+    @Getter(name = "hoverTooltip")
+    public ComponentWrapper[] getHoverTooltip() {
+        HoverEvent event = inner.getHoverEvent();
+        if (event == null) {
+            return new ComponentWrapper[0];
+        }
+
+        return switch (event.action()) {
+            case SHOW_TEXT -> new ComponentWrapper[] { new ComponentWrapper(((HoverEvent.ShowText) event).value()) };
+            case SHOW_ITEM -> {
+                List<Component> components = Screen.getTooltipFromItem(Minecraft.getInstance(), ((HoverEvent.ShowItem) event).item());
+                yield components.stream().map(ComponentWrapper::new).toArray(ComponentWrapper[]::new);
+            }
+            case SHOW_ENTITY -> {
+                List<Component> components = ((HoverEvent.ShowEntity) event).entity().getTooltipLines();
+                yield components.stream().map(ComponentWrapper::new).toArray(ComponentWrapper[]::new);
+            }
         };
     }
 
