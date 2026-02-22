@@ -18,6 +18,7 @@ import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
+import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -137,7 +138,7 @@ public class GameApi {
                 if (shouldWait) {
                     TickEndExecutor.instance.waitTicks(1, this);
                 } else {
-                    result.complete(true);
+                    result.complete(!(mc.screen instanceof DisconnectedScreen));
                 }
             }
         }
