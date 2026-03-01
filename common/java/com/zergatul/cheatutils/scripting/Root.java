@@ -48,6 +48,7 @@ public class Root {
     public static StepUpApi stepUp = new StepUpApi();
     public static AimAssistApi aimAssist = new AimAssistApi();
     public static AirPlaceApi airPlace = new AirPlaceApi();
+    public static SpeedTellyApi speedTelly = new SpeedTellyApi();
 
     // visuals
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();
