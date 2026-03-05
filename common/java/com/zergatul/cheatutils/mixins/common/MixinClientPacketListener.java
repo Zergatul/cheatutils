@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ChunkController;
 import com.zergatul.cheatutils.helpers.MixinClientPacketListenerHelper;
 import net.minecraft.client.Minecraft;
@@ -30,26 +31,30 @@ public abstract class MixinClientPacketListener {
             argsOnly = true,
             ordinal = 0)
     private ClientboundLoginPacket onModifyLoginPacket(ClientboundLoginPacket packet) {
-        Minecraft mc = Minecraft.getInstance();
-        return new ClientboundLoginPacket(
-                packet.playerId(),
-                packet.hardcore(),
-                packet.gameType(),
-                packet.previousGameType(),
-                packet.levels(),
-                packet.registryHolder(),
-                packet.dimensionType(),
-                packet.dimension(),
-                packet.seed(),
-                packet.maxPlayers(),
-                mc.options.renderDistance().get(),
-                mc.options.simulationDistance().get(),
-                packet.reducedDebugInfo(),
-                packet.showDeathScreen(),
-                packet.isDebug(),
-                packet.isFlat(),
-                packet.lastDeathLocation(),
-                packet.portalCooldown());
+        if (ConfigStore.instance.getConfig().chunksConfig.ignoreServerViewDistance) {
+            Minecraft mc = Minecraft.getInstance();
+            return new ClientboundLoginPacket(
+                    packet.playerId(),
+                    packet.hardcore(),
+                    packet.gameType(),
+                    packet.previousGameType(),
+                    packet.levels(),
+                    packet.registryHolder(),
+                    packet.dimensionType(),
+                    packet.dimension(),
+                    packet.seed(),
+                    packet.maxPlayers(),
+                    mc.options.renderDistance().get(),
+                    mc.options.simulationDistance().get(),
+                    packet.reducedDebugInfo(),
+                    packet.showDeathScreen(),
+                    packet.isDebug(),
+                    packet.isFlat(),
+                    packet.lastDeathLocation(),
+                    packet.portalCooldown());
+        } else {
+            return packet;
+        }
     }
 
     @ModifyVariable(
