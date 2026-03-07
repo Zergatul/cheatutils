@@ -20,7 +20,7 @@ public class FastGroupLineRenderer implements GroupLineRenderer {
         }
 
         this.event = event;
-        this.view = event.getCamera().position();
+        this.view = event.getCameraState().pos;
 
         if (program == null) {
             program = new EspGroupLinesProgram();

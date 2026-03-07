@@ -4,14 +4,13 @@ import com.zergatul.cheatutils.modules.scripting.Containers;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
-import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.core.Holder;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -55,7 +54,7 @@ public class ContainersApi {
         if (menu == null) {
             return "";
         }
-        return ClassRemapper.fromObf(menu.getClass().getName());
+        return menu.getClass().getName();
     }
 
     @MethodDescription("""
@@ -129,14 +128,14 @@ public class ContainersApi {
             return false;
         }
 
-        ClickType type;
+        ContainerInput type;
         try {
-            type = ClickType.valueOf(clickType);
+            type = ContainerInput.valueOf(clickType);
         } catch (IllegalArgumentException e) {
             return false;
         }
 
-        mc.gameMode.handleInventoryMouseClick(menu.containerId, slot, button, type, mc.player);
+        mc.gameMode.handleContainerInput(menu.containerId, slot, button, type, mc.player);
         return true;
     }
 

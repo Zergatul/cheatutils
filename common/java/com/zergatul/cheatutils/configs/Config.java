@@ -54,8 +54,6 @@ public class Config {
     public BreachSwapConfig breachSwapConfig = new BreachSwapConfig();
     public SpearRangeConfig spearRangeConfig = new SpearRangeConfig();
     public AutoStunnerConfig autoStunnerConfig = new AutoStunnerConfig();
-    public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
-    public FakeWeatherConfig fakeWeatherConfig = new FakeWeatherConfig();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
     public ExecConfig execConfig = new ExecConfig();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();

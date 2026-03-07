@@ -9,7 +9,7 @@ import net.minecraft.network.HashedStack;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -62,7 +62,7 @@ public class InventoryUtils {
                 mc.player.inventoryMenu.getStateId(),
                 fromSlot.toMenuIndex(),
                 (byte) toSlot.toInventoryIndex(), // buttonNum
-                ClickType.SWAP,
+                ContainerInput.SWAP,
                 int2objectmap,
                 toHashed(new ItemStack(Items.AIR, 1))));
 
@@ -90,7 +90,7 @@ public class InventoryUtils {
                     mc.player.inventoryMenu.getStateId(),
                     (short) -999, // slotNum
                     (byte) 0, // buttonNum
-                    ClickType.PICKUP,
+                    ContainerInput.PICKUP,
                     new Int2ObjectOpenHashMap<>(),
                     toHashed(air)));
         }
@@ -184,7 +184,7 @@ public class InventoryUtils {
                 mc.player.inventoryMenu.getStateId(),
                 slot.toMenuIndex(), // slotNum
                 (byte) 0, // buttonNum
-                ClickType.PICKUP,
+                ContainerInput.PICKUP,
                 changedSlots,
                 toHashed(stack))); //carriedItem
     }

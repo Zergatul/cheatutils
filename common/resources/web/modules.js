@@ -465,20 +465,6 @@ module({
 });
 module({
     group: 'visuals',
-    name: 'No Weather',
-    component: 'NoWeather',
-    path: 'no-weather',
-    tags: ['no', 'weather']
-});
-module({
-    group: 'visuals',
-    name: 'Fake Weather',
-    component: 'FakeWeather',
-    path: 'fake-weather',
-    tags: ['fake', 'weather']
-});
-module({
-    group: 'visuals',
     name: 'Logout Spots',
     component: 'LogoutSpots',
     path: 'logout-spots',

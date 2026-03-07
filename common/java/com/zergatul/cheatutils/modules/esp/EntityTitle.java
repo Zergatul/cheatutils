@@ -75,8 +75,7 @@ public class EntityTitle implements FontBackendHolder {
     private FontRenderer enchantmentFontRenderer;
 
     private EntityTitle() {
-        Events.AfterRenderWorld.add(this::onRenderWorld);
-        Events.PreRenderGui.add(this::onRenderGui);
+        Events.AfterRenderWorld.add(this::onRenderWorld, 20);
     }
 
     @Override
@@ -110,13 +109,13 @@ public class EntityTitle implements FontBackendHolder {
 
         ImmutableList<EntityEspConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
 
-        Vec3 view = event.getCamera().position();
+        Vec3 view = event.getCameraState().pos;
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity == mc.player && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
                 continue;
             }
 
-            Vec3 pos = entity.getPosition(event.getTickDelta());
+            Vec3 pos = entity.getPosition(event.getPartialTickTime());
             double distanceSqr = pos.distanceToSqr(view);
 
             boolean drawTitles = false;
@@ -166,9 +165,11 @@ public class EntityTitle implements FontBackendHolder {
         addDisconnectedPlayers(view);
 
         entities.sort((e1, e2) -> -Double.compare(e1.distanceSqr, e2.distanceSqr));
+
+        renderEntityTitles(event);
     }
 
-    private void onRenderGui(RenderGuiEvent event) {
+    private void renderEntityTitles(RenderWorldLastEvent event) {
         if (!EspGlobal.enabled) {
             return;
         }
@@ -212,14 +213,14 @@ public class EntityTitle implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+        RenderingContext context = new RenderingContext(event.getGuiGraphics(), matrix, halfScrWidth, halfScrHeight);
 
         List<ItemStack> items = new ArrayList<>();
         List<List<EnchantmentEntry>> enchantments = new ArrayList<>();
 
         for (EntityEntry entry : entities) {
-            Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
-            Vector4f v2 = event.getWorldProjectionMatrix().transform(v1);
+            Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
+            Vector4f v2 = event.getProjection().transform(v1);
             if (v2.z <= 0) {
                 continue; // behind
             }

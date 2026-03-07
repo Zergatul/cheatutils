@@ -1,10 +1,10 @@
 {
-  "required": false,
+  "required": true,
   "minVersion": "0.8.2",
   "package": "com.zergatul.cheatutils.mixins",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "injectors": {
-    "defaultRequire": 0
+    "defaultRequire": 1
   },
   "mixinPriority": 500,
   "client": [

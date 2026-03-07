@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinMultiPlayerGameMode {
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
-            method = "method_41930")
-    private void onBeforeInstaMine(BlockState blockState, BlockPos pos, Direction direction, int p_233728_, CallbackInfoReturnable<Packet<?>> cir) {
+            method = "lambda$startDestroyBlock$1(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;I)Lnet/minecraft/network/protocol/Packet;")
+    private void onBeforeInstaMine(BlockState blockState, BlockPos pos, Direction direction, int sequence, CallbackInfoReturnable<Packet<?>> cir) {
         Events.BeforeInstaMine.trigger(pos);
     }
 }

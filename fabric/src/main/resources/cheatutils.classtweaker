@@ -1,4 +1,5 @@
-classTweaker v1 named
+classTweaker v1 official
+accessible class com/mojang/blaze3d/opengl/GlDevice
 accessible class net/minecraft/client/multiplayer/ClientChunkCache$Storage
 accessible class net/minecraft/client/renderer/chunk/SectionCopy
 accessible class net/minecraft/client/renderer/rendertype/RenderSetup$TextureBinding

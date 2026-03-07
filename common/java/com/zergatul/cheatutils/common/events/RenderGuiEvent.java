@@ -1,24 +1,7 @@
 package com.zergatul.cheatutils.common.events;
 
-import net.minecraft.client.Camera;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4f;
 
-public record RenderGuiEvent(GuiGraphics graphics, RenderWorldLastEvent renderWorldLastEvent) {
-
-    public float getTickDelta() {
-        return renderWorldLastEvent.getTickDelta();
-    }
-
-    public Matrix4f getWorldPoseMatrix() {
-        return renderWorldLastEvent.getPose();
-    }
-
-    public Matrix4f getWorldProjectionMatrix() {
-        return renderWorldLastEvent.getProjection();
-    }
-
-    public Camera getCamera() {
-        return renderWorldLastEvent.getCamera();
-    }
-}
+public record RenderGuiEvent(GuiGraphics graphics) {}

@@ -152,7 +152,7 @@ public class WorldDownloadController {
             ((RegionalFileStorageAccessor) (Object) storage).write_CU(chunk.getPos(), compoundtag);
 
             ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).notifyChunkSaved(
-                    dimension, chunk.getPos().x, chunk.getPos().z);
+                    dimension, chunk.getPos().x(), chunk.getPos().z());
         } catch (Throwable e) {
             logger.error("Cannot save chunk", e);
         }
@@ -161,9 +161,9 @@ public class WorldDownloadController {
     // copy from SerializableChunkData.write(level, chunk)
     private CompoundTag write(ClientLevel level, ChunkAccess chunk) {
         CompoundTag chunkNbt = NbtUtils.addCurrentDataVersion(new CompoundTag());
-        chunkNbt.putInt("xPos", chunk.getPos().x);
+        chunkNbt.putInt("xPos", chunk.getPos().x());
         chunkNbt.putInt("yPos", chunk.getMinSectionY());
-        chunkNbt.putInt("zPos", chunk.getPos().z);
+        chunkNbt.putInt("zPos", chunk.getPos().z());
         chunkNbt.putLong("LastUpdate", level.getGameTime());
         chunkNbt.putLong("InhabitedTime", chunk.getInhabitedTime());
         chunkNbt.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(chunk.getPersistedStatus()).toString());

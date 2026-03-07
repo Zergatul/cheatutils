@@ -21,7 +21,7 @@ public class FastLineRenderer implements LineRenderer {
         }
 
         this.event = event;
-        this.view = event.getCamera().position();
+        this.view = event.getCameraState().pos;
         this.depthTest = depthTest;
 
         if (program == null) {

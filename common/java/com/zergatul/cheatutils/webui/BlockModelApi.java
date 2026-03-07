@@ -10,16 +10,16 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.*;
 
@@ -67,8 +68,9 @@ public class BlockModelApi extends ApiBase {
 
         BlockState state = block.defaultBlockState();
         BlockStateModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-        List<BlockModelPart> parts = model.collectParts(random);
-        for (BlockModelPart part : parts) {
+        List<BlockStateModelPart> parts = new ArrayList<>();
+        model.collectParts(random, parts);
+        for (BlockStateModelPart part : parts) {
             for (Direction direction : Direction.values()) {
                 List<BakedQuad> quads = part.getQuads(direction);
                 for (BakedQuad quad : quads) {
@@ -138,37 +140,10 @@ public class BlockModelApi extends ApiBase {
             }
         }
 
-        /*Vector3f min = new Vector3f(1000, 1000, 1000);
-        Vector3f max = new Vector3f(-1000, -1000, -1000);
-        result.forEach(quad -> {
-            Arrays.stream(quad.vertices).forEach(vertex -> {
-                if (vertex.x < min.x) {
-                    min.x = vertex.x;
-                }
-                if (vertex.y < min.y) {
-                    min.y = vertex.y;
-                }
-                if (vertex.z < min.z) {
-                    min.z = vertex.z;
-                }
-                if (vertex.x > max.x) {
-                    max.x = vertex.x;
-                }
-                if (vertex.y > max.y) {
-                    max.y = vertex.y;
-                }
-                if (vertex.z > max.z) {
-                    max.z = vertex.z;
-                }
-            });
-        });
-
-        System.out.println("MIN =" + min.toString(new DecimalFormat("0.000")));
-        System.out.println("MAX =" + max.toString(new DecimalFormat("0.000")));*/
-
         return result;
     }
 
+    @NullMarked
     private static class InMemoryNodeCollector implements SubmitNodeCollector {
 
         public final List<SubmitNodeStorage.ModelSubmit<?>> modelSubmits = new ArrayList<>();
@@ -176,27 +151,22 @@ public class BlockModelApi extends ApiBase {
         public final List<SubmitNodeStorage.ItemSubmit> itemSubmits = new ArrayList<>();
 
         @Override
-        public OrderedSubmitNodeCollector order(int i) {
+        public void submitShadow(PoseStack poseStack, float radius, List<EntityRenderState.ShadowPiece> pieces) {
             throw new AssertionError();
         }
 
         @Override
-        public void submitShadow(PoseStack poseStack, float f, List<EntityRenderState.ShadowPiece> list) {
+        public void submitNameTag(PoseStack poseStack, @org.jspecify.annotations.Nullable Vec3 nameTagAttachment, int offset, Component name, boolean seeThrough, int lightCoords, double distanceToCameraSq, CameraRenderState camera) {
             throw new AssertionError();
         }
 
         @Override
-        public void submitNameTag(PoseStack poseStack, @Nullable Vec3 vec3, int i, Component component, boolean bl, int j, double d, CameraRenderState cameraRenderState) {
+        public void submitText(PoseStack poseStack, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor) {
             throw new AssertionError();
         }
 
         @Override
-        public void submitText(PoseStack poseStack, float f, float g, FormattedCharSequence formattedCharSequence, boolean bl, Font.DisplayMode displayMode, int i, int j, int k, int l) {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void submitFlame(PoseStack poseStack, EntityRenderState entityRenderState, Quaternionf quaternionf) {
+        public void submitFlame(PoseStack poseStack, EntityRenderState renderState, Quaternionf rotation) {
             throw new AssertionError();
         }
 
@@ -206,37 +176,55 @@ public class BlockModelApi extends ApiBase {
         }
 
         @Override
-        public <S> void submitModel(Model<? super S> model, S object, PoseStack poseStack, RenderType renderType, int i, int j, int k, @Nullable TextureAtlasSprite textureAtlasSprite, int l, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+        public <S> void submitModel(
+                Model<? super S> model,
+                S state,
+                PoseStack poseStack,
+                RenderType renderType,
+                int lightCoords,
+                int overlayCoords,
+                int tintedColor,
+                @Nullable TextureAtlasSprite sprite,
+                int outlineColor,
+                @Nullable final ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
+        ) {
             this.modelSubmits.add(new SubmitNodeStorage.ModelSubmit<>(
                     poseStack.last().copy(),
                     model,
-                    object,
-                    i,
-                    j,
-                    k,
-                    textureAtlasSprite,
-                    l,
+                    state,
+                    lightCoords,
+                    overlayCoords,
+                    tintedColor,
+                    sprite,
+                    outlineColor,
                     crumblingOverlay));
         }
 
         @Override
-        public void submitModelPart(ModelPart modelPart, PoseStack poseStack, RenderType renderType, int i, int j, @Nullable TextureAtlasSprite textureAtlasSprite, boolean bl, boolean bl2, int k, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int l) {
+        public void submitModelPart(
+                ModelPart modelPart,
+                PoseStack poseStack,
+                RenderType renderType,
+                int lightCoords,
+                int overlayCoords,
+                @Nullable TextureAtlasSprite sprite,
+                boolean sheeted,
+                boolean hasFoil,
+                int tintedColor,
+                @Nullable final ModelFeatureRenderer.CrumblingOverlay crumblingOverlay,
+                final int outlineColor
+        ) {
             this.modelPartSubmits.add(new SubmitNodeStorage.ModelPartSubmit(
                     poseStack.last().copy(),
                     modelPart,
-                    i,
-                    j,
-                    textureAtlasSprite,
-                    bl,
-                    bl2,
-                    k,
+                    lightCoords,
+                    overlayCoords,
+                    sprite,
+                    sheeted,
+                    hasFoil,
+                    tintedColor,
                     crumblingOverlay,
-                    l));
-        }
-
-        @Override
-        public void submitBlock(PoseStack poseStack, BlockState blockState, int i, int j, int k) {
-            throw new AssertionError();
+                    outlineColor));
         }
 
         @Override
@@ -245,13 +233,22 @@ public class BlockModelApi extends ApiBase {
         }
 
         @Override
-        public void submitBlockModel(PoseStack poseStack, RenderType renderType, BlockStateModel blockStateModel, float f, float g, float h, int i, int j, int k) {
+        public void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
             throw new AssertionError();
         }
 
         @Override
-        public void submitItem(PoseStack poseStack, ItemDisplayContext itemDisplayContext, int i, int j, int k, int[] is, List<BakedQuad> list, RenderType renderType, ItemStackRenderState.FoilType foilType) {
-            itemSubmits.add(new SubmitNodeStorage.ItemSubmit(poseStack.last().copy(), itemDisplayContext, i, j, k, is, list, renderType, foilType));
+        public void submitItem(
+                PoseStack poseStack,
+                ItemDisplayContext displayContext,
+                int lightCoords,
+                int overlayCoords,
+                int outlineColor,
+                int[] tintLayers,
+                List<BakedQuad> quads,
+                ItemStackRenderState.FoilType foilType
+        ) {
+            itemSubmits.add(new SubmitNodeStorage.ItemSubmit(poseStack.last().copy(), displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, foilType));
         }
 
         @Override
@@ -263,6 +260,11 @@ public class BlockModelApi extends ApiBase {
         public void submitParticleGroup(ParticleGroupRenderer particleGroupRenderer) {
             throw new AssertionError();
         }
+
+        @Override
+        public OrderedSubmitNodeCollector order(int order) {
+            throw new AssertionError();
+        }
     }
 
     public static class Quad {
@@ -271,7 +273,7 @@ public class BlockModelApi extends ApiBase {
         public final Vertex[] vertices;
 
         public Quad(BakedQuad quad, BlockState state) {
-            this.location = quad.sprite().atlasLocation().toString();
+            this.location = quad.spriteInfo().sprite().atlasLocation().toString();
 
             this.vertices = new Vertex[4];
             for (int i = 0; i < 4; i++) {
@@ -281,7 +283,7 @@ public class BlockModelApi extends ApiBase {
                 this.vertices[i].z = quad.position(i).z() - 0.5f;
 
                 int color = quad.isTinted() ?
-                        Minecraft.getInstance().getBlockColors().getColor(state, null, null, 0) :
+                        Minecraft.getInstance().getBlockColors().getTintSource(state, 0).color(state) :
                         -1;
                 this.vertices[i].r = color & 0xFF;
                 this.vertices[i].g = (color >> 8) & 0xFF;
@@ -294,7 +296,7 @@ public class BlockModelApi extends ApiBase {
         }
 
         public Quad(BakedQuad quad) {
-            this.location = quad.sprite().atlasLocation().toString();
+            this.location = quad.spriteInfo().sprite().atlasLocation().toString();
 
             this.vertices = new Vertex[4];
             for (int i = 0; i < 4; i++) {

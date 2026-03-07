@@ -2,7 +2,7 @@
   "required": false,
   "minVersion": "0.8.2",
   "package": "com.zergatul.cheatutils.mixins",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "plugin": "com.zergatul.cheatutils.compatibility.IrisMixinPlugin",
   "injectors": {
     "defaultRequire": 0

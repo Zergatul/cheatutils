@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.zergatul.cheatutils.extensions.ParametrizedSubmit;
@@ -9,11 +10,13 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -29,41 +32,55 @@ public abstract class MixinItemFeatureRenderer {
     private PoseStack poseStack;
 
     @Inject(
-            method = "render",
-            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"),
-            locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void onRenderEntityEspBuffers(
-            SubmitNodeCollection submitNodeCollection,
-            MultiBufferSource.BufferSource bufferSource,
-            OutlineBufferSource outlineBufferSource,
+            method = "renderSolid",
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
+    private void onRenderEntityEspSolidBuffers(
+            final SubmitNodeCollection nodeCollection,
+            final MultiBufferSource.BufferSource bufferSource,
+            final OutlineBufferSource outlineBufferSource,
             CallbackInfo info,
-            Iterator<?> iterator,
-            SubmitNodeStorage.ItemSubmit submission
+            @Local(ordinal = 0) SubmitNodeStorage.ItemSubmit submit
     ) {
-        if (submission == null) {
+        captureBuffers(submit);
+    }
+
+    @Inject(
+            method = "renderTranslucent",
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
+    private void onRenderEntityEspTranslucentBuffers(
+            final SubmitNodeCollection nodeCollection,
+            final MultiBufferSource.BufferSource bufferSource,
+            final OutlineBufferSource outlineBufferSource,
+            CallbackInfo info,
+            @Local(ordinal = 0) SubmitNodeStorage.ItemSubmit submit
+    ) {
+        captureBuffers(submit);
+    }
+
+    @Unique
+    private void captureBuffers(SubmitNodeStorage.ItemSubmit submit) {
+        if (submit == null) {
             return;
         }
 
-        ParametrizedSubmit extension = (ParametrizedSubmit) (Object) submission;
+        ParametrizedSubmit extension = (ParametrizedSubmit) (Object) submit;
         EntityEsp.EntityRenderParameters parameters = extension.getParameters_CU();
         if (parameters == null) {
             return;
         }
 
-        RenderType renderType = submission.renderType();
+        /*RenderType renderType = submission.renderType();
         if (!EntityEsp.instance.isGoodRenderTypeForOverlays(renderType)) {
             return;
-        }
+        }*/
 
-        Identifier texture = EntityEsp.instance.getTextureFromRenderType(renderType).orElse(null);
-        if (texture == null) {
-            return;
-        }
+        BakedQuad quad = submit.quads().stream().findFirst().orElseThrow();
+        Identifier texture = quad.spriteInfo().sprite().atlasLocation();
 
         if (parameters.outlineConfig() != null) {
             VertexConsumer consumer = EntityEsp.instance.getOutlineVertexConsumer(parameters.outlineConfig(), texture);
             ItemRenderer.renderItem(
-                    submission.displayContext(),
+                    submit.displayContext(),
                     this.poseStack,
                     new OutlineBufferSource() {
                         @Override
@@ -71,18 +88,17 @@ public abstract class MixinItemFeatureRenderer {
                             return consumer;
                         }
                     },
-                    submission.lightCoords(),
-                    submission.overlayCoords(),
-                    submission.tintLayers(),
-                    submission.quads(),
-                    submission.renderType(),
+                    submit.lightCoords(),
+                    submit.overlayCoords(),
+                    submit.tintLayers(),
+                    submit.quads(),
                     ItemStackRenderState.FoilType.NONE);
         }
 
         if (parameters.overlayConfig() != null) {
             VertexConsumer consumer = EntityEsp.instance.getOverlayVertexConsumer(parameters.overlayConfig(), texture);
             ItemRenderer.renderItem(
-                    submission.displayContext(),
+                    submit.displayContext(),
                     this.poseStack,
                     new OutlineBufferSource() {
                         @Override
@@ -90,11 +106,10 @@ public abstract class MixinItemFeatureRenderer {
                             return consumer;
                         }
                     },
-                    submission.lightCoords(),
-                    submission.overlayCoords(),
-                    submission.tintLayers(),
-                    submission.quads(),
-                    submission.renderType(),
+                    submit.lightCoords(),
+                    submit.overlayCoords(),
+                    submit.tintLayers(),
+                    submit.quads(),
                     ItemStackRenderState.FoilType.NONE);
         }
     }

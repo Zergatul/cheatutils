@@ -42,10 +42,6 @@ public class RenderingContext {
         this.framebufferSetup = framebufferSetup;
     }
 
-    public GuiGraphics getGraphics() {
-        return graphics;
-    }
-
     public RenderBuffers getBuffers() {
         return buffers;
     }

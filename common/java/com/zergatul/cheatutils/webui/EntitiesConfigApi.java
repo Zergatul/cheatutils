@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.webui;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
-import com.zergatul.cheatutils.wrappers.ClassRemapper;
 
 public class EntitiesConfigApi extends ApiBase {
 
@@ -45,8 +44,7 @@ public class EntitiesConfigApi extends ApiBase {
         EntityEspConfig jsonConfig = gson.fromJson(body, EntityEspConfig.class);
         jsonConfig.validate();
 
-        String obfClassName = ClassRemapper.toObf(className);
-        if (!obfClassName.equals(jsonConfig.clazz.getName())) {
+        if (!className.equals(jsonConfig.clazz.getName())) {
             throw new ApiException("Entity class name don't match.", HttpResponseCodes.BAD_REQUEST);
         }
 
@@ -66,9 +64,8 @@ public class EntitiesConfigApi extends ApiBase {
 
     @Override
     public synchronized String delete(String className) {
-        String obfClassName = ClassRemapper.toObf(className);
         EntityEspConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
-                .filter(c -> c.clazz.getName().equals(obfClassName))
+                .filter(c -> c.clazz.getName().equals(className))
                 .findFirst()
                 .orElse(null);
 

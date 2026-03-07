@@ -57,25 +57,7 @@ public class BlockEsp {
 
         MainFrameBuffer.bind();
 
-        if (!customEntries.isEmpty()) {
-            final float shift = 0.01f;
-            Vec3 view = event.getCamera().position();
-            Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
-            renderer.begin();
-            for (CustomBlockPosEntry entry : customEntries) {
-                renderer.cuboid(
-                        (float) (entry.pos.getX() - view.x - shift),
-                        (float) (entry.pos.getY() - view.y - shift),
-                        (float) (entry.pos.getZ() - view.z - shift),
-                        (float) (entry.pos.getX() - view.x + 1 + shift),
-                        (float) (entry.pos.getY() - view.y + 1 + shift),
-                        (float) (entry.pos.getZ() - view.z + 1 + shift),
-                        ColorUtils.r(entry.color), ColorUtils.g(entry.color), ColorUtils.b(entry.color), ColorUtils.a(entry.color));
-            }
-            GlStateManager._depthMask(false);
-            renderer.end(event.getMvp());
-            GlStateManager._depthMask(true);
-        }
+        renderCustomEntries(event);
 
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;
@@ -218,6 +200,28 @@ public class BlockEsp {
                         config.overlayColor.getBlue() / 255f,
                         config.overlayColor.getAlpha() / 255f);
             }
+        }
+    }
+
+    private void renderCustomEntries(RenderWorldLastEvent event) {
+        if (!customEntries.isEmpty()) {
+            final float shift = 0.01f;
+            Vec3 view = event.getCameraState().pos;
+            Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
+            renderer.begin();
+            for (CustomBlockPosEntry entry : customEntries) {
+                renderer.cuboid(
+                        (float) (entry.pos.getX() - view.x - shift),
+                        (float) (entry.pos.getY() - view.y - shift),
+                        (float) (entry.pos.getZ() - view.z - shift),
+                        (float) (entry.pos.getX() - view.x + 1 + shift),
+                        (float) (entry.pos.getY() - view.y + 1 + shift),
+                        (float) (entry.pos.getZ() - view.z + 1 + shift),
+                        ColorUtils.r(entry.color), ColorUtils.g(entry.color), ColorUtils.b(entry.color), ColorUtils.a(entry.color));
+            }
+            GlStateManager._depthMask(false);
+            renderer.end(event.getMvp());
+            GlStateManager._depthMask(true);
         }
     }
 

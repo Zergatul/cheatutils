@@ -2,14 +2,11 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.chunkoverlays.*;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.Texture2dRenderer;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.utils.Dimension;
-import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
-import com.zergatul.cheatutils.common.events.MouseScrollEvent;
-import com.zergatul.cheatutils.common.events.RenderGuiEvent;
-import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -44,7 +41,7 @@ public class ChunkOverlayController {
 
         Events.RawChunkLoaded.add(this::onChunkLoaded);
         Events.RawBlockUpdated.add(this::onBlockChanged);
-        Events.PostRenderGui.add(this::render);
+        Events.AfterRenderWorld.add(this::render, 30);
         Events.PreRenderGuiOverlay.add(this::onPreRenderGameOverlay);
         Events.MouseScroll.add(this::onMouseScroll);
     }
@@ -54,7 +51,7 @@ public class ChunkOverlayController {
         return (T) overlays.stream().filter(o -> o.getClass() == clazz).findFirst().orElse(null);
     }
 
-    private void render(RenderGuiEvent event) {
+    private void render(RenderWorldLastEvent event) {
         if (noOverlaysEnabled()) {
             return;
         }
@@ -77,7 +74,7 @@ public class ChunkOverlayController {
 
         MainFrameBuffer.bind();
 
-        float frameTime = event.getTickDelta();
+        float frameTime = event.getPartialTickTime();
         float xp = (float) Mth.lerp(frameTime, mc.player.xo, mc.player.getX());
         float zp = (float) Mth.lerp(frameTime, mc.player.zo, mc.player.getZ());
         float xc = (float) mc.gameRenderer.getMainCamera().position().x;

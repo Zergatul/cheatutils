@@ -18,10 +18,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.BundleItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BundleContents;
 
 import java.util.ArrayList;
@@ -124,9 +121,9 @@ public class ContainerSummary implements Module {
             if (itemStack.getItem() instanceof BundleItem) {
                 BundleContents contents = itemStack.get(DataComponents.BUNDLE_CONTENTS);
                 assert contents != null;
-                for (ItemStack slot : contents.items()) {
-                    if (!slot.isEmpty()) {
-                        addItem(map, slot);
+                for (ItemStackTemplate slot : contents.items()) {
+                    if (slot.count() != 0) {
+                        addItem(map, slot.create());
                     }
                 }
             }

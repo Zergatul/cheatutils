@@ -132,7 +132,7 @@ public abstract class MixinMinecraft {
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;onDisconnected()V", shift = At.Shift.AFTER),
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")
-    private void onClearDisconnect(Screen screen, boolean b1, boolean b2, CallbackInfo info) {
+    private void onClearDisconnect(Screen screen, boolean keepResourcePacks, boolean stopSounds, CallbackInfo info) {
         if (this.level != null) {
             Events.LevelUnload.trigger();
         }
@@ -169,7 +169,7 @@ public abstract class MixinMinecraft {
         return InvMove.instance.overrideGetScreen(mc);
     }
 
-    @Inject(at = @At(value = "TAIL"), method = "resizeDisplay()V")
+    @Inject(at = @At(value = "TAIL"), method = "resizeGui()V")
     private void onResize(CallbackInfo info) {
         Events.WindowResize.trigger();
     }
@@ -177,5 +177,15 @@ public abstract class MixinMinecraft {
     @Inject(method = "startUseItem", at = @At("HEAD"))
     private void onBeforeStartUseItem(CallbackInfo info) {
         AirPlace.instance.onBeforeStartUseItem();
+    }
+
+    @Inject(method = "pick", at = @At("HEAD"))
+    private void onBeforePick(float partialTicks, CallbackInfo info) {
+        Events.OnBeforePick.trigger();
+    }
+
+    @Inject(method = "pick", at = @At("TAIL"))
+    private void onAfterPick(float partialTicks, CallbackInfo info) {
+        Events.OnAfterPick.trigger();
     }
 }

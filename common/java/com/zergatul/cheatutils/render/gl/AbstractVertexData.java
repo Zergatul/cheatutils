@@ -1,23 +1,18 @@
 package com.zergatul.cheatutils.render.gl;
 
-import com.zergatul.cheatutils.utils.IntUtils;
-import com.zergatul.cheatutils.utils.UnsafeUtil;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
-import sun.misc.Unsafe;
+
+import java.nio.ByteBuffer;
 
 public abstract class AbstractVertexData {
-
-    private static final MemoryUtil.MemoryAllocator ALLOCATOR = MemoryUtil.getAllocator(false);
-    private static final Unsafe UNSAFE = UnsafeUtil.get();
 
     public VertexArrayObject VAO;
     public VertexBufferObject VBO;
 
-    private long address;
+    private ByteBuffer buffer;
     private int position;
-    private int capacity;
 
     public AbstractVertexData() {
         VAO = new VertexArrayObject();
@@ -31,31 +26,26 @@ public abstract class AbstractVertexData {
         VBO.unbind();
         VAO.unbind();
 
-        capacity = 65536;
-        address = ALLOCATOR.malloc(capacity);
+        buffer = MemoryUtil.memAlloc(65536);
         position = 0;
     }
 
     public void add(float value) {
-        if (position == capacity) {
-            capacity *= 2;
-            address = ALLOCATOR.realloc(address, capacity);
-        }
-
-        UNSAFE.putFloat(address + position, value);
+        ensureCapacity(position + 4);
+        buffer.putFloat(position, value);
         position += 4;
     }
 
     public void add(FloatList list) {
-        if (position + list.size() * 4 > capacity) {
-            capacity = IntUtils.nextPowerOfTwo(position + list.size() * 4);
-            address = ALLOCATOR.realloc(address, capacity);
-        }
+        ensureCapacity(position + list.size() * 4);
 
+        int position = this.position;
         for (int i = 0; i < list.size(); i++) {
-            UNSAFE.putFloat(address + position, list.getFloat(i));
+            buffer.putFloat(position, list.getFloat(i));
             position += 4;
         }
+
+        this.position = position;
     }
 
     public void clear() {
@@ -67,18 +57,37 @@ public abstract class AbstractVertexData {
     }
 
     public void upload() {
+        buffer.limit(position);
+        buffer.position(0);
+
         VBO.bind();
-        GL30.nglBufferData(GL30.GL_ARRAY_BUFFER, position, address, GL30.GL_DYNAMIC_DRAW);
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buffer, GL30.GL_DYNAMIC_DRAW);
         VBO.unbind();
+
+        buffer.limit(buffer.capacity());
     }
 
     public void delete() {
         VAO.delete();
         VBO.delete();
-        ALLOCATOR.free(address);
+        MemoryUtil.memFree(buffer);
+        buffer = null;
     }
 
     protected abstract void bindAttributes();
 
     protected abstract int getBytesPerVertex();
+
+    private void ensureCapacity(int required) {
+        if (required <= buffer.capacity()) {
+            return;
+        }
+
+        int capacity = buffer.capacity();
+        while (capacity < required) {
+            capacity *= 2;
+        }
+
+        buffer = MemoryUtil.memRealloc(buffer, capacity);
+    }
 }

@@ -493,7 +493,7 @@ public class Schematica {
             return;
         }
 
-        Vec3 view = event.getCamera().position();
+        Vec3 view = event.getCameraState().pos;
 
         if (config.create.enabled) {
             renderCreateBoundaries(event, view, config.create);
@@ -778,11 +778,11 @@ public class Schematica {
         private long blockToChunkIndex(int x, int z) {
             x = SectionPos.blockToSectionCoord(x);
             z = SectionPos.blockToSectionCoord(z);
-            return ChunkPos.asLong(x, z);
+            return ChunkPos.pack(x, z);
         }
 
         private long chunkToChunkIndex(LevelChunk chunk) {
-            return ChunkPos.asLong(chunk.getPos().x, chunk.getPos().z);
+            return ChunkPos.pack(chunk.getPos().x(), chunk.getPos().z());
         }
 
         private Map<Long, Chunk> copyChunks(int dx, int dy, int dz) {

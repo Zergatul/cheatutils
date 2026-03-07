@@ -112,8 +112,8 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         }
 
         Segment segment = segments.get(segmentPos);
-        int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-        int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+        int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
+        int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
 
         Integer scanFromY = getConfig().scanFromY;
         for (int dx = 0; dx < 16; dx++) {
@@ -132,9 +132,9 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         }
 
         if (dimension.isNether()) {
-            int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-            int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
-            LevelChunk chunk = mc.level.getChunk(chunkPos.x, chunkPos.z);
+            int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
+            int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
+            LevelChunk chunk = mc.level.getChunk(chunkPos.x(), chunkPos.z());
             boolean updated = drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, chunk, getConfig().scanFromY);
             if (updated && !segment.updated) {
                 segment.updated = true;
@@ -142,13 +142,13 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                 addUpdatedSegment(segment);
             }
         } else {
-            LevelChunk chunk = mc.level.getChunk(chunkPos.x, chunkPos.z);
+            LevelChunk chunk = mc.level.getChunk(chunkPos.x(), chunkPos.z());
             int dx = Math.floorMod(pos.getX(), 16);
             int dz = Math.floorMod(pos.getZ(), 16);
             int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, dx, dz);
             if (pos.getY() >= height) {
-                int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-                int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+                int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
+                int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
                 boolean updated = drawPixel(dimension, xf, yf, dx, dz, segment, chunk, getConfig().scanFromY);
                 if (updated && !segment.updated) {
                     segment.updated = true;

@@ -3,12 +3,13 @@ package com.zergatul.cheatutils.chunkoverlays;
 import net.minecraft.world.level.ChunkPos;
 
 public class SegmentPos {
-    public int x;
-    public int z;
+
+    public final int x;
+    public final int z;
 
     public SegmentPos(ChunkPos pos, int segmentSize) {
-        this.x = Math.floorDiv(pos.x, segmentSize);
-        this.z = Math.floorDiv(pos.z, segmentSize);
+        this.x = Math.floorDiv(pos.x(), segmentSize);
+        this.z = Math.floorDiv(pos.z(), segmentSize);
     }
 
     @Override

@@ -121,10 +121,10 @@ public class EntityEsp implements Module {
         if (renderType.mode() != VertexFormat.Mode.QUADS) {
             return false;
         }
-        if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.POSITION)) {
+        if (renderType.format().getElements().stream().noneMatch(e -> e == VertexFormatElement.POSITION)) {
             return false;
         }
-        if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.UV)) {
+        if (renderType.format().getElements().stream().noneMatch(e -> e == VertexFormatElement.UV)) {
             return false;
         }
         return true;
@@ -203,7 +203,7 @@ public class EntityEsp implements Module {
             return;
         }
 
-        float partialTicks = event.getTickDelta();
+        float partialTicks = event.getPartialTickTime();
 
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;
@@ -290,7 +290,7 @@ public class EntityEsp implements Module {
                     a = ColorUtils.a(color);
                 }
 
-                Vec3 pos = entity.getPosition(event.getTickDelta());
+                Vec3 pos = entity.getPosition(event.getPartialTickTime());
                 final int lineWidth = config.tracerWidth;
                 if (lineWidth == 1) {
                     lineRenderer.line(tracerX, tracerY, tracerZ, pos.x, pos.y, pos.z, r, g, b, a);

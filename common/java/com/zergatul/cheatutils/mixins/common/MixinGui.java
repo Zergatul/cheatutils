@@ -32,13 +32,13 @@ public abstract class MixinGui {
     protected abstract Player getCameraPlayer();
 
     @Shadow
-    protected abstract int getVisibleVehicleHeartRows(int p_93013_);
+    protected abstract int getVisibleVehicleHeartRows(int hearts);
 
     @Shadow
     protected abstract LivingEntity getPlayerVehicleWithHealth();
 
     @Shadow
-    protected abstract int getVehicleMaxHearts(LivingEntity p_93023_);
+    protected abstract int getVehicleMaxHearts(LivingEntity vehicle);
 
     @Inject(at = @At("HEAD"), method = "renderEffects", cancellable = true)
     private void onRenderEffects(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
@@ -49,17 +49,13 @@ public abstract class MixinGui {
 
     @Inject(at = @At("HEAD"), method = "render")
     private void onBeforeRender(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
-        if (RenderWorldLastEvent.last != null) {
-            Events.PreRenderGui.trigger(new RenderGuiEvent(graphics, RenderWorldLastEvent.last));
-        }
+        Events.PreRenderGui.trigger(new RenderGuiEvent(graphics));
     }
 
     // inject at RETURN required for Forge
     @Inject(at = @At("RETURN"), method = "render")
     private void onAfterRender(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
-        if (RenderWorldLastEvent.last != null) {
-            Events.PostRenderGui.trigger(new RenderGuiEvent(graphics, RenderWorldLastEvent.last));
-        }
+        Events.PostRenderGui.trigger(new RenderGuiEvent(graphics));
     }
 
     @Inject(at = @At("TAIL"), method = "renderPlayerHealth")

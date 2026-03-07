@@ -5,9 +5,8 @@ import com.zergatul.cheatutils.extensions.ParametrizedSubmit;
 import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -26,13 +25,12 @@ public abstract class MixinSubmitNodeStorageItemSubmit implements ParametrizedSu
     @Inject(at = @At("TAIL"), method = "<init>")
     private void onConstructor(
             PoseStack.Pose pose,
-            ItemDisplayContext context,
+            ItemDisplayContext displayContext,
             int lightCoords,
             int overlayCoords,
             int outlineColor,
             int[] tintLayers,
             List<BakedQuad> quads,
-            RenderType renderType,
             ItemStackRenderState.FoilType foilType,
             CallbackInfo info
     ) {

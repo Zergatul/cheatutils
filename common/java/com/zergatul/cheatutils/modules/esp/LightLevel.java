@@ -212,8 +212,8 @@ public class LightLevel implements Module {
                 chunks.put(chunkPos, set);
             }
         }
-        int xc = chunk.getPos().x << 4;
-        int zc = chunk.getPos().z << 4;
+        int xc = chunk.getPos().x() << 4;
+        int zc = chunk.getPos().z() << 4;
         synchronized (set) {
             set.clear();
             for (int x = 0; x < 16; x++) {

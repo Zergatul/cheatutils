@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.common;
 
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
-import net.minecraft.WorldVersion;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
@@ -24,7 +23,7 @@ public class Events {
     // GameRenderer.pick(1)
     public static final ParameterizedEventHandler<DeltaTracker> RenderTickStart = new ParameterizedEventHandler<>();
     // GameRenderer.pick(partial)
-    public static final ParameterizedEventHandler<GetFieldOfViewEvent> GetFieldOfView = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<ModifyFieldOfViewEvent> ModifyFieldOfView = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler BeforeRenderWorld = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> AfterRenderWorld = new ParameterizedEventHandler<>();
     // GetFieldOfView again
@@ -46,6 +45,10 @@ public class Events {
     public static final SimpleEventHandler AfterSendPlayerPos = new SimpleEventHandler();
 
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
+
+
+    public static final SimpleEventHandler OnBeforePick = new SimpleEventHandler();
+    public static final SimpleEventHandler OnAfterPick = new SimpleEventHandler();
 
 
     public static final ParameterizedEventHandler<Connection> ClientPlayerLoggingIn = new ParameterizedEventHandler<>();

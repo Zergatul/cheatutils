@@ -13,7 +13,6 @@ import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
 import com.zergatul.cheatutils.utils.RayCast;
-import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
@@ -158,16 +157,6 @@ public class GameApi {
         return (int) mc.level.getGameTime();
     }
 
-    @MethodDescription("""
-            In ticks. Cycles from 0 to 24000.
-            """)
-    public int getDayTime() {
-        if (mc.level == null) {
-            return 0;
-        }
-        return (int) (mc.level.getDayTime() % 24000);
-    }
-
     public boolean isRaining() {
         if (mc.level == null) {
             return false;
@@ -245,7 +234,7 @@ public class GameApi {
                 Gets entity count by class name in render distance
                 """)
         public int getCount(String className) {
-            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
+            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(className);
             if (info == null) {
                 return Integer.MIN_VALUE;
             }
@@ -329,7 +318,7 @@ public class GameApi {
                 return Integer.MIN_VALUE;
             }
 
-            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
+            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(className);
             if (info == null) {
                 return Integer.MIN_VALUE;
             }
@@ -443,7 +432,7 @@ public class GameApi {
         }
 
         public boolean isInstanceOf(int entityId, String className) {
-            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
+            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(className);
             if (info == null) {
                 return false;
             }
@@ -729,7 +718,7 @@ public class GameApi {
                 return new int[0];
             }
 
-            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(ClassRemapper.toObf(className));
+            EntityUtils.EntityInfo info = EntityUtils.getEntityClass(className);
             if (info == null) {
                 return new int[0];
             }

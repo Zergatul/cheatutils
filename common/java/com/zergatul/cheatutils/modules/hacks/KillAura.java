@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -165,7 +165,7 @@ public class KillAura implements Module {
             LocalPlayer player = mc.player;
             mc.gameMode.attack(player, targets.getFirst());
             for (int i = 1; i < targets.size(); i++) {
-                NetworkPacketsController.instance.sendPacket(ServerboundInteractPacket.createAttackPacket(targets.get(i), player.isShiftKeyDown()));
+                NetworkPacketsController.instance.sendPacket(new ServerboundAttackPacket(targets.get(i).getId()));
             }
             mc.player.swing(InteractionHand.MAIN_HAND);
             targets.clear();

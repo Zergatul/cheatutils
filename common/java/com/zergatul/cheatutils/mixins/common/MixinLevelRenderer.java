@@ -1,19 +1,22 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.extensions.EntityRenderStateExtension;
+import com.zergatul.cheatutils.extensions.LevelRendererExtension;
 import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
-import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.state.LevelRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -27,10 +30,18 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
-public abstract class MixinLevelRenderer {
+public abstract class MixinLevelRenderer implements LevelRendererExtension {
+
+    // store projection matrix + bob views + portal distortions
+    @Unique
+    private Matrix4f modifiedProjectionMatrix;
+
+    public void setModifiedProjectionMatrix_CU(Matrix4f matrix) {
+        this.modifiedProjectionMatrix = matrix;
+    }
 
     @ModifyArg(
-            method = "renderLevel",
+            method = "update",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;cullTerrain(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;Z)V"),
             index = 2)
     private boolean onCallSetupRender(boolean isSpectator) {
@@ -43,38 +54,38 @@ public abstract class MixinLevelRenderer {
 
     @Inject(at = @At("HEAD"), method = "renderLevel")
     private void onRenderLevelBegin(
-            GraphicsResourceAllocator allocator,
-            DeltaTracker delta,
-            boolean renderBlockOutline,
-            Camera camera,
-            Matrix4f pose,
-            Matrix4f projection,
-            Matrix4f matrix,
-            GpuBufferSlice gpuBufferSlice,
-            Vector4f vector4f,
-            boolean b,
-            CallbackInfo info
+            final GraphicsResourceAllocator resourceAllocator,
+            final DeltaTracker deltaTracker,
+            final boolean renderOutline,
+            final CameraRenderState cameraState,
+            final Matrix4f modelViewMatrix,
+            final GpuBufferSlice terrainFog,
+            final Vector4f fogColor,
+            final boolean shouldRenderSky,
+            final ChunkSectionsToRender chunkSectionsToRender,
+            final CallbackInfo info
     ) {
         Events.BeforeRenderWorld.trigger();
     }
 
     @Inject(at = @At("RETURN"), method = "renderLevel")
     private void onRenderLevelEnd(
-            GraphicsResourceAllocator allocator,
-            DeltaTracker delta,
-            boolean renderBlockOutline,
-            Camera camera,
-            Matrix4f pose,
-            Matrix4f projectionWithBob,
-            Matrix4f projectionForCulling,
-            GpuBufferSlice gpuBufferSlice,
-            Vector4f vector4f,
-            boolean b,
-            CallbackInfo info
+            final GraphicsResourceAllocator resourceAllocator,
+            final DeltaTracker deltaTracker,
+            final boolean renderOutline,
+            final CameraRenderState cameraState,
+            final Matrix4f modelViewMatrix,
+            final GpuBufferSlice terrainFog,
+            final Vector4f fogColor,
+            final boolean shouldRenderSky,
+            final ChunkSectionsToRender chunkSectionsToRender,
+            final CallbackInfo info
     ) {
         int program = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(camera, pose, projectionWithBob, delta));
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix, deltaTracker));
         GL20.glUseProgram(program);
+
+        this.modifiedProjectionMatrix = null;
     }
 
     @Unique
@@ -99,19 +110,33 @@ public abstract class MixinLevelRenderer {
         return state;
     }
 
-    @ModifyArg(
+    @Inject(
             method = "submitEntities",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V"),
-            index = 0)
-    private EntityRenderState onStoreCurrentEntitySubmit(EntityRenderState state) {
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V"))
+    private void onBeforeSubmittingEntityState(
+            final PoseStack poseStack,
+            final LevelRenderState levelRenderState,
+            final SubmitNodeCollector output,
+            CallbackInfo info,
+            @Local(name = "state") EntityRenderState state
+    ) {
         MixinLevelRendererHelper.CURRENT_SUBMIT_ENTITY_RENDER_PARAMETERS = ((EntityRenderStateExtension) state).getParameters_CU();
-        return state;
     }
 
     @Inject(
             method = "submitEntities",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V", shift = At.Shift.AFTER))
-    private void onAfterSubmittingEntityState(PoseStack poseStack, LevelRenderState levelRenderState, SubmitNodeCollector submitNodeCollector, CallbackInfo info) {
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
+                    shift = At.Shift.AFTER))
+    private void onAfterSubmittingEntityState(
+            final PoseStack poseStack,
+            final LevelRenderState levelRenderState,
+            final SubmitNodeCollector output,
+            CallbackInfo info
+    ) {
         MixinLevelRendererHelper.CURRENT_SUBMIT_ENTITY_RENDER_PARAMETERS = null;
     }
 }

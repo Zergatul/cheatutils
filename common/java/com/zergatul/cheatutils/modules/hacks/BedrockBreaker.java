@@ -593,7 +593,7 @@ public class BedrockBreaker implements Module {
 
         Inventory inventory = mc.player.getInventory();
         for (int i = 0; i < 9; i++) {
-            if (inventory.getItem(i).getTags().anyMatch(tag -> tag == ItemTags.PICKAXES)) {
+            if (inventory.getItem(i).tags().anyMatch(tag -> tag == ItemTags.PICKAXES)) {
                 return i;
             }
         }

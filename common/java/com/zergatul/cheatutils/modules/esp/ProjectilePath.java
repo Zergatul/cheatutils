@@ -66,7 +66,7 @@ public class ProjectilePath {
                     }
 
                     LinkedList<TraceRecord> list = traces.get(entity.getId());
-                    Vec3 position = entity.getPosition(event.getTickDelta());
+                    Vec3 position = entity.getPosition(event.getPartialTickTime());
                     if (list.size() == 0) {
                         list.addFirst(new TraceRecord(position, time));
                     } else {
@@ -138,7 +138,7 @@ public class ProjectilePath {
         }
 
         Vec3 playerPos = event.getPlayerPos();
-        float partialTick = event.getTickDelta();
+        float partialTick = event.getPartialTickTime();
 
         double x = playerPos.x;
         double y = playerPos.y + mc.player.getEyeHeight();

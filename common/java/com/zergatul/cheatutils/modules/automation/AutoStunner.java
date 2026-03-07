@@ -40,7 +40,7 @@ public class AutoStunner implements Module {
         int axe = -1;
         for (int i = 0; i < 9; i++) {
             ItemStack item = inventory.getItem(i);
-            if (item.getTags().anyMatch(tag -> tag == ItemTags.AXES)) {
+            if (item.tags().anyMatch(tag -> tag == ItemTags.AXES)) {
                 axe = i;
                 break;
             }

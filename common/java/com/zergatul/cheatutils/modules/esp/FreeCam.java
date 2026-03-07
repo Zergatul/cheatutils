@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.ModifyFieldOfViewEvent;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
@@ -53,7 +54,7 @@ public class FreeCam implements Module {
     private boolean eyeLock;
     private boolean followCamera;
     private double followDeltaX, followDeltaY, followDeltaZ;
-    private boolean gameRendererPicking;
+    private boolean picking;
     private boolean moveAlongPath;
     private long pathStartTime;
     private long doNotMoveFreeCamBefore;
@@ -61,7 +62,10 @@ public class FreeCam implements Module {
     private FreeCam() {
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
         Events.ClientTickStart.add(this::onClientTickStart);
+        Events.ModifyFieldOfView.add(this::onModifyFieldOfView, 0);
         Events.RenderTickStart.add(this::onRenderTickStart);
+        Events.OnBeforePick.add(this::onBeforePick);
+        Events.OnAfterPick.add(this::onAfterPick);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
         Events.LevelUnload.add(this::onWorldUnload);
     }
@@ -252,6 +256,12 @@ public class FreeCam implements Module {
         }
     }
 
+    private void onModifyFieldOfView(ModifyFieldOfViewEvent event) {
+        if (active) {
+            event.fov = mc.options.fov().get();
+        }
+    }
+
     private void onRenderTickStart(DeltaTracker delta) {
         if (!active) {
             return;
@@ -335,6 +345,14 @@ public class FreeCam implements Module {
         }
     }
 
+    private void onBeforePick() {
+        picking = true;
+    }
+
+    private void onAfterPick() {
+        picking = false;
+    }
+
     private void onWorldUnload() {
         disable();
     }
@@ -376,19 +394,11 @@ public class FreeCam implements Module {
     public boolean shouldOverrideCameraEntityPosition(Entity entity) {
         FreeCamConfig config = getConfig();
         if (active && !cameraLock && !eyeLock && !followCamera && config.target) {
-            return entity == mc.getCameraEntity() && gameRendererPicking || freecamHitResultPicking;
+            return entity == mc.getCameraEntity() && picking || freecamHitResultPicking;
         } else {
             return false;
         }
     }
-
-    /*public void onRenderDebugScreenLeft(List<String> list) {
-        if (active) {
-            list.add("");
-            String coordinates = String.format(Locale.ROOT, "Free Cam XYZ: %.3f / %.5f / %.3f", x, y, z);
-            list.add(coordinates);
-        }
-    }*/
 
     public HitResult getHitResult() {
         if (!active || mc.player == null) {
@@ -408,35 +418,6 @@ public class FreeCam implements Module {
         finally {
             freecamHitResultPicking = false;
         }
-    }
-
-    /*public void onDebugScreenGetSystemInformation(List<String> list) {
-        HitResult hit = getHitResult();
-        if (hit == null) {
-            return;
-        }
-
-        if (hit.getType() == HitResult.Type.BLOCK) {
-            BlockPos pos = ((BlockHitResult)hit).getBlockPos();
-            BlockState state = mc.level.getBlockState(pos);
-            list.add("");
-            list.add(ChatFormatting.UNDERLINE + "Free Cam Targeted Block: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
-            list.add(String.valueOf(Registries.BLOCKS.getKey(state.getBlock())));
-
-            for (var entry : state.getValues().entrySet()) {
-                list.add(getPropertyValueString(entry));
-            }
-
-            state.getTags().map(tag -> "#" + tag.location()).forEach(list::add);
-        }
-    }*/
-
-    public void onBeforeGameRendererPick() {
-        gameRendererPicking = true;
-    }
-
-    public void onAfterGameRendererPick() {
-        gameRendererPicking = false;
     }
 
     private ClientInput createFreeCamInput(ClientInput playerInput) {

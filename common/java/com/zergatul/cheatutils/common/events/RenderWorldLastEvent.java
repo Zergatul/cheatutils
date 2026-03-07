@@ -1,44 +1,43 @@
 package com.zergatul.cheatutils.common.events;
 
-import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.*;
 
 public class RenderWorldLastEvent {
 
-    public static RenderWorldLastEvent last;
-
-    private final Matrix4f pose;
-    private final Matrix4f projection;
+    private final CameraRenderState cameraState;
+    private final Matrix4f modifiedProjectionMatrix;
     private final Matrix4f mvp;
-    private final float tickDelta;
+    private final float partialTickTime;
     private final Vec3 tracerCenter;
-    private final Vec3 playerPos;
-    private final Camera camera;
+    private final GuiGraphics graphics;
 
-    public RenderWorldLastEvent(Camera camera, Matrix4f pose, Matrix4f projection, DeltaTracker delta) {
-        this.camera = camera;
-        this.pose = new Matrix4f(pose);
-        this.projection = new Matrix4f(projection);
-        this.tickDelta = delta.getGameTimeDeltaPartialTick(true);
-        this.mvp = new Matrix4f(projection).mul(pose);
+    public RenderWorldLastEvent(CameraRenderState cameraState, Matrix4f modifiedProjectionMatrix, DeltaTracker delta) {
+        this.cameraState = cameraState;
+        this.modifiedProjectionMatrix = modifiedProjectionMatrix;
+        this.partialTickTime = delta.getGameTimeDeltaPartialTick(true);
+        this.mvp = new Matrix4f(getProjection()).mul(cameraState.viewRotationMatrix);
         this.tracerCenter = calculateTracerCenter();
-        this.playerPos = camera.entity().getPosition(tickDelta);
 
-        last = this;
+        Minecraft mc = Minecraft.getInstance();
+        this.graphics = new GuiGraphics(mc, mc.gameRenderer.getGameRenderState().guiRenderState, 0, 0);
     }
 
-    public float getTickDelta() {
-        return tickDelta;
+    public float getPartialTickTime() {
+        return partialTickTime;
     }
 
-    public Matrix4f getPose() {
-        return pose;
+    public Matrix4f getViewRotation() {
+        return cameraState.viewRotationMatrix;
     }
 
     public Matrix4f getProjection() {
-        return projection;
+        return modifiedProjectionMatrix;
     }
 
     public Matrix4f getMvp() {
@@ -50,15 +49,24 @@ public class RenderWorldLastEvent {
     }
 
     public Vec3 getPlayerPos() {
-        return playerPos;
+        Entity entity = Minecraft.getInstance().getCameraEntity();
+        if (entity != null) {
+            return entity.getPosition(partialTickTime);
+        } else {
+            return cameraState.pos;
+        }
     }
 
-    public Camera getCamera() {
-        return camera;
+    public CameraRenderState getCameraState() {
+        return cameraState;
+    }
+
+    public GuiGraphics getGuiGraphics() {
+        return graphics;
     }
 
     private Vec3 calculateTracerCenter() {
-        Matrix4f invProjection = new Matrix4f(projection).invert();
+        Matrix4f invProjection = new Matrix4f(getProjection()).invert();
 
         Vector4f ndcNear = new Vector4f(0f, 0f, -1f, 1f);
         Vector4f ndcFar  = new Vector4f(0f, 0f,  1f, 1f);
@@ -71,10 +79,10 @@ public class RenderWorldLastEvent {
 
         Vector3f directionView = new Vector3f(vFar.x - vNear.x, vFar.y - vNear.y, vFar.z - vNear.z).normalize();
 
-        Quaternionf rotation = camera.rotation();
+        Quaternionf rotation = cameraState.orientation;
         Vector3f directionWorld = new Matrix3f().rotation(rotation).transform(directionView, new Vector3f());
 
-        Vec3 camPos = camera.position();
+        Vec3 camPos = cameraState.pos;
 
         final double distance = 1024;
         double cx = camPos.x + directionWorld.x * distance;
