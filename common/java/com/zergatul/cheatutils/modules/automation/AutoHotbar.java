@@ -16,7 +16,7 @@ public class AutoHotbar implements Module {
     public static final AutoHotbar instance = new AutoHotbar();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private ItemStack[] lastTickHotbar = new ItemStack[9];
+    private final ItemStack[] lastTickHotbar = new ItemStack[9];
     private ItemStack lastTickOffhand;
 
     private AutoHotbar() {
@@ -33,6 +33,10 @@ public class AutoHotbar implements Module {
         AutoHotbarConfig config = ConfigStore.instance.getConfig().autoHotbarConfig;
         if (!config.enabled) {
             clear();
+            return;
+        }
+
+        if (mc.player.isUsingItem()) {
             return;
         }
 

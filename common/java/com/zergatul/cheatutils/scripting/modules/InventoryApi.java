@@ -152,7 +152,7 @@ public class InventoryApi {
     }
 
     @MethodDescription("""
-            Loops over all items in your inventory, calls custom function to decide if current item is good, and moves it to hotbar.
+            Loops over all items in your inventory+hotbar, calls custom function to decide if current item is good, and moves it to hotbar slot.
             Return false if no such item found.
             """)
     @ApiVisibility(ApiType.ACTION)
@@ -168,7 +168,7 @@ public class InventoryApi {
         Inventory inventory = mc.player.getInventory();
         int index = -1;
         ItemStack itemStack = null;
-        for (int i = 9; i < 36; i++) {
+        for (int i = 0; i < 36; i++) {
             if (predicate.test(new ItemStackWrapper(inventory.getItem(i)))) {
                 index = i;
                 break;
@@ -179,7 +179,40 @@ public class InventoryApi {
             return false;
         }
 
+        if (index == slot - 1) {
+            // item already here
+            return true;
+        }
+
         InventoryUtils.moveItemStack(new InventorySlot(index), new InventorySlot(slot - 1));
+        return true;
+    }
+
+    @MethodDescription("""
+            Loops over all items in your inventory+hotbar, calls custom function to decide if current item is good, and moves it to offhand slot.
+            Return false if no such item found.
+            """)
+    @ApiVisibility(ApiType.ACTION)
+    public boolean findAndMoveToOffHand(ItemStackPredicate predicate) {
+        if (mc.player == null) {
+            return false;
+        }
+
+        Inventory inventory = mc.player.getInventory();
+        int index = -1;
+        ItemStack itemStack = null;
+        for (int i = 0; i < 36; i++) {
+            if (predicate.test(new ItemStackWrapper(inventory.getItem(i)))) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index < 0) {
+            return false;
+        }
+
+        InventoryUtils.moveItemStack(new InventorySlot(index), new InventorySlot(EquipmentSlot.OFFHAND));
         return true;
     }
 

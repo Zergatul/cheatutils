@@ -11,6 +11,9 @@
         <fieldset>
             <legend>Slots</legend>
             <div>
+                <switch-checkbox v-model="config.refillSlotOffhand" @change="update()">Off Hand</switch-checkbox>
+            </div>
+            <div>
                 <switch-checkbox v-model="config.refillSlot1" @change="update()">Slot 1</switch-checkbox>
             </div>
             <div>
