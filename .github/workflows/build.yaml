@@ -3,9 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - '1.21'
-      - '1.21.[1-9]'
-      - '1.21.1[0-9]'
+      - '26.[1-9]'
 
 jobs:
   build:
@@ -21,14 +19,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
-
-      - name: Build Annotation Processor
-        run: |
-          pushd ./mixin-plugin/annotation-processor
-          chmod +x ./gradlew
-          ./gradlew build
-          popd
+          java-version: 25
 
       - name: Build Forge
         run: |
@@ -50,6 +41,13 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build
           popd
+
+      - name: Create CurseForge builds
+        shell: pwsh
+        run: |
+          Get-ChildItem    ./forge/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
+          Get-ChildItem   ./fabric/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
+          Get-ChildItem ./neoforge/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
 
       - name: Upload Forge artifacts
         uses: actions/upload-artifact@v4

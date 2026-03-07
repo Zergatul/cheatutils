@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.modules.visuals;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
 
 public class ArmorOverlay {
 
@@ -14,11 +12,9 @@ public class ArmorOverlay {
 
     private final Minecraft mc = Minecraft.getInstance();
 
-    private ArmorOverlay() {
+    private ArmorOverlay() {}
 
-    }
-
-    public void render(GuiGraphics graphics, Player player, int left, int top) {
+    public void render(GuiGraphicsExtractor graphics, Player player, int left, int top) {
         renderItem(graphics, player.getItemBySlot(EquipmentSlot.HEAD), left, top);
         left += 16;
         renderItem(graphics, player.getItemBySlot(EquipmentSlot.CHEST), left, top);
@@ -28,8 +24,8 @@ public class ArmorOverlay {
         renderItem(graphics, player.getItemBySlot(EquipmentSlot.FEET), left, top);
     }
 
-    private void renderItem(GuiGraphics graphics, ItemStack itemStack, int left, int top) {
-        graphics.renderItem(itemStack, left, top);
-        graphics.renderItemDecorations(mc.font, itemStack, left, top);
+    private void renderItem(GuiGraphicsExtractor graphics, ItemStack itemStack, int left, int top) {
+        graphics.item(itemStack, left, top);
+        graphics.itemDecorations(mc.font, itemStack, left, top);
     }
 }

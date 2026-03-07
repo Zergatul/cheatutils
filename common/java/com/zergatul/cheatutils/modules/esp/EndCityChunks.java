@@ -41,7 +41,7 @@ public class EndCityChunks {
         Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
         renderer.begin();
 
-        Vec3 view = event.getCamera().position();
+        Vec3 view = event.getCameraPos();
 
         AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
         for (int i = 0; i < chunks.length(); i++) {
@@ -50,12 +50,12 @@ public class EndCityChunks {
                 continue;
             }
 
-            int sx = Math.floorMod(chunk.getPos().x, 20);
-            int sz = Math.floorMod(chunk.getPos().z, 20);
+            int sx = Math.floorMod(chunk.getPos().x(), 20);
+            int sz = Math.floorMod(chunk.getPos().z(), 20);
             boolean isEndCityChunk = 0 <= sx && sx <= 8 && 0 <= sz && sz <= 8;
             if (isEndCityChunk) {
-                int x1 = chunk.getPos().x * 16;
-                int z1 = chunk.getPos().z * 16;
+                int x1 = chunk.getPos().x() * 16;
+                int z1 = chunk.getPos().z() * 16;
                 int x2 = x1 + 16;
                 int z2 = z1 + 16;
                 float r = sx == 4 || sz == 4 ? 1f : 0f;

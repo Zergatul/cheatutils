@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.accessors.ServerboundMovePlayerPacketAccessor;
+import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.NoFallConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -43,7 +43,7 @@ public class NoFall implements Module {
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
         if (args.packet instanceof ServerboundMovePlayerPacket packet) {
             if (isActive()) {
-                ((ServerboundMovePlayerPacketAccessor) packet).setOnGround_CU(true);
+                ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(true);
             }
         }
     }

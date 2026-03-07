@@ -21,8 +21,8 @@ public abstract class MixinConnection {
     @Shadow
     private Channel channel;
 
-    @Shadow
     @Final
+    @Shadow
     private PacketFlow receiving;
 
     @Inject(at = @At("RETURN"), method = "disconnect(Lnet/minecraft/network/DisconnectionDetails;)V")

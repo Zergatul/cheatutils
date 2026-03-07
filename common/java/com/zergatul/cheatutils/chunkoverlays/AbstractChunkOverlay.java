@@ -71,8 +71,8 @@ public abstract class AbstractChunkOverlay {
             return;
         }
 
-        var chunkPos = new ChunkPos(pos);
-        var segmentPos = new SegmentPos(chunkPos, segmentSize);
+        ChunkPos chunkPos = ChunkPos.containing(pos);
+        SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
         Map<SegmentPos, Segment> segments = getSegmentsMap(dimension);
         Segment segment = segments.get(segmentPos);
         processBlockChange(dimension, chunkPos, segment, pos, state);

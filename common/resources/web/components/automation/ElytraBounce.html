@@ -1,0 +1,54 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Search Youtube for "elytra bounce" or "e-bounce".<br>
+        Module automatically executes tick-perfect jumps as soon as you touch the ground after flying with elytra.
+    </div>
+
+    <div class="module-sections">
+        <div class="section-description">
+            Module can be only activated from scripting.<br>
+            If you want toggle key, use <b>Key Bindings</b> script like this:
+            <CodeBlock :code='`
+                elytraBounce.toggle();
+            `' />
+            If you want hold key, use <b>Events Scripting</b> script like this:
+            <CodeBlock :code='`
+                events.onHandleKeys(() => {
+                    elytraBounce.setEnabled(input.isKeyDown("Right Button"));
+                });
+            `' />
+        </div>
+
+        <fieldset>
+            <legend>
+                Settings
+            </legend>
+            <table>
+                <tr>
+                    <td>
+                        <span class="field-description">First Jump Ticks:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.firstJumpTicks" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Between Jumps Ticks:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.betweenJumpsTicks" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Second Jump Ticks:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.secondJumpTicks" @change="update()">
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</div>

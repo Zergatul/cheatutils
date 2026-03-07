@@ -11,5 +11,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface RegionalFileStorageAccessor {
 
     @Invoker("write")
-    void write_CU(ChunkPos pos, @Nullable CompoundTag compound);
+    void write_CU(ChunkPos pos, @Nullable CompoundTag value);
 }

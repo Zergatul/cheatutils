@@ -127,10 +127,24 @@ module({
 });
 module({
     group: 'automation',
-    name: 'Shield breaker',
+    name: 'Shield Breaker',
     component: 'AutoStunner',
     path: 'auto-stunner',
     tags: ['stun', 'shield', 'break', 'auto']
+});
+module({
+    group: 'automation',
+    name: 'Elytra Bounce',
+    component: 'ElytraBounce',
+    path: 'elytra-bounce',
+    tags: ['elytra', 'bounce', 'fly']
+});
+module({
+    group: 'automation',
+    name: 'Parkour Assist',
+    component: 'ParkourAssist',
+    path: 'parkour-assist',
+    tags: ['parkour', 'parkour', 'jump', 'edge', 'auto']
 });
 
 // ESP modules ======================
@@ -465,20 +479,6 @@ module({
 });
 module({
     group: 'visuals',
-    name: 'No Weather',
-    component: 'NoWeather',
-    path: 'no-weather',
-    tags: ['no', 'weather']
-});
-module({
-    group: 'visuals',
-    name: 'Fake Weather',
-    component: 'FakeWeather',
-    path: 'fake-weather',
-    tags: ['fake', 'weather']
-});
-module({
-    group: 'visuals',
     name: 'Logout Spots',
     component: 'LogoutSpots',
     path: 'logout-spots',
@@ -490,6 +490,13 @@ module({
     component: 'BlockEntityDistance',
     path: 'block-entity',
     tags: ['block', 'entity', 'chest', 'render']
+});
+module({
+    group: 'visuals',
+    name: 'Hands View',
+    component: 'HandsView',
+    path: 'hands-view',
+    tags: ['hands', 'view', 'render']
 });
 
 // Scripting Modules ======================

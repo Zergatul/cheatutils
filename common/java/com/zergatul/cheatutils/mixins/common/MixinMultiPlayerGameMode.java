@@ -11,12 +11,11 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,10 +34,6 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
 
     @Shadow
     private int destroyDelay;
-
-
-    @Shadow
-    private GameType localPlayerMode;
 
     @Shadow
     protected abstract void ensureHasSentCarriedItem();
@@ -60,12 +55,9 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
      **/
     public void attackClone_CU(Player player, Entity entity) {
         this.ensureHasSentCarriedItem();
-
-        this.connection.send(ServerboundInteractPacket.createAttackPacket(entity, player.isShiftKeyDown()));
-        if (this.localPlayerMode != GameType.SPECTATOR) {
-            player.attack(entity);
-            player.resetAttackStrengthTicker();
-        }
+        this.connection.send(new ServerboundAttackPacket(entity.getId()));
+        player.attack(entity);
+        player.resetAttackStrengthTicker();
     }
 
     @Inject(at = @At("HEAD"), method = "releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V", cancellable = true)
@@ -89,8 +81,14 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "interactAt")
-    private void onInteractAt(Player player, Entity entity, EntityHitResult hitResult, InteractionHand hand, CallbackInfoReturnable<InteractionResult> info) {
+    @Inject(at = @At("HEAD"), method = "interact")
+    private void onInteract(
+            final Player player,
+            final Entity entity,
+            final EntityHitResult hitResult,
+            final InteractionHand hand,
+            CallbackInfoReturnable<InteractionResult> info
+    ) {
         Events.EntityInteract.trigger(entity);
     }
 
@@ -114,7 +112,7 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "attack", cancellable = false)
+    @Inject(at = @At("TAIL"), method = "attack")
     private void afterAttack(Player player, Entity entity, CallbackInfo ci) {
         Events.AfterAttack.trigger();
     }

@@ -9,12 +9,11 @@
   "mixinPriority": 500,
   "client": [
     "forge.schematica.MixinSectionCompiler",
-
-    "forge.MixinGuiGraphics",
+    "forge.MixinGuiGraphicsExtractor",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
     "forge.MixinLevelRenderer",
-    "forge.MixinLightTexture",
+    "forge.MixinMinecraft",
     "forge.MixinModVersions",
     "forge.MixinMultiPlayerGameMode"
   ]

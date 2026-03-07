@@ -1,10 +1,7 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
 plugins {
     id 'java-library'
     id 'idea'
-    id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.123'
+    id 'net.neoforged.moddev' version '2.0.141'
     id 'cheatutils'
 }
 
@@ -19,28 +16,22 @@ tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
-version = mod_version
 group = mod_group_id
-
-repositories {
-    mavenLocal()
-}
+version = mod_version
 
 base {
     archivesName = mod_id
 }
 
-// Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
-
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
 
     // This line is optional. Access Transformers are automatically detected
     // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
@@ -157,19 +148,15 @@ tasks.withType(ProcessResources).configureEach {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-}
-
-tasks.withType(JavaCompile).configureEach {
+    it.options.release = 25
+    it.options.encoding = 'UTF-8'
     it.options.compilerArgs.add("-parameters")
 }
 
-tasks.named('jar', org.gradle.jvm.tasks.Jar).configure {
-    archiveFileName = "cheatutils-$mod_version-neoforge-${minecraft_version}.jar"
-}
-
 tasks.named('jar', Jar) {
+    archiveFileName = "cheatutils-$mod_version-neoforge-${minecraft_version}.jar"
     includeEmptyDirs = false
+
     exclude("net/caffeinemc/**")
     exclude('net/irisshaders/**')
 }

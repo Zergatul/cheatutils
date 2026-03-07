@@ -5,36 +5,35 @@ import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
 
+import java.util.function.Consumer;
+
+@SuppressWarnings("unused")
 public class MovementApi {
 
-    public boolean isSpeedMultiplierEnabled() {
-        var config = getConfig();
-        return config.scaleInputVector;
+    public double getJumpFactor() {
+        return getConfig().jumpHeightFactor;
     }
 
     public double getSpeedMultiplierFactor() {
-        var config = getConfig();
-        return config.inputVectorFactor;
+        return getConfig().inputVectorFactor;
+    }
+
+    public boolean isOverrideJumpHeightEnabled() {
+        return getConfig().scaleJumpHeight;
+    }
+
+    public boolean isSpeedMultiplierEnabled() {
+        return getConfig().scaleInputVector;
     }
 
     @ApiVisibility(ApiType.UPDATE)
-    public void toggleSpeedMultiplier() {
-        var config = getConfig();
-        config.scaleInputVector = !config.scaleInputVector;
-        ConfigStore.instance.requestWrite();
+    public void setJumpFactor(double value) {
+        update(c -> c.jumpHeightFactor = value);
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void setSpeedMultiplierFactor(double value) {
-        var config = getConfig();
-        config.inputVectorFactor = value;
-        config.validate();
-        ConfigStore.instance.requestWrite();
-    }
-
-    public boolean isOverrideJumpHeightEnabled() {
-        var config = getConfig();
-        return config.scaleJumpHeight;
+        update(c -> c.inputVectorFactor = value);
     }
 
     @ApiVisibility(ApiType.UPDATE)
@@ -44,17 +43,13 @@ public class MovementApi {
         ConfigStore.instance.requestWrite();
     }
 
-    public double getJumpFactor() {
-        var config = getConfig();
-        return config.jumpHeightFactor;
+    @ApiVisibility(ApiType.UPDATE)
+    public void toggleSpeedMultiplier() {
+        update(c -> c.scaleInputVector = !c.scaleInputVector);
     }
 
-    @ApiVisibility(ApiType.UPDATE)
-    public void setJumpFactor(double value) {
-        var config = getConfig();
-        config.jumpHeightFactor = value;
-        config.validate();
-        ConfigStore.instance.requestWrite();
+    private void update(Consumer<MovementHackConfig> update) {
+        ConfigStore.updateFromApi(c -> c.movementHackConfig, update);
     }
 
     private MovementHackConfig getConfig() {

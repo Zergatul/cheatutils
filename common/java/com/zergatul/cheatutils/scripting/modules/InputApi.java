@@ -17,7 +17,7 @@ public class InputApi {
     private final Map<String, InputConstants.Key> keyMap = new HashMap<>();
 
     public InputApi() {
-        for (InputConstants.Key key : InputConstantsKeyAccessor.getNameMap().values()) {
+        for (InputConstants.Key key : InputConstantsKeyAccessor.getNameMap_CU().values()) {
             StringBuilder sb = new StringBuilder();
             key.getDisplayName().visit(cc -> {
                 sb.append(cc);

@@ -1,5 +1,5 @@
 package com.zergatul.cheatutils.common.events;
 
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 
-public record ContainerClickEvent(int slot, int button, ClickType type) {}
+public record ContainerClickEvent(int slot, int button, ContainerInput type) {}

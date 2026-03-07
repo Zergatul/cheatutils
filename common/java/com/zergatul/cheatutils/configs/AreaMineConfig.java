@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class AreaMineConfig extends ModuleConfig implements ValidatableConfig {
+public class AreaMineConfig extends ModuleConfig implements Sanitizable {
 
     public double radius;
     public boolean preview;
@@ -12,7 +12,7 @@ public class AreaMineConfig extends ModuleConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         radius = MathUtils.clamp(radius, 1, 20);
     }
 }

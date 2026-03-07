@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.common.events.ContainerScreenRenderEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
 import com.zergatul.cheatutils.controllers.ContainerButtonsController;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -15,6 +15,7 @@ import net.minecraft.world.inventory.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -29,11 +30,12 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     @Shadow
     protected int leftPos;
 
+    @Final
     @Shadow
     protected int imageWidth;
 
-    @Shadow
     @Final
+    @Shadow
     protected T menu;
 
     protected MixinAbstractContainerScreen(Component component) {
@@ -55,7 +57,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             int btnHeight = 20;
             cursor -= btnWidth;
             addRenderableWidget(
-                    new Button.Builder(Component.translatable("button.take.all"), this::onTakeAllPress)
+                    new Button.Builder(Component.translatable("button.take.all"), this::onTakeAllPress_CU)
                             .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
                             .build());
             cursor -= space;
@@ -65,7 +67,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             int btnHeight = 20;
             cursor -= btnWidth;
             addRenderableWidget(
-                    new Button.Builder(Component.translatable("button.smart.put"), this::onSmartPutPress)
+                    new Button.Builder(Component.translatable("button.smart.put"), this::onSmartPutPress_CU)
                             .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
                             .build());
             cursor -= space;
@@ -75,14 +77,14 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             int btnHeight = 20;
             cursor -= btnWidth;
             addRenderableWidget(
-                    new Button.Builder(Component.translatable("button.drop.all"), this::onDropAllPress)
+                    new Button.Builder(Component.translatable("button.drop.all"), this::onDropAllPress_CU)
                             .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
                             .build());
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "renderContents")
-    private void onAfterRenderContents(GuiGraphics graphics, int slotIndex, int p_408205_, float p_408282_, CallbackInfo ci) {
+    @Inject(at = @At("TAIL"), method = "extractContents")
+    private void onAfterRenderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
         Events.ContainerScreenAfterRenderContents.trigger(
                 new ContainerScreenRenderEvent(
                         (AbstractContainerScreen<?>) (Object) this,
@@ -92,15 +94,18 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
                         imageWidth));
     }
 
-    private void onTakeAllPress(Button button) {
+    @Unique
+    private void onTakeAllPress_CU(Button button) {
         ContainerButtonsController.instance.takeAll(false);
     }
 
-    private void onSmartPutPress(Button button) {
+    @Unique
+    private void onSmartPutPress_CU(Button button) {
         ContainerButtonsController.instance.smartPut();
     }
 
-    private void onDropAllPress(Button button) {
+    @Unique
+    private void onDropAllPress_CU(Button button) {
         ContainerButtonsController.instance.dropAll(false);
     }
 

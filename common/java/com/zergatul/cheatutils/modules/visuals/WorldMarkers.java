@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.modules.visuals;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
@@ -8,8 +10,6 @@ import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.ui.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.common.events.RenderGuiEvent;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -28,7 +28,7 @@ public class WorldMarkers implements FontBackendHolder {
     private FontRenderer fontRenderer;
 
     private WorldMarkers() {
-        Events.PreRenderGui.add(this::onPreRenderGui);
+        Events.AfterRenderWorld.add(this::onRenderWorldLast, 10);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class WorldMarkers implements FontBackendHolder {
         TickEndExecutor.instance.execute(() -> fontChanged = true);
     }
 
-    private void onPreRenderGui(RenderGuiEvent event) {
+    private void onRenderWorldLast(RenderWorldLastEvent event) {
         if (!EspGlobal.enabled) {
             return;
         }
@@ -71,11 +71,7 @@ public class WorldMarkers implements FontBackendHolder {
             return;
         }
 
-        /*GlStateTracker.save(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);
-        MainFrameBuffer.enter();*/
-
-        Camera camera = event.getCamera();
-        Vec3 view = camera.position();
+        Vec3 view = event.getCameraPos();
 
         int scale = mc.getWindow().getGuiScale();
         int scrWidth = mc.getWindow().getWidth();
@@ -86,7 +82,9 @@ public class WorldMarkers implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+        RenderingContext context = new RenderingContext(matrix, scale);
+
+        GlStateManager._viewport(0, 0, scrWidth, scrHeight);
 
         String dimension = mc.level.dimension().identifier().toString();
         for (WorldMarkersConfig.Entry entry : config.entries) {
@@ -104,8 +102,8 @@ public class WorldMarkers implements FontBackendHolder {
                 continue;
             }
 
-            Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)x, (float)y, (float)z, 1));
-            Vector4f v2 = event.getWorldProjectionMatrix().transform(v1);
+            Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)x, (float)y, (float)z, 1));
+            Vector4f v2 = event.getProjection().transform(v1);
             if (v2.z <= 0) {
                 continue; // behind
             }
@@ -123,7 +121,7 @@ public class WorldMarkers implements FontBackendHolder {
                             .setBackgroundColor(inverse & 0x40FFFFFF)
                             .setBorderWidth(config.borderWidth)
                             .setBorderColor(entry.color.getRGB())
-                            .setMargin(context.getScale())
+                            .setMargin(scale)
                             .setContent(
                                     new TextElement(fontRenderer, text)
                                             .setCompactHeight(true)));
@@ -132,8 +130,5 @@ public class WorldMarkers implements FontBackendHolder {
 
             context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
         }
-
-        /*MainFrameBuffer.exit();
-        GlStateTracker.restore(GlStateTracker.PROGRAM | GlStateTracker.TEXTURE);*/
     }
 }

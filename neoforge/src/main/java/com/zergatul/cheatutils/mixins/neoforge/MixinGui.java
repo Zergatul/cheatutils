@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 import com.zergatul.cheatutils.modules.visuals.BetterStatusEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -35,8 +35,8 @@ public abstract class MixinGui {
     @Shadow
     protected abstract int getVehicleMaxHearts(LivingEntity entity);
 
-    @Inject(at = @At("TAIL"), method = "renderAirLevel")
-    private void onAfterRenderAirLevel(GuiGraphics graphics, CallbackInfo info) {
+    @Inject(at = @At("TAIL"), method = "extractAirLevel")
+    private void onAfterRenderAirLevel(GuiGraphicsExtractor graphics, CallbackInfo info) {
         Player player = this.getCameraPlayer();
         if (player == null) {
             return;

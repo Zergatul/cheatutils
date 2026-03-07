@@ -12,7 +12,7 @@ import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -76,7 +76,7 @@ public class ContainerButtonsController {
                     if (config.useFilter && !config.items.contains(slot.getItem().getItem())) {
                         continue;
                     }
-                    mc.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, i, 1, ClickType.THROW, mc.player);
+                    mc.gameMode.handleContainerInput(screen.getMenu().containerId, i, 1, ContainerInput.THROW, mc.player);
                 }
 
                 if (autoClose) {
@@ -111,7 +111,7 @@ public class ContainerButtonsController {
                     if (config.useFilter && !config.items.contains(slot.getItem().getItem())) {
                         continue;
                     }
-                    mc.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
+                    mc.gameMode.handleContainerInput(screen.getMenu().containerId, i, 0, ContainerInput.QUICK_MOVE, mc.player);
                 }
 
                 if (autoClose) {
@@ -195,13 +195,13 @@ public class ContainerButtonsController {
                                 }
 
                                 if (sameShulker) {
-                                    mc.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
+                                    mc.gameMode.handleContainerInput(screen.getMenu().containerId, i, 0, ContainerInput.QUICK_MOVE, mc.player);
                                 }
                             }
                         } else {
                             // double click on item if same item exists
                             if (containerItems.contains(item)) {
-                                mc.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, i, 0, ClickType.QUICK_MOVE, mc.player);
+                                mc.gameMode.handleContainerInput(screen.getMenu().containerId, i, 0, ContainerInput.QUICK_MOVE, mc.player);
                             }
                         }
                     }

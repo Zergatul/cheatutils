@@ -34,7 +34,7 @@ public abstract class EntityLike {
     public abstract int getAbsorption();
     public abstract UUID getOwner();
     public abstract void collectEquipment(List<ItemStack> items);
-    public abstract LivingEntity getEquipmentOwner();
+    public abstract ItemOwner getEquipmentOwner();
     public abstract boolean hasCustomName();
     public abstract Component getDisplayName();
 
@@ -102,8 +102,8 @@ public abstract class EntityLike {
             items.clear();
         }
 
-        public LivingEntity getEquipmentOwner() {
-            return null;
+        public ItemOwner getEquipmentOwner() {
+            return entity;
         }
 
         @Override
@@ -175,7 +175,7 @@ public abstract class EntityLike {
         }
 
         @Override
-        public LivingEntity getEquipmentOwner() {
+        public ItemOwner getEquipmentOwner() {
             return entity;
         }
 
@@ -255,7 +255,7 @@ public abstract class EntityLike {
         }
 
         @Override
-        public LivingEntity getEquipmentOwner() {
+        public ItemOwner getEquipmentOwner() {
             return null;
         }
 

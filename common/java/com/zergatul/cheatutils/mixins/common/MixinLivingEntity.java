@@ -29,8 +29,8 @@ public abstract class MixinLivingEntity extends Entity implements LivingEntityEx
     @Final
     private static EntityDataAccessor<List<ParticleOptions>> DATA_EFFECT_PARTICLES;
 
-    public MixinLivingEntity(EntityType<?> p_19870_, Level p_19871_) {
-        super(p_19870_, p_19871_);
+    public MixinLivingEntity(final EntityType<?> type, final Level level) {
+        super(type, level);
         throw new AssertionError();
     }
 

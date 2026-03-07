@@ -37,8 +37,8 @@ public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
                 segments.put(segmentPos, new Segment(segmentPos, segmentSize));
             }
             Segment segment = segments.get(segmentPos);
-            int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-            int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+            int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
+            int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
 
             // clear pixels
             for (int dx = 0; dx < 16; dx++) {

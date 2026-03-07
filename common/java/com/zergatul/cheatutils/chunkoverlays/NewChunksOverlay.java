@@ -71,8 +71,8 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
         }
 
         Segment segment = segments.get(segmentPos);
-        int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-        int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+        int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
+        int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
         redrawChunk(entry, segment, xf, yf);
         segment.onChange();
     }
@@ -91,8 +91,8 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
             return;
         }
 
-        int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-        int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+        int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
+        int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
         redrawChunk(entry, segment, xf, yf);
 
         if (!segment.updated) {

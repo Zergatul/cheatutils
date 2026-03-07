@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.mixins.common.accessors.EntityTypeAccessor;
-import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.Entity;
@@ -245,7 +244,7 @@ public class EntityUtils {
         }
 
         private String getSimpleName(Class<?> clazz) {
-            String rawName = ClassRemapper.fromObf(clazz.getName());
+            String rawName = clazz.getName();
             int index = rawName.lastIndexOf('.');
             if (index < 0) {
                 return rawName;

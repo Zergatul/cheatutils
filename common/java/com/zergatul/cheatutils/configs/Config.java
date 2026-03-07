@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
-public class Config {
+public class Config implements Sanitizable {
+
     public FullBrightConfig fullBrightConfig = new FullBrightConfig();
     public AutoFishConfig autoFishConfig = new AutoFishConfig();
     public ArmorOverlayConfig armorOverlayConfig = new ArmorOverlayConfig();
@@ -54,8 +55,6 @@ public class Config {
     public BreachSwapConfig breachSwapConfig = new BreachSwapConfig();
     public SpearRangeConfig spearRangeConfig = new SpearRangeConfig();
     public AutoStunnerConfig autoStunnerConfig = new AutoStunnerConfig();
-    public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
-    public FakeWeatherConfig fakeWeatherConfig = new FakeWeatherConfig();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
     public ExecConfig execConfig = new ExecConfig();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
@@ -75,4 +74,36 @@ public class Config {
     public AutoToolConfig autoTool = new AutoToolConfig();
     public BlockEntityDistanceConfig blockEntityDistance = new BlockEntityDistanceConfig();
     public AirPlaceConfig airPlaceConfig = new AirPlaceConfig();
+    public ElytraBounceConfig elytraBounceConfig = new ElytraBounceConfig();
+    public ParkourAssistConfig parkourAssistConfig = new ParkourAssistConfig();
+    public HandsViewConfig handsViewConfig = new HandsViewConfig();
+
+    @Override
+    public void sanitize() {
+        killAuraConfig.sanitize();
+        movementHackConfig.sanitize();
+        fastBreakConfig.sanitize();
+        elytraHackConfig.sanitize();
+        freeCamConfig.sanitize();
+        flyHackConfig.sanitize();
+        boatHackConfig.sanitize();
+        explorationMiniMapConfig.sanitize();
+        reachConfig.sanitize();
+        lightLevelConfig.sanitize();
+        schematicaConfig.sanitize();
+        autoBucketConfig.sanitize();
+        performanceConfig.sanitize();
+        entityTitleConfig.sanitize();
+        keyBindingsConfig.sanitize();
+        worldMarkersConfig.sanitize();
+        autoAttackConfig.sanitize();
+        projectilePathConfig.sanitize();
+        chatUtilitiesConfig.sanitize();
+        areaMineConfig.sanitize();
+        hitboxSizeConfig.sanitize();
+        coreConfig.sanitize();
+        blockEntityDistance.sanitize();
+        elytraBounceConfig.sanitize();
+        handsViewConfig.sanitize();
+    }
 }

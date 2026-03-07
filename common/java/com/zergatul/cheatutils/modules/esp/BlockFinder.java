@@ -65,8 +65,8 @@ public class BlockFinder {
         // need to call unload?
         Map<Block, BlockEspConfig> map = ConfigStore.instance.getConfig().blocks.getMap();
         int minY = chunk.getMinY();
-        int xc = chunk.getPos().x << 4;
-        int zc = chunk.getPos().z << 4;
+        int xc = chunk.getPos().x() << 4;
+        int zc = chunk.getPos().z() << 4;
         for (int x = 0; x < 16; x++) {
             int xw = xc | x;
             for (int z = 0; z < 16; z++) {
@@ -81,8 +81,8 @@ public class BlockFinder {
     }
 
     private void onChunkUnloaded(ChunkPos pos) {
-        final int cx = pos.x;
-        final int cz = pos.z;
+        final int cx = pos.x();
+        final int cz = pos.z();
         for (Set<BlockPos> set : blocks.values()) {
             set.removeIf(p -> (p.getX() >> 4) == cx && (p.getZ() >> 4) == cz);
         }
@@ -108,8 +108,8 @@ public class BlockFinder {
         Set<BlockPos> set = blocks.get(config);
         ImmutableList<Block> blockTypes = config.blocks;
         int minY = chunk.getMinY();
-        int xc = chunk.getPos().x << 4;
-        int zc = chunk.getPos().z << 4;
+        int xc = chunk.getPos().x() << 4;
+        int zc = chunk.getPos().z() << 4;
         for (int x = 0; x < 16; x++) {
             int xw = xc | x;
             for (int z = 0; z < 16; z++) {

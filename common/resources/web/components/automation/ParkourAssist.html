@@ -1,0 +1,36 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Automatically performs jump at the last possible tick before you start falling down.
+    </div>
+
+    <div class="module-sections">
+        <div class="section-description">
+            Module can be only activated from scripting.<br>
+            If you want toggle key, use <b>Key Bindings</b> script like this:
+            <CodeBlock :code='`
+                parkourAssist.toggle();
+            `' />
+            If you want hold key, use <b>Events Scripting</b> script like this:
+            <CodeBlock :code='`
+                events.onHandleKeys(() => {
+                    parkourAssist.setEnabled(input.isKeyDown("Right Button"));
+                });
+            `' />
+        </div>
+
+        <fieldset>
+            <legend>
+                Settings
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Fall Threshold:</span>
+                <input type="text" class="w4" v-model="config.threshold" @change="update()">
+            </div>
+            <div class="section-description">
+                Distance to check below your character.<br>
+                For example: if set to less than 1/16, module will perform jump when you "fall" from full block to dirt path block.<br>
+                If set to less than 0.5, module will perform jump when you "fall" from full block to slab block.
+            </div>
+        </fieldset>
+    </div>
+</div>

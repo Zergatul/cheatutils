@@ -13,7 +13,9 @@ import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class BlockEsp {
 
@@ -57,39 +59,12 @@ public class BlockEsp {
 
         MainFrameBuffer.bind();
 
-        if (!customEntries.isEmpty()) {
-            final float shift = 0.01f;
-            Vec3 view = event.getCamera().position();
-            Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
-            renderer.begin();
-            for (CustomBlockPosEntry entry : customEntries) {
-                renderer.cuboid(
-                        (float) (entry.pos.getX() - view.x - shift),
-                        (float) (entry.pos.getY() - view.y - shift),
-                        (float) (entry.pos.getZ() - view.z - shift),
-                        (float) (entry.pos.getX() - view.x + 1 + shift),
-                        (float) (entry.pos.getY() - view.y + 1 + shift),
-                        (float) (entry.pos.getZ() - view.z + 1 + shift),
-                        ColorUtils.r(entry.color), ColorUtils.g(entry.color), ColorUtils.b(entry.color), ColorUtils.a(entry.color));
-            }
-            GlStateManager._depthMask(false);
-            renderer.end(event.getMvp());
-            GlStateManager._depthMask(true);
-        }
+        renderCustomEntries(event);
 
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
-
-        Vec3 tracerCenter = event.getTracerCenter();
-        double tracerX = tracerCenter.x;
-        double tracerY = tracerCenter.y;
-        double tracerZ = tracerCenter.z;
-
-        GroupLineRenderer lineRenderer = RenderUtilities.instance.getGroupLineRenderer();
-        GroupThickLineRenderer thickLineRenderer = RenderUtilities.instance.getGroupThickLineRenderer();
-        BlockOverlayRenderer overlayRenderer = RenderUtilities.instance.getBlockOverlayRenderer();
 
         for (BlockEspConfig config : ConfigStore.instance.getConfig().blocks.getBlockConfigs()) {
             if (!config.enabled) {
@@ -159,117 +134,133 @@ public class BlockEsp {
             }
 
             if (!bbList.isEmpty()) {
-                final int lineWidth = config.outlineWidth;
-                CuboidRenderer renderer;
-                if (lineWidth == 1) {
-                    lineRenderer.begin(event);
-                    renderer = lineRenderer;
-                } else {
-                    thickLineRenderer.begin(event, lineWidth);
-                    renderer = thickLineRenderer;
-                }
-
-                for (BlockPos pos : bbList) {
-                    double x = pos.getX();
-                    double y = pos.getY();
-                    double z = pos.getZ();
-                    renderer.cuboid(x, y, z, x + 1, y + 1, z + 1);
-                }
-
-                if (lineWidth == 1) {
-                    lineRenderer.end(config.outlineColor);
-                } else {
-                    thickLineRenderer.end(config.outlineColor);
-                }
+                renderBoundingBoxes((float) config.outlineWidth, config.outlineColor, event);
             }
 
             if (!tracerList.isEmpty()) {
-                final int lineWidth = config.tracerWidth;
-                SimpleLineRenderer renderer;
-                if (lineWidth == 1) {
-                    lineRenderer.begin(event);
-                    renderer = lineRenderer;
-                } else {
-                    thickLineRenderer.begin(event, lineWidth);
-                    renderer = thickLineRenderer;
-                }
-
-                for (BlockPos pos : tracerList) {
-                    renderer.line(
-                            tracerX, tracerY, tracerZ,
-                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-                }
-
-                if (lineWidth == 1) {
-                    lineRenderer.end(config.tracerColor);
-                } else {
-                    thickLineRenderer.end(config.tracerColor);
-                }
+                renderTracers((float) config.tracerWidth, config.tracerColor, event);
             }
 
             if (!overlayList.isEmpty()) {
-                overlayRenderer.begin(event);
-                for (BlockPos pos: overlayList) {
-                    renderOverlay(overlayRenderer, pos);
-                }
-                overlayRenderer.end(
-                        config.overlayColor.getRed() / 255f,
-                        config.overlayColor.getGreen() / 255f,
-                        config.overlayColor.getBlue() / 255f,
-                        config.overlayColor.getAlpha() / 255f);
+                renderOverlay(config.overlayColor, event);
             }
         }
     }
 
-    private void renderOverlay(BlockOverlayRenderer renderer, BlockPos pos) {
-        int x1 = pos.getX();
-        int y1 = pos.getY();
-        int z1 = pos.getZ();
-        int x2 = x1 + 1;
-        int y2 = y1 + 1;
-        int z2 = z1 + 1;
+    private void renderBoundingBoxes(float width, Color color, RenderWorldLastEvent event) {
+        Vec3 cameraPos = event.getCameraPos();
+        double cameraX = cameraPos.x;
+        double cameraY = cameraPos.y;
+        double cameraZ = cameraPos.z;
 
-        // bottom
-        renderer.quad(
-                x2, y1, z2,
-                x1, y1, z2,
-                x1, y1, z1,
-                x2, y1, z1);
+        if (width == 1) {
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
+            for (BlockPos pos : bbList) {
+                double x = pos.getX();
+                double y = pos.getY();
+                double z = pos.getZ();
+                renderer.cuboid(
+                        (float) (x - cameraX),
+                        (float) (y - cameraY),
+                        (float) (z - cameraZ),
+                        (float) (x + 1 - cameraX),
+                        (float) (y + 1 - cameraY),
+                        (float) (z + 1 - cameraZ));
+            }
+            renderer.end(event.getMvp(), color);
+        } else {
+            UniformColorLineWidthRenderer renderer = UniformColorLineWidthRenderer.getInstance();
+            renderer.begin(event.getMvp(), width);
+            for (BlockPos pos : bbList) {
+                double x = pos.getX();
+                double y = pos.getY();
+                double z = pos.getZ();
+                renderer.cuboid(
+                        (float) (x - cameraX),
+                        (float) (y - cameraY),
+                        (float) (z - cameraZ),
+                        (float) (x + 1 - cameraX),
+                        (float) (y + 1 - cameraY),
+                        (float) (z + 1 - cameraZ));
+            }
+            renderer.end(color);
+        }
+    }
 
-        // top
-        renderer.quad(
-                x2, y2, z2,
-                x2, y2, z1,
-                x1, y2, z1,
-                x1, y2, z2);
+    private void renderTracers(float width, Color color, RenderWorldLastEvent event) {
+        Vec3 cameraPos = event.getCameraPos();
+        double cameraX = cameraPos.x;
+        double cameraY = cameraPos.y;
+        double cameraZ = cameraPos.z;
 
-        // west
-        renderer.quad(
-                x1, y1, z1,
-                x1, y1, z2,
-                x1, y2, z2,
-                x1, y2, z1);
+        Vec3 tracerCenter = event.getTracerCenter();
+        float tracerX = (float) (tracerCenter.x - cameraX);
+        float tracerY = (float) (tracerCenter.y - cameraY);
+        float tracerZ = (float) (tracerCenter.z - cameraZ);
 
-        // east
-        renderer.quad(
-                x2, y1, z1,
-                x2, y2, z1,
-                x2, y2, z2,
-                x2, y1, z2);
+        if (width == 1) {
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
+            for (BlockPos pos : tracerList) {
+                renderer.line(
+                        tracerX, tracerY, tracerZ,
+                        (float) (pos.getX() + 0.5 - cameraX),
+                        (float) (pos.getY() + 0.5 - cameraY),
+                        (float) (pos.getZ() + 0.5 - cameraZ));
+            }
+            renderer.end(event.getMvp(), color);
+        } else {
+            UniformColorLineWidthRenderer renderer = UniformColorLineWidthRenderer.getInstance();
+            renderer.begin(event.getMvp(), width);
+            for (BlockPos pos : tracerList) {
+                renderer.line(
+                        tracerX, tracerY, tracerZ,
+                        (float) (pos.getX() + 0.5 - cameraX),
+                        (float) (pos.getY() + 0.5 - cameraY),
+                        (float) (pos.getZ() + 0.5 - cameraZ));
+            }
+            renderer.end(color);
+        }
+    }
 
-        // north
-        renderer.quad(
-                x2, y1, z1,
-                x1, y1, z1,
-                x1, y2, z1,
-                x2, y2, z1);
+    private void renderOverlay(Color color, RenderWorldLastEvent event) {
+        Vec3 cameraPos = event.getCameraPos();
+        double cameraX = cameraPos.x;
+        double cameraY = cameraPos.y;
+        double cameraZ = cameraPos.z;
 
-        // south
-        renderer.quad(
-                x2, y1, z2,
-                x2, y2, z2,
-                x1, y2, z2,
-                x1, y1, z2);
+        BlockEspOverlayRenderer renderer = BlockEspOverlayRenderer.getInstance();
+        renderer.begin();
+        for (BlockPos pos : overlayList) {
+            renderer.submitBlock(
+                    (float) (pos.getX() - cameraX),
+                    (float) (pos.getY() - cameraY),
+                    (float) (pos.getZ() - cameraZ));
+        }
+        renderer.end(event.getMvp(), color);
+    }
+
+    private void renderCustomEntries(RenderWorldLastEvent event) {
+        if (!customEntries.isEmpty()) {
+            final float shift = 0.01f;
+            Vec3 view = event.getCameraPos();
+            Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
+            renderer.begin();
+            for (CustomBlockPosEntry entry : customEntries) {
+                renderer.cuboid(
+                        (float) (entry.pos.getX() - view.x - shift),
+                        (float) (entry.pos.getY() - view.y - shift),
+                        (float) (entry.pos.getZ() - view.z - shift),
+                        (float) (entry.pos.getX() - view.x + 1 + shift),
+                        (float) (entry.pos.getY() - view.y + 1 + shift),
+                        (float) (entry.pos.getZ() - view.z + 1 + shift),
+                        ColorUtils.r(entry.color), ColorUtils.g(entry.color), ColorUtils.b(entry.color), ColorUtils.a(entry.color));
+            }
+            GlStateManager._depthMask(false);
+            renderer.end(event.getMvp());
+            GlStateManager._depthMask(true);
+        }
     }
 
     public static class BlockScriptResult {

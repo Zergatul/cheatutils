@@ -2,25 +2,17 @@ package com.zergatul.cheatutils.mixins.forge.schematica;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
 import com.zergatul.cheatutils.schematics.ShadedVertexConsumerWrapper;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.*;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.RenderSectionRegion;
 import net.minecraft.client.renderer.chunk.SectionCompiler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -30,7 +22,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
 import java.util.Map;
 
 @Mixin(SectionCompiler.class)
@@ -38,10 +29,35 @@ public abstract class MixinSectionCompiler {
 
     @Shadow
     @Final
-    private BlockRenderDispatcher blockRenderer;
+    private boolean cutoutLeaves;
+
+    @Shadow
+    @Final
+    private BlockStateModelSet blockModelSet;
 
     @Shadow
     protected abstract BufferBuilder getOrBeginLayer(Map<ChunkSectionLayer, BufferBuilder> map, SectionBufferBuilderPack pack, ChunkSectionLayer layer);
+
+    @Inject(
+            method = "compile",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/core/BlockPos;betweenClosed(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Ljava/lang/Iterable;"))
+    private void onBeforeTesselating(
+            SectionPos sectionPos,
+            RenderSectionRegion region,
+            VertexSorting vertexSorting,
+            SectionBufferBuilderPack builders,
+            CallbackInfoReturnable<SectionCompiler.Results> info,
+            @Local(name = "startedLayers") Map<ChunkSectionLayer, BufferBuilder> startedLayers,
+            @Local(name = "blockRenderer") ModelBlockRenderer blockRenderer,
+            @Local(name = "fluidRenderer") FluidRenderer fluidRenderer
+    ) {
+        RenderSectionRegionExtension extension = (RenderSectionRegionExtension) region;
+        if (!extension.hasSchematicaBlocks_CU()) {
+            return;
+        }
+
+        extension.storeLocalVariables_CU(startedLayers, blockRenderer, fluidRenderer);
+    }
 
     @Inject(
             method = "compile",
@@ -49,25 +65,33 @@ public abstract class MixinSectionCompiler {
     private void onBeforeSorting(
             SectionPos sectionPos,
             RenderSectionRegion region,
-            VertexSorting sorting,
-            SectionBufferBuilderPack pack,
-            CallbackInfoReturnable<SectionCompiler.Results> info,
-            @Local(ordinal = 1) Map<ChunkSectionLayer, BufferBuilder> map,
-            @Local(ordinal = 0) PoseStack poseStack
+            VertexSorting vertexSorting,
+            SectionBufferBuilderPack builders,
+            CallbackInfoReturnable<SectionCompiler.Results> info
     ) {
         RenderSectionRegionExtension extension = (RenderSectionRegionExtension) region;
         if (!extension.hasSchematicaBlocks_CU()) {
             return;
         }
 
-        ClientLevel level = net.minecraft.client.Minecraft.getInstance().level;
-        assert level != null;
-        Map<BlockPos, ModelData> modelDataMap = level.getModelDataManager().getAt(sectionPos);
+        Map<BlockPos, ModelData> modelDataMap = net.minecraft.client.Minecraft.getInstance().level.getModelDataManager().getAt(sectionPos);
+
+        Map<ChunkSectionLayer, BufferBuilder> startedLayers = extension.getStartedLayers_CU();
+        ModelBlockRenderer blockRenderer = extension.getBlockRenderer_CU();
+        FluidRenderer fluidRenderer = extension.getFluidRenderer_CU();
 
         boolean shaded = extension.shadeSchematicaBlocks_CU();
-        RandomSource random = RandomSource.create();
-        List<BlockModelPart> list = new ObjectArrayList<>();
         BlockAndTintGetter wrapped = extension.asWrapped_CU();
+
+        BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
+            VertexConsumer consumer = this.getOrBeginLayer_CU(startedLayers, builders, quad.materialInfo().layer(), shaded);
+            consumer.putBlockBakedQuad(x, y, z, quad, instance);
+        };
+        BlockQuadOutput opaqueQuadOutput = (x, y, z, quad, instance) -> {
+            VertexConsumer consumer = this.getOrBeginLayer_CU(startedLayers, builders, ChunkSectionLayer.SOLID, shaded);
+            consumer.putBlockBakedQuad(x, y, z, quad, instance);
+        };
+        FluidRenderer.Output fluidOutput = layer -> this.getOrBeginLayer_CU(startedLayers, builders, layer, shaded);
 
         BlockPos corner1 = sectionPos.origin();
         BlockPos corner2 = corner1.offset(15, 15, 15);
@@ -83,25 +107,21 @@ public abstract class MixinSectionCompiler {
 
             FluidState fluidState = state.getFluidState();
             if (!fluidState.isEmpty()) {
-                ChunkSectionLayer layer = ItemBlockRenderTypes.getRenderLayer(fluidState);
-                this.blockRenderer.renderLiquid(pos, wrapped, getOrBeginLayer_CU(map, pack, layer, shaded), state, fluidState);
+                fluidRenderer.tesselate(wrapped, pos, fluidOutput, state, fluidState);
             }
 
             if (state.getRenderShape() == RenderShape.MODEL) {
-                BlockStateModel model = this.blockRenderer.getBlockModel(state);
-                ModelData data = modelDataMap.getOrDefault(pos, net.minecraftforge.client.model.data.ModelData.EMPTY);
-                data = model.getModelData(wrapped, pos, state, data);
-                random.setSeed(state.getSeed(pos));
-                for (ChunkSectionLayer layer : model.getRenderTypes(state, random, data)) {
-                    VertexConsumer consumer = this.getOrBeginLayer_CU(map, pack, layer, shaded);
-                    random.setSeed(state.getSeed(pos));
-                    model.collectParts(random, list, data, layer);
-                    poseStack.pushPose();
-                    poseStack.translate(pos.getX() & 0xF, pos.getY() & 0xF, pos.getZ() & 0xF);
-                    this.blockRenderer.renderBatched(state, pos, wrapped, poseStack, consumer, true, list);
-                    poseStack.popPose();
-                    list.clear();
-                }
+                blockRenderer.tesselateBlock(
+                        ModelBlockRenderer.forceOpaque(this.cutoutLeaves, state) ? opaqueQuadOutput : quadOutput,
+                        SectionPos.sectionRelative(pos.getX()),
+                        SectionPos.sectionRelative(pos.getY()),
+                        SectionPos.sectionRelative(pos.getZ()),
+                        wrapped,
+                        pos,
+                        state,
+                        this.blockModelSet.get(state),
+                        state.getSeed(pos),
+                        modelDataMap.getOrDefault(pos, net.minecraftforge.client.model.data.ModelData.EMPTY));
             }
         }
     }

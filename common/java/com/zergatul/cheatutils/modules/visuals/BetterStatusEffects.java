@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.mixins.common.accessors.GuiAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -25,7 +25,7 @@ public class BetterStatusEffects implements Module {
 
     }
 
-    public void render(GuiGraphics graphics, Player player, int y) {
+    public void render(GuiGraphicsExtractor graphics, Player player, int y) {
         if (!ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
             return;
         }
@@ -66,7 +66,7 @@ public class BetterStatusEffects implements Module {
                     textLeft - 1 + width + 2,
                     textTop + mc.font.lineHeight,
                     -1873784752);
-            graphics.drawString(mc.font, duration, textLeft, textTop, -1);
+            graphics.text(mc.font, duration, textLeft, textTop, -1);
 
             left += 25;
         }

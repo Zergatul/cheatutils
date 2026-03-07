@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class AutoAttackConfig extends ModuleConfig implements ValidatableConfig {
+public class AutoAttackConfig extends ModuleConfig implements Sanitizable {
 
     public boolean limitRange;
     public double maxRange;
@@ -16,7 +16,7 @@ public class AutoAttackConfig extends ModuleConfig implements ValidatableConfig 
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         maxRange = MathUtils.clamp(maxRange, 0, 10);
         extraTicksMin = MathUtils.clamp(extraTicksMin, -10, 10);
         extraTicksMax = MathUtils.clamp(extraTicksMax, extraTicksMin, 10);

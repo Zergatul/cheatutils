@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 
 public class DisconnectController {
@@ -55,6 +56,6 @@ public class DisconnectController {
         }
 
         addText = message;
-        NetworkPacketsController.instance.sendPacket(ServerboundInteractPacket.createAttackPacket(mc.player, mc.player.isShiftKeyDown()));
+        NetworkPacketsController.instance.sendPacket(new ServerboundAttackPacket(mc.player.getId()));
     }
 }

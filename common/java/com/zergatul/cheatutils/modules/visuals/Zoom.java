@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.GetFieldOfViewEvent;
+import com.zergatul.cheatutils.common.events.ModifyFieldOfViewEvent;
 import com.zergatul.cheatutils.modules.Module;
 
 public class Zoom implements Module {
@@ -15,7 +15,8 @@ public class Zoom implements Module {
     private double fovFactor;
 
     private Zoom() {
-        Events.GetFieldOfView.add(this::onGetFov);
+        // should run after FreeCam
+        Events.ModifyFieldOfView.add(this::onModifyFieldOfView, 10);
         state = State.NONE;
     }
 
@@ -71,21 +72,21 @@ public class Zoom implements Module {
         return fovFactor;
     }
 
-    private void onGetFov(GetFieldOfViewEvent event) {
+    private void onModifyFieldOfView(ModifyFieldOfViewEvent event) {
         long now = System.nanoTime();
-        double originalFov = event.get();
+        float original = event.fov;
         switch (state) {
             case ZOOM_IN:
                 if (now >= end) {
                     state = State.ZOOM_STATIC;
-                    onGetFov(event);
+                    onModifyFieldOfView(event);
                     return;
                 }
-                event.set(perceptual(originalFov, finalFov, 1d * (now - begin) / (end - begin)));
+                event.fov = (float) perceptual(original, finalFov, 1d * (now - begin) / (end - begin));
                 break;
 
             case ZOOM_STATIC:
-                event.set(finalFov);
+                event.fov = (float) finalFov;
                 break;
 
             case ZOOM_OUT:
@@ -93,11 +94,11 @@ public class Zoom implements Module {
                     state = State.NONE;
                     return;
                 }
-                event.set(perceptual(finalFov, originalFov, 1d * (now - begin) / (end - begin)));
+                event.fov = (float) perceptual(finalFov, original, 1d * (now - begin) / (end - begin));
                 break;
         }
 
-        fovFactor = event.get() / originalFov;
+        fovFactor = event.fov / original;
     }
 
     private double perceptual(double fov1, double fov2, double t) {

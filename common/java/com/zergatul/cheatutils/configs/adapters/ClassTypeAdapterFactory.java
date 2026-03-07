@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.zergatul.cheatutils.utils.ClassUtils;
-import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +32,7 @@ public class ClassTypeAdapterFactory implements TypeAdapterFactory {
             if (value == null) {
                 out.nullValue();
             } else {
-                out.value(ClassRemapper.fromObf(value.getName()));
+                out.value(value.getName());
             }
         }
 
@@ -44,7 +43,7 @@ public class ClassTypeAdapterFactory implements TypeAdapterFactory {
                 return null;
             } else {
                 try {
-                    return ClassUtils.forName(ClassRemapper.toObf(value));
+                    return ClassUtils.forName(value);
                 } catch (Throwable e) {
                     LOGGER.warn(String.format("Can't parse class from '%s'", value), e);
                     return null;

@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ConfigStore {
 
@@ -111,40 +113,23 @@ public class ConfigStore {
         });
     }
 
+    public static <T> void updateFromApi(Function<Config, T> extract, Consumer<T> update) {
+        ConfigStore store = instance;
+        Config config = store.getConfig();
+        T moduleConfig = extract.apply(config);
+        update.accept(moduleConfig);
+        if (moduleConfig instanceof Sanitizable sanitizable) {
+            sanitizable.sanitize();
+        }
+        store.requestWrite();
+    }
+
     private void onConfigLoaded() {
-        LightLevel.instance.onChanged();
+        config.sanitize();
         config.blocks.apply();
-
-        // clazz==null can occur after removing mod with custom entities
-        config.entities.configs = config.entities.configs.removeIf(c -> c.clazz == null);
-
-        // TODO: use reflection to automatically find ValidatableConfig's?
-        config.killAuraConfig.validate();
-        config.movementHackConfig.validate();
-        config.fastBreakConfig.validate();
-        config.elytraHackConfig.validate();
-        config.freeCamConfig.validate();
-        config.flyHackConfig.validate();
-        config.boatHackConfig.validate();
-        config.explorationMiniMapConfig.validate();
-        config.reachConfig.validate();
-        config.lightLevelConfig.validate();
-        config.schematicaConfig.validate();
-        config.autoBucketConfig.validate();
-        config.performanceConfig.validate();
-        config.entityTitleConfig.validate();
-        config.keyBindingsConfig.validate();
-        config.worldMarkersConfig.validate();
-        config.autoAttackConfig.validate();
-        config.projectilePathConfig.validate();
-        config.chatUtilitiesConfig.validate();
-        config.areaMineConfig.validate();
-        config.hitboxSizeConfig.validate();
-        config.coreConfig.validate();
-        config.blockEntityDistance.validate();
-
         config.blocks.refreshMap();
 
+        LightLevel.instance.onChanged();
         ConfigHttpServer.instance.onConfigUpdated();
         EntityTitle.instance.onTitleFontChange();
         EntityTitle.instance.onEnchantmentFontChange();

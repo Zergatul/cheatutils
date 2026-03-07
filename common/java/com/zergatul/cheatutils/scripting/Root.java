@@ -20,6 +20,8 @@ public class Root {
     public static AutoStunnerApi autoStunner = new AutoStunnerApi();
     public static BreachSwapApi breachSwap = new BreachSwapApi();
     public static SpearRangeApi spearRange = new SpearRangeApi();
+    public static ElytraBounceApi elytraBounce = new ElytraBounceApi();
+    public static ParkourAssistApi parkourAssist = new ParkourAssistApi();
 
     // ESP
     public static BlocksApi blocks = new BlocksApi();

@@ -1,0 +1,143 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Modify different parameters for hands renderer.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                Arms
+            </legend>
+            <div>
+                <switch-checkbox v-model="config.renderArms" @change="update()">Render Arms</switch-checkbox>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width: 3em;">
+                    <col style="width: 1em;">
+                    <col style="width: 2em;">
+                    <col style="width: 1em;">
+                    <col style="width: 2em;">
+                    <col style="width: 1em;">
+                    <col style="width: 2em;">
+                </colgroup>
+                <tr>
+                    <td>
+                        <span class="field-description">Scale</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">X:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.armsScale.x" @change="update()">
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">Y:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.armsScale.y" @change="update()">
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">Z:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.armsScale.z" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Shift</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">X:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.armsShift.x" @change="update()">
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">Y:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.armsShift.y" @change="update()">
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">Z:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.armsShift.z" @change="update()">
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Items
+            </legend>
+            <div>
+                <switch-checkbox v-model="config.renderItems" @change="update()">Render Items</switch-checkbox>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width: 3em;">
+                    <col style="width: 1em;">
+                    <col style="width: 2em;">
+                    <col style="width: 1em;">
+                    <col style="width: 2em;">
+                    <col style="width: 1em;">
+                    <col style="width: 2em;">
+                </colgroup>
+                <tr>
+                    <td>
+                        <span class="field-description">Scale</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">X:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.itemsScale.x" @change="update()">
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">Y:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.itemsScale.y" @change="update()">
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">Z:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.itemsScale.z" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Shift</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">X:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.itemsShift.x" @change="update()">
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">Y:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.itemsShift.y" @change="update()">
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="field-description">Z:</span>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="w3" v-model="config.itemsShift.z" @change="update()">
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</div>

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ProjectilePathConfig implements ValidatableConfig, ModuleStateProvider {
+public class ProjectilePathConfig implements Sanitizable, ModuleStateProvider {
 
     public boolean enderPearls;
     public boolean bows;
@@ -25,7 +25,7 @@ public class ProjectilePathConfig implements ValidatableConfig, ModuleStateProvi
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         tracesDuration = MathUtils.clamp(tracesDuration, 0, 3600);
         fadeDuration = MathUtils.clamp(fadeDuration, 0, tracesDuration);
     }

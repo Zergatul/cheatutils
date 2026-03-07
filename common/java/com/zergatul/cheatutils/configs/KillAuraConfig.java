@@ -3,19 +3,19 @@ package com.zergatul.cheatutils.configs;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
-import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
+import net.minecraft.world.entity.monster.piglin.PiglinBrute;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
 
 import java.util.*;
 import java.util.function.Predicate;
 
-public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
+public class KillAuraConfig extends ModuleConfig implements Sanitizable {
 
     public static final String ConstDelay = "ConstDelay";
     public static final String Cooldown = "Cooldown";
@@ -65,7 +65,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
         other.scriptEnabled = scriptEnabled;
     }
 
-    public void validate() {
+    public void sanitize() {
         maxRange = MathUtils.clamp(maxRange, 1, 100);
         attackTickInterval = MathUtils.clamp(attackTickInterval, 1, 100);
         extraTicks = MathUtils.clamp(extraTicks, -10, 1000);
@@ -114,10 +114,13 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
                         })),
                 Map.entry(ENEMIES_WO_PIGLINS, new PredefinedPriorityEntry(
                         ENEMIES_WO_PIGLINS,
-                        "Same as Enemies, but without Piglins.",
+                        "Same as Enemies, but without Piglins (Piglin Brute is still valid target).",
                         entity -> {
                             if (entity instanceof EnderMan) {
                                 return ((EnderMan) entity).isCreepy();
+                            }
+                            if (entity instanceof PiglinBrute) {
+                                return true;
                             }
                             if (entity instanceof AbstractPiglin) {
                                 return false;
@@ -151,7 +154,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
         public static CustomPriorityEntry create(String name, String description, String className) {
             Class<?> clazz;
             try {
-                clazz = ClassUtils.forName(ClassRemapper.toObf(className));
+                clazz = ClassUtils.forName(className);
             } catch (ClassNotFoundException e) {
                 return null;
             }

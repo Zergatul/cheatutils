@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
@@ -18,10 +18,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.BundleItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BundleContents;
 
 import java.util.ArrayList;
@@ -124,9 +121,9 @@ public class ContainerSummary implements Module {
             if (itemStack.getItem() instanceof BundleItem) {
                 BundleContents contents = itemStack.get(DataComponents.BUNDLE_CONTENTS);
                 assert contents != null;
-                for (ItemStack slot : contents.items()) {
-                    if (!slot.isEmpty()) {
-                        addItem(map, slot);
+                for (ItemStackTemplate slot : contents.items()) {
+                    if (slot.count() != 0) {
+                        addItem(map, slot.create());
                     }
                 }
             }
@@ -155,7 +152,7 @@ public class ContainerSummary implements Module {
         map.put(item, drawable);
     }
 
-    private void drawBorders(GuiGraphics graphics, List<ItemsColumn> columns, int baseX, int baseY) {
+    private void drawBorders(GuiGraphicsExtractor graphics, List<ItemsColumn> columns, int baseX, int baseY) {
         int width = columns.stream().map(ItemsColumn::getWidth).reduce(0, Integer::sum);
 
         graphics.blit(
@@ -232,7 +229,7 @@ public class ContainerSummary implements Module {
             }
         }
 
-        public void draw(GuiGraphics graphics, Identifier background, Font font, int x, int y, int width) {
+        public void draw(GuiGraphicsExtractor graphics, Identifier background, Font font, int x, int y, int width) {
             graphics.blit(
                     RenderPipelines.GUI_TEXTURED, background,
                     x, y,
@@ -259,25 +256,25 @@ public class ContainerSummary implements Module {
 
             if (stacksCount > 0) {
                 if (stacksCount > 1) {
-                    graphics.drawString(font, stacksCount + "x", x + TEXT_SHIFT_X, y + TEXT_SHIFT_Y, -1, true);
+                    graphics.text(font, stacksCount + "x", x + TEXT_SHIFT_X, y + TEXT_SHIFT_Y, -1, true);
                     x += font.width(stacksCount + "x");
                 }
 
                 ItemStack itemStack = new ItemStack(item, stackSize);
-                graphics.renderFakeItem(itemStack, x + 1, y + 1);
-                graphics.renderItemDecorations(font, itemStack, x + 1, y + 1);
+                graphics.fakeItem(itemStack, x + 1, y + 1);
+                graphics.itemDecorations(font, itemStack, x + 1, y + 1);
                 x += 18;
 
                 if (remCount > 0) {
-                    graphics.drawString(font, "+", x + TEXT_SHIFT_X, y + TEXT_SHIFT_Y, -1, true);
+                    graphics.text(font, "+", x + TEXT_SHIFT_X, y + TEXT_SHIFT_Y, -1, true);
                     x += font.width("+");
                 }
             }
 
             if (remCount > 0) {
                 ItemStack itemStack = new ItemStack(item, remCount);
-                graphics.renderFakeItem(itemStack, x + 1, y + 1);
-                graphics.renderItemDecorations(font, itemStack, x + 1, y + 1);
+                graphics.fakeItem(itemStack, x + 1, y + 1);
+                graphics.itemDecorations(font, itemStack, x + 1, y + 1);
             }
         }
     }

@@ -11,7 +11,7 @@ To download repository with submodules use below command:
 ## Build
 
 To build mod by yourself go to Forge or Fabric directory and run `gradlew build`.
-Requires JDK 21.
+Requires JDK 25.
 
 ## Debugging/Customizing Web App
 

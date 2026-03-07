@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.mixins.common.accessors.CrossbowItemAccessor;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.render.VertexColorLineRenderer;
 import com.zergatul.cheatutils.utils.ServerBehavior;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -66,8 +67,8 @@ public class ProjectilePath {
                     }
 
                     LinkedList<TraceRecord> list = traces.get(entity.getId());
-                    Vec3 position = entity.getPosition(event.getTickDelta());
-                    if (list.size() == 0) {
+                    Vec3 position = entity.getPosition(event.getPartialTickTime());
+                    if (list.isEmpty()) {
                         list.addFirst(new TraceRecord(position, time));
                     } else {
                         TraceRecord first = list.getFirst();
@@ -85,18 +86,23 @@ public class ProjectilePath {
             while (iterator.hasNext()) {
                 Map.Entry<Integer, LinkedList<TraceRecord>> entry = iterator.next();
                 LinkedList<TraceRecord> list = entry.getValue();
-                while (list.size() > 0 && list.getLast().time + config.tracesDuration * 1000000000L < time) {
+                while (!list.isEmpty() && list.getLast().time + config.tracesDuration * 1000000000L < time) {
                     list.removeLast();
                 }
-                if (list.size() == 0) {
+                if (list.isEmpty()) {
                     iterator.remove();
                 }
             }
 
             // rendering
 
-            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-            renderer.begin(event, true);
+            Vec3 cameraPos = event.getCameraPos();
+            double cameraX = cameraPos.x;
+            double cameraY = cameraPos.y;
+            double cameraZ = cameraPos.z;
+
+            VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance(); // TODO: depth
+            renderer.begin();
 
             for (List<TraceRecord> list : traces.values()) {
                 if (list.size() < 2) {
@@ -111,14 +117,14 @@ public class ProjectilePath {
                     long remain2 = r2.time + config.tracesDuration * 1000000000L - time;
                     float alpha2 = Math.min(1f, remain2 / 1e9f / config.fadeDuration);
                     renderer.line(
-                            r1.position.x, r1.position.y, r1.position.z,
+                            (float) (r1.position.x - cameraX), (float) (r1.position.y - cameraY), (float) (r1.position.z - cameraZ),
                             0.5f, 1f, 0.5f, alpha1,
-                            r2.position.x, r2.position.y, r2.position.z,
+                            (float) (r2.position.x - cameraX), (float) (r2.position.y - cameraY), (float) (r2.position.z - cameraZ),
                             0.5f, 1f, 0.5f, alpha2);
                 }
             }
 
-            renderer.end();
+            renderer.end(event.getMvp(), true);
         }
 
         ThrowableItemEntry entry = null;
@@ -138,7 +144,7 @@ public class ProjectilePath {
         }
 
         Vec3 playerPos = event.getPlayerPos();
-        float partialTick = event.getTickDelta();
+        float partialTick = event.getPartialTickTime();
 
         double x = playerPos.x;
         double y = playerPos.y + mc.player.getEyeHeight();
@@ -175,18 +181,23 @@ public class ProjectilePath {
         /*Vec3 vec = mc.player.getDeltaMovement();
         movement = movement.add(vec.x, mc.player.isOnGround() ? 0.0D : vec.y, vec.z);*/
 
-        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-        renderer.begin(event, true);
+        Vec3 cameraPos = event.getCameraPos();
+        double cameraX = cameraPos.x;
+        double cameraY = cameraPos.y;
+        double cameraZ = cameraPos.z;
+
+        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance(); // TODO depth
+        renderer.begin();
 
         List<Vec3> mainPath = calculatePath(entry, from, movement, shift);
-        drawPath(mainPath, renderer);
+        drawPath(mainPath, renderer, cameraX, cameraY, cameraZ);
 
         /*for (Vec3 devSpeed : deviations) {
             List<Vec3> devPath = calculatePath(entry, from, devSpeed, shift, view);
             drawPath(devPath, buffer, Color.LIGHT_GRAY.getRGB());
         }*/
 
-        renderer.end();
+        renderer.end(event.getMvp(), true);
     }
 
     private ProjectilePathConfig getConfig() {
@@ -203,11 +214,14 @@ public class ProjectilePath {
         return list;
     }
 
-    private void drawPath(List<Vec3> path, LineRenderer renderer) {
+    private void drawPath(List<Vec3> path, VertexColorLineRenderer renderer, double cameraX, double cameraY, double cameraZ) {
         for (int i = 0; i < path.size() - 1; i++) {
             Vec3 point1 = path.get(i);
             Vec3 point2 = path.get(i + 1);
-            renderer.line(point1.x, point1.y, point1.z, point2.x, point2.y, point2.z, 1f, 1f, 1f, 1f);
+            renderer.line(
+                    (float) (point1.x - cameraX), (float) (point1.y - cameraY), (float) (point1.z - cameraZ),
+                    (float) (point2.x - cameraX), (float) (point2.y - cameraY), (float) (point2.z - cameraZ),
+                    1f, 1f, 1f, 1f);
         }
     }
 

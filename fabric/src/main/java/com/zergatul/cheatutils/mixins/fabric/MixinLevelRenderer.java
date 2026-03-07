@@ -8,7 +8,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.state.LevelRenderState;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,7 +30,7 @@ public abstract class MixinLevelRenderer {
     protected abstract EntityRenderState extractEntity(Entity entity, float partialTicks);
 
     @Inject(at = @At("TAIL"), method = "extractVisibleEntities")
-    private void onAfterExtractVisibleEntities(Camera camera, Frustum frustum, DeltaTracker deltaTracker, LevelRenderState levelRenderState, CallbackInfo info) {
+    private void onAfterExtractVisibleEntities(Camera camera, Frustum frustum, DeltaTracker deltaTracker, LevelRenderState output, CallbackInfo info) {
         List<FakePlayer> fakes = FakePlayer.getList();
         if (fakes.isEmpty()) {
             return;
@@ -44,7 +44,7 @@ public abstract class MixinLevelRenderer {
         for (FakePlayer fake : fakes) {
             if (fake.distanceToSqr(player) > 1) {
                 EntityRenderState entityRenderState = this.extractEntity(fake, 1);
-                levelRenderState.entityRenderStates.add(entityRenderState);
+                output.entityRenderStates.add(entityRenderState);
             }
         }
     }

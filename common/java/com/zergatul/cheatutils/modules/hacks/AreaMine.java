@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.VertexColorLineRenderer;
 import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
@@ -66,8 +67,8 @@ public class AreaMine implements Module {
             return;
         }
 
-        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-        renderer.begin(event, false);
+        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
+        renderer.begin();
 
         int time = (int) (System.currentTimeMillis() % 2000);
         if (time > 1000) {
@@ -81,10 +82,10 @@ public class AreaMine implements Module {
             double y2 = pos.getY() + 0.5 + brad;
             double z1 = pos.getZ() + 0.5 - brad;
             double z2 = pos.getZ() + 0.5 + brad;
-            renderer.cuboid(x1, y1, z1, x2, y2, z2, 1f, 1f, 1f, 1f);
+            renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, 1f, 1f, 1f, 1f);
         });
 
-        renderer.end();
+        renderer.end(event.getMvp());
     }
 
     private void onBeforeInstaMine(BlockPos origin) {

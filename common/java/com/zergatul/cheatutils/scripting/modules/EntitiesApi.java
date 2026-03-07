@@ -1,14 +1,12 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 
 import java.awt.*;
@@ -36,7 +34,7 @@ public class EntitiesApi {
             """)
     public String[] getEntries() {
         return ConfigStore.instance.getConfig().entities.configs.stream()
-                .map(c -> ClassRemapper.fromObf(c.clazz.getName()))
+                .map(c -> c.clazz.getName())
                 .toArray(String[]::new);
     }
 
@@ -131,7 +129,7 @@ public class EntitiesApi {
     private EntityEspConfig getConfig(String className) {
         ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
         return list.stream()
-                .filter(c -> c.clazz.getName().equals(ClassRemapper.toObf(className)))
+                .filter(c -> c.clazz.getName().equals(className))
                 .findFirst()
                 .orElse(null);
     }

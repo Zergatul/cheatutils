@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.yggdrasil.ProfileResult;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -15,10 +16,12 @@ import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.modules.visuals.LogoutSpots;
+import com.zergatul.cheatutils.render.CacheItemRenderer;
 import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -74,9 +77,11 @@ public class EntityTitle implements FontBackendHolder {
     private CompletableFuture<FontBackend> enchantmentFontBackendFuture;
     private FontRenderer enchantmentFontRenderer;
 
+    private int itemScale;
+
     private EntityTitle() {
-        Events.AfterRenderWorld.add(this::onRenderWorld);
-        Events.PreRenderGui.add(this::onRenderGui);
+        Events.PreRenderGui.add(this::onPreRenderGui);
+        Events.AfterRenderWorld.add(this::onRenderWorld, 20);
     }
 
     @Override
@@ -98,8 +103,9 @@ public class EntityTitle implements FontBackendHolder {
         TickEndExecutor.instance.execute(() -> enchantmentFontChanged = true);
     }
 
-    private void onRenderWorld(RenderWorldLastEvent event) {
+    private void onPreRenderGui(RenderGuiEvent event) {
         entities.clear();
+
         if (mc.level == null) {
             return;
         }
@@ -108,68 +114,40 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        ImmutableList<EntityEspConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
+        CameraRenderState cameraState = mc.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState;
+        prepareEntityList(cameraState.pos, event.deltaTracker().getGameTimeDeltaPartialTick(true));
 
-        Vec3 view = event.getCamera().position();
-        for (Entity entity : mc.level.entitiesForRendering()) {
-            if (entity == mc.player && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
+        if (entities.isEmpty()) {
+            return;
+        }
+
+        EntityTitleConfig config = ConfigStore.instance.getConfig().entityTitleConfig;
+        itemScale = config.itemScale == 0 ? mc.getWindow().getGuiScale() : config.itemScale;
+
+        CacheItemRenderer renderer = CacheItemRenderer.instance;
+        renderer.beginFrame(itemScale);
+
+        List<ItemStack> items = new ArrayList<>();
+        for (EntityEntry entry : entities) {
+            if (!entry.showEquippedItems) {
                 continue;
             }
 
-            Vec3 pos = entity.getPosition(event.getTickDelta());
-            double distanceSqr = pos.distanceToSqr(view);
-
-            boolean drawTitles = false;
-            boolean showDefaultNames = false;
-            boolean showHp = false;
-            boolean showEquippedItems = false;
-            boolean useRaw = false;
-            boolean showOwner = false;
-            StylizedText title = null;
-            for (EntityEspConfig entityConfig : entityConfigs) {
-                if (!entityConfig.enabled || !entityConfig.drawTitles) {
-                    continue;
-                }
-                if (!entityConfig.isValidEntity(entity)) {
-                    continue;
-                }
-
-                if (distanceSqr < entityConfig.maxDistance * entityConfig.maxDistance) {
-                    drawTitles = true;
-                    showDefaultNames |= entityConfig.showDefaultNames;
-                    useRaw |= entityConfig.useRawNames;
-                    showHp |= entityConfig.showHp;
-                    showEquippedItems |= entityConfig.showEquippedItems;
-                    showOwner |= entityConfig.showOwner;
-                    if (title == null) {
-                        title = EntityEsp.instance.getTitleOverride(entityConfig, entity);
-                    }
-                }
-            }
-
-            if (drawTitles) {
-                pos = pos.add(-view.x, -view.y + entity.getBbHeight(), -view.z);
-                entities.add(new EntityEntry(
-                        EntityLike.fromEntity(entity),
-                        pos,
-                        distanceSqr,
-                        showDefaultNames,
-                        useRaw,
-                        showHp,
-                        showEquippedItems,
-                        showOwner,
-                        title,
-                        null));
+            items.clear();
+            entry.entityLike.collectEquipment(items);
+            for (ItemStack item : items) {
+                CacheItemRenderer.instance.requestItem(entry.entityLike.getEquipmentOwner(), item);
             }
         }
 
-        addDisconnectedPlayers(view);
-
-        entities.sort((e1, e2) -> -Double.compare(e1.distanceSqr, e2.distanceSqr));
+        renderer.updateAtlas();
     }
 
-    private void onRenderGui(RenderGuiEvent event) {
+    private void onRenderWorld(RenderWorldLastEvent event) {
         if (!EspGlobal.enabled) {
+            return;
+        }
+        if (entities.isEmpty()) {
             return;
         }
 
@@ -212,14 +190,17 @@ public class EntityTitle implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+        /*MainFrameBuffer.bind();*/
+        GlStateManager._viewport(0, 0, scrWidth, scrHeight);
+
+        RenderingContext context = new RenderingContext(matrix, itemScale/*, () -> {}*/);
 
         List<ItemStack> items = new ArrayList<>();
         List<List<EnchantmentEntry>> enchantments = new ArrayList<>();
 
         for (EntityEntry entry : entities) {
-            Vector4f v1 = event.getWorldPoseMatrix().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
-            Vector4f v2 = event.getWorldProjectionMatrix().transform(v1);
+            Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
+            Vector4f v2 = event.getProjection().transform(v1);
             if (v2.z <= 0) {
                 continue; // behind
             }
@@ -228,12 +209,12 @@ public class EntityTitle implements FontBackendHolder {
             int yc = Math.round(-v2.y / v2.w * halfScrHeight);
 
             StylizedText text = getEntityText(config, entry);
-            FlexColumnElement flex = new FlexColumnElement().setGap(context.getScale());
+            FlexColumnElement flex = new FlexColumnElement().setGap(scale);
 
             if (text != null) {
                 flex.append(
                         new DivisionElement()
-                                .setMargin(context.getScale())
+                                .setMargin(scale)
                                 .setBackgroundColor(Color.BLACK.getRGB() & 0x40000000)
                                 .setContent(
                                         new TextElement(titleFontRenderer, text)
@@ -245,7 +226,7 @@ public class EntityTitle implements FontBackendHolder {
                 if (owner != null) {
                     usernameCache.getUnchecked(owner).ifPresent(s -> {
                         flex.insertAt(0, new DivisionElement()
-                                .setMargin(context.getScale())
+                                .setMargin(scale)
                                 .setBackgroundColor(Color.BLACK.getRGB() & 0x40000000)
                                 .setContent(
                                         new TextElement(titleFontRenderer, StylizedText.of("Owner: " + s))
@@ -258,7 +239,7 @@ public class EntityTitle implements FontBackendHolder {
                 entry.entityLike.collectEquipment(items);
 
                 if (!items.isEmpty()) {
-                    LivingEntity owner = entry.entityLike.getEquipmentOwner();
+                    ItemOwner owner = entry.entityLike.getEquipmentOwner();
 
                     int maxEnchantments = 0;
                     enchantments.clear();
@@ -287,6 +268,68 @@ public class EntityTitle implements FontBackendHolder {
 
             context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
         }
+    }
+
+    private void prepareEntityList(Vec3 cameraPos, float partialTickTime) {
+        assert mc.level != null;
+
+        ImmutableList<EntityEspConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
+
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            if (entity == mc.player && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
+                continue;
+            }
+
+            Vec3 pos = entity.getPosition(partialTickTime);
+            double distanceSqr = pos.distanceToSqr(cameraPos);
+
+            boolean drawTitles = false;
+            boolean showDefaultNames = false;
+            boolean showHp = false;
+            boolean showEquippedItems = false;
+            boolean useRaw = false;
+            boolean showOwner = false;
+            StylizedText title = null;
+            for (EntityEspConfig entityConfig : entityConfigs) {
+                if (!entityConfig.enabled || !entityConfig.drawTitles) {
+                    continue;
+                }
+                if (!entityConfig.isValidEntity(entity)) {
+                    continue;
+                }
+
+                if (distanceSqr < entityConfig.maxDistance * entityConfig.maxDistance) {
+                    drawTitles = true;
+                    showDefaultNames |= entityConfig.showDefaultNames;
+                    useRaw |= entityConfig.useRawNames;
+                    showHp |= entityConfig.showHp;
+                    showEquippedItems |= entityConfig.showEquippedItems;
+                    showOwner |= entityConfig.showOwner;
+                    if (title == null) {
+                        title = EntityEsp.instance.getTitleOverride(entityConfig, entity);
+                    }
+                }
+            }
+
+            if (drawTitles) {
+                pos = pos.add(-cameraPos.x, -cameraPos.y + entity.getBbHeight(), -cameraPos.z);
+                entities.add(new EntityEntry(
+                        EntityLike.fromEntity(entity),
+                        pos,
+                        distanceSqr,
+                        showDefaultNames,
+                        useRaw,
+                        showHp,
+                        showEquippedItems,
+                        showOwner,
+                        title,
+                        null));
+            }
+        }
+
+        addDisconnectedPlayers(cameraPos);
+
+        entities.sort((e1, e2) -> -Double.compare(e1.distanceSqr, e2.distanceSqr));
     }
 
     private void addDisconnectedPlayers(Vec3 view) {

@@ -46,6 +46,11 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         Events.BeforePlayerAiStep.trigger();
     }
 
+    @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/tutorial/Tutorial;onInput(Lnet/minecraft/client/player/ClientInput;)V"))
+    private void onModifyPlayerInput(CallbackInfo info) {
+        Events.ModifyPlayerInput.trigger();
+    }
+
     @Inject(at = @At("TAIL"), method = "aiStep()V")
     private void onAfterAiStep(CallbackInfo info) {
         Events.AfterPlayerAiStep.trigger();
@@ -113,17 +118,13 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> fluid, double p_204033_) {
+    public boolean isPushedByFluid() {
         MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
         if (config.disableWaterPush) {
-            Vec3 delta = this.getDeltaMovement();
-            boolean result = super.updateFluidHeightAndDoFluidPushing(fluid, p_204033_);
-            this.setDeltaMovement(delta);
-            return result;
+            return false;
         } else {
-            return super.updateFluidHeightAndDoFluidPushing(fluid, p_204033_);
+            return super.isPushedByFluid();
         }
     }
 

@@ -13,6 +13,7 @@ import com.zergatul.cheatutils.scripting.modules.PlayerMessageSendingEvent;
 import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.json.*;
 import com.zergatul.cheatutils.scripting.types.nbt.*;
+import com.zergatul.cheatutils.utils.ModEnvironmentCommon;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilationParametersBuilder;
 import com.zergatul.scripting.compiler.JavaInteropPolicy;
@@ -109,7 +110,7 @@ public enum ScriptType {
     }
 
     public CompilationParameters createParameters() {
-        return new CompilationParametersBuilder()
+        CompilationParametersBuilder builder = new CompilationParametersBuilder()
                 .setRoot(Root.class)
                 .addCustomType(EnchantmentWrapper.class)
                 .addCustomTypes(List.of(ItemStackWrapper.class, AttributeModifier.class))
@@ -188,8 +189,13 @@ public enum ScriptType {
                 .setMainClassName(scriptClassName)
                 .setSourceFile("<" + scriptClassName + ">")
                 .emitLineNumbers(true)
-                .emitVariableNames(true)
-                .build();
+                .emitVariableNames(true);
+
+        if (ModEnvironmentCommon.IS_CURSEFORGE_RESTRICTED) {
+            builder.setPolicy(new CurseForgeMethodUsagePolicy());
+        }
+
+        return builder.build();
     }
 
     private static class Builder {

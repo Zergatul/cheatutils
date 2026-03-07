@@ -161,8 +161,8 @@ public class PlayerApi {
             return "";
         }
         BlockPos blockPos = mc.getCameraEntity().blockPosition();
-        ChunkPos chunkPos = new ChunkPos(blockPos);
-        return String.format(Locale.ROOT, "%d %d", chunkPos.x, chunkPos.z);
+        ChunkPos chunkPos = ChunkPos.containing(blockPos);
+        return String.format(Locale.ROOT, "%d %d", chunkPos.x(), chunkPos.z());
     }
 
     public String getDirection() {
@@ -703,9 +703,11 @@ public class PlayerApi {
                 Input oldInput = mc.player.input.keyPresses;
                 mc.player.input.keyPresses = new InputBuilder(oldInput).shift(true).build();
 
-                mc.gameMode.interactAt(mc.player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
-                mc.gameMode.interact(mc.player, target, InteractionHand.MAIN_HAND);
-                mc.player.swing(InteractionHand.MAIN_HAND);
+                if (mc.gameMode.interact(mc.player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND) instanceof InteractionResult.Success success) {
+                    if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
+                        mc.player.swing(InteractionHand.MAIN_HAND);
+                    }
+                }
 
                 mc.player.input.keyPresses = oldInput;
             }
@@ -731,12 +733,7 @@ public class PlayerApi {
             assert mc.gameMode != null;
 
             // copy from Minecraft.startUseItem
-            InteractionResult result = mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), hand);
-            if (!result.consumesAction()) {
-                result = mc.gameMode.interact(mc.player, entity, hand);
-            }
-
-            if (result instanceof InteractionResult.Success success) {
+            if (mc.gameMode.interact(mc.player, entity, new EntityHitResult(entity), hand) instanceof InteractionResult.Success success) {
                 if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
                     mc.player.swing(hand);
                 }

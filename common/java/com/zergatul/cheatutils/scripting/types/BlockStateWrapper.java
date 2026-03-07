@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 
 @SuppressWarnings("unused")
 @CustomType(name = "BlockState")
@@ -31,11 +32,12 @@ public class BlockStateWrapper {
     }
 
     public boolean hasTag(String tag) {
-        return state.getValues().keySet().stream().anyMatch(p -> p.getName().equals(tag));
+        return state.getValues().anyMatch(e -> e.property().getName().equals(tag));
     }
 
     public boolean getBooleanTag(BlockPosWrapper pos, String tag) {
-        return state.getValues().keySet().stream()
+        return state.getValues()
+                .map(Property.Value::property)
                 .filter(p -> p.getName().equals(tag) && p instanceof BooleanProperty)
                 .findFirst()
                 .map(p -> (Boolean) state.getValue(p))
@@ -43,7 +45,8 @@ public class BlockStateWrapper {
     }
 
     public int getIntegerTag(BlockPosWrapper pos, String tag) {
-        return state.getValues().keySet().stream()
+        return state.getValues()
+                .map(Property.Value::property)
                 .filter(p -> p.getName().equals(tag) && p instanceof IntegerProperty)
                 .findFirst()
                 .map(p -> (Integer) state.getValue(p))
@@ -51,8 +54,9 @@ public class BlockStateWrapper {
     }
 
     public String getEnumTag(BlockPosWrapper pos, String tag) {
-        return state.getValues().keySet().stream()
-                .filter(p -> p.getName().equals(tag) && p instanceof EnumProperty)
+        return state.getValues()
+                .map(Property.Value::property)
+                .filter(p -> p.getName().equals(tag) && p instanceof EnumProperty<?>)
                 .findFirst()
                 .map(p -> state.getValue(p).toString())
                 .orElse("");

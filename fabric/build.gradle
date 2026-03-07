@@ -1,54 +1,25 @@
-import net.fabricmc.loom.api.LoomGradleExtensionAPI
-import org.apache.tools.ant.taskdefs.condition.Os
-
 plugins {
-    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
-    //id 'fabric-loom' version "${loom_version}"
-    id 'maven-publish'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
     id 'cheatutils'
 }
 
 ext.mod_version = cheatutils.getModVersion()
 
-version = project.mod_version
 group = project.maven_group
+version = project.mod_version
 
 base {
     archivesName = project.archives_base_name
 }
 
-repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
-}
-
 loom {
     accessWidenerPath = file("src/main/resources/cheatutils.classtweaker")
-
-    mixin {
-        useLegacyMixinAp = true
-    }
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-
-    // Uncomment the following line to enable the deprecated Fabric API modules. 
-    // These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
-
-    // modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
-
-    annotationProcessor files('../mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
-
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     compileOnly("org.jspecify:jspecify:1.0.0")
 }
 
@@ -56,25 +27,13 @@ sourceSets {
     main {
         java {
             srcDir '../common/java'
-            srcDir '../common/forge-and-fabric/java'
             srcDir '../java-scripting-language/src/main/java'
             srcDir '../mixin-plugin/common/java'
         }
         resources {
             srcDir '../common/resources'
-            srcDir '../common/forge-and-fabric/resources'
         }
     }
-    codegen {
-        java {
-            srcDir '../common/codegen'
-        }
-    }
-}
-
-dependencies {
-    codegenImplementation "org.ow2.asm:asm:9.6"
-    codegenImplementation "org.ow2.asm:asm-tree:9.6"
 }
 
 processResources {
@@ -86,75 +45,26 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release.set(21)
+    it.options.release = 25
+    it.options.encoding = 'UTF-8'
+    it.options.compilerArgs.add("-parameters")
 }
 
 java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
     //withSourcesJar()
 
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
-jar {
+tasks.named('jar', Jar) {
+    archiveFileName = "${base.archivesName.get()}-${project.mod_version}-fabric-${project.minecraft_version}.jar"
+
     from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}"}
+        rename { "${it}_${project.archivesName.get()}"}
     }
 
     exclude("net/caffeinemc/**")
     exclude("net/irisshaders/**")
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.compilerArgs.add("-parameters")
-}
-
-tasks.register('buildAnnotationProcessor', {
-    doFirst {
-        def annotationProcessorJar = file('../mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
-        if (!annotationProcessorJar.exists()) {
-            println 'Annotation processor JAR not found. Building annotation processor...'
-            def buildResult = exec {
-                def gradlew = Os.isFamily(Os.FAMILY_WINDOWS) ? 'gradlew.bat' : 'gradlew'
-                commandLine "../mixin-plugin/annotation-processor/$gradlew", '-p', '../mixin-plugin/annotation-processor', 'build'
-            }
-            if (buildResult.exitValue != 0) {
-                throw new GradleException('Failed to build the annotation processor project.')
-            }
-        }
-    }
-})
-
-tasks.withType(JavaCompile).configureEach {
-    dependsOn('buildAnnotationProcessor')
-}
-
-remapJar {
-    afterEvaluate {
-        archiveFileName = "$archives_base_name-$mod_version-fabric-${minecraft_version}.jar"
-    }
-}
-
-tasks.register('compileCodegen', JavaCompile) {
-    source = sourceSets.codegen.java
-    classpath = sourceSets.codegen.compileClasspath
-    destinationDirectory = layout.buildDirectory.dir('classes/codegen')
-}
-
-tasks.register('generateMappings', JavaExec) {
-    group = 'codegen'
-    description = 'Creates mappings for Entity classes/interfaces'
-    dependsOn 'compileCodegen'
-
-    classpath = files(
-            layout.buildDirectory.dir('classes/codegen'),
-            sourceSets.codegen.compileClasspath)
-
-    mainClass = 'com.zergatul.cheatutils.codegen.MappingGenerator'
-
-    def loomExt = project.extensions.getByType(LoomGradleExtensionAPI)
-    args(loomExt.namedMinecraftJars.singleFile.toString(), loomExt.mappingsFile.toString())
 }

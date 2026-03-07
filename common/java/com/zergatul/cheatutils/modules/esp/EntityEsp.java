@@ -1,51 +1,62 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
-import com.zergatul.cheatutils.collections.FloatList;
+import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.StylizedText;
-import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import com.zergatul.cheatutils.utils.ColorUtils;
+import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.*;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
-
-import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class EntityEsp implements Module {
 
     public static final EntityEsp instance = new EntityEsp();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Map<EntityEspConfig, List<EntityTypeVertexConsumerEntry>> outlineVertexConsumers = new HashMap<>();
-    private final Map<EntityEspConfig, List<EntityTypeVertexConsumerEntry>> overlayVertexConsumers = new HashMap<>();
+    private final List<MatchedEntity> bbList = new ArrayList<>();
+    private final List<MatchedEntity> tracerList = new ArrayList<>();
+    private final Map<EntityEspConfig, List<EntityRenderState>> overlayEntityStates = new IdentityHashMap<>();
+    private final Map<EntityEspConfig, List<EntityRenderState>> outlineEntityStates = new IdentityHashMap<>();
+    private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
+    private final OutlineCaptureBufferSource bufferSource = new OutlineCaptureBufferSource();
+    private final FeatureRenderDispatcher dispatcher;
     private final Map<EntityScriptResultKey, EntityScriptResult> scriptResults = new HashMap<>();
     private boolean enabled = true;
 
     private EntityEsp() {
-        Events.BeforeRenderWorld.add(this::onBeforeRender);
-        Events.AfterRenderWorld.add(this::render);
+        Events.BeforeRenderWorld.add(this::onBeforeRenderWorld);
+        Events.AfterRenderWorld.add(this::onAfterRenderWorld);
+
+        this.dispatcher = new FeatureRenderDispatcher(
+                submitNodeStorage,
+                mc.getModelManager(),
+                bufferSource,
+                mc.getAtlasManager(),
+                new OutlineBufferSource(),
+                new EmptyBufferSource(),
+                mc.font,
+                mc.gameRenderer.getGameRenderState());
     }
 
     public boolean isEnabled() {
@@ -56,17 +67,13 @@ public class EntityEsp implements Module {
         enabled = !enabled;
     }
 
-    private void onBeforeRender() {
-        scriptResults.clear();
-    }
-
-    public EntityRenderParameters getEntityRenderParameters(Entity entity) {
-        if (mc.player == null || !EspGlobal.enabled) {
-            return EntityRenderParameters.EMPTY;
+    public void captureEntityRenderState(Entity entity, EntityRenderState renderState) {
+        if (mc.player == null || !EspGlobal.enabled || !enabled) {
+            return;
         }
 
-        EntityEspConfig outlineConfig = null;
-        EntityEspConfig overlayConfig = null;
+        boolean overlayFound = false;
+        boolean outlineFound = false;
 
         for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
             if (!config.enabled) {
@@ -77,83 +84,32 @@ public class EntityEsp implements Module {
                 continue;
             }
 
-            if (outlineConfig == null) {
-                boolean drawOutline = config.useModOutline() &&
-                        entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr() &&
-                        !isOutlineDisabledFromScript(config, entity);
-                if (drawOutline) {
-                    outlineConfig = config;
-                }
-            }
-
-            if (overlayConfig == null) {
-                boolean drawOverlay = config.drawOverlay &&
+            if (!overlayFound) {
+                overlayFound = config.drawOverlay &&
                         entity.distanceToSqr(mc.player) < config.getOverlayMaxDistanceSqr() &&
                         !isOverlayDisabledFromScript(config, entity);
-                if (drawOverlay) {
-                    overlayConfig = config;
+                if (overlayFound) {
+                    List<EntityRenderState> states = overlayEntityStates.computeIfAbsent(config, _ -> new ArrayList<>());
+                    states.add(renderState);
+                    if (outlineFound) {
+                        break;
+                    }
+                }
+            }
+
+            if (!outlineFound) {
+                outlineFound = config.useModOutline() &&
+                        entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr() &&
+                        !isOutlineDisabledFromScript(config, entity);
+                if (outlineFound) {
+                    List<EntityRenderState> states = outlineEntityStates.computeIfAbsent(config, _ -> new ArrayList<>());
+                    states.add(renderState);
+                    if (overlayFound) {
+                        break;
+                    }
                 }
             }
         }
-
-        if (outlineConfig != null || overlayConfig != null) {
-            return new EntityRenderParameters(outlineConfig, overlayConfig);
-        } else {
-            return EntityRenderParameters.EMPTY;
-        }
-    }
-
-    public Optional<Identifier> getTextureFromRenderType(RenderType renderType) {
-        RenderSetup setup = ((RenderTypeAccessor) renderType).getState_CU();
-        Map<String, RenderSetup.TextureBinding> textures = ((RenderSetupAccessor) (Object) setup).getTextures_CU();
-        RenderSetup.TextureBinding binding = textures.get("Sampler0");
-        if (binding == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(binding.location());
-    }
-
-    public boolean isGoodRenderTypeForOverlays(RenderType renderType) {
-        if (renderType.outline().isEmpty()) {
-            return false;
-        }
-        if (renderType.mode() != VertexFormat.Mode.QUADS) {
-            return false;
-        }
-        if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.POSITION)) {
-            return false;
-        }
-        if (renderType.format().getElements().stream().noneMatch(e -> e.usage() == VertexFormatElement.Usage.UV)) {
-            return false;
-        }
-        return true;
-    }
-
-    public VertexConsumer getOutlineVertexConsumer(EntityEspConfig config, Identifier texture) {
-        List<EntityTypeVertexConsumerEntry> entries = outlineVertexConsumers.computeIfAbsent(config, c -> new ArrayList<>());
-        for (EntityTypeVertexConsumerEntry entry : entries) {
-            if (entry.texture.equals(texture)) {
-                return entry.consumer;
-            }
-        }
-
-        BufferVertexConsumer consumer = new BufferVertexConsumer();
-        entries.add(new EntityTypeVertexConsumerEntry(texture, consumer));
-        return consumer;
-    }
-
-    public VertexConsumer getOverlayVertexConsumer(EntityEspConfig config, Identifier texture) {
-        List<EntityTypeVertexConsumerEntry> entries = overlayVertexConsumers.computeIfAbsent(config, c -> new ArrayList<>());
-        for (EntityTypeVertexConsumerEntry entry : entries) {
-            if (entry.texture.equals(texture)) {
-                return entry.consumer;
-            }
-        }
-
-        BufferVertexConsumer consumer = new BufferVertexConsumer();
-        entries.add(new EntityTypeVertexConsumerEntry(texture, consumer));
-        return consumer;
     }
 
     public boolean shouldEntityGlow(Entity entity) {
@@ -196,34 +152,30 @@ public class EntityEsp implements Module {
         return executeScript(config, entity).title;
     }
 
-    private void render(RenderWorldLastEvent event) {
+    private void onBeforeRenderWorld() {
+        scriptResults.clear();
+    }
+
+    private void onAfterRenderWorld(RenderWorldLastEvent event) {
         assert mc.level != null && mc.player != null;
 
         if (!enabled || !EspGlobal.enabled) {
             return;
         }
 
-        float partialTicks = event.getTickDelta();
+        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
+        if (list.size() == 0) {
+            return;
+        }
 
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        Vec3 tracerCenter = event.getTracerCenter();
-        double tracerX = tracerCenter.x;
-        double tracerY = tracerCenter.y;
-        double tracerZ = tracerCenter.z;
+        bbList.clear();
+        tracerList.clear();
 
-        MainFrameBuffer.bind();
-
-        LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
-        ThickLineRenderer thickLineRenderer = RenderUtilities.instance.getThickLineRenderer();
-
-        lineRenderer.begin(event, false);
-        thickLineRenderer.begin(event, false);
-
-        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity instanceof LocalPlayer) {
                 continue;
@@ -238,189 +190,221 @@ public class EntityEsp implements Module {
             double dz = entity.getZ() - playerZ;
             double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-            EntityEspConfig config = list.stream().filter(c ->
+            EntityEspConfig bbConfig = list.stream().filter(c ->
                     c.enabled &&
                     c.drawOutline &&
                     c.isValidEntity(entity) &&
                     distanceSqr < c.getOutlineMaxDistanceSqr()).findFirst().orElse(null);
 
-            if (config != null && !isCollisionBoxDisabledFromScript(config, entity)) {
-                Vec3 pos = entity.getPosition(partialTicks);
-                AABB box = entity.getDimensions(entity.getPose()).makeBoundingBox(pos);
-
-                float r = config.outlineColor.getRed() / 255f;
-                float g = config.outlineColor.getGreen() / 255f;
-                float b = config.outlineColor.getBlue() / 255f;
-                float a = config.outlineColor.getAlpha() / 255f;
-
-                final int lineWidth = config.outlineWidth;
-                if (lineWidth == 1) {
-                    lineRenderer.cuboid(
-                            box.minX, box.minY, box.minZ,
-                            box.maxX, box.maxY, box.maxZ,
-                            r, g, b, a);
-                } else {
-                    thickLineRenderer.setWidth(lineWidth);
-                    thickLineRenderer.cuboid(
-                            box.minX, box.minY, box.minZ,
-                            box.maxX, box.maxY, box.maxZ,
-                            r, g, b, a);
-                }
+            if (bbConfig != null && !isCollisionBoxDisabledFromScript(bbConfig, entity)) {
+                bbList.add(new MatchedEntity(entity, bbConfig));
             }
 
-            config = list.stream().filter(c ->
+            EntityEspConfig tracerConfig = list.stream().filter(c ->
                     c.enabled &&
                             c.drawTracers &&
                             c.clazz.isInstance(entity) &&
                             distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
-            if (config != null && !isTracerDisabledFromScript(config, entity)) {
-                Integer colorOverrideBoxed = getTracerColorOverride(config, entity);
-                float r, g, b, a;
-                if (colorOverrideBoxed == null) {
-                    r = config.tracerColor.getRed() / 255f;
-                    g = config.tracerColor.getGreen() / 255f;
-                    b = config.tracerColor.getBlue() / 255f;
-                    a = config.tracerColor.getAlpha() / 255f;
-                } else {
-                    int color = colorOverrideBoxed;
-                    r = ColorUtils.r(color);
-                    g = ColorUtils.g(color);
-                    b = ColorUtils.b(color);
-                    a = ColorUtils.a(color);
-                }
-
-                Vec3 pos = entity.getPosition(event.getTickDelta());
-                final int lineWidth = config.tracerWidth;
-                if (lineWidth == 1) {
-                    lineRenderer.line(tracerX, tracerY, tracerZ, pos.x, pos.y, pos.z, r, g, b, a);
-                } else {
-                    thickLineRenderer.setWidth(lineWidth);
-                    thickLineRenderer.line(tracerX, tracerY, tracerZ, pos.x, pos.y, pos.z, r, g, b, a);
-                }
+            if (tracerConfig != null && !isTracerDisabledFromScript(tracerConfig, entity)) {
+                tracerList.add(new MatchedEntity(entity, tracerConfig, getTracerColorOverride(tracerConfig, entity)));
             }
         }
 
-        lineRenderer.end();
-        thickLineRenderer.end();
+        if (!bbList.isEmpty() || !tracerList.isEmpty()) {
+            renderLines(event);
+        }
 
-        drawOverlays(event);
-        drawOutlines(event);
+        drawOverlays(list, event);
+        drawOutlines(list, event);
+
+        overlayEntityStates.clear();
+        outlineEntityStates.clear();
     }
 
-    private void drawOverlays(RenderWorldLastEvent event) {
-        EntityOverlayRenderer renderer = RenderUtilities.instance.getEntityOverlayRenderer();
-        for (EntityEspConfig config: overlayVertexConsumers.keySet()) {
-            renderer.begin();
+    private void renderLines(RenderWorldLastEvent event) {
+        Vec3 cameraPos = event.getCameraPos();
+        double cameraX = cameraPos.x;
+        double cameraY = cameraPos.y;
+        double cameraZ = cameraPos.z;
 
-            List<EntityTypeVertexConsumerEntry> entries = overlayVertexConsumers.get(config);
-            for (EntityTypeVertexConsumerEntry entry: entries) {
-                FloatList list = entry.consumer.list;
-                if (list.size() == 0) {
-                    continue;
+        Vec3 tracerCenter = event.getTracerCenter();
+        float tracerX = (float) (tracerCenter.x - cameraX);
+        float tracerY = (float) (tracerCenter.y - cameraY);
+        float tracerZ = (float) (tracerCenter.z - cameraZ);
+
+        float partialTicks = event.getPartialTickTime();
+
+        VertexColorLineRenderer renderer1 = null;
+        VertexColorLineWidthRenderer renderer2 = null;
+
+        for (MatchedEntity entry : bbList) {
+            Vec3 pos = entry.entity.getPosition(partialTicks);
+            AABB box = entry.entity.getDimensions(entry.entity.getPose()).makeBoundingBox(pos);
+
+            float r = entry.config.outlineColor.getRed() / 255f;
+            float g = entry.config.outlineColor.getGreen() / 255f;
+            float b = entry.config.outlineColor.getBlue() / 255f;
+            float a = entry.config.outlineColor.getAlpha() / 255f;
+
+            float lineWidth = (float) entry.config.outlineWidth;
+            if (lineWidth == 1) {
+                if (renderer1 == null) {
+                    renderer1 = VertexColorLineRenderer.getInstance();
+                    renderer1.begin();
                 }
-
-                int size = list.size();
-                if (size % 20 != 0) {
-                    continue; // invalid buffer, silently skip
+                renderer1.cuboid(
+                        (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
+                        (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
+                        r, g, b, a);
+            } else {
+                if (renderer2 == null) {
+                    renderer2 = VertexColorLineWidthRenderer.getInstance();
+                    renderer2.begin(event.getMvp());
                 }
-
-                int i = 0;
-                while (i < size) {
-                    float x1 = list.get(i++);
-                    float y1 = list.get(i++);
-                    float z1 = list.get(i++);
-                    float u1 = list.get(i++);
-                    float v1 = list.get(i++);
-                    float x2 = list.get(i++);
-                    float y2 = list.get(i++);
-                    float z2 = list.get(i++);
-                    float u2 = list.get(i++);
-                    float v2 = list.get(i++);
-                    float x3 = list.get(i++);
-                    float y3 = list.get(i++);
-                    float z3 = list.get(i++);
-                    float u3 = list.get(i++);
-                    float v3 = list.get(i++);
-                    float x4 = list.get(i++);
-                    float y4 = list.get(i++);
-                    float z4 = list.get(i++);
-                    float u4 = list.get(i++);
-                    float v4 = list.get(i++);
-                    renderer.quad(
-                            x1, y1, z1, u1, v1,
-                            x2, y2, z2, u2, v2,
-                            x3, y3, z3, u3, v3,
-                            x4, y4, z4, u4, v4);
-                }
-
-                AbstractTexture texture = mc.getTextureManager().getTexture(entry.texture);
-                renderer.renderBuffer(event.getMvp(), getGlTexture(texture.getTexture()).glId());
+                renderer2.cuboid(
+                        (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
+                        (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
+                        r, g, b, a,
+                        lineWidth);
             }
-
-            renderer.end(
-                    config.overlayColor.getRed() / 255f,
-                    config.overlayColor.getGreen() / 255f,
-                    config.overlayColor.getBlue() / 255f,
-                    config.overlayColor.getAlpha() / 255f);
         }
 
-        overlayVertexConsumers.clear();
+        for (MatchedEntity entry : tracerList) {
+            Vec3 pos = entry.entity.getPosition(partialTicks);
+
+            float r, g, b, a;
+            if (entry.colorOverride == null) {
+                r = entry.config.tracerColor.getRed() / 255f;
+                g = entry.config.tracerColor.getGreen() / 255f;
+                b = entry.config.tracerColor.getBlue() / 255f;
+                a = entry.config.tracerColor.getAlpha() / 255f;
+            } else {
+                int color = entry.colorOverride;
+                r = ColorUtils.r(color);
+                g = ColorUtils.g(color);
+                b = ColorUtils.b(color);
+                a = ColorUtils.a(color);
+            }
+
+            float lineWidth = (float) entry.config.tracerWidth;
+            if (lineWidth == 1) {
+                if (renderer1 == null) {
+                    renderer1 = VertexColorLineRenderer.getInstance();
+                    renderer1.begin();
+                }
+                renderer1.line(
+                        tracerX, tracerY, tracerZ,
+                        (float) (pos.x - cameraX), (float) (pos.y - cameraY), (float) (pos.z - cameraZ),
+                        r, g, b, a);
+            } else {
+                if (renderer2 == null) {
+                    renderer2 = VertexColorLineWidthRenderer.getInstance();
+                    renderer2.begin(event.getMvp());
+                }
+                renderer2.line(tracerX, tracerY, tracerZ,
+                        (float) (pos.x - cameraX), (float) (pos.y - cameraY), (float) (pos.z - cameraZ),
+                        r, g, b, a,
+                        lineWidth);
+            }
+        }
+
+        if (renderer1 != null) {
+            renderer1.end(event.getMvp());
+        }
+        if (renderer2 != null) {
+            renderer2.end();
+        }
     }
 
-    private void drawOutlines(RenderWorldLastEvent event) {
-        EntityOutlineRenderer renderer = RenderUtilities.instance.getEntityOutlineRenderer();
-        for (EntityEspConfig config: outlineVertexConsumers.keySet()) {
-            renderer.begin();
-
-            for (EntityTypeVertexConsumerEntry entry : outlineVertexConsumers.get(config)) {
-                FloatList list = entry.consumer.list;
-                if (list.size() == 0) {
-                    continue;
-                }
-
-                int size = list.size();
-                int i = 0;
-                while (i < size) {
-                    float x1 = list.get(i++);
-                    float y1 = list.get(i++);
-                    float z1 = list.get(i++);
-                    float u1 = list.get(i++);
-                    float v1 = list.get(i++);
-                    float x2 = list.get(i++);
-                    float y2 = list.get(i++);
-                    float z2 = list.get(i++);
-                    float u2 = list.get(i++);
-                    float v2 = list.get(i++);
-                    float x3 = list.get(i++);
-                    float y3 = list.get(i++);
-                    float z3 = list.get(i++);
-                    float u3 = list.get(i++);
-                    float v3 = list.get(i++);
-                    float x4 = list.get(i++);
-                    float y4 = list.get(i++);
-                    float z4 = list.get(i++);
-                    float u4 = list.get(i++);
-                    float v4 = list.get(i++);
-                    renderer.quad(
-                            x1, y1, z1, u1, v1,
-                            x2, y2, z2, u2, v2,
-                            x3, y3, z3, u3, v3,
-                            x4, y4, z4, u4, v4);
-                }
-
-                AbstractTexture texture = mc.getTextureManager().getTexture(entry.texture);
-                renderer.renderBuffer(event.getMvp(), getGlTexture(texture.getTexture()).glId());
-            }
-
-            renderer.end(
-                    config.glowColor.getRed() / 255f,
-                    config.glowColor.getGreen() / 255f,
-                    config.glowColor.getBlue() / 255f,
-                    config.glowColor.getAlpha() / 255f);
+    private void drawOverlays(ImmutableList<EntityEspConfig> list, RenderWorldLastEvent event) {
+        if (overlayEntityStates.isEmpty()) {
+            return;
         }
 
-        outlineVertexConsumers.clear();
+        Vec3 cameraPos = event.getCameraPos();
+        double camX = cameraPos.x();
+        double camY = cameraPos.y();
+        double camZ = cameraPos.z();
+
+        PoseStack poseStack = new PoseStack();
+        EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
+        EntityEspOverlayRenderer renderer = EntityEspOverlayRenderer.getInstance();
+        for (EntityEspConfig config : list) {
+            List<EntityRenderState> states = overlayEntityStates.get(config);
+            if (states == null || states.isEmpty()) {
+                continue;
+            }
+
+            renderer.begin();
+
+            for (EntityRenderState state : states) {
+                int outlineColor = state.outlineColor;
+                state.outlineColor = 0;
+                renderDispatcher.submit(state, event.getCameraRenderState(), state.x - camX, state.y - camY, state.z - camZ, poseStack, submitNodeStorage);
+                state.outlineColor = outlineColor;
+            }
+
+            dispatcher.renderAllFeatures();
+            bufferSource.endBatch();
+            renderer.end(config.overlayColor);
+        }
+    }
+
+    private void drawOutlines(ImmutableList<EntityEspConfig> list, RenderWorldLastEvent event) {
+        if (outlineEntityStates.isEmpty()) {
+            return;
+        }
+
+        Vec3 cameraPos = event.getCameraPos();
+        double camX = cameraPos.x();
+        double camY = cameraPos.y();
+        double camZ = cameraPos.z();
+
+        PoseStack poseStack = new PoseStack();
+        EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
+        EntityEspOutlineRenderer renderer = EntityEspOutlineRenderer.getInstance();
+        for (EntityEspConfig config : list) {
+            List<EntityRenderState> states = outlineEntityStates.get(config);
+            if (states == null || states.isEmpty()) {
+                continue;
+            }
+
+            renderer.begin();
+
+            for (EntityRenderState state : states) {
+                int outlineColor = state.outlineColor;
+                state.outlineColor = 0;
+                renderDispatcher.submit(state, event.getCameraRenderState(), state.x - camX, state.y - camY, state.z - camZ, poseStack, submitNodeStorage);
+                state.outlineColor = outlineColor;
+            }
+
+            dispatcher.renderAllFeatures();
+            bufferSource.endBatch();
+            renderer.end(config.glowColor);
+        }
+    }
+
+    private static final class OutlineCaptureBufferSource extends MultiBufferSource.BufferSource {
+
+        public OutlineCaptureBufferSource() {
+            super(new ByteBufferBuilder(1 << 16), Object2ObjectSortedMaps.emptyMap());
+        }
+
+        @Override
+        public @NonNull VertexConsumer getBuffer(final RenderType renderType) {
+            if (renderType.isOutline()) {
+                return super.getBuffer(renderType);
+            }
+
+            return renderType.outline().map(super::getBuffer).orElse(EmptyVertexConsumer.instance);
+        }
+    }
+
+    private static final class EmptyBufferSource extends MultiBufferSource.BufferSource {
+        public EmptyBufferSource() {
+            super(ByteBufferBuilder.exactlySized(4), Object2ObjectSortedMaps.emptyMap());
+        }
     }
 
     private boolean isCollisionBoxDisabledFromScript(EntityEspConfig config, Entity entity) {
@@ -516,63 +500,9 @@ public class EntityEsp implements Module {
         }
     }
 
-    private static class BufferVertexConsumer implements VertexConsumer {
-
-        private final FloatList list;
-
-        public BufferVertexConsumer() {
-            this.list = new FloatList();
-        }
-
-        @Override
-        public @NotNull VertexConsumer addVertex(float x, float y, float z) {
-            list.add(x);
-            list.add(y);
-            list.add(z);
-            return this;
-        }
-
-        @Override
-        public @NotNull VertexConsumer setColor(int i) {
-            return this;
-        }
-
-        @Override
-        public @NotNull VertexConsumer setColor(int i, int j, int k, int l) {
-            return this;
-        }
-
-        @Override
-        public @NotNull VertexConsumer setUv(float u, float v) {
-            list.add(u);
-            list.add(v);
-            return this;
-        }
-
-        @Override
-        public @NotNull VertexConsumer setUv1(int i, int j) {
-            return this;
-        }
-
-        @Override
-        public @NotNull VertexConsumer setUv2(int i, int j) {
-            return this;
-        }
-
-        @Override
-        public @NotNull VertexConsumer setNormal(float f, float g, float h) {
-            return this;
-        }
-
-        @Override
-        public @NotNull VertexConsumer setLineWidth(float f) {
-            return this;
+    private record MatchedEntity(Entity entity, EntityEspConfig config, @Nullable Integer colorOverride) {
+        public MatchedEntity(Entity entity, EntityEspConfig config) {
+            this(entity, config, null);
         }
     }
-
-    public record EntityRenderParameters(EntityEspConfig outlineConfig, EntityEspConfig overlayConfig) {
-        public static final EntityRenderParameters EMPTY = new EntityRenderParameters(null, null);
-    }
-
-    public record EntityTypeVertexConsumerEntry(Identifier texture, BufferVertexConsumer consumer) {}
 }

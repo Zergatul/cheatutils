@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.accessors.ServerboundMovePlayerPacketAccessor;
+import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
@@ -25,7 +25,7 @@ public class AntiHunger implements Module {
             if (ConfigStore.instance.getConfig().flyHackConfig.enabled) {
                 return;
             }
-            ((ServerboundMovePlayerPacketAccessor) packet).setOnGround_CU(false);
+            ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(false);
         }
     }
 }

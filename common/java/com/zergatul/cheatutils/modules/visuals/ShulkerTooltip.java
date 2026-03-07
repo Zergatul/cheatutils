@@ -6,9 +6,10 @@ import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlot
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ShulkerTooltipConfig;
+import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -22,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector2ic;
 
-public class ShulkerTooltip {
+public class ShulkerTooltip implements Module {
 
     public static ShulkerTooltip instance = new ShulkerTooltip();
 
@@ -99,7 +100,7 @@ public class ShulkerTooltip {
     private void onAfterScreenRendered(ScreenRenderEvent event) {
         if (locked) {
             if (mc.hasControlDown()) {
-                Matrix3x2fStack poseStack = event.getGuiGraphics().pose();
+                Matrix3x2fStack poseStack = event.getGraphics().pose();
 
                 poseStack.pushMatrix();
                 poseStack.identity();
@@ -110,8 +111,8 @@ public class ShulkerTooltip {
                 int my = event.getMouseY();
                 int hovered = getHoveredSlot(x, y, mx, my);
 
-                renderShulkerInventory(event.getGuiGraphics(), lockedStack, x, y, hovered);
-                renderTooltip(event.getGuiGraphics(), x, y, mx, my, hovered);
+                renderShulkerInventory(event.getGraphics(), lockedStack, x, y, hovered);
+                renderTooltip(event.getGraphics(), x, y, mx, my, hovered);
 
                 poseStack.popMatrix();
             } else {
@@ -157,7 +158,7 @@ public class ShulkerTooltip {
         renderShulkerInventory(currentEvent.getGraphics(), currentEvent.getItemStack(), x, y, -1);
     }
 
-    private void renderShulkerInventory(GuiGraphics graphics, ItemStack itemStack, int x, int y, int hovered) {
+    private void renderShulkerInventory(GuiGraphicsExtractor graphics, ItemStack itemStack, int x, int y, int hovered) {
         graphics.nextStratum();
 
         graphics.blit(
@@ -198,7 +199,7 @@ public class ShulkerTooltip {
         }
     }
 
-    private void renderTooltip(GuiGraphics graphics, int x, int y, int mouseX, int mouseY, int hovered) {
+    private void renderTooltip(GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY, int hovered) {
         if (hovered < 0) {
             return;
         }
@@ -211,7 +212,7 @@ public class ShulkerTooltip {
 
         graphics.nextStratum();
         allowTooltip = true;
-        graphics.renderTooltip(
+        graphics.tooltip(
                 mc.font,
                 Screen.getTooltipFromItem(mc, slot).stream()
                         .map(Component::getVisualOrderText)
@@ -222,9 +223,9 @@ public class ShulkerTooltip {
                 slot.get(DataComponents.TOOLTIP_STYLE));
     }
 
-    private void renderSlot(GuiGraphics graphics, ItemStack itemStack, int x, int y) {
-        graphics.renderFakeItem(itemStack, x, y);
-        graphics.renderItemDecorations(mc.font, itemStack, x, y);
+    private void renderSlot(GuiGraphicsExtractor graphics, ItemStack itemStack, int x, int y) {
+        graphics.fakeItem(itemStack, x, y);
+        graphics.itemDecorations(mc.font, itemStack, x, y);
     }
 
     private int getHoveredSlot(int x, int y, int mouseX, int mouseY) {

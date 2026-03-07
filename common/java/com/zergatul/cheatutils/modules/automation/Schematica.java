@@ -10,9 +10,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Color3dRenderer;
-import com.zergatul.cheatutils.render.GroupLineRenderer;
-import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.schematics.*;
 import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
@@ -36,7 +34,9 @@ import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.chunk.Strategy;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReferenceArray;
@@ -493,7 +493,7 @@ public class Schematica {
             return;
         }
 
-        Vec3 view = event.getCamera().position();
+        Vec3 view = event.getCameraPos();
 
         if (config.create.enabled) {
             renderCreateBoundaries(event, view, config.create);
@@ -505,23 +505,24 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-            renderer.begin(event);
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
 
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
                     renderer.line(
+                            event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
                 });
             }
 
-            renderer.end(0.2f, 1.0f, 0.2f, 0.8f);
+            renderer.end(event.getMvp(), new Color(0.2f, 1.0f, 0.2f, 0.8f));
         }
 
         if (config.showMissingBlockCubes) {
-            GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-            renderer.begin(event);
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
 
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
@@ -531,11 +532,11 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2);
                 });
             }
 
-            renderer.end(0.2f, 1.0f, 0.2f, 0.8f);
+            renderer.end(event.getMvp(), new Color(0.2f, 1.0f, 0.2f, 0.8f));
         }
 
         if (config.showWrongBlockTracers) {
@@ -544,23 +545,24 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-            renderer.begin(event);
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
 
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
                     renderer.line(
+                            event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
                 });
             }
 
-            renderer.end(1.0f, 0.5f, 0.5f, 0.6f);
+            renderer.end(event.getMvp(), new Color(1.0f, 0.5f, 0.5f, 0.6f));
         }
 
         if (config.showWrongBlockCubes) {
-            GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-            renderer.begin(event);
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
 
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockCubesMaxDistance, pos -> {
@@ -570,17 +572,18 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2);
                 });
             }
 
-            renderer.end(1.0f, 0.5f, 0.5f, 0.6f);
+            renderer.end(event.getMvp(), new Color(1.0f, 0.5f, 0.5f, 0.6f));
         }
     }
 
     private void renderCreateBoundaries(RenderWorldLastEvent event, Vec3 view, SchematicaConfig.Create create) {
         final double gap = 0.0625;
 
+        // TODO: not working because wrong framebuffer?
         Color3dRenderer quadRenderer = RenderUtilities.instance.getColor3dRenderer();
         quadRenderer.begin();
         quadRenderer.cuboid(
@@ -595,13 +598,14 @@ public class Schematica {
         quadRenderer.end(event.getMvp());
         GlStateManager._depthMask(true);
 
-        LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
-        lineRenderer.begin(event, true);
+        VertexColorLineRenderer lineRenderer = VertexColorLineRenderer.getInstance();
+        lineRenderer.begin();
         lineRenderer.cuboid(
+                event.getCameraPos(),
                 create.getX1() - gap, create.getY1() - gap, create.getZ1() - gap,
                 create.getX2() + gap, create.getY2() + gap, create.getZ2() + gap,
                 1f, 1f, 1f, 1f);
-        lineRenderer.end();
+        lineRenderer.end(event.getMvp(), true);
     }
 
     private void onChunkLoaded(LevelChunk chunk) {
@@ -778,11 +782,11 @@ public class Schematica {
         private long blockToChunkIndex(int x, int z) {
             x = SectionPos.blockToSectionCoord(x);
             z = SectionPos.blockToSectionCoord(z);
-            return ChunkPos.asLong(x, z);
+            return ChunkPos.pack(x, z);
         }
 
         private long chunkToChunkIndex(LevelChunk chunk) {
-            return ChunkPos.asLong(chunk.getPos().x, chunk.getPos().z);
+            return ChunkPos.pack(chunk.getPos().x(), chunk.getPos().z());
         }
 
         private Map<Long, Chunk> copyChunks(int dx, int dy, int dz) {

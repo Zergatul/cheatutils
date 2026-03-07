@@ -11,7 +11,6 @@ import net.minecraft.network.chat.*;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.UUID;
 
 @CustomType(name = "TextStyle")
 public class StyleWrapper {
@@ -113,7 +112,7 @@ public class StyleWrapper {
         return switch (event.action()) {
             case SHOW_TEXT -> new ComponentWrapper[] { new ComponentWrapper(((HoverEvent.ShowText) event).value()) };
             case SHOW_ITEM -> {
-                List<Component> components = Screen.getTooltipFromItem(Minecraft.getInstance(), ((HoverEvent.ShowItem) event).item());
+                List<Component> components = Screen.getTooltipFromItem(Minecraft.getInstance(), ((HoverEvent.ShowItem) event).item().create());
                 yield components.stream().map(ComponentWrapper::new).toArray(ComponentWrapper[]::new);
             }
             case SHOW_ENTITY -> {
@@ -131,7 +130,7 @@ public class StyleWrapper {
         }
 
         return switch (event.action()) {
-            case SHOW_ITEM -> new ItemStackWrapper(((HoverEvent.ShowItem) event).item());
+            case SHOW_ITEM -> new ItemStackWrapper(((HoverEvent.ShowItem) event).item().create());
             default -> new ItemStackWrapper(ItemStack.EMPTY);
         };
     }

@@ -2,7 +2,7 @@
   "required": false,
   "minVersion": "0.8.2",
   "package": "com.zergatul.cheatutils.mixins",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "plugin": "com.zergatul.mixin.MixinPlugin",
   "injectors": {
     "defaultRequire": 0
@@ -18,8 +18,8 @@
     "common.accessors.CrossbowItemAccessor",
     "common.accessors.EntityTypeAccessor",
     "common.accessors.FogRendererAccessor",
+    "common.accessors.GpuDeviceAccessor",
     "common.accessors.GuiAccessor",
-    "common.accessors.GuiGraphicsAccessor",
     "common.accessors.HeightmapAccessor",
     "common.accessors.InputConstantsKeyAccessor",
     "common.accessors.KeyMappingAccessor",
@@ -33,7 +33,6 @@
     "common.accessors.RegionalFileStorageAccessor",
     "common.accessors.RenderTypeAccessor",
     "common.accessors.RenderSetupAccessor",
-    "common.accessors.ScreenAccessor",
     "common.accessors.WalkAnimationStateAccessor",
 
     "common.schematics.MixinRenderRegionCache",
@@ -61,13 +60,13 @@
     "common.MixinEntity",
     "common.MixinEntityHitboxDebugRenderer",
     "common.MixinEntityRenderer",
-    "common.MixinEntityRenderState",
     "common.MixinFramerateLimitTracker",
     "common.MixinGameRenderer",
     "common.MixinGui",
     "common.MixinGuiFreeCam",
-    "common.MixinGuiGraphics",
-    "common.MixinItemFeatureRenderer",
+    "common.MixinGuiGraphicsExtractor",
+    "common.MixinGuiRenderState",
+    "common.MixinItemInHandRenderer",
     "common.MixinItemStack",
     "common.MixinKeyBindingListKeyEntry",
     "common.MixinLevelChunk",
@@ -75,7 +74,6 @@
     "common.MixinLivingEntity",
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
-    "common.MixinModelFeatureRenderer",
     "common.MixinMouseHandler",
     "common.MixinMouseHandlerFreeCam",
     "common.MixinMouseHandlerZoom",
@@ -88,9 +86,6 @@
     "common.MixinSoundBufferLibrary",
     "common.MixinSlimeBlock",
     "common.MixinSoundManager",
-    "common.MixinSubmitNodeStorageItemSubmit",
-    "common.MixinSubmitNodeStorageModelSubmit",
-    "common.MixinUser",
-    "common.MixinWeatherEffectRenderer"
+    "common.MixinUser"
   ]
 }

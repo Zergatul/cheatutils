@@ -11,11 +11,11 @@ public abstract class EspConfigBase {
     public boolean enabled;
 
     public boolean drawTracers;
-    public int tracerWidth;
+    public double tracerWidth;
     public Color tracerColor;
 
     public boolean drawOutline;
-    public int outlineWidth;
+    public double outlineWidth;
     public Color outlineColor;
 
     public double maxDistance;
@@ -48,8 +48,8 @@ public abstract class EspConfigBase {
     }
 
     public void validate() {
-        tracerWidth = MathUtils.clamp(tracerWidth, 1, 100);
-        outlineWidth = MathUtils.clamp(outlineWidth, 1, 100);
+        tracerWidth = MathUtils.clamp(tracerWidth, 0.5, 100);
+        outlineWidth = MathUtils.clamp(outlineWidth, 0.5, 100);
     }
 
     protected void copyFromJsonTracerConfigBase(EspConfigBase jsonConfig) {

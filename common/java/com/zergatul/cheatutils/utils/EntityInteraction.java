@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.EntityHitResult;
 
@@ -43,10 +44,14 @@ public class EntityInteraction {
                         future,
                         AfterSendPlayerPosExecutor.instance,
                         result -> {
-                            mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
-                            mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
-                            mc.player.swing(InteractionHand.MAIN_HAND);
-                            return result;
+                            if (mc.gameMode.interact(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND) instanceof InteractionResult.Success success) {
+                                if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
+                                    mc.player.swing(InteractionHand.MAIN_HAND);
+                                }
+                                return result;
+                            } else {
+                                return EntityInteractionResult.failed("GameMode.interact failed.");
+                            }
                         });
 
                 return future;

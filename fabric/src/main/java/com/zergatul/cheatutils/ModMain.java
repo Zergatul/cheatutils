@@ -7,7 +7,7 @@ import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.utils.DebugScreenExtensions;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,7 +25,7 @@ public class ModMain implements ClientModInitializer {
         ConfigHttpServer.instance.start();
         Modules.registerKeyBindings();
         Modules.register();
-        Events.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
+        Events.RegisterKeyBindings.trigger(KeyMappingHelper::registerKeyMapping);
         DebugScreenExtensions.register();
     }
 }
