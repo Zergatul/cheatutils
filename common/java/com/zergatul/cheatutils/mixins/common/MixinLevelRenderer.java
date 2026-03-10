@@ -103,7 +103,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
     @ModifyVariable(
             method = "extractVisibleEntities",
             at = @At(value = "STORE"),
-            ordinal = 0)
+            name = "state")
     private EntityRenderState onModifyEntityRenderState(EntityRenderState state) {
         ((EntityRenderStateExtension) state).setParameters_CU(EntityEsp.instance.getEntityRenderParameters(currentRenderedEntity_CU));
         currentRenderedEntity_CU = null;
