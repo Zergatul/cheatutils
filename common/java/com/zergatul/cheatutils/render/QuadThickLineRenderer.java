@@ -34,7 +34,7 @@ public class QuadThickLineRenderer implements ThickLineRenderer {
         }
 
         this.event = event;
-        this.view = event.getCameraState().pos;
+        this.view = event.getCameraPos();
 
         if (program == null) {
             program = new EspTrianglesProgram();

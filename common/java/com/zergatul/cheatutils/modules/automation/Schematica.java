@@ -493,7 +493,7 @@ public class Schematica {
             return;
         }
 
-        Vec3 view = event.getCameraState().pos;
+        Vec3 view = event.getCameraPos();
 
         if (config.create.enabled) {
             renderCreateBoundaries(event, view, config.create);

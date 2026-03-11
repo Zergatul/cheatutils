@@ -1,29 +1,32 @@
 package com.zergatul.cheatutils.ui;
 
-import net.minecraft.world.entity.LivingEntity;
+import com.mojang.blaze3d.opengl.GlTexture;
+import com.zergatul.cheatutils.render.CacheItemRenderer;
+import com.zergatul.cheatutils.render.GlHelper;
+import com.zergatul.cheatutils.render.buffers.TextureColor2dRenderBuffer;
+import com.zergatul.cheatutils.render.gl.CustomizableVanillaFontRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class ItemStackElement implements Element {
 
-    private final LivingEntity entity;
+    private final @Nullable ItemOwner owner;
     private final ItemStack itemStack;
     private int measuredWidth, measuredHeight;
     private int x, y;
 
-    public ItemStackElement(ItemStack itemStack) {
-        this.entity = null;
-        this.itemStack = itemStack;
-    }
-
-    public ItemStackElement(LivingEntity entity, ItemStack itemStack) {
-        this.entity = entity;
+    public ItemStackElement(@Nullable ItemOwner owner, ItemStack itemStack) {
+        this.owner = owner;
         this.itemStack = itemStack;
     }
 
     @Override
     public void measure(RenderingContext context) {
-        this.measuredWidth = 16 * context.getScale();
-        this.measuredHeight = 16 * context.getScale();
+        this.measuredWidth = 16 * context.getItemScale();
+        this.measuredHeight = 16 * context.getItemScale();
     }
 
     @Override
@@ -44,6 +47,33 @@ public class ItemStackElement implements Element {
 
     @Override
     public void render(RenderingContext context) {
-        context.queueItemStackRender(entity, itemStack, x, y);
+        CacheItemRenderer.AtlasSlot slot = CacheItemRenderer.instance.getTexture(owner, itemStack);
+        if (slot == null) {
+            return;
+        }
+
+        GlTexture texture = GlHelper.getGlTexture(slot.texture());
+        TextureColor2dRenderBuffer buffer = context.getBuffers().getTexColor2d(texture.glId());
+        int w = measuredWidth;
+        int h = measuredHeight;
+        buffer.quad(
+                x, y, slot.u0(), slot.v0(),
+                x, y + h, slot.u0(), slot.v1(),
+                x + w, y + h, slot.u1(), slot.v1(),
+                x + w, y, slot.u1(), slot.v0(),
+                1, 1, 1, 1);
+
+        // copied from GuiGraphics.renderItemCount
+        if (itemStack.getCount() != 1) {
+            String amount = String.valueOf(itemStack.getCount());
+            Font font = Minecraft.getInstance().font;
+            CustomizableVanillaFontRenderer.instance.render(
+                    font,
+                    context.getItemScale(),
+                    context.getBuffers(),
+                    amount,
+                    x + context.getItemScale() * (19 - 2 - font.width(amount)),
+                    y + context.getItemScale() * (6 + 3));
+        }
     }
 }

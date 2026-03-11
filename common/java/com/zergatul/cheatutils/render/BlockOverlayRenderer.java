@@ -23,7 +23,7 @@ public class BlockOverlayRenderer {
         }
 
         this.event = event;
-        this.view = event.getCameraState().pos;
+        this.view = event.getCameraPos();
 
         createGlObjectsIfRequired();
 

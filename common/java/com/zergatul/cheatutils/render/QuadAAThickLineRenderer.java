@@ -37,7 +37,7 @@ public class QuadAAThickLineRenderer implements ThickLineRenderer {
         }
 
         this.event = event;
-        this.view = event.getCameraState().pos;
+        this.view = event.getCameraPos();
 
         if (program == null) {
             program = new EspTrianglesAAProgram();

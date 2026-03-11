@@ -48,14 +48,14 @@ public abstract class MixinGui {
     }
 
     @Inject(at = @At("HEAD"), method = "render")
-    private void onBeforeRender(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
-        Events.PreRenderGui.trigger(new RenderGuiEvent(graphics));
+    private void onBeforeRender(GuiGraphics graphics, DeltaTracker deltaTracker, CallbackInfo info) {
+        Events.PreRenderGui.trigger(new RenderGuiEvent(graphics, deltaTracker));
     }
 
     // inject at RETURN required for Forge
     @Inject(at = @At("RETURN"), method = "render")
-    private void onAfterRender(GuiGraphics graphics, DeltaTracker delta, CallbackInfo info) {
-        Events.PostRenderGui.trigger(new RenderGuiEvent(graphics));
+    private void onAfterRender(GuiGraphics graphics, DeltaTracker deltaTracker, CallbackInfo info) {
+        Events.PostRenderGui.trigger(new RenderGuiEvent(graphics, deltaTracker));
     }
 
     @Inject(at = @At("TAIL"), method = "renderPlayerHealth")

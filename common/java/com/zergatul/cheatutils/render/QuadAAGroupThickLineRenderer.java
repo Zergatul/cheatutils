@@ -34,7 +34,7 @@ public class QuadAAGroupThickLineRenderer implements GroupThickLineRenderer {
         }
 
         this.event = event;
-        this.view = event.getCameraState().pos;
+        this.view = event.getCameraPos();
 
         if (program == null) {
             program = new EspGroupTrianglesAAProgram();

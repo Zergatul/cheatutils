@@ -158,13 +158,14 @@ public class StatusOverlay implements Module, FontBackendHolder {
         GlStateManager._colorMask(15);
         FrameBuffers.get2().bind();
         GlStateManager._viewport(0, 0, scrWidth, scrHeight);
+        GlStateManager._disableScissorTest();
         GL30.glClearColor(0, 0, 0, 0);
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
 
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(0, scrWidth, scrHeight, 0, -1, 1);
 
-        RenderingContext context = new RenderingContext(graphics, matrix, halfScrWidth, halfScrHeight, () -> {});
+        RenderingContext context = new RenderingContext(matrix, mc.getWindow().getGuiScale(), () -> {});
 
         for (Align align : Align.values()) {
             List<AlignedText> list = texts.get(align);

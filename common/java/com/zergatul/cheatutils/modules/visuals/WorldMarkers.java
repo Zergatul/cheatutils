@@ -10,7 +10,6 @@ import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.ui.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -72,7 +71,7 @@ public class WorldMarkers implements FontBackendHolder {
             return;
         }
 
-        Vec3 view = event.getCameraState().pos;
+        Vec3 view = event.getCameraPos();
 
         int scale = mc.getWindow().getGuiScale();
         int scrWidth = mc.getWindow().getWidth();
@@ -83,7 +82,7 @@ public class WorldMarkers implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        RenderingContext context = new RenderingContext(event.getGuiGraphics(), matrix, halfScrWidth, halfScrHeight);
+        RenderingContext context = new RenderingContext(matrix, scale);
 
         GlStateManager._viewport(0, 0, scrWidth, scrHeight);
 
@@ -122,7 +121,7 @@ public class WorldMarkers implements FontBackendHolder {
                             .setBackgroundColor(inverse & 0x40FFFFFF)
                             .setBorderWidth(config.borderWidth)
                             .setBorderColor(entry.color.getRGB())
-                            .setMargin(context.getScale())
+                            .setMargin(scale)
                             .setContent(
                                     new TextElement(fontRenderer, text)
                                             .setCompactHeight(true)));
