@@ -28,6 +28,12 @@ export function useIncrementalSearch({
     };
 
     const restartSearch = () => {
+        // if we don't reset scroll position here
+        // it will continue load batches in loop until it gets to the position of previous scroll
+        if (scrollRootRef.value) {
+            scrollRootRef.value.scrollTop = 0;
+        }
+
         itemsRef.value = [];
         session.reset(queryRef.value);
         pushItems(session.nextBatch(batchSize));
@@ -45,9 +51,6 @@ export function useIncrementalSearch({
         if (!session.hasMore) {
             return;
         }
-
-        // not resetting scroll position will cause loading all items to fulfill replaced items
-        scrollRootRef.value.scrollTop = 0;
 
         observer = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting) {
