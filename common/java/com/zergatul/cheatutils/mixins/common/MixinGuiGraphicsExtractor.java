@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.collections.TaggedArrayList;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -19,46 +19,50 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.Optional;
 
-@Mixin(GuiGraphics.class)
-public abstract class MixinGuiGraphics {
+@Mixin(GuiGraphicsExtractor.class)
+public abstract class MixinGuiGraphicsExtractor {
 
     @Unique
-    private TaggedArrayList<Component, ItemStack> cheatutils$storedComponents;
+    private TaggedArrayList<Component, ItemStack> storedComponents_CU;
 
-    @Inject(at = @At("HEAD"), method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V")
+    @Inject(
+            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V",
+            at = @At("HEAD"))
     private void onBeforeSetTooltipForNextFrame(
             Font font,
-            List<Component> components,
-            Optional<TooltipComponent> optional,
+            List<Component> texts,
+            Optional<TooltipComponent> optionalImage,
             int x, int y,
-            @Nullable Identifier location,
+            @Nullable Identifier style,
             CallbackInfo info
     ) {
-        if (components instanceof TaggedArrayList<?,?>) {
-            cheatutils$storedComponents = (TaggedArrayList<Component, ItemStack>) components;
+        if (texts instanceof TaggedArrayList<?,?>) {
+            storedComponents_CU = (TaggedArrayList<Component, ItemStack>) texts;
         }
     }
 
     @ModifyArg(
             method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;setTooltipForNextFrameInternal(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V"))
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;setTooltipForNextFrameInternal(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V"))
     private List<ClientTooltipComponent> onModifyComponentsList(List<ClientTooltipComponent> components) {
-        if (cheatutils$storedComponents != null) {
-            return new TaggedArrayList<>(components, cheatutils$storedComponents.getTag());
+        if (storedComponents_CU != null) {
+            return new TaggedArrayList<>(components, storedComponents_CU.getTag());
         } else {
             return components;
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V")
+    @Inject(
+            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V",
+            at = @At("TAIL"))
     private void onAfterSetTooltipForNextFrame(
             Font font,
-            List<Component> components,
-            Optional<TooltipComponent> optional,
+            List<Component> texts,
+            Optional<TooltipComponent> optionalImage,
             int x, int y,
-            @Nullable Identifier location,
+            @Nullable Identifier style,
             CallbackInfo info
     ) {
-        cheatutils$storedComponents = null;
+        storedComponents_CU = null;
     }
 }

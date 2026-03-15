@@ -1,7 +1,10 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.JavaRandom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -9,9 +12,12 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
+import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -21,9 +27,12 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -40,7 +49,6 @@ import java.util.*;
 public class BlockModelApi extends ApiBase {
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final JavaRandom random = new JavaRandom(0);
 
     @Override
     public String getRoute() {
@@ -64,39 +72,45 @@ public class BlockModelApi extends ApiBase {
     }
 
     private List<Quad> getFromBlockModel(Block block) {
-        List<Quad> result = new ArrayList<>();
+        BlockState blockState = block.defaultBlockState();
+        BlockModel model = Minecraft.getInstance().getModelManager().getBlockModelSet().get(blockState);
+        BlockModelRenderState renderState = new BlockModelRenderState();
+        model.update(renderState, blockState, BlockDisplayContext.create(), 0);
 
-        BlockState state = block.defaultBlockState();
-        BlockStateModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-        List<BlockStateModelPart> parts = new ArrayList<>();
-        model.collectParts(random, parts);
-        for (BlockStateModelPart part : parts) {
-            for (Direction direction : Direction.values()) {
-                List<BakedQuad> quads = part.getQuads(direction);
-                for (BakedQuad quad : quads) {
-                    result.add(new Quad(quad, state));
-                }
-            }
+        InMemoryNodeCollector collector = new InMemoryNodeCollector();
+        renderState.submit(new PoseStack(), collector, 0, 0, 0);
 
-            List<BakedQuad> quads = part.getQuads(null);
-            for (BakedQuad quad : quads) {
-                result.add(new Quad(quad, state));
-            }
-        }
-
-        return result;
+        return extractQuads(collector);
     }
 
     private List<Quad> getFromItemRenderer(Block block) {
-        List<Quad> result = new ArrayList<>();
-
-        PoseStack poseStack = new PoseStack();
-        ItemStack stack = new ItemStack(block);
+        ItemStack stack = new ItemStack(block.asItem());
         InMemoryNodeCollector collector = new InMemoryNodeCollector();
 
         ItemStackRenderState state = new ItemStackRenderState();
         mc.getItemModelResolver().updateForTopItem(state, stack, ItemDisplayContext.GROUND, null, null, 0);
-        state.submit(poseStack, collector, 15728880, OverlayTexture.NO_OVERLAY, 0);
+        state.submit(new PoseStack(), collector, 15728880, OverlayTexture.NO_OVERLAY, 0);
+
+        return extractQuads(collector);
+    }
+
+    private List<Quad> extractQuads(InMemoryNodeCollector collector) {
+        List<Quad> result = new ArrayList<>();
+
+        PoseStack poseStack = new PoseStack();
+
+        for (SubmitNodeStorage.BlockModelSubmit submission : collector.blockModelSubmits) {
+            for (BlockStateModelPart part : submission.modelParts()) {
+                for (Direction direction : Direction.values()) {
+                    for (BakedQuad quad : part.getQuads(direction)) {
+                        result.add(new Quad(quad, submission.tintLayers()));
+                    }
+                }
+                for (BakedQuad quad : part.getQuads(null)) {
+                    result.add(new Quad(quad, submission.tintLayers()));
+                }
+            }
+        }
 
         for (SubmitNodeStorage.ModelSubmit<?> submission : collector.modelSubmits) {
             if (submission.sprite() == null) {
@@ -136,7 +150,7 @@ public class BlockModelApi extends ApiBase {
 
         for (SubmitNodeStorage.ItemSubmit submission : collector.itemSubmits) {
             for (BakedQuad quad : submission.quads()) {
-                result.add(new Quad(quad));
+                result.add(new Quad(quad, submission.tintLayers()));
             }
         }
 
@@ -146,6 +160,7 @@ public class BlockModelApi extends ApiBase {
     @NullMarked
     private static class InMemoryNodeCollector implements SubmitNodeCollector {
 
+        public final List<SubmitNodeStorage.BlockModelSubmit> blockModelSubmits = new ArrayList<>();
         public final List<SubmitNodeStorage.ModelSubmit<?>> modelSubmits = new ArrayList<>();
         public final List<SubmitNodeStorage.ModelPartSubmit> modelPartSubmits = new ArrayList<>();
         public final List<SubmitNodeStorage.ItemSubmit> itemSubmits = new ArrayList<>();
@@ -234,6 +249,18 @@ public class BlockModelApi extends ApiBase {
 
         @Override
         public void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
+            this.blockModelSubmits.add(new SubmitNodeStorage.BlockModelSubmit(
+                    poseStack.last().copy(),
+                    renderType,
+                    parts,
+                    tintLayers,
+                    lightCoords,
+                    overlayCoords,
+                    outlineColor));
+        }
+
+        @Override
+        public void submitBreakingBlockModel(PoseStack poseStack, BlockStateModel model, long seed, int progress) {
             throw new AssertionError();
         }
 
@@ -273,7 +300,7 @@ public class BlockModelApi extends ApiBase {
         public final Vertex[] vertices;
 
         public Quad(BakedQuad quad, BlockState state) {
-            this.location = quad.spriteInfo().sprite().atlasLocation().toString();
+            this.location = quad.materialInfo().sprite().atlasLocation().toString();
 
             this.vertices = new Vertex[4];
             for (int i = 0; i < 4; i++) {
@@ -282,21 +309,21 @@ public class BlockModelApi extends ApiBase {
                 this.vertices[i].y = quad.position(i).y() - 0.5f;
                 this.vertices[i].z = quad.position(i).z() - 0.5f;
 
-                int color = quad.isTinted() ?
+                int color = quad.materialInfo().isTinted() ?
                         Minecraft.getInstance().getBlockColors().getTintSource(state, 0).color(state) :
                         -1;
                 this.vertices[i].r = color & 0xFF;
                 this.vertices[i].g = (color >> 8) & 0xFF;
                 this.vertices[i].b = (color >> 16) & 0xFF;
-                this.vertices[i].a = quad.isTinted() ? 255 : (color >> 24) & 0xFF;
+                this.vertices[i].a = quad.materialInfo().isTinted() ? 255 : (color >> 24) & 0xFF;
 
                 this.vertices[i].u = UVPair.unpackU(quad.packedUV(i));
                 this.vertices[i].v = UVPair.unpackV(quad.packedUV(i));
             }
         }
 
-        public Quad(BakedQuad quad) {
-            this.location = quad.spriteInfo().sprite().atlasLocation().toString();
+        public Quad(BakedQuad quad, int[] tintLayers) {
+            this.location = quad.materialInfo().sprite().atlasLocation().toString();
 
             this.vertices = new Vertex[4];
             for (int i = 0; i < 4; i++) {
@@ -305,10 +332,18 @@ public class BlockModelApi extends ApiBase {
                 this.vertices[i].y = quad.position(i).y() - 0.5f;
                 this.vertices[i].z = quad.position(i).z() - 0.5f;
 
-                this.vertices[i].r = 255;
-                this.vertices[i].g = 255;
-                this.vertices[i].b = 255;
-                this.vertices[i].a = 255;
+                if (quad.materialInfo().isTinted() && quad.materialInfo().tintIndex() < tintLayers.length) {
+                    int color = tintLayers[quad.materialInfo().tintIndex()];
+                    this.vertices[i].r = ColorUtils.Int.r(color);
+                    this.vertices[i].g = ColorUtils.Int.g(color);
+                    this.vertices[i].b = ColorUtils.Int.b(color);
+                    this.vertices[i].a = ColorUtils.Int.a(color);
+                } else {
+                    this.vertices[i].r = 255;
+                    this.vertices[i].g = 255;
+                    this.vertices[i].b = 255;
+                    this.vertices[i].a = 255;
+                }
 
                 this.vertices[i].u = UVPair.unpackU(quad.packedUV(i));
                 this.vertices[i].v = UVPair.unpackV(quad.packedUV(i));
@@ -337,9 +372,9 @@ public class BlockModelApi extends ApiBase {
 
         public Vertex(PoseStack.Pose pose1, PoseStack.Pose pose2, TextureAtlasSprite sprite, ModelPart.Vertex vertex, int color) {
             Vector3f pos = pose1.pose().mul(pose2.pose(), new Matrix4f()).transformPosition(vertex.worldX(), vertex.worldY(), vertex.worldZ(), new Vector3f());
-            this.x = pos.x() * 4;
-            this.y = (pos.y() - 0.1875f) * 4;
-            this.z = pos.z() * 4;
+            this.x = pos.x() - 0.5f;
+            this.y = pos.y() - 0.5f;
+            this.z = pos.z() - 0.5f;
             this.r = ((color >>> 16) & 0xFF);
             this.g = ((color >>> 8) & 0xFF);
             this.b = ((color >>> 0) & 0xFF);

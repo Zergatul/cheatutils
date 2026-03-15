@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
 import org.spongepowered.asm.mixin.Mixin;
@@ -58,7 +59,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final DeltaTracker deltaTracker,
             final boolean renderOutline,
             final CameraRenderState cameraState,
-            final Matrix4f modelViewMatrix,
+            final Matrix4fc modelViewMatrix,
             final GpuBufferSlice terrainFog,
             final Vector4f fogColor,
             final boolean shouldRenderSky,
@@ -74,7 +75,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final DeltaTracker deltaTracker,
             final boolean renderOutline,
             final CameraRenderState cameraState,
-            final Matrix4f modelViewMatrix,
+            final Matrix4fc modelViewMatrix,
             final GpuBufferSlice terrainFog,
             final Vector4f fogColor,
             final boolean shouldRenderSky,

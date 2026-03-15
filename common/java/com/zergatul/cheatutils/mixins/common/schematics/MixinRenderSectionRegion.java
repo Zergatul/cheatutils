@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
 import com.zergatul.cheatutils.schematics.SchematicaSectionCopy;
 import com.zergatul.cheatutils.schematics.WrapperRenderSectionRegion;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.RenderSectionRegion;
@@ -42,6 +43,9 @@ public abstract class MixinRenderSectionRegion implements RenderSectionRegionExt
     @Unique
     private ModelBlockRenderer blockRenderer_CU;
 
+    @Unique
+    private FluidRenderer fluidRenderer_CU;
+
     @Override
     public void setSchematicaSections_CU(SchematicaSectionCopy[] schematicaSections, boolean shade) {
         this.schematicaSections_CU = schematicaSections;
@@ -64,9 +68,10 @@ public abstract class MixinRenderSectionRegion implements RenderSectionRegionExt
     }
 
     @Override
-    public void storeLocalVariables_CU(Map<ChunkSectionLayer, BufferBuilder> startedLayers, ModelBlockRenderer blockRenderer) {
+    public void storeLocalVariables_CU(Map<ChunkSectionLayer, BufferBuilder> startedLayers, ModelBlockRenderer blockRenderer, FluidRenderer fluidRenderer) {
         this.startedLayers_CU = startedLayers;
         this.blockRenderer_CU = blockRenderer;
+        this.fluidRenderer_CU = fluidRenderer;
     }
 
     @Override
@@ -77,5 +82,10 @@ public abstract class MixinRenderSectionRegion implements RenderSectionRegionExt
     @Override
     public ModelBlockRenderer getBlockRenderer_CU() {
         return this.blockRenderer_CU;
+    }
+
+    @Override
+    public FluidRenderer getFluidRenderer_CU() {
+        return this.fluidRenderer_CU;
     }
 }

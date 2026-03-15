@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class MixinGuiFreeCam {
 
     @ModifyMethodReturnValue(
-            method = "renderCrosshair",
+            method = "extractCrosshair",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
     private static boolean onRenderCrosshairIsFirstPerson(boolean isFirstPerson) {
         return FreeCam.instance.onRenderCrosshairIsFirstPerson(isFirstPerson);

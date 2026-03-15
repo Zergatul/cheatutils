@@ -7,7 +7,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.*;
 import java.util.regex.MatchResult;
@@ -63,17 +62,14 @@ public class BlockStateMapper {
         Block block = Registries.BLOCKS.getValue(Identifier.parse(id));
 
         return block.getStateDefinition().getPossibleStates().stream().filter(state -> {
-            Map<Property<?>, Comparable<?>> currentProperties = state.getValues();
             return properties.entrySet().stream().allMatch(entry -> {
                 String propertyName = entry.getKey();
                 String value = entry.getValue();
-                return currentProperties.entrySet().stream().anyMatch(e -> {
-                    String currentPropertyName = e.getKey().getName();
-                    if (!propertyName.equals(currentPropertyName)) {
+                return state.getValues().anyMatch(e -> {
+                    if (!propertyName.equals(e.property().getName())) {
                         return false;
                     }
-                    String currentValue = getPropertyValueName(e.getKey(), e.getValue());
-                    return value.equals(currentValue);
+                    return value.equals(e.valueName());
                 });
             });
         }).findFirst().orElse(block.defaultBlockState());
@@ -117,15 +113,8 @@ public class BlockStateMapper {
         }
 
         Map<String, String> map = new HashMap<>(state.getProperties().size());
-        for (Map.Entry<Property<?>, Comparable<?>> entry : state.getValues().entrySet()) {
-            map.put(entry.getKey().getName(), getPropertyValueName(entry.getKey(), entry.getValue()));
-        }
+        state.getValues().forEach(entry -> map.put(entry.property().getName(), entry.valueName()));
 
         return map;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends Comparable<T>> String getPropertyValueName(Property<T> property, Comparable<?> comparable) {
-        return property.getName((T) comparable);
     }
 }

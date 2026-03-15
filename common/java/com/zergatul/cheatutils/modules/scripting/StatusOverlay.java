@@ -14,13 +14,12 @@ import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
+import com.zergatul.cheatutils.extensions.GuiRenderStateExtension;
 import com.zergatul.cheatutils.font.*;
-import com.zergatul.cheatutils.mixins.common.accessors.GuiGraphicsAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.FrameBuffers;
 import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -142,13 +141,13 @@ public class StatusOverlay implements Module, FontBackendHolder {
             return;
         }
 
-        renderToFrameBuffer(event.graphics());
+        renderToFrameBuffer();
 
         event.graphics().nextStratum();
-        ((GuiGraphicsAccessor) event.graphics()).getGuiRenderState_CU().submitGuiElement(new FboGuiRenderElement());
+        ((GuiRenderStateExtension) event.graphics().guiRenderState).addGuiElement_CU(new FboGuiRenderElement());
     }
 
-    private void renderToFrameBuffer(GuiGraphics graphics) {
+    private void renderToFrameBuffer() {
         int scale = mc.getWindow().getGuiScale();
         int scrWidth = mc.getWindow().getWidth();
         int scrHeight = mc.getWindow().getHeight();

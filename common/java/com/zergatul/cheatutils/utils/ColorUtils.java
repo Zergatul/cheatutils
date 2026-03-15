@@ -133,4 +133,23 @@ public class ColorUtils {
         int b = color & 255;
         return (a << 24) | ((255 - r) << 16) | ((255 - g) << 8) | (255 - b);
     }
+
+    public static final class Int {
+
+        public static int r(int color) {
+            return (color >>> 16) & 0xFF;
+        }
+
+        public static int g(int color) {
+            return (color >>> 8) & 0xFF;
+        }
+
+        public static int b(int color) {
+            return color & 0xFF;
+        }
+
+        public static int a(int color) {
+            return (color >>> 24) & 0xFF;
+        }
+    }
 }

@@ -1,20 +1,20 @@
 package com.zergatul.cheatutils.common.events;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class ScreenRenderEvent {
 
-    private final GuiGraphics graphics;
+    private final GuiGraphicsExtractor graphics;
     private final int mouseX;
     private final int mouseY;
 
-    public ScreenRenderEvent(GuiGraphics graphics, int mouseX, int mouseY) {
+    public ScreenRenderEvent(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         this.graphics = graphics;
         this.mouseX = mouseX;
         this.mouseY = mouseY;
     }
 
-    public GuiGraphics getGuiGraphics() {
+    public GuiGraphicsExtractor getGraphics() {
         return graphics;
     }
 

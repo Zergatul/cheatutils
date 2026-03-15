@@ -53,10 +53,8 @@ public abstract class MixinEntity {
         ElytraTunnelConfig config = ConfigStore.instance.getConfig().elytraTunnelConfig;
         if (config.enabled) {
             Entity entity = (Entity) (Object) this;
-            if (entity instanceof LocalPlayer) {
-                LocalPlayer player = (LocalPlayer) entity;
+            if (entity instanceof LocalPlayer player) {
                 if (player.isFallFlying()) {
-                    //ModMain.LOGGER.info("collide: {} -> {}", vec31, info.getReturnValue());
                     Vec3 result = info.getReturnValue();
                     AABB aabb = player.getBoundingBox().expandTowards(result);
                     if (aabb.maxY > config.limit) {

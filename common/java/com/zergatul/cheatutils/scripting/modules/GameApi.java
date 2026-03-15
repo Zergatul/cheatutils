@@ -940,8 +940,7 @@ public class GameApi {
             }
 
             BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
-            return state.getValues().keySet().stream()
-                    .anyMatch(p -> p.getName().equals(tag));
+            return state.getValues().anyMatch(e -> e.property().getName().equals(tag));
         }
 
         @MethodDescription("""
@@ -962,7 +961,8 @@ public class GameApi {
             }
 
             BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
-            Property<?> property = state.getValues().keySet().stream()
+            Property<?> property = state.getValues()
+                    .map(Property.Value::property)
                     .filter(p -> p.getName().equals(tag) && p instanceof IntegerProperty)
                     .findFirst()
                     .orElse(null);
@@ -989,7 +989,8 @@ public class GameApi {
             }
 
             BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
-            Property<?> property = state.getValues().keySet().stream()
+            Property<?> property = state.getValues()
+                    .map(Property.Value::property)
                     .filter(p -> p.getName().equals(tag) && p instanceof EnumProperty)
                     .findFirst()
                     .orElse(null);
@@ -1016,7 +1017,8 @@ public class GameApi {
             }
 
             BlockState state = mc.level.getBlockState(new BlockPos(x, y, z));
-            Property<?> property = state.getValues().keySet().stream()
+            Property<?> property = state.getValues()
+                    .map(Property.Value::property)
                     .filter(p -> p.getName().equals(tag) && p instanceof BooleanProperty)
                     .findFirst()
                     .orElse(null);

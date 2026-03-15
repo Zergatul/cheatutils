@@ -18,9 +18,6 @@ public abstract class MixinCamera {
     @Shadow
     private boolean detached;
 
-    @Shadow
-    private boolean isPanoramicMode;
-
     @Shadow(aliases = "Lnet/minecraft/client/Camera;setRotation(FF)V")
     protected abstract void setRotation(final float yRot, final float xRot);
 

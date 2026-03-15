@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BlockStateTypeAdapter extends TypeAdapter<BlockState> {
@@ -28,15 +29,14 @@ public class BlockStateTypeAdapter extends TypeAdapter<BlockState> {
             out.name(BLOCK_PROPERTY);
             out.value(Registries.BLOCKS.getKey(state.getBlock()).toString());
 
-            if (!state.getValues().isEmpty()) {
+            List<Property.Value<?>> values = state.getValues().toList();
+            if (!values.isEmpty()) {
                 out.name(PROPERTIES_PROPERTY);
                 out.beginObject();
 
-                for (var entry : state.getValues().entrySet()) {
-                    Property<?> property = entry.getKey();
-                    Comparable<?> value = entry.getValue();
-                    out.name(property.getName());
-                    out.value(getName(property, value));
+                for (Property.Value<?> entry : values) {
+                    out.name(entry.property().getName());
+                    out.value(entry.valueName());
                 }
 
                 out.endObject();
@@ -83,10 +83,5 @@ public class BlockStateTypeAdapter extends TypeAdapter<BlockState> {
         }
 
         return BlockStateMapper.map(id, properties);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends Comparable<T>> String getName(Property<T> property, Comparable<?> comparable) {
-        return property.getName((T) comparable);
     }
 }

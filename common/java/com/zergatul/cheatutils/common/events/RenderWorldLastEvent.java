@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.common.events;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -15,7 +14,6 @@ public class RenderWorldLastEvent {
     private final Matrix4f mvp;
     private final float partialTickTime;
     private final Vec3 tracerCenter;
-    private final GuiGraphics graphics;
 
     public RenderWorldLastEvent(CameraRenderState cameraState, Matrix4f modifiedProjectionMatrix, DeltaTracker delta) {
         this.cameraState = cameraState;
@@ -23,9 +21,6 @@ public class RenderWorldLastEvent {
         this.partialTickTime = delta.getGameTimeDeltaPartialTick(true);
         this.mvp = new Matrix4f(getProjection()).mul(cameraState.viewRotationMatrix);
         this.tracerCenter = calculateTracerCenter();
-
-        Minecraft mc = Minecraft.getInstance();
-        this.graphics = new GuiGraphics(mc, mc.gameRenderer.getGameRenderState().guiRenderState, 0, 0);
     }
 
     public float getPartialTickTime() {
@@ -59,10 +54,6 @@ public class RenderWorldLastEvent {
 
     public Vec3 getCameraPos() {
         return cameraState.pos;
-    }
-
-    public GuiGraphics getGuiGraphics() {
-        return graphics;
     }
 
     private Vec3 calculateTracerCenter() {
