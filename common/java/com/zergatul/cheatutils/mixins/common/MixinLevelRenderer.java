@@ -3,17 +3,16 @@ package com.zergatul.cheatutils.mixins.common;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.extensions.EntityRenderStateExtension;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
-import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
+import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
@@ -27,7 +26,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
@@ -53,7 +51,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "renderLevel")
+    @Inject(method = "renderLevel", at = @At("HEAD"))
     private void onRenderLevelBegin(
             final GraphicsResourceAllocator resourceAllocator,
             final DeltaTracker deltaTracker,
@@ -69,7 +67,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
         Events.BeforeRenderWorld.trigger();
     }
 
-    @Inject(at = @At("RETURN"), method = "renderLevel")
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;"))
     private void onRenderLevelEnd(
             final GraphicsResourceAllocator resourceAllocator,
             final DeltaTracker deltaTracker,
@@ -89,55 +87,18 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
         this.modifiedProjectionMatrix = null;
     }
 
-    @Unique
-    private Entity currentRenderedEntity_CU;
-
-    @ModifyArg(
-            method = "extractVisibleEntities",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;extractEntity(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;"),
-            index = 0)
-    private Entity onStoreEntityBeforeCalculatingRenderState(Entity entity) {
-        currentRenderedEntity_CU = entity;
-        return entity;
-    }
-
-    @ModifyVariable(
-            method = "extractVisibleEntities",
-            at = @At(value = "STORE"),
-            name = "state")
-    private EntityRenderState onModifyEntityRenderState(EntityRenderState state) {
-        ((EntityRenderStateExtension) state).setParameters_CU(EntityEsp.instance.getEntityRenderParameters(currentRenderedEntity_CU));
-        currentRenderedEntity_CU = null;
-        return state;
-    }
-
     @Inject(
-            method = "submitEntities",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V"))
-    private void onBeforeSubmittingEntityState(
-            final PoseStack poseStack,
-            final LevelRenderState levelRenderState,
-            final SubmitNodeCollector output,
-            CallbackInfo info,
+            method = "extractVisibleEntities",
+            at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", shift = At.Shift.AFTER))
+    private void onExtractEntityEspEntityStates(
+            Camera camera,
+            Frustum frustum,
+            DeltaTracker deltaTracker,
+            LevelRenderState output,
+            CallbackInfo ci,
+            @Local(name = "entity") Entity entity,
             @Local(name = "state") EntityRenderState state
     ) {
-        MixinLevelRendererHelper.CURRENT_SUBMIT_ENTITY_RENDER_PARAMETERS = ((EntityRenderStateExtension) state).getParameters_CU();
-    }
-
-    @Inject(
-            method = "submitEntities",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/level/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V",
-                    shift = At.Shift.AFTER))
-    private void onAfterSubmittingEntityState(
-            final PoseStack poseStack,
-            final LevelRenderState levelRenderState,
-            final SubmitNodeCollector output,
-            CallbackInfo info
-    ) {
-        MixinLevelRendererHelper.CURRENT_SUBMIT_ENTITY_RENDER_PARAMETERS = null;
+        EntityEsp.instance.captureEntityRenderState(entity, state);
     }
 }

@@ -29,6 +29,8 @@ public class EntityOverlayBufferProgram extends Program {
 
         GL30.glUseProgram(id);
 
+        GlStateManager._disableDepthTest();
+        GlStateManager._disableCull();
         GlStateManager._activeTexture(GL30.GL_TEXTURE0 + unit);
         GlStateManager._bindTexture(textureId);
         GL33.glBindSampler(unit, Sampler.DEFAULT.getId());

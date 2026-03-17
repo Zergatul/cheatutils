@@ -60,14 +60,12 @@
     "common.MixinEntity",
     "common.MixinEntityHitboxDebugRenderer",
     "common.MixinEntityRenderer",
-    "common.MixinEntityRenderState",
     "common.MixinFramerateLimitTracker",
     "common.MixinGameRenderer",
     "common.MixinGui",
     "common.MixinGuiFreeCam",
     "common.MixinGuiGraphicsExtractor",
     "common.MixinGuiRenderState",
-    "common.MixinItemFeatureRenderer",
     "common.MixinItemStack",
     "common.MixinKeyBindingListKeyEntry",
     "common.MixinLevelChunk",
@@ -75,7 +73,6 @@
     "common.MixinLivingEntity",
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
-    "common.MixinModelFeatureRenderer",
     "common.MixinMouseHandler",
     "common.MixinMouseHandlerFreeCam",
     "common.MixinMouseHandlerZoom",
@@ -88,8 +85,6 @@
     "common.MixinSoundBufferLibrary",
     "common.MixinSlimeBlock",
     "common.MixinSoundManager",
-    "common.MixinSubmitNodeStorageItemSubmit",
-    "common.MixinSubmitNodeStorageModelSubmit",
     "common.MixinUser"
   ]
 }

@@ -52,6 +52,10 @@ public class RenderWorldLastEvent {
         }
     }
 
+    public CameraRenderState getCameraRenderState() {
+        return cameraState;
+    }
+
     public Vec3 getCameraPos() {
         return cameraState.pos;
     }
