@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.ResizeEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
@@ -9,6 +10,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
@@ -27,6 +29,10 @@ public abstract class MixinGameRenderer {
     @Final
     private Minecraft minecraft;
 
+    @Shadow
+    @Final
+    private GameRenderState gameRenderState;
+
     @Redirect(
             method = "renderItemInHand",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z", ordinal = 0))
@@ -37,6 +43,11 @@ public abstract class MixinGameRenderer {
     @Inject(at = @At("HEAD"), method = "render")
     private void onBeforeRender(DeltaTracker delta, boolean renderLevel, CallbackInfo info) {
         Events.RenderTickStart.trigger(delta);
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resize(II)V"))
+    private void onResizeFramebuffers(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
+        Events.FramebuffersResize.trigger(new ResizeEvent(this.gameRenderState.windowRenderState.width, this.gameRenderState.windowRenderState.height));
     }
 
     @ModifyArg(

@@ -13,8 +13,6 @@ public class RenderUtilities {
     private final GroupLineRenderer groupLineRenderer = new FastGroupLineRenderer();
     private final GroupThickLineRenderer groupThickLineRenderer = new QuadAAGroupThickLineRenderer();
     private final BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();
-    private final EntityOverlayRenderer entityOverlayRenderer = new EntityOverlayRenderer();
-    private final EntityOutlineRenderer entityOutlineRenderer = new EntityOutlineRenderer();
     private final Texture2dRenderer texture2dRenderer = new Texture2dRenderer();
     private final TextureColor2dRenderer textureColor2dRenderer = new TextureColor2dRenderer();
     private final Color2dRenderer color2dRenderer = new Color2dRenderer();
@@ -43,14 +41,6 @@ public class RenderUtilities {
 
     public BlockOverlayRenderer getBlockOverlayRenderer() {
         return blockOverlayRenderer;
-    }
-
-    public EntityOverlayRenderer getEntityOverlayRenderer() {
-        return entityOverlayRenderer;
-    }
-
-    public EntityOutlineRenderer getEntityOutlineRenderer() {
-        return entityOutlineRenderer;
     }
 
     public Texture2dRenderer getTexture2dRenderer() { return texture2dRenderer; }

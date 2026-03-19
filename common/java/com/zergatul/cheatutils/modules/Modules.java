@@ -41,7 +41,6 @@ public class Modules {
         register(LockInputsController.instance);
         register(AutoCraft.instance);
         register(BlockEsp.instance);
-        register(EntityEsp.instance);
         register(ProjectilePath.instance);
         register(EndCityChunks.instance);
         register(AutoBucket.instance);
@@ -106,6 +105,10 @@ public class Modules {
 
     public static void registerKeyBindings() {
         register(KeyBindingsController.instance);
+    }
+
+    public static void lateRegister() {
+        register(EntityEsp.instance);
     }
 
     private static void register(Module module) {
