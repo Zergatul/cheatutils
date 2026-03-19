@@ -1,8 +1,15 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.opengl.GlBuffer;
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.pipeline.*;
+import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.vertex.*;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.collections.FloatList;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
@@ -13,6 +20,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.render.gl.OverlayDrawProgram;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
@@ -23,6 +31,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.*;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
@@ -30,11 +39,19 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
+import java.awt.*;
+import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 
 public class EntityEsp implements Module {
 
@@ -296,15 +313,44 @@ public class EntityEsp implements Module {
         outlineEntityStates.clear();
     }
 
+    private RenderTarget renderTarget;
+    private OverlayDrawProgram drawProgram;
+    private RenderPipeline overlayPipeline;
+    private GpuBuffer overlayColorBuffer;
+
     private void drawOverlays2(ImmutableList<EntityEspConfig> list, RenderWorldLastEvent event) {
         if (overlayEntityStates.isEmpty()) {
             return;
+        }
+
+        if (drawProgram == null) {
+            drawProgram = new OverlayDrawProgram();
+        }
+        if (renderTarget == null) {
+            WindowRenderState windowState = mc.gameRenderer.getGameRenderState().windowRenderState;
+            renderTarget = new TextureTarget("[" + ModMain.MODID + "] EntityEsp", windowState.width, windowState.height, true);
+        }
+        if (overlayPipeline == null) {
+            overlayPipeline = RenderPipeline.builder()
+                    .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/entity_overlay_blit"))
+                    .withSampler("InSampler")
+                    .withUniform("MyBlock", UniformType.UNIFORM_BUFFER)
+                    .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screenquad"))
+                    .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "blit_screen"))
+                    .withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.ENTITY_OUTLINE_BLIT), 7))
+                    .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
+                    .build();
+        }
+        if (overlayColorBuffer == null) {
+            overlayColorBuffer = RenderSystem.getDevice().createBuffer(() -> "Hello", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 16);
         }
 
         Vec3 cameraPos = event.getCameraPos();
         double camX = cameraPos.x();
         double camY = cameraPos.y();
         double camZ = cameraPos.z();
+
+        /**/RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(renderTarget.getColorTexture(), 0, renderTarget.getDepthTexture(), 1.0);
 
         PoseStack poseStack = new PoseStack();
         EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
@@ -313,6 +359,10 @@ public class EntityEsp implements Module {
             if (states == null || states.isEmpty()) {
                 continue;
             }
+
+            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(renderTarget.getColorTexture(), 0, renderTarget.getDepthTexture(), 1.0);
+            RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
+            RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
 
             submitNodeStorage.clear();
 
@@ -340,6 +390,27 @@ public class EntityEsp implements Module {
             dispatcher.renderAllFeatures();
 
             bufferSource.endBatch();
+
+            RenderSystem.outputColorTextureOverride = null;
+            RenderSystem.outputDepthTextureOverride = null;
+
+            /*renderTarget.blitAndBlendToTexture(mc.getMainRenderTarget().getColorTextureView());*/
+
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                ByteBuffer buffer = stack.malloc(16);
+                buffer.putFloat(config.overlayColor.getRed() / 255f);
+                buffer.putFloat(config.overlayColor.getGreen() / 255f);
+                buffer.putFloat(config.overlayColor.getBlue() / 255f);
+                buffer.putFloat(config.overlayColor.getAlpha() / 255f);
+                RenderSystem.getDevice().createCommandEncoder().writeToBuffer(overlayColorBuffer.slice(), buffer.flip());
+            }
+
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", mc.getMainRenderTarget().getColorTextureView(), OptionalInt.empty())) {
+                renderPass.setPipeline(overlayPipeline);
+                renderPass.bindTexture("InSampler", renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+                renderPass.setUniform("MyBlock", overlayColorBuffer);
+                renderPass.draw(0, 3);
+            }
         }
     }
 

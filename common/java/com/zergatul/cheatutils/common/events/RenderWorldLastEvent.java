@@ -2,25 +2,34 @@ package com.zergatul.cheatutils.common.events;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.*;
 
 public class RenderWorldLastEvent {
 
+    private final LevelTargetBundle targets;
     private final CameraRenderState cameraState;
     private final Matrix4f modifiedProjectionMatrix;
     private final Matrix4f mvp;
     private final float partialTickTime;
     private final Vec3 tracerCenter;
 
-    public RenderWorldLastEvent(CameraRenderState cameraState, Matrix4f modifiedProjectionMatrix, DeltaTracker delta) {
+    public RenderWorldLastEvent(LevelTargetBundle targets, CameraRenderState cameraState, Matrix4f modifiedProjectionMatrix, DeltaTracker delta) {
+        this.targets = targets;
         this.cameraState = cameraState;
         this.modifiedProjectionMatrix = modifiedProjectionMatrix;
+
         this.partialTickTime = delta.getGameTimeDeltaPartialTick(true);
         this.mvp = new Matrix4f(getProjection()).mul(cameraState.viewRotationMatrix);
         this.tracerCenter = calculateTracerCenter();
+    }
+
+    public LevelTargetBundle getTargets() {
+        return targets;
     }
 
     public float getPartialTickTime() {

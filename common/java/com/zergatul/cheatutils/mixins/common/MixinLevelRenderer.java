@@ -21,7 +21,9 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,12 +33,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LevelRenderer.class)
 public abstract class MixinLevelRenderer implements LevelRendererExtension {
 
+    @Shadow
+    @Final
+    private LevelTargetBundle targets;
     // store projection matrix + bob views + portal distortions
     @Unique
-    private Matrix4f modifiedProjectionMatrix;
+    private Matrix4f modifiedProjectionMatrix_CU;
 
     public void setModifiedProjectionMatrix_CU(Matrix4f matrix) {
-        this.modifiedProjectionMatrix = matrix;
+        this.modifiedProjectionMatrix_CU = matrix;
     }
 
     @ModifyArg(
@@ -67,7 +72,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
         Events.BeforeRenderWorld.trigger();
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;"))
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelTargetBundle;clear()V"))
     private void onRenderLevelEnd(
             final GraphicsResourceAllocator resourceAllocator,
             final DeltaTracker deltaTracker,
@@ -81,10 +86,10 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final CallbackInfo info
     ) {
         int program = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix, deltaTracker));
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(this.targets, cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
         GL20.glUseProgram(program);
 
-        this.modifiedProjectionMatrix = null;
+        this.modifiedProjectionMatrix_CU = null;
     }
 
     @Inject(

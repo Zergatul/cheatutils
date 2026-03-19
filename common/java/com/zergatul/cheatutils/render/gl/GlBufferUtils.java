@@ -1,18 +1,22 @@
 package com.zergatul.cheatutils.render.gl;
 
-import com.zergatul.cheatutils.ModMain;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL45C;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.StreamSupport;
 
 public class GlBufferUtils {
+
+    public static float[] toFloats(int handle, int size) {
+        ByteBuffer bytes = BufferUtils.createByteBuffer(size * 4);
+        GL45C.glGetNamedBufferSubData(handle, 0, bytes);
+
+        float[] result = new float[size];
+        bytes.asFloatBuffer().get(result);
+        return result;
+    }
 
     public static Matrix4f toMatrix(int handle) {
         ByteBuffer bytes = BufferUtils.createByteBuffer(64);
