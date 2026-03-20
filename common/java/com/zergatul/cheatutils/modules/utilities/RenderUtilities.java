@@ -12,7 +12,6 @@ public class RenderUtilities {
     private final ThickLineRenderer thickLineRenderer = new QuadAAThickLineRenderer();
     private final GroupLineRenderer groupLineRenderer = new FastGroupLineRenderer();
     private final GroupThickLineRenderer groupThickLineRenderer = new QuadAAGroupThickLineRenderer();
-    private final BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();
     private final Texture2dRenderer texture2dRenderer = new Texture2dRenderer();
     private final TextureColor2dRenderer textureColor2dRenderer = new TextureColor2dRenderer();
     private final Color2dRenderer color2dRenderer = new Color2dRenderer();
@@ -37,10 +36,6 @@ public class RenderUtilities {
 
     public GroupThickLineRenderer getGroupThickLineRenderer() {
         return groupThickLineRenderer;
-    }
-
-    public BlockOverlayRenderer getBlockOverlayRenderer() {
-        return blockOverlayRenderer;
     }
 
     public Texture2dRenderer getTexture2dRenderer() { return texture2dRenderer; }

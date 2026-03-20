@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -23,14 +22,29 @@ import java.util.OptionalInt;
 
 public class EntityEspOverlayRenderer {
 
-    private boolean initialized;
-    private RenderTarget renderTarget;
-    private RenderPipeline pipeline;
-    private GpuBuffer ubo;
+    private final RenderTarget renderTarget;
+    private final RenderPipeline pipeline;
+    private final GpuBuffer ubo;
+
+    private EntityEspOverlayRenderer() {
+        renderTarget = RenderTargets.getEsp();
+        pipeline = RenderPipeline.builder()
+                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/entity-esp-overlay"))
+                .withSampler("InSampler")
+                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
+                .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
+                .build();
+        ubo = RenderSystem.getDevice().createBuffer(() -> "Entity ESP Overlay UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 16);
+    }
+
+    public static EntityEspOverlayRenderer getInstance() {
+        return Holder.INSTANCE;
+    }
 
     public void begin() {
-        createGpuObjectsIfRequired();
-
         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(renderTarget.getColorTexture(), 0, renderTarget.getDepthTexture(), 1.0);
         RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
         RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
@@ -58,22 +72,7 @@ public class EntityEspOverlayRenderer {
         }
     }
 
-    private void createGpuObjectsIfRequired() {
-        if (initialized) {
-            return;
-        }
-
-        initialized = true;
-        renderTarget = RenderTargets.getEsp();
-        pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/entity-esp-overlay"))
-                .withSampler("InSampler")
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "entity-overlay"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
-                .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
-                .build();
-        ubo = RenderSystem.getDevice().createBuffer(() -> "Entity ESP Overlay UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 16);
+    private static final class Holder {
+        public static final EntityEspOverlayRenderer INSTANCE = new EntityEspOverlayRenderer();
     }
 }

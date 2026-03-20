@@ -36,8 +36,6 @@ public class EntityEsp implements Module {
     private final Minecraft mc = Minecraft.getInstance();
     private final Map<EntityEspConfig, List<EntityRenderState>> overlayEntityStates = new IdentityHashMap<>();
     private final Map<EntityEspConfig, List<EntityRenderState>> outlineEntityStates = new IdentityHashMap<>();
-    private final EntityEspOverlayRenderer overlayRenderer = new EntityEspOverlayRenderer();
-    private final EntityEspOutlineRenderer outlineRenderer = new EntityEspOutlineRenderer();
     private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
     private final OutlineCaptureBufferSource bufferSource = new OutlineCaptureBufferSource();
     private final FeatureRenderDispatcher dispatcher;
@@ -283,13 +281,14 @@ public class EntityEsp implements Module {
 
         PoseStack poseStack = new PoseStack();
         EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
+        EntityEspOverlayRenderer renderer = EntityEspOverlayRenderer.getInstance();
         for (EntityEspConfig config : list) {
             List<EntityRenderState> states = overlayEntityStates.get(config);
             if (states == null || states.isEmpty()) {
                 continue;
             }
 
-            overlayRenderer.begin();
+            renderer.begin();
 
             for (EntityRenderState state : states) {
                 int outlineColor = state.outlineColor;
@@ -300,7 +299,7 @@ public class EntityEsp implements Module {
 
             dispatcher.renderAllFeatures();
             bufferSource.endBatch();
-            overlayRenderer.end(config.overlayColor);
+            renderer.end(config.overlayColor);
         }
     }
 
@@ -316,13 +315,14 @@ public class EntityEsp implements Module {
 
         PoseStack poseStack = new PoseStack();
         EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
+        EntityEspOutlineRenderer renderer = EntityEspOutlineRenderer.getInstance();
         for (EntityEspConfig config : list) {
             List<EntityRenderState> states = outlineEntityStates.get(config);
             if (states == null || states.isEmpty()) {
                 continue;
             }
 
-            outlineRenderer.begin();
+            renderer.begin();
 
             for (EntityRenderState state : states) {
                 int outlineColor = state.outlineColor;
@@ -333,7 +333,7 @@ public class EntityEsp implements Module {
 
             dispatcher.renderAllFeatures();
             bufferSource.endBatch();
-            outlineRenderer.end(config.glowColor);
+            renderer.end(config.glowColor);
         }
     }
 

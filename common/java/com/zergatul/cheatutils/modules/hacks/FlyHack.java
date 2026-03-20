@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FlyHackConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
-import com.zergatul.cheatutils.accessors.ServerboundMovePlayerPacketAccessor;
+import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -40,7 +40,7 @@ public class FlyHack implements Module {
 
             FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
             if (config.enabled) {
-                ((ServerboundMovePlayerPacketAccessor) packet).setOnGround_CU(config.onGroundFlag);
+                ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(config.onGroundFlag);
             }
         }
     }

@@ -59,6 +59,11 @@ public class BlockEsp {
 
         renderCustomEntries(event);
 
+        Vec3 cameraPos = event.getCameraPos();
+        double cameraX = cameraPos.x;
+        double cameraY = cameraPos.y;
+        double cameraZ = cameraPos.z;
+
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;
         double playerY = playerPos.y;
@@ -71,7 +76,6 @@ public class BlockEsp {
 
         GroupLineRenderer lineRenderer = RenderUtilities.instance.getGroupLineRenderer();
         GroupThickLineRenderer thickLineRenderer = RenderUtilities.instance.getGroupThickLineRenderer();
-        BlockOverlayRenderer overlayRenderer = RenderUtilities.instance.getBlockOverlayRenderer();
 
         for (BlockEspConfig config : ConfigStore.instance.getConfig().blocks.getBlockConfigs()) {
             if (!config.enabled) {
@@ -190,15 +194,15 @@ public class BlockEsp {
             }
 
             if (!overlayList.isEmpty()) {
-                overlayRenderer.begin(event);
-                for (BlockPos pos: overlayList) {
-                    renderOverlay(overlayRenderer, pos);
+                BlockEspOverlayRenderer renderer = BlockEspOverlayRenderer.getInstance();
+                renderer.begin();
+                for (BlockPos pos : overlayList) {
+                    renderer.submitBlock(
+                            (float) (pos.getX() - cameraX),
+                            (float) (pos.getY() - cameraY),
+                            (float) (pos.getZ() - cameraZ));
                 }
-                overlayRenderer.end(
-                        config.overlayColor.getRed() / 255f,
-                        config.overlayColor.getGreen() / 255f,
-                        config.overlayColor.getBlue() / 255f,
-                        config.overlayColor.getAlpha() / 255f);
+                renderer.end(event.getMvp(), config.overlayColor);
             }
         }
     }
@@ -223,57 +227,6 @@ public class BlockEsp {
             renderer.end(event.getMvp());
             GlStateManager._depthMask(true);
         }
-    }
-
-    private void renderOverlay(BlockOverlayRenderer renderer, BlockPos pos) {
-        int x1 = pos.getX();
-        int y1 = pos.getY();
-        int z1 = pos.getZ();
-        int x2 = x1 + 1;
-        int y2 = y1 + 1;
-        int z2 = z1 + 1;
-
-        // bottom
-        renderer.quad(
-                x2, y1, z2,
-                x1, y1, z2,
-                x1, y1, z1,
-                x2, y1, z1);
-
-        // top
-        renderer.quad(
-                x2, y2, z2,
-                x2, y2, z1,
-                x1, y2, z1,
-                x1, y2, z2);
-
-        // west
-        renderer.quad(
-                x1, y1, z1,
-                x1, y1, z2,
-                x1, y2, z2,
-                x1, y2, z1);
-
-        // east
-        renderer.quad(
-                x2, y1, z1,
-                x2, y2, z1,
-                x2, y2, z2,
-                x2, y1, z2);
-
-        // north
-        renderer.quad(
-                x2, y1, z1,
-                x1, y1, z1,
-                x1, y2, z1,
-                x2, y2, z1);
-
-        // south
-        renderer.quad(
-                x2, y1, z2,
-                x2, y2, z2,
-                x1, y2, z2,
-                x1, y1, z2);
     }
 
     public static class BlockScriptResult {
