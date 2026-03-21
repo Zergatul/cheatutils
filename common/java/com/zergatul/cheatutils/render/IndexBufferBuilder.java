@@ -3,16 +3,12 @@ package com.zergatul.cheatutils.render;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
-
 public class IndexBufferBuilder {
 
     private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x10000);
     private final ByteBufferBuilder indexBuffer = new ByteBufferBuilder(0x10000);
     private int vertices;
     private int indexes;
-
-    public IndexBufferBuilder() {}
 
     public ByteBufferBuilder.Result getIndexBuffer() {
         return indexBuffer.build();
