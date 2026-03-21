@@ -109,7 +109,23 @@ public class VertexColorLineRenderer {
         bufferBuilder.addVertex(x2, y2, z2).setColor(r2, g2, b2, a2);;
     }
 
-    public void line(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b, float a) {
+    public void line(
+            Vec3 cameraPos,
+            double x1, double y1, double z1,
+            double x2, double y2, double z2,
+            float r, float g, float b, float a
+    ) {
+        line(
+                (float) (x1 - cameraPos.x), (float) (y1 - cameraPos.y), (float) (z1 - cameraPos.z),
+                (float) (x2 - cameraPos.x), (float) (y2 - cameraPos.y), (float) (z2 - cameraPos.z),
+                r, g, b, a);
+    }
+
+    public void line(
+            float x1, float y1, float z1,
+            float x2, float y2, float z2,
+            float r, float g, float b, float a
+    ) {
         isEmpty = false;
         bufferBuilder.addVertex(x1, y1, z1).setColor(r, g, b, a);
         bufferBuilder.addVertex(x2, y2, z2).setColor(r, g, b, a);;

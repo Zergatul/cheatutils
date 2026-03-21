@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.GroupLineRenderer;
+import com.zergatul.cheatutils.render.UniformColorLineRenderer;
 import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.CameraType;
@@ -24,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.awt.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -367,19 +369,20 @@ public class FreeCam implements Module {
             return;
         }
 
-        GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-        renderer.begin(event);
+        UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+        renderer.begin();
 
         for (int i = 1; i < path.size(); i++) {
             FreeCamPath.Entry e1 = path.get(i - 1);
             FreeCamPath.Entry e2 = path.get(i);
 
             renderer.line(
+                    event.getCameraPos(),
                     e1.position().x, e1.position().y, e1.position().z,
                     e2.position().x, e2.position().y, e2.position().z);
         }
 
-        renderer.end(1, 1, 1, 1);
+        renderer.end(event.getMvp(), Color.WHITE);
     }
 
     public void startPath() {

@@ -10,10 +10,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Color3dRenderer;
-import com.zergatul.cheatutils.render.GroupLineRenderer;
-import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.VertexColorLineRenderer;
+import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.schematics.*;
 import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
@@ -37,7 +34,9 @@ import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.chunk.Strategy;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReferenceArray;
@@ -506,23 +505,24 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-            renderer.begin(event);
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
 
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
                     renderer.line(
+                            event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
                 });
             }
 
-            renderer.end(0.2f, 1.0f, 0.2f, 0.8f);
+            renderer.end(event.getMvp(), new Color(0.2f, 1.0f, 0.2f, 0.8f));
         }
 
         if (config.showMissingBlockCubes) {
-            GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-            renderer.begin(event);
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
 
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
@@ -532,11 +532,11 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2);
                 });
             }
 
-            renderer.end(0.2f, 1.0f, 0.2f, 0.8f);
+            renderer.end(event.getMvp(), new Color(0.2f, 1.0f, 0.2f, 0.8f));
         }
 
         if (config.showWrongBlockTracers) {
@@ -545,23 +545,24 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-            renderer.begin(event);
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
 
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
                     renderer.line(
+                            event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
                 });
             }
 
-            renderer.end(1.0f, 0.5f, 0.5f, 0.6f);
+            renderer.end(event.getMvp(), new Color(1.0f, 0.5f, 0.5f, 0.6f));
         }
 
         if (config.showWrongBlockCubes) {
-            GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-            renderer.begin(event);
+            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            renderer.begin();
 
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockCubesMaxDistance, pos -> {
@@ -571,11 +572,11 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2);
                 });
             }
 
-            renderer.end(1.0f, 0.5f, 0.5f, 0.6f);
+            renderer.end(event.getMvp(), new Color(1.0f, 0.5f, 0.5f, 0.6f));
         }
     }
 

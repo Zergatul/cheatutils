@@ -12,6 +12,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.ModMain;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
@@ -26,6 +27,7 @@ public class UniformColorLineRenderer {
     private final GpuBuffer ubo;
     private final ByteBufferBuilder byteBufferBuilder;
     private BufferBuilder bufferBuilder;
+    private boolean isEmpty;
 
     private UniformColorLineRenderer() {
         pipeline = RenderPipeline.builder()
@@ -45,8 +47,19 @@ public class UniformColorLineRenderer {
     }
 
     public void begin() {
+        isEmpty = true;
         byteBufferBuilder.clear();
         bufferBuilder = new BufferBuilder(byteBufferBuilder, pipeline.getVertexFormatMode(), pipeline.getVertexFormat());
+    }
+
+    public void cuboid(
+            Vec3 cameraPos,
+            double x1, double y1, double z1,
+            double x2, double y2, double z2
+    ) {
+        cuboid(
+                (float) (x1 - cameraPos.x), (float) (y1 - cameraPos.y), (float) (z1 - cameraPos.z),
+                (float) (x2 - cameraPos.x), (float) (y2 - cameraPos.y), (float) (z2 - cameraPos.z));
     }
 
     public void cuboid(float x1, float y1, float z1, float x2, float y2, float z2) {
@@ -66,12 +79,27 @@ public class UniformColorLineRenderer {
         line(x2, y1, z1, x2, y2, z1);
     }
 
+    public void line(
+            Vec3 cameraPos,
+            double x1, double y1, double z1,
+            double x2, double y2, double z2
+    ) {
+        line(
+                (float) (x1 - cameraPos.x), (float) (y1 - cameraPos.y), (float) (z1 - cameraPos.z),
+                (float) (x2 - cameraPos.x), (float) (y2 - cameraPos.y), (float) (z2 - cameraPos.z));
+    }
+
     public void line(float x1, float y1, float z1, float x2, float y2, float z2) {
+        isEmpty = false;
         bufferBuilder.addVertex(x1, y1, z1);
         bufferBuilder.addVertex(x2, y2, z2);
     }
 
     public void end(Matrix4f mvp, Color color) {
+        if (isEmpty) {
+            return;
+        }
+
         int vertexCount;
         GpuBuffer vertexBuffer;
         try (MeshData mesh = bufferBuilder.buildOrThrow()) {

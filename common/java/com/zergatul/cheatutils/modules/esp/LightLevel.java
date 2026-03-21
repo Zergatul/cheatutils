@@ -11,6 +11,7 @@ import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.GroupLineRenderer;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.Texture3dRenderer;
+import com.zergatul.cheatutils.render.VertexColorLineRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -159,15 +160,17 @@ public class LightLevel implements Module {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        GroupLineRenderer renderer = RenderUtilities.instance.getGroupLineRenderer();
-        renderer.begin(event);
+        VertexColorLineRenderer lineRenderer = VertexColorLineRenderer.getInstance();
+        lineRenderer.begin();
 
         for (BlockPos pos: listTracers) {
             double y = pos.getY() + 0.05;
             if (config.showTracers) {
-                renderer.line(
+                lineRenderer.line(
+                        event.getCameraPos(),
                         tracerX, tracerY, tracerZ,
-                        pos.getX() + 0.5, y, pos.getZ() + 0.5);
+                        pos.getX() + 0.5, y, pos.getZ() + 0.5,
+                        1f, 1f, 1f, 0.5f);
             }
 
             if (config.showLocations) {
@@ -175,14 +178,14 @@ public class LightLevel implements Module {
                 double z1 = pos.getZ() + 0.05;
                 double x2 = x1 + 0.9;
                 double z2 = z1 + 0.9;
-                renderer.line(x1, y, z1, x1, y, z2);
-                renderer.line(x1, y, z2, x2, y, z2);
-                renderer.line(x2, y, z2, x2, y, z1);
-                renderer.line(x2, y, z1, x1, y, z1);
+                lineRenderer.line(event.getCameraPos(), x1, y, z1, x1, y, z2, 1f, 1f, 1f, 0.5f);
+                lineRenderer.line(event.getCameraPos(), x1, y, z2, x2, y, z2, 1f, 1f, 1f, 0.5f);
+                lineRenderer.line(event.getCameraPos(), x2, y, z2, x2, y, z1, 1f, 1f, 1f, 0.5f);
+                lineRenderer.line(event.getCameraPos(), x2, y, z1, x1, y, z1, 1f, 1f, 1f, 0.5f);
             }
         }
 
-        renderer.end(1f, 1f, 1f, 0.5f);
+        lineRenderer.end(event.getMvp());
     }
 
     public List<BlockPos> getBlockForRendering() {
