@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.modules.esp;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -7,11 +9,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.GroupLineRenderer;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
-import com.zergatul.cheatutils.render.Texture3dRenderer;
-import com.zergatul.cheatutils.render.VertexColorLineRenderer;
+import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -39,8 +37,6 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
-
 public class LightLevel implements Module {
 
     public static final LightLevel instance = new LightLevel();
@@ -64,6 +60,7 @@ public class LightLevel implements Module {
                     new int[] { 1, 0, 0, 1 },
                     new int[] { 0, 0, 1, 1 })));
 
+    private GpuTextureView textureView;
     private boolean active = false;
 
     private LightLevel() {
@@ -119,13 +116,11 @@ public class LightLevel implements Module {
         double yc = config.useFreeCamPosition ? view.y : mc.player.getY();
         double zc = config.useFreeCamPosition ? view.z : mc.player.getZ();
 
-        MainFrameBuffer.bind();
-
-        Texture3dRenderer renderer1 = RenderUtilities.instance.getTexture3dRenderer();
-        renderer1.begin();
+        Texture3dRenderer2 textureRenderer = Texture3dRenderer2.getInstance();
+        textureRenderer.begin();
 
         List<BlockPos> listTracers = new ArrayList<>();
-        for (BlockPos pos: getBlockForRendering()) {
+        for (BlockPos pos : getBlockForRendering()) {
             double dx = xc - pos.getX();
             double dy = yc - pos.getY();
             double dz = zc - pos.getZ();
@@ -144,7 +139,7 @@ public class LightLevel implements Module {
                 float z2 = z1 + 0.9f;
 
                 TextureLocation location = numbers[blockLight];
-                renderer1.quad(
+                textureRenderer.quad(
                         x1, y, z1, location.x[rot.u[0]], location.y[rot.v[0]],
                         x1, y, z2, location.x[rot.u[1]], location.y[rot.v[1]],
                         x2, y, z2, location.x[rot.u[2]], location.y[rot.v[2]],
@@ -152,8 +147,11 @@ public class LightLevel implements Module {
             }
         }
 
-        int textureId = getGlTexture(mc.getTextureManager().getTexture(texture).getTexture()).glId();
-        renderer1.end(event.getMvp(), textureId);
+        if (textureView == null) {
+            textureView = RenderSystem.getDevice().createTextureView(mc.getTextureManager().getTexture(texture).getTexture());
+        }
+
+        textureRenderer.end(event.getMvp(), textureView);
 
         Vec3 tracerCenter = event.getTracerCenter();
         double tracerX = tracerCenter.x;
