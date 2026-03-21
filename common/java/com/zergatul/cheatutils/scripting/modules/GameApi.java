@@ -8,13 +8,11 @@ import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
-import com.zergatul.cheatutils.utils.JavaRandom;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -23,12 +21,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.progress.ChunkProgressListener;
-import net.minecraft.world.RandomSequences;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
@@ -36,22 +29,18 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.phys.AABB;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -561,6 +550,36 @@ public class GameApi {
                     entityId,
                     entity -> new BoundingBox(entity.getBoundingBox()),
                     () -> new BoundingBox(new AABB(0, 0, 0, 0, 0, 0)));
+        }
+
+        @MethodDescription("""
+                Returns all entity ids for specified entity type id.
+                Entities are sorted by the distance from the player eyes.
+                """)
+        public int[] enumerateById(String id) {
+            if (mc.level == null || mc.player == null) {
+                return new int[0];
+            }
+
+            EntityType<?> type = Registries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
+            if (type == null) {
+                return new int[0];
+            }
+
+            List<Entity> entities = new ArrayList<>();
+            for (Entity entity : mc.level.entitiesForRendering()) {
+                if (entity == mc.player) {
+                    continue;
+                }
+                if (entity.getType() == type) {
+                    entities.add(entity);
+                }
+            }
+
+            Vec3 eye = mc.player.getEyePosition();
+            entities.sort(Comparator.comparingDouble(e -> e.distanceToSqr(eye)));
+
+            return entities.stream().mapToInt(Entity::getId).toArray();
         }
 
         private Function<Entity, ItemStackWrapper> getEquippedItem(EquipmentSlot slot) {
