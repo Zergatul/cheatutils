@@ -8,7 +8,6 @@ public class RenderUtilities {
 
     public static final RenderUtilities instance = new RenderUtilities();
 
-    private final LineRenderer lineRenderer = new FastLineRenderer();
     private final GroupLineRenderer groupLineRenderer = new FastGroupLineRenderer();
     private final Texture2dRenderer texture2dRenderer = new Texture2dRenderer();
     private final TextureColor2dRenderer textureColor2dRenderer = new TextureColor2dRenderer();
@@ -18,10 +17,6 @@ public class RenderUtilities {
 
     private RenderUtilities() {
         Events.WindowResize.add(this::onWindowResize);
-    }
-
-    public LineRenderer getLineRenderer() {
-        return lineRenderer;
     }
 
     public GroupLineRenderer getGroupLineRenderer() {

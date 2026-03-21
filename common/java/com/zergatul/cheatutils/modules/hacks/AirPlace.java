@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.VertexColorLineRenderer;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -110,13 +111,18 @@ public class AirPlace implements Module {
         BlockPos blockPos = new BlockPos((int) Math.floor(pos.x), (int) Math.floor(pos.y), (int) Math.floor(pos.z));
 
         double margin = 0.05;
-        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-        renderer.begin(event, true);
+        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
+        renderer.begin();
         renderer.cuboid(
-                blockPos.getX() + margin, blockPos.getY() + margin, blockPos.getZ() + margin,
-                blockPos.getX() + 1 - margin, blockPos.getY() + 1 - margin, blockPos.getZ() + 1 - margin,
+                event.getCameraPos(),
+                blockPos.getX() + margin,
+                blockPos.getY() + margin,
+                blockPos.getZ() + margin,
+                blockPos.getX() + 1 - margin,
+                blockPos.getY() + 1 - margin,
+                blockPos.getZ() + 1 - margin,
                 1f, 1f, 1f, 1f);
-        renderer.end();
+        renderer.end(event.getMvp(), true);
 
         currentPosition = blockPos;
     }

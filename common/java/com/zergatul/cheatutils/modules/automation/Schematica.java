@@ -13,6 +13,7 @@ import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.Color3dRenderer;
 import com.zergatul.cheatutils.render.GroupLineRenderer;
 import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.VertexColorLineRenderer;
 import com.zergatul.cheatutils.schematics.*;
 import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
@@ -581,6 +582,7 @@ public class Schematica {
     private void renderCreateBoundaries(RenderWorldLastEvent event, Vec3 view, SchematicaConfig.Create create) {
         final double gap = 0.0625;
 
+        // TODO: not working because wrong framebuffer?
         Color3dRenderer quadRenderer = RenderUtilities.instance.getColor3dRenderer();
         quadRenderer.begin();
         quadRenderer.cuboid(
@@ -595,13 +597,14 @@ public class Schematica {
         quadRenderer.end(event.getMvp());
         GlStateManager._depthMask(true);
 
-        LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
-        lineRenderer.begin(event, true);
+        VertexColorLineRenderer lineRenderer = VertexColorLineRenderer.getInstance();
+        lineRenderer.begin();
         lineRenderer.cuboid(
+                event.getCameraPos(),
                 create.getX1() - gap, create.getY1() - gap, create.getZ1() - gap,
                 create.getX2() + gap, create.getY2() + gap, create.getZ2() + gap,
                 1f, 1f, 1f, 1f);
-        lineRenderer.end();
+        lineRenderer.end(event.getMvp(), true);
     }
 
     private void onChunkLoaded(LevelChunk chunk) {

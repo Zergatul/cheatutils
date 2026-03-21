@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.VertexColorLineRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.Connection;
@@ -115,11 +116,12 @@ public class LogoutSpots implements Module {
             return;
         }
 
-        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-        renderer.begin(event, true);
+        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
+        renderer.begin();
         for (LogoutSpotEntry entry : entries) {
             if (entry.dimension.equals(mc.level.dimension().identifier())) {
                 renderer.cuboid(
+                        event.getCameraPos(),
                         entry.pos.x - entry.width / 2,
                         entry.pos.y,
                         entry.pos.z - entry.width / 2,
@@ -129,7 +131,7 @@ public class LogoutSpots implements Module {
                         1f, 1f, 1f, 1f);
             }
         }
-        renderer.end();
+        renderer.end(event.getMvp(), true);
     }
 
     private LogoutSpotsConfig getConfig() {
