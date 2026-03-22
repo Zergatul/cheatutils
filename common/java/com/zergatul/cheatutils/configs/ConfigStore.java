@@ -142,6 +142,7 @@ public class ConfigStore {
         config.hitboxSizeConfig.validate();
         config.coreConfig.validate();
         config.blockEntityDistance.validate();
+        config.elytraBounceConfig.validate();
 
         config.blocks.refreshMap();
 

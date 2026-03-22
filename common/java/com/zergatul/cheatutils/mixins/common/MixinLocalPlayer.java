@@ -46,6 +46,11 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         Events.BeforePlayerAiStep.trigger();
     }
 
+    @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/tutorial/Tutorial;onInput(Lnet/minecraft/client/player/ClientInput;)V"))
+    private void onModifyPlayerInput(CallbackInfo info) {
+        Events.ModifyPlayerInput.trigger();
+    }
+
     @Inject(at = @At("TAIL"), method = "aiStep()V")
     private void onAfterAiStep(CallbackInfo info) {
         Events.AfterPlayerAiStep.trigger();

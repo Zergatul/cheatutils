@@ -1,9 +1,6 @@
 package com.zergatul.cheatutils.modules;
 
-import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
-import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
-import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.font.FontBackendHolders;
 import com.zergatul.cheatutils.modules.automation.*;
@@ -37,6 +34,7 @@ public class Modules {
         register(AutoEat.instance);
         register(NoFall.instance);
         register(Scaffold.instance);
+        register(ElytraBounce.instance);
 
         register(LockInputsController.instance);
         register(AutoCraft.instance);

@@ -958,6 +958,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().airPlaceConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("elytra-bounce", ElytraBounceConfig.class) {
+            @Override
+            protected ElytraBounceConfig getConfig() {
+                return ConfigStore.instance.getConfig().elytraBounceConfig;
+            }
+
+            @Override
+            protected void setConfig(ElytraBounceConfig config) {
+                ConfigStore.instance.getConfig().elytraBounceConfig = config;
+            }
+        });
     }
 
     @Override

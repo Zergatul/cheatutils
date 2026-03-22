@@ -73,4 +73,5 @@ public class Config {
     public AutoToolConfig autoTool = new AutoToolConfig();
     public BlockEntityDistanceConfig blockEntityDistance = new BlockEntityDistanceConfig();
     public AirPlaceConfig airPlaceConfig = new AirPlaceConfig();
+    public ElytraBounceConfig elytraBounceConfig = new ElytraBounceConfig();
 }

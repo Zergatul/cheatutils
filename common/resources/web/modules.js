@@ -127,10 +127,17 @@ module({
 });
 module({
     group: 'automation',
-    name: 'Shield breaker',
+    name: 'Shield Breaker',
     component: 'AutoStunner',
     path: 'auto-stunner',
     tags: ['stun', 'shield', 'break', 'auto']
+});
+module({
+    group: 'automation',
+    name: 'Elytra Bounce',
+    component: 'ElytraBounce',
+    path: 'elytra-bounce',
+    tags: ['elytra', 'bounce', 'fly']
 });
 
 // ESP modules ======================

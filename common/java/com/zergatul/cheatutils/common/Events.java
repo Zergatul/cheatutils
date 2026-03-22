@@ -37,6 +37,7 @@ public class Events {
     public static final SimpleEventHandler BeforeEntitiesTick = new SimpleEventHandler();
 
     public static final SimpleEventHandler BeforePlayerAiStep = new SimpleEventHandler();
+    public static final SimpleEventHandler ModifyPlayerInput = new SimpleEventHandler();
     // player position is calculated here
     public static final SimpleEventHandler AfterPlayerAiStep = new SimpleEventHandler();
 
