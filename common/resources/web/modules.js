@@ -139,6 +139,13 @@ module({
     path: 'elytra-bounce',
     tags: ['elytra', 'bounce', 'fly']
 });
+module({
+    group: 'automation',
+    name: 'Parkour Assist',
+    component: 'ParkourAssist',
+    path: 'parkour-assist',
+    tags: ['parkour', 'parkour', 'jump', 'edge', 'auto']
+});
 
 // ESP modules ======================
 

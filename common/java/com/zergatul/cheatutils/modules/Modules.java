@@ -35,6 +35,7 @@ public class Modules {
         register(NoFall.instance);
         register(Scaffold.instance);
         register(ElytraBounce.instance);
+        register(ParkourAssist.instance);
 
         register(LockInputsController.instance);
         register(AutoCraft.instance);

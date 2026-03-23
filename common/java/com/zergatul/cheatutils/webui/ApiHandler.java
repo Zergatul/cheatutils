@@ -970,6 +970,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().elytraBounceConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("parkour-assist", ParkourAssistConfig.class) {
+            @Override
+            protected ParkourAssistConfig getConfig() {
+                return ConfigStore.instance.getConfig().parkourAssistConfig;
+            }
+
+            @Override
+            protected void setConfig(ParkourAssistConfig config) {
+                ConfigStore.instance.getConfig().parkourAssistConfig = config;
+            }
+        });
     }
 
     @Override

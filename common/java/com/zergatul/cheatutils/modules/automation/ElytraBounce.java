@@ -5,15 +5,12 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ElytraBounceConfig;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ElytraBounce implements Module {
 
     public static final ElytraBounce instance = new ElytraBounce();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Logger logger = LogManager.getLogger(ElytraBounce.class);
     private boolean enabled;
     private boolean wasFallFlying;
     private State state;
@@ -22,10 +19,10 @@ public class ElytraBounce implements Module {
     private ElytraBounce() {
         state = State.NONE;
 
-        Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
         Events.BeforePlayerAiStep.add(this::onPlayerAiStart);
         Events.ModifyPlayerInput.add(this::onModifyPlayerInput);
         Events.AfterPlayerAiStep.add(this::onPlayerAiEnd);
+        Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
     }
 
     public boolean isEnabled() {

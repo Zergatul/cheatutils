@@ -74,4 +74,5 @@ public class Config {
     public BlockEntityDistanceConfig blockEntityDistance = new BlockEntityDistanceConfig();
     public AirPlaceConfig airPlaceConfig = new AirPlaceConfig();
     public ElytraBounceConfig elytraBounceConfig = new ElytraBounceConfig();
+    public ParkourAssistConfig parkourAssistConfig = new ParkourAssistConfig();
 }
