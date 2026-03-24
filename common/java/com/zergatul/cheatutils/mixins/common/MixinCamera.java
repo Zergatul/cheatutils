@@ -1,8 +1,5 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.ModifyFieldOfViewEvent;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,16 +33,6 @@ public abstract class MixinCamera {
             setPosition(freeCam.getX(), freeCam.getY(), freeCam.getZ());
             info.cancel();
         }
-    }
-
-    @ModifyExpressionValue(
-            method = "calculateFov",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;modifyFovBasedOnDeathOrFluid(FF)F"))
-    private float onModifyCalculatedFieldOfView(float original) {
-        ModifyFieldOfViewEvent event = new ModifyFieldOfViewEvent();
-        event.fov = original;
-        Events.ModifyFieldOfView.trigger(event);
-        return event.fov;
     }
 
     @Inject(at = @At("HEAD"), method = "modifyFovBasedOnDeathOrFluid", cancellable = true)

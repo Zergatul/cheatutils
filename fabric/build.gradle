@@ -47,7 +47,9 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release.set(25)
+    it.options.release = 25
+    it.options.encoding = 'UTF-8'
+    it.options.compilerArgs.add("-parameters")
 }
 
 java {
@@ -58,7 +60,7 @@ java {
     }
 }
 
-jar {
+tasks.named('jar', Jar) {
     archiveFileName = "${base.archivesName.get()}-${project.mod_version}-fabric-${project.minecraft_version}.jar"
 
     from("LICENSE") {
@@ -67,8 +69,4 @@ jar {
 
     exclude("net/caffeinemc/**")
     exclude("net/irisshaders/**")
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.compilerArgs.add("-parameters")
 }

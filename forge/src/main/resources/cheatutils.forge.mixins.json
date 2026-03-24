@@ -14,7 +14,6 @@
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
     "forge.MixinLevelRenderer",
-    "forge.MixinLightTexture",
     "forge.MixinModVersions",
     "forge.MixinMultiPlayerGameMode"
   ]

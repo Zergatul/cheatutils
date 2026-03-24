@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.common.events.ResizeEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.modules.visuals.FullBright;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -63,5 +64,15 @@ public abstract class MixinGameRenderer {
         if (ConfigStore.instance.getConfig().bobHurtConfig.enabled) {
             info.cancel();
         }
+    }
+
+    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LightmapRenderStateExtractor;extract(Lnet/minecraft/client/renderer/state/LightmapRenderState;F)V"))
+    private void onBeforeLevelExtract(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
+        FullBright.instance.shouldReturnNightVisionEffect = true;
+    }
+
+    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;extractLevel(Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/client/Camera;F)V", shift = At.Shift.AFTER))
+    private void onAfterLevelExtract(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo info) {
+        FullBright.instance.shouldReturnNightVisionEffect = false;
     }
 }
