@@ -5,27 +5,15 @@ plugins {
 
 ext.mod_version = cheatutils.getModVersion()
 
-version = project.mod_version
 group = project.maven_group
+version = project.mod_version
 
 base {
     archivesName = project.archives_base_name
 }
 
-repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
-}
-
 loom {
     accessWidenerPath = file("src/main/resources/cheatutils.classtweaker")
-
-    /*mixin {
-        useLegacyMixinAp = true
-    }*/
 }
 
 dependencies {
@@ -48,16 +36,6 @@ sourceSets {
             srcDir '../common/forge-and-fabric/resources'
         }
     }
-    codegen {
-        java {
-            srcDir '../common/codegen'
-        }
-    }
-}
-
-dependencies {
-    codegenImplementation "org.ow2.asm:asm:9.6"
-    codegenImplementation "org.ow2.asm:asm-tree:9.6"
 }
 
 processResources {
@@ -81,8 +59,10 @@ java {
 }
 
 jar {
+    archiveFileName = "${base.archivesName.get()}-${project.mod_version}-fabric-${project.minecraft_version}.jar"
+
     from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}"}
+        rename { "${it}_${project.archivesName.get()}"}
     }
 
     exclude("net/caffeinemc/**")
