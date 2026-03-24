@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class AutoToolConfig extends ModuleConfig implements ValidatableConfig {
+public class AutoToolConfig extends ModuleConfig implements Sanitizable {
 
     public static final String MODE_HOTBAR = "HOTBAR";
     public static final String MODE_INVENTORY = "INVENTORY";
@@ -17,7 +17,7 @@ public class AutoToolConfig extends ModuleConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         if (!mode.equals(MODE_HOTBAR) && !mode.equals(MODE_INVENTORY)) {
             mode = MODE_HOTBAR;
         }

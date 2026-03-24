@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.font.FontRenderDetails;
 import com.zergatul.cheatutils.font.FontRendererType;
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class FontConfig implements ValidatableConfig {
+public class FontConfig implements Sanitizable {
 
     public FontRendererType renderer;
     public String face;
@@ -65,7 +65,7 @@ public class FontConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         size = MathUtils.clamp(size, 8, 100);
         letterSpacing = MathUtils.clamp(letterSpacing, -10, 10);
         lineSpacing = MathUtils.clamp(lineSpacing, -50, 50);

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ElytraBounceConfig implements ValidatableConfig {
+public class ElytraBounceConfig implements Sanitizable {
 
     public int firstJumpTicks;
     public int betweenJumpsTicks;
@@ -15,7 +15,7 @@ public class ElytraBounceConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         firstJumpTicks = MathUtils.clamp(firstJumpTicks, 1, 20);
         betweenJumpsTicks = MathUtils.clamp(betweenJumpsTicks, 1, 20);
         secondJumpTicks = MathUtils.clamp(secondJumpTicks, 1, 20);

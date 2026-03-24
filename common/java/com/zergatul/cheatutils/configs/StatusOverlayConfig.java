@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-public class StatusOverlayConfig extends ModuleConfig implements ValidatableConfig {
+public class StatusOverlayConfig extends ModuleConfig implements Sanitizable {
 
     public String code;
     public FontConfig font;
@@ -10,10 +10,10 @@ public class StatusOverlayConfig extends ModuleConfig implements ValidatableConf
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         if (font == null) {
             font = new FontConfig();
         }
-        font.validate();
+        font.sanitize();
     }
 }

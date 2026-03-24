@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ParkourAssistConfig implements ValidatableConfig {
+public class ParkourAssistConfig implements Sanitizable {
 
     public double threshold;
 
@@ -11,7 +11,7 @@ public class ParkourAssistConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         threshold = MathUtils.clamp(threshold, 0, 100);
     }
 }

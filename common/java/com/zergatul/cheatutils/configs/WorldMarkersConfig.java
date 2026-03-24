@@ -6,7 +6,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorldMarkersConfig extends ModuleConfig implements ValidatableConfig {
+public class WorldMarkersConfig extends ModuleConfig implements Sanitizable {
 
     public List<Entry> entries = new ArrayList<>();
     public FontConfig font;
@@ -18,11 +18,11 @@ public class WorldMarkersConfig extends ModuleConfig implements ValidatableConfi
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         if (font == null) {
             font = new FontConfig();
         }
-        font.validate();
+        font.sanitize();
 
         borderWidth = MathUtils.clamp(borderWidth, 1, 10);
         for (Entry entry : entries) {

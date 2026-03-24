@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class EntityTitleConfig implements ValidatableConfig {
+public class EntityTitleConfig implements Sanitizable {
 
     public String hpPrefix;
     public FontConfig titleFont;
@@ -17,16 +17,16 @@ public class EntityTitleConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         if (titleFont == null) {
             titleFont = new FontConfig();
         }
-        titleFont.validate();
+        titleFont.sanitize();
 
         if (enchantmentFont == null) {
             enchantmentFont = new FontConfig();
         }
-        enchantmentFont.validate();
+        enchantmentFont.sanitize();
 
         itemScale = MathUtils.clamp(itemScale, 0, 50);
     }

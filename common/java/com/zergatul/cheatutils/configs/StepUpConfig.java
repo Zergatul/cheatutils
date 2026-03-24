@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class StepUpConfig extends ModuleConfig implements ValidatableConfig {
+public class StepUpConfig extends ModuleConfig implements Sanitizable {
 
     public double height;
 
@@ -11,7 +11,7 @@ public class StepUpConfig extends ModuleConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         height = MathUtils.clamp(height, 0, 100);
     }
 }

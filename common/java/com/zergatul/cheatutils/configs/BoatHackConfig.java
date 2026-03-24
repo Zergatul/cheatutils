@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class BoatHackConfig implements ValidatableConfig, ModuleStateProvider {
+public class BoatHackConfig implements Sanitizable, ModuleStateProvider {
 
     public boolean fly;
     public double horizontalFlySpeed;
@@ -14,7 +14,7 @@ public class BoatHackConfig implements ValidatableConfig, ModuleStateProvider {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         horizontalFlySpeed = MathUtils.clamp(horizontalFlySpeed, 0, 100);
         verticalFlySpeed = MathUtils.clamp(verticalFlySpeed, 0, 100);
     }

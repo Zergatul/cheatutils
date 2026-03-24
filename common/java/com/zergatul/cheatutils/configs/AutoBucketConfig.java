@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class AutoBucketConfig extends ModuleConfig implements ValidatableConfig {
+public class AutoBucketConfig extends ModuleConfig implements Sanitizable {
     public double speedThreshold;
     public boolean useWaterBucket;
     public boolean usePowderSnowBucket;
@@ -22,7 +22,7 @@ public class AutoBucketConfig extends ModuleConfig implements ValidatableConfig 
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         hotbarSlot = MathUtils.clamp(hotbarSlot, 0, 8);
         speedThreshold = MathUtils.clamp(speedThreshold, 0.1, 100);
         reachDistance = MathUtils.clamp(reachDistance, 1, 20);

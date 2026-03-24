@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class AirPlaceConfig implements ValidatableConfig {
+public class AirPlaceConfig implements Sanitizable {
 
     public double minRange;
     public double maxRange;
@@ -13,7 +13,7 @@ public class AirPlaceConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         minRange = MathUtils.clamp(minRange, 0.5, 5);
         maxRange = MathUtils.clamp(maxRange, minRange, 10);
     }

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class AutoFishConfig extends ModuleConfig implements ValidatableConfig {
+public class AutoFishConfig extends ModuleConfig implements Sanitizable {
 
     public boolean autoRestartOnIdle;
     public int idleTimeout;
@@ -12,7 +12,7 @@ public class AutoFishConfig extends ModuleConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         idleTimeout = MathUtils.clamp(idleTimeout, 5, 3600);
     }
 }
