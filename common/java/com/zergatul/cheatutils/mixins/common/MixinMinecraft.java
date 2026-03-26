@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.AirPlace;
@@ -10,7 +9,6 @@ import com.zergatul.cheatutils.modules.hacks.InvMove;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -38,11 +36,6 @@ public abstract class MixinMinecraft {
 
     @Shadow
     public abstract boolean isGameLoadFinished();
-
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketProcessor;<init>(Ljava/lang/Thread;)V"))
-    private void onLoading(GameConfig gameConfig, CallbackInfo info) {
-        Modules.lateRegister();
-    }
 
     //Start Attack method, event triggers ==================================
     @Inject(at = @At("HEAD"), method = "startAttack")

@@ -1,19 +1,19 @@
 {
-  "required": false,
+  "required": true,
   "minVersion": "0.8.2",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_21",
   "injectors": {
-    "defaultRequire": 0
+    "defaultRequire": 1
   },
   "mixinPriority": 500,
   "client": [
     "forge.schematica.MixinSectionCompiler",
-
-    "forge.MixinGuiGraphics",
+    "forge.MixinGuiGraphicsExtractor",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
     "forge.MixinLevelRenderer",
+    "forge.MixinMinecraft",
     "forge.MixinModVersions",
     "forge.MixinMultiPlayerGameMode"
   ]

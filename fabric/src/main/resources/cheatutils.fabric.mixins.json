@@ -13,6 +13,7 @@
     "fabric.MixinGuiGraphics",
     "fabric.MixinKeyboardHandler",
     "fabric.MixinLevelRenderer",
+    "fabric.MixinMinecraft",
     "fabric.MixinMultiPlayerGameMode",
     "fabric.MixinScreen"
   ]

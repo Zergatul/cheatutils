@@ -28,7 +28,6 @@
   "mixins": [
     "cheatutils.common.mixins.json",
     "cheatutils.iris.mixins.json",
-    "cheatutils.fnf.mixins.json",
     "cheatutils.fabric.mixins.json"
   ],
 

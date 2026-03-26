@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - '26.[1-9]-dev'
+      - '26.[1-9]'
 
 jobs:
   build:
@@ -21,12 +21,12 @@ jobs:
           distribution: temurin
           java-version: 25
 
-      # - name: Build Forge
-      #   run: |
-      #     pushd ./forge
-      #     chmod +x ./gradlew
-      #     ./gradlew build
-      #     popd
+      - name: Build Forge
+        run: |
+          pushd ./forge
+          chmod +x ./gradlew
+          ./gradlew build
+          popd
 
       - name: Build Fabric
         run: |
@@ -42,13 +42,13 @@ jobs:
           ./gradlew build
           popd
 
-      # - name: Upload Forge artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: forge
-      #     path: ./forge/build/libs/*.jar
-      #     compression-level: 0
-      #     if-no-files-found: error
+      - name: Upload Forge artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge
+          path: ./forge/build/libs/*.jar
+          compression-level: 0
+          if-no-files-found: error
 
       - name: Upload Fabric artifacts
         uses: actions/upload-artifact@v4

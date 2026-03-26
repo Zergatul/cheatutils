@@ -18,10 +18,10 @@ public class ModEnvironment {
     }
 
     public static String getModVersion() {
-        return ModList.get().getModFileById(ModMain.MODID).getMods().getFirst().getVersion().toString();
+        return ModList.getModFileById(ModMain.MODID).getMods().getFirst().getVersion().toString();
     }
 
     public static int getModCount() {
-        return ModList.get().size();
+        return ModList.getMods().size();
     }
 }

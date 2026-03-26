@@ -1,82 +1,57 @@
 plugins {
+    id 'java'
     id 'eclipse'
     id 'idea'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.46,6.2)'
+    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
     id 'cheatutils'
 }
 
 def mod_version = cheatutils.getModVersion()
 
-version = mod_version
 group = mod_group_id
+version = mod_version
 
-// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
-    sourceCompatibility = "21"
-    targetCompatibility = "21"
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
-    mappings channel: mapping_channel, version: mapping_version
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-    copyIdeResources = true
-    reobf = false
+    accessTransformer = true
     runs {
         client {
-            workingDirectory project.file('run')
-            arg "-mixin.config=cheatutils.common.mixins.json"
-            arg "-mixin.config=cheatutils.iris.mixins.json"
-            arg "-mixin.config=cheatutils.fnf.mixins.json"
-            arg "-mixin.config=cheatutils.forge.mixins.json"
-            property 'forge.logging.console.level', 'debug'
+            workingDir = layout.projectDirectory.dir('run')
+            args "-mixin.config=cheatutils.common.mixins.json"
+            args "-mixin.config=cheatutils.iris.mixins.json"
+            args "-mixin.config=cheatutils.forge.mixins.json"
+            systemProperty 'forge.logging.console.level', 'debug'
         }
     }
+}
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
 }
 
 sourceSets {
     main {
         java {
             srcDir '../common/java'
-            srcDir '../common/forge-and-fabric/java'
             srcDir '../java-scripting-language/src/main/java'
             srcDir '../mixin-plugin/common/java'
         }
         resources {
             srcDir '../common/resources'
-            srcDir '../common/forge-and-fabric/resources'
-        }
-    }
-}
-
-repositories {
-    mavenCentral()
-    maven {
-        name = 'Forge'
-        url = 'https://maven.minecraftforge.net'
-    }
-    maven {
-        name = 'Minecraft libraries'
-        url = 'https://libraries.minecraft.net'
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = 'Sponge'
-                url = 'https://repo.spongepowered.org/repository/maven-public'
-            }
-        }
-        filter {
-            includeGroupAndSubgroups('org.spongepowered')
         }
     }
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.12'
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    //annotationProcessor 'org.spongepowered:mixin:0.8.7:processor'
 }
 
 tasks.named('processResources', ProcessResources) {
@@ -91,6 +66,10 @@ tasks.named('processResources', ProcessResources) {
 
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
+    }
+
+    filesMatching(['cheatutils.common.mixins.json', 'cheatutils.iris.mixins.json']) {
+        filter { String line -> line.replace("JAVA_25", "JAVA_21") }
     }
 }
 
@@ -110,29 +89,15 @@ tasks.named('jar', Jar) {
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
                 "Implementation-Vendor"   : mod_authors,
-                "MixinConfigs"            : 'cheatutils.common.mixins.json,cheatutils.iris.mixins.json,cheatutils.fnf.mixins.json,cheatutils.forge.mixins.json'
+                "MixinConfigs"            : 'cheatutils.common.mixins.json,cheatutils.iris.mixins.json,cheatutils.forge.mixins.json'
         ])
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-}
-
-tasks.withType(JavaCompile).configureEach {
+    it.options.release = 25
+    it.options.encoding = 'UTF-8'
     it.options.compilerArgs.add("-parameters")
 }
 
-// IntelliJ no longer downloads javadocs and sources by default.
-// This tells Gradle to force IDEA to do it.
 idea.module { downloadJavadoc = downloadSources = true }
-
-// Merge the resources and classes into the same directory. 
-// This is done because java expects modules to be in a single directory.
-// And if we have it in multiple we have to do performance intensive hacks like having the UnionFileSystem
-// This will eventually be migrated to ForgeGradle so modders don't need to manually do it. But that is later.
-sourceSets.each {
-    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
-    it.output.resourcesDir = dir
-    it.java.destinationDirectory = dir
-}
