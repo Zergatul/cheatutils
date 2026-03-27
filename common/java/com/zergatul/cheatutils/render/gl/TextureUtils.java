@@ -29,33 +29,54 @@ public class TextureUtils {
     public static byte[] toPng(int id) throws IOException {
         GlStateManager._bindTexture(id);
 
-        int width = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_WIDTH);
-        int height = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_HEIGHT);
-        int format = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_INTERNAL_FORMAT);
+        pushState();
+        try {
+            int width = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_WIDTH);
+            int height = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_HEIGHT);
+            int format = GL30.glGetTexLevelParameteri(GL30.GL_TEXTURE_2D, 0, GL30.GL_TEXTURE_INTERNAL_FORMAT);
 
-        byte[] result;
-        if (format == GL30.GL_RGBA || format == GL30.GL_RGBA8) {
-            ByteBuffer buffer = MemoryUtil.memAlloc(width * height * 4);
-            try {
-                GL30.glGetTexImage(GL30.GL_TEXTURE_2D, 0, GL30.GL_BGRA, GL30.GL_UNSIGNED_BYTE, buffer);
-                IntBuffer intBuf = buffer.asIntBuffer();
-                BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++) {
-                        image.setRGB(x, y, intBuf.get(y * width + x));
+            byte[] result;
+            if (format == GL30.GL_RGBA || format == GL30.GL_RGBA8) {
+                ByteBuffer buffer = MemoryUtil.memAlloc(width * height * 4);
+                try {
+                    GL30.glGetTexImage(GL30.GL_TEXTURE_2D, 0, GL30.GL_BGRA, GL30.GL_UNSIGNED_BYTE, buffer);
+                    IntBuffer intBuf = buffer.asIntBuffer();
+                    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            image.setRGB(x, y, intBuf.get(y * width + x));
+                        }
                     }
+
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    ImageIO.write(image, "png", stream);
+                    result = stream.toByteArray();
+                } finally {
+                    MemoryUtil.memFree(buffer);
                 }
-
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                ImageIO.write(image, "png", stream);
-                result = stream.toByteArray();
-            } finally {
-                MemoryUtil.memFree(buffer);
+            } else {
+                throw new IOException("Pixel format is not supported.");
             }
-        } else {
-            throw new IOException("Pixel format is not supported.");
-        }
 
-        return result;
+            return result;
+        } finally {
+            popState();
+        }
+    }
+
+    private static int prevPackBuffer;
+    private static int prevPackAlignment;
+
+    private static void pushState() {
+        prevPackBuffer = GL30.glGetInteger(GL30.GL_PIXEL_PACK_BUFFER_BINDING);
+        prevPackAlignment = GL30.glGetInteger(GL30.GL_PACK_ALIGNMENT);
+
+        GL30.glBindBuffer(GL30.GL_PIXEL_PACK_BUFFER, 0);
+        GL30.glPixelStorei(GL30.GL_PACK_ALIGNMENT, 1);
+    }
+
+    private static void popState() {
+        GL30.glPixelStorei(GL30.GL_PACK_ALIGNMENT, prevPackAlignment);
+        GL30.glBindBuffer(GL30.GL_PIXEL_PACK_BUFFER, prevPackBuffer);
     }
 }
