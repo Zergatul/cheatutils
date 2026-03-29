@@ -47,9 +47,9 @@ public abstract class MixinSectionCompiler {
             VertexSorting vertexSorting,
             SectionBufferBuilderPack builders,
             CallbackInfoReturnable<SectionCompiler.Results> info,
-            @Local(name = "map") Map<ChunkSectionLayer, BufferBuilder> startedLayers,
-            @Local(name = "modelblockrenderer") ModelBlockRenderer blockRenderer,
-            @Local(name = "fluidrenderer") FluidRenderer fluidRenderer
+            @Local(name = "startedLayers") Map<ChunkSectionLayer, BufferBuilder> startedLayers,
+            @Local(name = "blockRenderer") ModelBlockRenderer blockRenderer,
+            @Local(name = "fluidRenderer") FluidRenderer fluidRenderer
     ) {
         RenderSectionRegionExtension extension = (RenderSectionRegionExtension) region;
         if (!extension.hasSchematicaBlocks_CU()) {
