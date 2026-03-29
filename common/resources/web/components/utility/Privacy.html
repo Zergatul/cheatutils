@@ -1,0 +1,82 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Different options related to servers trying to get data about installed mods, fingerprinting your Minecraft installation etc.
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.hideFromModVersions" @change="update()">Hide mod from ModVersions packet</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                <b>Forge only.</b><br>
+                Forge mod loader has few additional packets client and server can exchange during handshake process.<br>
+                Server and client may inform each other about list of installed mods on both sides.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Translation/Keybind Exploit</legend>
+            <div>
+                <div>
+                    <switch-checkbox v-model="config.disconnectOnTranslationExploit" @change="update()">
+                        Disconnect on Attempt
+                    </switch-checkbox>
+                </div>
+                <div class="section-description">
+                    You will be immediately disconnected when mod detects server is trying to use translation exploit.<br>
+                    Translation exploit uses very quick sign open packets sent by server during login process,
+                    and requesting your client to "translate" key that may be present only if specific mod is loaded.
+                    Also works with anvils.<br>
+                    https://wurst.wiki/sign_translation_vulnerability
+                </div>
+                <hr>
+                <div>
+                    <switch-checkbox v-model="config.logTranslationExploitDetails" @change="update()">
+                        Log Attempts
+                    </switch-checkbox>
+                </div>
+                <div class="section-description">
+                    Save all exploit attempts to log. Open <b>Scripting</b> ⇒ <b>Debug</b> module to see logs.
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Resource Packs</legend>
+            <div>
+                <div>
+                    <switch-checkbox v-model="config.disconnectOnMaliciousResourcePackBehavior" @change="update()">
+                        Disconnect on malicious behavior
+                    </switch-checkbox>
+                </div>
+                <div class="section-description">
+                    You will be immediately disconnected if server sends invalid URL, or if host from that URL can be resolved to local IP (loopback, LAN or link-local).
+                </div>
+                <hr>
+                <div>
+                    <switch-checkbox v-model="config.alwaysPromptOnResourcePack" @change="update()">
+                        Always show confirmation on resource pack request from the server
+                    </switch-checkbox>
+                </div>
+                <div class="section-description">
+                    By default if you accept resource pack once, server may send any amount of additional resource packs and they all will get downloaded automatically.
+                </div>
+                <hr>
+                <div>
+                    <switch-checkbox v-model="config.displayResourcePackUrls" @change="update()">Display resource pack URLs</switch-checkbox>
+                </div>
+                <div class="section-description">
+                    Resource pack URLs will be displayed on the confirmation screen. You can see by yourself if server is doing something shady.
+                </div>
+                <hr>
+                <div>
+                    <switch-checkbox v-model="config.logResourcePackDetails" @change="update()">Log resource packs details</switch-checkbox>
+                </div>
+                <div class="section-description">
+                    Save all resource pack requests to log. Open <b>Scripting</b> ⇒ <b>Debug</b> module to see logs.
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>

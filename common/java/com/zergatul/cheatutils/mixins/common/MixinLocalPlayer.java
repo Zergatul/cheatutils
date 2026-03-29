@@ -2,28 +2,37 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.MovementHackConfig;
-import com.zergatul.cheatutils.configs.ReachConfig;
-import com.zergatul.cheatutils.configs.StepUpConfig;
+import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
+import com.zergatul.cheatutils.modules.scripting.Debugging;
+import com.zergatul.cheatutils.modules.utilities.Privacy;
 import com.zergatul.mixin.ExecuteAfterIfElseCondition;
 import com.zergatul.mixin.ModifyMethodReturnValue;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.tags.TagKey;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.util.Optional;
+
 @Mixin(LocalPlayer.class)
 public abstract class MixinLocalPlayer extends AbstractClientPlayer {
+
+    @Shadow
+    @Final
+    public ClientPacketListener connection;
 
     public MixinLocalPlayer(ClientLevel level, GameProfile profile) {
         super(level, profile);
@@ -116,6 +125,31 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         if (type == MoverType.SELF) {
             args.set(1, ElytraFly.instance.onModifyDeltaMove(delta));
         }
+    }
+
+    @Inject(at = @At("HEAD"), method = "openTextEdit", cancellable = true)
+    private void onOpenTextEdit(SignBlockEntity sign, boolean isFrontText, CallbackInfo info) {
+        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
+
+        if (config.logTranslationExploitDetails) {
+            Privacy.instance.forEachExploitable(
+                    sign,
+                    translatable -> Debugging.instance.addMessage("Translatable exploit attempt. Key=" + translatable.getKey()),
+                    keybind -> Debugging.instance.addMessage("Keybind exploit attempt. Key=" + keybind.getName()));
+        }
+
+        if (!config.disconnectOnTranslationExploit) {
+            return;
+        }
+
+        Privacy privacy = Privacy.instance;
+        Optional.<Component>empty()
+                .or(() -> privacy.checkExploitable(sign.getBackText()))
+                .or(() -> privacy.checkExploitable(sign.getFrontText()))
+                .ifPresent(reason -> {
+                    this.connection.getConnection().disconnect(reason);
+                    info.cancel();
+                });
     }
 
     @Override

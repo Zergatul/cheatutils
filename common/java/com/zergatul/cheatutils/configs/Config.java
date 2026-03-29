@@ -77,6 +77,7 @@ public class Config implements Sanitizable {
     public ElytraBounceConfig elytraBounceConfig = new ElytraBounceConfig();
     public ParkourAssistConfig parkourAssistConfig = new ParkourAssistConfig();
     public HandsViewConfig handsViewConfig = new HandsViewConfig();
+    public PrivacyConfig privacyConfig = new PrivacyConfig();
 
     @Override
     public void sanitize() {
