@@ -1,0 +1,31 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Different options related to servers trying to get data about installed mods, fingerprinting your Minecraft installation etc.
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.hideFromModVersions" @change="update()">Hide mod from ModVersions packet</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                <b>Forge only.</b><br>
+                Forge mod loader has few additional packets client and server can exchange during handshake process.<br>
+                Server and client may inform each other about list of installed mods on both sides.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.disconnectOnTranslationExploit" @change="update()">Disconnect on translation exploit</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                You will be immediately disconnected when mod detects server is trying to use translation exploit.<br>
+                Translation exploit uses very quick sign open packets sent by server during login process,
+                and requesting your client to "translate" key that may be present only if specific mod is loaded.
+                Also works with anvils.<br>
+                https://wurst.wiki/sign_translation_vulnerability
+            </div>
+        </fieldset>
+    </div>
+</div>

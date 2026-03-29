@@ -82,6 +82,7 @@
     "common.MixinProjectileUtil",
     "common.MixinScreen",
     "common.MixinServerboundMovePlayerPacket",
+    "common.MixinServerGamePacketListenerImpl",
     "common.MixinSoundBufferLibrary",
     "common.MixinSlimeBlock",
     "common.MixinSoundManager",

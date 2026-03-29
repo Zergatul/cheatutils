@@ -76,6 +76,7 @@ public class Config implements Sanitizable {
     public AirPlaceConfig airPlaceConfig = new AirPlaceConfig();
     public ElytraBounceConfig elytraBounceConfig = new ElytraBounceConfig();
     public ParkourAssistConfig parkourAssistConfig = new ParkourAssistConfig();
+    public PrivacyConfig privacyConfig = new PrivacyConfig();
 
     @Override
     public void sanitize() {

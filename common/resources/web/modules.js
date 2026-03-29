@@ -623,6 +623,13 @@ module({
     path: 'profiles',
     tags: ['profiles']
 });
+modules({
+    group: 'utility',
+    name: 'Privacy',
+    component: 'Privacy',
+    path: 'privacy',
+    tags: ['privacy', 'exploit', 'sign', 'fingerprint']
+});
 module({
     group: 'utility',
     name: 'User Name',
