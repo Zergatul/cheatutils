@@ -1,11 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.utils.JavaRandom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
@@ -27,17 +24,15 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -63,12 +58,13 @@ public class BlockModelApi extends ApiBase {
             throw new ApiException("Cannot find block by id.", HttpResponseCodes.NOT_FOUND);
         }
 
-        List<Quad> quads = getFromBlockModel(block);
-        if (quads.isEmpty()) {
-            quads = getFromItemRenderer(block);
-        }
+        // TODO: not working!!!
+//        List<Quad> quads = getFromBlockModel(block);
+//        if (quads.isEmpty()) {
+//            quads = getFromItemRenderer(block);
+//        }
 
-        return gson.toJson(quads);
+        return gson.toJson(List.of());
     }
 
     private List<Quad> getFromBlockModel(Block block) {
@@ -131,7 +127,7 @@ public class BlockModelApi extends ApiBase {
             }
         }
 
-        for (SubmitNodeStorage.ModelPartSubmit submission : collector.modelPartSubmits) {
+        /*for (SubmitNodeStorage.ModelPartSubmit submission : collector.modelPartSubmits) {
             if (submission.sprite() == null) {
                 continue;
             }
@@ -146,7 +142,7 @@ public class BlockModelApi extends ApiBase {
                             new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[3], submission.tintedColor())));
                 }
             });
-        }
+        }*/
 
         for (SubmitNodeStorage.ItemSubmit submission : collector.itemSubmits) {
             for (BakedQuad quad : submission.quads()) {
@@ -162,7 +158,6 @@ public class BlockModelApi extends ApiBase {
 
         public final List<SubmitNodeStorage.BlockModelSubmit> blockModelSubmits = new ArrayList<>();
         public final List<SubmitNodeStorage.ModelSubmit<?>> modelSubmits = new ArrayList<>();
-        public final List<SubmitNodeStorage.ModelPartSubmit> modelPartSubmits = new ArrayList<>();
         public final List<SubmitNodeStorage.ItemSubmit> itemSubmits = new ArrayList<>();
 
         @Override
@@ -216,33 +211,6 @@ public class BlockModelApi extends ApiBase {
         }
 
         @Override
-        public void submitModelPart(
-                ModelPart modelPart,
-                PoseStack poseStack,
-                RenderType renderType,
-                int lightCoords,
-                int overlayCoords,
-                @Nullable TextureAtlasSprite sprite,
-                boolean sheeted,
-                boolean hasFoil,
-                int tintedColor,
-                @Nullable final ModelFeatureRenderer.CrumblingOverlay crumblingOverlay,
-                final int outlineColor
-        ) {
-            this.modelPartSubmits.add(new SubmitNodeStorage.ModelPartSubmit(
-                    poseStack.last().copy(),
-                    modelPart,
-                    lightCoords,
-                    overlayCoords,
-                    sprite,
-                    sheeted,
-                    hasFoil,
-                    tintedColor,
-                    crumblingOverlay,
-                    outlineColor));
-        }
-
-        @Override
         public void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState) {
             throw new AssertionError();
         }
@@ -261,6 +229,11 @@ public class BlockModelApi extends ApiBase {
 
         @Override
         public void submitBreakingBlockModel(PoseStack poseStack, BlockStateModel model, long seed, int progress) {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void submitShapeOutline(PoseStack poseStack, VoxelShape shape, RenderType renderType, int color, float width, boolean afterTerrain) {
             throw new AssertionError();
         }
 

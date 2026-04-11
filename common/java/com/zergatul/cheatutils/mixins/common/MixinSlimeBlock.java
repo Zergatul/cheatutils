@@ -30,14 +30,15 @@ public abstract class MixinSlimeBlock extends HalfTransparentBlock {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "updateEntityMovementAfterFallOn", cancellable = true)
-    private void onUpdateEntityAfterFallOn(BlockGetter p_56406_, Entity entity, CallbackInfo info) {
-        if (shouldFallback_CU(entity)) {
-            entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
-            entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
-            info.cancel();
-        }
-    }
+    // TODO: not working
+//    @Inject(at = @At("HEAD"), method = "updateEntityMovementAfterFallOn", cancellable = true)
+//    private void onUpdateEntityAfterFallOn(BlockGetter p_56406_, Entity entity, CallbackInfo info) {
+//        if (shouldFallback_CU(entity)) {
+//            entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
+//            entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
+//            info.cancel();
+//        }
+//    }
 
     @Inject(at = @At("HEAD"), method = "stepOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/Entity;)V", cancellable = true)
     private void onStepOn(Level level, BlockPos pos, BlockState state, Entity entity, CallbackInfo info) {

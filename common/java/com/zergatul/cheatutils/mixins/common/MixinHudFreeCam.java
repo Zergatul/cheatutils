@@ -2,12 +2,12 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.mixin.ModifyMethodReturnValue;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Hud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(value = Gui.class, priority = 2000)
-public abstract class MixinGuiFreeCam {
+@Mixin(value = Hud.class, priority = 2000)
+public abstract class MixinHudFreeCam {
 
     @ModifyMethodReturnValue(
             method = "extractCrosshair",

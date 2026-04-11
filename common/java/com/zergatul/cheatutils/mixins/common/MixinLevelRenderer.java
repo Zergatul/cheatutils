@@ -3,11 +3,14 @@ package com.zergatul.cheatutils.mixins.common;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.render.RenderHelper;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
@@ -80,9 +83,13 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final ChunkSectionsToRender chunkSectionsToRender,
             final CallbackInfo info
     ) {
-        int program = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
-        GL20.glUseProgram(program);
+        if (RenderHelper.isOpenGL()) {
+            int program = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+            Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
+            GL20.glUseProgram(program);
+        } else {
+            Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
+        }
 
         this.modifiedProjectionMatrix_CU = null;
     }

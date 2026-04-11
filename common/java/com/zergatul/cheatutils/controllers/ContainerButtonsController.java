@@ -52,19 +52,19 @@ public class ContainerButtonsController {
     }
 
     public void dropAll(boolean autoClose) {
-        if (!isValidScreen(mc.screen)) {
+        if (!isValidScreen(mc.gui.screen())) {
             return;
         }
 
-        if (mc.screen instanceof AbstractContainerScreen<?> screen) {
+        if (mc.gui.screen() instanceof AbstractContainerScreen<?> screen) {
             ContainerButtonsConfig config = getConfig();
             NonNullList<Slot> slots = screen.getMenu().slots;
-            if (slots.size() > 0) {
+            if (!slots.isEmpty()) {
                 if (mc.gameMode == null || mc.player == null) {
                     return;
                 }
 
-                Container container = slots.get(0).container;
+                Container container = slots.getFirst().container;
                 for (int i = 0; i < slots.size(); i++) {
                     Slot slot = slots.get(i);
                     if (slot.container != container) {
@@ -87,19 +87,19 @@ public class ContainerButtonsController {
     }
 
     public void takeAll(boolean autoClose) {
-        if (!isValidScreen(mc.screen)) {
+        if (!isValidScreen(mc.gui.screen())) {
             return;
         }
 
-        if (mc.screen instanceof AbstractContainerScreen<?> screen) {
+        if (mc.gui.screen() instanceof AbstractContainerScreen<?> screen) {
             ContainerButtonsConfig config = getConfig();
             NonNullList<Slot> slots = screen.getMenu().slots;
-            if (slots.size() > 0) {
+            if (!slots.isEmpty()) {
                 if (mc.gameMode == null || mc.player == null) {
                     return;
                 }
 
-                Container container = slots.get(0).container;
+                Container container = slots.getFirst().container;
                 for (int i = 0; i < slots.size(); i++) {
                     Slot slot = slots.get(i);
                     if (slot.container != container) {
@@ -122,15 +122,15 @@ public class ContainerButtonsController {
     }
 
     public void smartPut() {
-        if (!isValidScreen(mc.screen)) {
+        if (!isValidScreen(mc.gui.screen())) {
             return;
         }
 
-        if (mc.screen instanceof AbstractContainerScreen<?> screen) {
+        if (mc.gui.screen() instanceof AbstractContainerScreen<?> screen) {
             boolean checkShulkerContent = ConfigStore.instance.getConfig().containerButtonsConfig.checkShulkerContent;
 
             NonNullList<Slot> slots = screen.getMenu().slots;
-            if (slots.size() > 0) {
+            if (!slots.isEmpty()) {
                 if (mc.gameMode == null || mc.player == null) {
                     return;
                 }
@@ -213,7 +213,7 @@ public class ContainerButtonsController {
     private void onClientTickEnd() {
         ContainerButtonsConfig config = getConfig();
         if (config.autoTakeAll || config.autoDropAll) {
-            if (!isValidScreen(mc.screen)) {
+            if (!isValidScreen(mc.gui.screen())) {
                 return;
             }
 

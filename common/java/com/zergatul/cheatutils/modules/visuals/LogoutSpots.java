@@ -8,9 +8,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LogoutSpotsConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.VertexColorLineRenderer;
+import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.Connection;
@@ -18,7 +17,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class LogoutSpots implements Module {
 
@@ -116,7 +117,7 @@ public class LogoutSpots implements Module {
             return;
         }
 
-        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
+        EspLineRenderer renderer = EspLineRenderer.getInstance();
         renderer.begin();
         for (LogoutSpotEntry entry : entries) {
             if (entry.dimension.equals(mc.level.dimension().identifier())) {
@@ -128,7 +129,8 @@ public class LogoutSpots implements Module {
                         entry.pos.x + entry.width / 2,
                         entry.pos.y + entry.height,
                         entry.pos.z + entry.width / 2,
-                        1f, 1f, 1f, 1f);
+                        ColorUtils.toShader(Color.WHITE),
+                        1f);
             }
         }
         renderer.end(event.getMvp(), true);

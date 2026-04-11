@@ -734,7 +734,7 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().chatUtilitiesConfig = config;
 
                 if (oldConfig.showTime != config.showTime || !Objects.equals(oldConfig.timeFormat, config.timeFormat)) {
-                    TickEndExecutor.instance.execute(() -> Minecraft.getInstance().gui.getChat().rescaleChat());
+                    TickEndExecutor.instance.execute(() -> Minecraft.getInstance().gui.hud.getChat().rescaleChat());
                 }
             }
         });

@@ -6,9 +6,8 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.AirPlaceConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.VertexColorLineRenderer;
+import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -20,6 +19,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
+import java.awt.*;
 
 public class AirPlace implements Module {
 
@@ -111,7 +112,7 @@ public class AirPlace implements Module {
         BlockPos blockPos = new BlockPos((int) Math.floor(pos.x), (int) Math.floor(pos.y), (int) Math.floor(pos.z));
 
         double margin = 0.05;
-        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
+        EspLineRenderer renderer = EspLineRenderer.getInstance();
         renderer.begin();
         renderer.cuboid(
                 event.getCameraPos(),
@@ -121,7 +122,8 @@ public class AirPlace implements Module {
                 blockPos.getX() + 1 - margin,
                 blockPos.getY() + 1 - margin,
                 blockPos.getZ() + 1 - margin,
-                1f, 1f, 1f, 1f);
+                ColorUtils.toShader(Color.WHITE),
+                1f);
         renderer.end(event.getMvp(), true);
 
         currentPosition = blockPos;

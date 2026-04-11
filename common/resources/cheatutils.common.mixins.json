@@ -1,11 +1,11 @@
 {
-  "required": false,
+  "required": true,
   "minVersion": "0.8.2",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_25",
   "plugin": "com.zergatul.mixin.MixinPlugin",
   "injectors": {
-    "defaultRequire": 0
+    "defaultRequire": 1
   },
   "mixinPriority": 500,
   "client": [
@@ -19,7 +19,7 @@
     "common.accessors.EntityTypeAccessor",
     "common.accessors.FogRendererAccessor",
     "common.accessors.GpuDeviceAccessor",
-    "common.accessors.GuiAccessor",
+    "common.accessors.HudAccessor",
     "common.accessors.HeightmapAccessor",
     "common.accessors.InputConstantsKeyAccessor",
     "common.accessors.KeyMappingAccessor",
@@ -63,9 +63,10 @@
     "common.MixinFramerateLimitTracker",
     "common.MixinGameRenderer",
     "common.MixinGui",
-    "common.MixinGuiFreeCam",
     "common.MixinGuiGraphicsExtractor",
     "common.MixinGuiRenderState",
+    "common.MixinHud",
+    "common.MixinHudFreeCam",
     "common.MixinItemInHandRenderer",
     "common.MixinItemStack",
     "common.MixinKeyBindingListKeyEntry",

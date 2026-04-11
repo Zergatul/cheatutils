@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.blaze3d.opengl.GlStateManager;
+import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -57,16 +58,22 @@ public class BlockEsp {
             return;
         }
 
-        MainFrameBuffer.bind();
-
         renderCustomEntries(event);
+
+        ImmutableList<BlockEspConfig> configs = ConfigStore.instance.getConfig().blocks.getBlockConfigs();
+        if (configs.isEmpty()) {
+            return;
+        }
 
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        for (BlockEspConfig config : ConfigStore.instance.getConfig().blocks.getBlockConfigs()) {
+        EspLineRenderer renderer = EspLineRenderer.getInstance();
+        renderer.begin();
+
+        for (BlockEspConfig config : configs) {
             if (!config.enabled) {
                 continue;
             }
@@ -134,61 +141,44 @@ public class BlockEsp {
             }
 
             if (!bbList.isEmpty()) {
-                renderBoundingBoxes((float) config.outlineWidth, config.outlineColor, event);
+                renderBoundingBoxes(renderer, (float) config.outlineWidth, ColorUtils.toShader(config.outlineColor), event);
             }
 
             if (!tracerList.isEmpty()) {
-                renderTracers((float) config.tracerWidth, config.tracerColor, event);
+                renderTracers(renderer, (float) config.tracerWidth, ColorUtils.toShader(config.tracerColor), event);
             }
 
             if (!overlayList.isEmpty()) {
                 renderOverlay(config.overlayColor, event);
             }
         }
+
+        renderer.end(event.getMvp());
     }
 
-    private void renderBoundingBoxes(float width, Color color, RenderWorldLastEvent event) {
+    private void renderBoundingBoxes(EspLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
         double cameraZ = cameraPos.z;
 
-        if (width == 1) {
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
-            renderer.begin();
-            for (BlockPos pos : bbList) {
-                double x = pos.getX();
-                double y = pos.getY();
-                double z = pos.getZ();
-                renderer.cuboid(
-                        (float) (x - cameraX),
-                        (float) (y - cameraY),
-                        (float) (z - cameraZ),
-                        (float) (x + 1 - cameraX),
-                        (float) (y + 1 - cameraY),
-                        (float) (z + 1 - cameraZ));
-            }
-            renderer.end(event.getMvp(), color);
-        } else {
-            UniformColorLineWidthRenderer renderer = UniformColorLineWidthRenderer.getInstance();
-            renderer.begin(event.getMvp(), width);
-            for (BlockPos pos : bbList) {
-                double x = pos.getX();
-                double y = pos.getY();
-                double z = pos.getZ();
-                renderer.cuboid(
-                        (float) (x - cameraX),
-                        (float) (y - cameraY),
-                        (float) (z - cameraZ),
-                        (float) (x + 1 - cameraX),
-                        (float) (y + 1 - cameraY),
-                        (float) (z + 1 - cameraZ));
-            }
-            renderer.end(color);
+        for (BlockPos pos : bbList) {
+            double x = pos.getX();
+            double y = pos.getY();
+            double z = pos.getZ();
+            renderer.cuboid(
+                    (float) (x - cameraX),
+                    (float) (y - cameraY),
+                    (float) (z - cameraZ),
+                    (float) (x + 1 - cameraX),
+                    (float) (y + 1 - cameraY),
+                    (float) (z + 1 - cameraZ),
+                    color,
+                    width);
         }
     }
 
-    private void renderTracers(float width, Color color, RenderWorldLastEvent event) {
+    private void renderTracers(EspLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
@@ -199,28 +189,13 @@ public class BlockEsp {
         float tracerY = (float) (tracerCenter.y - cameraY);
         float tracerZ = (float) (tracerCenter.z - cameraZ);
 
-        if (width == 1) {
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
-            renderer.begin();
-            for (BlockPos pos : tracerList) {
-                renderer.line(
-                        tracerX, tracerY, tracerZ,
-                        (float) (pos.getX() + 0.5 - cameraX),
-                        (float) (pos.getY() + 0.5 - cameraY),
-                        (float) (pos.getZ() + 0.5 - cameraZ));
-            }
-            renderer.end(event.getMvp(), color);
-        } else {
-            UniformColorLineWidthRenderer renderer = UniformColorLineWidthRenderer.getInstance();
-            renderer.begin(event.getMvp(), width);
-            for (BlockPos pos : tracerList) {
-                renderer.line(
-                        tracerX, tracerY, tracerZ,
-                        (float) (pos.getX() + 0.5 - cameraX),
-                        (float) (pos.getY() + 0.5 - cameraY),
-                        (float) (pos.getZ() + 0.5 - cameraZ));
-            }
-            renderer.end(color);
+        for (BlockPos pos : tracerList) {
+            renderer.line(
+                    tracerX, tracerY, tracerZ,
+                    (float) (pos.getX() + 0.5 - cameraX),
+                    (float) (pos.getY() + 0.5 - cameraY),
+                    (float) (pos.getZ() + 0.5 - cameraZ),
+                    color, width);
         }
     }
 

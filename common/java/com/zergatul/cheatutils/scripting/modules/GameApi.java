@@ -102,7 +102,7 @@ public class GameApi {
         if (!ServerAddress.isValidAddress(server)) {
             return CompletableFuture.completedFuture(false);
         }
-        if (mc.screen instanceof ConnectScreen) {
+        if (mc.gui.screen() instanceof ConnectScreen) {
             return CompletableFuture.completedFuture(false);
         }
 
@@ -121,7 +121,7 @@ public class GameApi {
 
         ServerAddress address = ServerAddress.parseString(server);
         ConnectScreen.startConnecting(
-                mc.screen instanceof TitleScreen ? mc.screen : new TitleScreen(),
+                mc.gui.screen() instanceof TitleScreen ? mc.gui.screen() : new TitleScreen(),
                 mc,
                 address,
                 new ServerData("Minecraft Server", address.getHost(), ServerData.Type.OTHER),
@@ -133,11 +133,11 @@ public class GameApi {
         class ScreenCheck implements Runnable {
             @Override
             public void run() {
-                boolean shouldWait = mc.screen instanceof ConnectScreen || mc.screen instanceof LevelLoadingScreen;
+                boolean shouldWait = mc.gui.screen() instanceof ConnectScreen || mc.gui.screen() instanceof LevelLoadingScreen;
                 if (shouldWait) {
                     TickEndExecutor.instance.waitTicks(1, this);
                 } else {
-                    result.complete(!(mc.screen instanceof DisconnectedScreen));
+                    result.complete(!(mc.gui.screen() instanceof DisconnectedScreen));
                 }
             }
         }
@@ -528,7 +528,7 @@ public class GameApi {
                     if (effect == null) {
                         return false;
                     }
-                    if (effect.isInstantenous()) {
+                    if (effect.isInstantaneous()) {
                         return false;
                     }
 

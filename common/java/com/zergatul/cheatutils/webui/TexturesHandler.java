@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -25,8 +26,9 @@ public class TexturesHandler implements HttpHandler {
         CompletableFuture<byte[]> pngFuture = new CompletableFuture<>();
         TickEndExecutor.instance.execute(() -> {
             try {
-                pngFuture.complete(TextureUtils.toPng(texture));
-            } catch (IOException e) {
+                TextureUtils.toPng(texture.getTexture()).thenAccept(pngFuture::complete);
+                //pngFuture.complete(TextureUtils.glTextureToPng(((GlTexture) texture.getTexture()).glId()));
+            } catch (Throwable e) {
                 pngFuture.completeExceptionally(e);
             }
         });

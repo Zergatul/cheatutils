@@ -1,8 +1,13 @@
 package com.zergatul.cheatutils.render.gl;
 
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.opengl.GlStateManager;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
@@ -10,23 +15,47 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-
-import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
+import java.util.concurrent.CompletableFuture;
 
 public class TextureUtils {
 
     public static void saveAsPng(int id, String path) throws IOException {
         File file = new File(path);
         FileOutputStream stream = new FileOutputStream(file);
-        stream.write(toPng(id));
+        stream.write(glTextureToPng(id));
         stream.close();
     }
 
-    public static byte[] toPng(AbstractTexture texture) throws IOException {
-        return toPng(getGlTexture(texture.getTexture()).glId());
+    // logic copied from Screenshot.takeScreenshot
+    public static CompletableFuture<byte[]> toPng(GpuTexture texture) {
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
+
+        int width = texture.getWidth(0);
+        int height = texture.getHeight(0);
+        int size = width * height * texture.getFormat().pixelSize();
+        GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Texture dump buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, size);
+        CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+        RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(texture, buffer, 0L, () -> {
+            try (GpuBuffer.MappedView read = commandEncoder.mapBuffer(buffer, true, false)) {
+                NativeImage image = new NativeImage(width, height, true);
+
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        int argb = read.data().getInt((x + y * width) * texture.getFormat().pixelSize());
+                        image.setPixelABGR(x, y, argb | 0xFF000000);
+                    }
+                }
+
+                future.complete(toPng(image));
+            }
+
+            buffer.close();
+        }, 0);
+
+        return future;
     }
 
-    public static byte[] toPng(int id) throws IOException {
+    public static byte[] glTextureToPng(int id) throws IOException {
         GlStateManager._bindTexture(id);
 
         pushState();
@@ -62,6 +91,22 @@ public class TextureUtils {
         } finally {
             popState();
         }
+    }
+
+    private static byte[] toPng(NativeImage image) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        STBImageWrite.stbi_write_png_to_func(
+                (long context, long data, int size) -> {
+                    ByteBuffer buffer = MemoryUtil.memByteBuffer(data, size);
+                    byte[] chunk = new byte[size];
+                    buffer.get(chunk);
+                    stream.write(chunk, 0, size);
+                },
+                0,
+                image.getWidth(), image.getHeight(), image.format().components(),
+                MemoryUtil.memByteBuffer(image.getPointer(), image.getWidth() * image.getHeight() * image.format().components()),
+                0);
+        return stream.toByteArray();
     }
 
     private static int prevPackBuffer;

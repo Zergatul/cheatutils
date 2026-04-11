@@ -158,7 +158,7 @@ public class LightLevel implements Module {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        VertexColorLineRenderer lineRenderer = VertexColorLineRenderer.getInstance();
+        EspLineRenderer lineRenderer = EspLineRenderer.getInstance();
         lineRenderer.begin();
 
         for (BlockPos pos: listTracers) {
@@ -168,7 +168,7 @@ public class LightLevel implements Module {
                         event.getCameraPos(),
                         tracerX, tracerY, tracerZ,
                         pos.getX() + 0.5, y, pos.getZ() + 0.5,
-                        1f, 1f, 1f, 0.5f);
+                        0x7FFFFFFF, 1f);
             }
 
             if (config.showLocations) {
@@ -176,10 +176,10 @@ public class LightLevel implements Module {
                 double z1 = pos.getZ() + 0.05;
                 double x2 = x1 + 0.9;
                 double z2 = z1 + 0.9;
-                lineRenderer.line(event.getCameraPos(), x1, y, z1, x1, y, z2, 1f, 1f, 1f, 0.5f);
-                lineRenderer.line(event.getCameraPos(), x1, y, z2, x2, y, z2, 1f, 1f, 1f, 0.5f);
-                lineRenderer.line(event.getCameraPos(), x2, y, z2, x2, y, z1, 1f, 1f, 1f, 0.5f);
-                lineRenderer.line(event.getCameraPos(), x2, y, z1, x1, y, z1, 1f, 1f, 1f, 0.5f);
+                lineRenderer.line(event.getCameraPos(), x1, y, z1, x1, y, z2, 0x7FFFFFFF, 1f);
+                lineRenderer.line(event.getCameraPos(), x1, y, z2, x2, y, z2, 0x7FFFFFFF, 1f);
+                lineRenderer.line(event.getCameraPos(), x2, y, z2, x2, y, z1, 0x7FFFFFFF, 1f);
+                lineRenderer.line(event.getCameraPos(), x2, y, z1, x1, y, z1, 0x7FFFFFFF, 1f);
             }
         }
 

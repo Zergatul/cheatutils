@@ -505,25 +505,28 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            EspLineRenderer renderer = EspLineRenderer.getInstance();
             renderer.begin();
 
+            Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
                     renderer.line(
                             event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
-                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            ColorUtils.toShader(color), 1f);
                 });
             }
 
-            renderer.end(event.getMvp(), new Color(0.2f, 1.0f, 0.2f, 0.8f));
+            renderer.end(event.getMvp());
         }
 
         if (config.showMissingBlockCubes) {
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            EspLineRenderer renderer = EspLineRenderer.getInstance();
             renderer.begin();
 
+            Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
                     double x1 = pos.getX() + 0.25;
@@ -532,11 +535,11 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, ColorUtils.toShader(color), 1f);
                 });
             }
 
-            renderer.end(event.getMvp(), new Color(0.2f, 1.0f, 0.2f, 0.8f));
+            renderer.end(event.getMvp());
         }
 
         if (config.showWrongBlockTracers) {
@@ -545,25 +548,28 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            EspLineRenderer renderer = EspLineRenderer.getInstance();
             renderer.begin();
 
+            Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
                     renderer.line(
                             event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
-                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            ColorUtils.toShader(color), 1f);
                 });
             }
 
-            renderer.end(event.getMvp(), new Color(1.0f, 0.5f, 0.5f, 0.6f));
+            renderer.end(event.getMvp());
         }
 
         if (config.showWrongBlockCubes) {
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            EspLineRenderer renderer = EspLineRenderer.getInstance();
             renderer.begin();
 
+            Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockCubesMaxDistance, pos -> {
                     double x1 = pos.getX() + 0.25;
@@ -572,11 +578,11 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, ColorUtils.toShader(color), 1f);
                 });
             }
 
-            renderer.end(event.getMvp(), new Color(1.0f, 0.5f, 0.5f, 0.6f));
+            renderer.end(event.getMvp());
         }
     }
 
@@ -598,13 +604,13 @@ public class Schematica {
         quadRenderer.end(event.getMvp());
         GlStateManager._depthMask(true);
 
-        VertexColorLineRenderer lineRenderer = VertexColorLineRenderer.getInstance();
+        EspLineRenderer lineRenderer = EspLineRenderer.getInstance();
         lineRenderer.begin();
         lineRenderer.cuboid(
                 event.getCameraPos(),
                 create.getX1() - gap, create.getY1() - gap, create.getZ1() - gap,
                 create.getX2() + gap, create.getY2() + gap, create.getZ2() + gap,
-                1f, 1f, 1f, 1f);
+                ColorUtils.toShader(Color.WHITE), 1f);
         lineRenderer.end(event.getMvp(), true);
     }
 

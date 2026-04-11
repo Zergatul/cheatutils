@@ -52,8 +52,8 @@ public class RenderNodeCollector {
     }
 
     private void renderSimpleWorldLines() {
-        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
-        renderer.begin();
+//        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
+//        renderer.begin();
     }
 
     public record SimpleLineSubmit(

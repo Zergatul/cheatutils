@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.modules.scripting;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.opengl.GlTextureView;
@@ -7,7 +8,6 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -249,7 +249,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
     }
 
     private static class FboTexture extends GlTexture {
-        protected FboTexture(int usage, String label, TextureFormat format, int width, int height, int depthOrLayers, int mipLevels, int id) {
+        protected FboTexture(int usage, String label, GpuFormat format, int width, int height, int depthOrLayers, int mipLevels, int id) {
             super(usage, label, format, width, height, depthOrLayers, mipLevels, id);
         }
     }
@@ -280,7 +280,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
                             new FboTexture(
                                     15,
                                     "",
-                                    TextureFormat.RGBA8,
+                                    GpuFormat.RGBA8_UNORM, // TODO: check
                                     FrameBuffers.get2().getWidth(),
                                     FrameBuffers.get2().getHeight(),
                                     0,

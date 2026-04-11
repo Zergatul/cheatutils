@@ -8,9 +8,8 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.VertexColorLineRenderer;
+import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
@@ -23,6 +22,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
 import java.util.function.Consumer;
 
 public class AreaMine implements Module {
@@ -67,7 +67,7 @@ public class AreaMine implements Module {
             return;
         }
 
-        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
+        EspLineRenderer renderer = EspLineRenderer.getInstance();
         renderer.begin();
 
         int time = (int) (System.currentTimeMillis() % 2000);
@@ -82,7 +82,7 @@ public class AreaMine implements Module {
             double y2 = pos.getY() + 0.5 + brad;
             double z1 = pos.getZ() + 0.5 - brad;
             double z2 = pos.getZ() + 0.5 + brad;
-            renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, 1f, 1f, 1f, 1f);
+            renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, ColorUtils.toShader(Color.WHITE), 1f);
         });
 
         renderer.end(event.getMvp());

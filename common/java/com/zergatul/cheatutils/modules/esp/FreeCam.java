@@ -6,9 +6,8 @@ import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.GroupLineRenderer;
-import com.zergatul.cheatutils.render.UniformColorLineRenderer;
+import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.CameraType;
@@ -369,7 +368,7 @@ public class FreeCam implements Module {
             return;
         }
 
-        UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+        EspLineRenderer renderer = EspLineRenderer.getInstance();
         renderer.begin();
 
         for (int i = 1; i < path.size(); i++) {
@@ -379,10 +378,11 @@ public class FreeCam implements Module {
             renderer.line(
                     event.getCameraPos(),
                     e1.position().x, e1.position().y, e1.position().z,
-                    e2.position().x, e2.position().y, e2.position().z);
+                    e2.position().x, e2.position().y, e2.position().z,
+                    ColorUtils.toShader(Color.WHITE), 1f);
         }
 
-        renderer.end(event.getMvp(), Color.WHITE);
+        renderer.end(event.getMvp());
     }
 
     public void startPath() {

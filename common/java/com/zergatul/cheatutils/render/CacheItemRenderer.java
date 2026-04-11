@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.ModMain;
 import net.minecraft.client.Minecraft;
@@ -91,9 +91,9 @@ public class CacheItemRenderer {
         if (texture == null) {
             textureSize = slotSize * 16 * guiScale;
             GpuDevice device = RenderSystem.getDevice();
-            texture = device.createTexture(ModMain.MODID + " items atlas", 13, TextureFormat.RGBA8, textureSize, textureSize, 1, 1);
+            texture = device.createTexture(ModMain.MODID + " items atlas", 13, GpuFormat.RGBA8_UNORM, textureSize, textureSize, 1, 1);
             textureView = device.createTextureView(texture);
-            depthTexture = device.createTexture(ModMain.MODID + " items atlas depth", 9, TextureFormat.DEPTH32, textureSize, textureSize, 1, 1);
+            depthTexture = device.createTexture(ModMain.MODID + " items atlas depth", 9, GpuFormat.D32_FLOAT, textureSize, textureSize, 1, 1);
             depthTextureView = device.createTextureView(depthTexture);
 
             for (int y = 0; y < slotSize; y++) {

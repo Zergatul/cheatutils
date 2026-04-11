@@ -164,7 +164,7 @@ public class EntityEsp implements Module {
         }
 
         ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             return;
         }
 
@@ -172,6 +172,9 @@ public class EntityEsp implements Module {
         double playerX = playerPos.x;
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
+
+        EspLineRenderer renderer = EspLineRenderer.getInstance();
+        renderer.begin();
 
         bbList.clear();
         tracerList.clear();
@@ -212,8 +215,10 @@ public class EntityEsp implements Module {
         }
 
         if (!bbList.isEmpty() || !tracerList.isEmpty()) {
-            renderLines(event);
+            renderLines(renderer, event);
         }
+
+        renderer.end(event.getMvp());
 
         drawOverlays(list, event);
         drawOutlines(list, event);
@@ -222,7 +227,7 @@ public class EntityEsp implements Module {
         outlineEntityStates.clear();
     }
 
-    private void renderLines(RenderWorldLastEvent event) {
+    private void renderLines(EspLineRenderer renderer, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
@@ -235,85 +240,23 @@ public class EntityEsp implements Module {
 
         float partialTicks = event.getPartialTickTime();
 
-        VertexColorLineRenderer renderer1 = null;
-        VertexColorLineWidthRenderer renderer2 = null;
-
         for (MatchedEntity entry : bbList) {
             Vec3 pos = entry.entity.getPosition(partialTicks);
             AABB box = entry.entity.getDimensions(entry.entity.getPose()).makeBoundingBox(pos);
-
-            float r = entry.config.outlineColor.getRed() / 255f;
-            float g = entry.config.outlineColor.getGreen() / 255f;
-            float b = entry.config.outlineColor.getBlue() / 255f;
-            float a = entry.config.outlineColor.getAlpha() / 255f;
-
-            float lineWidth = (float) entry.config.outlineWidth;
-            if (lineWidth == 1) {
-                if (renderer1 == null) {
-                    renderer1 = VertexColorLineRenderer.getInstance();
-                    renderer1.begin();
-                }
-                renderer1.cuboid(
-                        (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
-                        (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
-                        r, g, b, a);
-            } else {
-                if (renderer2 == null) {
-                    renderer2 = VertexColorLineWidthRenderer.getInstance();
-                    renderer2.begin(event.getMvp());
-                }
-                renderer2.cuboid(
-                        (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
-                        (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
-                        r, g, b, a,
-                        lineWidth);
-            }
+            renderer.cuboid(
+                    (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
+                    (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
+                    ColorUtils.toShader(entry.config.outlineColor),
+                    (float) entry.config.outlineWidth);
         }
 
         for (MatchedEntity entry : tracerList) {
             Vec3 pos = entry.entity.getPosition(partialTicks);
-
-            float r, g, b, a;
-            if (entry.colorOverride == null) {
-                r = entry.config.tracerColor.getRed() / 255f;
-                g = entry.config.tracerColor.getGreen() / 255f;
-                b = entry.config.tracerColor.getBlue() / 255f;
-                a = entry.config.tracerColor.getAlpha() / 255f;
-            } else {
-                int color = entry.colorOverride;
-                r = ColorUtils.r(color);
-                g = ColorUtils.g(color);
-                b = ColorUtils.b(color);
-                a = ColorUtils.a(color);
-            }
-
-            float lineWidth = (float) entry.config.tracerWidth;
-            if (lineWidth == 1) {
-                if (renderer1 == null) {
-                    renderer1 = VertexColorLineRenderer.getInstance();
-                    renderer1.begin();
-                }
-                renderer1.line(
-                        tracerX, tracerY, tracerZ,
-                        (float) (pos.x - cameraX), (float) (pos.y - cameraY), (float) (pos.z - cameraZ),
-                        r, g, b, a);
-            } else {
-                if (renderer2 == null) {
-                    renderer2 = VertexColorLineWidthRenderer.getInstance();
-                    renderer2.begin(event.getMvp());
-                }
-                renderer2.line(tracerX, tracerY, tracerZ,
-                        (float) (pos.x - cameraX), (float) (pos.y - cameraY), (float) (pos.z - cameraZ),
-                        r, g, b, a,
-                        lineWidth);
-            }
-        }
-
-        if (renderer1 != null) {
-            renderer1.end(event.getMvp());
-        }
-        if (renderer2 != null) {
-            renderer2.end();
+            renderer.line(
+                    tracerX, tracerY, tracerZ,
+                    (float) (pos.x - cameraX), (float) (pos.y - cameraY), (float) (pos.z - cameraZ),
+                    ColorUtils.toShader(entry.colorOverride != null ? entry.colorOverride : entry.config.tracerColor.getRGB()),
+                    (float) entry.config.tracerWidth);
         }
     }
 

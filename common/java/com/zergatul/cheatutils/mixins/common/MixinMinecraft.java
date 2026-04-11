@@ -5,14 +5,12 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.AirPlace;
-import com.zergatul.cheatutils.modules.hacks.InvMove;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -129,7 +127,7 @@ public abstract class MixinMinecraft {
     }
 
     @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;onDisconnected()V", shift = At.Shift.AFTER),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;onDisconnected()V", shift = At.Shift.AFTER),
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")
     private void onClearDisconnect(Screen screen, boolean keepResourcePacks, boolean stopSounds, CallbackInfo info) {
         if (this.level != null) {
@@ -138,7 +136,7 @@ public abstract class MixinMinecraft {
     }
 
     @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;onDisconnected()V"),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;onDisconnected()V"),
             method = "clearClientLevel")
     private void onClearClientLevel(Screen screen, CallbackInfo info) {
         if (this.level != null) {
@@ -159,13 +157,6 @@ public abstract class MixinMinecraft {
         }
 
         this.continueAttack(value);
-    }
-
-    @Redirect(
-            method = "tick",
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 6))
-    private Screen onTickScreenPassEvents(Minecraft mc) {
-        return InvMove.instance.overrideGetScreen(mc);
     }
 
     @Inject(at = @At(value = "TAIL"), method = "resizeGui()V")

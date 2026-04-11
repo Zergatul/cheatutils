@@ -134,6 +134,18 @@ public class ColorUtils {
         return (a << 24) | ((255 - r) << 16) | ((255 - g) << 8) | (255 - b);
     }
 
+    public static int toShader(Color color) {
+        return toShader(color.getRGB());
+    }
+
+    public static int toShader(int color) {
+        int a = Int.a(color);
+        int r = Int.r(color);
+        int g = Int.g(color);
+        int b = Int.b(color);
+        return (a << 24) | (b << 16) | (g << 8) | r;
+    }
+
     public static final class Int {
 
         public static int r(int color) {

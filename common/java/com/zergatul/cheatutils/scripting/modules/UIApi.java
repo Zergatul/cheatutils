@@ -15,7 +15,7 @@ public class UIApi {
     private final Minecraft mc = Minecraft.getInstance();
 
     public boolean isDebugScreenEnabled() {
-        return mc.gui.getDebugOverlay().showDebugScreen();
+        return mc.gui.hud.getDebugOverlay().showDebugScreen();
     }
 
     @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
@@ -70,12 +70,12 @@ public class UIApi {
     @ApiVisibility(ApiType.ACTION)
     public void screenshot() {
         Screenshot.grab(mc.gameDirectory, mc.getMainRenderTarget(), message -> mc.execute(() -> {
-            mc.gui.getChat().addClientSystemMessage(message);
+            mc.gui.hud.getChat().addClientSystemMessage(message);
             mc.getNarrator().saySystemQueued(message);
         }));
     }
 
     private void showMessage(MutableComponent message, boolean overlay) {
-        mc.getChatListener().handleSystemMessage(message, overlay);
+        mc.gui.chatListener().handleSystemMessage(message, overlay);
     }
 }

@@ -1,11 +1,17 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 public class VertexFormatElements {
 
-    public static VertexFormatElement GRADIENT = VertexFormatElement.register(findFreeId(), 0, VertexFormatElement.Type.FLOAT, false, 1);
-    public static VertexFormatElement COLOR4 = VertexFormatElement.register(findFreeId(), 0, VertexFormatElement.Type.FLOAT, false, 4);
+    public static VertexFormatElement GRADIENT = VertexFormatElement.register(findFreeId(), 0, GpuFormat.R32_FLOAT);
+    public static VertexFormatElement COLOR4 = VertexFormatElement.register(findFreeId(), 0, GpuFormat.RGBA32_FLOAT);
+
+    public static final VertexFormatElement LINE_POINT_B = VertexFormatElement.register(findFreeId(), 0, GpuFormat.RGB32_FLOAT);
+    public static final VertexFormatElement LINE_T = VertexFormatElement.register(findFreeId(), 0, GpuFormat.R32_FLOAT);
+    public static final VertexFormatElement LINE_SIDE = VertexFormatElement.register(findFreeId(), 0, GpuFormat.R32_FLOAT);
+    public static final VertexFormatElement LINE_WIDTH = VertexFormatElement.register(findFreeId(), 0, GpuFormat.R32_FLOAT);
 
     private static int findFreeId() {
         for (int i = 0; i < 32; i++) {

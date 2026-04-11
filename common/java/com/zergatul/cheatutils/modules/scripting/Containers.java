@@ -44,8 +44,8 @@ public class Containers implements Module {
 
     public void close() {
         AbstractContainerMenu menu = getContainerMenu();
-        if (menu != null && mc.screen != null) {
-            mc.screen.onClose();
+        if (menu != null && mc.gui.screen() != null) {
+            mc.gui.screen().onClose();
         }
     }
 
@@ -89,7 +89,7 @@ public class Containers implements Module {
     }
 
     private AbstractContainerMenu getContainerMenu() {
-        Screen screen = mc.screen;
+        Screen screen = mc.gui.screen();
         if (screen == null) {
             return null;
         }
