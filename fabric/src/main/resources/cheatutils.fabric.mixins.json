@@ -1,6 +1,6 @@
 {
   "required": false,
-  "minVersion": "0.8.2",
+  "minVersion": "0.8.7",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_25",
   "injectors": {
@@ -10,9 +10,9 @@
   "client": [
     "fabric.schematica.MixinSectionCompiler",
     "fabric.MixinCamera",
-    "fabric.MixinGuiGraphics",
+    "fabric.MixinGuiGraphicsExtractor",
     "fabric.MixinKeyboardHandler",
-    "fabric.MixinLevelRenderer",
+    "fabric.MixinLevelExtractor",
     "fabric.MixinMinecraft",
     "fabric.MixinMultiPlayerGameMode",
     "fabric.MixinScreen"

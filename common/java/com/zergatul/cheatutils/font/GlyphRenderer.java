@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.font;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
-import com.zergatul.cheatutils.render.gl.AtlasTexture;
+import com.zergatul.cheatutils.render.AtlasTexture;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;

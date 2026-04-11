@@ -32,7 +32,7 @@ public abstract class MixinGuiGraphicsExtractor {
             Font font,
             List<Component> texts,
             Optional<TooltipComponent> optionalImage,
-            int x, int y,
+            int xo, int yo,
             @Nullable Identifier style,
             CallbackInfo info
     ) {
@@ -59,7 +59,7 @@ public abstract class MixinGuiGraphicsExtractor {
             Font font,
             List<Component> texts,
             Optional<TooltipComponent> optionalImage,
-            int x, int y,
+            int xo, int yo,
             @Nullable Identifier style,
             CallbackInfo info
     ) {

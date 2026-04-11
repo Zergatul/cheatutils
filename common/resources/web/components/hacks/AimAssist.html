@@ -21,8 +21,8 @@
                         if (aimAssist.hasBowAssistTarget()) {
                             let id = aimAssist.getBowAssistEntityId();
                             overlay.addAtPosition(
-                                window.getGuiWidth() / 2 + 16,
-                                window.getGuiHeight() / 2 + 16,
+                                window.getWidth() / 2 + 16,
+                                window.getHeight() / 2 + 16,
                                 "#FFFFFF",
                                 "Target: " + game.entities.getName(id));
                         }

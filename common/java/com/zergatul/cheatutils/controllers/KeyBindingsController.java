@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
@@ -30,7 +30,7 @@ public class KeyBindingsController {
     private final Optional<CompletableFuture<?>>[] futures = new Optional[KeyBindingsConfig.KeysCount];
 
     private KeyBindingsController() {
-        KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(ModMain.MODID, "common"));
+        KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "common"));
 
         keys = new KeyMapping[KeyBindingsConfig.KeysCount];
         for (int i = 0; i < keys.length; i++) {

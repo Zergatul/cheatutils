@@ -133,7 +133,7 @@ public class ServerPlugins implements Module {
                 plugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
                 if (ConfigStore.instance.getConfig().serverPluginsConfig.autoPrint) {
                     for (String plugin: plugins) {
-                        mc.getChatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
+                        mc.gui.chatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
                     }
                 }
             }
@@ -144,7 +144,7 @@ public class ServerPlugins implements Module {
                 bukkitPlugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
                 if (ConfigStore.instance.getConfig().serverPluginsConfig.autoPrint) {
                     for (String plugin: bukkitPlugins) {
-                        mc.getChatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
+                        mc.gui.chatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
                     }
                 }
             }

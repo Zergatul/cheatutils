@@ -42,7 +42,7 @@ public class InventoryUtils {
             fromSlot.set(toItemStack);
         }
 
-        if (!(mc.screen instanceof InventoryScreen)) {
+        if (!(mc.gui.screen() instanceof InventoryScreen)) {
             NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(0));
         }
     }
@@ -95,7 +95,7 @@ public class InventoryUtils {
                     toHashed(air)));
         }
 
-        if (!(mc.screen instanceof InventoryScreen)) {
+        if (!(mc.gui.screen() instanceof InventoryScreen)) {
             NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(0));
         }
     }

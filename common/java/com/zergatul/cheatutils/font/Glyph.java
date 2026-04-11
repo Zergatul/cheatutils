@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.font;
 
-import com.zergatul.cheatutils.render.gl.AtlasTexture;
+import com.zergatul.cheatutils.render.AtlasTexture;
 
 public class Glyph {
 

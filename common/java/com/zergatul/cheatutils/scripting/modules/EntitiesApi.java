@@ -90,7 +90,7 @@ public class EntitiesApi {
             return;
         }
 
-        config.glowColor = colorValue;
+        config.outlineColor = colorValue;
         ConfigStore.instance.requestWrite();
     }
 
@@ -106,7 +106,7 @@ public class EntitiesApi {
             return;
         }
 
-        config.outlineColor = colorValue;
+        config.boundingBoxColor = colorValue;
         ConfigStore.instance.requestWrite();
     }
 

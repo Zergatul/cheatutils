@@ -1,9 +1,9 @@
 classTweaker v1 official
-accessible class com/mojang/blaze3d/opengl/GlDevice
 accessible class net/minecraft/client/multiplayer/ClientChunkCache$Storage
-accessible class net/minecraft/client/renderer/chunk/SectionCopy
 accessible class net/minecraft/client/renderer/rendertype/RenderSetup$TextureBinding
-accessible class net/minecraft/client/renderer/state/gui/GuiRenderState$Node
 accessible method net/minecraft/world/level/chunk/storage/RegionFileStorage <init> (Lnet/minecraft/world/level/chunk/storage/RegionStorageInfo;Ljava/nio/file/Path;Z)V
 accessible class net/minecraft/client/multiplayer/ClientCommonPacketListenerImpl$PackConfirmScreen
 accessible class net/minecraft/client/multiplayer/ClientCommonPacketListenerImpl$PackConfirmScreen$PendingRequest
+accessible class com/mojang/blaze3d/opengl/GlCommandEncoder
+accessible class com/mojang/blaze3d/opengl/GlRenderPass
+accessible class net/minecraft/client/renderer/feature/phase/SimpleFeatureRenderPhase$FeatureSubmits

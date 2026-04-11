@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.audio.SoundBuffer;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.sound.SoundLibrary;
 import net.minecraft.client.sounds.JOrbisAudioStream;
 import net.minecraft.client.sounds.SoundBufferLibrary;
@@ -26,7 +26,7 @@ public abstract class MixinSoundBufferLibrary {
 
     @Inject(at = @At("HEAD"), method = "getCompleteBuffer", cancellable = true)
     private void onGetCompleteBuffer(Identifier location, CallbackInfoReturnable<CompletableFuture<SoundBuffer>> info) {
-        if (location.getNamespace().equals(ModMain.MODID) && location.getPath().startsWith("sounds/dynamic/")) {
+        if (location.getNamespace().equals(Constants.MOD_ID) && location.getPath().startsWith("sounds/dynamic/")) {
             var future = dynamicSoundsMap.get(location);
             if (future != null) {
                 info.setReturnValue(future);
@@ -41,7 +41,7 @@ public abstract class MixinSoundBufferLibrary {
             File file = new File(filename);
             try (
                     InputStream stream = new FileInputStream(file);
-                    JOrbisAudioStream audioStream = new JOrbisAudioStream(stream);
+                    JOrbisAudioStream audioStream = new JOrbisAudioStream(stream)
             ) {
                 ByteBuffer byteBuffer = audioStream.readAll();
                 SoundBuffer soundBuffer = new SoundBuffer(byteBuffer, audioStream.getFormat());

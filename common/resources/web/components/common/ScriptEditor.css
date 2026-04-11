@@ -2,5 +2,9 @@ div.script-editor {
     flex-basis: 28em;
     flex-grow: 1;
     font-size: initial;
-    overflow-y: hidden;
+    overflow-y: visible;
+}
+
+div.script-editor div.suggest-widget > div.message {
+    font-size: 0.9em;
 }

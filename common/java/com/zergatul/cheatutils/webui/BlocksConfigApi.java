@@ -32,7 +32,7 @@ public class BlocksConfigApi extends ApiBase {
         BlockEspConfig jsonConfig = gson.fromJson(body, BlockEspConfig.class);
         jsonConfig.validate();
 
-        if (jsonConfig.blocks.size() == 0) {
+        if (jsonConfig.blocks.isEmpty()) {
             throw new ApiException("Received empty BlockEspConfig.", HttpResponseCodes.BAD_REQUEST);
         }
 
@@ -54,7 +54,7 @@ public class BlocksConfigApi extends ApiBase {
             }
 
             if (configs.size() == 1) {
-                config = configs.get(0);
+                config = configs.getFirst();
                 config.blocks = jsonConfig.blocks;
                 config.copyFrom(jsonConfig);
                 blocksConfig.refreshMap();

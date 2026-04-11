@@ -21,7 +21,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.zergatul.cheatutils.ModMain"
+      "com.zergatul.cheatutils.fabric.ModMain"
     ]
   },
   "accessWidener": "cheatutils.classtweaker",
@@ -33,7 +33,7 @@
 
   "depends": {
     "fabricloader": ">=0.18.3",
-    "minecraft": "~26.1-",
+    "minecraft": "~26.2-",
     "java": ">=25",
     "fabric-api": "*"
   }

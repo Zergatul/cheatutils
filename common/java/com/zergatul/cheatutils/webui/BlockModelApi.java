@@ -1,54 +1,41 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseFeatureSubmitsAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.TranslucentFeatureRenderPhaseAccessor;
+import com.zergatul.cheatutils.render.RenderTypeHelper;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.utils.JavaRandom;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.BlockModelRenderState;
-import net.minecraft.client.renderer.block.MovingBlockRenderState;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.BlockModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.feature.phase.SimpleFeatureRenderPhase;
+import net.minecraft.client.renderer.feature.phase.TranslucentFeatureRenderPhase;
+import net.minecraft.client.renderer.feature.submit.SubmitNode;
+import net.minecraft.client.renderer.feature.submit.TranslucentSubmit;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NullMarked;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class BlockModelApi extends ApiBase {
-
-    private final Minecraft mc = Minecraft.getInstance();
 
     @Override
     public String getRoute() {
@@ -56,18 +43,15 @@ public class BlockModelApi extends ApiBase {
     }
 
     @Override
-    public String get(String id) throws ApiException {
+    public String get(String id) throws ApiException, ExecutionException, InterruptedException {
         Identifier loc = Identifier.parse(id);
-        Block block = Registries.BLOCKS.getValue(loc);
-        if (block == null) {
-            throw new ApiException("Cannot find block by id.", HttpResponseCodes.NOT_FOUND);
-        }
-
-        List<Quad> quads = getFromBlockModel(block);
-        if (quads.isEmpty()) {
-            quads = getFromItemRenderer(block);
-        }
-
+        // we need to run this in the main thread
+        // because we call submission.model().setupAnim(..), and this mutates Model state
+        // that can be used for rendering real stuff at the same time
+        List<Quad> quads = Minecraft.getInstance().submit(() -> {
+            Block block = Registries.BLOCKS.getValue(loc);
+            return getFromBlockModel(block);
+        }).get();
         return gson.toJson(quads);
     }
 
@@ -77,220 +61,105 @@ public class BlockModelApi extends ApiBase {
         BlockModelRenderState renderState = new BlockModelRenderState();
         model.update(renderState, blockState, BlockDisplayContext.create(), 0);
 
-        InMemoryNodeCollector collector = new InMemoryNodeCollector();
-        renderState.submit(new PoseStack(), collector, 0, 0, 0);
+        SubmitNodeStorage storage = new SubmitNodeStorage();
+        renderState.submit(new PoseStack(), storage, 0, 0, 0);
 
-        return extractQuads(collector);
+        return extractQuads(storage);
     }
 
-    private List<Quad> getFromItemRenderer(Block block) {
-        ItemStack stack = new ItemStack(block.asItem());
-        InMemoryNodeCollector collector = new InMemoryNodeCollector();
-
-        ItemStackRenderState state = new ItemStackRenderState();
-        mc.getItemModelResolver().updateForTopItem(state, stack, ItemDisplayContext.GROUND, null, null, 0);
-        state.submit(new PoseStack(), collector, 15728880, OverlayTexture.NO_OVERLAY, 0);
-
-        return extractQuads(collector);
-    }
-
-    private List<Quad> extractQuads(InMemoryNodeCollector collector) {
+    private List<Quad> extractQuads(SubmitNodeStorage storage) {
         List<Quad> result = new ArrayList<>();
-
-        PoseStack poseStack = new PoseStack();
-
-        for (SubmitNodeStorage.BlockModelSubmit submission : collector.blockModelSubmits) {
-            for (BlockStateModelPart part : submission.modelParts()) {
-                for (Direction direction : Direction.values()) {
-                    for (BakedQuad quad : part.getQuads(direction)) {
-                        result.add(new Quad(quad, submission.tintLayers()));
-                    }
-                }
-                for (BakedQuad quad : part.getQuads(null)) {
-                    result.add(new Quad(quad, submission.tintLayers()));
-                }
-            }
+        for (SubmitNodeCollection collection : storage.getSubmitsPerOrder().values()) {
+            extractQuads(collection, result);
         }
-
-        for (SubmitNodeStorage.ModelSubmit<?> submission : collector.modelSubmits) {
-            if (submission.sprite() == null) {
-                continue;
-            }
-
-            for (ModelPart part : submission.model().allParts()) {
-                part.visit(poseStack, (pose, str, i, cube) -> {
-                    for (ModelPart.Polygon polygon : cube.polygons) {
-                        result.add(new Quad(
-                                submission.sprite().atlasLocation().toString(),
-                                new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[0], submission.tintedColor()),
-                                new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[1], submission.tintedColor()),
-                                new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[2], submission.tintedColor()),
-                                new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[3], submission.tintedColor())));
-                    }
-                });
-            }
-        }
-
-        for (SubmitNodeStorage.ModelPartSubmit submission : collector.modelPartSubmits) {
-            if (submission.sprite() == null) {
-                continue;
-            }
-
-            submission.modelPart().visit(poseStack, (pose, str, i, cube) -> {
-                for (ModelPart.Polygon polygon : cube.polygons) {
-                    result.add(new Quad(
-                            submission.sprite().atlasLocation().toString(),
-                            new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[0], submission.tintedColor()),
-                            new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[1], submission.tintedColor()),
-                            new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[2], submission.tintedColor()),
-                            new Vertex(submission.pose(), pose, submission.sprite(), polygon.vertices()[3], submission.tintedColor())));
-                }
-            });
-        }
-
-        for (SubmitNodeStorage.ItemSubmit submission : collector.itemSubmits) {
-            for (BakedQuad quad : submission.quads()) {
-                result.add(new Quad(quad, submission.tintLayers()));
-            }
-        }
-
         return result;
     }
 
-    @NullMarked
-    private static class InMemoryNodeCollector implements SubmitNodeCollector {
+    private void extractQuads(SubmitNodeCollection collection, List<Quad> output) {
+        extractQuads(collection.translucentBlocksAndItems, output);
+        extractQuads(collection.translucentModels, output);
+        extractQuads(collection.solid, output);
 
-        public final List<SubmitNodeStorage.BlockModelSubmit> blockModelSubmits = new ArrayList<>();
-        public final List<SubmitNodeStorage.ModelSubmit<?>> modelSubmits = new ArrayList<>();
-        public final List<SubmitNodeStorage.ModelPartSubmit> modelPartSubmits = new ArrayList<>();
-        public final List<SubmitNodeStorage.ItemSubmit> itemSubmits = new ArrayList<>();
+        // these are not used for block models
+        //extractQuads(collection.breakingOverlay, output);
+        //extractQuads(collection.waterMask, output);
+        //extractQuads(collection.outline, output);
+    }
 
-        @Override
-        public void submitShadow(PoseStack poseStack, float radius, List<EntityRenderState.ShadowPiece> pieces) {
-            throw new AssertionError();
+    private void extractQuads(BlockModelFeatureRenderer.Submit submission, List<Quad> output) {
+        for (BlockStateModelPart part : submission.modelParts()) {
+            for (Direction direction : Direction.values()) {
+                extractQuads(part.getQuads(direction), submission.tintLayers(), submission.tintColor(), output);
+            }
+            extractQuads(part.getQuads(null), submission.tintLayers(), submission.tintColor(), output);
+        }
+    }
+
+    private void extractQuads(SimpleFeatureRenderPhase phase, List<Quad> output) {
+        for (SimpleFeatureRenderPhase.FeatureSubmits<SubmitNode> submits : ((SimpleFeatureRenderPhaseAccessor) phase).getSubmitsByFeature_CU()) {
+            if (submits == null) {
+                continue;
+            }
+
+            SimpleFeatureRenderPhaseFeatureSubmitsAccessor accessor = (SimpleFeatureRenderPhaseFeatureSubmitsAccessor) submits;
+            for (SubmitNode submission : accessor.getUnbatched_CU()) {
+                extractQuads(submission, output);
+            }
+            for (List<SubmitNode> batch : accessor.getBatches_CU().values()) {
+                for (SubmitNode submission : batch) {
+                    extractQuads(submission, output);
+                }
+            }
+        }
+    }
+
+    private void extractQuads(TranslucentFeatureRenderPhase phase, List<Quad> output) {
+        for (TranslucentSubmit submission : ((TranslucentFeatureRenderPhaseAccessor) phase).getSubmits_CU()) {
+            extractQuads(submission, output);
+        }
+    }
+
+    private void extractQuads(SubmitNode submission, List<Quad> output) {
+        if (submission instanceof BlockModelFeatureRenderer.Submit blockModel) {
+            extractQuads(blockModel, output);
+        } else if (submission instanceof ModelFeatureRenderer.Submit<?> model) {
+            extractQuads(model, output);
+        }
+    }
+
+    private <S> void extractQuads(ModelFeatureRenderer.Submit<S> submission, List<Quad> output) {
+        extractQuads(submission.renderType(), submission, output);
+    }
+
+    private <S> void extractQuads(RenderType renderType, ModelFeatureRenderer.Submit<S> submission, List<Quad> output) {
+        TextureAtlasSprite sprite = submission.sprite();
+        String textureLocation;
+        if (sprite != null) {
+            textureLocation = sprite.atlasLocation().toString();
+        } else {
+            Optional<Identifier> optional = RenderTypeHelper.getTextureLocation(renderType);
+            if (optional.isEmpty()) {
+                return;
+            }
+            textureLocation = optional.get().toString();
         }
 
-        @Override
-        public void submitNameTag(PoseStack poseStack, @org.jspecify.annotations.Nullable Vec3 nameTagAttachment, int offset, Component name, boolean seeThrough, int lightCoords, double distanceToCameraSq, CameraRenderState camera) {
-            throw new AssertionError();
-        }
+        submission.model().setupAnim(submission.state());
+        submission.model().root().visit(new PoseStack(), (pose, str, i, cube) -> {
+            for (ModelPart.Polygon polygon : cube.polygons) {
+                output.add(new Quad(
+                        textureLocation,
+                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[0], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[1], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[2], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[3], submission.tintedColor())));
+            }
+        });
+    }
 
-        @Override
-        public void submitText(PoseStack poseStack, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor) {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void submitFlame(PoseStack poseStack, EntityRenderState renderState, Quaternionf rotation) {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void submitLeash(PoseStack poseStack, EntityRenderState.LeashState leashState) {
-            throw new AssertionError();
-        }
-
-        @Override
-        public <S> void submitModel(
-                Model<? super S> model,
-                S state,
-                PoseStack poseStack,
-                RenderType renderType,
-                int lightCoords,
-                int overlayCoords,
-                int tintedColor,
-                @Nullable TextureAtlasSprite sprite,
-                int outlineColor,
-                @Nullable final ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
-        ) {
-            this.modelSubmits.add(new SubmitNodeStorage.ModelSubmit<>(
-                    poseStack.last().copy(),
-                    model,
-                    state,
-                    lightCoords,
-                    overlayCoords,
-                    tintedColor,
-                    sprite,
-                    outlineColor,
-                    crumblingOverlay));
-        }
-
-        @Override
-        public void submitModelPart(
-                ModelPart modelPart,
-                PoseStack poseStack,
-                RenderType renderType,
-                int lightCoords,
-                int overlayCoords,
-                @Nullable TextureAtlasSprite sprite,
-                boolean sheeted,
-                boolean hasFoil,
-                int tintedColor,
-                @Nullable final ModelFeatureRenderer.CrumblingOverlay crumblingOverlay,
-                final int outlineColor
-        ) {
-            this.modelPartSubmits.add(new SubmitNodeStorage.ModelPartSubmit(
-                    poseStack.last().copy(),
-                    modelPart,
-                    lightCoords,
-                    overlayCoords,
-                    sprite,
-                    sheeted,
-                    hasFoil,
-                    tintedColor,
-                    crumblingOverlay,
-                    outlineColor));
-        }
-
-        @Override
-        public void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState) {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
-            this.blockModelSubmits.add(new SubmitNodeStorage.BlockModelSubmit(
-                    poseStack.last().copy(),
-                    renderType,
-                    parts,
-                    tintLayers,
-                    lightCoords,
-                    overlayCoords,
-                    outlineColor));
-        }
-
-        @Override
-        public void submitBreakingBlockModel(PoseStack poseStack, BlockStateModel model, long seed, int progress) {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void submitItem(
-                PoseStack poseStack,
-                ItemDisplayContext displayContext,
-                int lightCoords,
-                int overlayCoords,
-                int outlineColor,
-                int[] tintLayers,
-                List<BakedQuad> quads,
-                ItemStackRenderState.FoilType foilType
-        ) {
-            itemSubmits.add(new SubmitNodeStorage.ItemSubmit(poseStack.last().copy(), displayContext, lightCoords, overlayCoords, outlineColor, tintLayers, quads, foilType));
-        }
-
-        @Override
-        public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, CustomGeometryRenderer customGeometryRenderer) {
-            throw new AssertionError();
-        }
-
-        @Override
-        public void submitParticleGroup(ParticleGroupRenderer particleGroupRenderer) {
-            throw new AssertionError();
-        }
-
-        @Override
-        public OrderedSubmitNodeCollector order(int order) {
-            throw new AssertionError();
+    private void extractQuads(List<BakedQuad> bakedQuads, int[] tintLayers, int baseTintColor, List<Quad> output) {
+        for (BakedQuad quad : bakedQuads) {
+            output.add(new Quad(quad, tintLayers, baseTintColor));
         }
     }
 
@@ -299,7 +168,7 @@ public class BlockModelApi extends ApiBase {
         public final String location;
         public final Vertex[] vertices;
 
-        public Quad(BakedQuad quad, BlockState state) {
+        public Quad(BakedQuad quad, int[] tintLayers, int baseTintColor) {
             this.location = quad.materialInfo().sprite().atlasLocation().toString();
 
             this.vertices = new Vertex[4];
@@ -309,40 +178,18 @@ public class BlockModelApi extends ApiBase {
                 this.vertices[i].y = quad.position(i).y() - 0.5f;
                 this.vertices[i].z = quad.position(i).z() - 0.5f;
 
-                int color = quad.materialInfo().isTinted() ?
-                        Minecraft.getInstance().getBlockColors().getTintSource(state, 0).color(state) :
-                        -1;
-                this.vertices[i].r = color & 0xFF;
-                this.vertices[i].g = (color >> 8) & 0xFF;
-                this.vertices[i].b = (color >> 16) & 0xFF;
-                this.vertices[i].a = quad.materialInfo().isTinted() ? 255 : (color >> 24) & 0xFF;
-
-                this.vertices[i].u = UVPair.unpackU(quad.packedUV(i));
-                this.vertices[i].v = UVPair.unpackV(quad.packedUV(i));
-            }
-        }
-
-        public Quad(BakedQuad quad, int[] tintLayers) {
-            this.location = quad.materialInfo().sprite().atlasLocation().toString();
-
-            this.vertices = new Vertex[4];
-            for (int i = 0; i < 4; i++) {
-                this.vertices[i] = new Vertex();
-                this.vertices[i].x = quad.position(i).x() - 0.5f;
-                this.vertices[i].y = quad.position(i).y() - 0.5f;
-                this.vertices[i].z = quad.position(i).z() - 0.5f;
-
-                if (quad.materialInfo().isTinted() && quad.materialInfo().tintIndex() < tintLayers.length) {
-                    int color = tintLayers[quad.materialInfo().tintIndex()];
+                int tintIndex = quad.materialInfo().tintIndex();
+                if (quad.materialInfo().isTinted() && tintIndex >= 0 && tintIndex < tintLayers.length) {
+                    int color = ColorUtils.Int.multiply(baseTintColor, tintLayers[tintIndex]);
                     this.vertices[i].r = ColorUtils.Int.r(color);
                     this.vertices[i].g = ColorUtils.Int.g(color);
                     this.vertices[i].b = ColorUtils.Int.b(color);
                     this.vertices[i].a = ColorUtils.Int.a(color);
                 } else {
-                    this.vertices[i].r = 255;
-                    this.vertices[i].g = 255;
-                    this.vertices[i].b = 255;
-                    this.vertices[i].a = 255;
+                    this.vertices[i].r = ColorUtils.Int.r(baseTintColor);
+                    this.vertices[i].g = ColorUtils.Int.g(baseTintColor);
+                    this.vertices[i].b = ColorUtils.Int.b(baseTintColor);
+                    this.vertices[i].a = ColorUtils.Int.a(baseTintColor);
                 }
 
                 this.vertices[i].u = UVPair.unpackU(quad.packedUV(i));
@@ -370,7 +217,7 @@ public class BlockModelApi extends ApiBase {
 
         public Vertex() {}
 
-        public Vertex(PoseStack.Pose pose1, PoseStack.Pose pose2, TextureAtlasSprite sprite, ModelPart.Vertex vertex, int color) {
+        public Vertex(PoseStack.Pose pose1, PoseStack.Pose pose2, @Nullable TextureAtlasSprite sprite, ModelPart.Vertex vertex, int color) {
             Vector3f pos = pose1.pose().mul(pose2.pose(), new Matrix4f()).transformPosition(vertex.worldX(), vertex.worldY(), vertex.worldZ(), new Vector3f());
             this.x = pos.x() - 0.5f;
             this.y = pos.y() - 0.5f;
@@ -379,8 +226,13 @@ public class BlockModelApi extends ApiBase {
             this.g = ((color >>> 8) & 0xFF);
             this.b = ((color >>> 0) & 0xFF);
             this.a = ((color >>> 24) & 0xFF);
-            this.u = sprite.getU(vertex.u());
-            this.v = sprite.getV(vertex.v());
+            if (sprite != null) {
+                this.u = sprite.getU(vertex.u());
+                this.v = sprite.getV(vertex.v());
+            } else {
+                this.u = vertex.u();
+                this.v = vertex.v();
+            }
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.ui;
 
-import com.zergatul.cheatutils.render.Color2dRenderer;
-import com.zergatul.cheatutils.render.buffers.Color2dRenderBuffer;
+import com.zergatul.cheatutils.render.Position2dColorRenderer;
 
 public class RectangleElement implements Element {
 
@@ -37,11 +36,7 @@ public class RectangleElement implements Element {
 
     @Override
     public void render(RenderingContext context) {
-        Color2dRenderBuffer buffer = context.getBuffers().getColor2d();
-        float a = (color >> 24 & 255) / 255.0F;
-        float r = (color >> 16 & 255) / 255.0F;
-        float g = (color >> 8 & 255) / 255.0F;
-        float b = (color & 255) / 255.0F;
-        buffer.rect(x, y, width, height, r, g, b, a);
+        Position2dColorRenderer.BufferBuilder buffer = context.getBuffers().getColor2d();
+        buffer.rect(x, y, width, height, color);
     }
 }

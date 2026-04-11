@@ -3,9 +3,7 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.chunkoverlays.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.*;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Texture2dRenderer;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
+import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -13,10 +11,9 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class ChunkOverlayController {
 
@@ -72,14 +69,12 @@ public class ChunkOverlayController {
             return;
         }
 
-        MainFrameBuffer.bind();
-
         float frameTime = event.getPartialTickTime();
         float xp = (float) Mth.lerp(frameTime, mc.player.xo, mc.player.getX());
         float zp = (float) Mth.lerp(frameTime, mc.player.zo, mc.player.getZ());
-        float xc = (float) mc.gameRenderer.getMainCamera().position().x;
-        float zc = (float) mc.gameRenderer.getMainCamera().position().z;
-        float yRot = mc.gameRenderer.getMainCamera().yRot();
+        float xc = (float) mc.gameRenderer.mainCamera().position().x;
+        float zc = (float) mc.gameRenderer.mainCamera().position().z;
+        float yRot = mc.gameRenderer.mainCamera().yRot();
 
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(
@@ -96,7 +91,8 @@ public class ChunkOverlayController {
         float multiplier = 1f / (16 * SegmentSize) * scale;
         Dimension dimension = Dimension.get(mc.level);
 
-        for (AbstractChunkOverlay overlay: overlays) {
+        Position2dTextureColorRenderer.BufferBuilder buffer = new Position2dTextureColorRenderer.BufferBuilder();
+        for (AbstractChunkOverlay overlay : overlays) {
             for (Segment segment: overlay.getSegments(dimension)) {
                 if (segment.texture == null) {
                     continue;
@@ -105,10 +101,13 @@ public class ChunkOverlayController {
                 float x = (segment.pos.x * 16 * SegmentSize - xc) * multiplier;
                 float y = (segment.pos.z * 16 * SegmentSize - zc) * multiplier;
 
-                Texture2dRenderer renderer = RenderUtilities.instance.getTexture2dRenderer();
-                renderer.begin();
-                renderer.rect(x, y, scale, scale);
-                renderer.end(matrix, getGlTexture(segment.texture.getTexture()).glId());
+                buffer.clear();
+                buffer.rect(x, y, scale, scale, Color.WHITE.getRGB());
+                Position2dTextureColorRenderer.getInstance().draw(
+                        mc.gameRenderer.mainRenderTarget(),
+                        segment.texture.getTextureView(),
+                        matrix,
+                        buffer);
             }
         }
 

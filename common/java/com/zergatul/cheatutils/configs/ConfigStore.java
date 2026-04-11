@@ -36,6 +36,7 @@ public class ConfigStore {
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
+            .registerTypeAdapterFactory(new EntityTypeTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
             .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
@@ -49,7 +50,7 @@ public class ConfigStore {
     private File currentFile;
 
     private ConfigStore() {
-        config = new Config();
+        setConfig(new Config());
     }
 
     public Config getConfig() {
@@ -67,6 +68,7 @@ public class ConfigStore {
                 migration2(element);
                 migration3(element);
                 migration4(element);
+                migration5(element);
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
@@ -80,7 +82,7 @@ public class ConfigStore {
         }
 
         currentFile = file;
-        config = newConfig;
+        setConfig(newConfig);
         onConfigLoaded();
     }
 
@@ -91,26 +93,28 @@ public class ConfigStore {
 
     public synchronized void createNew(File file) {
         currentFile = file;
-        config = new Config();
+        setConfig(new Config());
         onConfigLoaded();
         requestWrite();
     }
 
     public void requestWrite() {
+        ConfigWriterQueue.instance.queue(this.currentFile, WRITE_FILE_DELAY, getWriteToFileTask());
+    }
+
+    public Runnable getWriteToFileTask() {
         File file = this.currentFile;
         Config config = this.config;
-        ConfigWriterQueue.instance.queue(file, WRITE_FILE_DELAY, () -> {
-            logger.debug("Saving config to file " + file.getName());
+        return () -> {
+            logger.debug("Saving config to file {}", file.getName());
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(file));
                 gson.toJson(config, writer);
                 writer.close();
+            } catch (Throwable e) {
+                logger.error("Cannot write config", e);
             }
-            catch (Exception e) {
-                logger.error("Cannot write config");
-                logger.error(e);
-            }
-        });
+        };
     }
 
     public static <T> void updateFromApi(Function<Config, T> extract, Consumer<T> update) {
@@ -124,10 +128,15 @@ public class ConfigStore {
         store.requestWrite();
     }
 
+    // only this method should update this.config
+    private void setConfig(Config config) {
+        config.blocks.refreshMap();
+        this.config = config;
+    }
+
     private void onConfigLoaded() {
         config.sanitize();
         config.blocks.apply();
-        config.blocks.refreshMap();
 
         LightLevel.instance.onChanged();
         ConfigHttpServer.instance.onConfigUpdated();
@@ -390,5 +399,78 @@ public class ConfigStore {
 
         root.remove("scriptsConfig");
         root.add("keyBindingScriptsConfig", config);
+    }
+
+    private void migration5(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject root = element.getAsJsonObject();
+        migrateBlockEspConfigFields(root);
+        migrateEntityEspConfigFields(root);
+    }
+
+    private void migrateBlockEspConfigFields(JsonObject root) {
+        migrateEspConfigs(root, "blocks", config -> {
+            renameField(config, "drawOutline", "drawBoundingBox");
+            renameField(config, "outlineWidth", "boundingBoxWidth");
+            renameField(config, "outlineColor", "boundingBoxColor");
+            renameField(config, "outlineMaxDistance", "boundingBoxMaxDistance");
+        });
+    }
+
+    private void migrateEntityEspConfigFields(JsonObject root) {
+        migrateEspConfigs(root, "entities", config -> {
+            if (config.has("glow")) {
+                // we need this check because 'drawOutline' field exists pre- and post-migration
+                // and they have different meaning
+                renameField(config, "drawOutline", "drawBoundingBox");
+                renameField(config, "outlineWidth", "boundingBoxWidth");
+                renameField(config, "outlineColor", "boundingBoxColor");
+                renameField(config, "outlineMaxDistance", "boundingBoxMaxDistance");
+            }
+
+            renameField(config, "glow", "drawOutline");
+            renameField(config, "glowColor", "outlineColor");
+            renameField(config, "glowMaxDistance", "outlineMaxDistance");
+        });
+    }
+
+    private void migrateEspConfigs(JsonObject root, String key, Consumer<JsonObject> migration) {
+        if (!root.has(key)) {
+            return;
+        }
+
+        JsonElement element = root.get(key);
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject group = element.getAsJsonObject();
+        if (!group.has("configs")) {
+            return;
+        }
+
+        element = group.get("configs");
+        if (!element.isJsonArray()) {
+            return;
+        }
+
+        for (JsonElement item : element.getAsJsonArray()) {
+            if (!item.isJsonObject()) {
+                continue;
+            }
+
+            JsonObject config = item.getAsJsonObject();
+            migration.accept(config);
+        }
+    }
+
+    private void renameField(JsonObject object, String oldName, String newName) {
+        JsonElement value = object.remove(oldName);
+        if (value != null && !object.has(newName)) {
+            object.add(newName, value);
+        }
     }
 }

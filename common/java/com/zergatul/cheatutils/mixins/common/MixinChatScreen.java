@@ -28,7 +28,7 @@ public abstract class MixinChatScreen {
         if (ConfigStore.instance.getConfig().chatUtilitiesConfig.dontCloseChatOnEnter) {
             if (!this.input.getValue().isEmpty()) {
                 this.input.setValue("");
-                this.historyPos = Minecraft.getInstance().gui.getChat().getRecentChat().size();
+                this.historyPos = Minecraft.getInstance().gui.hud.getChat().getRecentChat().size();
                 info.cancel();
             }
         }

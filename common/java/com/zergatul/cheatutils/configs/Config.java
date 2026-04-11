@@ -78,9 +78,12 @@ public class Config implements Sanitizable {
     public ParkourAssistConfig parkourAssistConfig = new ParkourAssistConfig();
     public HandsViewConfig handsViewConfig = new HandsViewConfig();
     public PrivacyConfig privacyConfig = new PrivacyConfig();
+    public CrystalAuraConfig crystalAuraConfig = new CrystalAuraConfig();
 
     @Override
     public void sanitize() {
+        blocks.sanitize();
+        entities.sanitize();
         killAuraConfig.sanitize();
         movementHackConfig.sanitize();
         fastBreakConfig.sanitize();
@@ -106,5 +109,6 @@ public class Config implements Sanitizable {
         blockEntityDistance.sanitize();
         elytraBounceConfig.sanitize();
         handsViewConfig.sanitize();
+        crystalAuraConfig.sanitize();
     }
 }

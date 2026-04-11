@@ -240,7 +240,7 @@ public class AutoBucket implements Module {
         if (itemAppliedRealPos != null) {
             // not more than 4 sec
             if (System.nanoTime() - itemAppliedTime < 4000000000L) {
-                Vec3 blockCenter = itemAppliedRealPos.getCenter();
+                Vec3 blockCenter = Vec3.atCenterOf(itemAppliedRealPos);
                 double d2 = mc.player.getPosition(1).distanceToSqr(blockCenter);
                 if (d2 < config.reachDistance * config.reachDistance) {
                     if (currentMethod.tryPickUp(mc, blockCenter, config)) {

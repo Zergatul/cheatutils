@@ -46,7 +46,7 @@ public class Modules {
         register(WorldDownloadController.instance);
         register(EntityTitle.instance);
         register(ContainerButtonsController.instance);
-        register(TeleportHackController.instance);
+        register(TeleportHack.instance);
         register(WorldMarkers.instance);
         register(TpsCounterController.instance);
         register(BlockAutomation.instance);
@@ -73,7 +73,6 @@ public class Modules {
         register(AreaMine.instance);
         register(ServerPlugins.instance);
         register(BedrockBreaker.instance);
-        register(RenderUtilities.instance);
         register(Containers.instance);
         register(AntiHunger.instance);
         register(Schematica.instance);
@@ -83,6 +82,7 @@ public class Modules {
         register(AutoTool.instance);
         register(AirPlace.instance);
         register(ContainerSummary.instance);
+        register(CrystalAura.instance);
 
         register(TickEndExecutor.instance);
 

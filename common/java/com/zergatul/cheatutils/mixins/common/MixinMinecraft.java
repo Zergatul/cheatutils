@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
@@ -12,7 +14,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -32,7 +33,7 @@ public abstract class MixinMinecraft {
     public ClientLevel level;
 
     @Shadow
-    protected abstract void continueAttack(boolean p_91387_);
+    protected abstract void continueAttack(boolean down);
 
     @Shadow
     public abstract boolean isGameLoadFinished();
@@ -51,7 +52,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
-        if (EntityEsp.instance.shouldEntityGlow(entity)) {
+        if (EntityEsp.instance.shouldEntityHaveOutline(entity)) {
             info.setReturnValue(true);
             info.cancel();
         }
@@ -82,7 +83,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "tick()V")
     private void onBeforeTick(CallbackInfo info) {
-        if (this.isGameLoadFinished()) {
+        if (this.isGameLoadFinished() && this.level != null && this.player != null) {
             Events.ClientTickStart.trigger();
         }
     }
@@ -98,15 +99,30 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("TAIL"), method = "tick()V")
     private void onAfterTick(CallbackInfo info) {
-        if (this.isGameLoadFinished()) {
+        if (this.isGameLoadFinished() && this.level != null && this.player != null) {
             Events.ClientTickEnd.trigger();
         }
+    }
+
+    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketProcessor;processQueuedPackets()V"))
+    public void onBeforeProcessQueuedPackets(boolean advanceGameTime, CallbackInfo info) {
+        Events.BeforeProcessQueuedPackets.trigger();
+    }
+
+    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketProcessor;processQueuedPackets()V", shift = At.Shift.AFTER))
+    public void onAfterProcessQueuedPackets(boolean advanceGameTime, CallbackInfo info) {
+        Events.AfterProcessQueuedPackets.trigger();
+    }
+
+    @Inject(at = @At("TAIL"), method = "runTick")
+    private void onRunTickEnd(boolean advanceGameTime, CallbackInfo info) {
+        Events.MainLoopFrameEnd.trigger();
     }
 
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetData()V", shift = At.Shift.AFTER),
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")
-    private void onPlayerLoggingOut(Screen screen, boolean b1, boolean b2, CallbackInfo info) {
+    private void onPlayerLoggingOut(Screen screen, boolean keepResourcePacks, boolean stopSound, CallbackInfo info) {
         Events.ClientPlayerLoggingOut.trigger();
     }
 
@@ -129,16 +145,16 @@ public abstract class MixinMinecraft {
     }
 
     @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;onDisconnected()V", shift = At.Shift.AFTER),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;onDisconnected()V", shift = At.Shift.AFTER),
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")
-    private void onClearDisconnect(Screen screen, boolean keepResourcePacks, boolean stopSounds, CallbackInfo info) {
+    private void onClearDisconnect(Screen screen, boolean keepResourcePacks, boolean stopSound, CallbackInfo info) {
         if (this.level != null) {
             Events.LevelUnload.trigger();
         }
     }
 
     @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;onDisconnected()V"),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;onDisconnected()V"),
             method = "clearClientLevel")
     private void onClearClientLevel(Screen screen, CallbackInfo info) {
         if (this.level != null) {
@@ -146,26 +162,26 @@ public abstract class MixinMinecraft {
         }
     }
 
-    @Redirect(
+    @WrapWithCondition(
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
-    private void onShouldContinueAttack(Minecraft instance, boolean value) {
+    private boolean onShouldContinueAttack(Minecraft instance, boolean down) {
         if (VillagerRoller.instance.isBreakingBlock()) {
-            return;
+            return false;
         }
 
         if (BlockAutomation.instance.isBreakingBlock()) {
-            return;
+            return false;
         }
 
-        this.continueAttack(value);
+        return true;
     }
 
-    @Redirect(
+    @ModifyExpressionValue(
             method = "tick",
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 6))
-    private Screen onTickScreenPassEvents(Minecraft mc) {
-        return InvMove.instance.overrideGetScreen(mc);
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;screen()Lnet/minecraft/client/gui/screens/Screen;"))
+    private Screen onTickScreenPassEvents(Screen screen) {
+        return InvMove.instance.overrideCurrentScreen(screen);
     }
 
     @Inject(at = @At(value = "TAIL"), method = "resizeGui()V")

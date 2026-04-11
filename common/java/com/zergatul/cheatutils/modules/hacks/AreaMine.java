@@ -8,10 +8,8 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.VertexColorLineRenderer;
-import com.zergatul.cheatutils.wrappers.PickRange;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
@@ -23,6 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
 import java.util.function.Consumer;
 
 public class AreaMine implements Module {
@@ -55,7 +54,7 @@ public class AreaMine implements Module {
             return;
         }
 
-        HitResult result = entity.pick(PickRange.get(), 0.0F, false);
+        HitResult result = entity.pick(mc.player.blockInteractionRange(), 0.0F, false);
         if (result.getType() != HitResult.Type.BLOCK) {
             return;
         }
@@ -67,7 +66,7 @@ public class AreaMine implements Module {
             return;
         }
 
-        VertexColorLineRenderer renderer = VertexColorLineRenderer.getInstance();
+        LineRenderer renderer = LineRenderer.getInstance();
         renderer.begin();
 
         int time = (int) (System.currentTimeMillis() % 2000);
@@ -82,7 +81,7 @@ public class AreaMine implements Module {
             double y2 = pos.getY() + 0.5 + brad;
             double z1 = pos.getZ() + 0.5 - brad;
             double z2 = pos.getZ() + 0.5 + brad;
-            renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, 1f, 1f, 1f, 1f);
+            renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, Color.WHITE.getRGB(), 1f);
         });
 
         renderer.end(event.getMvp());
@@ -119,7 +118,7 @@ public class AreaMine implements Module {
     }
 
     private void forEachInstaminable(Vec3 playerPos, BlockPos origin, AreaMineConfig config, Consumer<BlockPos> consumer) {
-        double pick2 = PickRange.get();
+        double pick2 = mc.player.blockInteractionRange();
         pick2 = pick2 * pick2;
         int delta = (int) Math.floor(config.radius);
         int r2 = (int) Math.floor(config.radius * config.radius);

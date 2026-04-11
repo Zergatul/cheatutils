@@ -1,0 +1,114 @@
+plugins {
+    id 'base'
+}
+
+import java.security.MessageDigest
+
+def allLoaders = [
+    fabric  : file('../fabric'),
+    forge   : file('../forge'),
+    neoforge: file('../neoforge')
+]
+
+// can be overridden from command line: -Ploaders=fabric,neoforge
+def enabledLoaders = (findProperty('loaders') ?: 'fabric,forge,neoforge')
+    .split(',')
+    .collect { it.trim() }
+    .findAll { !it.isEmpty() }
+
+def loaders = allLoaders.findAll { loader, _ -> enabledLoaders.contains(loader) }
+
+def commonProperties = new Properties()
+file('../common/gradle.properties').withInputStream { commonProperties.load(it) }
+
+def fabricProperties = new Properties()
+file('../fabric/gradle.properties').withInputStream { fabricProperties.load(it) }
+
+def loaderProperties = allLoaders.collectEntries { loader, dir ->
+    def properties = new Properties()
+    file("${dir}/gradle.properties").withInputStream { properties.load(it) }
+    [(loader): properties]
+}
+
+def modVersion = commonProperties['mod_version']
+def minecraftVersion = fabricProperties['minecraft_version']
+def gradlew = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? 'gradlew.bat' : './gradlew'
+
+def loaderJar = { String loader ->
+    def loaderMinecraftVersion = loaderProperties[loader]['minecraft_version']
+    file("${loaders[loader]}/build/libs/cheatutils-${modVersion}-${loader}-${loaderMinecraftVersion}.jar")
+}
+
+def sha256 = { byte[] bytes ->
+    MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString()
+}
+
+tasks.register('cleanJars', Delete) {
+    delete loaders.values().collect { fileTree("${it}/build/libs") { include '*.jar' } }
+}
+
+def buildTasks = loaders.collectEntries { loader, dir ->
+    [(loader): tasks.register("build${loader.capitalize()}", Exec) {
+        dependsOn cleanJars
+        workingDir dir
+        commandLine gradlew, 'jar'
+    }]
+}
+
+tasks.register('verifyUniversalJarInputs') {
+    dependsOn buildTasks.values()
+
+    doLast {
+        def entries = [:].withDefault { [:] }
+
+        loaders.keySet().each { loader ->
+            zipTree(loaderJar(loader)).matching {
+                exclude 'META-INF/MANIFEST.MF'
+            }.visit { details ->
+                if (!details.directory) {
+                    entries[details.path][loader] = sha256(details.file.bytes)
+                }
+            }
+        }
+
+        def conflicts = entries.findAll { _, hashes ->
+            hashes.size() > 1 && hashes.values().toSet().size() > 1
+        }
+
+        if (!conflicts.isEmpty()) {
+            def message = new StringBuilder('Universal jar inputs contain conflicting duplicate entries:')
+            conflicts.each { path, hashes ->
+                message.append(System.lineSeparator()).append("  ").append(path)
+                hashes.each { loader, hash ->
+                    message.append(System.lineSeparator()).append("    ").append(loader).append(": ").append(hash)
+                }
+            }
+            throw new GradleException(message.toString())
+        }
+    }
+}
+
+tasks.register('universalJar', Jar) {
+    dependsOn verifyUniversalJarInputs
+
+    archiveFileName = "cheatutils-${modVersion}-mc-${minecraftVersion}.jar"
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    reproducibleFileOrder = true
+    preserveFileTimestamps = false
+
+    from({
+        loaders.keySet().collect { loader ->
+            zipTree(loaderJar(loader))
+        }
+    }) {
+        exclude 'META-INF/MANIFEST.MF'
+    }
+
+    doFirst {
+        def manifestLoader = ['forge', 'neoforge', 'fabric'].find { loaders.containsKey(it) }
+        manifest.from(zipTree(loaderJar(manifestLoader)).matching {
+            include 'META-INF/MANIFEST.MF'
+        }.singleFile)
+    }
+}

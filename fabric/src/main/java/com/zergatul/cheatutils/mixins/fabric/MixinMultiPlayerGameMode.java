@@ -16,7 +16,7 @@ public abstract class MixinMultiPlayerGameMode {
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyBlock(Lnet/minecraft/core/BlockPos;)Z"),
             method = "lambda$startDestroyBlock$1(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;I)Lnet/minecraft/network/protocol/Packet;")
-    private void onBeforeInstaMine(BlockState blockState, BlockPos pos, Direction direction, int sequence, CallbackInfoReturnable<Packet<?>> cir) {
+    private void onBeforeInstaMine(BlockState state, BlockPos pos, Direction direction, int sequence, CallbackInfoReturnable<Packet<?>> cir) {
         Events.BeforeInstaMine.trigger(pos);
     }
 }

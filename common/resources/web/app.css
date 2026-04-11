@@ -134,6 +134,12 @@ a:hover {
     width: 30em;
 }
 
+.input-container {
+    display: inline-flex;
+    justify-content: center;
+    vertical-align: middle;
+}
+
 /* modules */
 
 div.module-main {

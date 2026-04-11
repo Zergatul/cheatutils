@@ -1,0 +1,285 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Crystal Aura in Beta. Report issues or suggest improvements.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                General
+            </legend>
+            <table>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Min Total Target Damage:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.minTargetDamage" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            Minimum total target damage required to break a crystal
+                            <template #additional>
+                                Damage is summed across all matching targets in range.
+                                Example: if one target would take 3 damage and another would take 4, total target damage is 7.
+                                If <b>Min Total Target Damage</b> is 6, Crystal Aura can use this crystal.
+                            </template>
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Max Self Damage:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.maxSelfDamage" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            Maximum predicted damage to yourself allowed for crystal placement or attack
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Crystal Age:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.crystalAge" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            Minimum crystal age before Auto-Break considers attacking it, in ticks
+                            <template #additional>
+                                Setting this higher than Break Delay may cause the module to place multiple crystals before breaking the first one.
+                            </template>
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Hotbar Mode:</span>
+                    </td>
+                    <td>
+                        <select v-model="config.hotbarSwitchMode" @change="update()">
+                            <option value="NORMAL">Normal</option>
+                            <option value="SILENT">Silent</option>
+                        </select>
+                    </td>
+                    <td>
+                        <Description>
+                            How module selects crystals/obsidian on hotbar
+                            <template #additional>
+                                <div><b>Normal</b> - you can see module switches hotbar slots</div>
+                                <div><b>Silent</b> - module doesn't affect your selected slot visible on UI</div>
+                            </template>
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Pause on Item Use:</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="input-container w3">
+                            <switch-checkbox v-model="config.pauseOnItemUse" @change="update()"></switch-checkbox>
+                        </div>
+                    </td>
+                    <td>
+                        <Description>
+                            Pauses on consuming food, using bow, etc.
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Pause on Mining:</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="input-container w3">
+                            <switch-checkbox v-model="config.pauseOnMining" @change="update()"></switch-checkbox>
+                        </div>
+                    </td>
+                    <td>
+                        <Description>
+                            Pauses when you mine blocks
+                        </Description>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+
+        <fieldset class="crystal-aura-targets-fieldset">
+            <legend>Targets</legend>
+            <ul class="crystal-aura-targets">
+                <li class="new">
+                    <span v-if="!showAddNew" @click="showAutoComplete()">Add new...</span>
+                    <auto-complete
+                        v-if="showAddNew"
+                        value=""
+                        :list="entityTypes"
+                        autofocus
+                        cancel-on-blur
+                        apply-on-click
+                        @apply="addTarget"
+                        @cancel="cancelAddTarget"></auto-complete>
+                </li>
+                <li class="target" v-for="(type, index) in config.targets" :key="type + ':' + index">
+                    <span class="target-name">{{ type }}</span>
+                    <button type="button" class="remove" aria-label="Remove target" @click="removeTarget(index)">
+                        <span></span>
+                    </button>
+                </li>
+            </ul>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoRotate" @change="update()">Auto-Rotate</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Automatically rotates player to the direction of crystal placements, support block placements and crystal attacks
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoPlace" @change="update()">Auto-Place</switch-checkbox>
+            </legend>
+            <table v-if="config.autoPlace">
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Range:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.placeRange" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            Interaction range for placing crystals, in blocks
+                            <template #additional>
+                                Setting this more than Break Range may cause module to place multiple crystals before breaking one of them.
+                                This is client-side max range for attempting crystal placement.
+                                Servers may accept or reject different ranges depending on reach settings, lag compensation, and plugins.
+                            </template>
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Delay:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.placeDelay" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            How many ticks to wait after placing a crystal before trying to place another one
+                        </Description>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoPlaceSupport" @change="update()">Auto-Support</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Requires <b>Auto-Place</b>. Uses the <b>Auto-Place</b> range setting.
+            </div>
+            <hr>
+            <table v-if="config.autoPlaceSupport">
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Delay:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.placeSupportDelay" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            How many ticks to wait after placing a support obsidian block before trying to place a crystal
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Air Place:</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="input-container w3">
+                            <switch-checkbox v-model="config.airPlace" @change="update()"></switch-checkbox>
+                        </div>
+                    </td>
+                    <td>
+                        <Description>
+                            Allows support obsidian to be placed without attaching it to another block
+                        </Description>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoBreak" @change="update()">Auto-Break</switch-checkbox>
+            </legend>
+            <table v-if="config.autoBreak">
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Range:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.breakRange" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            Interaction range for attacking crystals, in blocks
+                            <template #additional>
+                                This is client-side max range for attempting crystal attacks.
+                                Servers may accept or reject different ranges depending on reach settings, lag compensation, and plugins.
+                            </template>
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Fast-Break:</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="input-container w3">
+                            <switch-checkbox v-model="config.fastBreak" @change="update()"></switch-checkbox>
+                        </div>
+                    </td>
+                    <td>
+                        <Description>
+                            Attacks crystals as soon as they spawn
+                            <template #additional>
+                                Ignores <b>Auto-Break Delay</b> and <b>Crystal Age</b>.<br>
+                                <b>Fast-Break</b> is disabled while <b>Auto-Rotate</b> is enabled.
+                            </template>
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Delay:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.breakDelay" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            How many ticks to wait after attacking a crystal before attacking another one
+                        </Description>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</div>

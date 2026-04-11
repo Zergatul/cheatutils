@@ -1,5 +1,8 @@
 package com.zergatul.cheatutils.modules.utilities;
 
+import com.zergatul.cheatutils.Constants;
+import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.cheatutils.configs.PrivacyConfig;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -19,6 +22,14 @@ public class Privacy implements Module {
     public static final Privacy instance = new Privacy();
 
     private Privacy() {}
+
+    public boolean shouldDisconnectOnTranslationExploit(PrivacyConfig config) {
+        return config.disconnectOnTranslationExploit && !ModLoaderBridgeInstance.get().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
+    }
+
+    public boolean shouldDisconnectOnMaliciousResourcePack(PrivacyConfig config) {
+        return config.disconnectOnMaliciousResourcePackBehavior && !ModLoaderBridgeInstance.get().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
+    }
 
     public Optional<Component> checkExploitable(SignText text) {
         for (int i = 0; i < SignText.LINES; i++) {
@@ -63,6 +74,14 @@ public class Privacy implements Module {
 
     private Optional<Component> checkExploitable(ComponentContents contents) {
         if (contents instanceof TranslatableContents translatable) {
+            for (Object arg : translatable.getArgs()) {
+                if (arg instanceof Component component) {
+                    Optional<Component> result = checkExploitable(component);
+                    if (result.isPresent()) {
+                        return result;
+                    }
+                }
+            }
             return Optional.of(
                     Component.literal("")
                             .append(Component.literal("Server attempted to extract translatable key [").withStyle(ChatFormatting.WHITE))
@@ -109,6 +128,12 @@ public class Privacy implements Module {
             Consumer<KeybindContents> keybindConsumer
     ) {
         if (contents instanceof TranslatableContents translatable) {
+            for (Object arg : translatable.getArgs()) {
+                if (arg instanceof Component component) {
+                    forEachExploitable(component, checked, translatableConsumer, keybindConsumer);
+                }
+            }
+
             String key = "T:" + translatable.getKey();
             if (!checked.contains(key)) {
                 checked.add(key);

@@ -12,7 +12,7 @@ public class CameraApi {
             return Double.NaN;
         }
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         return camera.position().x;
     }
 
@@ -21,7 +21,7 @@ public class CameraApi {
             return Double.NaN;
         }
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         return camera.position().y;
     }
 
@@ -30,7 +30,7 @@ public class CameraApi {
             return Double.NaN;
         }
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         return camera.position().z;
     }
 
@@ -39,7 +39,7 @@ public class CameraApi {
             return Double.NaN;
         }
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         return camera.xRot();
     }
 
@@ -48,7 +48,7 @@ public class CameraApi {
             return Double.NaN;
         }
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         return camera.yRot();
     }
 }

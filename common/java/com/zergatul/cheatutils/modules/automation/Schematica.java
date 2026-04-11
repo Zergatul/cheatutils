@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.modules.automation;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
@@ -9,7 +8,6 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.schematics.*;
 import com.zergatul.cheatutils.utils.*;
@@ -140,7 +138,7 @@ public class Schematica {
             boolean renderBlocks = isBlockRenderingEnabled();
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
-                    mc.levelRenderer.setSectionDirty(info.x, info.y, info.z);
+                    mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
                     if (renderBlocks) {
                         mc.level.getChunkSource().onSectionEmptinessChanged(info.x, info.y, info.z, false); // hasOnlyAir=false
                     }
@@ -176,7 +174,7 @@ public class Schematica {
                         lookup.put(index, info.add(entry, section));
 
                         if (mc.level != null) {
-                            mc.levelRenderer.setSectionDirty(section.getSectionX(), section.getSectionY(), section.getSectionZ());
+                            mc.levelExtractor.setSectionDirty(section.getSectionX(), section.getSectionY(), section.getSectionZ());
                             mc.level.getChunkSource().onSectionEmptinessChanged(section.getSectionX(), section.getSectionY(), section.getSectionZ(), false); // hasOnlyAir=false
                         }
                     }
@@ -200,7 +198,7 @@ public class Schematica {
                         }
 
                         if (mc.level != null) {
-                            mc.levelRenderer.setSectionDirty(
+                            mc.levelExtractor.setSectionDirty(
                                     section.getSectionX(),
                                     section.getSectionY(),
                                     section.getSectionZ());
@@ -228,7 +226,7 @@ public class Schematica {
         TickEndExecutor.instance.execute(() -> {
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
-                    mc.levelRenderer.setSectionDirty(info.x, info.y, info.z);
+                    mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
                 }
             }
 
@@ -256,7 +254,7 @@ public class Schematica {
 
                     // last parameter - return empty chunk, not null
                     section.onChunkLoaded(entry, mc.level.getChunkSource().getChunk(section.getSectionX(), section.getSectionZ(), true));
-                    mc.levelRenderer.setSectionDirty(
+                    mc.levelExtractor.setSectionDirty(
                             section.getSectionX(),
                             section.getSectionY(),
                             section.getSectionZ());
@@ -280,7 +278,7 @@ public class Schematica {
                         }
 
                         if (mc.level != null) {
-                            mc.levelRenderer.setSectionDirty(
+                            mc.levelExtractor.setSectionDirty(
                                     section.getSectionX(),
                                     section.getSectionY(),
                                     section.getSectionZ());
@@ -320,7 +318,7 @@ public class Schematica {
                         // last parameter - return empty chunk, not null
                         if (mc.level != null) {
                             section.onChunkLoaded(newEntry, mc.level.getChunkSource().getChunk(section.getSectionX(), section.getSectionZ(), true));
-                            mc.levelRenderer.setSectionDirty(
+                            mc.levelExtractor.setSectionDirty(
                                     section.getSectionX(),
                                     section.getSectionY(),
                                     section.getSectionZ());
@@ -505,25 +503,28 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            LineRenderer renderer = LineRenderer.getInstance();
             renderer.begin();
 
+            Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
                     renderer.line(
                             event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
-                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            color.getRGB(), 1f);
                 });
             }
 
-            renderer.end(event.getMvp(), new Color(0.2f, 1.0f, 0.2f, 0.8f));
+            renderer.end(event.getMvp());
         }
 
         if (config.showMissingBlockCubes) {
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            LineRenderer renderer = LineRenderer.getInstance();
             renderer.begin();
 
+            Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
                     double x1 = pos.getX() + 0.25;
@@ -532,11 +533,11 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, color.getRGB(), 1f);
                 });
             }
 
-            renderer.end(event.getMvp(), new Color(0.2f, 1.0f, 0.2f, 0.8f));
+            renderer.end(event.getMvp());
         }
 
         if (config.showWrongBlockTracers) {
@@ -545,25 +546,28 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            LineRenderer renderer = LineRenderer.getInstance();
             renderer.begin();
 
+            Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
                     renderer.line(
                             event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
-                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            color.getRGB(), 1f);
                 });
             }
 
-            renderer.end(event.getMvp(), new Color(1.0f, 0.5f, 0.5f, 0.6f));
+            renderer.end(event.getMvp());
         }
 
         if (config.showWrongBlockCubes) {
-            UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+            LineRenderer renderer = LineRenderer.getInstance();
             renderer.begin();
 
+            Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockCubesMaxDistance, pos -> {
                     double x1 = pos.getX() + 0.25;
@@ -572,19 +576,18 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, color.getRGB(), 1f);
                 });
             }
 
-            renderer.end(event.getMvp(), new Color(1.0f, 0.5f, 0.5f, 0.6f));
+            renderer.end(event.getMvp());
         }
     }
 
     private void renderCreateBoundaries(RenderWorldLastEvent event, Vec3 view, SchematicaConfig.Create create) {
         final double gap = 0.0625;
 
-        // TODO: not working because wrong framebuffer?
-        Color3dRenderer quadRenderer = RenderUtilities.instance.getColor3dRenderer();
+        Position3dColorRenderer quadRenderer = Position3dColorRenderer.getInstance();
         quadRenderer.begin();
         quadRenderer.cuboid(
                 (float) (create.getX1() - gap - view.x),
@@ -593,18 +596,16 @@ public class Schematica {
                 (float) (create.getX2() + gap - view.x),
                 (float) (create.getY2() + gap - view.y),
                 (float) (create.getZ2() + gap - view.z),
-                0.00f, 0.58f, 1.00f, 0.2f);
-        GlStateManager._depthMask(false);
+                new Color(0.00f, 0.58f, 1.00f, 0.2f).getRGB());
         quadRenderer.end(event.getMvp());
-        GlStateManager._depthMask(true);
 
-        VertexColorLineRenderer lineRenderer = VertexColorLineRenderer.getInstance();
+        LineRenderer lineRenderer = LineRenderer.getInstance();
         lineRenderer.begin();
         lineRenderer.cuboid(
                 event.getCameraPos(),
                 create.getX1() - gap, create.getY1() - gap, create.getZ1() - gap,
                 create.getX2() + gap, create.getY2() + gap, create.getZ2() + gap,
-                1f, 1f, 1f, 1f);
+                Color.WHITE.getRGB(), 1f);
         lineRenderer.end(event.getMvp(), true);
     }
 

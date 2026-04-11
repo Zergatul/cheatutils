@@ -1,8 +1,8 @@
 #version 330
 
-uniform sampler2D InSampler;
+uniform sampler2D Texture0;
 
-layout(std140) uniform Block {
+layout(std140) uniform Inputs {
     vec4 OutlineColor;
     float PixelWidth;
     float PixelHeight;
@@ -20,15 +20,15 @@ void main() {
     float y2 = TexCoordinates.y;
     float y3 = TexCoordinates.y + PixelHeight;
     vec4 sum =
-        8 * texture(InSampler, vec2(x2, y2))
-        - texture(InSampler, vec2(x1, y1))
-        - texture(InSampler, vec2(x1, y2))
-        - texture(InSampler, vec2(x1, y3))
-        - texture(InSampler, vec2(x2, y1))
-        - texture(InSampler, vec2(x2, y3))
-        - texture(InSampler, vec2(x3, y1))
-        - texture(InSampler, vec2(x3, y2))
-        - texture(InSampler, vec2(x3, y3));
+        8 * texture(Texture0, vec2(x2, y2))
+        - texture(Texture0, vec2(x1, y1))
+        - texture(Texture0, vec2(x1, y2))
+        - texture(Texture0, vec2(x1, y3))
+        - texture(Texture0, vec2(x2, y1))
+        - texture(Texture0, vec2(x2, y3))
+        - texture(Texture0, vec2(x3, y1))
+        - texture(Texture0, vec2(x3, y2))
+        - texture(Texture0, vec2(x3, y3));
     float sf = sum.r + sum.g + sum.b + sum.a;
     FragColor = clamp(vec4(sf / 2.0), 0.0, 1.0) * OutlineColor;
 }

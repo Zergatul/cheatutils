@@ -41,14 +41,19 @@ public abstract class MixinGameRenderer {
         return FreeCam.instance.onRenderItemInHandIsFirstPerson(cameraType);
     }
 
-    @Inject(at = @At("HEAD"), method = "render")
-    private void onBeforeRender(DeltaTracker delta, boolean renderLevel, CallbackInfo info) {
-        Events.RenderTickStart.trigger(delta);
+    @Inject(method = "render", at = @At("HEAD"))
+    private void onBeforeRender(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo info) {
+        Events.RenderTickStart.trigger(deltaTracker);
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resize(II)V"))
     private void onResizeFramebuffers(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
         Events.FramebuffersResize.trigger(new ResizeEvent(this.gameRenderState.windowRenderState.width, this.gameRenderState.windowRenderState.height));
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderBuffers;endFrame()V"))
+    private void onRenderBuffersEndFrame(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
+        Events.RenderBuffersCleanUp.trigger();
     }
 
     @ModifyArg(
@@ -71,7 +76,7 @@ public abstract class MixinGameRenderer {
         FullBright.instance.shouldReturnNightVisionEffect = true;
     }
 
-    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;extractLevel(Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/client/Camera;F)V", shift = At.Shift.AFTER))
+    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/extract/LevelExtractor;extract(Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/client/Camera;F)V", shift = At.Shift.AFTER))
     private void onAfterLevelExtract(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo info) {
         FullBright.instance.shouldReturnNightVisionEffect = false;
     }

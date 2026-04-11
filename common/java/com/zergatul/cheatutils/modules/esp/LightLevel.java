@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -42,7 +42,7 @@ public class LightLevel implements Module {
     public static final LightLevel instance = new LightLevel();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Identifier texture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/light-level.png");
+    private final Identifier texture = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/light-level.png");
     private final TextureLocation[] numbers = new TextureLocation[16];
     private final HashMap<ChunkPos, HashSet<BlockPos>> chunks = new HashMap<>();
     private final List<BlockPos> listForRendering = new ArrayList<>();
@@ -105,7 +105,7 @@ public class LightLevel implements Module {
             return;
         }
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         Vec3 view = camera.position();
 
         Direction direction = Direction.fromYRot(camera.yRot());
@@ -116,7 +116,7 @@ public class LightLevel implements Module {
         double yc = config.useFreeCamPosition ? view.y : mc.player.getY();
         double zc = config.useFreeCamPosition ? view.z : mc.player.getZ();
 
-        Texture3dRenderer2 textureRenderer = Texture3dRenderer2.getInstance();
+        Position3dTextureRenderer textureRenderer = Position3dTextureRenderer.getInstance();
         textureRenderer.begin();
 
         List<BlockPos> listTracers = new ArrayList<>();
@@ -158,7 +158,7 @@ public class LightLevel implements Module {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        VertexColorLineRenderer lineRenderer = VertexColorLineRenderer.getInstance();
+        LineRenderer lineRenderer = LineRenderer.getInstance();
         lineRenderer.begin();
 
         for (BlockPos pos: listTracers) {
@@ -168,7 +168,7 @@ public class LightLevel implements Module {
                         event.getCameraPos(),
                         tracerX, tracerY, tracerZ,
                         pos.getX() + 0.5, y, pos.getZ() + 0.5,
-                        1f, 1f, 1f, 0.5f);
+                        0x7FFFFFFF, 1f);
             }
 
             if (config.showLocations) {
@@ -176,10 +176,10 @@ public class LightLevel implements Module {
                 double z1 = pos.getZ() + 0.05;
                 double x2 = x1 + 0.9;
                 double z2 = z1 + 0.9;
-                lineRenderer.line(event.getCameraPos(), x1, y, z1, x1, y, z2, 1f, 1f, 1f, 0.5f);
-                lineRenderer.line(event.getCameraPos(), x1, y, z2, x2, y, z2, 1f, 1f, 1f, 0.5f);
-                lineRenderer.line(event.getCameraPos(), x2, y, z2, x2, y, z1, 1f, 1f, 1f, 0.5f);
-                lineRenderer.line(event.getCameraPos(), x2, y, z1, x1, y, z1, 1f, 1f, 1f, 0.5f);
+                lineRenderer.line(event.getCameraPos(), x1, y, z1, x1, y, z2, 0x7FFFFFFF, 1f);
+                lineRenderer.line(event.getCameraPos(), x1, y, z2, x2, y, z2, 0x7FFFFFFF, 1f);
+                lineRenderer.line(event.getCameraPos(), x2, y, z2, x2, y, z1, 0x7FFFFFFF, 1f);
+                lineRenderer.line(event.getCameraPos(), x2, y, z1, x1, y, z1, 0x7FFFFFFF, 1f);
             }
         }
 

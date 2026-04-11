@@ -72,14 +72,16 @@ public class MixinClientCommonPacketListenerImpl {
             cancellable = true)
     private void onPushResourcePackInvalidUrl(ClientboundResourcePackPushPacket packet, CallbackInfo info) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
-        if (!config.disconnectOnMaliciousResourcePackBehavior) {
+        Privacy privacy = Privacy.instance;
+
+        if (!privacy.shouldDisconnectOnMaliciousResourcePack(config)) {
             return;
         }
 
         Component message = Component.literal("")
                 .append(Component.literal("Server sent invalid resource pack URL: ").withStyle(ChatFormatting.WHITE))
                 .append(Component.literal(packet.url()).withStyle(ChatFormatting.GREEN));
-        this.connection.disconnect(Privacy.instance.createDisconnectMessage(message));
+        this.connection.disconnect(privacy.createDisconnectMessage(message));
         info.cancel();
     }
 
@@ -93,7 +95,9 @@ public class MixinClientCommonPacketListenerImpl {
             @Local(name = "url") URL url
     ) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
-        if (!config.disconnectOnMaliciousResourcePackBehavior) {
+        Privacy privacy = Privacy.instance;
+
+        if (!privacy.shouldDisconnectOnMaliciousResourcePack(config)) {
             return;
         }
 

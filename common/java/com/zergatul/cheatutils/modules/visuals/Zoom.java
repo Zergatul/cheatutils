@@ -15,8 +15,7 @@ public class Zoom implements Module {
     private double fovFactor;
 
     private Zoom() {
-        // should run after FreeCam
-        Events.ModifyFieldOfView.add(this::onModifyFieldOfView, 10);
+        Events.ModifyCalculatedFieldOfView.add(this::onModifyFieldOfView);
         state = State.NONE;
     }
 

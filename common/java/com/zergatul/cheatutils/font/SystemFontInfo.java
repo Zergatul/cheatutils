@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.font;
 
 import com.zergatul.cheatutils.font.ttf.*;
+import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public abstract class SystemFontInfo {
@@ -45,13 +47,14 @@ public abstract class SystemFontInfo {
     }
 
     public static List<SystemFontInfo> fromFile(String path) throws IOException {
-        if (path.endsWith(".ttc")) {
+        String extension = FilenameUtils.getExtension(path).toLowerCase(Locale.ROOT);
+        if (extension.equals("ttc")) {
             return fromContainerFile(path);
         }
-        if (path.endsWith(".ttf") || path.endsWith(".otf")) {
+        if (extension.equals("ttf") || extension.equals("otf")) {
             return List.of(fromFontFile(path));
         }
-        throw new IllegalStateException();
+        throw new IllegalArgumentException("Unsupported font file extension: " + path);
     }
 
     private static List<SystemFontInfo> fromContainerFile(String path) throws IOException {

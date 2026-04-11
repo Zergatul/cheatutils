@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
+import com.zergatul.cheatutils.modules.hacks.CrystalAura;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
@@ -41,6 +42,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new BlockModelApi());
         apis.add(new BlockStateApi());
         apis.add(new RescanChunksApi());
+        apis.add(new EntityTypesApi());
         apis.add(new EntityInfoApi());
         apis.add(new EntitiesConfigApi());
         apis.add(new BlockColorApi());
@@ -734,7 +736,7 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().chatUtilitiesConfig = config;
 
                 if (oldConfig.showTime != config.showTime || !Objects.equals(oldConfig.timeFormat, config.timeFormat)) {
-                    TickEndExecutor.instance.execute(() -> Minecraft.getInstance().gui.getChat().rescaleChat());
+                    TickEndExecutor.instance.execute(() -> Minecraft.getInstance().gui.hud.getChat().rescaleChat());
                 }
             }
         });
@@ -1004,6 +1006,22 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(PrivacyConfig config) {
                 ConfigStore.instance.getConfig().privacyConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("crystal-aura", CrystalAuraConfig.class) {
+            @Override
+            protected CrystalAuraConfig getConfig() {
+                return ConfigStore.instance.getConfig().crystalAuraConfig;
+            }
+
+            @Override
+            protected void setConfig(CrystalAuraConfig config) {
+                CrystalAuraConfig oldConfig = ConfigStore.instance.getConfig().crystalAuraConfig;
+                ConfigStore.instance.getConfig().crystalAuraConfig = config;
+                if (oldConfig.enabled ^ config.enabled) {
+                    CrystalAura.instance.onEnableStateChanged();
+                }
             }
         });
     }

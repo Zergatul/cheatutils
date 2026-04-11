@@ -13,10 +13,10 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -89,7 +89,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     }
 
     @Override
-    public void lerpMotion(Vec3 movement) {
+    public void lerpMotion(@NonNull Vec3 movement) {
         MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
         if (config.antiKnockback) {
             return;
@@ -130,19 +130,19 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     @Inject(at = @At("HEAD"), method = "openTextEdit", cancellable = true)
     private void onOpenTextEdit(SignBlockEntity sign, boolean isFrontText, CallbackInfo info) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
+        Privacy privacy = Privacy.instance;
 
         if (config.logTranslationExploitDetails) {
-            Privacy.instance.forEachExploitable(
+            privacy.forEachExploitable(
                     sign,
                     translatable -> Debugging.instance.addMessage("Translatable exploit attempt. Key=" + translatable.getKey()),
                     keybind -> Debugging.instance.addMessage("Keybind exploit attempt. Key=" + keybind.getName()));
         }
 
-        if (!config.disconnectOnTranslationExploit) {
+        if (!privacy.shouldDisconnectOnTranslationExploit(config)) {
             return;
         }
 
-        Privacy privacy = Privacy.instance;
         Optional.<Component>empty()
                 .or(() -> privacy.checkExploitable(sign.getBackText()))
                 .or(() -> privacy.checkExploitable(sign.getFrontText()))

@@ -12,9 +12,6 @@ public class BlockEspConfig extends EspConfigBase {
     // array is sorted by block id during json deserialization
     public ImmutableList<Block> blocks;
 
-    public boolean drawOverlay;
-    public Color overlayColor;
-
     public boolean scriptEnabled;
     public String code;
 
@@ -23,9 +20,6 @@ public class BlockEspConfig extends EspConfigBase {
 
     public void copyFrom(BlockEspConfig jsonConfig) {
         copyFromJsonTracerConfigBase(jsonConfig);
-
-        drawOverlay = jsonConfig.drawOverlay;
-        overlayColor = jsonConfig.overlayColor;
 
         scriptEnabled = jsonConfig.scriptEnabled;
         code = jsonConfig.code;
@@ -39,8 +33,8 @@ public class BlockEspConfig extends EspConfigBase {
         config.drawTracers = true;
         config.tracerColor = Color.WHITE;
 
-        config.drawOutline = true;
-        config.outlineColor = Color.WHITE;
+        config.drawBoundingBox = true;
+        config.boundingBoxColor = Color.WHITE;
 
         config.drawOverlay = false;
         config.overlayColor = new Color(0x80FFFFFF, true);

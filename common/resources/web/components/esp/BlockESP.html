@@ -38,8 +38,8 @@
                                 </switch-checkbox>
                             </td>
                             <td>
-                                <switch-checkbox v-model="item.drawOutline" title="Bounding Box" @change="update(item)">
-                                    <color-box :color="item.outlineColor"></color-box>
+                                <switch-checkbox v-model="item.drawBoundingBox" title="Bounding Box" @change="update(item)">
+                                    <color-box :color="item.boundingBoxColor"></color-box>
                                     <span class="icon-desc">BB</span>
                                 </switch-checkbox>
                             </td>
@@ -158,7 +158,7 @@
                                         <span class="field-description">Line Width:</span>
                                     </td>
                                     <td>
-                                        <input type="number" min="0.5" max="100" step="0.25" class="w5" v-model="selectedConfig.tracerWidth" @change="update(selectedConfig)">
+                                        <input type="number" min="0.5" max="100" step="0.1" class="w5" v-model="selectedConfig.tracerWidth" @change="update(selectedConfig)">
                                     </td>
                                 </tr>
                                 <tr>
@@ -178,12 +178,12 @@
                 </fieldset>
                 <fieldset>
                     <legend>
-                        <switch-checkbox v-model="selectedConfig.drawOutline" @change="update(selectedConfig)">
+                        <switch-checkbox v-model="selectedConfig.drawBoundingBox" @change="update(selectedConfig)">
                             Bounding Box
                         </switch-checkbox>
                     </legend>
                     <color-picker
-                        v-model="selectedConfig.outlineColor"
+                        v-model="selectedConfig.boundingBoxColor"
                         @update:model-value="update(selectedConfig)">
                     </color-picker>
                     <div>
@@ -194,7 +194,7 @@
                                         <span class="field-description">Line Width:</span>
                                     </td>
                                     <td>
-                                        <input type="number" min="0.5" max="100" step="0.25" class="w5" v-model="selectedConfig.outlineWidth" @change="update(selectedConfig)">
+                                        <input type="number" min="0.5" max="100" step="0.1" class="w5" v-model="selectedConfig.boundingBoxWidth" @change="update(selectedConfig)">
                                     </td>
                                 </tr>
                                 <tr>
@@ -202,7 +202,7 @@
                                         <span class="field-description">Max Distance Override:</span>
                                     </td>
                                     <td>
-                                        <input type="text" class="w5" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                                        <input type="text" class="w5" v-model="selectedConfig.boundingBoxMaxDistance" @change="update(selectedConfig)">
                                     </td>
                                 </tr>
                             </table>
@@ -223,7 +223,7 @@
                         @update:model-value="update(selectedConfig)">
                     </color-picker>
                     <div>
-                        
+
                     </div>
                 </fieldset>
                 <fieldset style="flex-direction: column;">

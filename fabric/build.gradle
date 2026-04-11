@@ -12,6 +12,10 @@ base {
     archivesName = project.archives_base_name
 }
 
+repositories {
+    mavenCentral()
+}
+
 loom {
     accessWidenerPath = file("src/main/resources/cheatutils.classtweaker")
 }
@@ -21,6 +25,8 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     compileOnly("org.jspecify:jspecify:1.0.0")
+    testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 sourceSets {
@@ -50,6 +56,10 @@ tasks.withType(JavaCompile).configureEach {
     it.options.compilerArgs.add("-parameters")
 }
 
+tasks.named('test', Test) {
+    useJUnitPlatform()
+}
+
 java {
     //withSourcesJar()
 
@@ -65,6 +75,7 @@ tasks.named('jar', Jar) {
         rename { "${it}_${project.archivesName.get()}"}
     }
 
+    includeEmptyDirs = false
     exclude("net/caffeinemc/**")
     exclude("net/irisshaders/**")
 }

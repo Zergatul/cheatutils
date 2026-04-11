@@ -1,8 +1,8 @@
 #version 330
 
-uniform sampler2D InSampler;
+uniform sampler2D Texture0;
 
-layout(std140) uniform Block {
+layout(std140) uniform Inputs {
     vec4 OverlayColor;
 };
 
@@ -11,5 +11,5 @@ in vec2 TexCoordinates;
 out vec4 FragColor;
 
 void main() {
-    FragColor = texture(InSampler, TexCoordinates) * OverlayColor;
+    FragColor = texture(Texture0, TexCoordinates) * OverlayColor;
 }

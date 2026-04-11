@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.font;
 
-import com.zergatul.cheatutils.render.buffers.Color2dRenderBuffer;
+import com.zergatul.cheatutils.render.Position2dColorRenderer;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 
 public class FailedFontRenderer extends FontRenderer {
@@ -37,7 +37,7 @@ public class FailedFontRenderer extends FontRenderer {
             return;
         }
 
-        Color2dRenderBuffer buffer = buffers.getColor2d();
+        Position2dColorRenderer.BufferBuilder buffer = buffers.getColor2d();
         for (StylizedTextChunk chunk : text.chunks) {
             for (int i = 0; i < chunk.text().length(); i++) {
                 buffer.rect(x + 1, y + 1, size - 2, size - 2, chunk.color());

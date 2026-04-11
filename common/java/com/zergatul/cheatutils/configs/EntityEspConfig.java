@@ -9,12 +9,10 @@ import java.awt.*;
 public class EntityEspConfig extends EspConfigBase {
 
     public Class<?> clazz;
-    public boolean glow;
-    public Color glowColor;
-    public Double glowMaxDistance;
+    public boolean drawOutline;
+    public Color outlineColor;
+    public Double outlineMaxDistance;
     public int outlineMethod;
-    public boolean drawOverlay;
-    public Color overlayColor;
 
     // Entity Title
     public boolean drawTitles;
@@ -34,9 +32,9 @@ public class EntityEspConfig extends EspConfigBase {
         return clazz.isInstance(entity);
     }
 
-    public double getGlowMaxDistanceSqr() {
-        if (glowMaxDistance != null) {
-            return glowMaxDistance * glowMaxDistance;
+    public double getOutlineMaxDistanceSqr() {
+        if (outlineMaxDistance != null) {
+            return outlineMaxDistance * outlineMaxDistance;
         } else {
             return maxDistance * maxDistance;
         }
@@ -44,12 +42,10 @@ public class EntityEspConfig extends EspConfigBase {
 
     public void copyFrom(EntityEspConfig jsonConfig) {
         copyFromJsonTracerConfigBase(jsonConfig);
-        glow = jsonConfig.glow;
-        glowColor = jsonConfig.glowColor;
-        glowMaxDistance = jsonConfig.glowMaxDistance;
+        drawOutline = jsonConfig.drawOutline;
+        outlineColor = jsonConfig.outlineColor;
+        outlineMaxDistance = jsonConfig.outlineMaxDistance;
         outlineMethod = jsonConfig.outlineMethod;
-        drawOverlay = jsonConfig.drawOverlay;
-        overlayColor = jsonConfig.overlayColor;
 
         drawTitles = jsonConfig.drawTitles;
         showDefaultNames = jsonConfig.showDefaultNames;
@@ -62,11 +58,11 @@ public class EntityEspConfig extends EspConfigBase {
     }
 
     public boolean useMinecraftOutline() {
-        return this.enabled && this.glow && this.outlineMethod == 0;
+        return this.enabled && this.drawOutline && this.outlineMethod == 0;
     }
 
     public boolean useModOutline() {
-        return this.glow && this.outlineMethod == 1;
+        return this.drawOutline && this.outlineMethod == 1;
     }
 
     public boolean shouldDrawOverlay() {
@@ -79,11 +75,11 @@ public class EntityEspConfig extends EspConfigBase {
         config.enabled = false;
         config.drawTracers = true;
         config.tracerColor = Color.WHITE;
+        config.drawBoundingBox = true;
+        config.boundingBoxColor = Color.WHITE;
+        config.maxDistance = DefaultMaxDistance;
         config.drawOutline = true;
         config.outlineColor = Color.WHITE;
-        config.maxDistance = DefaultMaxDistance;
-        config.glow = true;
-        config.glowColor = Color.WHITE;
         config.drawOverlay = false;
         config.overlayColor = new Color(0x80FFFFFF, true);
         return config;

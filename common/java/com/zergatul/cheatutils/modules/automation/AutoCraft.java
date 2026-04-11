@@ -45,7 +45,7 @@ public class AutoCraft {
             return;
         }
 
-        if (!(mc.screen instanceof CraftingScreen craftingScreen)) {
+        if (!(mc.gui.screen() instanceof CraftingScreen craftingScreen)) {
             state = State.NONE;
             return;
         }

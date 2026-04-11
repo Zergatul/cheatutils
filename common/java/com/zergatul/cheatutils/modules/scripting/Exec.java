@@ -46,6 +46,6 @@ public class Exec implements Module {
     }
 
     private void systemMessage(String message, int color) {
-        Minecraft.getInstance().getChatListener().handleSystemMessage(Component.literal(message).withStyle(Style.EMPTY.withColor(color)), false);
+        Minecraft.getInstance().gui.chatListener().handleSystemMessage(Component.literal(message).withStyle(Style.EMPTY.withColor(color)), false);
     }
 }

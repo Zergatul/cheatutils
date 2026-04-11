@@ -1,17 +1,19 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -27,6 +29,7 @@ public class CacheItemRenderer {
     public static final CacheItemRenderer instance = new CacheItemRenderer();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
     private final Queue<FreeSlot> freeSlots;
     private final Map<Object, OccupiedSlot> slots;
     private final List<Object> animated;
@@ -50,7 +53,7 @@ public class CacheItemRenderer {
         this.cacheList = new LinkedList<>();
         this.requestedItems = new HashMap<>();
         this.projection = new Projection();
-        this.projectionMatrixBuffer = new ProjectionMatrixBuffer(ModMain.MODID + " items");
+        this.projectionMatrixBuffer = new ProjectionMatrixBuffer(Constants.MOD_ID + " items");
         this.slotSize = 4; // 4x4 by default
     }
 
@@ -91,9 +94,17 @@ public class CacheItemRenderer {
         if (texture == null) {
             textureSize = slotSize * 16 * guiScale;
             GpuDevice device = RenderSystem.getDevice();
-            texture = device.createTexture(ModMain.MODID + " items atlas", 13, TextureFormat.RGBA8, textureSize, textureSize, 1, 1);
+            texture = device.createTexture(
+                    Constants.MOD_ID + " items atlas",
+                    GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT,
+                    GpuFormat.RGBA8_UNORM,
+                    textureSize, textureSize, 1, 1);
             textureView = device.createTextureView(texture);
-            depthTexture = device.createTexture(ModMain.MODID + " items atlas depth", 9, TextureFormat.DEPTH32, textureSize, textureSize, 1, 1);
+            depthTexture = device.createTexture(
+                    Constants.MOD_ID + " items atlas depth",
+                    GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_RENDER_ATTACHMENT,
+                    GpuFormat.D32_FLOAT,
+                    textureSize, textureSize, 1, 1);
             depthTextureView = device.createTextureView(depthTexture);
 
             for (int y = 0; y < slotSize; y++) {
@@ -162,7 +173,7 @@ public class CacheItemRenderer {
         float u1 = (float)(x + slotSize) / textureSize;
         float v0 = 1f - (float)y / textureSize;
         float v1 = 1f - (float)(y + slotSize) / textureSize;
-        return new AtlasSlot(texture, u0, v0, u1, v1);
+        return new AtlasSlot(textureView, u0, v0, u1, v1);
     }
 
     // copied from GuiItemAtlas.drawToSlot
@@ -175,7 +186,7 @@ public class CacheItemRenderer {
 
         GpuDevice device = RenderSystem.getDevice();
         device.createCommandEncoder().clearColorAndDepthTextures(
-                texture, 0, depthTexture, 1.0,
+                texture, GuiRenderer.CLEAR_COLOR, depthTexture, 0.0,
                 left, textureSize - bottom, slotSize, slotSize);
 
         PoseStack poseStack = new PoseStack();
@@ -188,13 +199,13 @@ public class CacheItemRenderer {
         RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(projection), ProjectionType.ORTHOGRAPHIC);
         RenderSystem.enableScissorForRenderTypeDraws(left, textureSize - bottom, slotSize, slotSize);
         Lighting.Entry lighting = renderState.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
-        mc.gameRenderer.getLighting().setupFor(lighting);
-        renderState.submit(poseStack, mc.gameRenderer.getSubmitNodeStorage(), 15728880, OverlayTexture.NO_OVERLAY, 0);
-        mc.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
-        mc.renderBuffers().bufferSource().endBatch();
+        mc.gameRenderer.lighting().setupFor(lighting);
+        renderState.submit(poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, 0);
+        mc.gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
         RenderSystem.disableScissorForRenderTypeDraws();
         RenderSystem.outputColorTextureOverride = null;
         RenderSystem.outputDepthTextureOverride = null;
+        poseStack.popPose();
     }
 
     private void invalidate() {
@@ -241,5 +252,5 @@ public class CacheItemRenderer {
 
     private record ItemRequest(ItemOwner owner, ItemStack itemStack) {}
 
-    public record AtlasSlot(GpuTexture texture, float u0, float v0, float u1, float v1) {}
+    public record AtlasSlot(GpuTextureView textureView, float u0, float v0, float u1, float v1) {}
 }

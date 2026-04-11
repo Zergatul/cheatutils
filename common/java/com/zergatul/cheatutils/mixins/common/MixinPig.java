@@ -31,7 +31,7 @@ public abstract class MixinPig {
     }
 
     @Inject(at = @At("HEAD"), method = "getRiddenSpeed(Lnet/minecraft/world/entity/player/Player;)F", cancellable = true)
-    private void onGetRiddenSpeed(Player player, CallbackInfoReturnable<Float> info) {
+    private void onGetRiddenSpeed(Player controller, CallbackInfoReturnable<Float> info) {
         PigHackConfig config = ConfigStore.instance.getConfig().pigHackConfig;
         if (config.enabled && config.overrideSteeringSpeed) {
             var pig = (Pig) (Object) this;

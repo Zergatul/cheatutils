@@ -134,6 +134,25 @@ public class ColorUtils {
         return (a << 24) | ((255 - r) << 16) | ((255 - g) << 8) | (255 - b);
     }
 
+    public static int shadowed(int color, float factor) {
+        int r = ColorUtils.Int.r(color);
+        int g = ColorUtils.Int.g(color);
+        int b = ColorUtils.Int.b(color);
+        int a = ColorUtils.Int.a(color);
+        r = Math.round(r * factor);
+        g = Math.round(g * factor);
+        b = Math.round(b * factor);
+        return ColorUtils.Int.combine(r, g, b, a);
+    }
+
+    public static int toShader(int color) {
+        int a = Int.a(color);
+        int r = Int.r(color);
+        int g = Int.g(color);
+        int b = Int.b(color);
+        return (a << 24) | (b << 16) | (g << 8) | r;
+    }
+
     public static final class Int {
 
         public static int r(int color) {
@@ -150,6 +169,18 @@ public class ColorUtils {
 
         public static int a(int color) {
             return (color >>> 24) & 0xFF;
+        }
+
+        public static int combine(int r, int g, int b, int a) {
+            return (a << 24) | (r << 16) | (g << 8) | b;
+        }
+
+        public static int multiply(int color1, int color2) {
+            return combine(
+                    r(color1) * r(color2) / 255,
+                    g(color1) * g(color2) / 255,
+                    b(color1) * b(color2) / 255,
+                    a(color1) * a(color2) / 255);
         }
     }
 }

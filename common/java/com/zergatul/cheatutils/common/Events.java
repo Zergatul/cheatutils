@@ -19,11 +19,21 @@ public class Events {
     // called once during loading
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
 
+    // Minecraft.runTick() : begin
+    public static final SimpleEventHandler BeforeProcessQueuedPackets = new SimpleEventHandler();
+    // PacketProcessor.processQueuedPackets() : begin
+    public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
+    // PacketProcessor.processQueuedPackets() : end
+    public static final SimpleEventHandler AfterProcessQueuedPackets = new SimpleEventHandler();
+
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     // GameRenderer.pick(1)
     public static final ParameterizedEventHandler<DeltaTracker> RenderTickStart = new ParameterizedEventHandler<>();
     // GameRenderer.pick(partial)
-    public static final ParameterizedEventHandler<ModifyFieldOfViewEvent> ModifyFieldOfView = new ParameterizedEventHandler<>();
+    public static final CancelableEventHandler<SimpleCancellableEvent> ModifyFieldOfViewAnimation = new CancelableEventHandler<>();
+    public static final CancelableEventHandler<SimpleCancellableEvent> ModifyFieldOfViewBasedOnLiquid = new CancelableEventHandler<>();
+    public static final ParameterizedEventHandler<ModifyFieldOfViewEvent> ModifyCalculatedFieldOfView = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler BeforeRenderWorld = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> AfterRenderWorld = new ParameterizedEventHandler<>();
     // GetFieldOfView again
@@ -47,6 +57,11 @@ public class Events {
 
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
 
+    public static final SimpleEventHandler RenderBuffersCleanUp = new SimpleEventHandler();
+
+    // runs after each frame rendered, close to the main game loop
+    public static final SimpleEventHandler MainLoopFrameEnd = new SimpleEventHandler();
+
 
     public static final SimpleEventHandler OnBeforePick = new SimpleEventHandler();
     public static final SimpleEventHandler OnAfterPick = new SimpleEventHandler();
@@ -57,6 +72,8 @@ public class Events {
     public static final ParameterizedEventHandler<LevelChunk> RawChunkLoaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<LevelChunk> RawChunkUnloaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockUpdateEvent> RawBlockUpdated = new ParameterizedEventHandler<>();
+
+    // below 3 events run in separate thread owned by BlockEventsProcessor class
     public static final ParameterizedEventHandler<SnapshotChunk> ChunkLoaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<ChunkPos> ChunkUnloaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockUpdateEvent> BlockUpdated = new ParameterizedEventHandler<>();
@@ -69,8 +86,7 @@ public class Events {
     public static final SimpleEventHandler LevelUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
     public static final ParameterizedEventHandler<GatherTooltipComponentsEvent> GatherTooltipComponents = new ParameterizedEventHandler<>();
-    public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
-    public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
+
     public static final CancelableEventHandler<PreRenderTooltipEvent> PreRenderTooltip = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<Vector2ic> TooltipPositioned = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler PostRenderTooltip = new SimpleEventHandler();

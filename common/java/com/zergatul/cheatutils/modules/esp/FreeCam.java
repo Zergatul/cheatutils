@@ -1,14 +1,12 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.ModifyFieldOfViewEvent;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
+import com.zergatul.cheatutils.common.events.SimpleCancellableEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.GroupLineRenderer;
-import com.zergatul.cheatutils.render.UniformColorLineRenderer;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.CameraType;
@@ -64,7 +62,8 @@ public class FreeCam implements Module {
     private FreeCam() {
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
         Events.ClientTickStart.add(this::onClientTickStart);
-        Events.ModifyFieldOfView.add(this::onModifyFieldOfView, 0);
+        Events.ModifyFieldOfViewAnimation.add(this::onModifyFieldOfViewAnimation);
+        Events.ModifyFieldOfViewBasedOnLiquid.add(this::onModifyFieldOfViewBasedOnLiquid);
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.OnBeforePick.add(this::onBeforePick);
         Events.OnAfterPick.add(this::onAfterPick);
@@ -88,12 +87,26 @@ public class FreeCam implements Module {
         return z;
     }
 
+    public Vec3 getPosition() {
+        return new Vec3(x, y, z);
+    }
+
     public float getXRot() {
         return xRot;
     }
 
     public float getYRot() {
         return yRot;
+    }
+
+    public Vec3 getViewVector() {
+        float xRotRadians = xRot * (float) (Math.PI / 180.0);
+        float yRotRadians = -yRot * (float) (Math.PI / 180.0);
+        float cosYRot = Mth.cos(yRotRadians);
+        float sinYRot = Mth.sin(yRotRadians);
+        float cosXRot = Mth.cos(xRotRadians);
+        float sinXRot = Mth.sin(xRotRadians);
+        return new Vec3(sinYRot * cosXRot, -sinXRot, cosYRot * cosXRot);
     }
 
     public FreeCamPath getPath() {
@@ -258,9 +271,15 @@ public class FreeCam implements Module {
         }
     }
 
-    private void onModifyFieldOfView(ModifyFieldOfViewEvent event) {
+    private void onModifyFieldOfViewAnimation(SimpleCancellableEvent event) {
         if (active) {
-            event.fov = mc.options.fov().get();
+            event.cancel();
+        }
+    }
+
+    private void onModifyFieldOfViewBasedOnLiquid(SimpleCancellableEvent event) {
+        if (active) {
+            event.cancel();
         }
     }
 
@@ -369,7 +388,7 @@ public class FreeCam implements Module {
             return;
         }
 
-        UniformColorLineRenderer renderer = UniformColorLineRenderer.getInstance();
+        LineRenderer renderer = LineRenderer.getInstance();
         renderer.begin();
 
         for (int i = 1; i < path.size(); i++) {
@@ -379,10 +398,11 @@ public class FreeCam implements Module {
             renderer.line(
                     event.getCameraPos(),
                     e1.position().x, e1.position().y, e1.position().z,
-                    e2.position().x, e2.position().y, e2.position().z);
+                    e2.position().x, e2.position().y, e2.position().z,
+                    Color.WHITE.getRGB(), 1f);
         }
 
-        renderer.end(event.getMvp(), Color.WHITE);
+        renderer.end(event.getMvp());
     }
 
     public void startPath() {

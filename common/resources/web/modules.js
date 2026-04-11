@@ -383,6 +383,13 @@ module({
     path: 'air-place',
     tags: ['air', 'place', 'airplace', 'scaffold']
 });
+module({
+    group: 'hacks',
+    name: 'Crystal Aura (BETA)',
+    component: 'CrystalAura',
+    path: 'crystal-aura',
+    tags: ['kill', 'crystal', 'aura', 'auto', 'attack', 'blow', 'explode']
+});
 
 // Visuals Modules ============================
 

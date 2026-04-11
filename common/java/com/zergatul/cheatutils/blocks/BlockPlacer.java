@@ -65,9 +65,9 @@ public class BlockPlacer {
                     if (target != null) {
                         Rotation rotation = method.getTargetRotation();
                         if (rotation == null) {
-                            return createPlan(pos.getCenter(), neighbourPos, direction.getOpposite(), config);
+                            return createPlan(Vec3.atCenterOf(pos), neighbourPos, direction.getOpposite(), config);
                         } else {
-                            return createPlan(pos.getCenter(), neighbourPos, direction.getOpposite(), rotation, method.isDelayedRotation(), method.getTargetDirection(), config);
+                            return createPlan(Vec3.atCenterOf(pos), neighbourPos, direction.getOpposite(), rotation, method.isDelayedRotation(), method.getTargetDirection(), config);
                         }
                     }
                 }
@@ -123,7 +123,7 @@ public class BlockPlacer {
                             public CompletableFuture<Void> apply(InteractionHand hand) {
                                 mc.player.connection.send(new ServerboundUseItemOnPacket(
                                         hand,
-                                        new BlockHitResult(pos.getCenter(), direction.getOpposite(), neighbourPos, false),
+                                        new BlockHitResult(Vec3.atCenterOf(pos), direction.getOpposite(), neighbourPos, false),
                                         getSequenceNumber()));
                                 return CompletableFuture.completedFuture(null);
                             }
@@ -145,7 +145,7 @@ public class BlockPlacer {
                                         false));
                                 mc.player.connection.send(new ServerboundUseItemOnPacket(
                                         hand,
-                                        new BlockHitResult(pos.getCenter(), direction.getOpposite(), neighbourPos, false),
+                                        new BlockHitResult(Vec3.atCenterOf(pos), direction.getOpposite(), neighbourPos, false),
                                         getSequenceNumber()));
                                 return CompletableFuture.completedFuture(null);
                             }
@@ -166,7 +166,7 @@ public class BlockPlacer {
     }
 
     private static BlockPlacePlan createItemUsePlan(BlockPos pos, InteractionConfig config) {
-        return createPlan(pos.getCenter(), pos, Direction.UP, config);
+        return createPlan(Vec3.atCenterOf(pos), pos, Direction.UP, config);
     }
 
     private static BlockPlacePlan createPlan(Vec3 target, BlockPos neighbourPos, Direction direction, InteractionConfig config) {

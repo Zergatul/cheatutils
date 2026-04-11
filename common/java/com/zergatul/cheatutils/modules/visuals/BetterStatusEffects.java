@@ -2,11 +2,11 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import com.google.common.collect.Ordering;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.mixins.common.accessors.GuiAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.HudAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -21,9 +21,7 @@ public class BetterStatusEffects implements Module {
 
     private final Minecraft mc = Minecraft.getInstance();
 
-    private BetterStatusEffects() {
-
-    }
+    private BetterStatusEffects() {}
 
     public void render(GuiGraphicsExtractor graphics, Player player, int y) {
         if (!ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
@@ -42,12 +40,12 @@ public class BetterStatusEffects implements Module {
             MobEffectInstance effectInstance = sorted.get(i);
 
             if (effectInstance.isAmbient()) {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GuiAccessor.getEffectBackgroundAmbientSprite_CU(), left, y, 24, 24);
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HudAccessor.getEffectBackgroundAmbientSprite_CU(), left, y, 24, 24);
             } else {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GuiAccessor.getEffectBackgroundSprite_CU(), left, y, 24, 24);
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HudAccessor.getEffectBackgroundSprite_CU(), left, y, 24, 24);
             }
 
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Gui.getMobEffectSprite(effectInstance.getEffect()), left + 3, y + 3, 18, 18);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Hud.getMobEffectSprite(effectInstance.getEffect()), left + 3, y + 3, 18, 18);
 
             String duration = MobEffectUtil.formatDuration(effectInstance, 1, mc.level.tickRateManager().tickrate()).getString();
             if (duration.startsWith("00")) {

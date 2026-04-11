@@ -29,10 +29,10 @@ public class ContainersApi {
             Returns currently opened screen title. Example: "Barrel"
             """)
     public String getScreenTitle() {
-        if (mc.screen == null) {
+        if (mc.gui.screen() == null) {
             return "";
         }
-        return mc.screen.getTitle().getString();
+        return mc.gui.screen().getTitle().getString();
     }
 
     @MethodDescription("""
@@ -170,7 +170,7 @@ public class ContainersApi {
     }
 
     private AbstractContainerMenu getContainerMenu() {
-        Screen screen = mc.screen;
+        Screen screen = mc.gui.screen();
         if (screen == null) {
             return null;
         }

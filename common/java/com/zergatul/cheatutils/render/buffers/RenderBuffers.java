@@ -1,76 +1,93 @@
 package com.zergatul.cheatutils.render.buffers;
 
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Color2dRenderer;
-import com.zergatul.cheatutils.render.TextureColor2dRenderer;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import com.zergatul.cheatutils.render.Position2dColorRenderer;
+import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import org.joml.Matrix4f;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 public class RenderBuffers {
 
-    private Color2dRenderBuffer color2d;
-    private Int2ObjectMap<TextureColor2dRenderBuffer> texColor2d;
+    public static final int BACKGROUNDS = -4;
+    public static final int ITEMS = 0;
+    public static final int FONT_SHADOW = 2;
+    public static final int FONT = 4;
 
-    public Color2dRenderBuffer getColor2d() {
-        if (color2d == null) {
-            color2d = new Color2dRenderBuffer();
-        }
-        return color2d;
+    private final Matrix4f matrix;
+    private Int2ObjectMap<Position2dColorRenderer.BufferBuilder> color2dMap;
+    private Int2ObjectMap<Object2ObjectMap<GpuTextureView, Position2dTextureColorRenderer.BufferBuilder>> texColor2dMap;
+
+    public RenderBuffers(Matrix4f matrix) {
+        this.matrix = matrix;
     }
 
-    public TextureColor2dRenderBuffer getTexColor2d(int textureId) {
-        if (texColor2d == null) {
-            // use simple array map, since we shouldn't have a lot of entries here
-            texColor2d = new Int2ObjectArrayMap<>();
-        }
-        if (!texColor2d.containsKey(textureId)) {
-            texColor2d.put(textureId, new TextureColor2dRenderBuffer());
-        }
-        return texColor2d.get(textureId);
+    public Position2dColorRenderer.BufferBuilder getColor2d() {
+        return this.getColor2d(RenderBuffers.BACKGROUNDS);
     }
 
-    public void render(Matrix4f matrix, Runnable framebufferSetup) {
-        if (isEmpty()) {
-            return;
+    public Position2dColorRenderer.BufferBuilder getColor2d(int zIndex) {
+        createColor2dMapIfRequired();
+        return this.color2dMap.computeIfAbsent(zIndex, _ -> new Position2dColorRenderer.BufferBuilder());
+    }
+
+    public Position2dTextureColorRenderer.BufferBuilder getTexColor2d(int zIndex, GpuTextureView textureView) {
+        createTexColor2MapIfRequired();
+        return this.texColor2dMap
+                .computeIfAbsent(zIndex, _ -> new Object2ObjectArrayMap<>())
+                .computeIfAbsent(textureView, _ -> new Position2dTextureColorRenderer.BufferBuilder());
+    }
+
+    public void render(RenderTarget renderTarget) {
+        List<LayerRenderTask> tasks = new ArrayList<>();
+
+        if (this.color2dMap != null) {
+            this.color2dMap.forEach((zIndex, builder) -> {
+                tasks.add(new LayerRenderTask(zIndex, () -> {
+                    Position2dColorRenderer.getInstance().draw(renderTarget, matrix, builder);
+                    builder.clear();
+                }));
+            });
         }
 
-        framebufferSetup.run();
-
-        if (color2d != null) {
-            Color2dRenderer renderer = RenderUtilities.instance.getColor2dRenderer();
-            renderer.begin();
-            renderer.fill(color2d.getList());
-            renderer.end(matrix);
-            color2d.clear();
+        if (this.texColor2dMap != null) {
+            this.texColor2dMap.forEach((zIndex, map) -> {
+                tasks.add(new LayerRenderTask(zIndex, () -> {
+                    for (Map.Entry<GpuTextureView, Position2dTextureColorRenderer.BufferBuilder> entry : map.entrySet()) {
+                        Position2dTextureColorRenderer.getInstance().draw(renderTarget, entry.getKey(), matrix, entry.getValue());
+                        entry.getValue().clear();
+                    }
+                }));
+            });
         }
 
-        if (hasTexColor2dData()) {
-            TextureColor2dRenderer renderer = RenderUtilities.instance.getTextureColor2dRenderer();
-            IntIterator iterator = texColor2d.keySet().iterator();
-            while (iterator.hasNext()) {
-                int textureId = iterator.nextInt();
-                renderer.begin();
-                TextureColor2dRenderBuffer buffer = texColor2d.get(textureId);
-                renderer.fill(buffer.getList());
-                renderer.end(matrix, textureId, true);
-                buffer.clear();
-            }
+        tasks.sort(Comparator.comparingInt(t -> t.zIndex));
+        tasks.forEach(t -> t.task.run());
+    }
+
+    private boolean hasTexColor2dData(Object2ObjectMap<GpuTextureView, Position2dTextureColorRenderer.BufferBuilder> map) {
+        return map != null && !map.values().stream().allMatch(Position2dTextureColorRenderer.BufferBuilder::isEmpty);
+    }
+
+    private void createColor2dMapIfRequired() {
+        if (this.color2dMap == null) {
+            this.color2dMap = new Int2ObjectArrayMap<>(1);
         }
     }
 
-    private boolean isEmpty() {
-        if (color2d != null && !color2d.getList().isEmpty()) {
-            return false;
+    private void createTexColor2MapIfRequired() {
+        if (this.texColor2dMap == null) {
+            this.texColor2dMap = new Int2ObjectArrayMap<>(4);
         }
-        if (hasTexColor2dData()) {
-            return false;
-        }
-        return true;
     }
 
-    private boolean hasTexColor2dData() {
-        return texColor2d != null && !texColor2d.values().stream().allMatch(b -> b.getList().isEmpty());
-    }
+    private record LayerRenderTask(int zIndex, Runnable task) {}
 }

@@ -1,37 +1,44 @@
 package com.zergatul.cheatutils.ui;
 
-import com.zergatul.cheatutils.render.MainFrameBuffer;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.render.GuiRenderer;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
+
+import java.util.Objects;
 
 public class RenderingContext {
 
-    private final Matrix4f matrix;
     private final int itemScale;
     private final RenderBuffers buffers;
-    private final Runnable framebufferSetup;
+    private final RenderTarget renderTarget;
 
     public RenderingContext(Matrix4f matrix, int itemScale) {
-        this(matrix, itemScale, MainFrameBuffer::bind);
+        this(matrix, itemScale, Minecraft.getInstance().gameRenderer.mainRenderTarget());
     }
 
-    public RenderingContext(Matrix4f matrix, int itemScale, Runnable framebufferSetup) {
-        this.matrix = matrix;
+    public RenderingContext(Matrix4f matrix, int itemScale, RenderTarget renderTarget) {
         this.itemScale = itemScale;
-        this.buffers = new RenderBuffers();
-        this.framebufferSetup = framebufferSetup;
+        this.buffers = new RenderBuffers(matrix);
+        this.renderTarget = renderTarget;
     }
 
     public RenderBuffers getBuffers() {
         return buffers;
     }
 
-    public Matrix4f getMatrix() {
-        return matrix;
-    }
-
     public int getItemScale() {
         return itemScale;
+    }
+
+    public void clearTarget() {
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(
+                Objects.requireNonNull(renderTarget.getColorTexture()),
+                GuiRenderer.CLEAR_COLOR);
     }
 
     public void render(Element element, int x, int y, HorizontalAlign hAlign, VerticalAlign vAlign) {
@@ -55,6 +62,6 @@ public class RenderingContext {
         element.layout(x, y, width, height);
         element.render(this);
 
-        buffers.render(matrix, framebufferSetup);
+        buffers.render(this.renderTarget);
     }
 }
