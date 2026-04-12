@@ -10,7 +10,7 @@
   "client": [
     "fabric.schematica.MixinSectionCompiler",
     "fabric.MixinCamera",
-    "fabric.MixinGuiGraphics",
+    "fabric.MixinGuiGraphicsExtractor",
     "fabric.MixinKeyboardHandler",
     "fabric.MixinLevelRenderer",
     "fabric.MixinMinecraft",

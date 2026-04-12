@@ -5,9 +5,6 @@ import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 public class VertexFormatElements {
 
-    public static VertexFormatElement GRADIENT = VertexFormatElement.register(findFreeId(), 0, GpuFormat.R32_FLOAT);
-    public static VertexFormatElement COLOR4 = VertexFormatElement.register(findFreeId(), 0, GpuFormat.RGBA32_FLOAT);
-
     public static final VertexFormatElement LINE_POINT_B = VertexFormatElement.register(findFreeId(), 0, GpuFormat.RGB32_FLOAT);
     public static final VertexFormatElement LINE_T = VertexFormatElement.register(findFreeId(), 0, GpuFormat.R32_FLOAT);
     public static final VertexFormatElement LINE_SIDE = VertexFormatElement.register(findFreeId(), 0, GpuFormat.R32_FLOAT);

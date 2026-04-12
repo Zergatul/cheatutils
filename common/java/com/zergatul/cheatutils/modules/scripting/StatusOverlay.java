@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.opengl.GlTextureView;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -20,6 +19,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.FrameBuffers;
 import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -27,7 +27,6 @@ import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL30;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -141,25 +140,24 @@ public class StatusOverlay implements Module, FontBackendHolder {
             return;
         }
 
-        renderToFrameBuffer();
-
-        event.graphics().nextStratum();
-        ((GuiRenderStateExtension) event.graphics().guiRenderState).addGuiElement_CU(new FboGuiRenderElement());
+        extractRenderState(event.graphics());
     }
 
-    private void renderToFrameBuffer() {
+    private void extractRenderState(GuiGraphicsExtractor graphics) {
+        graphics.nextStratum();
+
         int scale = mc.getWindow().getGuiScale();
         int scrWidth = mc.getWindow().getWidth();
         int scrHeight = mc.getWindow().getHeight();
         int halfScrWidth = scrWidth / 2;
         int halfScrHeight = scrHeight / 2;
 
-        GlStateManager._colorMask(15);
-        FrameBuffers.get2().bind();
-        GlStateManager._viewport(0, 0, scrWidth, scrHeight);
-        GlStateManager._disableScissorTest();
-        GL30.glClearColor(0, 0, 0, 0);
-        GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
+//        GlStateManager._colorMask(15);
+//        FrameBuffers.get2().bind();
+//        GlStateManager._viewport(0, 0, scrWidth, scrHeight);
+//        GlStateManager._disableScissorTest();
+//        GL30.glClearColor(0, 0, 0, 0);
+//        GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
 
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(0, scrWidth, scrHeight, 0, -1, 1);
@@ -188,11 +186,12 @@ public class StatusOverlay implements Module, FontBackendHolder {
                 case BOTTOM -> scrHeight - 2 * scale;
             };
 
-            context.render(flex, x, y, align.hAlign, align.vAlign);
+            context.extract(graphics, flex, x, y, align.hAlign, align.vAlign);
         }
 
         for (FreeText item : freeTexts) {
-            context.render(
+            context.extract(
+                    graphics,
                     new TextElement(fontRenderer, item.text).setBackgroundColor(item.background),
                     item.x, item.y, HorizontalAlign.LEFT, VerticalAlign.TOP);
         }
@@ -242,63 +241,63 @@ public class StatusOverlay implements Module, FontBackendHolder {
 
     private record FreeText(int x, int y, int background, StylizedText text) {}
 
-    private static class FboTextureView extends GlTextureView {
-        protected FboTextureView(GlTexture glTexture) {
-            super(glTexture, 0, 1);
-        }
-    }
-
-    private static class FboTexture extends GlTexture {
-        protected FboTexture(int usage, String label, GpuFormat format, int width, int height, int depthOrLayers, int mipLevels, int id) {
-            super(usage, label, format, width, height, depthOrLayers, mipLevels, id);
-        }
-    }
-
-    private static class FboGuiRenderElement implements GuiElementRenderState {
-
-        @Override
-        public void buildVertices(VertexConsumer vertexConsumer) {
-            final float z = 0.1f;
-            final Window window = mc.getWindow();
-            final float w = 1f * window.getWidth() / window.getGuiScale();
-            final float h = 1f * window.getHeight() / window.getGuiScale();
-            vertexConsumer.addVertex(0, 0, z).setColor(-1).setUv(0, 1);
-            vertexConsumer.addVertex(0, h, z).setColor(-1).setUv(0, 0);
-            vertexConsumer.addVertex(w, h, z).setColor(-1).setUv(1, 0);
-            vertexConsumer.addVertex(w, 0, z).setColor(-1).setUv(1, 1);
-        }
-
-        @Override
-        public @NotNull RenderPipeline pipeline() {
-            return RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA;
-        }
-
-        @Override
-        public @NotNull TextureSetup textureSetup() {
-            return TextureSetup.singleTexture(
-                    new FboTextureView(
-                            new FboTexture(
-                                    15,
-                                    "",
-                                    GpuFormat.RGBA8_UNORM, // TODO: check
-                                    FrameBuffers.get2().getWidth(),
-                                    FrameBuffers.get2().getHeight(),
-                                    0,
-                                    1,
-                                    FrameBuffers.get2().getTextureId())),
-                    RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST));
-        }
-
-        @Nullable
-        @Override
-        public ScreenRectangle scissorArea() {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public ScreenRectangle bounds() {
-            return new ScreenRectangle(0, 0, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
-        }
-    }
+//    private static class FboTextureView extends GlTextureView {
+//        protected FboTextureView(GlTexture glTexture) {
+//            super(glTexture, 0, 1);
+//        }
+//    }
+//
+//    private static class FboTexture extends GlTexture {
+//        protected FboTexture(int usage, String label, GpuFormat format, int width, int height, int depthOrLayers, int mipLevels, int id) {
+//            super(usage, label, format, width, height, depthOrLayers, mipLevels, id);
+//        }
+//    }
+//
+//    private static class FboGuiRenderElement implements GuiElementRenderState {
+//
+//        @Override
+//        public void buildVertices(VertexConsumer vertexConsumer) {
+//            final float z = 0.1f;
+//            final Window window = mc.getWindow();
+//            final float w = 1f * window.getWidth() / window.getGuiScale();
+//            final float h = 1f * window.getHeight() / window.getGuiScale();
+//            vertexConsumer.addVertex(0, 0, z).setColor(-1).setUv(0, 1);
+//            vertexConsumer.addVertex(0, h, z).setColor(-1).setUv(0, 0);
+//            vertexConsumer.addVertex(w, h, z).setColor(-1).setUv(1, 0);
+//            vertexConsumer.addVertex(w, 0, z).setColor(-1).setUv(1, 1);
+//        }
+//
+//        @Override
+//        public @NotNull RenderPipeline pipeline() {
+//            return RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA;
+//        }
+//
+//        @Override
+//        public @NotNull TextureSetup textureSetup() {
+//            return TextureSetup.singleTexture(
+//                    new FboTextureView(
+//                            new FboTexture(
+//                                    15,
+//                                    "",
+//                                    GpuFormat.RGBA8_UNORM, // TODO: check
+//                                    FrameBuffers.get2().getWidth(),
+//                                    FrameBuffers.get2().getHeight(),
+//                                    0,
+//                                    1,
+//                                    FrameBuffers.get2().getTextureId())),
+//                    RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST));
+//        }
+//
+//        @Nullable
+//        @Override
+//        public ScreenRectangle scissorArea() {
+//            return null;
+//        }
+//
+//        @Nullable
+//        @Override
+//        public ScreenRectangle bounds() {
+//            return new ScreenRectangle(0, 0, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
+//        }
+//    }
 }

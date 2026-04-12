@@ -1,8 +1,10 @@
 package com.zergatul.cheatutils.ui;
 
+import com.zergatul.cheatutils.extensions.GuiGraphicsExtractorExtension;
 import com.zergatul.cheatutils.font.FontRenderer;
 import com.zergatul.cheatutils.font.StylizedText;
 import com.zergatul.cheatutils.font.TextBounds;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class TextElement implements Element {
 
@@ -53,6 +55,11 @@ public class TextElement implements Element {
                 context.getBuffers().getColor2d().rect(x, y, measuredWidth, font.getLineHeight(), bgColor);
             }
         }
+    }
+
+    @Override
+    public void extract(GuiGraphicsExtractor graphics) {
+        ((GuiGraphicsExtractorExtension) graphics).
     }
 
     public TextElement setCompactHeight(boolean compact) {

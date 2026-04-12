@@ -93,47 +93,47 @@ public class TableElement implements Element {
 
     @Override
     public void render(RenderingContext context) {
-        if (borderWidth > 0) {
-            MainFrameBuffer.bind();
-            Color2dRenderer renderer = RenderUtilities.instance.getColor2dRenderer();
-            renderer.begin();
-
-            int yCursor = y;
-            for (int i = 0; i <= rowCount; i++) {
-                int x0 = x;
-                int x1 = x + measuredWidth;
-                int y0 = yCursor;
-                int y1 = yCursor + borderWidth;
-                renderer.quad(
-                        x0, y0,
-                        x1, y0,
-                        x1, y1,
-                        x0, y1,
-                        1, 1, 1, 1);
-                if (i < rowCount) {
-                    yCursor += rowHeights[i] + borderWidth;
-                }
-            }
-
-            int xCursor = x;
-            for (int i = 0; i <= colCount; i++) {
-                int x0 = xCursor;
-                int x1 = xCursor + borderWidth;
-                int y0 = y;
-                int y1 = y + measuredHeight;
-                renderer.quad(
-                        x0, y0,
-                        x1, y0,
-                        x1, y1,
-                        x0, y1,
-                        1, 1, 1, 1);
-                if (i < colCount) {
-                    xCursor += colWidths[i] + borderWidth;
-                }
-            }
-
-            renderer.end(context.getMatrix());
-        }
+//        if (borderWidth > 0) {
+//            MainFrameBuffer.bind();
+//            Color2dRenderer renderer = RenderUtilities.instance.getColor2dRenderer();
+//            renderer.begin();
+//
+//            int yCursor = y;
+//            for (int i = 0; i <= rowCount; i++) {
+//                int x0 = x;
+//                int x1 = x + measuredWidth;
+//                int y0 = yCursor;
+//                int y1 = yCursor + borderWidth;
+//                renderer.quad(
+//                        x0, y0,
+//                        x1, y0,
+//                        x1, y1,
+//                        x0, y1,
+//                        1, 1, 1, 1);
+//                if (i < rowCount) {
+//                    yCursor += rowHeights[i] + borderWidth;
+//                }
+//            }
+//
+//            int xCursor = x;
+//            for (int i = 0; i <= colCount; i++) {
+//                int x0 = xCursor;
+//                int x1 = xCursor + borderWidth;
+//                int y0 = y;
+//                int y1 = y + measuredHeight;
+//                renderer.quad(
+//                        x0, y0,
+//                        x1, y0,
+//                        x1, y1,
+//                        x0, y1,
+//                        1, 1, 1, 1);
+//                if (i < colCount) {
+//                    xCursor += colWidths[i] + borderWidth;
+//                }
+//            }
+//
+//            renderer.end(context.getMatrix());
+//        }
 
         for (int r = 0; r < rowCount; r++) {
             for (int c = 0; c < colCount; c++) {
