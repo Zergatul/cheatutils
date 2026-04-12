@@ -1,4 +1,6 @@
-#version 150
+#version 330
+
+uniform sampler2D Texture;
 
 in vec4 Color;
 

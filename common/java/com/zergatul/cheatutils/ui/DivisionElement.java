@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.ui;
 
-import com.zergatul.cheatutils.render.Color2dRenderer;
-import com.zergatul.cheatutils.render.buffers.Color2dRenderBuffer;
+import com.zergatul.cheatutils.render.Position2dColorRenderer;
 
 public class DivisionElement implements Element {
 
@@ -48,19 +47,15 @@ public class DivisionElement implements Element {
     @Override
     public void render(RenderingContext context) {
         if (borderWidth > 0) {
-            Color2dRenderBuffer buffer = context.getBuffers().getColor2d();
-            float a = (borderColor >> 24 & 255) / 255.0F;
-            float r = (borderColor >> 16 & 255) / 255.0F;
-            float g = (borderColor >> 8 & 255) / 255.0F;
-            float b = (borderColor & 255) / 255.0F;
-            buffer.rect(x, y, measuredWidth, borderWidth, r, g, b, a);
-            buffer.rect(x, y + measuredHeight - borderWidth, measuredWidth, borderWidth, r, g, b, a);
-            buffer.rect(x, y, borderWidth, measuredHeight, r, g, b, a);
-            buffer.rect(x + measuredWidth - borderWidth, y, borderWidth, measuredHeight, r, g, b, a);
+            Position2dColorRenderer.BufferBuilder buffer = context.getBuffers().getColor2d();
+            buffer.rect(x, y, measuredWidth, borderWidth, borderColor);
+            buffer.rect(x, y + measuredHeight - borderWidth, measuredWidth, borderWidth, borderColor);
+            buffer.rect(x, y, borderWidth, measuredHeight, borderColor);
+            buffer.rect(x + measuredWidth - borderWidth, y, borderWidth, measuredHeight, borderColor);
         }
 
         if (bgColor != 0) {
-            Color2dRenderBuffer buffer = context.getBuffers().getColor2d();
+            Position2dColorRenderer.BufferBuilder buffer = context.getBuffers().getColor2d();
             buffer.rect(
                     x + borderWidth, y + borderWidth,
                     measuredWidth - 2 * borderWidth, measuredHeight - 2 * borderWidth,

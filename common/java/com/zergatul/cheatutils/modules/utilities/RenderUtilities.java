@@ -9,8 +9,6 @@ public class RenderUtilities {
     public static final RenderUtilities instance = new RenderUtilities();
 
     private final Texture2dRenderer texture2dRenderer = new Texture2dRenderer();
-    private final TextureColor2dRenderer textureColor2dRenderer = new TextureColor2dRenderer();
-    private final Color2dRenderer color2dRenderer = new Color2dRenderer();
     private final Color3dRenderer color3dRenderer = new Color3dRenderer();
 
     private RenderUtilities() {
@@ -18,10 +16,6 @@ public class RenderUtilities {
     }
 
     public Texture2dRenderer getTexture2dRenderer() { return texture2dRenderer; }
-
-    public TextureColor2dRenderer getTextureColor2dRenderer() { return textureColor2dRenderer; }
-
-    public Color2dRenderer getColor2dRenderer() { return color2dRenderer; }
 
     public Color3dRenderer getColor3dRenderer() { return color3dRenderer; }
 

@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.floats.FloatList;
 public class TextureColor2dRenderBuffer {
 
     private final FloatList list = new FloatArrayList(32);
+    private int vertices;
 
     public FloatList getList() {
         return list;
@@ -14,6 +15,10 @@ public class TextureColor2dRenderBuffer {
 
     public void clear() {
         list.clear();
+    }
+
+    public boolean isEmpty() {
+        return list.isEmpty();
     }
 
     public void rect(
@@ -57,5 +62,6 @@ public class TextureColor2dRenderBuffer {
         list.add(g);
         list.add(b);
         list.add(a);
+        vertices++;
     }
 }

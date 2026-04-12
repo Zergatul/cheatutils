@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.render.gl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.zergatul.cheatutils.render.gl.images.ImageSource;
 
 import java.util.ArrayList;
@@ -19,6 +21,14 @@ public class AtlasTexture {
         texture = TextureWrapper.empty(size, size);
         lines = new ArrayList<>();
         lines.add(new Line(0, 0, 0));
+    }
+
+    public GpuTexture getTexture() {
+        return texture.getTexture();
+    }
+
+    public GpuTextureView getTextureView() {
+        return texture.getTextureView();
     }
 
     public Item add(ImageSource image) {

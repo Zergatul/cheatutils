@@ -1,9 +1,5 @@
 package com.zergatul.cheatutils.ui;
 
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Color2dRenderer;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
-
 import java.util.Arrays;
 
 public class TableElement implements Element {

@@ -162,7 +162,7 @@ public class CacheItemRenderer {
         float u1 = (float)(x + slotSize) / textureSize;
         float v0 = 1f - (float)y / textureSize;
         float v1 = 1f - (float)(y + slotSize) / textureSize;
-        return new AtlasSlot(texture, u0, v0, u1, v1);
+        return new AtlasSlot(textureView, u0, v0, u1, v1);
     }
 
     // copied from GuiItemAtlas.drawToSlot
@@ -241,5 +241,5 @@ public class CacheItemRenderer {
 
     private record ItemRequest(ItemOwner owner, ItemStack itemStack) {}
 
-    public record AtlasSlot(GpuTexture texture, float u0, float v0, float u1, float v1) {}
+    public record AtlasSlot(GpuTextureView textureView, float u0, float v0, float u1, float v1) {}
 }

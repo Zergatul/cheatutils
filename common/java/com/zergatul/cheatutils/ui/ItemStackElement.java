@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.ui;
 import com.mojang.blaze3d.opengl.GlTexture;
 import com.zergatul.cheatutils.render.CacheItemRenderer;
 import com.zergatul.cheatutils.render.GlHelper;
+import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.render.buffers.TextureColor2dRenderBuffer;
 import com.zergatul.cheatutils.render.gl.CustomizableVanillaFontRenderer;
 import net.minecraft.client.Minecraft;
@@ -52,8 +53,7 @@ public class ItemStackElement implements Element {
             return;
         }
 
-        GlTexture texture = GlHelper.getGlTexture(slot.texture());
-        TextureColor2dRenderBuffer buffer = context.getBuffers().getTexColor2d(texture.glId());
+        Position2dTextureColorRenderer.BufferBuilder buffer = context.getBuffers().getTexColor2dFront(slot.textureView());
         int w = measuredWidth;
         int h = measuredHeight;
         buffer.quad(
@@ -61,7 +61,7 @@ public class ItemStackElement implements Element {
                 x, y + h, slot.u0(), slot.v1(),
                 x + w, y + h, slot.u1(), slot.v1(),
                 x + w, y, slot.u1(), slot.v0(),
-                1, 1, 1, 1);
+                -1);
 
         // copied from GuiGraphics.renderItemCount
         if (itemStack.getCount() != 1) {

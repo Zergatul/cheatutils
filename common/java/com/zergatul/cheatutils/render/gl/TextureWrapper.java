@@ -14,14 +14,14 @@ import java.nio.ByteOrder;
 public class TextureWrapper {
 
     private final GpuTexture texture;
-    private final GpuTextureView view;
+    private final GpuTextureView textureView;
     private final int width;
     private final int height;
     private boolean disposed;
 
-    private TextureWrapper(GpuTexture texture, GpuTextureView view, int width, int height) {
+    private TextureWrapper(GpuTexture texture, GpuTextureView textureView, int width, int height) {
         this.texture = texture;
-        this.view = view;
+        this.textureView = textureView;
         this.width = width;
         this.height = height;
     }
@@ -39,6 +39,10 @@ public class TextureWrapper {
 
     public GpuTexture getTexture() {
         return texture;
+    }
+
+    public GpuTextureView getTextureView() {
+        return textureView;
     }
 
     public int getWidth() {
@@ -86,7 +90,7 @@ public class TextureWrapper {
 
     public void dispose() {
         if (!disposed) {
-            view.close();
+            textureView.close();
             texture.close();
             disposed = true;
         }

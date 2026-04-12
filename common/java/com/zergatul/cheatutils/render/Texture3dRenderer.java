@@ -18,12 +18,11 @@ import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
-import java.awt.*;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-public class Texture3dRenderer2 {
+public class Texture3dRenderer {
 
     private final RenderPipeline pipeline;
     private final GpuBuffer ubo;
@@ -31,7 +30,7 @@ public class Texture3dRenderer2 {
     private BufferBuilder bufferBuilder;
     private boolean isEmpty;
 
-    private Texture3dRenderer2() {
+    private Texture3dRenderer() {
         pipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/position-3d-texture"))
                 .withSampler("InSampler")
@@ -46,7 +45,7 @@ public class Texture3dRenderer2 {
         byteBufferBuilder = new ByteBufferBuilder(0x10000);
     }
 
-    public static Texture3dRenderer2 getInstance() {
+    public static Texture3dRenderer getInstance() {
         return Holder.INSTANCE;
     }
 
@@ -108,6 +107,6 @@ public class Texture3dRenderer2 {
     }
 
     private static final class Holder {
-        public static final Texture3dRenderer2 INSTANCE = new Texture3dRenderer2();
+        public static final Texture3dRenderer INSTANCE = new Texture3dRenderer();
     }
 }

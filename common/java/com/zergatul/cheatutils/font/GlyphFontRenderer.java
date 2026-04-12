@@ -1,8 +1,9 @@
 package com.zergatul.cheatutils.font;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
-import com.zergatul.cheatutils.render.buffers.TextureColor2dRenderBuffer;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.util.Mth;
 
 import java.util.PrimitiveIterator;
@@ -54,12 +55,8 @@ public abstract class GlyphFontRenderer extends FontRenderer {
 
         for (StylizedTextChunk chunk : text.chunks) {
             String string = chunk.text();
-            int color = chunk.color();
-            float r = (float) (color >> 16 & 0xFF) / 255;
-            float g = (float) (color >> 8 & 0xFF) / 255;
-            float b = (float) (color & 0xFF) / 255;
-
-            x = renderGlyphs(buffers, string, x, y, r, g, b, 1);
+            int color = chunk.color() | 0xFF000000;
+            x = renderGlyphs(buffers, string, x, y, color);
         }
     }
 
@@ -90,27 +87,29 @@ public abstract class GlyphFontRenderer extends FontRenderer {
         return new TextBounds(Mth.ceil(width), Math.round(y0), Math.round(y1));
     }
 
-    private float renderGlyphs(RenderBuffers buffers, String text, float x, float y, float r, float g, float b, float a) {
-        TextureColor2dRenderBuffer buffer = buffers.getTexColor2d(glyphRenderer.texture.getId());
+    private float renderGlyphs(RenderBuffers buffers, String text, float x, float y, int color) {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             Glyph glyph = glyphRenderer.get(ch);
             x += glyph.getLeftSideBearing();
             if (!glyph.isBlank()) {
                 if (details.dropShadow()) {
+                    Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dBack(glyphRenderer.texture.getTextureView());
                     buffer.rect(
                             Math.round(x + glyph.getX0()) + details.shadowOffsetX(),
                             Math.round(y + glyph.getY0()) + details.shadowOffsetY(),
                             (int) Math.ceil(glyph.getWidth()),
                             (int) Math.ceil(glyph.getHeight()),
-                            glyph.getSprite(), r * SHADOW_FACTOR, g * SHADOW_FACTOR, b * SHADOW_FACTOR, a);
+                            glyph.getSprite(), ColorUtils.shadowed(color, SHADOW_FACTOR));
                 }
+
+                Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dFront(glyphRenderer.texture.getTextureView());
                 buffer.rect(
                         Math.round(x + glyph.getX0()),
                         Math.round(y + glyph.getY0()),
                         (int) Math.ceil(glyph.getWidth()),
                         (int) Math.ceil(glyph.getHeight()),
-                        glyph.getSprite(), r, g, b, a);
+                        glyph.getSprite(), color);
             }
             x += glyph.getAdvanceWidth() + details.letterSpacing();
         }

@@ -5,7 +5,7 @@ import org.lwjgl.system.MemoryUtil;
 
 public class VertexBufferBuilder {
 
-    private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x10000);
+    private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x1000);
     private int vertices;
 
     public ByteBufferBuilder.Result getVertexBuffer() {

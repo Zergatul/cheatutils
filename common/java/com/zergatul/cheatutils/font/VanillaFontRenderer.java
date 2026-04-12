@@ -4,10 +4,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
+import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
-import com.zergatul.cheatutils.render.buffers.TextureColor2dRenderBuffer;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatList;
+import com.zergatul.cheatutils.utils.ColorUtils;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -19,8 +20,6 @@ import org.joml.Matrix4f;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class VanillaFontRenderer extends FontRenderer {
 
@@ -88,7 +87,7 @@ public class VanillaFontRenderer extends FontRenderer {
                     RenderType type = entry.getKey();
                     FontVertexConsumer consumer = entry.getValue();
 
-                    if (consumer.list.isEmpty()) {
+                    if (consumer.buffer.isEmpty()) {
                         continue;
                     }
 
@@ -104,58 +103,50 @@ public class VanillaFontRenderer extends FontRenderer {
                     }
 
                     AbstractTexture texture = mc.getTextureManager().getTexture(binding.location());
-                    int id = getGlTexture(texture.getTexture()).glId();
-
-                    TextureColor2dRenderBuffer buffer = buffers.getTexColor2d(id);
                     if (dropShadow) {
-                        for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
-                            float r = consumer.list.getFloat(i * 8 * 4 + 4) * SHADOW_FACTOR;
-                            float g = consumer.list.getFloat(i * 8 * 4 + 5) * SHADOW_FACTOR;
-                            float b = consumer.list.getFloat(i * 8 * 4 + 6) * SHADOW_FACTOR;
-                            float a = consumer.list.getFloat(i * 8 * 4 + 7);
+                        Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dBack(texture.getTextureView());
+                        for (int i = 0; i < consumer.buffer.size() / 20; i++) {
                             buffer.quad(
-                                    x + scale + consumer.list.getFloat(i * 8 * 4 + 0) * scale, // x1
-                                    y + scale + consumer.list.getFloat(i * 8 * 4 + 1) * scale, // y1
-                                    consumer.list.getFloat(i * 8 * 4 + 2), // u1
-                                    consumer.list.getFloat(i * 8 * 4 + 3), // v1
-                                    x + scale + consumer.list.getFloat(i * 8 * 4 + 8) * scale, // x2
-                                    y + scale + consumer.list.getFloat(i * 8 * 4 + 9) * scale, // y2
-                                    consumer.list.getFloat(i * 8 * 4 + 10), // u2
-                                    consumer.list.getFloat(i * 8 * 4 + 11), // v2
-                                    x + scale + consumer.list.getFloat(i * 8 * 4 + 16) * scale, // x3
-                                    y + scale + consumer.list.getFloat(i * 8 * 4 + 17) * scale, // y3
-                                    consumer.list.getFloat(i * 8 * 4 + 18), // u3
-                                    consumer.list.getFloat(i * 8 * 4 + 19), // v3
-                                    x + scale + consumer.list.getFloat(i * 8 * 4 + 24) * scale, // x3
-                                    y + scale + consumer.list.getFloat(i * 8 * 4 + 25) * scale, // y3
-                                    consumer.list.getFloat(i * 8 * 4 + 26), // u3
-                                    consumer.list.getFloat(i * 8 * 4 + 27), // v3
-                                    r, g, b, a);
+                                    x + scale + consumer.getX(i * 4) * scale, // x1
+                                    y + scale + consumer.getY(i * 4) * scale, // y1
+                                    consumer.getU(i * 4), // u1
+                                    consumer.getV(i * 4), // v1
+                                    x + scale + consumer.getX(i * 4 + 1) * scale, // x2
+                                    y + scale + consumer.getY(i * 4 + 1) * scale, // y2
+                                    consumer.getU(i * 4 + 1), // u2
+                                    consumer.getV(i * 4 + 1), // v2
+                                    x + scale + consumer.getX(i * 4 + 2) * scale, // x3
+                                    y + scale + consumer.getY(i * 4 + 2) * scale, // y3
+                                    consumer.getU(i * 4 + 2), // u3
+                                    consumer.getV(i * 4 + 2), // v3
+                                    x + scale + consumer.getX(i * 4 + 3) * scale, // x3
+                                    y + scale + consumer.getY(i * 4 + 3) * scale, // y3
+                                    consumer.getU(i * 4 + 3), // u3
+                                    consumer.getV(i * 4 + 3), // v3
+                                    ColorUtils.shadowed(consumer.getColor(i * 4), SHADOW_FACTOR));
                         }
                     }
 
-                    for (int i = 0; i < consumer.list.size() / 8 / 4; i++) {
+                    Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dFront(texture.getTextureView());
+                    for (int i = 0; i < consumer.buffer.size() / 20; i++) {
                         buffer.quad(
-                                x + consumer.list.getFloat(i * 8 * 4 + 0) * scale, // x1
-                                y + consumer.list.getFloat(i * 8 * 4 + 1) * scale, // y1
-                                consumer.list.getFloat(i * 8 * 4 + 2), // u1
-                                consumer.list.getFloat(i * 8 * 4 + 3), // v1
-                                x + consumer.list.getFloat(i * 8 * 4 + 8) * scale, // x2
-                                y + consumer.list.getFloat(i * 8 * 4 + 9) * scale, // y2
-                                consumer.list.getFloat(i * 8 * 4 + 10), // u2
-                                consumer.list.getFloat(i * 8 * 4 + 11), // v2
-                                x + consumer.list.getFloat(i * 8 * 4 + 16) * scale, // x3
-                                y + consumer.list.getFloat(i * 8 * 4 + 17) * scale, // y3
-                                consumer.list.getFloat(i * 8 * 4 + 18), // u3
-                                consumer.list.getFloat(i * 8 * 4 + 19), // v3
-                                x + consumer.list.getFloat(i * 8 * 4 + 24) * scale, // x3
-                                y + consumer.list.getFloat(i * 8 * 4 + 25) * scale, // y3
-                                consumer.list.getFloat(i * 8 * 4 + 26), // u3
-                                consumer.list.getFloat(i * 8 * 4 + 27), // v3
-                                consumer.list.getFloat(i * 8 * 4 + 4), // r
-                                consumer.list.getFloat(i * 8 * 4 + 5), // g
-                                consumer.list.getFloat(i * 8 * 4 + 6), // b
-                                consumer.list.getFloat(i * 8 * 4 + 7)); // a
+                                x + consumer.getX(i * 4) * scale, // x1
+                                y +  consumer.getY(i * 4) * scale, // y1
+                                consumer.getU(i * 4), // u1
+                                consumer.getV(i * 4), // v1
+                                x + consumer.getX(i * 4 + 1) * scale, // x2
+                                y + consumer.getY(i * 4 + 1) * scale, // y2
+                                consumer.getU(i * 4 + 1), // u2
+                                consumer.getV(i * 4 + 1), // v2
+                                x + consumer.getX(i * 4 + 2) * scale, // x3
+                                y + consumer.getY(i * 4 + 2) * scale, // y3
+                                consumer.getU(i * 4 + 2), // u3
+                                consumer.getV(i * 4 + 2), // v3
+                                x + consumer.getX(i * 4 + 3) * scale, // x3
+                                y + consumer.getY(i * 4 + 3) * scale, // y3
+                                consumer.getU(i * 4 + 3), // u3
+                                consumer.getV(i * 4 + 3), // v3
+                                consumer.getColor(i * 4));
                     }
                 }
             }
@@ -185,7 +176,7 @@ public class VanillaFontRenderer extends FontRenderer {
         }
 
         public boolean hasData() {
-            return map.values().stream().anyMatch(c -> !c.list.isEmpty());
+            return map.values().stream().anyMatch(c -> !c.buffer.isEmpty());
         }
 
         public Map<RenderType, FontVertexConsumer> getConsumers() {
@@ -206,47 +197,67 @@ public class VanillaFontRenderer extends FontRenderer {
 
     private static class FontVertexConsumer implements VertexConsumer {
 
-        private final FloatList list;
-        private int index;
+        public final IntList buffer;
+        private boolean hasPos, hasColor, hasUv;
+        private float x, y, u, v;
+        private int color;
 
         private FontVertexConsumer() {
-            this.list = new FloatArrayList();
+            this.buffer = new IntArrayList();
         }
 
         public void clear() {
-            list.clear();
-            index = 0;
+            buffer.clear();
+        }
+
+        public float getX(int index) {
+            return Float.intBitsToFloat(buffer.getInt(index * 5));
+        }
+
+        public float getY(int index) {
+            return Float.intBitsToFloat(buffer.getInt(index * 5 + 1));
+        }
+
+        public float getU(int index) {
+            return Float.intBitsToFloat(buffer.getInt(index * 5 + 2));
+        }
+
+        public float getV(int index) {
+            return Float.intBitsToFloat(buffer.getInt(index * 5 + 3));
+        }
+
+        public int getColor(int index) {
+            return buffer.getInt(index * 5 + 4);
         }
 
         @Override
         public @NotNull VertexConsumer addVertex(float x, float y, float z) {
-            index = list.size();
-            for (int i = 0; i < 8; i++) {
-                list.add(0);
-            }
-            list.set(index, x);
-            list.set(index + 1, y);
+            this.x = x;
+            this.y = y;
+            this.hasPos = true;
+            this.store();
             return this;
         }
 
         @Override
         public @NotNull VertexConsumer setColor(int c) {
-            return setColor((c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF, (c >> 24) & 0xFF);
-        }
-
-        @Override
-        public @NotNull VertexConsumer setColor(int r, int g, int b, int a) {
-            list.set(index + 4, r / 255f);
-            list.set(index + 5, g / 255f);
-            list.set(index + 6, b / 255f);
-            list.set(index + 7, a / 255f);
+            this.color = c;
+            this.hasColor = true;
+            this.store();
             return this;
         }
 
         @Override
+        public @NotNull VertexConsumer setColor(int r, int g, int b, int a) {
+            throw new AssertionError();
+        }
+
+        @Override
         public @NotNull VertexConsumer setUv(float u, float v) {
-            list.set(index + 2, u);
-            list.set(index + 3, v);
+            this.u = u;
+            this.v = v;
+            this.hasUv = true;
+            this.store();
             return this;
         }
 
@@ -268,6 +279,17 @@ public class VanillaFontRenderer extends FontRenderer {
         @Override
         public @NotNull VertexConsumer setLineWidth(float f) {
             return this;
+        }
+
+        private void store() {
+            if (this.hasPos && this.hasColor && this.hasUv) {
+                buffer.add(Float.floatToIntBits(this.x));
+                buffer.add(Float.floatToIntBits(this.y));
+                buffer.add(Float.floatToIntBits(this.u));
+                buffer.add(Float.floatToIntBits(this.v));
+                buffer.add(this.color);
+                this.hasPos = this.hasColor = this.hasUv = false;
+            }
         }
     }
 }
