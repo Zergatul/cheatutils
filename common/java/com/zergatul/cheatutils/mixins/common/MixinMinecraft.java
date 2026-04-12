@@ -163,7 +163,7 @@ public abstract class MixinMinecraft {
 
     @Redirect(
             method = "tick",
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 6))
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 7))
     private Screen onTickScreenPassEvents(Minecraft mc) {
         return InvMove.instance.overrideGetScreen(mc);
     }

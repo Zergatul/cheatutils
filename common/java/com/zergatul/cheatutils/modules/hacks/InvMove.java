@@ -10,9 +10,7 @@ public class InvMove implements Module {
 
     public static final InvMove instance = new InvMove();
 
-    private InvMove() {
-
-    }
+    private InvMove() {}
 
     public Screen overrideGetScreen(Minecraft mc) {
         if (mc.screen != null && InvMove.instance.shouldPassEvents(mc.screen)) {
