@@ -1,12 +1,13 @@
 package com.zergatul.cheatutils.ui;
 
+import com.zergatul.cheatutils.extensions.GuiGraphicsExtractorExtension;
 import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix4f;
 
 public class RenderingContext {
 
-    private final Matrix4f matrix;
     private final int itemScale;
     private final RenderBuffers buffers;
     private final Runnable framebufferSetup;
@@ -16,9 +17,8 @@ public class RenderingContext {
     }
 
     public RenderingContext(Matrix4f matrix, int itemScale, Runnable framebufferSetup) {
-        this.matrix = matrix;
         this.itemScale = itemScale;
-        this.buffers = new RenderBuffers();
+        this.buffers = new RenderBuffers(matrix);
         this.framebufferSetup = framebufferSetup;
     }
 
@@ -26,15 +26,16 @@ public class RenderingContext {
         return buffers;
     }
 
-    public Matrix4f getMatrix() {
-        return matrix;
-    }
-
     public int getItemScale() {
         return itemScale;
     }
 
     public void render(Element element, int x, int y, HorizontalAlign hAlign, VerticalAlign vAlign) {
+        extractToBuffers(element, x, y, hAlign, vAlign);
+        buffers.render(framebufferSetup);
+    }
+
+    private void extractToBuffers(Element element, int x, int y, HorizontalAlign hAlign, VerticalAlign vAlign) {
         element.measure(this);
 
         int width = element.getMeasuredWidth();
@@ -54,7 +55,5 @@ public class RenderingContext {
 
         element.layout(x, y, width, height);
         element.render(this);
-
-        buffers.render(matrix, framebufferSetup);
     }
 }

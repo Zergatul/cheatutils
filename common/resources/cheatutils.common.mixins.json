@@ -64,7 +64,6 @@
     "common.MixinGameRenderer",
     "common.MixinGui",
     "common.MixinGuiGraphicsExtractor",
-    "common.MixinGuiRenderState",
     "common.MixinHud",
     "common.MixinHudFreeCam",
     "common.MixinItemInHandRenderer",

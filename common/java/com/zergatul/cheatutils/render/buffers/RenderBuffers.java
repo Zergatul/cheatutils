@@ -10,8 +10,13 @@ import org.joml.Matrix4f;
 
 public class RenderBuffers {
 
+    private final Matrix4f matrix;
     private Color2dRenderBuffer color2d;
     private Int2ObjectMap<TextureColor2dRenderBuffer> texColor2d;
+
+    public RenderBuffers(Matrix4f matrix) {
+        this.matrix = matrix;
+    }
 
     public Color2dRenderBuffer getColor2d() {
         if (color2d == null) {
@@ -31,7 +36,7 @@ public class RenderBuffers {
         return texColor2d.get(textureId);
     }
 
-    public void render(Matrix4f matrix, Runnable framebufferSetup) {
+    public void render(Runnable framebufferSetup) {
         if (isEmpty()) {
             return;
         }

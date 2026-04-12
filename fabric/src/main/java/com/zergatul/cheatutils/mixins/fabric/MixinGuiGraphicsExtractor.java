@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(GuiGraphicsExtractor.class)
-public abstract class MixinGuiGraphics {
+public abstract class MixinGuiGraphicsExtractor {
 
     @Inject(
             at = @At("HEAD"),

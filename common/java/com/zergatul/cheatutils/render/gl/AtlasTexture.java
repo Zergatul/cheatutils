@@ -1,16 +1,14 @@
 package com.zergatul.cheatutils.render.gl;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.render.gl.images.ImageSource;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL30.*;
-
 public class AtlasTexture {
 
-    private Texture texture;
+    private TextureWrapper texture;
     private List<Line> lines;
 
     public AtlasTexture() {
@@ -18,7 +16,7 @@ public class AtlasTexture {
     }
 
     public AtlasTexture(int size) {
-        texture = Texture.empty(size, size);
+        texture = TextureWrapper.empty(size, size);
         lines = new ArrayList<>();
         lines.add(new Line(0, 0, 0));
     }
@@ -34,10 +32,6 @@ public class AtlasTexture {
             resize();
             return add(image);
         }
-    }
-
-    public int getId() {
-        return texture.getId();
     }
 
     public void dispose() {
@@ -85,43 +79,50 @@ public class AtlasTexture {
     }
 
     private void resize() {
-        Texture oldTexture = texture;
-        texture = Texture.empty(texture.getWidth() * 2, texture.getHeight() * 2);
+        TextureWrapper oldTexture = texture;
+        texture = TextureWrapper.empty(texture.getWidth() * 2, texture.getHeight() * 2);
         List<Line> oldLines = lines;
         lines = new ArrayList<>();
         lines.add(new Line(0, 0, 0));
 
-        int srcFBO = GlStateManager.glGenFramebuffers();
-        GlStateManager._glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
-        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, oldTexture.getId(), 0);
-
-        int dstFBO = GlStateManager.glGenFramebuffers();
-        GlStateManager._glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
+//        int srcFBO = GlStateManager.glGenFramebuffers();
+//        GlStateManager._glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
+//        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, oldTexture.getTexture(), 0);
+//
+//        int dstFBO = GlStateManager.glGenFramebuffers();
+//        GlStateManager._glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
+//        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getTexture(), 0);
 
         for (Line line : oldLines) {
             for (Item item : line.items) {
                 Line last = lines.getLast();
                 if (hasSpace(last, item)) {
-                    copyToLine(last, item);
+                    copyToLine(oldTexture, texture, last, item);
                 } else if (hasSpaceOnNewLine(last, item)) {
                     lines.add(last = new Line(last.top + last.height, 0, 0));
-                    copyToLine(last, item);
+                    copyToLine(oldTexture, texture, last, item);
                 } else {
                     throw new IllegalStateException("Not enough space to copy atlas texture items.");
                 }
             }
         }
 
-        GlStateManager._glDeleteFramebuffers(srcFBO);
-        GlStateManager._glDeleteFramebuffers(dstFBO);
+//        GlStateManager._glDeleteFramebuffers(srcFBO);
+//        GlStateManager._glDeleteFramebuffers(dstFBO);
     }
 
-    private void copyToLine(Line line, Item item) {
-        glBlitFramebuffer(
-                item.x, item.y, item.x + item.width, item.y + item.height,
-                line.width, line.top, line.width + item.width, line.top + item.height,
-                GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    private void copyToLine(TextureWrapper oldTexture, TextureWrapper newTexture, Line line, Item item) {
+//        glBlitFramebuffer(
+//                item.x, item.y, item.x + item.width, item.y + item.height,
+//                line.width, line.top, line.width + item.width, line.top + item.height,
+//                GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(
+                oldTexture.getTexture(),
+                newTexture.getTexture(),
+                0,
+                line.width, line.top,
+                item.x, item.y,
+                item.width, item.height);
 
         item.x = line.width;
         item.y = line.top;
