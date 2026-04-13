@@ -8,9 +8,7 @@ layout(std140) uniform Block {
 in vec3 inPointA;
 in vec3 inPointB;
 in vec4 inColor;
-in float inT;      // 0.0 or 1.0
-in float inSide;   // -1.0 or +1.0
-in float inLineWidth;
+in int inParameters;
 
 noperspective out float vAlongPx;      // 0 .. lineLengthPx
 noperspective out float vSidePx;       // -halfWidth .. +halfWidth
@@ -73,6 +71,11 @@ void main() {
         vHalfWidthPx = 0.0;
         return;
     }
+
+    // expand inParameters
+    float inT = inParameters >> 24; // 0.0 or 1.0
+    float inSide = ((inParameters >> 16) & 0xFF) - 1;   // -1.0 or +1.0
+    float inLineWidth = (inParameters & 0xFFFF) / 256.0;
 
     vec2 ndcA = clipA.xy / clipA.w;
     vec2 ndcB = clipB.xy / clipB.w;

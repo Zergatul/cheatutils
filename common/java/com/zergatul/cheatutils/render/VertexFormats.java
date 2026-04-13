@@ -9,9 +9,7 @@ public class VertexFormats {
             .add("inPointA", VertexFormatElement.POSITION)
             .add("inPointB", VertexFormatElements.LINE_POINT_B)
             .add("inColor", VertexFormatElement.COLOR)
-            .add("inT", VertexFormatElements.LINE_T)
-            .add("inSide", VertexFormatElements.LINE_SIDE)
-            .add("inLineWidth", VertexFormatElements.LINE_WIDTH)
+            .add("inParameters", VertexFormatElements.LINE_PARAMETERS)
             .build();
 
     public static final VertexFormat POSITION_2D_COLOR = VertexFormat.builder()

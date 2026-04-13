@@ -18,6 +18,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -28,13 +29,16 @@ public class EspLineRenderer {
     private final RenderPipeline pipeline;
     private final RenderPipeline depthPipeline;
     private final GpuBuffer ubo;
-    private final VertexBufferBuilder bufferBuilder;
+    private final BufferBuilder bufferBuilder;
 
     private EspLineRenderer() {
         pipeline = createPipeline("pipeline/esp-lines", false);
         depthPipeline = createPipeline("pipeline/esp-lines-depth", true);
-        ubo = RenderSystem.getDevice().createBuffer(() -> "ESP Lines Renderer UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 72);
-        bufferBuilder = new VertexBufferBuilder();
+        ubo = RenderSystem.getDevice().createBuffer(
+                () -> ModMain.MODID + ": ESP Lines Renderer UBO",
+                GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
+                72);
+        bufferBuilder = new BufferBuilder();
     }
 
     private static RenderPipeline createPipeline(String location, boolean depth) {
@@ -112,13 +116,15 @@ public class EspLineRenderer {
             float x2, float y2, float z2,
             int color, float width
     ) {
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color, 0, -1, width);
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color, 0, +1, width);
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color, 1, -1, width);
+        int packedWidth = packWidth(width);
 
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color, 0, +1, width);
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color, 1, -1, width);
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color, 1, +1, width);
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color, pack(0, -1, packedWidth));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color, pack(0, +1, packedWidth));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color, pack(1, -1, packedWidth));
+
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color, pack(0, +1, packedWidth));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color, pack(1, -1, packedWidth));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color, pack(1, +1, packedWidth));
     }
 
     public void line(
@@ -126,13 +132,15 @@ public class EspLineRenderer {
             float x2, float y2, float z2, int color2,
             float width
     ) {
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color1, 0, -1, width);
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color1, 0, +1, width);
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color2, 1, -1, width);
+        int packedWidth = packWidth(width);
 
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color1, 0, +1, width);
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color2, 1, -1, width);
-        bufferBuilder.vertexLine(x1, y1, z1, x2, y2, z2, color2, 1, +1, width);
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color1, pack(0, -1, packedWidth));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color1, pack(0, +1, packedWidth));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color2, pack(1, -1, packedWidth));
+
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color1, pack(0, +1, packedWidth));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color2, pack(1, -1, packedWidth));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color2, pack(1, +1, packedWidth));
     }
 
     public void end(Matrix4f mvp) {
@@ -140,7 +148,7 @@ public class EspLineRenderer {
     }
 
     public void end(Matrix4f mvp, boolean depth) {
-        if (bufferBuilder.getVertexCount() == 0) {
+        if (bufferBuilder.isEmpty()) {
             return;
         }
 
@@ -166,18 +174,68 @@ public class EspLineRenderer {
     }
 
     private RenderPass createRenderPass(RenderTarget mainRenderTarget, boolean depth) {
+        assert mainRenderTarget.getColorTextureView() != null;
+
         if (depth) {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                    () -> "Render Depth-Tested ESP Lines",
+                    () -> ModMain.MODID + ": Render Depth-Tested ESP Lines",
                     mainRenderTarget.getColorTextureView(),
                     OptionalInt.empty(),
                     mainRenderTarget.getDepthTextureView(),
                     OptionalDouble.empty());
         } else {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                    () -> "Render ESP Lines",
+                    () -> ModMain.MODID + ": Render ESP Lines",
                     mainRenderTarget.getColorTextureView(),
                     OptionalInt.empty());
+        }
+    }
+
+    private static int pack(int t, int side, int packedWidth) {
+        // t: 0 or 1
+        // side: -1 or 1
+        // packedWidth: 16 bits
+        return (t << 24) | ((side + 1) << 16) | packedWidth;
+    }
+
+    private static int packWidth(float width) {
+        // width shouldn't be more than 255
+        return (int) (256 * width + 0.5);
+    }
+
+    private static class BufferBuilder {
+
+        private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x1000);
+        private int vertices;
+
+        public void clear() {
+            vertices = 0;
+            vertexBuffer.clear();
+        }
+
+        public ByteBufferBuilder.Result getVertexBuffer() {
+            return vertexBuffer.build();
+        }
+
+        public int getVertexCount() {
+            return vertices;
+        }
+
+        public boolean isEmpty() {
+            return vertices == 0;
+        }
+
+        public void vertex(float x1, float y1, float z1, float x2, float y2, float z2, int color, int params) {
+            long pointer = vertexBuffer.reserve(4 * 8);
+            MemoryUtil.memPutFloat(pointer + 0x00L, x1);
+            MemoryUtil.memPutFloat(pointer + 0x04L, y1);
+            MemoryUtil.memPutFloat(pointer + 0x08L, z1);
+            MemoryUtil.memPutFloat(pointer + 0x0CL, x2);
+            MemoryUtil.memPutFloat(pointer + 0x10L, y2);
+            MemoryUtil.memPutFloat(pointer + 0x14L, z2);
+            MemoryUtil.memPutInt(pointer + 0x18L, color);
+            MemoryUtil.memPutInt(pointer + 0x1CL, params);
+            vertices++;
         }
     }
 
