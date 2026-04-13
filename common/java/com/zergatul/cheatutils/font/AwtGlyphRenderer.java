@@ -37,12 +37,17 @@ public class AwtGlyphRenderer extends GlyphRenderer {
 
     @Override
     protected Glyph renderGlyph(char ch) {
-        FontRenderContext context = createFontRenderContext();
         String str = Character.toString(ch);
 
+        BufferedImage contextImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D contextGraphics = contextImage.createGraphics();
+        setupGraphics(contextGraphics);
+        FontRenderContext context = contextGraphics.getFontRenderContext();
         GlyphVector vector = font.createGlyphVector(context, str);
-        GlyphMetrics metrics = vector.getGlyphMetrics(0);
         Rectangle rect = vector.getGlyphPixelBounds(0, context, 0, 0);
+        contextGraphics.dispose();
+
+        GlyphMetrics metrics = vector.getGlyphMetrics(0);
         float leftSideBearing = metrics.getLSB();
         float advance = metrics.getAdvance();
 
@@ -50,16 +55,11 @@ public class AwtGlyphRenderer extends GlyphRenderer {
         if (rect.width > 0 && rect.height > 0) {
             BufferedImage image = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics = image.createGraphics();
-            graphics.setFont(font);
             graphics.setColor(new Color(255, 255, 255, 0));
             graphics.fillRect(0, 0, rect.width, rect.height);
+            setupGraphics(graphics);
             graphics.setColor(Color.WHITE);
-            graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    antiAliasing ? RenderingHints.VALUE_ANTIALIAS_OFF : RenderingHints.VALUE_ANTIALIAS_ON);
-            graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                    antiAliasing ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-            graphics.drawString(str, -rect.x, -rect.y);
+            graphics.drawGlyphVector(vector, -rect.x, -rect.y);
             graphics.dispose();
 
             sprite = texture.add(ImageSource.fromBuffered(image));
@@ -81,6 +81,15 @@ public class AwtGlyphRenderer extends GlyphRenderer {
         FontRenderContext context = createFontRenderContext();
         LineMetrics metrics = font.getLineMetrics("A", context);
         return metrics.getHeight();
+    }
+
+    private void setupGraphics(Graphics2D graphics) {
+        graphics.setFont(font);
+        graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                antiAliasing ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF);
+        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                antiAliasing ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
     }
 
     private FontRenderContext createFontRenderContext() {

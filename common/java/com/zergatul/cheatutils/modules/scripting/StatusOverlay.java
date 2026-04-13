@@ -148,13 +148,6 @@ public class StatusOverlay implements Module, FontBackendHolder {
         int halfScrWidth = scrWidth / 2;
         int halfScrHeight = scrHeight / 2;
 
-//        GlStateManager._colorMask(15);
-//        FrameBuffers.get2().bind();
-//        GlStateManager._viewport(0, 0, scrWidth, scrHeight);
-//        GlStateManager._disableScissorTest();
-//        GL30.glClearColor(0, 0, 0, 0);
-//        GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
-
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(0, scrWidth, scrHeight, 0, -1, 1);
 
@@ -276,64 +269,4 @@ public class StatusOverlay implements Module, FontBackendHolder {
             return new ScreenRectangle(0, 0, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
         }
     }
-
-//    private static class FboTextureView extends GlTextureView {
-//        protected FboTextureView(GlTexture glTexture) {
-//            super(glTexture, 0, 1);
-//        }
-//    }
-//
-//    private static class FboTexture extends GlTexture {
-//        protected FboTexture(int usage, String label, GpuFormat format, int width, int height, int depthOrLayers, int mipLevels, int id) {
-//            super(usage, label, format, width, height, depthOrLayers, mipLevels, id);
-//        }
-//    }
-//
-//    private static class FboGuiRenderElement implements GuiElementRenderState {
-//
-//        @Override
-//        public void buildVertices(VertexConsumer vertexConsumer) {
-//            final float z = 0.1f;
-//            final Window window = mc.getWindow();
-//            final float w = 1f * window.getWidth() / window.getGuiScale();
-//            final float h = 1f * window.getHeight() / window.getGuiScale();
-//            vertexConsumer.addVertex(0, 0, z).setColor(-1).setUv(0, 1);
-//            vertexConsumer.addVertex(0, h, z).setColor(-1).setUv(0, 0);
-//            vertexConsumer.addVertex(w, h, z).setColor(-1).setUv(1, 0);
-//            vertexConsumer.addVertex(w, 0, z).setColor(-1).setUv(1, 1);
-//        }
-//
-//        @Override
-//        public @NotNull RenderPipeline pipeline() {
-//            return RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA;
-//        }
-//
-//        @Override
-//        public @NotNull TextureSetup textureSetup() {
-//            return TextureSetup.singleTexture(
-//                    new FboTextureView(
-//                            new FboTexture(
-//                                    15,
-//                                    "",
-//                                    GpuFormat.RGBA8_UNORM, // TODO: check
-//                                    FrameBuffers.get2().getWidth(),
-//                                    FrameBuffers.get2().getHeight(),
-//                                    0,
-//                                    1,
-//                                    FrameBuffers.get2().getTextureId())),
-//                    RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST));
-//        }
-//
-//        @Nullable
-//        @Override
-//        public ScreenRectangle scissorArea() {
-//            return null;
-//        }
-//
-//        @Nullable
-//        @Override
-//        public ScreenRectangle bounds() {
-//            return new ScreenRectangle(0, 0, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
-//        }
-//    }
 }
