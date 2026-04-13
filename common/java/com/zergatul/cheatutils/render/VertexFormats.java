@@ -19,6 +19,11 @@ public class VertexFormats {
             .add("InColor", VertexFormatElement.COLOR)
             .build();
 
+    public static final VertexFormat POSITION_3D_COLOR = VertexFormat.builder()
+            .add("InPosition", VertexFormatElement.POSITION)
+            .add("InColor", VertexFormatElement.COLOR)
+            .build();
+
     public static final VertexFormat POSITION_2D_TEXTURE_COLOR = VertexFormat.builder()
             .add("InPosition", VertexFormatElements.POSITION_2D)
             .add("InTexCoords", VertexFormatElement.UV)

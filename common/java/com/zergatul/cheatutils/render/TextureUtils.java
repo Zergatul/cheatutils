@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.render.gl;
+package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.opengl.GlStateManager;

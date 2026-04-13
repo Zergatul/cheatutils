@@ -1,10 +1,9 @@
 package com.zergatul.cheatutils.webui;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
-import com.zergatul.cheatutils.render.gl.TextureUtils;
+import com.zergatul.cheatutils.render.TextureUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;

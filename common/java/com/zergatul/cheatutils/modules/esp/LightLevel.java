@@ -116,7 +116,7 @@ public class LightLevel implements Module {
         double yc = config.useFreeCamPosition ? view.y : mc.player.getY();
         double zc = config.useFreeCamPosition ? view.z : mc.player.getZ();
 
-        Texture3dRenderer textureRenderer = Texture3dRenderer.getInstance();
+        Position3dTextureRenderer textureRenderer = Position3dTextureRenderer.getInstance();
         textureRenderer.begin();
 
         List<BlockPos> listTracers = new ArrayList<>();

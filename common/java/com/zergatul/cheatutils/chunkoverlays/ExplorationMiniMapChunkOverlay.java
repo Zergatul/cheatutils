@@ -4,8 +4,7 @@ import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Texture2dRenderer;
+import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.LevelChunkUtils;
 import net.minecraft.core.BlockPos;
@@ -17,12 +16,11 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.MapColor;
 import org.joml.Matrix4f;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
@@ -74,32 +72,48 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     public void onPostDrawSegments(Dimension dimension, Matrix4f matrix, float xp, float zp, float xc, float zc, float multiplier) {
         final int ImageSize = 8;
 
-        Texture2dRenderer renderer =  RenderUtilities.instance.getTexture2dRenderer();
+        Position2dTextureColorRenderer.BufferBuilder buffer = new Position2dTextureColorRenderer.BufferBuilder();
+
+        buffer.clear();
         for (Marker marker : markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
-            renderer.begin();
-            renderer.rect(
+            buffer.rect(
                     -ImageSize / 2f + ((float) marker.x - xc) * multiplier,
                     -ImageSize / 2f + ((float) marker.z - zc) * multiplier,
-                    ImageSize, ImageSize);
-            renderer.end(matrix, getGlTexture(mc.getTextureManager().getTexture(MarkerTexture).getTexture()).glId());
+                    ImageSize, ImageSize,
+                    Color.WHITE.getRGB());
         }
+        Position2dTextureColorRenderer.getInstance().draw(
+                mc.getMainRenderTarget(),
+                mc.getTextureManager().getTexture(MarkerTexture).getTextureView(),
+                matrix,
+                buffer);
 
         double distanceToPlayer = Math.sqrt((xp - xc) * (xp - xc) + (zp - zc) * (zp - zc));
         if (distanceToPlayer * multiplier > 2 * ImageSize) {
-            renderer.begin();
-            renderer.rect(
+            buffer.clear();
+            buffer.rect(
                     -ImageSize / 2f,
                     -ImageSize / 2f,
-                    ImageSize, ImageSize);
-            renderer.end(matrix, getGlTexture(mc.getTextureManager().getTexture(CenterPosTexture).getTexture()).glId());
+                    ImageSize, ImageSize,
+                    Color.WHITE.getRGB());
+            Position2dTextureColorRenderer.getInstance().draw(
+                    mc.getMainRenderTarget(),
+                    mc.getTextureManager().getTexture(CenterPosTexture).getTextureView(),
+                    matrix,
+                    buffer);
         }
 
-        renderer.begin();
-        renderer.rect(
+        buffer.clear();
+        buffer.rect(
                 -ImageSize / 2f + (xp - xc) * multiplier,
                 -ImageSize / 2f + (zp - zc) * multiplier,
-                ImageSize, ImageSize);
-        renderer.end(matrix, getGlTexture(mc.getTextureManager().getTexture(PlayerPosTexture).getTexture()).glId());
+                ImageSize, ImageSize,
+                Color.WHITE.getRGB());
+        Position2dTextureColorRenderer.getInstance().draw(
+                mc.getMainRenderTarget(),
+                mc.getTextureManager().getTexture(PlayerPosTexture).getTextureView(),
+                matrix,
+                buffer);
     }
 
     @Override

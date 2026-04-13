@@ -331,7 +331,7 @@ public class EntityEsp implements Module {
     private static final class OutlineCaptureBufferSource extends MultiBufferSource.BufferSource {
 
         public OutlineCaptureBufferSource() {
-            super(new ByteBufferBuilder(1 << 16), Object2ObjectSortedMaps.emptyMap());
+            super(new ByteBufferBuilder(0x10000), Object2ObjectSortedMaps.emptyMap());
         }
 
         @Override

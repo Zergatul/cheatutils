@@ -1,11 +1,9 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
@@ -219,22 +217,20 @@ public class BlockEsp {
     private void renderCustomEntries(RenderWorldLastEvent event) {
         if (!customEntries.isEmpty()) {
             final float shift = 0.01f;
-            Vec3 view = event.getCameraPos();
-            Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
+            Vec3 cameraPos = event.getCameraPos();
+            Position3dColorRenderer renderer = Position3dColorRenderer.getInstance();
             renderer.begin();
             for (CustomBlockPosEntry entry : customEntries) {
                 renderer.cuboid(
-                        (float) (entry.pos.getX() - view.x - shift),
-                        (float) (entry.pos.getY() - view.y - shift),
-                        (float) (entry.pos.getZ() - view.z - shift),
-                        (float) (entry.pos.getX() - view.x + 1 + shift),
-                        (float) (entry.pos.getY() - view.y + 1 + shift),
-                        (float) (entry.pos.getZ() - view.z + 1 + shift),
-                        ColorUtils.r(entry.color), ColorUtils.g(entry.color), ColorUtils.b(entry.color), ColorUtils.a(entry.color));
+                        (float) (entry.pos.getX() - cameraPos.x - shift),
+                        (float) (entry.pos.getY() - cameraPos.y - shift),
+                        (float) (entry.pos.getZ() - cameraPos.z - shift),
+                        (float) (entry.pos.getX() - cameraPos.x + 1 + shift),
+                        (float) (entry.pos.getY() - cameraPos.y + 1 + shift),
+                        (float) (entry.pos.getZ() - cameraPos.z + 1 + shift),
+                        entry.color);
             }
-            GlStateManager._depthMask(false);
             renderer.end(event.getMvp());
-            GlStateManager._depthMask(true);
         }
     }
 

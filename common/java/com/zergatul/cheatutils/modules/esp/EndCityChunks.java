@@ -4,14 +4,14 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.Color3dRenderer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.render.Position3dColorRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 
+import java.awt.*;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class EndCityChunks {
@@ -30,18 +30,14 @@ public class EndCityChunks {
             return;
         }
 
-        if (mc.player == null) {
+        if (mc.level == null || mc.level.dimension() != Level.END) {
             return;
         }
 
-        if (mc.player.level().dimension() != Level.END) {
-            return;
-        }
-
-        Color3dRenderer renderer = RenderUtilities.instance.getColor3dRenderer();
+        Position3dColorRenderer renderer = Position3dColorRenderer.getInstance();
         renderer.begin();
 
-        Vec3 view = event.getCameraPos();
+        Vec3 cameraPos = event.getCameraPos();
 
         AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
         for (int i = 0; i < chunks.length(); i++) {
@@ -63,11 +59,11 @@ public class EndCityChunks {
                 float b = 0f;
                 for (float y = 32.1f; y < 100; y += 32) {
                     renderer.quad(
-                            (float) (x1 - view.x), (float) (y - view.y), (float) (z1 - view.z),
-                            (float) (x1 - view.x), (float) (y - view.y), (float) (z2 - view.z),
-                            (float) (x2 - view.x), (float) (y - view.y), (float) (z2 - view.z),
-                            (float) (x2 - view.x), (float) (y - view.y), (float) (z1 - view.z),
-                            r, g, b, 0.1f);
+                            (float) (x1 - cameraPos.x), (float) (y - cameraPos.y), (float) (z1 - cameraPos.z),
+                            (float) (x1 - cameraPos.x), (float) (y - cameraPos.y), (float) (z2 - cameraPos.z),
+                            (float) (x2 - cameraPos.x), (float) (y - cameraPos.y), (float) (z2 - cameraPos.z),
+                            (float) (x2 - cameraPos.x), (float) (y - cameraPos.y), (float) (z1 - cameraPos.z),
+                            new Color(r, g, b, 0.1f).getRGB());
                 }
             }
         }

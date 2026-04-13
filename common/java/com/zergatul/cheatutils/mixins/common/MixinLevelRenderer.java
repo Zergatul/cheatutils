@@ -83,14 +83,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final ChunkSectionsToRender chunkSectionsToRender,
             final CallbackInfo info
     ) {
-        if (RenderHelper.isOpenGL()) {
-            int program = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-            Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
-            GL20.glUseProgram(program);
-        } else {
-            Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
-        }
-
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
         this.modifiedProjectionMatrix_CU = null;
     }
 

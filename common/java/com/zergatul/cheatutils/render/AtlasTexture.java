@@ -1,9 +1,9 @@
-package com.zergatul.cheatutils.render.gl;
+package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.zergatul.cheatutils.render.gl.images.ImageSource;
+import com.zergatul.cheatutils.render.images.ImageSource;
 
 import java.util.ArrayList;
 import java.util.List;

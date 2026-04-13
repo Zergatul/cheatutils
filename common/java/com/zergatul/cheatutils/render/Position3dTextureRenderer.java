@@ -18,11 +18,12 @@ import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-public class Texture3dRenderer {
+public class Position3dTextureRenderer {
 
     private final RenderPipeline pipeline;
     private final GpuBuffer ubo;
@@ -30,7 +31,7 @@ public class Texture3dRenderer {
     private BufferBuilder bufferBuilder;
     private boolean isEmpty;
 
-    private Texture3dRenderer() {
+    private Position3dTextureRenderer() {
         pipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/position-3d-texture"))
                 .withSampler("InSampler")
@@ -42,10 +43,10 @@ public class Texture3dRenderer {
                 .withDepthStencilState(DepthStencilState.DEFAULT)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(() -> "Texture 3d Renderer UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
-        byteBufferBuilder = new ByteBufferBuilder(0x10000);
+        byteBufferBuilder = new ByteBufferBuilder(0x1000);
     }
 
-    public static Texture3dRenderer getInstance() {
+    public static Position3dTextureRenderer getInstance() {
         return Holder.INSTANCE;
     }
 
@@ -93,7 +94,7 @@ public class Texture3dRenderer {
         RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "Render 3d Texture",
-                mainRenderTarget.getColorTextureView(),
+                Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 OptionalInt.empty(),
                 mainRenderTarget.getDepthTextureView(),
                 OptionalDouble.empty())
@@ -107,6 +108,6 @@ public class Texture3dRenderer {
     }
 
     private static final class Holder {
-        public static final Texture3dRenderer INSTANCE = new Texture3dRenderer();
+        public static final Position3dTextureRenderer INSTANCE = new Position3dTextureRenderer();
     }
 }

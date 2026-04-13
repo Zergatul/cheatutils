@@ -73,7 +73,6 @@ public class Modules {
         register(AreaMine.instance);
         register(ServerPlugins.instance);
         register(BedrockBreaker.instance);
-        register(RenderUtilities.instance);
         register(Containers.instance);
         register(AntiHunger.instance);
         register(Schematica.instance);

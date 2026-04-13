@@ -1,10 +1,9 @@
-package com.zergatul.cheatutils.render.gl;
+package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
-import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;

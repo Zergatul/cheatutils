@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.render.gl.images;
+package com.zergatul.cheatutils.render.images;
 
 import java.nio.ByteBuffer;
 

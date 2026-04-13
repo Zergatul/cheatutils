@@ -1,9 +1,11 @@
-#version 150
+#version 330
+
+layout(std140) uniform Block {
+    mat4 MVP;
+};
 
 in vec3 InPosition;
 in vec4 InColor;
-
-uniform mat4 MVP;
 
 out vec4 Color;
 

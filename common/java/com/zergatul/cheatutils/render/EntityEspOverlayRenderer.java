@@ -17,6 +17,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -37,7 +38,10 @@ public class EntityEspOverlayRenderer {
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
                 .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
                 .build();
-        ubo = RenderSystem.getDevice().createBuffer(() -> "Entity ESP Overlay UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 16);
+        ubo = RenderSystem.getDevice().createBuffer(
+                () -> ModMain.MODID + ": Entity ESP Overlay UBO",
+                GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
+                16);
     }
 
     public static EntityEspOverlayRenderer getInstance() {
@@ -45,7 +49,11 @@ public class EntityEspOverlayRenderer {
     }
 
     public void begin() {
-        RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(renderTarget.getColorTexture(), 0, renderTarget.getDepthTexture(), 1.0);
+        RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(
+                Objects.requireNonNull(renderTarget.getColorTexture()),
+                0,
+                Objects.requireNonNull(renderTarget.getDepthTexture()),
+                1.0);
         RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
         RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
     }
@@ -64,7 +72,11 @@ public class EntityEspOverlayRenderer {
         }
 
         RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
-        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit entity overlay", mainRenderTarget.getColorTextureView(), OptionalInt.empty())) {
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                () -> ModMain.MODID + ": Blit entity overlay",
+                Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
+                OptionalInt.empty())
+        ) {
             renderPass.setPipeline(pipeline);
             renderPass.bindTexture("InSampler", renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform("Block", ubo);

@@ -1,11 +1,8 @@
 package com.zergatul.cheatutils.ui;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.zergatul.cheatutils.render.CacheItemRenderer;
-import com.zergatul.cheatutils.render.GlHelper;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
-import com.zergatul.cheatutils.render.buffers.TextureColor2dRenderBuffer;
-import com.zergatul.cheatutils.render.gl.CustomizableVanillaFontRenderer;
+import com.zergatul.cheatutils.render.CustomizableVanillaFontRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.world.entity.ItemOwner;

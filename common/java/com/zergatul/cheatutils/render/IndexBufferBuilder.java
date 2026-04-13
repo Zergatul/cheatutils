@@ -5,8 +5,8 @@ import org.lwjgl.system.MemoryUtil;
 
 public class IndexBufferBuilder {
 
-    private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x10000);
-    private final ByteBufferBuilder indexBuffer = new ByteBufferBuilder(0x10000);
+    private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x1000);
+    private final ByteBufferBuilder indexBuffer = new ByteBufferBuilder(0x1000);
     private int vertices;
     private int indexes;
 

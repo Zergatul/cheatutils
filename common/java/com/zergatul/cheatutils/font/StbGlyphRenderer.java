@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.font;
 
-import com.zergatul.cheatutils.render.gl.AtlasTexture;
-import com.zergatul.cheatutils.render.gl.images.ImageSource;
+import com.zergatul.cheatutils.render.AtlasTexture;
+import com.zergatul.cheatutils.render.images.ImageSource;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTruetype;
 

@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.modules.automation;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
@@ -9,7 +8,6 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.schematics.*;
 import com.zergatul.cheatutils.utils.*;
@@ -589,8 +587,7 @@ public class Schematica {
     private void renderCreateBoundaries(RenderWorldLastEvent event, Vec3 view, SchematicaConfig.Create create) {
         final double gap = 0.0625;
 
-        // TODO: not working because wrong framebuffer?
-        Color3dRenderer quadRenderer = RenderUtilities.instance.getColor3dRenderer();
+        Position3dColorRenderer quadRenderer = Position3dColorRenderer.getInstance();
         quadRenderer.begin();
         quadRenderer.cuboid(
                 (float) (create.getX1() - gap - view.x),
@@ -599,10 +596,8 @@ public class Schematica {
                 (float) (create.getX2() + gap - view.x),
                 (float) (create.getY2() + gap - view.y),
                 (float) (create.getZ2() + gap - view.z),
-                0.00f, 0.58f, 1.00f, 0.2f);
-        GlStateManager._depthMask(false);
+                new Color(0.00f, 0.58f, 1.00f, 0.2f).getRGB());
         quadRenderer.end(event.getMvp());
-        GlStateManager._depthMask(true);
 
         EspLineRenderer lineRenderer = EspLineRenderer.getInstance();
         lineRenderer.begin();

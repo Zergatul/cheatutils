@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.render.buffers;
 
-import com.zergatul.cheatutils.render.gl.AtlasTexture;
+import com.zergatul.cheatutils.render.AtlasTexture;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 

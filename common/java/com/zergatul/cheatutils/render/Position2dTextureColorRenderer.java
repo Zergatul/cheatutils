@@ -13,7 +13,6 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.ModMain;
-import com.zergatul.cheatutils.render.gl.AtlasTexture;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -96,6 +95,15 @@ public class Position2dTextureColorRenderer {
 
         public boolean isEmpty() {
             return vertices == 0;
+        }
+
+        public void rect(float x, float y, float width, float height, int color) {
+            quad(
+                    x, y, 0, 0,
+                    x, y + height, 0, 1,
+                    x + width, y + height, 1, 1,
+                    x + width, y, 1, 0,
+                    color);
         }
 
         public void rect(
