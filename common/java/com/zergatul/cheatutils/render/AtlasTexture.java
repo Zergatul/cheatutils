@@ -73,7 +73,7 @@ public class AtlasTexture {
     }
 
     private boolean hasSpace(Line line, int width, int height) {
-        return line.top + height < texture.getHeight() && line.width + width < texture.getWidth();
+        return line.top + height <= texture.getHeight() && line.width + width <= texture.getWidth();
     }
 
     private boolean hasSpaceOnNewLine(Line line, ImageSource image) {
@@ -85,7 +85,7 @@ public class AtlasTexture {
     }
 
     private boolean hasSpaceOnNewLine(Line line, int width, int height) {
-        return line.top + line.height + height < texture.getHeight() && width < texture.getWidth();
+        return line.top + line.height + height <= texture.getHeight() && width <= texture.getWidth();
     }
 
     private void resize() {
@@ -94,14 +94,6 @@ public class AtlasTexture {
         List<Line> oldLines = lines;
         lines = new ArrayList<>();
         lines.add(new Line(0, 0, 0));
-
-//        int srcFBO = GlStateManager.glGenFramebuffers();
-//        GlStateManager._glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
-//        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, oldTexture.getTexture(), 0);
-//
-//        int dstFBO = GlStateManager.glGenFramebuffers();
-//        GlStateManager._glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
-//        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getTexture(), 0);
 
         for (Line line : oldLines) {
             for (Item item : line.items) {
@@ -116,16 +108,9 @@ public class AtlasTexture {
                 }
             }
         }
-
-//        GlStateManager._glDeleteFramebuffers(srcFBO);
-//        GlStateManager._glDeleteFramebuffers(dstFBO);
     }
 
     private void copyToLine(TextureWrapper oldTexture, TextureWrapper newTexture, Line line, Item item) {
-//        glBlitFramebuffer(
-//                item.x, item.y, item.x + item.width, item.y + item.height,
-//                line.width, line.top, line.width + item.width, line.top + item.height,
-//                GL_COLOR_BUFFER_BIT, GL_NEAREST);
         RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(
                 oldTexture.getTexture(),
                 newTexture.getTexture(),

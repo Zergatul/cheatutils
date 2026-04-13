@@ -4,7 +4,6 @@ import com.zergatul.cheatutils.chunkoverlays.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
-import com.zergatul.cheatutils.render.MainFrameBuffer;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;

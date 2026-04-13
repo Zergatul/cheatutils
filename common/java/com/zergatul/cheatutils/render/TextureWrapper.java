@@ -29,7 +29,7 @@ public class TextureWrapper {
     public static TextureWrapper empty(int width, int height) {
         GpuTexture texture = RenderSystem.getDevice().createTexture(
                 () -> ModMain.MODID + ": Font atlas",
-                GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT,
+                GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT,
                 GpuFormat.RGBA8_UNORM,
                 width, height,
                 1, 1);
