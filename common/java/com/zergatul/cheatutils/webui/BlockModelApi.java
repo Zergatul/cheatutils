@@ -252,7 +252,7 @@ public class BlockModelApi extends ApiBase {
         }
 
         @Override
-        public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, CustomGeometryRenderer customGeometryRenderer) {
+        public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, int outlineColor, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer) {
             throw new AssertionError();
         }
 

@@ -5,9 +5,9 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.extract.LevelExtractor;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@Mixin(LevelRenderer.class)
-public abstract class MixinLevelRenderer {
+@Mixin(LevelExtractor.class)
+public abstract class MixinLevelExtractor {
 
     @Shadow
     @Final
@@ -36,7 +36,7 @@ public abstract class MixinLevelRenderer {
             return;
         }
 
-        LocalPlayer player = minecraft.player;
+        LocalPlayer player = this.minecraft.player;
         if (player == null) {
             return;
         }

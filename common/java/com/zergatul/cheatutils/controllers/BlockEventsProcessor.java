@@ -25,6 +25,10 @@ public class BlockEventsProcessor {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final ProfilerSingleThreadExecutor executor = new ProfilerSingleThreadExecutor(10000);
+
+    // Sometimes chunk unload events don't trigger for all chunks.
+    // This map tracks loaded chunks, and every tick we recheck all loaded chunks, if some chunks disappear,
+    // we trigger unload event for them
     private final Map<ChunkPos, Boolean> capturedChunks = new HashMap<>();
 
     private BlockEventsProcessor() {

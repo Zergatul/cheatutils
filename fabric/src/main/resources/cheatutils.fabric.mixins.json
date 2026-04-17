@@ -12,7 +12,7 @@
     "fabric.MixinCamera",
     "fabric.MixinGuiGraphicsExtractor",
     "fabric.MixinKeyboardHandler",
-    "fabric.MixinLevelRenderer",
+    "fabric.MixinLevelExtractor",
     "fabric.MixinMinecraft",
     "fabric.MixinMultiPlayerGameMode",
     "fabric.MixinScreen"

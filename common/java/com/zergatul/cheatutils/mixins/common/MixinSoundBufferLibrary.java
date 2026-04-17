@@ -41,7 +41,7 @@ public abstract class MixinSoundBufferLibrary {
             File file = new File(filename);
             try (
                     InputStream stream = new FileInputStream(file);
-                    JOrbisAudioStream audioStream = new JOrbisAudioStream(stream);
+                    JOrbisAudioStream audioStream = new JOrbisAudioStream(stream)
             ) {
                 ByteBuffer byteBuffer = audioStream.readAll();
                 SoundBuffer soundBuffer = new SoundBuffer(byteBuffer, audioStream.getFormat());

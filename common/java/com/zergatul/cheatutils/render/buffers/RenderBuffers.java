@@ -11,6 +11,7 @@ import org.joml.Matrix4f;
 public class RenderBuffers {
 
     private final Matrix4f matrix;
+    // add z-index
     private Position2dColorRenderer.BufferBuilder color2d;
     private Object2ObjectMap<GpuTextureView, Position2dTextureColorRenderer.BufferBuilder> texColor2dBack;
     private Object2ObjectMap<GpuTextureView, Position2dTextureColorRenderer.BufferBuilder> texColor2dFront;

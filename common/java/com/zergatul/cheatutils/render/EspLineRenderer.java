@@ -7,7 +7,6 @@ import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -30,6 +29,7 @@ public class EspLineRenderer {
     private final RenderPipeline depthPipeline;
     private final GpuBuffer ubo;
     private final BufferBuilder bufferBuilder;
+    private final DynamicGpuBuffer dynamicVertexBuffer;
 
     private EspLineRenderer() {
         pipeline = createPipeline("pipeline/esp-lines", false);
@@ -39,12 +39,13 @@ public class EspLineRenderer {
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 72);
         bufferBuilder = new BufferBuilder();
+        dynamicVertexBuffer = DynamicGpuBuffer.vertex();
     }
 
     private static RenderPipeline createPipeline(String location, boolean depth) {
         RenderPipeline.Builder builder = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, location))
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "esp-lines"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "esp-lines"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
@@ -154,10 +155,10 @@ public class EspLineRenderer {
 
         GpuBuffer vertexBuffer;
         try (ByteBufferBuilder.Result result = bufferBuilder.getVertexBuffer()) {
-            vertexBuffer = this.pipeline.getVertexFormat().uploadImmediateVertexBuffer(result.byteBuffer());
+            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(result.byteBuffer());
         }
 
-        RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+        RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (MemoryStack stack = MemoryStack.stackPush()) {
             Std140Builder builder = Std140Builder.onStack(stack, 72);
             builder.putMat4f(mvp);
@@ -167,7 +168,7 @@ public class EspLineRenderer {
 
         try (RenderPass renderPass = createRenderPass(mainRenderTarget, depth)) {
             renderPass.setPipeline(depth ? depthPipeline : pipeline);
-            renderPass.setUniform("Block", ubo);
+            renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer);
             renderPass.draw(0, bufferBuilder.getVertexCount());
         }

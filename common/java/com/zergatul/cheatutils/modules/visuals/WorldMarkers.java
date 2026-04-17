@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.modules.visuals;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -84,8 +83,6 @@ public class WorldMarkers implements FontBackendHolder {
 
         RenderingContext context = new RenderingContext(matrix, scale);
 
-        GlStateManager._viewport(0, 0, scrWidth, scrHeight);
-
         String dimension = mc.level.dimension().identifier().toString();
         for (WorldMarkersConfig.Entry entry : config.entries) {
             if (!entry.enabled) {
@@ -104,7 +101,7 @@ public class WorldMarkers implements FontBackendHolder {
 
             Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)x, (float)y, (float)z, 1));
             Vector4f v2 = event.getProjection().transform(v1);
-            if (v2.z <= 0) {
+            if (v2.z / v2.w <= 0) {
                 continue; // behind
             }
 

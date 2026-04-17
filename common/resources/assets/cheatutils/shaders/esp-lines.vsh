@@ -1,6 +1,6 @@
 #version 330
 
-layout(std140) uniform Block {
+layout(std140) uniform Inputs {
     mat4 MVP;
     vec2 ViewportSize;
 };

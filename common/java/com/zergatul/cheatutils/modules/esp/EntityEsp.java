@@ -12,6 +12,7 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
+import it.unimi.dsi.fastutil.objects.ObjectSortedSets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
@@ -53,10 +54,10 @@ public class EntityEsp implements Module {
                 mc.getModelManager(),
                 bufferSource,
                 mc.getAtlasManager(),
-                new OutlineBufferSource(),
+                new OutlineBufferSource(new EmptyBufferSource()),
                 new EmptyBufferSource(),
                 mc.font,
-                mc.gameRenderer.getGameRenderState());
+                mc.gameRenderer.gameRenderState());
     }
 
     public boolean isEnabled() {
@@ -289,7 +290,7 @@ public class EntityEsp implements Module {
             }
 
             dispatcher.renderAllFeatures();
-            bufferSource.endBatch();
+            bufferSource.uploadAndDraw();
             renderer.end(config.overlayColor);
         }
     }
@@ -323,7 +324,7 @@ public class EntityEsp implements Module {
             }
 
             dispatcher.renderAllFeatures();
-            bufferSource.endBatch();
+            bufferSource.uploadAndDraw();
             renderer.end(config.glowColor);
         }
     }
@@ -331,7 +332,7 @@ public class EntityEsp implements Module {
     private static final class OutlineCaptureBufferSource extends MultiBufferSource.BufferSource {
 
         public OutlineCaptureBufferSource() {
-            super(new ByteBufferBuilder(0x10000), Object2ObjectSortedMaps.emptyMap());
+            super(0x10000, ObjectSortedSets.emptySet());
         }
 
         @Override
@@ -346,7 +347,7 @@ public class EntityEsp implements Module {
 
     private static final class EmptyBufferSource extends MultiBufferSource.BufferSource {
         public EmptyBufferSource() {
-            super(ByteBufferBuilder.exactlySized(4), Object2ObjectSortedMaps.emptyMap());
+            super(4, ObjectSortedSets.emptySet());
         }
     }
 

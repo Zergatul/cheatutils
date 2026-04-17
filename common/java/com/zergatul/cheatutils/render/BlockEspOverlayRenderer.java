@@ -29,12 +29,14 @@ public class BlockEspOverlayRenderer {
     private final RenderPipeline blitPipeline;
     private final GpuBuffer blitUbo;
     private final IndexBufferBuilder indexBufferBuilder;
+    private final DynamicGpuBuffer dynamicVertexBuffer;
+    private final DynamicGpuBuffer dynamicIndexBuffer;
 
     private BlockEspOverlayRenderer() {
         renderTarget = RenderTargets.getEsp();
         drawPipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/block-esp-overlay-draw"))
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
@@ -43,8 +45,8 @@ public class BlockEspOverlayRenderer {
         drawUbo = RenderSystem.getDevice().createBuffer(() -> "Block ESP Overlay Buffer Draw UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
         blitPipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/block-esp-overlay-blit"))
-                .withSampler("InSampler")
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
+                .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
@@ -52,6 +54,8 @@ public class BlockEspOverlayRenderer {
                 .build();
         blitUbo = RenderSystem.getDevice().createBuffer(() -> "Block ESP Overlay Blit UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 16);
         indexBufferBuilder = new IndexBufferBuilder();
+        dynamicVertexBuffer = DynamicGpuBuffer.vertex();
+        dynamicIndexBuffer = DynamicGpuBuffer.index();
     }
 
     public static BlockEspOverlayRenderer getInstance() {
@@ -100,11 +104,11 @@ public class BlockEspOverlayRenderer {
     public void end(Matrix4f mvp, Color color) {
         GpuBuffer vertexBuffer;
         try (ByteBufferBuilder.Result result = indexBufferBuilder.getVertexBuffer()) {
-            vertexBuffer = drawPipeline.getVertexFormat().uploadImmediateVertexBuffer(result.byteBuffer());
+            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(result.byteBuffer());
         }
         GpuBuffer indexBuffer;
         try (ByteBufferBuilder.Result result = indexBufferBuilder.getIndexBuffer()) {
-            indexBuffer = drawPipeline.getVertexFormat().uploadImmediateIndexBuffer(result.byteBuffer());
+            indexBuffer = this.dynamicIndexBuffer.uploadImmediate(result.byteBuffer());
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -114,7 +118,7 @@ public class BlockEspOverlayRenderer {
 
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Draw block overlay", renderTarget.getColorTextureView(), OptionalInt.of(0))) {
             renderPass.setPipeline(drawPipeline);
-            renderPass.setUniform("Block", drawUbo);
+            renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, drawUbo);
             renderPass.setVertexBuffer(0, vertexBuffer);
             renderPass.setIndexBuffer(indexBuffer, VertexFormat.IndexType.INT);
             renderPass.drawIndexed(0, 0, indexBufferBuilder.getIndexCount(), 1);
@@ -129,11 +133,11 @@ public class BlockEspOverlayRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(blitUbo.slice(), buffer.flip());
         }
 
-        RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+        RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit block overlay", mainRenderTarget.getColorTextureView(), OptionalInt.empty())) {
             renderPass.setPipeline(blitPipeline);
-            renderPass.bindTexture("InSampler", renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-            renderPass.setUniform("Block", blitUbo);
+            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, blitUbo);
             renderPass.draw(0, 3);
         }
     }

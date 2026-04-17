@@ -27,19 +27,24 @@ public class Position2dTextureColorRenderer {
 
     private final RenderPipeline pipeline;
     private final GpuBuffer ubo;
+    private final DynamicGpuBuffer dynamicVertexBuffer;
 
     private Position2dTextureColorRenderer() {
         pipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pos2d-tex-color"))
-                .withSampler("Texture")
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
+                .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-texture-color"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-texture-color"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(VertexFormats.POSITION_2D_TEXTURE_COLOR, VertexFormat.Mode.TRIANGLES)
                 .withCull(false)
                 .build();
-        ubo = RenderSystem.getDevice().createBuffer(() -> "Pos2dTexCol Renderer UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
+        ubo = RenderSystem.getDevice().createBuffer(
+                () -> ModMain.MODID + ": Pos2dTexCol Renderer UBO",
+                GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
+                64);
+        dynamicVertexBuffer = DynamicGpuBuffer.vertex();
     }
 
     public static Position2dTextureColorRenderer getInstance() {
@@ -53,7 +58,7 @@ public class Position2dTextureColorRenderer {
 
         GpuBuffer vertexBuffer;
         try (ByteBufferBuilder.Result result = buffer.getVertexBuffer()) {
-            vertexBuffer = this.pipeline.getVertexFormat().uploadImmediateVertexBuffer(result.byteBuffer());
+            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(result.byteBuffer());
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -68,8 +73,8 @@ public class Position2dTextureColorRenderer {
                 OptionalInt.empty()
         )) {
             renderPass.setPipeline(pipeline);
-            renderPass.bindTexture("Texture", textureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-            renderPass.setUniform("Block", ubo);
+            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, textureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer);
             renderPass.draw(0, buffer.getVertexCount());
         }

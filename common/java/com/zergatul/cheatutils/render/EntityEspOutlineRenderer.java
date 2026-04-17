@@ -30,8 +30,8 @@ public class EntityEspOutlineRenderer {
         renderTarget = RenderTargets.getEsp();
         pipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/entity-esp-outline"))
-                .withSampler("InSampler")
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
+                .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "entity-outline"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
@@ -65,11 +65,11 @@ public class EntityEspOutlineRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(ubo.slice(), buffer.flip());
         }
 
-        RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+        RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit entity outline target", mainRenderTarget.getColorTextureView(), OptionalInt.empty())) {
             renderPass.setPipeline(pipeline);
-            renderPass.bindTexture("InSampler", renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-            renderPass.setUniform("Block", ubo);
+            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.draw(0, 3);
         }
     }

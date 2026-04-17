@@ -25,18 +25,23 @@ public class Position2dColorRenderer {
 
     private final RenderPipeline pipeline;
     private final GpuBuffer ubo;
+    private final DynamicGpuBuffer dynamicVertexBuffer;
 
     private Position2dColorRenderer() {
         pipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pos2d-color"))
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-color"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-color"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(VertexFormats.POSITION_2D_COLOR, VertexFormat.Mode.TRIANGLES)
                 .withCull(false)
                 .build();
-        ubo = RenderSystem.getDevice().createBuffer(() -> "Pos2dCol Renderer UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
+        ubo = RenderSystem.getDevice().createBuffer(
+                () -> ModMain.MODID +  ": Pos2dCol Renderer UBO",
+                GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
+                64);
+        dynamicVertexBuffer = DynamicGpuBuffer.vertex();
     }
 
     public static Position2dColorRenderer getInstance() {
@@ -50,7 +55,7 @@ public class Position2dColorRenderer {
 
         GpuBuffer vertexBuffer;
         try (ByteBufferBuilder.Result result = buffer.getVertexBuffer()) {
-            vertexBuffer = this.pipeline.getVertexFormat().uploadImmediateVertexBuffer(result.byteBuffer());
+            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(result.byteBuffer());
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -65,7 +70,7 @@ public class Position2dColorRenderer {
                 OptionalInt.empty()
         )) {
             renderPass.setPipeline(pipeline);
-            renderPass.setUniform("Block", ubo);
+            renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer);
             renderPass.draw(0, buffer.getVertexCount());
         }

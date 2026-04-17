@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,6 +33,17 @@ public abstract class MixinCamera {
             setRotation(freeCam.getYRot(), freeCam.getXRot());
             setPosition(freeCam.getX(), freeCam.getY(), freeCam.getZ());
             info.cancel();
+        }
+    }
+
+    @ModifyExpressionValue(
+            method = "extractRenderState",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isSpectator()Z"))
+    private boolean onExtractRenderStateModifyIsSpectator(boolean isSpectator) {
+        if (FreeCam.instance.isActive()) {
+            return true;
+        } else {
+            return isSpectator;
         }
     }
 

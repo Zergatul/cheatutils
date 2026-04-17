@@ -68,7 +68,7 @@ public class CustomizableVanillaFontRenderer {
 
             AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(binding.location());
             for (int i = 0; i < consumer.buffer.size() / 20; i++) {
-                Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dBack(texture.getTextureView());
+                Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dFront(texture.getTextureView());
                 buffer.quad(
                         x + consumer.getX(i * 4) * scale, // x1
                         y + consumer.getY(i * 4) * scale, // y1
@@ -86,10 +86,10 @@ public class CustomizableVanillaFontRenderer {
                         y + consumer.getY(i * 4 + 3) * scale, // y3
                         consumer.getU(i * 4 + 3), // u3
                         consumer.getV(i * 4 + 3), // v3
-                        ColorUtils.shadowed(consumer.getColor(i * 4), SHADOW_FACTOR));
+                        consumer.getColor(i * 4));
             }
 
-            Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dFront(texture.getTextureView());
+            Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dBack(texture.getTextureView());
             for (int i = 0; i < consumer.buffer.size() / 20; i++) {
                 buffer.quad(
                         x + scale + consumer.getX(i * 4) * scale, // x1
@@ -108,7 +108,7 @@ public class CustomizableVanillaFontRenderer {
                         y + scale + consumer.getY(i * 4 + 3) * scale, // y3
                         consumer.getU(i * 4 + 3), // u3
                         consumer.getV(i * 4 + 3), // v3
-                        consumer.getColor(i * 4));
+                        ColorUtils.shadowed(consumer.getColor(i * 4), SHADOW_FACTOR));
             }
         }
     }

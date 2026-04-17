@@ -101,7 +101,7 @@ public class AirPlace implements Module {
 
         init();
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         Quaternionf rotation = new Quaternionf(0, 0, 0, 1);
         rotation.rotationYXZ(
                 -camera.yRot() * ((float) Math.PI / 180F),

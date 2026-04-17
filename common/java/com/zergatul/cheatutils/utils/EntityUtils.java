@@ -6,6 +6,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,7 +57,7 @@ public class EntityUtils {
         set.add(info3);
 
         Registries.ENTITY_TYPES.getValues().stream().map(et -> {
-            if (et == EntityType.PLAYER) {
+            if (et == EntityTypes.PLAYER) {
                 return null;
             }
 

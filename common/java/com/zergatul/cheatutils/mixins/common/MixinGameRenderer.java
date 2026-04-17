@@ -71,7 +71,7 @@ public abstract class MixinGameRenderer {
         FullBright.instance.shouldReturnNightVisionEffect = true;
     }
 
-    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;extractLevel(Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/client/Camera;F)V", shift = At.Shift.AFTER))
+    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/extract/LevelExtractor;extract(Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/client/Camera;F)V", shift = At.Shift.AFTER))
     private void onAfterLevelExtract(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo info) {
         FullBright.instance.shouldReturnNightVisionEffect = false;
     }

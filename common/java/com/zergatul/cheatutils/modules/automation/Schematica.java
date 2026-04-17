@@ -138,7 +138,7 @@ public class Schematica {
             boolean renderBlocks = isBlockRenderingEnabled();
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
-                    mc.levelRenderer.setSectionDirty(info.x, info.y, info.z);
+                    mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
                     if (renderBlocks) {
                         mc.level.getChunkSource().onSectionEmptinessChanged(info.x, info.y, info.z, false); // hasOnlyAir=false
                     }
@@ -174,7 +174,7 @@ public class Schematica {
                         lookup.put(index, info.add(entry, section));
 
                         if (mc.level != null) {
-                            mc.levelRenderer.setSectionDirty(section.getSectionX(), section.getSectionY(), section.getSectionZ());
+                            mc.levelExtractor.setSectionDirty(section.getSectionX(), section.getSectionY(), section.getSectionZ());
                             mc.level.getChunkSource().onSectionEmptinessChanged(section.getSectionX(), section.getSectionY(), section.getSectionZ(), false); // hasOnlyAir=false
                         }
                     }
@@ -198,7 +198,7 @@ public class Schematica {
                         }
 
                         if (mc.level != null) {
-                            mc.levelRenderer.setSectionDirty(
+                            mc.levelExtractor.setSectionDirty(
                                     section.getSectionX(),
                                     section.getSectionY(),
                                     section.getSectionZ());
@@ -226,7 +226,7 @@ public class Schematica {
         TickEndExecutor.instance.execute(() -> {
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
-                    mc.levelRenderer.setSectionDirty(info.x, info.y, info.z);
+                    mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
                 }
             }
 
@@ -254,7 +254,7 @@ public class Schematica {
 
                     // last parameter - return empty chunk, not null
                     section.onChunkLoaded(entry, mc.level.getChunkSource().getChunk(section.getSectionX(), section.getSectionZ(), true));
-                    mc.levelRenderer.setSectionDirty(
+                    mc.levelExtractor.setSectionDirty(
                             section.getSectionX(),
                             section.getSectionY(),
                             section.getSectionZ());
@@ -278,7 +278,7 @@ public class Schematica {
                         }
 
                         if (mc.level != null) {
-                            mc.levelRenderer.setSectionDirty(
+                            mc.levelExtractor.setSectionDirty(
                                     section.getSectionX(),
                                     section.getSectionY(),
                                     section.getSectionZ());
@@ -318,7 +318,7 @@ public class Schematica {
                         // last parameter - return empty chunk, not null
                         if (mc.level != null) {
                             section.onChunkLoaded(newEntry, mc.level.getChunkSource().getChunk(section.getSectionX(), section.getSectionZ(), true));
-                            mc.levelRenderer.setSectionDirty(
+                            mc.levelExtractor.setSectionDirty(
                                     section.getSectionX(),
                                     section.getSectionY(),
                                     section.getSectionZ());

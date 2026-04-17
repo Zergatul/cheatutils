@@ -15,7 +15,7 @@ public class RenderingContext {
     private final RenderTarget renderTarget;
 
     public RenderingContext(Matrix4f matrix, int itemScale) {
-        this(matrix, itemScale, Minecraft.getInstance().getMainRenderTarget());
+        this(matrix, itemScale, Minecraft.getInstance().gameRenderer.mainRenderTarget());
     }
 
     public RenderingContext(Matrix4f matrix, int itemScale, RenderTarget renderTarget) {

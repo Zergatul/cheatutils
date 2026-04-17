@@ -69,7 +69,7 @@ public class UIApi {
             """)
     @ApiVisibility(ApiType.ACTION)
     public void screenshot() {
-        Screenshot.grab(mc.gameDirectory, mc.getMainRenderTarget(), message -> mc.execute(() -> {
+        Screenshot.grab(mc.gameDirectory, mc.gameRenderer.mainRenderTarget(), message -> mc.execute(() -> {
             mc.gui.hud.getChat().addClientSystemMessage(message);
             mc.getNarrator().saySystemQueued(message);
         }));

@@ -175,7 +175,7 @@ public class CacheItemRenderer {
 
         GpuDevice device = RenderSystem.getDevice();
         device.createCommandEncoder().clearColorAndDepthTextures(
-                texture, 0, depthTexture, 1.0,
+                texture, 0, depthTexture, 0.0,
                 left, textureSize - bottom, slotSize, slotSize);
 
         PoseStack poseStack = new PoseStack();
@@ -188,13 +188,13 @@ public class CacheItemRenderer {
         RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(projection), ProjectionType.ORTHOGRAPHIC);
         RenderSystem.enableScissorForRenderTypeDraws(left, textureSize - bottom, slotSize, slotSize);
         Lighting.Entry lighting = renderState.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
-        mc.gameRenderer.getLighting().setupFor(lighting);
-        renderState.submit(poseStack, mc.gameRenderer.getSubmitNodeStorage(), 15728880, OverlayTexture.NO_OVERLAY, 0);
-        mc.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
-        mc.renderBuffers().bufferSource().endBatch();
+        mc.gameRenderer.lighting().setupFor(lighting);
+        renderState.submit(poseStack, mc.gameRenderer.submitNodeStorage(), 15728880, OverlayTexture.NO_OVERLAY, 0);
+        mc.gameRenderer.featureRenderDispatcher().renderAllFeatures();
         RenderSystem.disableScissorForRenderTypeDraws();
         RenderSystem.outputColorTextureOverride = null;
         RenderSystem.outputDepthTextureOverride = null;
+        poseStack.popPose();
     }
 
     private void invalidate() {

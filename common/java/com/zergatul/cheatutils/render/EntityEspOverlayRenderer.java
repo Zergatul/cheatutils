@@ -31,8 +31,8 @@ public class EntityEspOverlayRenderer {
         renderTarget = RenderTargets.getEsp();
         pipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/entity-esp-overlay"))
-                .withSampler("InSampler")
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
+                .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
@@ -71,15 +71,15 @@ public class EntityEspOverlayRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(ubo.slice(), buffer.flip());
         }
 
-        RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+        RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> ModMain.MODID + ": Blit entity overlay",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 OptionalInt.empty())
         ) {
             renderPass.setPipeline(pipeline);
-            renderPass.bindTexture("InSampler", renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-            renderPass.setUniform("Block", ubo);
+            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.draw(0, 3);
         }
     }

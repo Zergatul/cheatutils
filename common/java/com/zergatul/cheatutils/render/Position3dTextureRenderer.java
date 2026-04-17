@@ -6,7 +6,6 @@ import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
@@ -28,22 +27,27 @@ public class Position3dTextureRenderer {
     private final RenderPipeline pipeline;
     private final GpuBuffer ubo;
     private final ByteBufferBuilder byteBufferBuilder;
+    private final DynamicGpuBuffer dynamicVertexBuffer;
     private BufferBuilder bufferBuilder;
     private boolean isEmpty;
 
     private Position3dTextureRenderer() {
         pipeline = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/position-3d-texture"))
-                .withSampler("InSampler")
-                .withUniform("Block", UniformType.UNIFORM_BUFFER)
+                .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
+                .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-texture"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-texture"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLES)
                 .withDepthStencilState(DepthStencilState.DEFAULT)
                 .build();
-        ubo = RenderSystem.getDevice().createBuffer(() -> "Texture 3d Renderer UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
+        ubo = RenderSystem.getDevice().createBuffer(
+                () -> ModMain.MODID + ": Texture 3d Renderer UBO",
+                GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
+                64);
         byteBufferBuilder = new ByteBufferBuilder(0x1000);
+        dynamicVertexBuffer = DynamicGpuBuffer.vertex();
     }
 
     public static Position3dTextureRenderer getInstance() {
@@ -81,7 +85,7 @@ public class Position3dTextureRenderer {
         int vertexCount;
         GpuBuffer vertexBuffer;
         try (MeshData mesh = bufferBuilder.buildOrThrow()) {
-            vertexBuffer = this.pipeline.getVertexFormat().uploadImmediateVertexBuffer(mesh.vertexBuffer());
+            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(mesh.vertexBuffer());
             vertexCount = mesh.drawState().vertexCount();
         }
 
@@ -91,7 +95,7 @@ public class Position3dTextureRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(ubo.slice(), builder.get());
         }
 
-        RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+        RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "Render 3d Texture",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
@@ -100,8 +104,8 @@ public class Position3dTextureRenderer {
                 OptionalDouble.empty())
         ) {
             renderPass.setPipeline(pipeline);
-            renderPass.bindTexture("InSampler", texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-            renderPass.setUniform("Block", ubo);
+            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer);
             renderPass.draw(0, vertexCount);
         }

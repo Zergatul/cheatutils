@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.yggdrasil.ProfileResult;
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
@@ -114,7 +113,7 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        CameraRenderState cameraState = mc.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState;
+        CameraRenderState cameraState = mc.gameRenderer.gameRenderState().levelRenderState.cameraRenderState;
         prepareEntityList(cameraState.pos, event.deltaTracker().getGameTimeDeltaPartialTick(true));
 
         if (entities.isEmpty()) {
@@ -190,10 +189,7 @@ public class EntityTitle implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        /*MainFrameBuffer.bind();*/
-        GlStateManager._viewport(0, 0, scrWidth, scrHeight);
-
-        RenderingContext context = new RenderingContext(matrix, itemScale/*, () -> {}*/);
+        RenderingContext context = new RenderingContext(matrix, itemScale);
 
         List<ItemStack> items = new ArrayList<>();
         List<List<EnchantmentEntry>> enchantments = new ArrayList<>();
@@ -201,7 +197,7 @@ public class EntityTitle implements FontBackendHolder {
         for (EntityEntry entry : entities) {
             Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
             Vector4f v2 = event.getProjection().transform(v1);
-            if (v2.z <= 0) {
+            if (v2.z / v2.w <= 0) {
                 continue; // behind
             }
 

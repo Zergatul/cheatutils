@@ -18,14 +18,14 @@ public class RenderTargets {
     }
 
     private static RenderTarget createEspRenderTarget() {
-        WindowRenderState windowState = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState;
+        WindowRenderState windowState = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
         TextureTarget result = new TextureTarget("[" + ModMain.MODID + "] ESP", windowState.width, windowState.height, true);
         Events.FramebuffersResize.add(event -> result.resize(event.width(), event.height()));
         return result;
     }
 
     private static RenderTarget createStatusOverlayRenderTarget() {
-        WindowRenderState windowState = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState;
+        WindowRenderState windowState = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
         TextureTarget result = new TextureTarget("[" + ModMain.MODID + "] Status Overlay", windowState.width, windowState.height, false);
         Events.FramebuffersResize.add(event -> result.resize(event.width(), event.height()));
         return result;

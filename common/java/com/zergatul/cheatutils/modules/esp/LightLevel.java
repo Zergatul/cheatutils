@@ -105,7 +105,7 @@ public class LightLevel implements Module {
             return;
         }
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         Vec3 view = camera.position();
 
         Direction direction = Direction.fromYRot(camera.yRot());
