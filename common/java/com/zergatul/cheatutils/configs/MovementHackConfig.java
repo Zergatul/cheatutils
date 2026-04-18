@@ -11,7 +11,6 @@ public class MovementHackConfig implements Sanitizable, ModuleStateProvider {
     public boolean antiPush;
     public boolean scaleJumpHeight;
     public double jumpHeightFactor;
-    public boolean disableSlimePhysics;
     public boolean disableWaterPush;
 
     public MovementHackConfig() {
@@ -26,6 +25,6 @@ public class MovementHackConfig implements Sanitizable, ModuleStateProvider {
 
     @Override
     public boolean isEnabled() {
-        return disableSlowdownOnUseItem || scaleInputVector || disableCrouchingSlowdown || antiKnockback || antiPush || scaleJumpHeight || disableSlimePhysics || disableWaterPush;
+        return disableSlowdownOnUseItem || scaleInputVector || disableCrouchingSlowdown || antiKnockback || antiPush || scaleJumpHeight || disableWaterPush;
     }
 }

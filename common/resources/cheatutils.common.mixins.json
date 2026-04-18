@@ -85,7 +85,6 @@
     "common.MixinScreen",
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSoundBufferLibrary",
-    "common.MixinSlimeBlock",
     "common.MixinSoundManager",
     "common.MixinUser"
   ]
