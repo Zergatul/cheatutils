@@ -104,7 +104,7 @@ public class VanillaFontRenderer extends FontRenderer {
 
                     AbstractTexture texture = mc.getTextureManager().getTexture(binding.location());
                     if (dropShadow) {
-                        Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dBack(texture.getTextureView());
+                        Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2d(RenderBuffers.FONT_SHADOW, texture.getTextureView());
                         for (int i = 0; i < consumer.buffer.size() / 20; i++) {
                             buffer.quad(
                                     x + scale + consumer.getX(i * 4) * scale, // x1
@@ -127,7 +127,7 @@ public class VanillaFontRenderer extends FontRenderer {
                         }
                     }
 
-                    Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dFront(texture.getTextureView());
+                    Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2d(RenderBuffers.FONT, texture.getTextureView());
                     for (int i = 0; i < consumer.buffer.size() / 20; i++) {
                         buffer.quad(
                                 x + consumer.getX(i * 4) * scale, // x1

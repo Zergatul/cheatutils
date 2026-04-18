@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.ui;
 import com.zergatul.cheatutils.render.CacheItemRenderer;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.render.CustomizableVanillaFontRenderer;
+import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.world.entity.ItemOwner;
@@ -50,7 +51,7 @@ public class ItemStackElement implements Element {
             return;
         }
 
-        Position2dTextureColorRenderer.BufferBuilder buffer = context.getBuffers().getTexColor2dFront(slot.textureView());
+        Position2dTextureColorRenderer.BufferBuilder buffer = context.getBuffers().getTexColor2d(RenderBuffers.ITEMS, slot.textureView());
         int w = measuredWidth;
         int h = measuredHeight;
         buffer.quad(

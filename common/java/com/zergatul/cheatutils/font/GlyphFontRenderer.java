@@ -94,7 +94,7 @@ public abstract class GlyphFontRenderer extends FontRenderer {
             x += glyph.getLeftSideBearing();
             if (!glyph.isBlank()) {
                 if (details.dropShadow()) {
-                    Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dBack(glyphRenderer.texture.getTextureView());
+                    Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2d(RenderBuffers.FONT_SHADOW, glyphRenderer.texture.getTextureView());
                     buffer.rect(
                             Math.round(x + glyph.getX0()) + details.shadowOffsetX(),
                             Math.round(y + glyph.getY0()) + details.shadowOffsetY(),
@@ -103,7 +103,7 @@ public abstract class GlyphFontRenderer extends FontRenderer {
                             glyph.getSprite(), ColorUtils.shadowed(color, SHADOW_FACTOR));
                 }
 
-                Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2dFront(glyphRenderer.texture.getTextureView());
+                Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2d(RenderBuffers.FONT, glyphRenderer.texture.getTextureView());
                 buffer.rect(
                         Math.round(x + glyph.getX0()),
                         Math.round(y + glyph.getY0()),
