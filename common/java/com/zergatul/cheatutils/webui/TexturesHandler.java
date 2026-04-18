@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.render.TextureUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -11,7 +10,6 @@ import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.CompletableFuture;
 
 public class TexturesHandler implements HttpHandler {
 
@@ -19,21 +17,15 @@ public class TexturesHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String id = exchange.getRequestURI().getPath().substring("/textures/".length());
         Identifier location = Identifier.parse(id);
-        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        AbstractTexture texture = textureManager.getTexture(location);
-
-        CompletableFuture<byte[]> pngFuture = new CompletableFuture<>();
-        TickEndExecutor.instance.execute(() -> {
-            try {
-                TextureUtils.toPng(texture.getTexture()).thenAccept(pngFuture::complete);
-                //pngFuture.complete(TextureUtils.glTextureToPng(((GlTexture) texture.getTexture()).glId()));
-            } catch (Throwable e) {
-                pngFuture.completeExceptionally(e);
-            }
-        });
 
         try {
-            byte[] png = pngFuture.get();
+            Minecraft mc = Minecraft.getInstance();
+            byte[] png = mc.submit(() -> {
+                TextureManager textureManager = mc.getTextureManager();
+                AbstractTexture texture = textureManager.getTexture(location);
+                return TextureUtils.toPng(texture.getTexture());
+            }).get().get();
+
             if (png == null) {
                 exchange.sendResponseHeaders(500, 0);
             } else {

@@ -15,6 +15,7 @@ public class ModMain implements ClientModInitializer {
 
     public static final String MODID = "cheatutils";
     public static final Logger LOGGER = LogManager.getLogger(ModMain.class);
+    public static final ModLoaderBridge BRIDGE = new FabricModLoaderBridge();
 
     @Override
     public void onInitializeClient() {

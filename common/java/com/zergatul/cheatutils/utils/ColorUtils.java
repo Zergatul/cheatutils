@@ -178,5 +178,13 @@ public class ColorUtils {
         public static int combine(int r, int g, int b, int a) {
             return (a << 24) | (r << 16) | (g << 8) | b;
         }
+
+        public static int multiply(int color1, int color2) {
+            return combine(
+                    r(color1) * r(color2) / 255,
+                    g(color1) * g(color2) / 255,
+                    b(color1) * b(color2) / 255,
+                    a(color1) * a(color2) / 255);
+        }
     }
 }

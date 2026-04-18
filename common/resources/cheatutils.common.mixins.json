@@ -26,6 +26,7 @@
     "common.accessors.LocalPlayerAccessor",
     "common.accessors.MinecraftAccessor",
     "common.accessors.MinecraftServerAccessor",
+    "common.accessors.ModelFeatureRendererStorageAccessor",
     "common.accessors.MouseHandlerAccessor",
     "common.accessors.MultiPlayerGameModeAccessor",
     "common.accessors.ProjectileAccessor",

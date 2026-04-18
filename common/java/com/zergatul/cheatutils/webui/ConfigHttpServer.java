@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.util.concurrent.Executors;
 
 public class ConfigHttpServer {
 
@@ -66,7 +67,9 @@ public class ConfigHttpServer {
         server.createContext("/llm/cheatutils-api.txt", new ApiGenHandler());
         server.createContext("/", new StaticFilesHandler());
 
-        server.setExecutor(null);
+        // we may need more threads, but they will not eat CPU,
+        // since most likely they will be waiting for Future to be completed in the main thread
+        server.setExecutor(Executors.newFixedThreadPool(8));
         server.start();
 
         logger.info("HTTP server started at port {}", port);

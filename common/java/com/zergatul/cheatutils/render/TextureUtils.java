@@ -37,16 +37,15 @@ public class TextureUtils {
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(texture, buffer, 0L, () -> {
             try (GpuBuffer.MappedView read = commandEncoder.mapBuffer(buffer, true, false)) {
-                NativeImage image = new NativeImage(width, height, true);
-
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++) {
-                        int argb = read.data().getInt((x + y * width) * texture.getFormat().pixelSize());
-                        image.setPixelABGR(x, y, argb | 0xFF000000);
+                try (NativeImage image = new NativeImage(width, height, true)) {
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            image.setPixelABGR(x, y, read.data().getInt((x + y * width) * texture.getFormat().pixelSize()));
+                        }
                     }
-                }
 
-                future.complete(toPng(image));
+                    future.complete(toPng(image));
+                }
             }
 
             buffer.close();
