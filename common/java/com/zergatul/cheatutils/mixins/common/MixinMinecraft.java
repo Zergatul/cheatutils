@@ -101,6 +101,11 @@ public abstract class MixinMinecraft {
         }
     }
 
+    @Inject(at = @At("TAIL"), method = "runTick")
+    private void onRunTickEnd(boolean advanceGameTime, CallbackInfo info) {
+        Events.MainLoopFrameEnd.trigger();
+    }
+
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetData()V", shift = At.Shift.AFTER),
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")

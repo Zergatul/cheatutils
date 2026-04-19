@@ -25,7 +25,7 @@ public class BlockEventsProcessor {
     public static final BlockEventsProcessor instance = new BlockEventsProcessor();
 
     private static final AtomicReferenceArray<LevelChunk> EMPTY = new AtomicReferenceArray<>(0);
-    private static final long CHUNK_COPY_BUDGET_NANOS = 4_000_000L;
+    private static final long CHUNK_COPY_BUDGET_NANOS = 1_000_000L;
 
     private final Minecraft mc = Minecraft.getInstance();
     private final ProfilerSingleThreadExecutor executor = new ProfilerSingleThreadExecutor(10000);
@@ -43,7 +43,7 @@ public class BlockEventsProcessor {
         Events.RawChunkLoaded.add(this::onChunkLoaded);
         Events.RawChunkUnloaded.add(this::onChunkUnloaded);
         Events.RawBlockUpdated.add(this::onBlockUpdated);
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.MainLoopFrameEnd.add(this::onFrameEnd);
         Events.LevelUnload.add(this::onLevelUnload);
     }
 
@@ -99,7 +99,7 @@ public class BlockEventsProcessor {
         emitBlockUpdated(event);
     }
 
-    private void onClientTickEnd() {
+    private void onFrameEnd() {
         for (Map.Entry<ChunkPos, Boolean> entry : capturedChunks.entrySet()) {
             entry.setValue(Boolean.FALSE);
         }
