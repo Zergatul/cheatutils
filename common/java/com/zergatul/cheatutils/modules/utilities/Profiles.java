@@ -140,6 +140,9 @@ public class Profiles implements Module {
             throw new IllegalStateException("Profile name is not valid.");
         }
 
+        // if we have pending write, execute it right now
+        ConfigWriterQueue.instance.immediate(getProfileFile(current), ConfigStore.instance.getWriteToFileTask());
+
         current = name;
         requestWrite();
 
@@ -225,17 +228,14 @@ public class Profiles implements Module {
     private void requestWrite() {
         String current = this.current;
         File file = getProfileConfigFile();
-        Gson gson = new GsonBuilder().create();
         ConfigWriterQueue.instance.queue(file, WRITE_FILE_DELAY, () -> {
-            logger.debug("Saving profile config file " + file.getName());
+            logger.debug("Saving profile config file {}", file.getName());
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-                gson.toJson(new ProfileConfig(current), writer);
+                new GsonBuilder().create().toJson(new ProfileConfig(current), writer);
                 writer.close();
-            }
-            catch (Exception e) {
-                logger.error("Cannot write profile config");
-                logger.error(e);
+            } catch (Throwable e) {
+                logger.error("Cannot write profile config", e);
             }
         });
     }

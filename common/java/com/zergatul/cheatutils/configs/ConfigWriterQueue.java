@@ -36,6 +36,18 @@ public class ConfigWriterQueue {
         }
     }
 
+    public void immediate(File file, Runnable runnable) {
+        if (Profiles.instance.isInResetState()) {
+            return;
+        }
+        synchronized (queue) {
+            queue.add(new Entry(file, System.nanoTime(), runnable, true));
+        }
+        synchronized (event) {
+            event.notify();
+        }
+    }
+
     public void queue(File file, long timeout, Runnable runnable) {
         if (Profiles.instance.isInResetState()) {
             return;
@@ -67,11 +79,18 @@ public class ConfigWriterQueue {
                     if (entry.time <= System.nanoTime()) {
                         queue.poll();
 
+                        if (entry.immediate) {
+                            processImmediateEntry(entry);
+                            nextDelay = 0;
+                            continue;
+                        }
+
                         if (queue.stream().anyMatch(e -> e.file.equals(entry.file))) {
                             // if there is another entry for the same config, skip save
                             nextDelay = calculateDelay(queue.peek());
                         } else {
                             save = entry;
+                            nextDelay = 0;
                         }
                     } else {
                         nextDelay = calculateDelay(entry);
@@ -86,27 +105,48 @@ public class ConfigWriterQueue {
             // save all
             synchronized (queue) {
                 while (!queue.isEmpty()) {
-                    // don't save twice
                     Entry entry = queue.peek();
+
+                    // very unlikely to happen
+                    if (entry.immediate) {
+                        processImmediateEntry(entry);
+                        continue;
+                    }
+
+                    // don't save twice
                     Entry last = queue.stream()
                             .filter(e -> e.file.equals(entry.file))
                             .max(Comparator.naturalOrder())
-                            .get();
+                            .orElseThrow();
                     last.runnable.run();
                     queue.removeIf(e -> e.file.equals(entry.file));
                 }
             }
         }
-
     }
+
+    private void processImmediateEntry(Entry entry) {
+        // we run actual save for immediate only if there was another entry for the same file
+        // if not other entry was present, this means there is no changes to save
+        if (queue.removeIf(e -> e.file.equals(entry.file))) {
+            entry.runnable.run();
+        }
+    }
+
     private int calculateDelay(Entry entry) {
         return MathUtils.clamp((int) ((System.nanoTime() - entry.time) / 1000000), MIN_WAIT_TIMEOUT, MAX_WAIT_TIMEOUT);
     }
 
-    private record Entry(File file, long time, Runnable runnable) implements Comparable<Entry> {
+    private record Entry(File file, long time, Runnable runnable, boolean immediate) implements Comparable<Entry> {
+
+        public Entry(File file, long time, Runnable runnable) {
+            this(file, time, runnable, false);
+        }
+
         @Override
         public int compareTo(Entry other) {
             return Long.compare(time, other.time);
         }
+
     }
 }

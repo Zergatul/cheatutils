@@ -97,20 +97,22 @@ public class ConfigStore {
     }
 
     public void requestWrite() {
+        ConfigWriterQueue.instance.queue(this.currentFile, WRITE_FILE_DELAY, getWriteToFileTask());
+    }
+
+    public Runnable getWriteToFileTask() {
         File file = this.currentFile;
         Config config = this.config;
-        ConfigWriterQueue.instance.queue(file, WRITE_FILE_DELAY, () -> {
-            logger.debug("Saving config to file " + file.getName());
+        return () -> {
+            logger.debug("Saving config to file {}", file.getName());
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(file));
                 gson.toJson(config, writer);
                 writer.close();
+            } catch (Throwable e) {
+                logger.error("Cannot write config", e);
             }
-            catch (Exception e) {
-                logger.error("Cannot write config");
-                logger.error(e);
-            }
-        });
+        };
     }
 
     public static <T> void updateFromApi(Function<Config, T> extract, Consumer<T> update) {
@@ -127,7 +129,6 @@ public class ConfigStore {
     private void onConfigLoaded() {
         config.sanitize();
         config.blocks.apply();
-        config.blocks.refreshMap();
 
         LightLevel.instance.onChanged();
         ConfigHttpServer.instance.onConfigUpdated();

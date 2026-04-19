@@ -35,23 +35,27 @@ public class BlockFinder {
         });
     }
 
+    public void applyConfigs(ImmutableList<BlockEspConfig> configs) {
+        BlockEventsProcessor.instance.getExecutor().execute(() -> {
+            blocks.clear();
+            for (BlockEspConfig config : configs) {
+                blocks.put(config, ConcurrentHashMap.newKeySet());
+            }
+            scanAll();
+        });
+    }
+
     public void removeConfig(BlockEspConfig config) {
         blocks.remove(config);
     }
 
-    public void removeAllConfigs() {
-        blocks.clear();
-    }
-
     public void rescan() {
-        BlockEventsProcessor.instance.getChunks().thenAcceptAsync(chunks -> {
+        BlockEventsProcessor.instance.getExecutor().execute(() -> {
             for (Set<BlockPos> set : blocks.values()) {
                 set.clear();
             }
-            for (SnapshotChunk chunk : chunks) {
-                onChunkLoaded(chunk);
-            }
-        }, BlockEventsProcessor.instance.getExecutor());
+            scanAll();
+        });
     }
 
     public void addBlackList(BlockPos pos) {
@@ -97,15 +101,27 @@ public class BlockFinder {
     }
 
     private void scan(final BlockEspConfig config) {
-        BlockEventsProcessor.instance.getChunks().thenAcceptAsync(chunks -> {
+        BlockEventsProcessor.instance.requestChunkSnapshots(config, chunks -> {
             for (SnapshotChunk chunk : chunks) {
                 scanChunkForBlock(chunk, config);
             }
-        }, BlockEventsProcessor.instance.getExecutor());
+        });
+    }
+
+    private void scanAll() {
+        BlockEventsProcessor.instance.requestChunkSnapshots(this, chunks -> {
+            for (SnapshotChunk chunk : chunks) {
+                onChunkLoaded(chunk);
+            }
+        });
     }
 
     private void scanChunkForBlock(SnapshotChunk chunk, BlockEspConfig config) {
         Set<BlockPos> set = blocks.get(config);
+        if (set == null) {
+            return;
+        }
+
         ImmutableList<Block> blockTypes = config.blocks;
         int minY = chunk.getMinY();
         int xc = chunk.getPos().x() << 4;

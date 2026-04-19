@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.blaze3d.vertex.*;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -11,7 +12,6 @@ import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
 import it.unimi.dsi.fastutil.objects.ObjectSortedSets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -20,6 +20,8 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.*;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -169,6 +171,9 @@ public class EntityEsp implements Module {
             return;
         }
 
+        ProfilerFiller profiler = Profiler.get();
+        profiler.push(ModMain.MODID + " : EntityEspRender");
+
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;
         double playerY = playerPos.y;
@@ -226,6 +231,8 @@ public class EntityEsp implements Module {
 
         overlayEntityStates.clear();
         outlineEntityStates.clear();
+
+        profiler.pop();
     }
 
     private void renderLines(EspLineRenderer renderer, RenderWorldLastEvent event) {

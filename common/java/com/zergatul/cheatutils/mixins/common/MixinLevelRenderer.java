@@ -2,12 +2,15 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
@@ -55,7 +58,10 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final boolean shouldRenderSky,
             final CallbackInfo info
     ) {
+        ProfilerFiller profiler = Profiler.get();
+        profiler.push(ModMain.MODID + " : AfterRenderWorld");
         Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
+        profiler.pop();
         this.modifiedProjectionMatrix_CU = null;
     }
 }

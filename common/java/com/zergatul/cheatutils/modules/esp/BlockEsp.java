@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.modules.esp;
 
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
@@ -10,6 +11,8 @@ import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
@@ -56,8 +59,16 @@ public class BlockEsp {
             return;
         }
 
-        renderCustomEntries(event);
+        ProfilerFiller profiler = Profiler.get();
+        profiler.push(ModMain.MODID + " : BlockEspRender");
 
+        renderCustomEntries(event);
+        renderConfiguredEntries(event);
+
+        profiler.pop();
+    }
+
+    private void renderConfiguredEntries(RenderWorldLastEvent event) {
         ImmutableList<BlockEspConfig> configs = ConfigStore.instance.getConfig().blocks.getBlockConfigs();
         if (configs.isEmpty()) {
             return;
