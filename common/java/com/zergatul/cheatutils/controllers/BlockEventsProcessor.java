@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
+import com.zergatul.cheatutils.concurrent.MainLoopEndExecutor;
 import com.zergatul.cheatutils.concurrent.ProfilerSingleThreadExecutor;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.controllers.chunks.ChunkScanTaskGroup;
@@ -56,17 +57,27 @@ public class BlockEventsProcessor {
     }
 
     public void requestFullScan() {
-        for (LevelChunk chunk : getLoadedChunks()) {
-            ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(chunk.getPos());
-            group.markForScanAll();
-        }
+        MainLoopEndExecutor.instance.execute(() -> {
+            ChunkPos[] positions = getLoadedChunksPosition();
+            executor.execute(() -> {
+                for (ChunkPos pos : positions) {
+                    ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(pos);
+                    group.markForScanAll();
+                }
+            });
+        });
     }
 
     public void requestScan(BlockEspConfig config) {
-        for (LevelChunk chunk : getLoadedChunks()) {
-            ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(chunk.getPos());
-            group.markForScan(config);
-        }
+        MainLoopEndExecutor.instance.execute(() -> {
+            ChunkPos[] positions = getLoadedChunksPosition();
+            executor.execute(() -> {
+                for (ChunkPos pos : positions) {
+                    ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(pos);
+                    group.markForScan(config);
+                }
+            });
+        });
     }
 
     private void onChunkLoaded(LevelChunk chunk) {
@@ -108,6 +119,10 @@ public class BlockEventsProcessor {
             this.queue.clear();
             this.lookup.clear();
         }
+
+        // this will remove any stale blocks that may end up here due to race condition
+        // when Snapshot chunk gets created and sent to executor right before level unload occurs
+        executor.execute(BlockFinder.instance::clearPositions);
 
         for (ChunkPos pos : capturedChunks.keySet()) {
             executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
@@ -232,7 +247,7 @@ public class BlockEventsProcessor {
         executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
     }
 
-    private LevelChunk[] getLoadedChunks() {
+    private ChunkPos[] getLoadedChunksPosition() {
         AtomicReferenceArray<LevelChunk> chunks = getRawChunks();
         int count = 0;
         for (int i = 0; i < chunks.length(); i++) {
@@ -241,11 +256,11 @@ public class BlockEventsProcessor {
             }
         }
 
-        LevelChunk[] result = new LevelChunk[count];
+        ChunkPos[] result = new ChunkPos[count];
         for (int i = 0, j = 0; i < chunks.length(); i++) {
             LevelChunk chunk = chunks.get(i);
             if (chunk != null) {
-                result[j++] = chunk;
+                result[j++] = chunk.getPos();
             }
         }
         return result;

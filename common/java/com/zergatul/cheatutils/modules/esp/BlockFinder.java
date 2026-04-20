@@ -49,11 +49,15 @@ public class BlockFinder {
         blocks.remove(config);
     }
 
+    public void clearPositions() {
+        for (Set<BlockPos> set : blocks.values()) {
+            set.clear();
+        }
+    }
+
     public void rescan() {
         BlockEventsProcessor.instance.getExecutor().execute(() -> {
-            for (Set<BlockPos> set : blocks.values()) {
-                set.clear();
-            }
+            clearPositions();
             scanAll();
         });
     }

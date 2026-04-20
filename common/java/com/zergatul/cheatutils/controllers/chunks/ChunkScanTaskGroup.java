@@ -49,7 +49,10 @@ public class ChunkScanTaskGroup {
         if (this.queuedConfigs == null) {
             this.queuedConfigs = new ArrayList<>(2);
         }
-        this.queuedConfigs.add(config);
+        // it should be very hard to queue the same config twice, but just in case we will not allow this
+        if (!this.queuedConfigs.contains(config)) {
+            this.queuedConfigs.add(config);
+        }
     }
 
     public void markBlockUpdated(BlockUpdateEvent event) {
@@ -60,8 +63,8 @@ public class ChunkScanTaskGroup {
 
         if (this.queuedBlockUpdates == null) {
             this.queuedBlockUpdates = new ArrayList<>();
-            this.queuedBlockUpdates.add(event);
         }
+        this.queuedBlockUpdates.add(event);
     }
 
     public void markCancelled() {

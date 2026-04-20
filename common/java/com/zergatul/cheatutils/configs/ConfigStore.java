@@ -49,7 +49,7 @@ public class ConfigStore {
     private File currentFile;
 
     private ConfigStore() {
-        config = new Config();
+        setConfig(new Config());
     }
 
     public Config getConfig() {
@@ -80,7 +80,7 @@ public class ConfigStore {
         }
 
         currentFile = file;
-        config = newConfig;
+        setConfig(newConfig);
         onConfigLoaded();
     }
 
@@ -91,7 +91,7 @@ public class ConfigStore {
 
     public synchronized void createNew(File file) {
         currentFile = file;
-        config = new Config();
+        setConfig(new Config());
         onConfigLoaded();
         requestWrite();
     }
@@ -124,6 +124,12 @@ public class ConfigStore {
             sanitizable.sanitize();
         }
         store.requestWrite();
+    }
+
+    // only this method should update this.config
+    private void setConfig(Config config) {
+        config.blocks.refreshMap();
+        this.config = config;
     }
 
     private void onConfigLoaded() {
