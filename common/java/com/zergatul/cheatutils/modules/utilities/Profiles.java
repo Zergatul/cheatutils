@@ -141,7 +141,7 @@ public class Profiles implements Module {
         }
 
         // if we have pending write, execute it right now
-        ConfigWriterQueue.instance.immediate(getProfileFile(current), ConfigStore.instance.getWriteToFileTask());
+        ConfigWriterQueue.instance.flush(getProfileFile(current));
 
         current = name;
         requestWrite();

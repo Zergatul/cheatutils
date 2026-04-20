@@ -1,10 +1,9 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.utils.MathUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.Comparator;
@@ -14,46 +13,55 @@ public class ConfigWriterQueue {
 
     public static final ConfigWriterQueue instance = new ConfigWriterQueue();
 
-    private static final int MIN_WAIT_TIMEOUT = 15;
-    private static final int MAX_WAIT_TIMEOUT = 1000;
+    private static final long WAIT_INDEFINITELY = 0;
+    private static final long MIN_WAIT_TIMEOUT = 15;
+    private static final long MAX_WAIT_TIMEOUT = 1000;
 
-    private final Logger logger = LogManager.getLogger(ConfigWriterQueue.class);
     private final PriorityQueue<Entry> queue = new PriorityQueue<>();
+    private final Object lock = new Object();
     private final Thread thread;
-    private final Object event = new Object();
-
 
     private ConfigWriterQueue() {
-        thread = new Thread(this::threadFunc);
+        thread = new Thread(this::threadFunc, ModMain.MODID + " config writer");
         thread.start();
 
         Events.Close.add(this::onClose);
     }
 
     public void clear() {
-        synchronized (queue) {
+        synchronized (lock) {
             queue.clear();
         }
     }
 
-    public void immediate(File file, Runnable runnable) {
+    public void flush(File file) {
         if (Profiles.instance.isInResetState()) {
             return;
         }
-        synchronized (queue) {
-            queue.add(new Entry(file, System.nanoTime(), runnable, true));
+
+        Entry entry;
+        synchronized (lock) {
+            entry = queue.stream()
+                    .filter(e -> e.file.equals(file))
+                    .max(Comparator.naturalOrder())
+                    .orElse(null);
+            if (entry == null) {
+                return;
+            }
+
+            queue.removeIf(e -> e.file.equals(file));
         }
-        synchronized (event) {
-            event.notify();
-        }
+
+        entry.runnable.run();
     }
 
     public void queue(File file, long timeout, Runnable runnable) {
         if (Profiles.instance.isInResetState()) {
             return;
         }
-        synchronized (queue) {
+        synchronized (lock) {
             queue.add(new Entry(file, System.nanoTime() + timeout, runnable));
+            lock.notify();
         }
     }
 
@@ -62,56 +70,37 @@ public class ConfigWriterQueue {
     }
 
     private void threadFunc() {
-        long nextDelay = MAX_WAIT_TIMEOUT;
         try {
             while (true) {
-                synchronized (event) {
-                    event.wait(nextDelay);
-                }
-
-                Entry save = null;
-                synchronized (queue) {
-                    if (queue.isEmpty()) {
-                        continue;
+                Entry save;
+                synchronized (lock) {
+                    while (queue.isEmpty()) {
+                        lock.wait(WAIT_INDEFINITELY);
                     }
 
                     Entry entry = queue.peek();
-                    if (entry.time <= System.nanoTime()) {
-                        queue.poll();
-
-                        if (entry.immediate) {
-                            processImmediateEntry(entry);
-                            nextDelay = 0;
-                            continue;
-                        }
-
-                        if (queue.stream().anyMatch(e -> e.file.equals(entry.file))) {
-                            // if there is another entry for the same config, skip save
-                            nextDelay = calculateDelay(queue.peek());
-                        } else {
-                            save = entry;
-                            nextDelay = 0;
-                        }
-                    } else {
-                        nextDelay = calculateDelay(entry);
+                    long delay = entry.time - System.nanoTime();
+                    if (delay > 0) {
+                        lock.wait(MathUtils.clamp(delay / 1_000_000, MIN_WAIT_TIMEOUT, MAX_WAIT_TIMEOUT));
+                        continue;
                     }
+
+                    queue.poll();
+                    if (queue.stream().anyMatch(e -> e.file.equals(entry.file))) {
+                        // if there is another entry for the same config, skip save
+                        continue;
+                    }
+
+                    save = entry;
                 }
 
-                if (save != null) {
-                    save.runnable.run();
-                }
+                save.runnable.run();
             }
         } catch (InterruptedException exception) {
             // save all
-            synchronized (queue) {
+            synchronized (lock) {
                 while (!queue.isEmpty()) {
                     Entry entry = queue.peek();
-
-                    // very unlikely to happen
-                    if (entry.immediate) {
-                        processImmediateEntry(entry);
-                        continue;
-                    }
 
                     // don't save twice
                     Entry last = queue.stream()
@@ -125,28 +114,10 @@ public class ConfigWriterQueue {
         }
     }
 
-    private void processImmediateEntry(Entry entry) {
-        // we run actual save for immediate only if there was another entry for the same file
-        // if not other entry was present, this means there is no changes to save
-        if (queue.removeIf(e -> e.file.equals(entry.file))) {
-            entry.runnable.run();
-        }
-    }
-
-    private int calculateDelay(Entry entry) {
-        return MathUtils.clamp((int) ((System.nanoTime() - entry.time) / 1000000), MIN_WAIT_TIMEOUT, MAX_WAIT_TIMEOUT);
-    }
-
-    private record Entry(File file, long time, Runnable runnable, boolean immediate) implements Comparable<Entry> {
-
-        public Entry(File file, long time, Runnable runnable) {
-            this(file, time, runnable, false);
-        }
-
+    private record Entry(File file, long time, Runnable runnable) implements Comparable<Entry> {
         @Override
         public int compareTo(Entry other) {
             return Long.compare(time, other.time);
         }
-
     }
 }
