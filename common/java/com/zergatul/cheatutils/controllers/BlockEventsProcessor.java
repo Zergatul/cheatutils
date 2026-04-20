@@ -3,22 +3,18 @@ package com.zergatul.cheatutils.controllers;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.concurrent.ProfilerSingleThreadExecutor;
+import com.zergatul.cheatutils.configs.BlockEspConfig;
+import com.zergatul.cheatutils.controllers.chunks.ChunkScanTaskGroup;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientChunkCacheAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientChunkCacheStorageAccessor;
+import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReferenceArray;
-import java.util.function.Consumer;
 
 public class BlockEventsProcessor {
 
@@ -29,10 +25,9 @@ public class BlockEventsProcessor {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final ProfilerSingleThreadExecutor executor = new ProfilerSingleThreadExecutor(10000);
-    private final Object chunkCopyLock = new Object();
-    private final ArrayDeque<ChunkCopyTask> chunkCopyTasks = new ArrayDeque<>();
-    private final List<Runnable> bufferedEvents = new ArrayList<>();
-    private ChunkCopyTask activeChunkCopyTask;
+    private final Object collectionsLock = new Object();
+    private final List<ChunkScanTaskGroup> queue = new ArrayList<>();
+    private final Map<ChunkPos, ChunkScanTaskGroup> lookup = new HashMap<>();
 
     // Sometimes chunk unload events don't trigger for all chunks.
     // This map tracks loaded chunks, and every tick we recheck all loaded chunks, if some chunks disappear,
@@ -60,46 +55,67 @@ public class BlockEventsProcessor {
         }
     }
 
-    public void requestChunkSnapshots(Object key, Consumer<SnapshotChunk[]> callback) {
-        synchronized (chunkCopyLock) {
-            Iterator<ChunkCopyTask> iterator = chunkCopyTasks.iterator();
-            while (iterator.hasNext()) {
-                ChunkCopyTask task = iterator.next();
-                if (Objects.equals(task.key, key)) {
-                    task.cancelled = true;
-                    iterator.remove();
-                }
-            }
+    public void requestFullScan() {
+        for (LevelChunk chunk : getLoadedChunks()) {
+            ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(chunk.getPos());
+            group.markForScanAll();
+        }
+    }
 
-            if (activeChunkCopyTask != null && Objects.equals(activeChunkCopyTask.key, key)) {
-                activeChunkCopyTask.cancelled = true;
-            }
-
-            chunkCopyTasks.add(new ChunkCopyTask(key, callback));
+    public void requestScan(BlockEspConfig config) {
+        for (LevelChunk chunk : getLoadedChunks()) {
+            ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(chunk.getPos());
+            group.markForScan(config);
         }
     }
 
     private void onChunkLoaded(LevelChunk chunk) {
         capturedChunks.put(chunk.getPos(), Boolean.FALSE);
-        if (hasChunkCopyWork()) {
-            queueChunkLoaded(chunk);
-        } else {
-            final SnapshotChunk snapshot = SnapshotChunk.from(chunk);
-            executor.execute(() -> Events.ChunkLoaded.trigger(snapshot));
+
+        synchronized (collectionsLock) {
+            ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(chunk.getPos());
+            group.markForScanAll();
         }
     }
 
     private void onChunkUnloaded(LevelChunk chunk) {
         capturedChunks.remove(chunk.getPos());
-        final ChunkPos pos = chunk.getPos();
-        emitChunkUnloaded(pos);
+
+        // no need to update queue, since task group for uploaded chunk will not do anything
+        ChunkPos pos = chunk.getPos();
+        executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
     }
 
     public void onBlockUpdated(final BlockUpdateEvent event) {
-        emitBlockUpdated(event);
+        synchronized (collectionsLock) {
+            ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(event.chunk().getPos());
+            group.markBlockUpdated(event);
+        }
     }
 
     private void onFrameEnd() {
+        if (mc.level == null || mc.player == null) {
+            return;
+        }
+
+        processCapturedChunks();
+        processChunkCopyQueue();
+    }
+
+    private void onLevelUnload() {
+        synchronized (collectionsLock) {
+            this.queue.forEach(ChunkScanTaskGroup::markCancelled);
+            this.queue.clear();
+            this.lookup.clear();
+        }
+
+        for (ChunkPos pos : capturedChunks.keySet()) {
+            executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
+        }
+        capturedChunks.clear();
+    }
+
+    private void processCapturedChunks() {
         for (Map.Entry<ChunkPos, Boolean> entry : capturedChunks.entrySet()) {
             entry.setValue(Boolean.FALSE);
         }
@@ -121,185 +137,99 @@ public class BlockEventsProcessor {
                 emitChunkUnloaded(pos);
             }
         }
-
-        processChunkCopyQueue();
     }
 
-    private void onLevelUnload() {
-        cancelChunkCopyWork();
-        for (ChunkPos pos : capturedChunks.keySet()) {
-            executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
+    private void processChunkCopyQueue() {
+        assert mc.player != null;
+
+        long deadline = System.nanoTime() + CHUNK_COPY_BUDGET_NANOS;
+
+        // sort chunks based on distance from the player
+        // should be O(n) since in most cases chunks are already sorted from previous frame
+        int playerX = mc.player.getBlockX();
+        int playerZ = mc.player.getBlockZ();
+
+        // TODO: default sort allocates new array? check if can be done without reallocation
+        synchronized (collectionsLock) {
+            if (this.queue.isEmpty()) {
+                return;
+            }
+
+            this.queue.sort((g1, g2) -> {
+                long d1 = g1.distanceSqrTo(playerX, playerZ);
+                long d2 = g2.distanceSqrTo(playerX, playerZ);
+                return Long.compare(d1, d2);
+            });
         }
-        capturedChunks.clear();
+
+        while (true) {
+            ChunkScanTaskGroup group;
+
+            synchronized (collectionsLock) {
+                if (this.queue.isEmpty()) {
+                    break;
+                }
+
+                // TODO: not optimal, think for better structure?
+                group = this.queue.removeFirst();
+                this.lookup.remove(group.pos);
+            }
+
+            if (group.cancelled) {
+                continue;
+            }
+
+            processTaskGroup(group);
+
+            if (System.nanoTime() >= deadline) {
+                break;
+            }
+        }
     }
 
-    private void queueChunkLoaded(LevelChunk chunk) {
-        synchronized (chunkCopyLock) {
-            chunkCopyTasks.add(new ChunkCopyTask(new Object(), new LevelChunk[] { chunk }, snapshots -> {
-                if (snapshots.length > 0) {
-                    Events.ChunkLoaded.trigger(snapshots[0]);
-                }
-            }));
+    private void processTaskGroup(ChunkScanTaskGroup group) {
+        assert mc.level != null;
+
+        // at this time group is no longer in our collections
+        // thus it can't be modified from another threads
+        LevelChunk chunk = mc.level.getChunkSource().getChunkNow(group.pos.x(), group.pos.z());
+        if (chunk == null) {
+            // chunk is unloaded
+            return;
+        }
+
+        SnapshotChunk snapshot = SnapshotChunk.from(chunk);
+        executor.execute(() -> processSnapshot(group, snapshot));
+    }
+
+    private void processSnapshot(ChunkScanTaskGroup group, SnapshotChunk chunk) {
+        if (group.scanAllConfigs) {
+            Events.ChunkLoaded.trigger(chunk);
+        }
+        if (group.queuedConfigs != null) {
+            for (BlockEspConfig config : group.queuedConfigs) {
+                BlockFinder.instance.scanChunkForBlock(chunk, config);
+            }
+        }
+        if (group.queuedBlockUpdates != null) {
+            group.queuedBlockUpdates.forEach(Events.BlockUpdated::trigger);
+        }
+    }
+
+    private ChunkScanTaskGroup getOrCreateChunkTaskGroup(ChunkPos pos) {
+        synchronized (collectionsLock) {
+            ChunkScanTaskGroup group = lookup.get(pos);
+            if (group == null) {
+                lookup.put(pos, group = new ChunkScanTaskGroup(pos));
+                queue.add(group);
+            }
+
+            return group;
         }
     }
 
     private void emitChunkUnloaded(ChunkPos pos) {
-        emitOrBuffer(() -> Events.ChunkUnloaded.trigger(pos));
-    }
-
-    private void emitBlockUpdated(BlockUpdateEvent event) {
-        emitOrBuffer(() -> Events.BlockUpdated.trigger(event));
-    }
-
-    private void emitOrBuffer(Runnable runnable) {
-        synchronized (chunkCopyLock) {
-            if (activeChunkCopyTask != null || !chunkCopyTasks.isEmpty()) {
-                bufferedEvents.add(runnable);
-                return;
-            }
-        }
-
-        executor.execute(runnable);
-    }
-
-    private boolean hasChunkCopyWork() {
-        synchronized (chunkCopyLock) {
-            return activeChunkCopyTask != null || !chunkCopyTasks.isEmpty();
-        }
-    }
-
-    private void processChunkCopyQueue() {
-        long deadline = System.nanoTime() + CHUNK_COPY_BUDGET_NANOS;
-        boolean copiedAny = false;
-
-        while (true) {
-            ChunkCopyTask task = getActiveChunkCopyTask();
-            if (task == null) {
-                flushBufferedEventsIfIdle();
-                return;
-            }
-
-            if (task.cancelled) {
-                completeActiveChunkCopyTask(task);
-                continue;
-            }
-
-            boolean copied = task.copyNext();
-            copiedAny |= copied;
-
-            if (task.isComplete()) {
-                completeActiveChunkCopyTask(task);
-                if (!task.cancelled) {
-                    executor.execute(() -> task.callback.accept(task.getSnapshots()));
-                }
-                continue;
-            }
-
-            if (copiedAny && System.nanoTime() >= deadline) {
-                return;
-            }
-        }
-    }
-
-    private ChunkCopyTask getActiveChunkCopyTask() {
-        synchronized (chunkCopyLock) {
-            while (activeChunkCopyTask == null) {
-                activeChunkCopyTask = chunkCopyTasks.poll();
-                if (activeChunkCopyTask == null) {
-                    return null;
-                }
-                if (!activeChunkCopyTask.cancelled) {
-                    break;
-                }
-                activeChunkCopyTask = null;
-            }
-
-            return activeChunkCopyTask;
-        }
-    }
-
-    private void completeActiveChunkCopyTask(ChunkCopyTask task) {
-        synchronized (chunkCopyLock) {
-            if (activeChunkCopyTask == task) {
-                activeChunkCopyTask = null;
-            }
-        }
-    }
-
-    private void flushBufferedEventsIfIdle() {
-        List<Runnable> events;
-        synchronized (chunkCopyLock) {
-            if (activeChunkCopyTask != null || !chunkCopyTasks.isEmpty() || bufferedEvents.isEmpty()) {
-                return;
-            }
-
-            events = new ArrayList<>(bufferedEvents);
-            bufferedEvents.clear();
-        }
-
-        for (Runnable event : events) {
-            executor.execute(event);
-        }
-    }
-
-    private void cancelChunkCopyWork() {
-        synchronized (chunkCopyLock) {
-            if (activeChunkCopyTask != null) {
-                activeChunkCopyTask.cancelled = true;
-                activeChunkCopyTask = null;
-            }
-            for (ChunkCopyTask task : chunkCopyTasks) {
-                task.cancelled = true;
-            }
-            chunkCopyTasks.clear();
-            bufferedEvents.clear();
-        }
-    }
-
-    private class ChunkCopyTask {
-
-        private final Object key;
-        private final Consumer<SnapshotChunk[]> callback;
-        private final List<SnapshotChunk> snapshots = new ArrayList<>();
-        private LevelChunk[] chunks;
-        private int index;
-        private volatile boolean cancelled;
-
-        private ChunkCopyTask(Object key, Consumer<SnapshotChunk[]> callback) {
-            this.key = key;
-            this.callback = callback;
-        }
-
-        private ChunkCopyTask(Object key, LevelChunk[] chunks, Consumer<SnapshotChunk[]> callback) {
-            this.key = key;
-            this.chunks = chunks;
-            this.callback = callback;
-        }
-
-        private boolean copyNext() {
-            if (cancelled) {
-                return false;
-            }
-
-            if (chunks == null) {
-                chunks = getLoadedChunks();
-            }
-
-            if (index >= chunks.length) {
-                return false;
-            }
-
-            snapshots.add(SnapshotChunk.from(chunks[index++]));
-            return true;
-        }
-
-        private boolean isComplete() {
-            return cancelled || chunks != null && index >= chunks.length;
-        }
-
-        private SnapshotChunk[] getSnapshots() {
-            return snapshots.toArray(SnapshotChunk[]::new);
-        }
+        executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
     }
 
     private LevelChunk[] getLoadedChunks() {

@@ -101,22 +101,14 @@ public class BlockFinder {
     }
 
     private void scan(final BlockEspConfig config) {
-        BlockEventsProcessor.instance.requestChunkSnapshots(config, chunks -> {
-            for (SnapshotChunk chunk : chunks) {
-                scanChunkForBlock(chunk, config);
-            }
-        });
+        BlockEventsProcessor.instance.requestScan(config);
     }
 
     private void scanAll() {
-        BlockEventsProcessor.instance.requestChunkSnapshots(this, chunks -> {
-            for (SnapshotChunk chunk : chunks) {
-                onChunkLoaded(chunk);
-            }
-        });
+        BlockEventsProcessor.instance.requestFullScan();
     }
 
-    private void scanChunkForBlock(SnapshotChunk chunk, BlockEspConfig config) {
+    public void scanChunkForBlock(SnapshotChunk chunk, BlockEspConfig config) {
         Set<BlockPos> set = blocks.get(config);
         if (set == null) {
             return;
