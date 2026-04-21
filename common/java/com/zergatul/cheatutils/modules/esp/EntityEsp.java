@@ -57,7 +57,6 @@ public class EntityEsp implements Module {
                 bufferSource,
                 mc.getAtlasManager(),
                 new OutlineBufferSource(new EmptyBufferSource()),
-                new EmptyBufferSource(),
                 mc.font,
                 mc.gameRenderer.gameRenderState());
     }

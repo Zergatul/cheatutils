@@ -35,7 +35,8 @@ public class CustomizableVanillaFontRenderer {
     public void render(Font font, int scale, RenderBuffers buffers, String text, int x, int y) {
         bufferSource.clear();
 
-        font.drawInBatch(
+        VanillaFontHelper.drawInBatch(
+                font,
                 text,
                 0, 0,
                 -1,

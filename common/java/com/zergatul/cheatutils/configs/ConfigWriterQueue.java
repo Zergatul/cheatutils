@@ -97,7 +97,7 @@ public class ConfigWriterQueue {
                 save.runnable.run();
             }
         } catch (InterruptedException exception) {
-            // save all
+            // shutdown: save latest pending write per file
             synchronized (lock) {
                 while (!queue.isEmpty()) {
                     Entry entry = queue.peek();

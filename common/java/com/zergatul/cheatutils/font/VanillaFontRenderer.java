@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
+import com.zergatul.cheatutils.render.VanillaFontHelper;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -70,7 +71,8 @@ public class VanillaFontRenderer extends FontRenderer {
                 continue;
             }
 
-            mc.font.drawInBatch(
+            VanillaFontHelper.drawInBatch(
+                    mc.font,
                     chunk.text(),
                     0, 0,
                     chunk.color(),

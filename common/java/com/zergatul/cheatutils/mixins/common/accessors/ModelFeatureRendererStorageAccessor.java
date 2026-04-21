@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.mixins.common.accessors;
 
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,8 +12,8 @@ import java.util.Map;
 public interface ModelFeatureRendererStorageAccessor {
 
     @Accessor("solidModelSubmits")
-    Map<RenderType, List<SubmitNodeStorage.ModelSubmit<?>>> getSolidModelSubmits_CU();
+    Map<RenderType, List<ModelFeatureRenderer.Submit<?>>> getSolidModelSubmits_CU();
 
     @Accessor("translucentModelSubmits")
-    List<SubmitNodeStorage.TranslucentModelSubmit<?>> getTranslucentModelSubmits_CU();
+    List<ModelFeatureRenderer.Submit<?>> getTranslucentModelSubmits_CU();
 }

@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.feature.BlockModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -70,7 +71,7 @@ public class BlockModelApi extends ApiBase {
     }
 
     private void extractQuads(SubmitNodeCollection collection, List<Quad> output) {
-        for (SubmitNodeStorage.BlockModelSubmit submission : collection.getBlockModelSubmits()) {
+        for (BlockModelFeatureRenderer.Submit submission : collection.getBlockModelSubmits()) {
             extractQuads(submission, output);
         }
 
@@ -79,7 +80,7 @@ public class BlockModelApi extends ApiBase {
         ModMain.BRIDGE.extractAdditionalQuads(collection, output);
     }
 
-    private void extractQuads(SubmitNodeStorage.BlockModelSubmit submission, List<Quad> output) {
+    private void extractQuads(BlockModelFeatureRenderer.Submit submission, List<Quad> output) {
         for (BlockStateModelPart part : submission.modelParts()) {
             for (Direction direction : Direction.values()) {
                 extractQuads(part.getQuads(direction), submission.tintLayers(), output);
@@ -92,22 +93,21 @@ public class BlockModelApi extends ApiBase {
         ModelFeatureRendererStorageAccessor accessor = (ModelFeatureRendererStorageAccessor) storage;
         // order is important for banners: first translucent, second solid
         // since quad with the same coordinates are submitted?
-        for (SubmitNodeStorage.TranslucentModelSubmit<?> submission : accessor.getTranslucentModelSubmits_CU()) {
+        for (ModelFeatureRenderer.Submit<?> submission : accessor.getTranslucentModelSubmits_CU()) {
             extractQuads(submission, output);
         }
         accessor.getSolidModelSubmits_CU().forEach((renderType, submissions) -> {
-            for (SubmitNodeStorage.ModelSubmit<?> submission : submissions) {
+            for (ModelFeatureRenderer.Submit<?> submission : submissions) {
                 extractQuads(renderType, submission, output);
             }
         });
     }
 
-    private void extractQuads(SubmitNodeStorage.TranslucentModelSubmit<?> submission, List<Quad> output) {
-        // TODO: submission.position is ignored???
-        extractQuads(submission.renderType(), submission.modelSubmit(), output);
+    private <S> void extractQuads(ModelFeatureRenderer.Submit<S> submission, List<Quad> output) {
+        extractQuads(submission.renderType(), submission, output);
     }
 
-    private <S> void extractQuads(RenderType renderType, SubmitNodeStorage.ModelSubmit<S> submission, List<Quad> output) {
+    private <S> void extractQuads(RenderType renderType, ModelFeatureRenderer.Submit<S> submission, List<Quad> output) {
         TextureAtlasSprite sprite = submission.sprite();
         String textureLocation;
         if (sprite != null) {
