@@ -12,6 +12,13 @@ public class VertexFormats {
             .add("inParameters", VertexFormatElements.LINE_PARAMETERS)
             .build();
 
+    public static final VertexFormat LINES_INSTANCED = VertexFormat.builder()
+            .add("inPointA", VertexFormatElement.POSITION)
+            .add("inPointB", VertexFormatElements.LINE_POINT_B)
+            .add("inColor", VertexFormatElement.COLOR)
+            .add("inParameters", VertexFormatElements.LINE_PARAMETERS)
+            .build();
+
     public static final VertexFormat POSITION_2D_COLOR = VertexFormat.builder()
             .add("InPosition", VertexFormatElements.POSITION_2D)
             .add("InColor", VertexFormatElement.COLOR)

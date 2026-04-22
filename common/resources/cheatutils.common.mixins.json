@@ -91,6 +91,8 @@
     "common.MixinSoundBufferLibrary",
     "common.MixinSoundManager",
     "common.MixinUser",
+    "common.MixinVertexArrayCacheEmulated",
+    "common.MixinVertexArrayCacheSeparate",
     "common.MixinVulkanRenderPass"
   ]
 }

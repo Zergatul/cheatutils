@@ -88,7 +88,7 @@ public class BlockEsp {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        EspLineRenderer renderer = EspLineRenderer.getInstance();
+        NewEspLineRenderer renderer = NewEspLineRenderer.getInstance();
         renderer.begin();
 
         for (BlockEspConfig config : configs) {
@@ -176,7 +176,7 @@ public class BlockEsp {
         lastFrameGpuTime += sw.elapsed(TimeUnit.MICROSECONDS) / 1000d;
     }
 
-    private void renderBoundingBoxes(EspLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderBoundingBoxes(NewEspLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
@@ -198,7 +198,7 @@ public class BlockEsp {
         }
     }
 
-    private void renderTracers(EspLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderTracers(NewEspLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
