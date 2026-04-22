@@ -8,3 +8,4 @@ accessible method net/minecraft/world/level/chunk/storage/RegionFileStorage <ini
 accessible class net/minecraft/client/multiplayer/ClientCommonPacketListenerImpl$PackConfirmScreen
 accessible class net/minecraft/client/multiplayer/ClientCommonPacketListenerImpl$PackConfirmScreen$PendingRequest
 accessible class com/mojang/blaze3d/opengl/GlCommandEncoder
+accessible class com/mojang/blaze3d/opengl/GlRenderPass
