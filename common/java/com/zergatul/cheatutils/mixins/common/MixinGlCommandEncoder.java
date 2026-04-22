@@ -1,12 +1,17 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.zergatul.cheatutils.extensions.GlCommandEncoderExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(targets = "com.mojang.blaze3d.opengl.GlCommandEncoder")
-public abstract class MixinGlCommandEncoder {
+public abstract class MixinGlCommandEncoder implements GlCommandEncoderExtension {
+
+    public void executeDrawInstanced_CU(/* TODO */) {
+
+    }
 
     @ModifyArgs(
             method = "copyTextureToTexture",
