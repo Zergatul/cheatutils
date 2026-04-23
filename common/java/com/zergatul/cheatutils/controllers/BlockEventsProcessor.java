@@ -41,6 +41,7 @@ public class BlockEventsProcessor {
         Events.RawBlockUpdated.add(this::onBlockUpdated);
         Events.MainLoopFrameEnd.add(this::onFrameEnd);
         Events.LevelUnload.add(this::onLevelUnload);
+        Events.Close.add(this::onClose);
     }
 
     public ProfilerSingleThreadExecutor getExecutor() {
@@ -128,6 +129,10 @@ public class BlockEventsProcessor {
             executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
         }
         capturedChunks.clear();
+    }
+
+    private void onClose() {
+        this.executor.shutdownNow();
     }
 
     private void processCapturedChunks() {
