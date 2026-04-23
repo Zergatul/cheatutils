@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.AirPlaceConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Camera;
@@ -112,7 +112,7 @@ public class AirPlace implements Module {
         BlockPos blockPos = new BlockPos((int) Math.floor(pos.x), (int) Math.floor(pos.y), (int) Math.floor(pos.z));
 
         double margin = 0.05;
-        EspLineRenderer renderer = EspLineRenderer.getInstance();
+        LineRenderer renderer = LineRenderer.getInstance();
         renderer.begin();
         renderer.cuboid(
                 event.getCameraPos(),

@@ -8,7 +8,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LogoutSpotsConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
@@ -117,7 +117,7 @@ public class LogoutSpots implements Module {
             return;
         }
 
-        EspLineRenderer renderer = EspLineRenderer.getInstance();
+        LineRenderer renderer = LineRenderer.getInstance();
         renderer.begin();
         for (LogoutSpotEntry entry : entries) {
             if (entry.dimension.equals(mc.level.dimension().identifier())) {

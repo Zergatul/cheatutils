@@ -178,7 +178,7 @@ public class EntityEsp implements Module {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        EspLineRenderer renderer = EspLineRenderer.getInstance();
+        LineRenderer renderer = LineRenderer.getInstance();
         renderer.begin();
 
         bbList.clear();
@@ -234,7 +234,7 @@ public class EntityEsp implements Module {
         profiler.pop();
     }
 
-    private void renderLines(EspLineRenderer renderer, RenderWorldLastEvent event) {
+    private void renderLines(LineRenderer renderer, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;

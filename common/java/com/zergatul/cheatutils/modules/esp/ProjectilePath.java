@@ -8,7 +8,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ProjectilePathConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.CrossbowItemAccessor;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.ServerBehavior;
 import net.minecraft.client.Minecraft;
@@ -101,7 +101,7 @@ public class ProjectilePath {
             double cameraY = cameraPos.y;
             double cameraZ = cameraPos.z;
 
-            EspLineRenderer renderer = EspLineRenderer.getInstance();
+            LineRenderer renderer = LineRenderer.getInstance();
             renderer.begin();
 
             for (List<TraceRecord> list : traces.values()) {
@@ -116,11 +116,13 @@ public class ProjectilePath {
                     float alpha1 = Math.min(1f, remain1 / 1e9f / config.fadeDuration);
                     long remain2 = r2.time + config.tracesDuration * 1000000000L - time;
                     float alpha2 = Math.min(1f, remain2 / 1e9f / config.fadeDuration);
+                    // original code had 2 colors:
+                    // ColorUtils.toShader(new Color(0.5f, 1f, 0.5f, alpha1))
+                    // ColorUtils.toShader(new Color(0.5f, 1f, 0.5f, alpha2))
                     renderer.line(
                             (float) (r1.position.x - cameraX), (float) (r1.position.y - cameraY), (float) (r1.position.z - cameraZ),
-                            ColorUtils.toShader(new Color(0.5f, 1f, 0.5f, alpha1)),
                             (float) (r2.position.x - cameraX), (float) (r2.position.y - cameraY), (float) (r2.position.z - cameraZ),
-                            ColorUtils.toShader(new Color(0.5f, 1f, 0.5f, alpha2)),
+                            ColorUtils.toShader(new Color(0.5f, 1f, 0.5f, (alpha1 + alpha2) / 2)),
                             1f);
                 }
             }
@@ -187,7 +189,7 @@ public class ProjectilePath {
         double cameraY = cameraPos.y;
         double cameraZ = cameraPos.z;
 
-        EspLineRenderer renderer = EspLineRenderer.getInstance(); // TODO depth
+        LineRenderer renderer = LineRenderer.getInstance();
         renderer.begin();
 
         List<Vec3> mainPath = calculatePath(entry, from, movement, shift);
@@ -215,7 +217,7 @@ public class ProjectilePath {
         return list;
     }
 
-    private void drawPath(List<Vec3> path, EspLineRenderer renderer, double cameraX, double cameraY, double cameraZ) {
+    private void drawPath(List<Vec3> path, LineRenderer renderer, double cameraX, double cameraY, double cameraZ) {
         for (int i = 0; i < path.size() - 1; i++) {
             Vec3 point1 = path.get(i);
             Vec3 point2 = path.get(i + 1);

@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -368,7 +368,7 @@ public class FreeCam implements Module {
             return;
         }
 
-        EspLineRenderer renderer = EspLineRenderer.getInstance();
+        LineRenderer renderer = LineRenderer.getInstance();
         renderer.begin();
 
         for (int i = 1; i < path.size(); i++) {

@@ -14,7 +14,7 @@ public abstract class MixinVertexArrayCacheSeparate {
 
     @Inject(method = "bindVertexArray", at = @At("RETURN"))
     private void bindInstancedDivisors(VertexFormat format, GlBuffer vertexBuffer, CallbackInfo ci) {
-        if (format == VertexFormats.LINES_INSTANCED) {
+        if (format == VertexFormats.LINES_INSTANCED || format == VertexFormats.CUBE_LINES_INSTANCED) {
             ARBVertexAttribBinding.glVertexBindingDivisor(0, 1);
         }
     }

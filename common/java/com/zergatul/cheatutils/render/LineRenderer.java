@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-public class NewEspLineRenderer {
+public class LineRenderer {
 
     private final RenderPipeline pipeline;
     private final RenderPipeline depthPipeline;
@@ -32,11 +32,11 @@ public class NewEspLineRenderer {
     private final BufferBuilder bufferBuilder;
     private final DynamicGpuBuffer dynamicVertexBuffer;
 
-    private NewEspLineRenderer() {
-        pipeline = createPipeline("pipeline/new-esp-lines", false);
-        depthPipeline = createPipeline("pipeline/new-esp-lines-depth", true);
+    private LineRenderer() {
+        pipeline = createPipeline("pipeline/lines", false);
+        depthPipeline = createPipeline("pipeline/depth-lines", true);
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> ModMain.MODID + ": New ESP Lines Renderer UBO",
+                () -> ModMain.MODID + ": Lines Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 72);
         bufferBuilder = new BufferBuilder();
@@ -47,8 +47,8 @@ public class NewEspLineRenderer {
         RenderPipeline.Builder builder = RenderPipeline.builder()
                 .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, location))
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "new-esp-lines"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "esp-lines"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "lines"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "lines"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(VertexFormats.LINES_INSTANCED, VertexFormat.Mode.TRIANGLES)
                 .withCull(false);
@@ -60,7 +60,7 @@ public class NewEspLineRenderer {
         return builder.build();
     }
 
-    public static NewEspLineRenderer getInstance() {
+    public static LineRenderer getInstance() {
         return Holder.INSTANCE;
     }
 
@@ -118,7 +118,7 @@ public class NewEspLineRenderer {
             float x2, float y2, float z2,
             int color, float width
     ) {
-        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color, packWidth(width));
+        bufferBuilder.vertex(x1, y1, z1, x2, y2, z2, color, width);
     }
 
     public void end(Matrix4f mvp) {
@@ -156,24 +156,22 @@ public class NewEspLineRenderer {
 
         if (depth) {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                    () -> ModMain.MODID + ": Render New Depth-Tested ESP Lines",
+                    () -> ModMain.MODID + ": Render Depth Lines",
                     mainRenderTarget.getColorTextureView(),
                     OptionalInt.empty(),
                     mainRenderTarget.getDepthTextureView(),
                     OptionalDouble.empty());
         } else {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                    () -> ModMain.MODID + ": Render New ESP Lines",
+                    () -> ModMain.MODID + ": Render Lines",
                     mainRenderTarget.getColorTextureView(),
                     OptionalInt.empty());
         }
     }
 
-    private static int packWidth(float width) {
-        return (int) (256 * width + 0.5);
-    }
-
     private static class BufferBuilder {
+
+        private static final int RECORD_SIZE = 4 * 8;
 
         private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x1000);
         private int lines;
@@ -195,8 +193,8 @@ public class NewEspLineRenderer {
             return lines == 0;
         }
 
-        public void vertex(float x1, float y1, float z1, float x2, float y2, float z2, int color, int params) {
-            long pointer = vertexBuffer.reserve(4 * 8);
+        public void vertex(float x1, float y1, float z1, float x2, float y2, float z2, int color, float width) {
+            long pointer = vertexBuffer.reserve(RECORD_SIZE);
             MemoryUtil.memPutFloat(pointer + 0x00L, x1);
             MemoryUtil.memPutFloat(pointer + 0x04L, y1);
             MemoryUtil.memPutFloat(pointer + 0x08L, z1);
@@ -204,12 +202,12 @@ public class NewEspLineRenderer {
             MemoryUtil.memPutFloat(pointer + 0x10L, y2);
             MemoryUtil.memPutFloat(pointer + 0x14L, z2);
             MemoryUtil.memPutInt(pointer + 0x18L, color);
-            MemoryUtil.memPutInt(pointer + 0x1CL, params);
+            MemoryUtil.memPutFloat(pointer + 0x1CL, width);
             lines++;
         }
     }
 
     private static final class Holder {
-        public static final NewEspLineRenderer INSTANCE = new NewEspLineRenderer();
+        public static final LineRenderer INSTANCE = new LineRenderer();
     }
 }

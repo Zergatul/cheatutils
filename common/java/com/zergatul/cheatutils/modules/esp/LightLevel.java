@@ -158,7 +158,7 @@ public class LightLevel implements Module {
         double tracerY = tracerCenter.y;
         double tracerZ = tracerCenter.z;
 
-        EspLineRenderer lineRenderer = EspLineRenderer.getInstance();
+        LineRenderer lineRenderer = LineRenderer.getInstance();
         lineRenderer.begin();
 
         for (BlockPos pos: listTracers) {

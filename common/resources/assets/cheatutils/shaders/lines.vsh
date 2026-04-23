@@ -8,7 +8,7 @@ layout(std140) uniform Inputs {
 in vec3 inPointA;
 in vec3 inPointB;
 in vec4 inColor;
-in int inParameters;
+in float inLineWidth;
 
 noperspective out float vAlongPx;
 noperspective out float vSidePx;
@@ -78,7 +78,6 @@ void main() {
     int vertex = gl_VertexID % 6;
     float inT = T_VALUES[vertex];
     float inSide = SIDE_VALUES[vertex];
-    float inLineWidth = (inParameters & 0xFFFF) / 256.0;
 
     vec2 ndcA = clipA.xy / clipA.w;
     vec2 ndcB = clipB.xy / clipB.w;

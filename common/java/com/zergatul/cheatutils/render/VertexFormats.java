@@ -5,18 +5,17 @@ import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 public class VertexFormats {
 
-    public static final VertexFormat LINES = VertexFormat.builder()
-            .add("inPointA", VertexFormatElement.POSITION)
+    public static final VertexFormat LINES_INSTANCED = VertexFormat.builder()
+            .add("inPointA", VertexFormatElements.LINE_POINT_A)
             .add("inPointB", VertexFormatElements.LINE_POINT_B)
             .add("inColor", VertexFormatElement.COLOR)
-            .add("inParameters", VertexFormatElements.LINE_PARAMETERS)
+            .add("inLineWidth", VertexFormatElement.LINE_WIDTH)
             .build();
 
-    public static final VertexFormat LINES_INSTANCED = VertexFormat.builder()
-            .add("inPointA", VertexFormatElement.POSITION)
-            .add("inPointB", VertexFormatElements.LINE_POINT_B)
+    public static final VertexFormat CUBE_LINES_INSTANCED = VertexFormat.builder()
+            .add("inOrigin", VertexFormatElement.POSITION)
             .add("inColor", VertexFormatElement.COLOR)
-            .add("inParameters", VertexFormatElements.LINE_PARAMETERS)
+            .add("inLineWidth", VertexFormatElement.LINE_WIDTH)
             .build();
 
     public static final VertexFormat POSITION_2D_COLOR = VertexFormat.builder()

@@ -8,7 +8,7 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
-import com.zergatul.cheatutils.render.EspLineRenderer;
+import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
@@ -67,7 +67,7 @@ public class AreaMine implements Module {
             return;
         }
 
-        EspLineRenderer renderer = EspLineRenderer.getInstance();
+        LineRenderer renderer = LineRenderer.getInstance();
         renderer.begin();
 
         int time = (int) (System.currentTimeMillis() % 2000);

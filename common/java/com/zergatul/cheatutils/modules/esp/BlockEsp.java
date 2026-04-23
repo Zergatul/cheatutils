@@ -88,8 +88,10 @@ public class BlockEsp {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        NewEspLineRenderer renderer = NewEspLineRenderer.getInstance();
-        renderer.begin();
+        LineRenderer lineRenderer = LineRenderer.getInstance();
+        lineRenderer.begin();
+        EspCubeLineRender cubeRenderer = EspCubeLineRender.getInstance();
+        cubeRenderer.begin();
 
         for (BlockEspConfig config : configs) {
             if (!config.enabled) {
@@ -159,11 +161,11 @@ public class BlockEsp {
             }
 
             if (!bbList.isEmpty()) {
-                renderBoundingBoxes(renderer, (float) config.outlineWidth, ColorUtils.toShader(config.outlineColor), event);
+                renderBoundingBoxes(cubeRenderer, (float) config.outlineWidth, ColorUtils.toShader(config.outlineColor), event);
             }
 
             if (!tracerList.isEmpty()) {
-                renderTracers(renderer, (float) config.tracerWidth, ColorUtils.toShader(config.tracerColor), event);
+                renderTracers(lineRenderer, (float) config.tracerWidth, ColorUtils.toShader(config.tracerColor), event);
             }
 
             if (!overlayList.isEmpty()) {
@@ -172,11 +174,12 @@ public class BlockEsp {
         }
 
         var sw = Stopwatch.createStarted();
-        renderer.end(event.getMvp());
+        lineRenderer.end(event.getMvp());
+        cubeRenderer.end(event.getMvp());
         lastFrameGpuTime += sw.elapsed(TimeUnit.MICROSECONDS) / 1000d;
     }
 
-    private void renderBoundingBoxes(NewEspLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderBoundingBoxes(EspCubeLineRender renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
@@ -186,19 +189,16 @@ public class BlockEsp {
             double x = pos.getX();
             double y = pos.getY();
             double z = pos.getZ();
-            renderer.cuboid(
+            renderer.cube(
                     (float) (x - cameraX),
                     (float) (y - cameraY),
                     (float) (z - cameraZ),
-                    (float) (x + 1 - cameraX),
-                    (float) (y + 1 - cameraY),
-                    (float) (z + 1 - cameraZ),
                     color,
                     width);
         }
     }
 
-    private void renderTracers(NewEspLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderTracers(LineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
