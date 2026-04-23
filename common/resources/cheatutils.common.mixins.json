@@ -93,6 +93,7 @@
     "common.MixinUser",
     "common.MixinVertexArrayCacheEmulated",
     "common.MixinVertexArrayCacheSeparate",
+    "common.MixinVulkanRenderPipeline",
     "common.MixinVulkanRenderPass"
   ]
 }

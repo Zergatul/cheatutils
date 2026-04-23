@@ -14,7 +14,7 @@ public abstract class MixinVertexArrayCacheEmulated {
 
     @Inject(method = "bindVertexArray", at = @At("RETURN"))
     private void bindInstancedDivisors(VertexFormat format, GlBuffer vertexBuffer, CallbackInfo ci) {
-        if (format == VertexFormats.LINES_INSTANCED || format == VertexFormats.CUBE_LINES_INSTANCED) {
+        if (VertexFormats.isInstanced(format)) {
             for (int i = 0; i < format.getElements().size(); i++) {
                 GL33C.glVertexAttribDivisor(i, 1);
             }

@@ -33,4 +33,8 @@ public class VertexFormats {
             .add("InTexCoords", VertexFormatElement.UV)
             .add("InColor", VertexFormatElement.COLOR)
             .build();
+
+    public static boolean isInstanced(VertexFormat format) {
+        return format == LINES_INSTANCED || format == CUBE_LINES_INSTANCED;
+    }
 }
