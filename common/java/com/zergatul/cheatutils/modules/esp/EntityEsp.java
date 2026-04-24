@@ -227,6 +227,7 @@ public class EntityEsp implements Module {
 
         drawOverlays(list, event);
         drawOutlines(list, event);
+        bufferSource.endFrame();
 
         overlayEntityStates.clear();
         outlineEntityStates.clear();
