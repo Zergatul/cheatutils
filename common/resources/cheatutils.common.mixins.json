@@ -18,7 +18,6 @@
     "common.accessors.CrossbowItemAccessor",
     "common.accessors.EntityTypeAccessor",
     "common.accessors.FogRendererAccessor",
-    "common.accessors.GlCommandEncoderAccessor",
     "common.accessors.HudAccessor",
     "common.accessors.HeightmapAccessor",
     "common.accessors.InputConstantsKeyAccessor",
