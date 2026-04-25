@@ -39,7 +39,8 @@ public class BlockEventsProcessor {
 
     // Sometimes chunk unload events don't trigger for all chunks.
     // This map tracks loaded chunks, and every tick we recheck all loaded chunks, if some chunks disappear,
-    // we trigger unload event for them
+    // we trigger unload event for them.
+    // Accessed only from main thread.
     private final Map<ChunkPos, Boolean> capturedChunks = new HashMap<>();
 
     private BlockEventsProcessor() {
@@ -55,6 +56,7 @@ public class BlockEventsProcessor {
         return executor;
     }
 
+    // should be called from main thread only
     public AtomicReferenceArray<LevelChunk> getRawChunks() {
         if (mc.level == null) {
             return EMPTY;
@@ -64,6 +66,7 @@ public class BlockEventsProcessor {
         }
     }
 
+    // any thread
     public void requestFullScan() {
         MainLoopEndExecutor.instance.execute(() -> {
             ChunkPos[] positions = getLoadedChunksPosition();
@@ -76,6 +79,7 @@ public class BlockEventsProcessor {
         });
     }
 
+    // any thread
     public void requestScan(BlockEspConfig config) {
         MainLoopEndExecutor.instance.execute(() -> {
             ChunkPos[] positions = getLoadedChunksPosition();
@@ -88,6 +92,7 @@ public class BlockEventsProcessor {
         });
     }
 
+    // main thread
     private void onChunkLoaded(LevelChunk chunk) {
         capturedChunks.put(chunk.getPos(), Boolean.FALSE);
 
@@ -97,6 +102,7 @@ public class BlockEventsProcessor {
         }
     }
 
+    // main thread
     private void onChunkUnloaded(LevelChunk chunk) {
         capturedChunks.remove(chunk.getPos());
 
@@ -105,6 +111,7 @@ public class BlockEventsProcessor {
         executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
     }
 
+    // main thread
     public void onBlockUpdated(final BlockUpdateEvent event) {
         synchronized (collectionsLock) {
             ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(event.chunk().getPos());
@@ -112,6 +119,7 @@ public class BlockEventsProcessor {
         }
     }
 
+    // main thread
     private void onFrameEnd() {
         if (mc.level == null || mc.player == null) {
             return;
@@ -121,6 +129,7 @@ public class BlockEventsProcessor {
         processChunkCopyQueue();
     }
 
+    // main thread
     private void onLevelUnload() {
         synchronized (collectionsLock) {
             this.queue.forEach(ChunkScanTaskGroup::markCancelled);
@@ -138,10 +147,12 @@ public class BlockEventsProcessor {
         capturedChunks.clear();
     }
 
+    // main thread
     private void onClose() {
         this.executor.shutdownNow();
     }
 
+    // main thread
     private void processCapturedChunks() {
         for (Map.Entry<ChunkPos, Boolean> entry : capturedChunks.entrySet()) {
             entry.setValue(Boolean.FALSE);
@@ -161,11 +172,12 @@ public class BlockEventsProcessor {
             if (entry.getValue() == Boolean.FALSE) {
                 ChunkPos pos = entry.getKey();
                 iterator.remove();
-                emitChunkUnloaded(pos);
+                executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
             }
         }
     }
 
+    // main thread
     private void processChunkCopyQueue() {
         assert mc.player != null;
 
@@ -203,6 +215,7 @@ public class BlockEventsProcessor {
         }
     }
 
+    // main thread
     private void processTaskGroup(ChunkScanTaskGroup group) {
         assert mc.level != null;
 
@@ -218,6 +231,7 @@ public class BlockEventsProcessor {
         executor.execute(() -> processSnapshot(group, snapshot));
     }
 
+    // worker thread: BlockEventsProcessor.executor
     private void processSnapshot(ChunkScanTaskGroup group, SnapshotChunk chunk) {
         if (group.scanAllConfigs) {
             Events.ChunkLoaded.trigger(chunk);
@@ -232,6 +246,7 @@ public class BlockEventsProcessor {
         }
     }
 
+    // any thread
     private ChunkScanTaskGroup getOrCreateChunkTaskGroup(ChunkPos pos) {
         synchronized (collectionsLock) {
             ChunkScanTaskGroup group = lookup.get(pos);
@@ -244,10 +259,7 @@ public class BlockEventsProcessor {
         }
     }
 
-    private void emitChunkUnloaded(ChunkPos pos) {
-        executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
-    }
-
+    // main thread
     private ChunkPos[] getLoadedChunksPosition() {
         AtomicReferenceArray<LevelChunk> chunks = getRawChunks();
         int count = 0;
