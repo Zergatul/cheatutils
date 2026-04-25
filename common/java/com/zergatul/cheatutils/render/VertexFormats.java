@@ -18,6 +18,10 @@ public class VertexFormats {
             .add("inLineWidth", VertexFormatElement.LINE_WIDTH)
             .build();
 
+    public static final VertexFormat BLOCK_OVERLAY_INSTANCED = VertexFormat.builder()
+            .add("inOrigin", VertexFormatElement.POSITION)
+            .build();
+
     public static final VertexFormat POSITION_2D_COLOR = VertexFormat.builder()
             .add("InPosition", VertexFormatElements.POSITION_2D)
             .add("InColor", VertexFormatElement.COLOR)
@@ -35,6 +39,6 @@ public class VertexFormats {
             .build();
 
     public static boolean isInstanced(VertexFormat format) {
-        return format == LINES_INSTANCED || format == CUBE_LINES_INSTANCED;
+        return format == LINES_INSTANCED || format == CUBE_LINES_INSTANCED || format == BLOCK_OVERLAY_INSTANCED;
     }
 }

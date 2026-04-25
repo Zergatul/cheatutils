@@ -13,7 +13,6 @@ import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;

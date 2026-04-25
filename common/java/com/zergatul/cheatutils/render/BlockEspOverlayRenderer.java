@@ -5,19 +5,21 @@ import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -28,9 +30,8 @@ public class BlockEspOverlayRenderer {
     private final GpuBuffer drawUbo;
     private final RenderPipeline blitPipeline;
     private final GpuBuffer blitUbo;
-    private final IndexBufferBuilder indexBufferBuilder;
+    private final BufferBuilder bufferBuilder;
     private final DynamicGpuBuffer dynamicVertexBuffer;
-    private final DynamicGpuBuffer dynamicIndexBuffer;
 
     private BlockEspOverlayRenderer() {
         renderTarget = RenderTargets.getEsp();
@@ -40,7 +41,7 @@ public class BlockEspOverlayRenderer {
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
-                .withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.TRIANGLES)
+                .withVertexFormat(VertexFormats.BLOCK_OVERLAY_INSTANCED, VertexFormat.Mode.TRIANGLES)
                 .build();
         drawUbo = RenderSystem.getDevice().createBuffer(() -> "Block ESP Overlay Buffer Draw UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
         blitPipeline = RenderPipeline.builder()
@@ -53,9 +54,8 @@ public class BlockEspOverlayRenderer {
                 .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
                 .build();
         blitUbo = RenderSystem.getDevice().createBuffer(() -> "Block ESP Overlay Blit UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 16);
-        indexBufferBuilder = new IndexBufferBuilder();
+        bufferBuilder = new BufferBuilder();
         dynamicVertexBuffer = DynamicGpuBuffer.vertex();
-        dynamicIndexBuffer = DynamicGpuBuffer.index();
     }
 
     public static BlockEspOverlayRenderer getInstance() {
@@ -63,52 +63,21 @@ public class BlockEspOverlayRenderer {
     }
 
     public void begin() {
-        indexBufferBuilder.clear();
+        bufferBuilder.clear();
     }
 
     public void submitBlock(float x, float y, float z) {
-        int v1 = indexBufferBuilder.vertex(x + 0, y + 0, z + 0);
-        int v2 = indexBufferBuilder.vertex(x + 0, y + 0, z + 1);
-        int v3 = indexBufferBuilder.vertex(x + 1, y + 0, z + 0);
-        int v4 = indexBufferBuilder.vertex(x + 1, y + 0, z + 1);
-        int v5 = indexBufferBuilder.vertex(x + 0, y + 1, z + 0);
-        int v6 = indexBufferBuilder.vertex(x + 0, y + 1, z + 1);
-        int v7 = indexBufferBuilder.vertex(x + 1, y + 1, z + 0);
-        int v8 = indexBufferBuilder.vertex(x + 1, y + 1, z + 1);
-
-        // bottom (-Y)
-        indexBufferBuilder.triangle(v1, v4, v2);
-        indexBufferBuilder.triangle(v1, v3, v4);
-
-        // top (+Y)
-        indexBufferBuilder.triangle(v5, v6, v8);
-        indexBufferBuilder.triangle(v5, v8, v7);
-
-        // side 1 (-Z)
-        indexBufferBuilder.triangle(v1, v5, v7);
-        indexBufferBuilder.triangle(v1, v7, v3);
-
-        // side 2 (+Z)
-        indexBufferBuilder.triangle(v2, v8, v6);
-        indexBufferBuilder.triangle(v2, v4, v8);
-
-        // side 3 (-X)
-        indexBufferBuilder.triangle(v1, v2, v6);
-        indexBufferBuilder.triangle(v1, v6, v5);
-
-        // side 4 (+X)
-        indexBufferBuilder.triangle(v3, v7, v8);
-        indexBufferBuilder.triangle(v3, v8, v4);
+        bufferBuilder.vertex(x, y, z);
     }
 
     public void end(Matrix4f mvp, Color color) {
-        GpuBuffer vertexBuffer;
-        try (ByteBufferBuilder.Result result = indexBufferBuilder.getVertexBuffer()) {
-            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(result.byteBuffer());
+        if (bufferBuilder.isEmpty()) {
+            return;
         }
-        GpuBuffer indexBuffer;
-        try (ByteBufferBuilder.Result result = indexBufferBuilder.getIndexBuffer()) {
-            indexBuffer = this.dynamicIndexBuffer.uploadImmediate(result.byteBuffer());
+
+        GpuBuffer vertexBuffer;
+        try (ByteBufferBuilder.Result result = bufferBuilder.getVertexBuffer()) {
+            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(result.byteBuffer());
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -116,12 +85,15 @@ public class BlockEspOverlayRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(drawUbo.slice(), byteBuffer);
         }
 
-        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Draw block overlay", renderTarget.getColorTextureView(), OptionalInt.of(0))) {
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                () -> ModMain.MODID + ": Draw block overlay",
+                Objects.requireNonNull(renderTarget.getColorTextureView()),
+                OptionalInt.of(0))
+        ) {
             renderPass.setPipeline(drawPipeline);
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, drawUbo);
             renderPass.setVertexBuffer(0, vertexBuffer);
-            renderPass.setIndexBuffer(indexBuffer, VertexFormat.IndexType.INT);
-            renderPass.drawIndexed(0, 0, indexBufferBuilder.getIndexCount(), 1);
+            ((RenderPassExtension) renderPass).drawInstanced_CU(0, 36, bufferBuilder.getBlockCount());
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -134,11 +106,48 @@ public class BlockEspOverlayRenderer {
         }
 
         RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
-        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit block overlay", mainRenderTarget.getColorTextureView(), OptionalInt.empty())) {
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                () -> ModMain.MODID + ": Blit block overlay",
+                Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
+                OptionalInt.empty())
+        ) {
             renderPass.setPipeline(blitPipeline);
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, blitUbo);
             renderPass.draw(0, 3);
+        }
+    }
+
+    private static class BufferBuilder {
+
+        private static final int RECORD_SIZE = 3 * 4;
+
+        private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x1000);
+        private int blocks;
+
+        public void clear() {
+            blocks = 0;
+            vertexBuffer.clear();
+        }
+
+        public ByteBufferBuilder.Result getVertexBuffer() {
+            return vertexBuffer.build();
+        }
+
+        public int getBlockCount() {
+            return blocks;
+        }
+
+        public boolean isEmpty() {
+            return blocks == 0;
+        }
+
+        public void vertex(float x, float y, float z) {
+            long pointer = vertexBuffer.reserve(RECORD_SIZE);
+            MemoryUtil.memPutFloat(pointer + 0x00L, x);
+            MemoryUtil.memPutFloat(pointer + 0x04L, y);
+            MemoryUtil.memPutFloat(pointer + 0x08L, z);
+            blocks++;
         }
     }
 
