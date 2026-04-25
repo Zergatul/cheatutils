@@ -15,19 +15,26 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.function.Consumer;
 
 public class BlockEventsProcessor {
 
     public static final BlockEventsProcessor instance = new BlockEventsProcessor();
 
     private static final AtomicReferenceArray<LevelChunk> EMPTY = new AtomicReferenceArray<>(0);
-    private static final long CHUNK_COPY_BUDGET_NANOS = 1_000_000L;
+    private static final long CHUNK_COPY_BUDGET_NANOS = TimeUnit.MILLISECONDS.toNanos(1);
 
     private final Minecraft mc = Minecraft.getInstance();
     private final ProfilerSingleThreadExecutor executor = new ProfilerSingleThreadExecutor(10000);
+
+    // lock to use when accessing queue and lookup
     private final Object collectionsLock = new Object();
-    private final List<ChunkScanTaskGroup> queue = new ArrayList<>();
+
+    // sorted by the distance from the player, descending order, so removing from the tail is very fast
+    private final ChunkQueue queue = new ChunkQueue();
+
     private final Map<ChunkPos, ChunkScanTaskGroup> lookup = new HashMap<>();
 
     // Sometimes chunk unload events don't trigger for all chunks.
@@ -165,23 +172,13 @@ public class BlockEventsProcessor {
         long deadline = System.nanoTime() + CHUNK_COPY_BUDGET_NANOS;
 
         // sort chunks based on distance from the player
-        // should be O(n) since in most cases chunks are already sorted from previous frame
-        int playerX = mc.player.getBlockX();
-        int playerZ = mc.player.getBlockZ();
-
-        // TODO: default sort allocates new array? check if can be done without reallocation
         synchronized (collectionsLock) {
-            if (this.queue.isEmpty()) {
-                return;
-            }
-
-            this.queue.sort((g1, g2) -> {
-                long d1 = g1.distanceSqrTo(playerX, playerZ);
-                long d2 = g2.distanceSqrTo(playerX, playerZ);
-                return Long.compare(d1, d2);
-            });
+            this.queue.sort(mc.player.getBlockX(), mc.player.getBlockZ());
         }
 
+        // New groups may be appended while this loop drains the queue.
+        // Strict ordering is not required here; sorting is only a best-effort
+        // responsiveness hint, so we avoid resorting inside the loop
         while (true) {
             ChunkScanTaskGroup group;
 
@@ -190,8 +187,7 @@ public class BlockEventsProcessor {
                     break;
                 }
 
-                // TODO: not optimal, think for better structure?
-                group = this.queue.removeFirst();
+                group = this.queue.deque();
                 this.lookup.remove(group.pos);
             }
 
@@ -269,5 +265,89 @@ public class BlockEventsProcessor {
             }
         }
         return result;
+    }
+
+    private static class ChunkQueue {
+
+        private ChunkScanTaskGroup[] elements;
+        private int size;
+
+        public ChunkQueue() {
+            this.elements = new ChunkScanTaskGroup[128];
+            this.size = 0;
+        }
+
+        public void add(ChunkScanTaskGroup element) {
+            if (this.size >= this.elements.length) {
+                ChunkScanTaskGroup[] oldArray = this.elements;
+                ChunkScanTaskGroup[] newArray = new ChunkScanTaskGroup[this.elements.length * 2];
+                System.arraycopy(oldArray, 0, newArray, 0, oldArray.length);
+                this.elements = newArray;
+            }
+
+            this.elements[this.size++] = element;
+        }
+
+        public void clear() {
+            this.size = 0;
+            Arrays.fill(this.elements, 0, this.size, null);
+        }
+
+        public void forEach(Consumer<ChunkScanTaskGroup> consumer) {
+            for (int i = 0; i < this.size; i++) {
+                consumer.accept(this.elements[i]);
+            }
+        }
+
+        public boolean isEmpty() {
+            return this.size == 0;
+        }
+
+        public ChunkScanTaskGroup deque() {
+            ChunkScanTaskGroup element = this.elements[--this.size];
+            this.elements[this.size] = null;
+            return element;
+        }
+
+        public void sort(int playerX, int playerZ) {
+            if (this.isEmpty()) {
+                return;
+            }
+
+            Comparator<ChunkScanTaskGroup> comparator = (g1, g2) -> {
+                long d1 = g1.distanceSqrTo(playerX, playerZ);
+                long d2 = g2.distanceSqrTo(playerX, playerZ);
+                return -Long.compare(d1, d2);
+            };
+
+            // begin insertion sort, since in the most cases collection should be sorted from previous frame
+            // in rare cases (player crossed boundary) collection will be almost sorted
+            // in extremely rate cases (player teleported) collection will require full sort
+            ChunkScanTaskGroup[] elements = this.elements;
+            int size = this.size;
+            int moves = 0;
+            int movesLimit = size / 8 + 1;
+
+            outerLoop:
+            for (int i = 1; i < size; i++) {
+                ChunkScanTaskGroup element = elements[i];
+                int j = i - 1;
+
+                while (j >= 0 && comparator.compare(elements[j], element) > 0) {
+                    elements[j + 1] = elements[j];
+                    j--;
+                    moves++;
+
+                    // if we detect that array is not nearly sorted we fall back to default implementation
+                    // however it allocates new array for merging
+                    if (moves > movesLimit) {
+                        Arrays.sort(elements, 0, size, comparator);
+                        break outerLoop;
+                    }
+                }
+
+                elements[j + 1] = element;
+            }
+        }
     }
 }
