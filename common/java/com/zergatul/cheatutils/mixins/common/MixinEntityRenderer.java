@@ -15,14 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinEntityRenderer {
 
     @Inject(
-            method = "extractNameplates(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/entity/state/EntityRenderState;FDD)V",
+            method = "extractNameTags(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/entity/state/EntityRenderState;FDD)V",
             at = @At("HEAD"),
             cancellable = true)
     private void onExtractNamePlates(
             Entity entity,
             EntityRenderState state,
             float partialTicks,
-            double nameplateDistance,
+            double nameTagDistance,
             double belowNameDistance,
             CallbackInfo info
     ) {

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
@@ -12,20 +12,17 @@ import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import it.unimi.dsi.fastutil.objects.ObjectSortedSets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.feature.*;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -42,7 +39,7 @@ public class EntityEsp implements Module {
     private final Map<EntityEspConfig, List<EntityRenderState>> overlayEntityStates = new IdentityHashMap<>();
     private final Map<EntityEspConfig, List<EntityRenderState>> outlineEntityStates = new IdentityHashMap<>();
     private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
-    private final OutlineCaptureBufferSource bufferSource = new OutlineCaptureBufferSource();
+    private final RenderBuffers renderBuffers = new RenderBuffers(1);
     private final FeatureRenderDispatcher dispatcher;
     private final Map<EntityScriptResultKey, EntityScriptResult> scriptResults = new HashMap<>();
     private boolean enabled = true;
@@ -50,13 +47,13 @@ public class EntityEsp implements Module {
     private EntityEsp() {
         Events.BeforeRenderWorld.add(this::onBeforeRenderWorld);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld);
+        Events.MainLoopFrameEnd.add(this.renderBuffers::endFrame);
+        Events.Close.add(this::onClose);
 
         this.dispatcher = new FeatureRenderDispatcher(
-                submitNodeStorage,
+                renderBuffers,
                 mc.getModelManager(),
-                bufferSource,
                 mc.getAtlasManager(),
-                new OutlineBufferSource(new EmptyBufferSource()),
                 mc.font,
                 mc.gameRenderer.gameRenderState());
     }
@@ -158,6 +155,11 @@ public class EntityEsp implements Module {
         scriptResults.clear();
     }
 
+    private void onClose() {
+        dispatcher.close();
+        renderBuffers.close();
+    }
+
     private void onAfterRenderWorld(RenderWorldLastEvent event) {
         assert mc.level != null && mc.player != null;
 
@@ -227,7 +229,6 @@ public class EntityEsp implements Module {
 
         drawOverlays(list, event);
         drawOutlines(list, event);
-        bufferSource.endFrame();
 
         overlayEntityStates.clear();
         outlineEntityStates.clear();
@@ -288,16 +289,8 @@ public class EntityEsp implements Module {
             }
 
             renderer.begin();
-
-            for (EntityRenderState state : states) {
-                int outlineColor = state.outlineColor;
-                state.outlineColor = 0;
-                renderDispatcher.submit(state, event.getCameraRenderState(), state.x - camX, state.y - camY, state.z - camZ, poseStack, submitNodeStorage);
-                state.outlineColor = outlineColor;
-            }
-
-            dispatcher.renderAllFeatures();
-            bufferSource.uploadAndDraw();
+            submitEntityMasks(states, event, renderDispatcher, poseStack, camX, camY, camZ);
+            drawSubmittedMasks();
             renderer.end(config.overlayColor);
         }
     }
@@ -322,39 +315,32 @@ public class EntityEsp implements Module {
             }
 
             renderer.begin();
-
-            for (EntityRenderState state : states) {
-                int outlineColor = state.outlineColor;
-                state.outlineColor = 0;
-                renderDispatcher.submit(state, event.getCameraRenderState(), state.x - camX, state.y - camY, state.z - camZ, poseStack, submitNodeStorage);
-                state.outlineColor = outlineColor;
-            }
-
-            dispatcher.renderAllFeatures();
-            bufferSource.uploadAndDraw();
+            submitEntityMasks(states, event, renderDispatcher, poseStack, camX, camY, camZ);
+            drawSubmittedMasks();
             renderer.end(config.glowColor);
         }
     }
 
-    private static final class OutlineCaptureBufferSource extends MultiBufferSource.BufferSource {
-
-        public OutlineCaptureBufferSource() {
-            super(0x10000, ObjectSortedSets.emptySet());
-        }
-
-        @Override
-        public @NonNull VertexConsumer getBuffer(final RenderType renderType) {
-            if (renderType.isOutline()) {
-                return super.getBuffer(renderType);
-            }
-
-            return renderType.outline().map(super::getBuffer).orElse(EmptyVertexConsumer.instance);
+    private void submitEntityMasks(
+            List<EntityRenderState> states,
+            RenderWorldLastEvent event,
+            EntityRenderDispatcher renderDispatcher,
+            PoseStack poseStack,
+            double camX,
+            double camY,
+            double camZ
+    ) {
+        for (EntityRenderState state : states) {
+            int outlineColor = state.outlineColor;
+            state.outlineColor = -1;
+            renderDispatcher.submit(state, event.getCameraRenderState(), state.x - camX, state.y - camY, state.z - camZ, poseStack, submitNodeStorage);
+            state.outlineColor = outlineColor;
         }
     }
 
-    private static final class EmptyBufferSource extends MultiBufferSource.BufferSource {
-        public EmptyBufferSource() {
-            super(4, ObjectSortedSets.emptySet());
+    private void drawSubmittedMasks() {
+        try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage)) {
+            frame.executeOutline();
         }
     }
 
