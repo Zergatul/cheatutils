@@ -77,14 +77,16 @@ public class BlockModelApi extends ApiBase {
     }
 
     private void extractQuads(SubmitNodeCollection collection, List<Quad> output) {
-        // TODO: check what is really required
         extractQuads(collection.translucentBlocksAndItems, output);
         extractQuads(collection.translucentModels, output);
         extractQuads(collection.solid, output);
+
+        // these are not used for block models
         //extractQuads(collection.breakingOverlay, output);
         //extractQuads(collection.waterMask, output);
         //extractQuads(collection.outline, output);
 
+        // TODO: remove?
         ModMain.BRIDGE.extractAdditionalQuads(collection, output);
     }
 
@@ -99,6 +101,10 @@ public class BlockModelApi extends ApiBase {
 
     private void extractQuads(SimpleFeatureRenderPhase phase, List<Quad> output) {
         for (SimpleFeatureRenderPhase.FeatureSubmits<SubmitNode> submits : ((SimpleFeatureRenderPhaseAccessor) phase).getSubmitsByFeature_CU()) {
+            if (submits == null) {
+                continue;
+            }
+
             SimpleFeatureRenderPhaseFeatureSubmitsAccessor accessor = (SimpleFeatureRenderPhaseFeatureSubmitsAccessor) submits;
             for (SubmitNode submission : accessor.getUnbatched_CU()) {
                 extractQuads(submission, output);
