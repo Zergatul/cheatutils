@@ -3,7 +3,9 @@ package com.zergatul.cheatutils.webui;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.mixins.common.accessors.ModelFeatureRendererStorageAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseFeatureSubmitsAccessor;
+import com.zergatul.cheatutils.mixins.common.accessors.TranslucentFeatureRenderPhaseAccessor;
 import com.zergatul.cheatutils.render.RenderTypeHelper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
@@ -16,6 +18,10 @@ import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.feature.BlockModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.feature.phase.SimpleFeatureRenderPhase;
+import net.minecraft.client.renderer.feature.phase.TranslucentFeatureRenderPhase;
+import net.minecraft.client.renderer.feature.submit.SubmitNode;
+import net.minecraft.client.renderer.feature.submit.TranslucentSubmit;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
@@ -71,11 +77,13 @@ public class BlockModelApi extends ApiBase {
     }
 
     private void extractQuads(SubmitNodeCollection collection, List<Quad> output) {
-        for (BlockModelFeatureRenderer.Submit submission : collection.getBlockModelSubmits()) {
-            extractQuads(submission, output);
-        }
-
-        extractQuads(collection.getModelSubmits(), output);
+        // TODO: check what is really required
+        extractQuads(collection.translucentBlocksAndItems, output);
+        extractQuads(collection.translucentModels, output);
+        extractQuads(collection.solid, output);
+        //extractQuads(collection.breakingOverlay, output);
+        //extractQuads(collection.waterMask, output);
+        //extractQuads(collection.outline, output);
 
         ModMain.BRIDGE.extractAdditionalQuads(collection, output);
     }
@@ -83,24 +91,38 @@ public class BlockModelApi extends ApiBase {
     private void extractQuads(BlockModelFeatureRenderer.Submit submission, List<Quad> output) {
         for (BlockStateModelPart part : submission.modelParts()) {
             for (Direction direction : Direction.values()) {
-                extractQuads(part.getQuads(direction), submission.tintLayers(), output);
+                extractQuads(part.getQuads(direction), submission.tintLayers(), submission.tintColor(), output);
             }
-            extractQuads(part.getQuads(null), submission.tintLayers(), output);
+            extractQuads(part.getQuads(null), submission.tintLayers(), submission.tintColor(), output);
         }
     }
 
-    private void extractQuads(ModelFeatureRenderer.Storage storage, List<Quad> output) {
-        ModelFeatureRendererStorageAccessor accessor = (ModelFeatureRendererStorageAccessor) storage;
-        // order is important for banners: first translucent, second solid
-        // since quad with the same coordinates are submitted?
-        for (ModelFeatureRenderer.Submit<?> submission : accessor.getTranslucentModelSubmits_CU()) {
+    private void extractQuads(SimpleFeatureRenderPhase phase, List<Quad> output) {
+        for (SimpleFeatureRenderPhase.FeatureSubmits<SubmitNode> submits : ((SimpleFeatureRenderPhaseAccessor) phase).getSubmitsByFeature_CU()) {
+            SimpleFeatureRenderPhaseFeatureSubmitsAccessor accessor = (SimpleFeatureRenderPhaseFeatureSubmitsAccessor) submits;
+            for (SubmitNode submission : accessor.getUnbatched_CU()) {
+                extractQuads(submission, output);
+            }
+            for (List<SubmitNode> batch : accessor.getBatches_CU().values()) {
+                for (SubmitNode submission : batch) {
+                    extractQuads(submission, output);
+                }
+            }
+        }
+    }
+
+    private void extractQuads(TranslucentFeatureRenderPhase phase, List<Quad> output) {
+        for (TranslucentSubmit submission : ((TranslucentFeatureRenderPhaseAccessor) phase).getSubmits_CU()) {
             extractQuads(submission, output);
         }
-        accessor.getSolidModelSubmits_CU().forEach((renderType, submissions) -> {
-            for (ModelFeatureRenderer.Submit<?> submission : submissions) {
-                extractQuads(renderType, submission, output);
-            }
-        });
+    }
+
+    private void extractQuads(SubmitNode submission, List<Quad> output) {
+        if (submission instanceof BlockModelFeatureRenderer.Submit blockModel) {
+            extractQuads(blockModel, output);
+        } else if (submission instanceof ModelFeatureRenderer.Submit<?> model) {
+            extractQuads(model, output);
+        }
     }
 
     private <S> void extractQuads(ModelFeatureRenderer.Submit<S> submission, List<Quad> output) {
@@ -133,9 +155,9 @@ public class BlockModelApi extends ApiBase {
         });
     }
 
-    private void extractQuads(List<BakedQuad> bakedQuads, int[] tintLayers, List<Quad> output) {
+    private void extractQuads(List<BakedQuad> bakedQuads, int[] tintLayers, int baseTintColor, List<Quad> output) {
         for (BakedQuad quad : bakedQuads) {
-            output.add(new Quad(quad, tintLayers));
+            output.add(new Quad(quad, tintLayers, baseTintColor));
         }
     }
 
@@ -144,7 +166,7 @@ public class BlockModelApi extends ApiBase {
         public final String location;
         public final Vertex[] vertices;
 
-        public Quad(BakedQuad quad, int[] tintLayers) {
+        public Quad(BakedQuad quad, int[] tintLayers, int baseTintColor) {
             this.location = quad.materialInfo().sprite().atlasLocation().toString();
 
             this.vertices = new Vertex[4];
@@ -154,17 +176,18 @@ public class BlockModelApi extends ApiBase {
                 this.vertices[i].y = quad.position(i).y() - 0.5f;
                 this.vertices[i].z = quad.position(i).z() - 0.5f;
 
-                if (quad.materialInfo().isTinted() && quad.materialInfo().tintIndex() < tintLayers.length) {
-                    int color = tintLayers[quad.materialInfo().tintIndex()];
+                int tintIndex = quad.materialInfo().tintIndex();
+                if (quad.materialInfo().isTinted() && tintIndex >= 0 && tintIndex < tintLayers.length) {
+                    int color = ColorUtils.Int.multiply(baseTintColor, tintLayers[tintIndex]);
                     this.vertices[i].r = ColorUtils.Int.r(color);
                     this.vertices[i].g = ColorUtils.Int.g(color);
                     this.vertices[i].b = ColorUtils.Int.b(color);
                     this.vertices[i].a = ColorUtils.Int.a(color);
                 } else {
-                    this.vertices[i].r = 255;
-                    this.vertices[i].g = 255;
-                    this.vertices[i].b = 255;
-                    this.vertices[i].a = 255;
+                    this.vertices[i].r = ColorUtils.Int.r(baseTintColor);
+                    this.vertices[i].g = ColorUtils.Int.g(baseTintColor);
+                    this.vertices[i].b = ColorUtils.Int.b(baseTintColor);
+                    this.vertices[i].a = ColorUtils.Int.a(baseTintColor);
                 }
 
                 this.vertices[i].u = UVPair.unpackU(quad.packedUV(i));
