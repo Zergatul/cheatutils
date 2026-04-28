@@ -1,19 +1,13 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.gui.font.TextRenderable;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
@@ -35,41 +29,26 @@ public class CustomizableVanillaFontRenderer {
     public void render(Font font, int scale, RenderBuffers buffers, String text, int x, int y) {
         bufferSource.clear();
 
-        VanillaFontHelper.drawInBatch(
+        VanillaFontHelper.visit(
                 font,
                 text,
                 0, 0,
                 -1,
                 false, // drawShadow
-                new Matrix4f(),
-                bufferSource,
-                Font.DisplayMode.NORMAL,
                 0, // backgroundColor
-                15728880);
+                bufferSource::accept);
 
-        Map<RenderType, FontVertexConsumer> consumers = bufferSource.getConsumers();
+        Map<GpuTextureView, FontVertexConsumer> consumers = bufferSource.getConsumers();
         for (var entry : consumers.entrySet()) {
-            RenderType type = entry.getKey();
+            GpuTextureView textureView = entry.getKey();
             FontVertexConsumer consumer = entry.getValue();
 
             if (consumer.buffer.isEmpty()) {
                 continue;
             }
 
-            RenderSetup setup = ((RenderTypeAccessor) type).getState_CU();
-            Map<String, RenderSetup.TextureBinding> textures = ((RenderSetupAccessor) (Object) setup).getTextures_CU();
-            RenderSetup.TextureBinding binding = textures.get("Sampler0");
-            if (binding == null) {
-                continue;
-            }
-
-            if (entry.getKey().mode() != VertexFormat.Mode.QUADS) {
-                continue;
-            }
-
-            AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(binding.location());
             for (int i = 0; i < consumer.buffer.size() / 20; i++) {
-                Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2d(RenderBuffers.FONT, texture.getTextureView());
+                Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2d(RenderBuffers.FONT, textureView);
                 buffer.quad(
                         x + consumer.getX(i * 4) * scale, // x1
                         y + consumer.getY(i * 4) * scale, // y1
@@ -90,7 +69,7 @@ public class CustomizableVanillaFontRenderer {
                         consumer.getColor(i * 4));
             }
 
-            Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2d(RenderBuffers.FONT_SHADOW, texture.getTextureView());
+            Position2dTextureColorRenderer.BufferBuilder buffer = buffers.getTexColor2d(RenderBuffers.FONT_SHADOW, textureView);
             for (int i = 0; i < consumer.buffer.size() / 20; i++) {
                 buffer.quad(
                         x + scale + consumer.getX(i * 4) * scale, // x1
@@ -114,9 +93,9 @@ public class CustomizableVanillaFontRenderer {
         }
     }
 
-    private static class FontBufferSource implements MultiBufferSource {
+    private static class FontBufferSource {
 
-        private final Map<RenderType, FontVertexConsumer> map = new HashMap<>();
+        private final Map<GpuTextureView, FontVertexConsumer> map = new HashMap<>();
 
         public void clear() {
             for (FontVertexConsumer consumer : map.values()) {
@@ -124,19 +103,20 @@ public class CustomizableVanillaFontRenderer {
             }
         }
 
-        public Map<RenderType, FontVertexConsumer> getConsumers() {
+        public Map<GpuTextureView, FontVertexConsumer> getConsumers() {
             return map;
         }
 
-        @Override
-        public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
-            if (map.containsKey(renderType)) {
-                return map.get(renderType);
+        public void accept(TextRenderable renderable) {
+            GpuTextureView textureView = renderable.textureView();
+            FontVertexConsumer consumer;
+            if (map.containsKey(textureView)) {
+                consumer = map.get(textureView);
             } else {
-                var consumer = new FontVertexConsumer();
-                map.put(renderType, consumer);
-                return consumer;
+                consumer = new FontVertexConsumer();
+                map.put(textureView, consumer);
             }
+            renderable.render(new Matrix4f(), consumer, 15728880, false);
         }
     }
 

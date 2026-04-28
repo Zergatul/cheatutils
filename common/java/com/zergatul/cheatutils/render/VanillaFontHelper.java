@@ -1,46 +1,39 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-import org.joml.Matrix4fc;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.function.Consumer;
 
 @NullMarked
 public class VanillaFontHelper {
 
-    public static void drawInBatch(
+    public static void visit(
             Font font,
             String text,
             float x,
             float y,
             int color,
             boolean drawShadow,
-            Matrix4fc pose,
-            MultiBufferSource bufferSource,
-            Font.DisplayMode displayMode,
             int backgroundColor,
-            int packedLightCoords
+            Consumer<TextRenderable> consumer
     ) {
         Font.PreparedText prepared = font.prepareText(text, x, y, color, drawShadow, backgroundColor);
-        prepared.visit(createGlyphVisitor(bufferSource, pose, displayMode, packedLightCoords));
+        prepared.visit(createGlyphVisitor(consumer));
     }
 
-    public static void drawInBatch(
+    public static void visit(
             Font font,
             Component text,
             float x,
             float y,
             int color,
             boolean drawShadow,
-            Matrix4fc pose,
-            MultiBufferSource bufferSource,
-            Font.DisplayMode displayMode,
             int backgroundColor,
-            int packedLightCoords
+            Consumer<TextRenderable> consumer
     ) {
         Font.PreparedText prepared = font.prepareText(
                 text.getVisualOrderText(),
@@ -49,21 +42,18 @@ public class VanillaFontHelper {
                 drawShadow,
                 false,
                 backgroundColor);
-        prepared.visit(createGlyphVisitor(bufferSource, pose, displayMode, packedLightCoords));
+        prepared.visit(createGlyphVisitor(consumer));
     }
 
-    public static void drawInBatch(
+    public static void visit(
             Font font,
             FormattedCharSequence text,
             float x,
             float y,
             int color,
             boolean drawShadow,
-            Matrix4fc pose,
-            MultiBufferSource bufferSource,
-            Font.DisplayMode displayMode,
             int backgroundColor,
-            int packedLightCoords
+            Consumer<TextRenderable> consumer
     ) {
         Font.PreparedText prepared = font.prepareText(
                 text,
@@ -72,20 +62,14 @@ public class VanillaFontHelper {
                 drawShadow,
                 false,
                 backgroundColor);
-        prepared.visit(createGlyphVisitor(bufferSource, pose, displayMode, packedLightCoords));
+        prepared.visit(createGlyphVisitor(consumer));
     }
 
-    private static Font.GlyphVisitor createGlyphVisitor(
-            MultiBufferSource bufferSource,
-            Matrix4fc pose,
-            Font.DisplayMode displayMode,
-            int packedLightCoords
-    ) {
+    private static Font.GlyphVisitor createGlyphVisitor(Consumer<TextRenderable> consumer) {
         return new Font.GlyphVisitor() {
             @Override
             public void acceptRenderable(TextRenderable renderable) {
-                VertexConsumer buffer = bufferSource.getBuffer(renderable.renderType(displayMode));
-                renderable.render(pose, buffer, packedLightCoords, false);
+                consumer.accept(renderable);
             }
         };
     }
