@@ -12,6 +12,7 @@ import com.zergatul.cheatutils.ModMain;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -27,6 +28,7 @@ public class CacheItemRenderer {
     public static final CacheItemRenderer instance = new CacheItemRenderer();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
     private final Queue<FreeSlot> freeSlots;
     private final Map<Object, OccupiedSlot> slots;
     private final List<Object> animated;
@@ -189,8 +191,8 @@ public class CacheItemRenderer {
         RenderSystem.enableScissorForRenderTypeDraws(left, textureSize - bottom, slotSize, slotSize);
         Lighting.Entry lighting = renderState.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
         mc.gameRenderer.lighting().setupFor(lighting);
-        renderState.submit(poseStack, mc.gameRenderer.submitNodeStorage(), 15728880, OverlayTexture.NO_OVERLAY, 0);
-        mc.gameRenderer.featureRenderDispatcher().renderAllFeatures();
+        renderState.submit(poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, 0);
+        mc.gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
         RenderSystem.disableScissorForRenderTypeDraws();
         RenderSystem.outputColorTextureOverride = null;
         RenderSystem.outputDepthTextureOverride = null;
