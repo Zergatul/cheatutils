@@ -99,7 +99,7 @@ public class BlocksApi {
             return;
         }
 
-        config.outlineColor = colorValue;
+        config.boundingBoxColor = colorValue;
         ConfigStore.instance.requestWrite();
     }
 

@@ -14,17 +14,20 @@ public abstract class EspConfigBase {
     public double tracerWidth;
     public Color tracerColor;
 
-    public boolean drawOutline;
-    public double outlineWidth;
-    public Color outlineColor;
+    public boolean drawBoundingBox;
+    public double boundingBoxWidth;
+    public Color boundingBoxColor;
+
+    public boolean drawOverlay;
+    public Color overlayColor;
 
     public double maxDistance;
     public Double tracerMaxDistance;
-    public Double outlineMaxDistance;
+    public Double boundingBoxMaxDistance;
 
     protected EspConfigBase() {
         tracerWidth = 1;
-        outlineWidth = 1;
+        boundingBoxWidth = 1;
     }
 
     public double getTracerMaxDistanceSqr() {
@@ -35,9 +38,9 @@ public abstract class EspConfigBase {
         }
     }
 
-    public double getOutlineMaxDistanceSqr() {
-        if (outlineMaxDistance != null) {
-            return outlineMaxDistance * outlineMaxDistance;
+    public double getBoundingBoxMaxDistanceSqr() {
+        if (boundingBoxMaxDistance != null) {
+            return boundingBoxMaxDistance * boundingBoxMaxDistance;
         } else {
             return maxDistance * maxDistance;
         }
@@ -49,7 +52,7 @@ public abstract class EspConfigBase {
 
     public void validate() {
         tracerWidth = MathUtils.clamp(tracerWidth, 0.5, 100);
-        outlineWidth = MathUtils.clamp(outlineWidth, 0.5, 100);
+        boundingBoxWidth = MathUtils.clamp(boundingBoxWidth, 0.5, 100);
     }
 
     protected void copyFromJsonTracerConfigBase(EspConfigBase jsonConfig) {
@@ -60,9 +63,12 @@ public abstract class EspConfigBase {
         tracerWidth = jsonConfig.tracerWidth;
         tracerColor = jsonConfig.tracerColor;
 
-        drawOutline = jsonConfig.drawOutline;
-        outlineWidth = jsonConfig.outlineWidth;
-        outlineColor = jsonConfig.outlineColor;
+        drawBoundingBox = jsonConfig.drawBoundingBox;
+        boundingBoxWidth = jsonConfig.boundingBoxWidth;
+        boundingBoxColor = jsonConfig.boundingBoxColor;
+
+        drawOverlay = jsonConfig.drawOverlay;
+        overlayColor = jsonConfig.overlayColor;
 
         maxDistance = jsonConfig.maxDistance;
         if (Double.isNaN(maxDistance)) {
@@ -73,6 +79,6 @@ public abstract class EspConfigBase {
         }
 
         tracerMaxDistance = jsonConfig.tracerMaxDistance;
-        outlineMaxDistance = jsonConfig.outlineMaxDistance;
+        boundingBoxMaxDistance = jsonConfig.boundingBoxMaxDistance;
     }
 }

@@ -98,7 +98,7 @@ public class EntityEsp implements Module {
 
             if (!outlineFound) {
                 outlineFound = config.useModOutline() &&
-                        entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr() &&
+                        entity.distanceToSqr(mc.player) < config.getOutlineMaxDistanceSqr() &&
                         !isOutlineDisabledFromScript(config, entity);
                 if (outlineFound) {
                     List<EntityRenderState> states = outlineEntityStates.computeIfAbsent(config, _ -> new ArrayList<>());
@@ -111,7 +111,7 @@ public class EntityEsp implements Module {
         }
     }
 
-    public boolean shouldEntityGlow(Entity entity) {
+    public boolean shouldEntityHaveOutline(Entity entity) {
         if (!enabled || !EspGlobal.enabled) {
             return false;
         }
@@ -119,20 +119,20 @@ public class EntityEsp implements Module {
             return false;
         }
         for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
-            if (config.useMinecraftOutline() && config.isValidEntity(entity) && entity.distanceToSqr(mc.player) < config.getGlowMaxDistanceSqr()) {
+            if (config.useMinecraftOutline() && config.isValidEntity(entity) && entity.distanceToSqr(mc.player) < config.getOutlineMaxDistanceSqr()) {
                 return !isOutlineDisabledFromScript(config, entity);
             }
         }
         return false;
     }
 
-    public Integer getGlowColor(Entity entity) {
+    public Integer getOutlineColor(Entity entity) {
         if (!EspGlobal.enabled) {
             return null;
         }
         for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
             if (config.useMinecraftOutline() && config.isValidEntity(entity)) {
-                return config.glowColor.getRGB();
+                return config.outlineColor.getRGB();
             }
         }
         return null;
@@ -197,9 +197,9 @@ public class EntityEsp implements Module {
 
             EntityEspConfig bbConfig = list.stream().filter(c ->
                     c.enabled &&
-                    c.drawOutline &&
+                    c.drawBoundingBox &&
                     c.isValidEntity(entity) &&
-                    distanceSqr < c.getOutlineMaxDistanceSqr()).findFirst().orElse(null);
+                    distanceSqr < c.getBoundingBoxMaxDistanceSqr()).findFirst().orElse(null);
 
             if (bbConfig != null && !isCollisionBoxDisabledFromScript(bbConfig, entity)) {
                 bbList.add(new MatchedEntity(entity, bbConfig));
@@ -259,8 +259,8 @@ public class EntityEsp implements Module {
             renderer.cuboid(
                     (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
                     (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
-                    ColorUtils.toShader(entry.config.outlineColor),
-                    (float) entry.config.outlineWidth);
+                    ColorUtils.toShader(entry.config.boundingBoxColor),
+                    (float) entry.config.boundingBoxWidth);
         }
 
         for (MatchedEntity entry : tracerList) {
@@ -321,7 +321,7 @@ public class EntityEsp implements Module {
             renderer.begin();
             submitEntityMasks(states, event, renderDispatcher, poseStack, camX, camY, camZ);
             drawSubmittedMasks();
-            renderer.end(config.glowColor);
+            renderer.end(config.outlineColor);
         }
     }
 

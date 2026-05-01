@@ -104,7 +104,7 @@ public class BlockEsp {
             }
 
             double tracerMaxDistanceSqr = config.getTracerMaxDistanceSqr();
-            double outlineMaxDistanceSqr = config.getOutlineMaxDistanceSqr();
+            double boundingBoxMaxDistanceSqr = config.getBoundingBoxMaxDistanceSqr();
             double overlayMaxDistanceSqr = config.getOverlayMaxDistanceSqr();
 
             bbList.clear();
@@ -120,14 +120,14 @@ public class BlockEsp {
                     double dz = pos.getZ() - playerZ;
                     double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-                    if (distanceSqr >= outlineMaxDistanceSqr && distanceSqr >= tracerMaxDistanceSqr && distanceSqr >= overlayMaxDistanceSqr) {
+                    if (distanceSqr >= boundingBoxMaxDistanceSqr && distanceSqr >= tracerMaxDistanceSqr && distanceSqr >= overlayMaxDistanceSqr) {
                         continue;
                     }
 
                     result.reset();
                     config.script.accept(new BlockPosWrapper(pos), blockEspEvent);
 
-                    if (distanceSqr < outlineMaxDistanceSqr && result.shouldDrawOutline(config.drawOutline)) {
+                    if (distanceSqr < boundingBoxMaxDistanceSqr && result.shouldDrawOutline(config.drawBoundingBox)) {
                         bbList.add(pos);
                     }
 
@@ -146,7 +146,7 @@ public class BlockEsp {
                     double dz = pos.getZ() - playerZ;
                     double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-                    if (config.drawOutline && distanceSqr < outlineMaxDistanceSqr) {
+                    if (config.drawBoundingBox && distanceSqr < boundingBoxMaxDistanceSqr) {
                         bbList.add(pos);
                     }
 
@@ -161,7 +161,7 @@ public class BlockEsp {
             }
 
             if (!bbList.isEmpty()) {
-                renderBoundingBoxes(cubeRenderer, (float) config.outlineWidth, ColorUtils.toShader(config.outlineColor), event);
+                renderBoundingBoxes(cubeRenderer, (float) config.boundingBoxWidth, ColorUtils.toShader(config.boundingBoxColor), event);
             }
 
             if (!tracerList.isEmpty()) {

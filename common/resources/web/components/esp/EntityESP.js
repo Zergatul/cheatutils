@@ -140,11 +140,11 @@ export function createComponent(template) {
                 if (config.tracerMaxDistance == '') {
                     config.tracerMaxDistance = null;
                 }
-                if (config.glowMaxDistance == '') {
-                    config.glowMaxDistance = null;
-                }
                 if (config.outlineMaxDistance == '') {
                     config.outlineMaxDistance = null;
+                }
+                if (config.boundingBoxMaxDistance == '') {
+                    config.boundingBoxMaxDistance = null;
                 }
                 http.put('/api/entities/' + config.clazz, config);
             };

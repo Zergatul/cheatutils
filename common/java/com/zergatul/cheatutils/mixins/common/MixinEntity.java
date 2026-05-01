@@ -25,7 +25,7 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "getTeamColor()I", cancellable = true)
     private void onGetTeamColor(CallbackInfoReturnable<Integer> info) {
-        Integer color = EntityEsp.instance.getGlowColor((Entity) (Object) this);
+        Integer color = EntityEsp.instance.getOutlineColor((Entity) (Object) this);
         if (color != null) {
             info.setReturnValue(color);
             info.cancel();

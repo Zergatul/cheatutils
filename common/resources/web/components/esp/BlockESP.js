@@ -178,8 +178,8 @@ export function createComponent(template) {
                 if (config.tracerMaxDistance == '') {
                     config.tracerMaxDistance = null;
                 }
-                if (config.outlineMaxDistance == '') {
-                    config.outlineMaxDistance = null;
+                if (config.boundingBoxMaxDistance == '') {
+                    config.boundingBoxMaxDistance = null;
                 }
                 http.post('/api/blocks', config);
             };
@@ -283,7 +283,7 @@ export function createComponent(template) {
                         console.error('Cannot find list to initialize observer');
                         return;
                     }
-    
+
                     observer = new IntersectionObserver(entries => {
                         entries.forEach(entry => {
                             if (entry.isIntersecting) {

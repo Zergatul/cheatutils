@@ -49,7 +49,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
-        if (EntityEsp.instance.shouldEntityGlow(entity)) {
+        if (EntityEsp.instance.shouldEntityHaveOutline(entity)) {
             info.setReturnValue(true);
             info.cancel();
         }
