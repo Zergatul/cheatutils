@@ -47,6 +47,8 @@ public class Events {
 
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
 
+    public static final SimpleEventHandler RenderBuffersCleanUp = new SimpleEventHandler();
+
     // runs after each frame rendered, close to the main game loop
     public static final SimpleEventHandler MainLoopFrameEnd = new SimpleEventHandler();
 

@@ -85,9 +85,6 @@ public class BlockModelApi extends ApiBase {
         //extractQuads(collection.breakingOverlay, output);
         //extractQuads(collection.waterMask, output);
         //extractQuads(collection.outline, output);
-
-        // TODO: remove?
-        ModMain.BRIDGE.extractAdditionalQuads(collection, output);
     }
 
     private void extractQuads(BlockModelFeatureRenderer.Submit submission, List<Quad> output) {

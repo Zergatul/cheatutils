@@ -41,7 +41,7 @@ public abstract class MixinGameRenderer {
         return FreeCam.instance.onRenderItemInHandIsFirstPerson(cameraType);
     }
 
-    @Inject(at = @At("HEAD"), method = "render")
+    @Inject(method = "render", at = @At("HEAD"))
     private void onBeforeRender(DeltaTracker delta, boolean renderLevel, CallbackInfo info) {
         Events.RenderTickStart.trigger(delta);
     }
@@ -49,6 +49,11 @@ public abstract class MixinGameRenderer {
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resize(II)V"))
     private void onResizeFramebuffers(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
         Events.FramebuffersResize.trigger(new ResizeEvent(this.gameRenderState.windowRenderState.width, this.gameRenderState.windowRenderState.height));
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderBuffers;endFrame()V"))
+    private void onRenderBuffersEndFrame(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
+        Events.RenderBuffersCleanUp.trigger();
     }
 
     @ModifyArg(

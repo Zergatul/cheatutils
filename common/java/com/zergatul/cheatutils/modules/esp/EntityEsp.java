@@ -47,7 +47,7 @@ public class EntityEsp implements Module {
     private EntityEsp() {
         Events.BeforeRenderWorld.add(this::onBeforeRenderWorld);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld);
-        Events.MainLoopFrameEnd.add(this.renderBuffers::endFrame);
+        Events.RenderBuffersCleanUp.add(this::onRenderBuffersCleanUp);
         Events.Close.add(this::onClose);
 
         this.dispatcher = new FeatureRenderDispatcher(
@@ -155,11 +155,6 @@ public class EntityEsp implements Module {
         scriptResults.clear();
     }
 
-    private void onClose() {
-        dispatcher.close();
-        renderBuffers.close();
-    }
-
     private void onAfterRenderWorld(RenderWorldLastEvent event) {
         assert mc.level != null && mc.player != null;
 
@@ -234,6 +229,15 @@ public class EntityEsp implements Module {
         outlineEntityStates.clear();
 
         profiler.pop();
+    }
+
+    private void onRenderBuffersCleanUp() {
+        this.renderBuffers.endFrame();
+    }
+
+    private void onClose() {
+        dispatcher.close();
+        renderBuffers.close();
     }
 
     private void renderLines(LineRenderer renderer, RenderWorldLastEvent event) {
