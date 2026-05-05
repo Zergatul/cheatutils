@@ -1,6 +1,6 @@
 # Website components
 
-## Explanation:-
+## Explanation:
 
 - `v-model="config.VariableName"` This defines the variable to be modified.
 
@@ -8,7 +8,7 @@
 
 ### [Website uses Vue components](https://vuejs.org/guide/introduction.html)
 
-## Component Examples:-
+## Component Examples:
 
 ### Switch
 

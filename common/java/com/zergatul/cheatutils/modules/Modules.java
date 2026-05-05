@@ -91,6 +91,7 @@ public class Modules {
         register(AfterPlayerAiStepExecutor.instance);
         register(AfterSendPlayerPosExecutor.instance);
         register(KillAura.instance);
+        register(KillAura.instance);
 
         register(SpearRange.instance);
         register(AutoStunner.instance);

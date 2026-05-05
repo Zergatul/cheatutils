@@ -9,6 +9,7 @@ public class Config implements Sanitizable {
     public EntitiesConfig entities = new EntitiesConfig();
     public LightLevelConfig lightLevelConfig = new LightLevelConfig();
     public KillAuraConfig killAuraConfig = new KillAuraConfig();
+    public CrystalAuraConfig crystalAuraConfig = new CrystalAuraConfig();
     public BoatHackConfig boatHackConfig = new BoatHackConfig();
     public ShulkerTooltipConfig shulkerTooltipConfig = new ShulkerTooltipConfig();
     public ProjectilePathConfig projectilePathConfig = new ProjectilePathConfig();
@@ -82,6 +83,7 @@ public class Config implements Sanitizable {
     @Override
     public void sanitize() {
         killAuraConfig.sanitize();
+        crystalAuraConfig.sanitize();
         movementHackConfig.sanitize();
         fastBreakConfig.sanitize();
         elytraHackConfig.sanitize();
