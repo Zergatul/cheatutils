@@ -379,7 +379,7 @@ public class FreeCam implements Module {
                     event.getCameraPos(),
                     e1.position().x, e1.position().y, e1.position().z,
                     e2.position().x, e2.position().y, e2.position().z,
-                    ColorUtils.toShader(Color.WHITE), 1f);
+                    Color.WHITE.getRGB(), 1f);
         }
 
         renderer.end(event.getMvp());

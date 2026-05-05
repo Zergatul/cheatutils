@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class RenderTypeHelper {
 
     public static Optional<Identifier> getTextureLocation(RenderType type) {
-        if (type.mode() != VertexFormat.Mode.QUADS) {
+        if (type.primitiveTopology() != PrimitiveTopology.QUADS) {
             return Optional.empty();
         }
 

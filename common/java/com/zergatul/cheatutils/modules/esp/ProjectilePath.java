@@ -122,7 +122,7 @@ public class ProjectilePath {
                     renderer.line(
                             (float) (r1.position.x - cameraX), (float) (r1.position.y - cameraY), (float) (r1.position.z - cameraZ),
                             (float) (r2.position.x - cameraX), (float) (r2.position.y - cameraY), (float) (r2.position.z - cameraZ),
-                            ColorUtils.toShader(new Color(0.5f, 1f, 0.5f, (alpha1 + alpha2) / 2)),
+                            new Color(0.5f, 1f, 0.5f, (alpha1 + alpha2) / 2).getRGB(),
                             1f);
                 }
             }
@@ -224,7 +224,7 @@ public class ProjectilePath {
             renderer.line(
                     (float) (point1.x - cameraX), (float) (point1.y - cameraY), (float) (point1.z - cameraZ),
                     (float) (point2.x - cameraX), (float) (point2.y - cameraY), (float) (point2.z - cameraZ),
-                    ColorUtils.toShader(Color.WHITE),
+                    Color.WHITE.getRGB(),
                     1f);
         }
     }

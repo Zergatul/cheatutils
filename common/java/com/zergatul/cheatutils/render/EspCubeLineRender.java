@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
@@ -11,6 +13,7 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.extensions.RenderPassExtension;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -34,8 +37,9 @@ public class EspCubeLineRender {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "esp-cube-lines"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "lines"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
-                .withVertexFormat(VertexFormats.CUBE_LINES_INSTANCED, VertexFormat.Mode.TRIANGLES)
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
+                .withVertexBinding(0, VertexFormats.CUBE_LINES_INSTANCED)
+                .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
@@ -79,11 +83,11 @@ public class EspCubeLineRender {
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> ModMain.MODID + ": Render ESP Cube Lines",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
-                OptionalInt.empty())
+                Optional.empty())
         ) {
             renderPass.setPipeline(pipeline);
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
-            renderPass.setVertexBuffer(0, vertexBuffer);
+            renderPass.setVertexBuffer(0, vertexBuffer.slice());
             ((RenderPassExtension) renderPass).drawInstanced_CU(0, 12 * 6, bufferBuilder.getCubeCount());
         }
     }
@@ -117,7 +121,7 @@ public class EspCubeLineRender {
             MemoryUtil.memPutFloat(pointer + 0x00L, x);
             MemoryUtil.memPutFloat(pointer + 0x04L, y);
             MemoryUtil.memPutFloat(pointer + 0x08L, z);
-            MemoryUtil.memPutInt(pointer + 0x0CL, color);
+            MemoryUtil.memPutInt(pointer + 0x0CL, ColorUtils.toShader(color));
             MemoryUtil.memPutFloat(pointer + 0x10L, width);
             cubes++;
         }

@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
@@ -16,20 +18,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 
 public class Position3dTextureRenderer {
 
     private final RenderPipeline pipeline;
     private final GpuBuffer ubo;
-    private final ByteBufferBuilder byteBufferBuilder;
+    private final BufferBuilder bufferBuilder;
     private final DynamicGpuBuffer dynamicVertexBuffer;
-    private BufferBuilder bufferBuilder;
-    private boolean isEmpty;
 
     private Position3dTextureRenderer() {
         pipeline = RenderPipeline.builder()
@@ -38,15 +38,16 @@ public class Position3dTextureRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-texture"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-texture"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
-                .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLES)
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
+                .withVertexBinding(0, VertexFormats.POSITION_3D_TEXTURE)
+                .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withDepthStencilState(DepthStencilState.DEFAULT)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
                 () -> ModMain.MODID + ": Texture 3d Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 64);
-        byteBufferBuilder = new ByteBufferBuilder(0x1000);
+        bufferBuilder = new BufferBuilder();
         dynamicVertexBuffer = DynamicGpuBuffer.vertex();
     }
 
@@ -55,9 +56,7 @@ public class Position3dTextureRenderer {
     }
 
     public void begin() {
-        isEmpty = true;
-        byteBufferBuilder.clear();
-        bufferBuilder = new BufferBuilder(byteBufferBuilder, pipeline.getVertexFormatMode(), pipeline.getVertexFormat());
+        bufferBuilder.clear();
     }
 
     public void quad(
@@ -66,27 +65,23 @@ public class Position3dTextureRenderer {
             float x3, float y3, float z3, float u3, float v3,
             float x4, float y4, float z4, float u4, float v4
     ) {
-        isEmpty = false;
+        bufferBuilder.vertex(x1, y1, z1, u1, v1);
+        bufferBuilder.vertex(x2, y2, z2, u2, v2);
+        bufferBuilder.vertex(x3, y3, z3, u3, v3);
 
-        bufferBuilder.addVertex(x1, y1, z1).setUv(u1, v1);
-        bufferBuilder.addVertex(x2, y2, z2).setUv(u2, v2);
-        bufferBuilder.addVertex(x3, y3, z3).setUv(u3, v3);
-
-        bufferBuilder.addVertex(x1, y1, z1).setUv(u1, v1);
-        bufferBuilder.addVertex(x3, y3, z3).setUv(u3, v3);
-        bufferBuilder.addVertex(x4, y4, z4).setUv(u4, v4);
+        bufferBuilder.vertex(x1, y1, z1, u1, v1);
+        bufferBuilder.vertex(x3, y3, z3, u3, v3);
+        bufferBuilder.vertex(x4, y4, z4, u4, v4);
     }
 
     public void end(Matrix4f mvp, GpuTextureView texture) {
-        if (isEmpty) {
+        if (bufferBuilder.isEmpty()) {
             return;
         }
 
-        int vertexCount;
         GpuBuffer vertexBuffer;
-        try (MeshData mesh = bufferBuilder.buildOrThrow()) {
-            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(mesh.vertexBuffer());
-            vertexCount = mesh.drawState().vertexCount();
+        try (ByteBufferBuilder.Result result = bufferBuilder.getVertexBuffer()) {
+            vertexBuffer = this.dynamicVertexBuffer.uploadImmediate(result.byteBuffer());
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -99,15 +94,50 @@ public class Position3dTextureRenderer {
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "Render 3d Texture",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
-                OptionalInt.empty(),
+                Optional.empty(),
                 mainRenderTarget.getDepthTextureView(),
                 OptionalDouble.empty())
         ) {
             renderPass.setPipeline(pipeline);
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
-            renderPass.setVertexBuffer(0, vertexBuffer);
-            renderPass.draw(0, vertexCount);
+            renderPass.setVertexBuffer(0, vertexBuffer.slice());
+            renderPass.draw(0, bufferBuilder.getVertexCount());
+        }
+    }
+
+    private static class BufferBuilder {
+
+        private static final int RECORD_SIZE = 5 * 4;
+
+        private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x1000);
+        private int vertices;
+
+        public void clear() {
+            vertices = 0;
+            vertexBuffer.clear();
+        }
+
+        public ByteBufferBuilder.Result getVertexBuffer() {
+            return vertexBuffer.build();
+        }
+
+        public int getVertexCount() {
+            return vertices;
+        }
+
+        public boolean isEmpty() {
+            return vertices == 0;
+        }
+
+        public void vertex(float x, float y, float z, float u, float v) {
+            long pointer = vertexBuffer.reserve(RECORD_SIZE);
+            MemoryUtil.memPutFloat(pointer + 0x00L, x);
+            MemoryUtil.memPutFloat(pointer + 0x04L, y);
+            MemoryUtil.memPutFloat(pointer + 0x08L, z);
+            MemoryUtil.memPutFloat(pointer + 0x0CL, u);
+            MemoryUtil.memPutFloat(pointer + 0x10L, v);
+            vertices++;
         }
     }
 

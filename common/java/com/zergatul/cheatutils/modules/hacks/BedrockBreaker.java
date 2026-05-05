@@ -265,7 +265,7 @@ public class BedrockBreaker implements Module {
             // activate lever
             mc.player.connection.send(new ServerboundUseItemOnPacket(
                     InteractionHand.MAIN_HAND,
-                    new BlockHitResult(leverPos.getCenter(), Direction.UP, leverPos, false),
+                    new BlockHitResult(Vec3.atCenterOf(leverPos), Direction.UP, leverPos, false),
                     getSequenceNumber()));
 
             state = State.WAIT_PISTON_EXTEND;
@@ -286,7 +286,7 @@ public class BedrockBreaker implements Module {
             // deactivate lever
             mc.player.connection.send(new ServerboundUseItemOnPacket(
                     InteractionHand.MAIN_HAND,
-                    new BlockHitResult(leverPos.getCenter(), Direction.UP, leverPos, false),
+                    new BlockHitResult(Vec3.atCenterOf(leverPos), Direction.UP, leverPos, false),
                     getSequenceNumber()));
 
             // break piston
@@ -486,7 +486,7 @@ public class BedrockBreaker implements Module {
             }
 
             BlockHitResult hit = new BlockHitResult(
-                    bedrockPos.getCenter().add(direction.getUnitVec3().multiply(0.5, 0.5, 0.5)),
+                    Vec3.atCenterOf(bedrockPos).add(direction.getUnitVec3().multiply(0.5, 0.5, 0.5)),
                     direction,
                     bedrockPos,
                     false);
@@ -529,7 +529,7 @@ public class BedrockBreaker implements Module {
                     continue;
                 }
                 BlockHitResult hit = new BlockHitResult(
-                        possibleSupportPos.getCenter().add(dir.getOpposite().getUnitVec3().multiply(0.5, 0.5, 0.5)),
+                        Vec3.atCenterOf(possibleSupportPos).add(dir.getOpposite().getUnitVec3().multiply(0.5, 0.5, 0.5)),
                         dir.getOpposite(),
                         possibleSupportPos,
                         false);

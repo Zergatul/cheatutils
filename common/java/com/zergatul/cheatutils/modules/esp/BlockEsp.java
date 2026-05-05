@@ -161,11 +161,11 @@ public class BlockEsp {
             }
 
             if (!bbList.isEmpty()) {
-                renderBoundingBoxes(cubeRenderer, (float) config.boundingBoxWidth, ColorUtils.toShader(config.boundingBoxColor), event);
+                renderBoundingBoxes(cubeRenderer, (float) config.boundingBoxWidth, config.boundingBoxColor.getRGB(), event);
             }
 
             if (!tracerList.isEmpty()) {
-                renderTracers(lineRenderer, (float) config.tracerWidth, ColorUtils.toShader(config.tracerColor), event);
+                renderTracers(lineRenderer, (float) config.tracerWidth, config.tracerColor.getRGB(), event);
             }
 
             if (!overlayList.isEmpty()) {

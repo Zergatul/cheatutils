@@ -513,7 +513,7 @@ public class Schematica {
                             event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                            ColorUtils.toShader(color), 1f);
+                            color.getRGB(), 1f);
                 });
             }
 
@@ -533,7 +533,7 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, ColorUtils.toShader(color), 1f);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, color.getRGB(), 1f);
                 });
             }
 
@@ -556,7 +556,7 @@ public class Schematica {
                             event.getCameraPos(),
                             tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                            ColorUtils.toShader(color), 1f);
+                            color.getRGB(), 1f);
                 });
             }
 
@@ -576,7 +576,7 @@ public class Schematica {
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, ColorUtils.toShader(color), 1f);
+                    renderer.cuboid(event.getCameraPos(), x1, y1, z1, x2, y2, z2, color.getRGB(), 1f);
                 });
             }
 
@@ -605,7 +605,7 @@ public class Schematica {
                 event.getCameraPos(),
                 create.getX1() - gap, create.getY1() - gap, create.getZ1() - gap,
                 create.getX2() + gap, create.getY2() + gap, create.getZ2() + gap,
-                ColorUtils.toShader(Color.WHITE), 1f);
+                Color.WHITE.getRGB(), 1f);
         lineRenderer.end(event.getMvp(), true);
     }
 

@@ -4,12 +4,12 @@ layout(std140) uniform Inputs {
     mat4 MVP;
 };
 
-in vec3 Position;
-in vec2 TexCoordinates;
+in vec3 InPosition;
+in vec2 InTexCoords;
 
-out vec2 VertexCoordinates;
+out vec2 TextureCoordinates;
 
 void main() {
-    gl_Position = MVP * vec4(Position, 1.0);
-    VertexCoordinates = TexCoordinates;
+    gl_Position = MVP * vec4(InPosition, 1.0);
+    TextureCoordinates = InTexCoords;
 }

@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -26,7 +27,7 @@ public class BlockBreaker {
                     future.complete(null);
                 } else {
                     if (config.shouldAutoRotate()) {
-                        FakeRotation.instance.setServerRotation(pos.getCenter());
+                        FakeRotation.instance.setServerRotation(Vec3.atCenterOf(pos));
                     }
                     AfterSendPlayerPosExecutor.instance.execute(() -> {
                         assert mc.player != null;
@@ -60,7 +61,7 @@ public class BlockBreaker {
         TickEndExecutor.instance.execute(() -> {
             if (config.shouldAutoRotate()) {
                 AfterPlayerAiStepExecutor.instance.execute(() -> {
-                    FakeRotation.instance.setServerRotation(pos.getCenter());
+                    FakeRotation.instance.setServerRotation(Vec3.atCenterOf(pos));
                 });
             }
             AfterSendPlayerPosExecutor.instance.execute(() -> {

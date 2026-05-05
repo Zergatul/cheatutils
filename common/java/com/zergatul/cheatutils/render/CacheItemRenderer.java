@@ -10,6 +10,7 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.ModMain;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.SubmitNodeStorage;
@@ -177,7 +178,7 @@ public class CacheItemRenderer {
 
         GpuDevice device = RenderSystem.getDevice();
         device.createCommandEncoder().clearColorAndDepthTextures(
-                texture, 0, depthTexture, 0.0,
+                texture, GuiRenderer.CLEAR_COLOR, depthTexture, 0.0,
                 left, textureSize - bottom, slotSize, slotSize);
 
         PoseStack poseStack = new PoseStack();

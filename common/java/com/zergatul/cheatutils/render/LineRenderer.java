@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
@@ -13,6 +15,7 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.extensions.RenderPassExtension;
+import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
@@ -49,8 +52,9 @@ public class LineRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "lines"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "lines"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
-                .withVertexFormat(VertexFormats.LINES_INSTANCED, VertexFormat.Mode.TRIANGLES)
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
+                .withVertexBinding(0, VertexFormats.LINES_INSTANCED)
+                .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false);
 
         if (depth) {
@@ -146,7 +150,7 @@ public class LineRenderer {
         try (RenderPass renderPass = createRenderPass(mainRenderTarget, depth)) {
             renderPass.setPipeline(depth ? depthPipeline : pipeline);
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
-            renderPass.setVertexBuffer(0, vertexBuffer);
+            renderPass.setVertexBuffer(0, vertexBuffer.slice());
             ((RenderPassExtension) renderPass).drawInstanced_CU(0, 6, bufferBuilder.getLineCount());
         }
     }
@@ -158,14 +162,14 @@ public class LineRenderer {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                     () -> ModMain.MODID + ": Render Depth Lines",
                     mainRenderTarget.getColorTextureView(),
-                    OptionalInt.empty(),
+                    Optional.empty(),
                     mainRenderTarget.getDepthTextureView(),
                     OptionalDouble.empty());
         } else {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                     () -> ModMain.MODID + ": Render Lines",
                     mainRenderTarget.getColorTextureView(),
-                    OptionalInt.empty());
+                    Optional.empty());
         }
     }
 
@@ -201,7 +205,7 @@ public class LineRenderer {
             MemoryUtil.memPutFloat(pointer + 0x0CL, x2);
             MemoryUtil.memPutFloat(pointer + 0x10L, y2);
             MemoryUtil.memPutFloat(pointer + 0x14L, z2);
-            MemoryUtil.memPutInt(pointer + 0x18L, color);
+            MemoryUtil.memPutInt(pointer + 0x18L, ColorUtils.toShader(color));
             MemoryUtil.memPutFloat(pointer + 0x1CL, width);
             lines++;
         }

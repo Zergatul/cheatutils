@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.CommandEncoder;
@@ -27,6 +28,7 @@ public class TextureUtils {
     }
 
     // logic copied from Screenshot.takeScreenshot
+    // current bug in Mojang code cause OpenGL error being logged in snapshot 6, verify if this is fixed later
     public static CompletableFuture<byte[]> toPng(GpuTexture texture) {
         CompletableFuture<byte[]> future = new CompletableFuture<>();
 
@@ -34,9 +36,8 @@ public class TextureUtils {
         int height = texture.getHeight(0);
         int size = width * height * texture.getFormat().pixelSize();
         GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Texture dump buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, size);
-        CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(texture, buffer, 0L, () -> {
-            try (GpuBuffer.MappedView read = commandEncoder.mapBuffer(buffer, true, false)) {
+            try (GpuBufferSlice.MappedView read = buffer.map(true, false);) {
                 try (NativeImage image = new NativeImage(width, height, true)) {
                     for (int y = 0; y < height; y++) {
                         for (int x = 0; x < width; x++) {

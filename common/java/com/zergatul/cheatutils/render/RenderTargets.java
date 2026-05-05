@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.zergatul.cheatutils.ModMain;
@@ -19,14 +20,24 @@ public class RenderTargets {
 
     private static RenderTarget createEspRenderTarget() {
         WindowRenderState windowState = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
-        TextureTarget result = new TextureTarget("[" + ModMain.MODID + "] ESP", windowState.width, windowState.height, true);
+        TextureTarget result = new TextureTarget(
+                "[" + ModMain.MODID + "] ESP",
+                windowState.width,
+                windowState.height,
+                true,
+                GpuFormat.RGBA8_UNORM);
         Events.FramebuffersResize.add(event -> result.resize(event.width(), event.height()));
         return result;
     }
 
     private static RenderTarget createStatusOverlayRenderTarget() {
         WindowRenderState windowState = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
-        TextureTarget result = new TextureTarget("[" + ModMain.MODID + "] Status Overlay", windowState.width, windowState.height, false);
+        TextureTarget result = new TextureTarget(
+                "[" + ModMain.MODID + "] Status Overlay",
+                windowState.width,
+                windowState.height,
+                false,
+                GpuFormat.RGBA8_UNORM);
         Events.FramebuffersResize.add(event -> result.resize(event.width(), event.height()));
         return result;
     }

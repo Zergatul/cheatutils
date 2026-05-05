@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.opengl.GlRenderPass;
 import com.zergatul.cheatutils.extensions.GlCommandEncoderExtension;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 public abstract class MixinGlCommandEncoder implements GlCommandEncoderExtension {
 
     @Shadow
-    protected abstract void executeDraw(GlRenderPass renderPass, int baseVertex, int firstIndex, int drawCount, VertexFormat.@Nullable IndexType indexType, int instanceCount);
+    protected abstract void executeDraw(GlRenderPass renderPass, int baseVertex, int firstIndex, int drawCount, @Nullable IndexType indexType, int instanceCount);
 
     @Override
     public void executeDrawInstanced_CU(GlRenderPass renderPass, int firstVertex, int vertexCount, int instanceCount) {

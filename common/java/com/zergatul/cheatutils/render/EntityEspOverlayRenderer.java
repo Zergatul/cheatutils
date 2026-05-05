@@ -1,25 +1,25 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.ModMain;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.resources.Identifier;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 public class EntityEspOverlayRenderer {
 
@@ -35,8 +35,8 @@ public class EntityEspOverlayRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
-                .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR))
+                .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
                 () -> ModMain.MODID + ": Entity ESP Overlay UBO",
@@ -51,7 +51,7 @@ public class EntityEspOverlayRenderer {
     public void begin() {
         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(
                 Objects.requireNonNull(renderTarget.getColorTexture()),
-                0,
+                GuiRenderer.CLEAR_COLOR,
                 Objects.requireNonNull(renderTarget.getDepthTexture()),
                 1.0);
         RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
@@ -75,7 +75,7 @@ public class EntityEspOverlayRenderer {
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> ModMain.MODID + ": Blit entity overlay",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
-                OptionalInt.empty())
+                Optional.empty())
         ) {
             renderPass.setPipeline(pipeline);
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));

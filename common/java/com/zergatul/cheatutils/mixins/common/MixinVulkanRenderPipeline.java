@@ -18,7 +18,7 @@ public abstract class MixinVulkanRenderPipeline {
             int original,
             @Local(name = "pipeline") RenderPipeline pipeline
     ) {
-        if (VertexFormats.isInstanced(pipeline.getVertexFormat())) {
+        if (VertexFormats.isInstanced(pipeline.getVertexFormatBinding(0))) {
             return 1;
         } else {
             return original;

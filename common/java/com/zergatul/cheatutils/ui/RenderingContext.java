@@ -4,7 +4,10 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.render.GuiRenderer;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 import java.util.Objects;
 
@@ -35,7 +38,7 @@ public class RenderingContext {
     public void clearTarget() {
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(
                 Objects.requireNonNull(renderTarget.getColorTexture()),
-                0);
+                GuiRenderer.CLEAR_COLOR);
     }
 
     public void render(Element element, int x, int y, HorizontalAlign hAlign, VerticalAlign vAlign) {

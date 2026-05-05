@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
@@ -36,8 +38,9 @@ public class Position2dTextureColorRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-texture-color"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-texture-color"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
-                .withVertexFormat(VertexFormats.POSITION_2D_TEXTURE_COLOR, VertexFormat.Mode.TRIANGLES)
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
+                .withVertexBinding(0, VertexFormats.POSITION_2D_TEXTURE_COLOR)
+                .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
@@ -70,12 +73,12 @@ public class Position2dTextureColorRenderer {
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> ModMain.MODID + ": Pos2d Tex Color",
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
-                OptionalInt.empty()
+                Optional.empty()
         )) {
             renderPass.setPipeline(pipeline);
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, textureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
-            renderPass.setVertexBuffer(0, vertexBuffer);
+            renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.draw(0, buffer.getVertexCount());
         }
     }

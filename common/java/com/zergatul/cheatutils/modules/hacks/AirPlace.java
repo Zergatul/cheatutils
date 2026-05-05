@@ -68,7 +68,7 @@ public class AirPlace implements Module {
         }
 
         mc.hitResult = new BlockHitResult(
-                currentPosition.getCenter(),
+                Vec3.atCenterOf(currentPosition),
                 Direction.UP,
                 currentPosition,
                 true);
@@ -122,7 +122,7 @@ public class AirPlace implements Module {
                 blockPos.getX() + 1 - margin,
                 blockPos.getY() + 1 - margin,
                 blockPos.getZ() + 1 - margin,
-                ColorUtils.toShader(Color.WHITE),
+                Color.WHITE.getRGB(),
                 1f);
         renderer.end(event.getMvp(), true);
 

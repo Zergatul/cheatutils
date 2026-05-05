@@ -129,7 +129,7 @@ public class LogoutSpots implements Module {
                         entry.pos.x + entry.width / 2,
                         entry.pos.y + entry.height,
                         entry.pos.z + entry.width / 2,
-                        ColorUtils.toShader(Color.WHITE),
+                        Color.WHITE.getRGB(),
                         1f);
             }
         }

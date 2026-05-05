@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
@@ -12,8 +14,10 @@ import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -40,8 +44,9 @@ public class BlockEspOverlayRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
-                .withVertexFormat(VertexFormats.BLOCK_OVERLAY_INSTANCED, VertexFormat.Mode.TRIANGLES)
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
+                .withVertexBinding(0, VertexFormats.BLOCK_OVERLAY_INSTANCED)
+                .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .build();
         drawUbo = RenderSystem.getDevice().createBuffer(() -> "Block ESP Overlay Buffer Draw UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
         blitPipeline = RenderPipeline.builder()
@@ -50,8 +55,8 @@ public class BlockEspOverlayRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
-                .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR))
+                .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .build();
         blitUbo = RenderSystem.getDevice().createBuffer(() -> "Block ESP Overlay Blit UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 16);
         bufferBuilder = new BufferBuilder();
@@ -88,11 +93,11 @@ public class BlockEspOverlayRenderer {
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> ModMain.MODID + ": Draw block overlay",
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
-                OptionalInt.of(0))
+                Optional.of(GuiRenderer.CLEAR_COLOR))
         ) {
             renderPass.setPipeline(drawPipeline);
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, drawUbo);
-            renderPass.setVertexBuffer(0, vertexBuffer);
+            renderPass.setVertexBuffer(0, vertexBuffer.slice());
             ((RenderPassExtension) renderPass).drawInstanced_CU(0, 36, bufferBuilder.getBlockCount());
         }
 
@@ -109,7 +114,7 @@ public class BlockEspOverlayRenderer {
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> ModMain.MODID + ": Blit block overlay",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
-                OptionalInt.empty())
+                Optional.empty())
         ) {
             renderPass.setPipeline(blitPipeline);
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));

@@ -145,10 +145,6 @@ public class ColorUtils {
         return ColorUtils.Int.combine(r, g, b, a);
     }
 
-    public static int toShader(Color color) {
-        return toShader(color.getRGB());
-    }
-
     public static int toShader(int color) {
         int a = Int.a(color);
         int r = Int.r(color);

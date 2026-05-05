@@ -259,7 +259,7 @@ public class EntityEsp implements Module {
             renderer.cuboid(
                     (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
                     (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
-                    ColorUtils.toShader(entry.config.boundingBoxColor),
+                    entry.config.boundingBoxColor.getRGB(),
                     (float) entry.config.boundingBoxWidth);
         }
 
@@ -268,7 +268,7 @@ public class EntityEsp implements Module {
             renderer.line(
                     tracerX, tracerY, tracerZ,
                     (float) (pos.x - cameraX), (float) (pos.y - cameraY), (float) (pos.z - cameraZ),
-                    ColorUtils.toShader(entry.colorOverride != null ? entry.colorOverride : entry.config.tracerColor.getRGB()),
+                    entry.colorOverride != null ? entry.colorOverride : entry.config.tracerColor.getRGB(),
                     (float) entry.config.tracerWidth);
         }
     }
