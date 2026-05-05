@@ -117,8 +117,8 @@ public class ProjectilePath {
                     long remain2 = r2.time + config.tracesDuration * 1000000000L - time;
                     float alpha2 = Math.min(1f, remain2 / 1e9f / config.fadeDuration);
                     // original code had 2 colors:
-                    // ColorUtils.toShader(new Color(0.5f, 1f, 0.5f, alpha1))
-                    // ColorUtils.toShader(new Color(0.5f, 1f, 0.5f, alpha2))
+                    // new Color(0.5f, 1f, 0.5f, alpha1)
+                    // new Color(0.5f, 1f, 0.5f, alpha2)
                     renderer.line(
                             (float) (r1.position.x - cameraX), (float) (r1.position.y - cameraY), (float) (r1.position.z - cameraZ),
                             (float) (r2.position.x - cameraX), (float) (r2.position.y - cameraY), (float) (r2.position.z - cameraZ),

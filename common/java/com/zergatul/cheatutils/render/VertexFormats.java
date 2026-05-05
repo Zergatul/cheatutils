@@ -11,20 +11,20 @@ public class VertexFormats {
     private static final GpuFormat LINE_WIDTH_FORMAT = GpuFormat.R32_FLOAT;
     private static final GpuFormat UV_FORMAT = GpuFormat.RG32_FLOAT;
 
-    public static final VertexFormat LINES_INSTANCED = VertexFormat.builder(0)
+    public static final VertexFormat LINES_INSTANCED = VertexFormat.builder(1)
             .addAttribute("inPointA", GpuFormat.RGB32_FLOAT)
             .addAttribute("inPointB", GpuFormat.RGB32_FLOAT)
             .addAttribute("inColor", COLOR_FORMAT)
             .addAttribute("inLineWidth", LINE_WIDTH_FORMAT)
             .build();
 
-    public static final VertexFormat CUBE_LINES_INSTANCED = VertexFormat.builder(0)
+    public static final VertexFormat CUBE_LINES_INSTANCED = VertexFormat.builder(1)
             .addAttribute("inOrigin", POSITION_3D_FORMAT)
             .addAttribute("inColor", COLOR_FORMAT)
             .addAttribute("inLineWidth", LINE_WIDTH_FORMAT)
             .build();
 
-    public static final VertexFormat BLOCK_OVERLAY_INSTANCED = VertexFormat.builder(0)
+    public static final VertexFormat BLOCK_OVERLAY_INSTANCED = VertexFormat.builder(1)
             .addAttribute("inOrigin", POSITION_3D_FORMAT)
             .build();
 
@@ -48,8 +48,4 @@ public class VertexFormats {
             .addAttribute("InTexCoords", UV_FORMAT)
             .addAttribute("InColor", COLOR_FORMAT)
             .build();
-
-    public static boolean isInstanced(VertexFormat format) {
-        return format == LINES_INSTANCED || format == CUBE_LINES_INSTANCED || format == BLOCK_OVERLAY_INSTANCED;
-    }
 }
