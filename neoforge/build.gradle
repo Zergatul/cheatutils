@@ -30,14 +30,9 @@ java {
 }
 
 neoForge {
-    // Specify the version of NeoForge to use.
     version = project.neo_version
+    accessTransformers = files('src/main/resources/META-INF/neoforge_at.cfg')
 
-    // This line is optional. Access Transformers are automatically detected
-    // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
-
-    // Default run configurations.
-    // These can be tweaked, removed, or duplicated as needed.
     runs {
         client {
             client()

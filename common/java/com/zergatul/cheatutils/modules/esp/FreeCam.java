@@ -1,16 +1,12 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.ModifyFieldOfViewEvent;
-import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
+import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.GroupLineRenderer;
 import com.zergatul.cheatutils.render.UniformColorLineRenderer;
 import com.zergatul.cheatutils.utils.FreeCamPath;
-import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -64,7 +60,8 @@ public class FreeCam implements Module {
     private FreeCam() {
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
         Events.ClientTickStart.add(this::onClientTickStart);
-        Events.ModifyFieldOfView.add(this::onModifyFieldOfView, 0);
+        Events.ModifyFieldOfViewAnimation.add(this::onModifyFieldOfViewAnimation);
+        Events.ModifyFieldOfViewBasedOnLiquid.add(this::onModifyFieldOfViewBasedOnLiquid);
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.OnBeforePick.add(this::onBeforePick);
         Events.OnAfterPick.add(this::onAfterPick);
@@ -258,9 +255,15 @@ public class FreeCam implements Module {
         }
     }
 
-    private void onModifyFieldOfView(ModifyFieldOfViewEvent event) {
+    private void onModifyFieldOfViewAnimation(SimpleCancellableEvent event) {
         if (active) {
-            event.fov = mc.options.fov().get();
+            event.cancel();
+        }
+    }
+
+    private void onModifyFieldOfViewBasedOnLiquid(SimpleCancellableEvent event) {
+        if (active) {
+            event.cancel();
         }
     }
 

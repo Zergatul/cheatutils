@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.concurrent.ProfilerSingleThreadExecutor;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import net.minecraft.client.gui.components.debug.DebugScreenDisplayer;
@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DebugScreenExtensions {
 
-    private static final Identifier COMMON = Identifier.fromNamespaceAndPath(ModMain.MODID, ModMain.MODID);
+    private static final Identifier COMMON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, Constants.MOD_ID);
 
     public static void register() {
         DebugScreenEntries.register(COMMON, new CommonDebugScreenEntry());

@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.zergatul.cheatutils.ModMain;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +70,7 @@ public class NetworkPacketsController {
             try {
                 connection.channelRead(null, packet);
             } catch (Exception e) {
-                ModMain.LOGGER.error("Cannot receive packet", e);
+                LogManager.getLogger(NetworkPacketsController.class).error("Cannot receive packet", e);
             }
         }
     }

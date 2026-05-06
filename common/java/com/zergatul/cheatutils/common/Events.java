@@ -23,7 +23,9 @@ public class Events {
     // GameRenderer.pick(1)
     public static final ParameterizedEventHandler<DeltaTracker> RenderTickStart = new ParameterizedEventHandler<>();
     // GameRenderer.pick(partial)
-    public static final ParameterizedEventHandler<ModifyFieldOfViewEvent> ModifyFieldOfView = new ParameterizedEventHandler<>();
+    public static final CancelableEventHandler<SimpleCancellableEvent> ModifyFieldOfViewAnimation = new CancelableEventHandler<>();
+    public static final CancelableEventHandler<SimpleCancellableEvent> ModifyFieldOfViewBasedOnLiquid = new CancelableEventHandler<>();
+    public static final ParameterizedEventHandler<ModifyFieldOfViewEvent> ModifyCalculatedFieldOfView = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler BeforeRenderWorld = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> AfterRenderWorld = new ParameterizedEventHandler<>();
     // GetFieldOfView again

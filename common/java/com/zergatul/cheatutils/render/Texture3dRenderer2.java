@@ -12,13 +12,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.*;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
-import java.awt.*;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -33,11 +32,11 @@ public class Texture3dRenderer2 {
 
     private Texture3dRenderer2() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/position-3d-texture"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/position-3d-texture"))
                 .withSampler("InSampler")
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-texture"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-texture"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-3d-texture"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-3d-texture"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLES)
                 .withDepthStencilState(DepthStencilState.DEFAULT)

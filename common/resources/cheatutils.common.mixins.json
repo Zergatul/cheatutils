@@ -1,6 +1,6 @@
 {
   "required": false,
-  "minVersion": "0.8.2",
+  "minVersion": "0.8.7",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_25",
   "plugin": "com.zergatul.mixin.MixinPlugin",

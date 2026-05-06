@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
@@ -26,9 +26,9 @@ import static com.zergatul.cheatutils.render.GlHelper.getGlTexture;
 
 public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
-    private static final Identifier PlayerPosTexture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-player.png");
-    private static final Identifier CenterPosTexture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-center.png");
-    private static final Identifier MarkerTexture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/mini-map-marker.png");
+    private static final Identifier PlayerPosTexture = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/mini-map-player.png");
+    private static final Identifier CenterPosTexture = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/mini-map-center.png");
+    private static final Identifier MarkerTexture = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/mini-map-marker.png");
 
     private final Map<Dimension, List<Marker>> markers = new HashMap<>();
 

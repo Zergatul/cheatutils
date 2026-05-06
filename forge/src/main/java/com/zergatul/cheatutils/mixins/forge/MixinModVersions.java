@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.forge;
 
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.PrivacyConfig;
 import net.minecraftforge.network.packets.ModVersions;
@@ -16,7 +16,7 @@ public abstract class MixinModVersions {
     private static void onCreate(CallbackInfoReturnable<ModVersions> info) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
         if (config.hideFromModVersions) {
-            info.getReturnValue().mods().remove(ModMain.MODID);
+            info.getReturnValue().mods().remove(Constants.MOD_ID);
         }
     }
 }

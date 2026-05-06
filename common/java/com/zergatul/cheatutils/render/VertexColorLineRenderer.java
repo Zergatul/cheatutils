@@ -11,7 +11,7 @@ import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
@@ -19,7 +19,6 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
-import java.awt.*;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -35,18 +34,18 @@ public class VertexColorLineRenderer {
 
     private VertexColorLineRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/vertex-color-line"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/vertex-color-line"))
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "vertex-color-line"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "vertex-color-line"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "vertex-color-line"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "vertex-color-line"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES)
                 .build();
         depthPipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/vertex-color-line"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/vertex-color-line"))
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "vertex-color-line"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "vertex-color-line"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "vertex-color-line"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "vertex-color-line"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES)
                 .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))

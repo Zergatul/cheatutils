@@ -8,10 +8,7 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
-import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.render.VertexColorLineRenderer;
-import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
@@ -55,7 +52,8 @@ public class AreaMine implements Module {
             return;
         }
 
-        HitResult result = entity.pick(PickRange.get(), 0.0F, false);
+        double pickRange = mc.player.blockInteractionRange();
+        HitResult result = entity.pick(pickRange, 0.0F, false);
         if (result.getType() != HitResult.Type.BLOCK) {
             return;
         }
@@ -75,7 +73,7 @@ public class AreaMine implements Module {
             time = 2000 - time;
         }
         double brad = 0.2 + 0.2 * time / 1000;
-        forEachInstaminable(event.getPlayerPos(), blockPos, config, pos -> {
+        forEachInstaminable(event.getPlayerPos(), blockPos, pickRange, config, pos -> {
             double x1 = pos.getX() + 0.5 - brad;
             double x2 = pos.getX() + 0.5 + brad;
             double y1 = pos.getY() + 0.5 - brad;
@@ -98,7 +96,7 @@ public class AreaMine implements Module {
             return;
         }
 
-        forEachInstaminable(mc.player.getPosition(1f), origin, config, pos -> {
+        forEachInstaminable(mc.player.getPosition(1f), origin, mc.player.blockInteractionRange(), config, pos -> {
             if (pos.equals(origin)) {
                 return;
             }
@@ -118,9 +116,8 @@ public class AreaMine implements Module {
         });
     }
 
-    private void forEachInstaminable(Vec3 playerPos, BlockPos origin, AreaMineConfig config, Consumer<BlockPos> consumer) {
-        double pick2 = PickRange.get();
-        pick2 = pick2 * pick2;
+    private void forEachInstaminable(Vec3 playerPos, BlockPos origin, double pickRange, AreaMineConfig config, Consumer<BlockPos> consumer) {
+        double pickRangeSqr = pickRange * pickRange;
         int delta = (int) Math.floor(config.radius);
         int r2 = (int) Math.floor(config.radius * config.radius);
         for (int x = -delta; x <= delta; x++) {
@@ -128,7 +125,7 @@ public class AreaMine implements Module {
                 for (int z = -delta; z <= delta; z++) {
                     if (x * x + y * y + z * z <= r2) {
                         BlockPos pos = origin.offset(x, y, z);
-                        if (pos.distToCenterSqr(playerPos) > pick2) {
+                        if (pos.distToCenterSqr(playerPos) > pickRangeSqr) {
                             continue;
                         }
 

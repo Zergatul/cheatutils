@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.utils.Dimension;
@@ -11,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.apache.logging.log4j.LogManager;
 import org.joml.Matrix4f;
 
 import java.io.IOException;
@@ -127,9 +127,8 @@ public abstract class AbstractChunkOverlay {
                 throw new IllegalStateException("Stream is null.");
             }
             return NativeImage.read(stream);
-        }
-        catch (IOException e) {
-            ModMain.LOGGER.error(String.format("Cannot load image %s", filename), e);
+        } catch (IOException e) {
+            LogManager.getLogger(AbstractChunkOverlay.class).error("Cannot load image {}", filename, e);
             return null;
         }
     }

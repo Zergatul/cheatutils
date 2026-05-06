@@ -11,64 +11,29 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
         with:
           submodules: true
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@main
         with:
           distribution: temurin
           java-version: 25
 
-      - name: Build Forge
+      - name: Build
         run: |
-          pushd ./forge
-          chmod +x ./gradlew
-          ./gradlew build
-          popd
+          cd universal
+          ./gradlew universalJar
 
-      - name: Build Fabric
-        run: |
-          pushd ./fabric
-          chmod +x ./gradlew
-          ./gradlew build
-          popd
-
-      - name: Build NeoForge
-        run: |
-          pushd ./neoforge
-          chmod +x ./gradlew
-          ./gradlew build
-          popd
-
-      - name: Create CurseForge builds
+      - name: Create CurseForge build
         shell: pwsh
-        run: |
-          Get-ChildItem    ./forge/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
-          Get-ChildItem   ./fabric/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
-          Get-ChildItem ./neoforge/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
+        run: Get-ChildItem ./universal/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
 
-      - name: Upload Forge artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@main
         with:
-          name: forge
-          path: ./forge/build/libs/*.jar
-          compression-level: 0
-          if-no-files-found: error
-
-      - name: Upload Fabric artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: fabric
-          path: ./fabric/build/libs/*.jar
-          compression-level: 0
-          if-no-files-found: error
-
-      - name: Upload NeoForge artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: neoforge
-          path: ./neoforge/build/libs/*.jar
+          name: universal
+          path: universal/build/libs/*.jar
           compression-level: 0
           if-no-files-found: error

@@ -9,7 +9,7 @@ import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
@@ -31,10 +31,10 @@ public class UniformColorLineRenderer {
 
     private UniformColorLineRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/uniform-color-line"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/uniform-color-line"))
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "uniform-color-line"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "uniform-color-line"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "uniform-color-line"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "uniform-color-line"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.DEBUG_LINES)
                 .build();
