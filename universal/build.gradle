@@ -1,0 +1,98 @@
+plugins {
+    id 'base'
+}
+
+import java.security.MessageDigest
+
+def loaders = [
+    fabric  : file('../fabric'),
+    forge   : file('../forge'),
+    neoforge: file('../neoforge')
+]
+
+def commonProperties = new Properties()
+file('../common/gradle.properties').withInputStream { commonProperties.load(it) }
+
+def fabricProperties = new Properties()
+file('../fabric/gradle.properties').withInputStream { fabricProperties.load(it) }
+
+def modVersion = commonProperties['mod_version']
+def minecraftVersion = fabricProperties['minecraft_version']
+def gradlew = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? 'gradlew.bat' : './gradlew'
+
+def loaderJar = { String loader ->
+    file("${loaders[loader]}/build/libs/zergatul.freecam-${modVersion}-${loader}-${minecraftVersion}.jar")
+}
+
+def sha256 = { byte[] bytes ->
+    MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString()
+}
+
+tasks.register('cleanJars', Delete) {
+    delete loaders.values().collect { fileTree("${it}/build/libs") { include '*.jar' } }
+}
+
+def buildTasks = loaders.collectEntries { loader, dir ->
+    [(loader): tasks.register("build${loader.capitalize()}", Exec) {
+        dependsOn cleanJars
+        workingDir dir
+        commandLine gradlew, 'jar'
+    }]
+}
+
+tasks.register('verifyUniversalJarInputs') {
+    dependsOn buildTasks.values()
+
+    doLast {
+        def entries = [:].withDefault { [:] }
+
+        loaders.keySet().each { loader ->
+            zipTree(loaderJar(loader)).matching {
+                exclude 'META-INF/MANIFEST.MF'
+            }.visit { details ->
+                if (!details.directory) {
+                    entries[details.path][loader] = sha256(details.file.bytes)
+                }
+            }
+        }
+
+        def conflicts = entries.findAll { path, hashes ->
+            hashes.size() > 1 && hashes.values().toSet().size() > 1
+        }
+
+        if (!conflicts.isEmpty()) {
+            def message = new StringBuilder('Universal jar inputs contain conflicting duplicate entries:')
+            conflicts.each { path, hashes ->
+                message.append(System.lineSeparator()).append("  ").append(path)
+                hashes.each { loader, hash ->
+                    message.append(System.lineSeparator()).append("    ").append(loader).append(": ").append(hash)
+                }
+            }
+            throw new GradleException(message.toString())
+        }
+    }
+}
+
+tasks.register('universalJar', Jar) {
+    dependsOn verifyUniversalJarInputs
+
+    archiveFileName = "zergatul.freecam-${modVersion}-mc-${minecraftVersion}.jar"
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    reproducibleFileOrder = true
+    preserveFileTimestamps = false
+
+    from({
+        loaders.keySet().collect { loader ->
+            zipTree(loaderJar(loader))
+        }
+    }) {
+        exclude 'META-INF/MANIFEST.MF'
+    }
+
+    doFirst {
+        manifest.from(zipTree(loaderJar('forge')).matching {
+            include 'META-INF/MANIFEST.MF'
+        }.singleFile)
+    }
+}
