@@ -10,7 +10,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
@@ -29,11 +29,11 @@ public class EntityEspOverlayRenderer {
     private EntityEspOverlayRenderer() {
         renderTarget = RenderTargets.getEsp();
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/entity-esp-overlay"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/entity-esp-overlay"))
                 .withSampler("InSampler")
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "screen-quad"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "color-overlay"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
                 .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
                 .build();

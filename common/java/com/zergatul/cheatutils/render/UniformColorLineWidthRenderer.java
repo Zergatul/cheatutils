@@ -9,7 +9,7 @@ import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -41,10 +41,10 @@ public class UniformColorLineWidthRenderer {
 
     private UniformColorLineWidthRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/uniform-color-line-width"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/uniform-color-line-width"))
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "uniform-color-line-width"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "uniform-color-line-width"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "uniform-color-line-width"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "uniform-color-line-width"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(VertexFormats.POSITION_GRADIENT, VertexFormat.Mode.TRIANGLES)
                 .withCull(false)

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting;
 
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.forge.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;

@@ -10,7 +10,7 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.*;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -33,20 +33,20 @@ public class BlockEspOverlayRenderer {
     private BlockEspOverlayRenderer() {
         renderTarget = RenderTargets.getEsp();
         drawPipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/block-esp-overlay-draw"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/block-esp-overlay-draw"))
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "block-overlay-buffer"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "block-overlay-buffer"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.TRIANGLES)
                 .build();
         drawUbo = RenderSystem.getDevice().createBuffer(() -> "Block ESP Overlay Buffer Draw UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
         blitPipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/block-esp-overlay-blit"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/block-esp-overlay-blit"))
                 .withSampler("InSampler")
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "screen-quad"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "color-overlay"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_COLOR))
                 .withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
                 .build();

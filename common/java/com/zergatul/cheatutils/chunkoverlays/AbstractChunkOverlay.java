@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.forge.ModMain;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.utils.Dimension;

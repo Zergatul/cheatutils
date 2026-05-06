@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -42,7 +42,7 @@ public class LightLevel implements Module {
     public static final LightLevel instance = new LightLevel();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Identifier texture = Identifier.fromNamespaceAndPath(ModMain.MODID, "textures/light-level.png");
+    private final Identifier texture = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/light-level.png");
     private final TextureLocation[] numbers = new TextureLocation[16];
     private final HashMap<ChunkPos, HashSet<BlockPos>> chunks = new HashMap<>();
     private final List<BlockPos> listForRendering = new ArrayList<>();

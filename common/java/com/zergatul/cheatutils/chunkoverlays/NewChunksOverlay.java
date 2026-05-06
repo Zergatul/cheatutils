@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.core.BlockPos;
@@ -11,8 +10,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;

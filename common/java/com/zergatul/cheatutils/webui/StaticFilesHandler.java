@@ -3,11 +3,8 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.utils.ResourceHelper;
-import com.zergatul.cheatutils.wrappers.ModEnvironment;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class StaticFilesHandler implements HttpHandler {
 
@@ -30,8 +27,7 @@ public class StaticFilesHandler implements HttpHandler {
             }
 
             bytes = org.apache.commons.io.IOUtils.toByteArray(stream);
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             exchange.sendResponseHeaders(HttpResponseCodes.INTERNAL_SERVER_ERROR, 0);
             exchange.close();
             return;

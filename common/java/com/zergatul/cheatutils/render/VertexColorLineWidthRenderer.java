@@ -10,14 +10,13 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
-import java.awt.*;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -41,10 +40,10 @@ public class VertexColorLineWidthRenderer {
 
     private VertexColorLineWidthRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/vertex-color-line-width"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/vertex-color-line-width"))
                 .withUniform("Block", UniformType.UNIFORM_BUFFER)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "vertex-color-line-width"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "vertex-color-line-width"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "vertex-color-line-width"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "vertex-color-line-width"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexFormat(VertexFormats.POSITION_COLOR_GRADIENT_LINE_WIDTH, VertexFormat.Mode.TRIANGLES)
                 .withCull(false)
