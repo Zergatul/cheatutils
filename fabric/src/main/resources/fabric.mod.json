@@ -20,9 +20,7 @@
 
   "environment": "client",
   "entrypoints": {
-    "client": [
-      "com.zergatul.cheatutils.ModMain"
-    ]
+    "client": ["com.zergatul.cheatutils.fabric.ModMain"]
   },
   "accessWidener": "cheatutils.classtweaker",
   "mixins": [

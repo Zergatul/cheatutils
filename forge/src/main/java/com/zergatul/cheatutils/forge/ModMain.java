@@ -32,8 +32,6 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.versions.forge.ForgeVersion;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,9 +40,9 @@ import java.util.List;
 @Mod(Constants.MOD_ID)
 public final class ModMain {
 
-    public static final Logger LOGGER = LogManager.getLogger(ModMain.class);
-
     public ModMain(final FMLJavaModLoadingContext context) {
+        ModLoaderBridgeInstance.init(new Bridge());
+
         BusGroup modBusGroup = context.getModBusGroup();
 
         FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::onCommonSetup);
@@ -54,8 +52,6 @@ public final class ModMain {
         Modules.registerKeyBindings();
         Modules.register();
         DebugScreenExtensions.register();
-
-        ModLoaderBridgeInstance.init(new Bridge());
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
