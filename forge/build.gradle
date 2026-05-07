@@ -21,7 +21,7 @@ java {
 }
 
 minecraft {
-    accessTransformer = true
+    accessTransformer = 'META-INF/forge_at.cfg'
     runs {
         client {
             workingDir = layout.projectDirectory.dir('run')
