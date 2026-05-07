@@ -1,6 +1,6 @@
 {
   "required": false,
-  "minVersion": "0.8.2",
+  "minVersion": "0.8.7",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_21",
   "injectors": {
@@ -9,6 +9,7 @@
   "mixinPriority": 500,
   "client": [
     "forge.schematica.MixinSectionCompiler",
+    "forge.MixinCamera",
     "forge.MixinGuiGraphicsExtractor",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
