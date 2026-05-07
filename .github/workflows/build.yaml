@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - '26.[1-9]'
+      - '26.[1-9]-dev'
 
 jobs:
   build:
