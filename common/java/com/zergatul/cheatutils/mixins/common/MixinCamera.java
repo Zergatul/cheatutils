@@ -1,5 +1,9 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.ModifyFieldOfViewEvent;
+import com.zergatul.cheatutils.common.events.SimpleCancellableEvent;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,9 +39,25 @@ public abstract class MixinCamera {
         }
     }
 
+    @ModifyExpressionValue(method = "calculateFov", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;lerp(FFF)F"))
+    private float onModifyFovModifier(float original) {
+        if (Events.ModifyFieldOfViewAnimation.trigger(new SimpleCancellableEvent())) {
+            return 1.0f;
+        } else {
+            return original;
+        }
+    }
+
+    @ModifyExpressionValue(method = "calculateFov", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;modifyFovBasedOnDeathOrFluid(FF)F"))
+    private float onModifyCalculatedFieldOfView(float original) {
+        ModifyFieldOfViewEvent event = new ModifyFieldOfViewEvent(original);
+        Events.ModifyCalculatedFieldOfView.trigger(event);
+        return event.fov;
+    }
+
     @Inject(at = @At("HEAD"), method = "modifyFovBasedOnDeathOrFluid", cancellable = true)
     private void onModifyFovBasedOnDeathOrFluid(float partialTicks, float fov, CallbackInfoReturnable<Float> info) {
-        if (FreeCam.instance.isActive()) {
+        if (Events.ModifyFieldOfViewBasedOnLiquid.trigger(new SimpleCancellableEvent())) {
             info.setReturnValue(fov);
         }
     }
