@@ -9,7 +9,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.resources.Identifier;
@@ -30,16 +30,16 @@ public class EntityEspOverlayRenderer {
     private EntityEspOverlayRenderer() {
         renderTarget = RenderTargets.getEsp();
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/entity-esp-overlay"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/entity-esp-overlay"))
                 .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "screen-quad"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "color-overlay"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR))
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> ModMain.MODID + ": Entity ESP Overlay UBO",
+                () -> Constants.MOD_ID + ": Entity ESP Overlay UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 16);
     }
@@ -73,7 +73,7 @@ public class EntityEspOverlayRenderer {
 
         RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> ModMain.MODID + ": Blit entity overlay",
+                () -> Constants.MOD_ID + ": Blit entity overlay",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty())
         ) {

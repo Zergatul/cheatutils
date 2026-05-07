@@ -13,7 +13,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.*;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -33,18 +33,18 @@ public class Position3dTextureRenderer {
 
     private Position3dTextureRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/position-3d-texture"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/position-3d-texture"))
                 .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-texture"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-texture"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-3d-texture"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-3d-texture"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.POSITION_3D_TEXTURE)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withDepthStencilState(DepthStencilState.DEFAULT)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> ModMain.MODID + ": Texture 3d Renderer UBO",
+                () -> Constants.MOD_ID + ": Texture 3d Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 64);
         bufferBuilder = new BufferBuilder();

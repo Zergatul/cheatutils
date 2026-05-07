@@ -14,7 +14,7 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -33,18 +33,18 @@ public class Position2dTextureColorRenderer {
 
     private Position2dTextureColorRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pos2d-tex-color"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pos2d-tex-color"))
                 .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-texture-color"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-texture-color"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-2d-texture-color"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-2d-texture-color"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.POSITION_2D_TEXTURE_COLOR)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> ModMain.MODID + ": Pos2dTexCol Renderer UBO",
+                () -> Constants.MOD_ID + ": Pos2dTexCol Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 64);
         dynamicVertexBuffer = DynamicGpuBuffer.vertex();
@@ -71,7 +71,7 @@ public class Position2dTextureColorRenderer {
         }
 
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> ModMain.MODID + ": Pos2d Tex Color",
+                () -> Constants.MOD_ID + ": Pos2d Tex Color",
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
                 Optional.empty()
         )) {

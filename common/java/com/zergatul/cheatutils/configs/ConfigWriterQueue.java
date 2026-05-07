@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.utils.MathUtils;
@@ -22,7 +22,7 @@ public class ConfigWriterQueue {
     private final Thread thread;
 
     private ConfigWriterQueue() {
-        thread = new Thread(this::threadFunc, ModMain.MODID + " config writer");
+        thread = new Thread(this::threadFunc, Constants.MOD_ID + " config writer");
         thread.start();
 
         Events.Close.add(this::onClose);

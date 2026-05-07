@@ -12,7 +12,7 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -31,17 +31,17 @@ public class Position2dColorRenderer {
 
     private Position2dColorRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pos2d-color"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pos2d-color"))
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-color"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-2d-color"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-2d-color"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-2d-color"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.POSITION_2D_COLOR)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> ModMain.MODID +  ": Pos2dCol Renderer UBO",
+                () -> Constants.MOD_ID +  ": Pos2dCol Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 64);
         dynamicVertexBuffer = DynamicGpuBuffer.vertex();
@@ -68,7 +68,7 @@ public class Position2dColorRenderer {
         }
 
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> ModMain.MODID + ": Pos2d Color",
+                () -> Constants.MOD_ID + ": Pos2d Color",
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
                 Optional.empty()
         )) {

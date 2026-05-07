@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
@@ -59,7 +59,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final CallbackInfo info
     ) {
         ProfilerFiller profiler = Profiler.get();
-        profiler.push(ModMain.MODID + " : AfterRenderWorld");
+        profiler.push(Constants.MOD_ID + " : AfterRenderWorld");
         Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
         profiler.pop();
         this.modifiedProjectionMatrix_CU = null;

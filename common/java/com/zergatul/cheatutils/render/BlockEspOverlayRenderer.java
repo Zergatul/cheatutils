@@ -11,7 +11,7 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.*;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
@@ -40,21 +40,21 @@ public class BlockEspOverlayRenderer {
     private BlockEspOverlayRenderer() {
         renderTarget = RenderTargets.getEsp();
         drawPipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/block-esp-overlay-draw"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/block-esp-overlay-draw"))
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "block-overlay-buffer"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "block-overlay-buffer"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "block-overlay-buffer"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.BLOCK_OVERLAY_INSTANCED)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .build();
         drawUbo = RenderSystem.getDevice().createBuffer(() -> "Block ESP Overlay Buffer Draw UBO", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, 64);
         blitPipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/block-esp-overlay-blit"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/block-esp-overlay-blit"))
                 .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "color-overlay"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "screen-quad"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "color-overlay"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR))
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .build();
@@ -91,7 +91,7 @@ public class BlockEspOverlayRenderer {
         }
 
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> ModMain.MODID + ": Draw block overlay",
+                () -> Constants.MOD_ID + ": Draw block overlay",
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
                 Optional.of(GuiRenderer.CLEAR_COLOR))
         ) {
@@ -112,7 +112,7 @@ public class BlockEspOverlayRenderer {
 
         RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> ModMain.MODID + ": Blit block overlay",
+                () -> Constants.MOD_ID + ": Blit block overlay",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty())
         ) {

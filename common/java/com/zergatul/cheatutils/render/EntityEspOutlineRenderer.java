@@ -9,7 +9,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.GameRenderer;
@@ -31,11 +31,11 @@ public class EntityEspOutlineRenderer {
     private EntityEspOutlineRenderer() {
         renderTarget = RenderTargets.getEsp();
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/entity-esp-outline"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/entity-esp-outline"))
                 .withBindGroupLayout(BindGroupLayouts.TEXTURE0)
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "screen-quad"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "entity-outline"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "screen-quad"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "entity-outline"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR))
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .build();

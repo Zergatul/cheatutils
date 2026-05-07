@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting;
 
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
@@ -183,7 +183,7 @@ public enum ScriptType {
 
                     @Override
                     public ClassLoader getClassLoader() {
-                        return ModMain.class.getClassLoader();
+                        return Constants.class.getClassLoader();
                     }
                 })
                 .setMainClassName(scriptClassName)

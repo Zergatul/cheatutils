@@ -11,7 +11,7 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
@@ -33,17 +33,17 @@ public class EspCubeLineRender {
 
     private EspCubeLineRender() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/esp-cube-lines"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/esp-cube-lines"))
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "esp-cube-lines"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "lines"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "esp-cube-lines"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "lines"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.CUBE_LINES_INSTANCED)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> ModMain.MODID + ": ESP Cube Lines Renderer UBO",
+                () -> Constants.MOD_ID + ": ESP Cube Lines Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 72);
         bufferBuilder = new BufferBuilder();
@@ -81,7 +81,7 @@ public class EspCubeLineRender {
         }
 
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> ModMain.MODID + ": Render ESP Cube Lines",
+                () -> Constants.MOD_ID + ": Render ESP Cube Lines",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty())
         ) {

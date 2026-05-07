@@ -6,10 +6,13 @@ plugins {
     id 'cheatutils'
 }
 
-def mod_version = cheatutils.getModVersion()
+def modVersion = cheatutils.getModVersion()
+def commonMixinsConfigOriginal = 'cheatutils.common.mixins.json'
+def commonMixinsConfigForge = 'cheatutils.common-forge-patched.mixins.json'
+def generatedMixinsConfigDir = layout.buildDirectory.dir('generated/forge-mixins/resources')
 
 group = mod_group_id
-version = mod_version
+version = modVersion
 
 java {
     toolchain {
@@ -18,12 +21,12 @@ java {
 }
 
 minecraft {
-    accessTransformer = true
+    accessTransformer = 'META-INF/forge_at.cfg'
     runs {
         client {
             workingDir = layout.projectDirectory.dir('run')
-            args "-mixin.config=cheatutils.common.mixins.json"
-            args "-mixin.config=cheatutils.iris.mixins.json"
+            args "-mixin.config=${commonMixinsConfigForge}"
+            //args "-mixin.config=cheatutils.iris.mixins.json"
             args "-mixin.config=cheatutils.forge.mixins.json"
             systemProperty 'forge.logging.console.level', 'debug'
         }
@@ -36,6 +39,15 @@ repositories {
     maven fg.minecraftLibsMaven
 }
 
+tasks.register('generateForgeMixinsConfig', Copy) {
+    from('../common/resources') {
+        include commonMixinsConfigOriginal
+        filter { String line -> line.replace("JAVA_25", "JAVA_21") }
+        rename { commonMixinsConfigForge }
+    }
+    into generatedMixinsConfigDir
+}
+
 sourceSets {
     main {
         java {
@@ -45,21 +57,24 @@ sourceSets {
         }
         resources {
             srcDir '../common/resources'
+            exclude commonMixinsConfigOriginal
+            srcDir generatedMixinsConfigDir
         }
     }
 }
 
 dependencies {
     implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
-    //annotationProcessor 'org.spongepowered:mixin:0.8.7:processor'
 }
 
 tasks.named('processResources', ProcessResources) {
+    dependsOn tasks.named('generateForgeMixinsConfig')
+
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
             forge_version: forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: modVersion,
             mod_authors: mod_authors, mod_description: mod_description,
     ]
     inputs.properties replaceProperties
@@ -68,14 +83,10 @@ tasks.named('processResources', ProcessResources) {
         expand replaceProperties + [project: project]
     }
 
-    filesMatching(['cheatutils.common.mixins.json', 'cheatutils.iris.mixins.json']) {
-        filter { String line -> line.replace("JAVA_25", "JAVA_21") }
-    }
 }
 
-// Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar) {
-    archiveFileName = "$mod_id-$mod_version-forge-${minecraft_version}.jar"
+    archiveFileName = "$mod_id-$modVersion-forge-${minecraft_version}.jar"
 
     includeEmptyDirs = false
     exclude("net/caffeinemc/**")
@@ -83,13 +94,8 @@ tasks.named('jar', Jar) {
 
     manifest {
         attributes([
-                "Specification-Title"     : mod_id,
-                "Specification-Vendor"    : mod_authors,
-                "Specification-Version"   : '1', // We are version 1 of ourselves
-                "Implementation-Title"    : project.name,
-                "Implementation-Version"  : project.jar.archiveVersion,
-                "Implementation-Vendor"   : mod_authors,
-                "MixinConfigs"            : 'cheatutils.common.mixins.json,cheatutils.iris.mixins.json,cheatutils.forge.mixins.json'
+                // excluded "cheatutils.iris.mixins.json"
+                "MixinConfigs": "${commonMixinsConfigForge},cheatutils.forge.mixins.json"
         ])
     }
 }

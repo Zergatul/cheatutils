@@ -15,7 +15,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
@@ -37,10 +37,10 @@ public class Position3dColorRenderer {
 
     private Position3dColorRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, "pipeline/position-3d-color"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/position-3d-color"))
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-color"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "position-3d-color"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-3d-color"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-3d-color"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.POSITION_3D_COLOR)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
@@ -48,7 +48,7 @@ public class Position3dColorRenderer {
                 .withCull(false)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> ModMain.MODID + ": Pos3d Color Renderer UBO",
+                () -> Constants.MOD_ID + ": Pos3d Color Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 64);
         bufferBuilder = new BufferBuilder();
@@ -156,7 +156,7 @@ public class Position3dColorRenderer {
 
         RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> ModMain.MODID + ": Render Pos3dColor",
+                () -> Constants.MOD_ID + ": Render Pos3dColor",
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty(),
                 mainRenderTarget.getDepthTextureView(),

@@ -13,7 +13,7 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
@@ -39,7 +39,7 @@ public class LineRenderer {
         pipeline = createPipeline("pipeline/lines", false);
         depthPipeline = createPipeline("pipeline/depth-lines", true);
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> ModMain.MODID + ": Lines Renderer UBO",
+                () -> Constants.MOD_ID + ": Lines Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 72);
         bufferBuilder = new BufferBuilder();
@@ -48,10 +48,10 @@ public class LineRenderer {
 
     private static RenderPipeline createPipeline(String location, boolean depth) {
         RenderPipeline.Builder builder = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(ModMain.MODID, location))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, location))
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "lines"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(ModMain.MODID, "lines"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "lines"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "lines"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.LINES_INSTANCED)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
@@ -160,14 +160,14 @@ public class LineRenderer {
 
         if (depth) {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                    () -> ModMain.MODID + ": Render Depth Lines",
+                    () -> Constants.MOD_ID + ": Render Depth Lines",
                     mainRenderTarget.getColorTextureView(),
                     Optional.empty(),
                     mainRenderTarget.getDepthTextureView(),
                     OptionalDouble.empty());
         } else {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                    () -> ModMain.MODID + ": Render Lines",
+                    () -> Constants.MOD_ID + ": Render Lines",
                     mainRenderTarget.getColorTextureView(),
                     Optional.empty());
         }

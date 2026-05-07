@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.render;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 
 import java.nio.ByteBuffer;
 
@@ -34,7 +34,7 @@ public class DynamicGpuBuffer {
             }
 
             vertexBuffer = device.createBuffer(
-                    () -> ModMain.MODID + ": Dynamic vertex buffer",
+                    () -> Constants.MOD_ID + ": Dynamic vertex buffer",
                     this.usage,
                     data);
         } else {

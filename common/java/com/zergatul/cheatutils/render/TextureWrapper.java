@@ -5,7 +5,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.render.images.ImageSource;
 
 import java.nio.ByteBuffer;
@@ -28,7 +28,7 @@ public class TextureWrapper {
 
     public static TextureWrapper empty(int width, int height) {
         GpuTexture texture = RenderSystem.getDevice().createTexture(
-                () -> ModMain.MODID + ": Font atlas",
+                () -> Constants.MOD_ID + ": Font atlas",
                 GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT,
                 GpuFormat.RGBA8_UNORM,
                 width, height,

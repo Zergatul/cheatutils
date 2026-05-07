@@ -10,7 +10,6 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.wrappers.PickRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
@@ -55,7 +54,7 @@ public class AreaMine implements Module {
             return;
         }
 
-        HitResult result = entity.pick(PickRange.get(), 0.0F, false);
+        HitResult result = entity.pick(mc.player.blockInteractionRange(), 0.0F, false);
         if (result.getType() != HitResult.Type.BLOCK) {
             return;
         }
@@ -119,7 +118,7 @@ public class AreaMine implements Module {
     }
 
     private void forEachInstaminable(Vec3 playerPos, BlockPos origin, AreaMineConfig config, Consumer<BlockPos> consumer) {
-        double pick2 = PickRange.get();
+        double pick2 = mc.player.blockInteractionRange();
         pick2 = pick2 * pick2;
         int delta = (int) Math.floor(config.radius);
         int r2 = (int) Math.floor(config.radius * config.radius);

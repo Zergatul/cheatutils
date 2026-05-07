@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.wrappers.ModEnvironment;
+import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 public class ResourceHelper {
 
     public static InputStream get(String path) {
-        return ModEnvironment.IS_PRODUCTION ? getProduction(path) : getDevelopment(path);
+        return ModLoaderBridgeInstance.get().isProduction() ? getProduction(path) : getDevelopment(path);
     }
 
     private static InputStream getDevelopment(String filename) {

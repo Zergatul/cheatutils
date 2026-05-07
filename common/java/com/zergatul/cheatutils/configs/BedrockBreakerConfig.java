@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-import com.zergatul.cheatutils.common.Registries;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
 public class BedrockBreakerConfig {
 
@@ -10,6 +9,8 @@ public class BedrockBreakerConfig {
     public boolean allBlocks;
 
     public BedrockBreakerConfig() {
-        replaceBlockId = Registries.ITEMS.getKey(Items.NETHERRACK).toString();
+        // this doesn't work since config init happens very early before ModMain, at least in Forge
+        // Registries.ITEMS.getKey(Items.NETHERRACK).toString();
+        replaceBlockId = Blocks.NETHERRACK.builtInRegistryHolder().key().identifier().toString();
     }
 }

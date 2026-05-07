@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -168,7 +168,7 @@ public class EntityEsp implements Module {
         }
 
         ProfilerFiller profiler = Profiler.get();
-        profiler.push(ModMain.MODID + " : EntityEspRender");
+        profiler.push(Constants.MOD_ID + " : EntityEspRender");
 
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;

@@ -65,6 +65,7 @@ tasks.named('jar', Jar) {
         rename { "${it}_${project.archivesName.get()}"}
     }
 
+    includeEmptyDirs = false
     exclude("net/caffeinemc/**")
     exclude("net/irisshaders/**")
 }

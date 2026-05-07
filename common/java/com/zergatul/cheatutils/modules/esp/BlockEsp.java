@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.google.common.base.Stopwatch;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
@@ -62,7 +62,7 @@ public class BlockEsp {
         }
 
         ProfilerFiller profiler = Profiler.get();
-        profiler.push(ModMain.MODID + " : BlockEspRender");
+        profiler.push(Constants.MOD_ID + " : BlockEspRender");
         var stopwatch = Stopwatch.createStarted();
 
         lastFrameGpuTime = 0;

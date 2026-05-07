@@ -21,7 +21,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.zergatul.cheatutils.ModMain"
+      "com.zergatul.cheatutils.fabric.ModMain"
     ]
   },
   "accessWidener": "cheatutils.classtweaker",

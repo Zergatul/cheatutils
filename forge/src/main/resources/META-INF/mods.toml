@@ -1,8 +1,9 @@
 modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
-issueTrackerURL="https://github.com/Zergatul/cheatutils/issues" #optional
+issueTrackerURL="https://github.com/Zergatul/cheatutils/issues"
 clientSideOnly=true
+accessTransformers=["META-INF/forge_at.cfg"]
 
 [[mods]]
 modId="${mod_id}"

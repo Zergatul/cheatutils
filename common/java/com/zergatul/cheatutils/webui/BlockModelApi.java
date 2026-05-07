@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseFeatureSubmitsAccessor;
