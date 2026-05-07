@@ -21,7 +21,7 @@ def minecraftVersion = fabricProperties['minecraft_version']
 def gradlew = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? 'gradlew.bat' : './gradlew'
 
 def loaderJar = { String loader ->
-    file("${loaders[loader]}/build/libs/zergatul.freecam-${modVersion}-${loader}-${minecraftVersion}.jar")
+    file("${loaders[loader]}/build/libs/cheatutils-${modVersion}-${loader}-${minecraftVersion}.jar")
 }
 
 def sha256 = { byte[] bytes ->
@@ -76,7 +76,7 @@ tasks.register('verifyUniversalJarInputs') {
 tasks.register('universalJar', Jar) {
     dependsOn verifyUniversalJarInputs
 
-    archiveFileName = "zergatul.freecam-${modVersion}-mc-${minecraftVersion}.jar"
+    archiveFileName = "cheatutils-${modVersion}-mc-${minecraftVersion}.jar"
     destinationDirectory = layout.buildDirectory.dir('libs')
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     reproducibleFileOrder = true
