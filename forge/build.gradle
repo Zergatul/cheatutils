@@ -9,7 +9,7 @@ plugins {
 def modVersion = cheatutils.getModVersion()
 def commonMixinsConfigOriginal = 'cheatutils.common.mixins.json'
 def commonMixinsConfigForge = 'cheatutils.common-forge-patched.mixins.json'
-def generatedMixinsConfigDir = layout.buildDirectory.dir('generated/resources/forge-mixins')
+def generatedMixinsConfigDir = layout.buildDirectory.dir('generated/forge-mixins/resources')
 
 group = mod_group_id
 version = modVersion
