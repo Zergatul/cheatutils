@@ -22,7 +22,7 @@ config="${mod_id}.iris.mixins.json"
 config="${mod_id}.neoforge.mixins.json"
 
 [[accessTransformers]]
-file="META-INF/accesstransformer.cfg"
+file="META-INF/neoforge_at.cfg"
 
 [[dependencies.${mod_id}]]
     modId="neoforge"
