@@ -9,6 +9,7 @@
   "mixinPriority": 500,
   "client": [
     "fabric.schematica.MixinSectionCompiler",
+    "fabric.MixinCamera",
     "fabric.MixinGuiGraphics",
     "fabric.MixinKeyboardHandler",
     "fabric.MixinLevelRenderer",

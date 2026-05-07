@@ -47,18 +47,4 @@ public abstract class MixinCamera {
             return original;
         }
     }
-
-    @ModifyExpressionValue(method = "calculateFov", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;modifyFovBasedOnDeathOrFluid(FF)F"))
-    private float onModifyCalculatedFieldOfView(float original) {
-        ModifyFieldOfViewEvent event = new ModifyFieldOfViewEvent(original);
-        Events.ModifyCalculatedFieldOfView.trigger(event);
-        return event.fov;
-    }
-
-    @Inject(at = @At("HEAD"), method = "modifyFovBasedOnDeathOrFluid", cancellable = true)
-    private void onModifyFovBasedOnDeathOrFluid(float partialTicks, float fov, CallbackInfoReturnable<Float> info) {
-        if (Events.ModifyFieldOfViewBasedOnLiquid.trigger(new SimpleCancellableEvent())) {
-            info.setReturnValue(fov);
-        }
-    }
 }

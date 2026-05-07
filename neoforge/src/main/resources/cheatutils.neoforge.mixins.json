@@ -9,6 +9,7 @@
   "mixinPriority": 500,
   "client": [
     "neoforge.schematics.MixinSectionCompiler",
+    "neoforge.MixinCamera",
     "neoforge.MixinGui",
     "neoforge.MixinGuiGraphicsExtractor",
     "neoforge.MixinLevelRenderer",
