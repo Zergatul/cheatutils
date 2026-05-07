@@ -136,6 +136,20 @@ an example of a minimal config which does not need validation or enable variable
 ```java
     public class AutoPearlConfig {}
 ```
+
+**How to access config**  
+Use this pattern to access the config variables:
+
+```java
+import com.zergatul.cheatutils.configs.AutoPearlConfig;
+import com.zergatul.cheatutils.configs.ConfigStore;
+
+AutoPearlConfig config = ConfigStore.instance.getConfig().autoPearlConfig;
+
+// Access variables with usual class pattern
+if(!config.enabled)return;
+```
+
 \
 \
 **Next, navigate to [`Config.java`](./common/java/com/zergatul/cheatutils/configs/Config.java), located in the same directory.**
