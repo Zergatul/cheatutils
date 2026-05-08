@@ -37,6 +37,7 @@ public class Root {
     public static FastBreakApi fastBreak = new FastBreakApi();
     public static FlyHackApi flyHack = new FlyHackApi();
     public static KillAuraApi killAura = new KillAuraApi();
+    public static CrystalAuraApi crystalAuraApi = new CrystalAuraApi();
     public static MovementApi movement = new MovementApi();
     public static NoFallApi noFall = new NoFallApi();
     public static ScaffoldApi scaffold = new ScaffoldApi();

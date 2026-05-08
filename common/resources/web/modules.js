@@ -222,6 +222,15 @@ module({
     path: 'kill-aura',
     tags: ['kill', 'aura', 'auto', 'attack']
 });
+
+module({
+    group: 'hacks',
+    name: 'Crystal Aura',
+    component: 'CrystalAura',
+    path: 'crystal-aura',
+    tags: ['kill', 'crystal', 'aura', 'auto', 'attack', 'blow', 'explode']
+});
+
 module({
     group: 'hacks',
     name: 'Elytra Fly',
