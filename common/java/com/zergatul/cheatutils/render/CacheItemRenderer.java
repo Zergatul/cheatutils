@@ -94,9 +94,17 @@ public class CacheItemRenderer {
         if (texture == null) {
             textureSize = slotSize * 16 * guiScale;
             GpuDevice device = RenderSystem.getDevice();
-            texture = device.createTexture(Constants.MOD_ID + " items atlas", 13, GpuFormat.RGBA8_UNORM, textureSize, textureSize, 1, 1);
+            texture = device.createTexture(
+                    Constants.MOD_ID + " items atlas",
+                    GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT,
+                    GpuFormat.RGBA8_UNORM,
+                    textureSize, textureSize, 1, 1);
             textureView = device.createTextureView(texture);
-            depthTexture = device.createTexture(Constants.MOD_ID + " items atlas depth", 9, GpuFormat.D32_FLOAT, textureSize, textureSize, 1, 1);
+            depthTexture = device.createTexture(
+                    Constants.MOD_ID + " items atlas depth",
+                    GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_RENDER_ATTACHMENT,
+                    GpuFormat.D32_FLOAT,
+                    textureSize, textureSize, 1, 1);
             depthTextureView = device.createTextureView(depthTexture);
 
             for (int y = 0; y < slotSize; y++) {
