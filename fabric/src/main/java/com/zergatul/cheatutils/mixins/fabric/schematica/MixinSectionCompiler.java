@@ -38,7 +38,7 @@ public abstract class MixinSectionCompiler {
     private BlockStateModelSet blockModelSet;
 
     @Shadow
-    protected abstract BufferBuilder getOrBeginLayer(Map<ChunkSectionLayer, BufferBuilder> map, SectionBufferBuilderPack pack, ChunkSectionLayer layer);
+    protected abstract BufferBuilder getOrBeginLayer(Map<ChunkSectionLayer, BufferBuilder> startedLayers, SectionBufferBuilderPack buffers, ChunkSectionLayer layer);
 
     @Inject(
             method = "compile",

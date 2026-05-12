@@ -42,8 +42,8 @@ public abstract class MixinGameRenderer {
     }
 
     @Inject(method = "render", at = @At("HEAD"))
-    private void onBeforeRender(DeltaTracker delta, boolean renderLevel, CallbackInfo info) {
-        Events.RenderTickStart.trigger(delta);
+    private void onBeforeRender(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo info) {
+        Events.RenderTickStart.trigger(deltaTracker);
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resize(II)V"))

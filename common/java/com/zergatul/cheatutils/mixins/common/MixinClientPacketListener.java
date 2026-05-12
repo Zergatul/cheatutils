@@ -6,7 +6,6 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheRadiusPacket;
 import org.spongepowered.asm.mixin.Mixin;
@@ -41,6 +40,7 @@ public abstract class MixinClientPacketListener {
                     packet.showDeathScreen(),
                     packet.doLimitedCrafting(),
                     packet.commonPlayerSpawnInfo(),
+                    packet.onlineMode(),
                     packet.enforcesSecureChat());
         } else {
             return packet;
@@ -76,8 +76,8 @@ public abstract class MixinClientPacketListener {
     }
 
     @Inject(method = "sendChat", at = @At("HEAD"), cancellable = true)
-    private void onSendChat(String message, CallbackInfo info) {
-        if (Events.SendChat.trigger(new SendChatEvent(message))) {
+    private void onSendChat(String content, CallbackInfo info) {
+        if (Events.SendChat.trigger(new SendChatEvent(content))) {
             info.cancel();
         }
     }

@@ -68,9 +68,9 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
     }
 
     @Inject(at = @At("HEAD"), method = "useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;", cancellable = true)
-    private void onUseItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> info) {
+    private void onUseItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult blockHit, CallbackInfoReturnable<InteractionResult> info) {
         if (ConfigStore.instance.getConfig().antiRespawnResetConfig.enabled) {
-            BlockState state = player.level().getBlockState(hitResult.getBlockPos());
+            BlockState state = player.level().getBlockState(blockHit.getBlockPos());
             if (state.getBlock() instanceof BedBlock) {
                 info.setReturnValue(InteractionResult.FAIL);
                 return;
@@ -93,8 +93,8 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
     }
 
     @Inject(at = @At("HEAD"), method = "startDestroyBlock")
-    private void onBeforeStartDestroyBlock(BlockPos blockPos, Direction direction, CallbackInfoReturnable<Boolean> info) {
-        Events.StartDestroyBlock.trigger(blockPos);
+    private void onBeforeStartDestroyBlock(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> info) {
+        Events.StartDestroyBlock.trigger(pos);
     }
 
     @Inject(at = @At("HEAD"), method = "continueDestroyBlock")

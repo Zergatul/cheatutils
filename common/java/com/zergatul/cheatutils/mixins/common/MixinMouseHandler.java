@@ -22,8 +22,8 @@ public class MixinMouseHandler {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isSpectator()Z"),
             method = "onScroll(JDD)V",
             cancellable = true)
-    private void onScroll(long window, double horizontal, double vertical, CallbackInfo info) {
-        double delta = (this.minecraft.options.discreteMouseScroll().get() ? Math.signum(vertical) : vertical) * this.minecraft.options.mouseWheelSensitivity().get();
+    private void onScroll(long handle, double xoffset, double yoffset, CallbackInfo info) {
+        double delta = (this.minecraft.options.discreteMouseScroll().get() ? Math.signum(yoffset) : yoffset) * this.minecraft.options.mouseWheelSensitivity().get();
         if (Events.MouseScroll.trigger(new MouseScrollEvent(delta))) {
             info.cancel();
         }

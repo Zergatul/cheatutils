@@ -12,12 +12,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -25,7 +23,6 @@ import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 public class BlockEspOverlayRenderer {
 
@@ -98,7 +95,7 @@ public class BlockEspOverlayRenderer {
             renderPass.setPipeline(drawPipeline);
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, drawUbo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
-            ((RenderPassExtension) renderPass).drawInstanced_CU(0, 36, bufferBuilder.getBlockCount());
+            renderPass.draw(36, bufferBuilder.getBlockCount(), 0, 0);
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -119,7 +116,7 @@ public class BlockEspOverlayRenderer {
             renderPass.setPipeline(blitPipeline);
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, blitUbo);
-            renderPass.draw(0, 3);
+            renderPass.draw(3, 1, 0, 0);
         }
     }
 

@@ -10,9 +10,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
@@ -22,7 +20,6 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 public class EspCubeLineRender {
 
@@ -88,7 +85,7 @@ public class EspCubeLineRender {
             renderPass.setPipeline(pipeline);
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
-            ((RenderPassExtension) renderPass).drawInstanced_CU(0, 12 * 6, bufferBuilder.getCubeCount());
+            renderPass.draw(12 * 6, bufferBuilder.getCubeCount(), 0, 0);
         }
     }
 

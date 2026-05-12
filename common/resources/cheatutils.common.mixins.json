@@ -65,7 +65,6 @@
     "common.MixinFramerateLimitTracker",
     "common.MixinGameRenderer",
     "common.MixinGlCommandEncoder",
-    "common.MixinGlRenderPass",
     "common.MixinGuiGraphicsExtractor",
     "common.MixinHud",
     "common.MixinHudFreeCam",
@@ -86,12 +85,10 @@
     "common.MixinPackConfirmScreen",
     "common.MixinPig",
     "common.MixinProjectileUtil",
-    "common.MixinRenderPass",
     "common.MixinScreen",
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSoundBufferLibrary",
     "common.MixinSoundManager",
-    "common.MixinUser",
-    "common.MixinVulkanRenderPass"
+    "common.MixinUser"
   ]
 }

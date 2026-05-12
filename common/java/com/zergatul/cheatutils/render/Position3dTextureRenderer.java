@@ -102,7 +102,7 @@ public class Position3dTextureRenderer {
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
-            renderPass.draw(0, bufferBuilder.getVertexCount());
+            renderPass.draw(bufferBuilder.getVertexCount(), 1, 0, 0);
         }
     }
 

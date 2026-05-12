@@ -27,7 +27,7 @@ public abstract class MixinLevelExtractor {
     private Minecraft minecraft;
 
     @Shadow
-    protected abstract EntityRenderState extractEntity(Entity entity, float partialTicks);
+    protected abstract EntityRenderState extractEntity(Entity entity, float partialTickTime);
 
     @Inject(at = @At("TAIL"), method = "extractVisibleEntities")
     private void onAfterExtractVisibleEntities(Camera camera, Frustum frustum, DeltaTracker deltaTracker, LevelRenderState output, CallbackInfo info) {

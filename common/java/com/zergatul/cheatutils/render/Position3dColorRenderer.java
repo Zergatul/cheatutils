@@ -165,7 +165,7 @@ public class Position3dColorRenderer {
             renderPass.setPipeline(pipeline);
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
-            renderPass.draw(0, bufferBuilder.getVertexCount());
+            renderPass.draw(bufferBuilder.getVertexCount(), 1, 0, 0);
         }
     }
 

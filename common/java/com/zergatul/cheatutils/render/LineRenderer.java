@@ -12,9 +12,7 @@ import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.extensions.RenderPassExtension;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
@@ -25,7 +23,6 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 
 public class LineRenderer {
 
@@ -151,7 +148,7 @@ public class LineRenderer {
             renderPass.setPipeline(depth ? depthPipeline : pipeline);
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
-            ((RenderPassExtension) renderPass).drawInstanced_CU(0, 6, bufferBuilder.getLineCount());
+            renderPass.draw(6, bufferBuilder.getLineCount(), 0, 0);
         }
     }
 

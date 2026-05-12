@@ -80,7 +80,7 @@ public class EntityEspOutlineRenderer {
             renderPass.setPipeline(pipeline);
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
-            renderPass.draw(0, 3);
+            renderPass.draw(3, 1, 0, 0);
         }
     }
 

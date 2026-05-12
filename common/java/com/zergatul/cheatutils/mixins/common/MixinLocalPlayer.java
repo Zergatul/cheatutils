@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -88,7 +89,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     }
 
     @Override
-    public void lerpMotion(Vec3 movement) {
+    public void lerpMotion(@NonNull Vec3 movement) {
         MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
         if (config.antiKnockback) {
             return;

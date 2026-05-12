@@ -19,7 +19,10 @@ public abstract class MixinPackConfirmScreen {
     @ModifyExpressionValue(
             method = "<init>",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientCommonPacketListenerImpl;preparePackPrompt(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/Component;"))
-    private static Component onModifyMessage(Component original, @Local(name = "requests") List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> requests) {
+    private static Component onModifyMessage(
+            Component original,
+            @Local(name = "requests", argsOnly = true) List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> requests
+    ) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
         if (!config.displayResourcePackUrls) {
             return original;

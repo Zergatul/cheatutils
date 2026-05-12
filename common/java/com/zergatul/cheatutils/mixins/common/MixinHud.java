@@ -40,7 +40,7 @@ public abstract class MixinHud {
     protected abstract int getVehicleMaxHearts(LivingEntity vehicle);
 
     @Inject(at = @At("HEAD"), method = "extractEffects", cancellable = true)
-    private void onExtractEffects(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo info) {
+    private void onExtractEffects(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo info) {
         if (ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
             info.cancel();
         }
@@ -92,7 +92,7 @@ public abstract class MixinHud {
     }
 
     @Inject(at = @At("HEAD"), method = "extractTabList", cancellable = true)
-    private void onExtractTabList(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo info) {
+    private void onExtractTabList(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo info) {
         if (Events.PreRenderGuiOverlay.trigger(new PreRenderGuiOverlayEvent(PreRenderGuiOverlayEvent.GuiOverlayType.PLAYER_LIST))) {
             info.cancel();
         }

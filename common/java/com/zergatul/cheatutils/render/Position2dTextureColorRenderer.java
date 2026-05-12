@@ -79,7 +79,7 @@ public class Position2dTextureColorRenderer {
             renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, textureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
-            renderPass.draw(0, buffer.getVertexCount());
+            renderPass.draw(buffer.getVertexCount(), 1, 0, 0);
         }
     }
 

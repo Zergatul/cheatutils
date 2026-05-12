@@ -29,7 +29,7 @@ public abstract class MixinGuiGraphicsExtractor {
     private void onBeforeRenderTooltip(
             Font font,
             List<ClientTooltipComponent> lines,
-            int x, int y,
+            int xo, int yo,
             ClientTooltipPositioner positioner,
             @Nullable Identifier style,
             CallbackInfo info
@@ -40,7 +40,7 @@ public abstract class MixinGuiGraphicsExtractor {
 
         if (lines instanceof TaggedArrayList<?,?>) {
             ItemStack itemStack = ((TaggedArrayList<ClientTooltipComponent, ItemStack>) lines).getTag();
-            if (Events.PreRenderTooltip.trigger(new PreRenderTooltipEvent((GuiGraphicsExtractor) (Object) this, itemStack, x, y))) {
+            if (Events.PreRenderTooltip.trigger(new PreRenderTooltipEvent((GuiGraphicsExtractor) (Object) this, itemStack, xo, yo))) {
                 info.cancel();
             }
         }
@@ -60,7 +60,7 @@ public abstract class MixinGuiGraphicsExtractor {
     private void onAfterRenderTooltipInternal(
             Font font,
             List<ClientTooltipComponent> lines,
-            int x, int y,
+            int xo, int yo,
             ClientTooltipPositioner positioner,
             @Nullable Identifier style,
             CallbackInfo info

@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 public abstract class MixinLevelChunk {
 
     @Inject(at = @At("TAIL"), method = "replaceWithPacketData")
-    private void onAfterReplaceWithPacketData(FriendlyByteBuf buf, Map<Heightmap.Types, long[]> map, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> consumer, CallbackInfo info) {
+    private void onAfterReplaceWithPacketData(FriendlyByteBuf buffer, Map<Heightmap.Types, long[]> heightmaps, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> blockEntities, CallbackInfo info) {
         CoordinatesLeakProtectionController.instance.processChunk((LevelChunk) (Object) this);
         WorldDownloadController.instance.onChunkFilledFromPacket((LevelChunk) (Object) this);
     }

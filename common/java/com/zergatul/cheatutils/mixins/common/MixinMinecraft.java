@@ -30,7 +30,7 @@ public abstract class MixinMinecraft {
     public ClientLevel level;
 
     @Shadow
-    protected abstract void continueAttack(boolean p_91387_);
+    protected abstract void continueAttack(boolean down);
 
     @Shadow
     public abstract boolean isGameLoadFinished();
@@ -109,7 +109,7 @@ public abstract class MixinMinecraft {
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetData()V", shift = At.Shift.AFTER),
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")
-    private void onPlayerLoggingOut(Screen screen, boolean b1, boolean b2, CallbackInfo info) {
+    private void onPlayerLoggingOut(Screen screen, boolean keepResourcePacks, boolean stopSound, CallbackInfo info) {
         Events.ClientPlayerLoggingOut.trigger();
     }
 
@@ -134,7 +134,7 @@ public abstract class MixinMinecraft {
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;onDisconnected()V", shift = At.Shift.AFTER),
             method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V")
-    private void onClearDisconnect(Screen screen, boolean keepResourcePacks, boolean stopSounds, CallbackInfo info) {
+    private void onClearDisconnect(Screen screen, boolean keepResourcePacks, boolean stopSound, CallbackInfo info) {
         if (this.level != null) {
             Events.LevelUnload.trigger();
         }
@@ -152,7 +152,7 @@ public abstract class MixinMinecraft {
     @Redirect(
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
-    private void onShouldContinueAttack(Minecraft instance, boolean value) {
+    private void onShouldContinueAttack(Minecraft instance, boolean down) {
         if (VillagerRoller.instance.isBreakingBlock()) {
             return;
         }
@@ -161,7 +161,7 @@ public abstract class MixinMinecraft {
             return;
         }
 
-        this.continueAttack(value);
+        this.continueAttack(down);
     }
 
     @Inject(at = @At(value = "TAIL"), method = "resizeGui()V")
