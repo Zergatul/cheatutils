@@ -1,10 +1,12 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.AirPlace;
+import com.zergatul.cheatutils.modules.hacks.InvMove;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -162,6 +164,13 @@ public abstract class MixinMinecraft {
         }
 
         this.continueAttack(down);
+    }
+
+    @ModifyExpressionValue(
+            method = "tick",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;screen()Lnet/minecraft/client/gui/screens/Screen;"))
+    private Screen onTickScreenPassEvents(Screen screen) {
+        return InvMove.instance.overrideCurrentScreen(screen);
     }
 
     @Inject(at = @At(value = "TAIL"), method = "resizeGui()V")

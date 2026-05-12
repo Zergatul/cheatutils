@@ -21,7 +21,9 @@ public abstract class MixinPackConfirmScreen {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientCommonPacketListenerImpl;preparePackPrompt(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/Component;"))
     private static Component onModifyMessage(
             Component original,
-            @Local(name = "requests", argsOnly = true) List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> requests
+            // don't use argsOnly=true here, because in runtime arguments are: arg1, arg2, ...
+            // this is because constructor has synthetic parameter as this class is inner class, and it receives outer-class instance
+            @Local(name = "requests") List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> requests
     ) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
         if (!config.displayResourcePackUrls) {
