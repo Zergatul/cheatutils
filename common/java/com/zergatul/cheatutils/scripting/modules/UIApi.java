@@ -76,6 +76,10 @@ public class UIApi {
     }
 
     private void showMessage(MutableComponent message, boolean overlay) {
-        mc.gui.chatListener().handleSystemMessage(message, overlay);
+        if (overlay) {
+            mc.getChatListener().handleOverlay(message);
+        } else {
+            mc.getChatListener().handleSystemMessage(message, false);
+        }
     }
 }
