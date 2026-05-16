@@ -74,6 +74,14 @@ public class Privacy implements Module {
 
     private Optional<Component> checkExploitable(ComponentContents contents) {
         if (contents instanceof TranslatableContents translatable) {
+            for (Object arg : translatable.getArgs()) {
+                if (arg instanceof Component component) {
+                    Optional<Component> result = checkExploitable(component);
+                    if (result.isPresent()) {
+                        return result;
+                    }
+                }
+            }
             return Optional.of(
                     Component.literal("")
                             .append(Component.literal("Server attempted to extract translatable key [").withStyle(ChatFormatting.WHITE))
@@ -120,6 +128,12 @@ public class Privacy implements Module {
             Consumer<KeybindContents> keybindConsumer
     ) {
         if (contents instanceof TranslatableContents translatable) {
+            for (Object arg : translatable.getArgs()) {
+                if (arg instanceof Component component) {
+                    forEachExploitable(component, checked, translatableConsumer, keybindConsumer);
+                }
+            }
+
             String key = "T:" + translatable.getKey();
             if (!checked.contains(key)) {
                 checked.add(key);
