@@ -17,4 +17,5 @@ public interface ModLoaderBridge {
     String getModLoaderVersion();
     String getModVersion();
     int getModCount();
+    boolean hasMod(String modId);
 }

@@ -98,6 +98,11 @@ public class ModMain implements ClientModInitializer {
         public int getModCount() {
             return FabricLoader.getInstance().getAllMods().size();
         }
+
+        @Override
+        public boolean hasMod(String modId) {
+            return FabricLoader.getInstance().isModLoaded(modId);
+        }
     }
 
     private record VanillaWrapperRegistry<T>(Registry<T> registry) implements WrappedRegistry<T> {

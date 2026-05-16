@@ -1,5 +1,8 @@
 package com.zergatul.cheatutils.modules.utilities;
 
+import com.zergatul.cheatutils.Constants;
+import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.cheatutils.configs.PrivacyConfig;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -19,6 +22,14 @@ public class Privacy implements Module {
     public static final Privacy instance = new Privacy();
 
     private Privacy() {}
+
+    public boolean shouldDisconnectOnTranslationExploit(PrivacyConfig config) {
+        return config.disconnectOnTranslationExploit && !ModLoaderBridgeInstance.get().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
+    }
+
+    public boolean shouldDisconnectOnMaliciousResourcePack(PrivacyConfig config) {
+        return config.disconnectOnMaliciousResourcePackBehavior && !ModLoaderBridgeInstance.get().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
+    }
 
     public Optional<Component> checkExploitable(SignText text) {
         for (int i = 0; i < SignText.LINES; i++) {

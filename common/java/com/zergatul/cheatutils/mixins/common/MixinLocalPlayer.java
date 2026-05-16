@@ -130,19 +130,19 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     @Inject(at = @At("HEAD"), method = "openTextEdit", cancellable = true)
     private void onOpenTextEdit(SignBlockEntity sign, boolean isFrontText, CallbackInfo info) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
+        Privacy privacy = Privacy.instance;
 
         if (config.logTranslationExploitDetails) {
-            Privacy.instance.forEachExploitable(
+            privacy.forEachExploitable(
                     sign,
                     translatable -> Debugging.instance.addMessage("Translatable exploit attempt. Key=" + translatable.getKey()),
                     keybind -> Debugging.instance.addMessage("Keybind exploit attempt. Key=" + keybind.getName()));
         }
 
-        if (!config.disconnectOnTranslationExploit) {
+        if (!privacy.shouldDisconnectOnTranslationExploit(config)) {
             return;
         }
 
-        Privacy privacy = Privacy.instance;
         Optional.<Component>empty()
                 .or(() -> privacy.checkExploitable(sign.getBackText()))
                 .or(() -> privacy.checkExploitable(sign.getFrontText()))
