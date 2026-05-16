@@ -514,6 +514,13 @@ module({
 });
 module({
     group: 'utility',
+    name: 'Privacy',
+    component: 'Privacy',
+    path: 'privacy',
+    tags: ['privacy', 'exploit', 'sign', 'fingerprint']
+});
+module({
+    group: 'utility',
     name: 'User Name',
     component: 'UserName',
     path: 'user-name',

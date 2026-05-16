@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.mixins.forge;
 
 import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.PrivacyConfig;
 import net.minecraftforge.network.packets.ModVersions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +15,9 @@ public abstract class MixinModVersions {
 
     @Inject(at = @At("TAIL"), method = "create()Lnet/minecraftforge/network/packets/ModVersions;", remap = false)
     private static void onCreate(CallbackInfoReturnable<ModVersions> info) {
-        info.getReturnValue().mods().remove(ModMain.MODID);
+        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
+        if (config.hideFromModVersions) {
+            info.getReturnValue().mods().remove(ModMain.MODID);
+        }
     }
 }

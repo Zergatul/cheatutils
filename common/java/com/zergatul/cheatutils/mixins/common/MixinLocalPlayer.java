@@ -5,21 +5,34 @@ import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
+import com.zergatul.cheatutils.modules.scripting.Debugging;
+import com.zergatul.cheatutils.modules.utilities.Privacy;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.util.Optional;
+
 @Mixin(LocalPlayer.class)
 public abstract class MixinLocalPlayer extends AbstractClientPlayer {
+
+    @Shadow
+    @Final
+    public ClientPacketListener connection;
 
     private boolean flyHackOverride = false;
     private boolean oldFlying;
@@ -136,6 +149,31 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         MoverType type = args.get(0);
         Vec3 delta = args.get(1);
         args.set(1, ElytraFly.instance.onBeforeMove(type, delta));
+    }
+
+    @Inject(at = @At("HEAD"), method = "openTextEdit", cancellable = true)
+    private void onOpenTextEdit(SignBlockEntity sign, boolean isFrontText, CallbackInfo info) {
+        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
+        Privacy privacy = Privacy.instance;
+
+        if (config.logTranslationExploitDetails) {
+            privacy.forEachExploitable(
+                    sign,
+                    translatable -> Debugging.instance.addMessage("Translatable exploit attempt. Key=" + translatable.getKey()),
+                    keybind -> Debugging.instance.addMessage("Keybind exploit attempt. Key=" + keybind.getName()));
+        }
+
+        if (!privacy.shouldDisconnectOnTranslationExploit(config)) {
+            return;
+        }
+
+        Optional.<Component>empty()
+                .or(() -> privacy.checkExploitable(sign.getBackText()))
+                .or(() -> privacy.checkExploitable(sign.getFrontText()))
+                .ifPresent(reason -> {
+                    this.connection.getConnection().disconnect(reason);
+                    info.cancel();
+                });
     }
 
     @SuppressWarnings("deprecation")

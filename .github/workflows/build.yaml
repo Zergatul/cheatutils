@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - '1.21'
+      - '1.21.1'
 
 jobs:
   build:
@@ -11,15 +11,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
         with:
           submodules: true
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@main
         with:
-          distribution: 'adopt'
-          java-version: '21'
+          distribution: adopt
+          java-version: 21
 
       - name: Build Annotation Processor
         run: |
@@ -50,7 +50,7 @@ jobs:
           popd
 
       - name: Upload Forge artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@main
         with:
           name: forge
           path: ./forge/build/libs/*.jar
@@ -58,7 +58,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Fabric artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@main
         with:
           name: fabric
           path: ./fabric/build/libs/*.jar
@@ -66,7 +66,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload NeoForge artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@main
         with:
           name: neoforge
           path: ./neoforge/build/libs/*.jar

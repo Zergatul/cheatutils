@@ -72,6 +72,7 @@
     "common.MixinMouseHandlerZoom",
     "common.MixinMultiPlayerGameMode",
     "common.MixinOptions",
+    "common.MixinPackConfirmScreen",
     "common.MixinParticleEngine",
     "common.MixinPig",
     "common.MixinPlayerRenderer",

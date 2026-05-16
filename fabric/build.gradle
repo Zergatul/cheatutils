@@ -2,7 +2,7 @@ import java.nio.file.Paths
 import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
-    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
     id 'maven-publish'
 }
 
@@ -23,10 +23,19 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+    maven {
+        name = "Sponge"
+        url = "https://repo.spongepowered.org/repository/maven-public/"
+    }
 }
 
 loom {
     accessWidenerPath = file("src/main/resources/cheatutils.accesswidener")
+
+    mixin {
+        useLegacyMixinAp = true
+        defaultRefmapName = "cheatutils-refmap.json"
+    }
 }
 
 dependencies {
@@ -34,15 +43,16 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    compileOnly "org.spongepowered:mixin:0.8.7"
+    implementation "org.ow2.asm:asm:9.9"
+    implementation "org.ow2.asm:asm-tree:9.9"
 
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    // Uncomment the following line to enable the deprecated Fabric API modules. 
-    // These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
-
-    // modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
-
+    annotationProcessor "net.fabricmc:sponge-mixin:0.17.2+mixin.0.8.7"
+    annotationProcessor "org.ow2.asm:asm:9.9"
+    annotationProcessor "org.ow2.asm:asm-tree:9.9"
+    annotationProcessor "com.google.code.gson:gson:2.11.0"
+    annotationProcessor "com.google.guava:guava:33.3.1-jre"
     annotationProcessor files('../mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
 }
 
@@ -93,6 +103,9 @@ jar {
 
 tasks.withType(JavaCompile).configureEach {
     it.options.compilerArgs.add("-parameters")
+    it.options.compilerArgs.addAll([
+            "-processor",
+            "com.zergatul.mixin.AnnotationProcessor,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets"])
 }
 
 tasks.register('buildAnnotationProcessor', {

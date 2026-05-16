@@ -874,6 +874,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().stepUp = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("privacy", PrivacyConfig.class) {
+            @Override
+            protected PrivacyConfig getConfig() {
+                return ConfigStore.instance.getConfig().privacyConfig;
+            }
+
+            @Override
+            protected void setConfig(PrivacyConfig config) {
+                ConfigStore.instance.getConfig().privacyConfig = config;
+            }
+        });
     }
 
     @Override
