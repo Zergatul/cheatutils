@@ -137,6 +137,11 @@ public final class ModMain {
         public int getModCount() {
             return ModList.getMods().size();
         }
+
+        @Override
+        public boolean hasMod(String modId) {
+            return ModList.getModFileById(modId) != null;
+        }
     }
 
     private record ForgeWrappedRegistry<T>(IForgeRegistry<T> registry) implements WrappedRegistry<T> {

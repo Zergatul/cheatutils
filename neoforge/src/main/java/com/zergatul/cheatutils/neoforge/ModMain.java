@@ -140,6 +140,11 @@ public class ModMain {
         public int getModCount() {
             return ModList.get().size();
         }
+
+        @Override
+        public boolean hasMod(String modId) {
+            return ModList.get().getModFileById(modId) != null;
+        }
     }
 
     private record BuiltInWrappedRegistry<T>(DefaultedRegistry<T> registry) implements WrappedRegistry<T> {
