@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
@@ -34,6 +35,9 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
     // store projection matrix + bob views + portal distortions
     @Unique
     private Matrix4f modifiedProjectionMatrix_CU;
+
+    @Unique
+    private Matrix4f storedModelViewMatrix_CU;
 
     public void setModifiedProjectionMatrix_CU(Matrix4f matrix) {
         this.modifiedProjectionMatrix_CU = matrix;
@@ -67,7 +71,28 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
         Events.BeforeRenderWorld.trigger();
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelTargetBundle;clear()V"))
+    @Inject(
+            method = "renderLevel",
+            at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;"))
+    private void onRenderLevelRememberLastModelViewMatrix(
+            final GraphicsResourceAllocator resourceAllocator,
+            final DeltaTracker deltaTracker,
+            final boolean renderOutline,
+            final CameraRenderState cameraState,
+            final Matrix4fc modelViewMatrix,
+            final GpuBufferSlice terrainFog,
+            final Vector4f fogColor,
+            final boolean shouldRenderSky,
+            final ChunkSectionsToRender chunkSectionsToRender,
+            final CallbackInfo info
+    ) {
+        // fix for Iris compatibility
+        this.storedModelViewMatrix_CU = new Matrix4f(RenderSystem.getModelViewStack());
+    }
+
+    @Inject(
+            method = "renderLevel",
+            at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;", shift = At.Shift.AFTER))
     private void onRenderLevelEnd(
             final GraphicsResourceAllocator resourceAllocator,
             final DeltaTracker deltaTracker,
@@ -81,7 +106,11 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final CallbackInfo info
     ) {
         int program = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+        // fix for Iris compatibility
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().mul(this.storedModelViewMatrix_CU);
         Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
+        RenderSystem.getModelViewStack().popMatrix();
         GL20.glUseProgram(program);
 
         this.modifiedProjectionMatrix_CU = null;
