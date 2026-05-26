@@ -81,6 +81,8 @@ public class Config implements Sanitizable {
 
     @Override
     public void sanitize() {
+        blocks.sanitize();
+        entities.sanitize();
         killAuraConfig.sanitize();
         movementHackConfig.sanitize();
         fastBreakConfig.sanitize();
