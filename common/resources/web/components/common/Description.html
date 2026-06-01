@@ -1,0 +1,16 @@
+<span class="common-description">
+    <span
+        v-if="hasAdditional"
+        class="description-icon"
+        tabindex="0"
+        aria-label="More information"
+        @mouseenter="show"
+        @mouseleave="hide"
+        @mousemove="updatePosition"
+        @focus="show"
+        @blur="hide">i</span>
+    <span class="input-description"><slot></slot></span>
+    <span v-if="visible" class="description-tooltip" role="tooltip" :style="tooltipStyle">
+        <slot name="additional"></slot>
+    </span>
+</span>

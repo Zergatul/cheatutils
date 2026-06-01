@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.Schematica;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
+import com.zergatul.cheatutils.modules.hacks.CrystalAura;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
@@ -1015,7 +1016,11 @@ public class ApiHandler implements HttpHandler {
 
             @Override
             protected void setConfig(CrystalAuraConfig config) {
+                CrystalAuraConfig oldConfig = ConfigStore.instance.getConfig().crystalAuraConfig;
                 ConfigStore.instance.getConfig().crystalAuraConfig = config;
+                if (oldConfig.enabled ^ config.enabled) {
+                    CrystalAura.instance.onEnableStateChanged();
+                }
             }
         });
     }

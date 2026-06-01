@@ -18,7 +18,7 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
     public boolean autoBreak;
     public double breakRange;
     public int breakDelay;
-
+    public boolean fastBreak;
     public int crystalAge;
 
     public CrystalAuraConfig() {
@@ -36,7 +36,7 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
         autoBreak = true;
         breakRange = 4.5;
         breakDelay = 1;
-
+        fastBreak = true;
         crystalAge = 0;
     }
 
@@ -52,7 +52,6 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
 
         breakDelay = MathUtils.clamp(breakDelay, 0, 20);
         breakRange = MathUtils.clamp(breakRange, 0, 10);
-
         crystalAge = MathUtils.clamp(crystalAge, 0, 20);
     }
 }

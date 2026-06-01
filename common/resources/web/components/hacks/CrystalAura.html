@@ -14,7 +14,7 @@
             </legend>
             <table>
                 <tr>
-                    <td>
+                    <td style="text-align: right;">
                         <span class="field-description">Min Target Damage:</span>
                     </td>
                     <td>
@@ -22,7 +22,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>
+                    <td style="text-align: right;">
                         <span class="field-description">Max Self Damage:</span>
                     </td>
                     <td>
@@ -30,14 +30,19 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>
+                    <td style="text-align: right;">
                         <span class="field-description">Crystal Age:</span>
                     </td>
                     <td>
                         <input type="text" class="w3" v-model="config.crystalAge" @change="update()">
                     </td>
                     <td>
-                        <div class="input-description">How old crystal should be so module considers to break it, in ticks. Setting it more than Break Delay may cause module to place multiple crystals before breaking first of them.</div>
+                        <Description>
+                            How old crystal should be so module considers to break it, in ticks
+                            <template #additional>
+                                Setting it more than Break Delay may cause module to place multiple crystals before breaking first of them.
+                            </template>
+                        </Description>
                     </td>
                 </tr>
             </table>
@@ -47,41 +52,45 @@
             <legend>
                 <switch-checkbox v-model="config.autoRotate" @change="update()">Auto-Rotate</switch-checkbox>
             </legend>
-            abc
+            <div class="section-description">
+                Automatically rotates player to the direction of crystal placements and attacks
+            </div>
         </fieldset>
 
         <fieldset>
             <legend>
                 <switch-checkbox v-model="config.autoPlace" @change="update()">Auto-Place</switch-checkbox>
             </legend>
-            <table>
+            <table v-if="config.autoPlace">
                 <tr>
-                    <td>
+                    <td style="text-align: right;">
                         <span class="field-description">Range:</span>
                     </td>
                     <td>
                         <input type="text" class="w3" v-model="config.placeRange" @change="update()">
                     </td>
                     <td>
-                        <div class="input-description">
-                            Interaction range for placing crystals.
-                            Setting this more than Break Range may cause module to place multiple crystals before breaking one of them.
-                            This is client-side max range for attempting crystal placement.
-                            Servers may accept or reject different ranges depending on reach settings, lag compensation, and plugins.
-                        </div>
+                        <Description>
+                            Interaction range for placing crystals, in blocks
+                            <template #additional>
+                                Setting this more than Break Range may cause module to place multiple crystals before breaking one of them.
+                                This is client-side max range for attempting crystal placement.
+                                Servers may accept or reject different ranges depending on reach settings, lag compensation, and plugins.
+                            </template>
+                        </Description>
                     </td>
                 </tr>
                 <tr>
-                    <td>
+                    <td style="text-align: right;">
                         <span class="field-description">Delay:</span>
                     </td>
                     <td>
                         <input type="number" class="w3" v-model="config.placeDelay" @change="update()">
                     </td>
                     <td>
-                        <div class="input-description">
+                        <Description>
                             How many ticks to wait after crystal exploded before placing new one
-                        </div>
+                        </Description>
                     </td>
                 </tr>
             </table>
@@ -91,9 +100,9 @@
             <legend>
                 <switch-checkbox v-model="config.autoPlaceSupport" @change="update()">Auto-Support</switch-checkbox>
             </legend>
-            <table>
+            <table v-if="config.autoPlaceSupport">
                 <tr>
-                    <td>
+                    <td style="text-align: right;">
                         <span class="field-description">Delay:</span>
                     </td>
                     <td>
@@ -112,31 +121,52 @@
             <legend>
                 <switch-checkbox v-model="config.autoBreak" @change="update()">Auto-Break</switch-checkbox>
             </legend>
-            <table>
+            <table v-if="config.autoBreak">
                 <tr>
-                    <td>
+                    <td style="text-align: right;">
                         <span class="field-description">Range:</span>
                     </td>
                     <td>
                         <input type="text" class="w3" v-model="config.breakRange" @change="update()">
                     </td>
                     <td>
-                        <div class="input-description">
-                            Interaction range for attacking crystals.
-                            This is client-side max range for attempting crystal attacks.
-                            Servers may accept or reject different ranges depending on reach settings, lag compensation, and plugins.
-                        </div>
+                        <Description>
+                            Interaction range for attacking crystals, in blocks
+                            <template #additional>
+                                This is client-side max range for attempting crystal attacks.
+                                Servers may accept or reject different ranges depending on reach settings, lag compensation, and plugins.
+                            </template>
+                        </Description>
                     </td>
                 </tr>
                 <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Fast-Break:</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <switch-checkbox v-model="config.fastBreak" style="vertical-align: middle;" @change="update()"></switch-checkbox>
+                    </td>
                     <td>
+                        <Description>
+                            Break crystals as soon as they spawn
+                            <template #additional>
+                                In such case it ignores Delay and Crystal Age settings.<br>
+                                Fast break is implicitly disabled when Auto-Rotate is ON.
+                            </template>
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
                         <span class="field-description">Delay:</span>
                     </td>
                     <td>
                         <input type="number" class="w3" v-model="config.breakDelay" @change="update()">
                     </td>
                     <td>
-                        <div class="input-description">How many ticks to wait after placing crystal</div>
+                        <Description>
+                            How many ticks to wait after placing crystal
+                        </Description>
                     </td>
                 </tr>
             </table>

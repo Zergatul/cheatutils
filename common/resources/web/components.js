@@ -17,7 +17,8 @@ const components = {
     SwitchCheckbox: getComponent('common/SwitchCheckbox'),
     AutoComplete: getComponent('common/AutoComplete'),
     CodeBlock: getComponent('common/CodeBlock'),
-    FontPicker: getComponent('common/FontPicker')
+    FontPicker: getComponent('common/FontPicker'),
+    Description: getComponent('common/Description'),
 };
 
 export { components }

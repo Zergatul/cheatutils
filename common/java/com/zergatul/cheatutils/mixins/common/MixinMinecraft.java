@@ -103,6 +103,16 @@ public abstract class MixinMinecraft {
         }
     }
 
+    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketProcessor;processQueuedPackets()V"))
+    public void onBeforeProcessQueuedPackets(boolean advanceGameTime, CallbackInfo info) {
+        Events.BeforeProcessQueuedPackets.trigger();
+    }
+
+    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketProcessor;processQueuedPackets()V", shift = At.Shift.AFTER))
+    public void onAfterProcessQueuedPackets(boolean advanceGameTime, CallbackInfo info) {
+        Events.AfterProcessQueuedPackets.trigger();
+    }
+
     @Inject(at = @At("TAIL"), method = "runTick")
     private void onRunTickEnd(boolean advanceGameTime, CallbackInfo info) {
         Events.MainLoopFrameEnd.trigger();

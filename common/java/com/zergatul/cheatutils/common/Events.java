@@ -19,6 +19,14 @@ public class Events {
     // called once during loading
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
 
+    // Minecraft.runTick() : begin
+    public static final SimpleEventHandler BeforeProcessQueuedPackets = new SimpleEventHandler();
+    // PacketProcessor.processQueuedPackets() : begin
+    public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
+    // PacketProcessor.processQueuedPackets() : end
+    public static final SimpleEventHandler AfterProcessQueuedPackets = new SimpleEventHandler();
+
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     // GameRenderer.pick(1)
     public static final ParameterizedEventHandler<DeltaTracker> RenderTickStart = new ParameterizedEventHandler<>();
@@ -78,8 +86,7 @@ public class Events {
     public static final SimpleEventHandler LevelUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
     public static final ParameterizedEventHandler<GatherTooltipComponentsEvent> GatherTooltipComponents = new ParameterizedEventHandler<>();
-    public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
-    public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
+
     public static final CancelableEventHandler<PreRenderTooltipEvent> PreRenderTooltip = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<Vector2ic> TooltipPositioned = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler PostRenderTooltip = new SimpleEventHandler();

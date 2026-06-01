@@ -3,8 +3,12 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
+import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.DamageUtils;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -34,17 +38,95 @@ public class CrystalAura implements Module {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<LivingEntity> targets = new ArrayList<>();
+    private final List<EndCrystal> spawnedCrystals = new ArrayList<>();
+    private final Int2IntMap recentlyAttackedCrystals = new Int2IntArrayMap();
     private int placeCountdown;
     private int breakCountdown;
+    private Runnable afterPositionSentAction;
 
     private CrystalAura() {
+        Events.BeforeProcessQueuedPackets.add(this::onBeforeProcessQueuedPackets);
+        Events.EntityAdded.add(this::onEntityAdded);
+        Events.AfterProcessQueuedPackets.add(this::onAfterProcessQueuedPackets);
         Events.ClientTickStart.add(this::onTickStart);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
+        Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos);
         Events.ClientTickEnd.add(this::onTickEnd);
+    }
+
+    public void onEnableStateChanged() {
+        targets.clear();
+        spawnedCrystals.clear();
+        recentlyAttackedCrystals.clear();
+        placeCountdown = 0;
+        breakCountdown = 0;
+        afterPositionSentAction = null;
+    }
+
+    private void onBeforeProcessQueuedPackets() {
+        spawnedCrystals.clear();
+    }
+
+    private void onEntityAdded(Entity entity) {
+        CrystalAuraConfig config = ConfigStore.instance.getConfig().crystalAuraConfig;
+        if (!config.enabled) {
+            return;
+        }
+
+        // TODO: for now Fast-Break is disabled when Auto-Rotate is ON
+        if (!config.autoBreak || !config.fastBreak || config.autoRotate) {
+            return;
+        }
+
+        if (!(entity instanceof EndCrystal crystal)) {
+            return;
+        }
+
+        spawnedCrystals.add(crystal);
+    }
+
+    private void onAfterProcessQueuedPackets() {
+        if (spawnedCrystals.isEmpty()) {
+            return;
+        }
+
+        assert mc.level != null;
+        assert mc.player != null;
+        assert mc.gameMode != null;
+
+        CrystalAuraConfig config = ConfigStore.instance.getConfig().crystalAuraConfig;
+
+        findTargets();
+        if (targets.isEmpty()) {
+            return;
+        }
+
+        for (EndCrystal crystal : spawnedCrystals) {
+            if (recentlyAttackedCrystals.containsKey(crystal.getId())) {
+                // should not happen
+                continue;
+            }
+
+            if (!inBreakRange(crystal.getBoundingBox(), mc.player.getEyePosition(), config)) {
+                continue;
+            }
+
+            float damage = calculatePossibleDamage(mc.level, mc.player, crystal.position(), config);
+            if (damage == 0) {
+                continue;
+            }
+
+            mc.gameMode.attack(mc.player, crystal);
+            recentlyAttackedCrystals.put(crystal.getId(), 0);
+            break;
+        }
+
+        targets.clear();
     }
 
     private void onTickStart() {
         targets.clear();
+        afterPositionSentAction = null;
 
         if (placeCountdown > 0) {
             placeCountdown--;
@@ -60,6 +142,28 @@ public class CrystalAura implements Module {
             return;
         }
 
+        findTargets();
+        tickRecentlyAttackedCrystals();
+
+        if (tryBreakCrystal(config)) {
+            breakCountdown = config.breakDelay;
+        } else if (tryPlaceCrystal(config)) {
+            placeCountdown = config.placeDelay;
+        }
+    }
+
+    private void onAfterSendPlayerPos() {
+        if (afterPositionSentAction != null) {
+            afterPositionSentAction.run();
+            afterPositionSentAction = null;
+        }
+    }
+
+    private void onTickEnd() {
+
+    }
+
+    private void findTargets() {
         assert mc.level != null;
         assert mc.player != null;
 
@@ -87,16 +191,19 @@ public class CrystalAura implements Module {
 
             targets.add(living);
         }
-
-        if (tryBreakCrystal(config)) {
-            breakCountdown = config.breakDelay;
-        } else if (tryPlaceCrystal(config)) {
-            placeCountdown = config.placeDelay;
-        }
     }
 
-    private void onTickEnd() {
-
+    private void tickRecentlyAttackedCrystals() {
+        ObjectIterator<Int2IntMap.Entry> iterator = recentlyAttackedCrystals.int2IntEntrySet().iterator();
+        while (iterator.hasNext()) {
+            Int2IntMap.Entry entry = iterator.next();
+            int ticks = entry.getIntValue();
+            if (ticks > 3) {
+                iterator.remove();
+            } else {
+                entry.setValue(ticks + 1);
+            }
+        }
     }
 
     private boolean tryPlaceCrystal(CrystalAuraConfig config) {
@@ -111,21 +218,8 @@ public class CrystalAura implements Module {
         ClientLevel level = mc.level;
         LocalPlayer player = mc.player;
 
-        boolean hasCrystalInMainHand = player.getMainHandItem().is(Items.END_CRYSTAL);
-        boolean hasCrystalInOffHand = player.getOffhandItem().is(Items.END_CRYSTAL);
-        int crystalSlot = -1;
-        if (!hasCrystalInMainHand && !hasCrystalInOffHand) {
-            Inventory inventory = player.getInventory();
-            for (int i = 0; i < 9; i++) {
-                if (inventory.getItem(i).is(Items.END_CRYSTAL)) {
-                    crystalSlot = i;
-                    break;
-                }
-            }
-
-            if (crystalSlot == -1) {
-                return false;
-            }
+        if (!hasCrystalOnHotbar(player)) {
+            return false;
         }
 
         Vec3 eyePos = player.getEyePosition();
@@ -133,6 +227,9 @@ public class CrystalAura implements Module {
         // check if there is at least one crystal that's good for blowing up
         for (Entity entity : level.entitiesForRendering()) {
             if (entity instanceof EndCrystal crystal) {
+                if (recentlyAttackedCrystals.containsKey(crystal.getId())) {
+                    continue;
+                }
                 AABB bb = crystal.getBoundingBox();
                 if (inBreakRange(bb, eyePos, config) && calculatePossibleDamage(level, player, crystal.position(), config) > 0) {
                     return false;
@@ -163,7 +260,7 @@ public class CrystalAura implements Module {
                         continue;
                     }
 
-                    if (new AABB(crystalBlockPos).distanceToSqr(eyePos) > placeRangeSqr) {
+                    if (new AABB(pos).distanceToSqr(eyePos) > placeRangeSqr) {
                         continue;
                     }
 
@@ -194,7 +291,10 @@ public class CrystalAura implements Module {
             return false;
         }
 
-        // TODO: auto-rotation
+        if (config.autoRotate) {
+            // look at support center for now
+            FakeRotation.instance.setServerRotation(Vec3.atCenterOf(bestCrystalBlockPos.below()));
+        }
 
         // TODO: proper HitResult calculation
         BlockHitResult hit = new BlockHitResult(
@@ -203,17 +303,35 @@ public class CrystalAura implements Module {
                 bestCrystalBlockPos.below(),
                 false);
 
-        InteractionResult result;
-        if (hasCrystalInMainHand) {
-            result = mc.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
-        } else if (hasCrystalInOffHand) {
-            result = mc.gameMode.useItemOn(player, InteractionHand.OFF_HAND, hit);
-        } else {
-            player.getInventory().setSelectedSlot(crystalSlot);
-            result = mc.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
-        }
+        afterPositionSentAction = () -> {
+            InteractionResult result;
+            if (player.getMainHandItem().is(Items.END_CRYSTAL)) {
+                result = mc.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
+            } else if (player.getOffhandItem().is(Items.END_CRYSTAL)) {
+                result = mc.gameMode.useItemOn(player, InteractionHand.OFF_HAND, hit);
+            } else {
+                Inventory inventory = player.getInventory();
+                for (int i = 0; i < 9; i++) {
+                    if (inventory.getItem(i).is(Items.END_CRYSTAL)) {
+                        inventory.setSelectedSlot(i);
+                        break;
+                    }
+                }
+                if (!player.getMainHandItem().is(Items.END_CRYSTAL)) {
+                    // rollback countdown, crystals disappeared from hotbar
+                    placeCountdown = 0;
+                    return;
+                }
 
-        return result.consumesAction();
+                result = mc.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
+            }
+            if (!result.consumesAction()) {
+                // rollback countdown, since action failed on client
+                placeCountdown = 0;
+            }
+        };
+
+        return true;
     }
 
     private boolean tryBreakCrystal(CrystalAuraConfig config) {
@@ -238,6 +356,9 @@ public class CrystalAura implements Module {
             if (crystal.tickCount < config.crystalAge) {
                 continue;
             }
+            if (recentlyAttackedCrystals.containsKey(crystal.getId())) {
+                continue;
+            }
 
             if (!inBreakRange(crystal.getBoundingBox(), eyePos, config)) {
                 continue;
@@ -254,8 +375,17 @@ public class CrystalAura implements Module {
             return false;
         }
 
-        // TODO: auto rotate here, and trigger attack from another event, once client sends position/rotation to the server
-        mc.gameMode.attack(player, bestCrystal);
+        if (config.autoRotate) {
+            // look at bottom-center position for now
+            FakeRotation.instance.setServerRotation(bestCrystal.position());
+        }
+
+        EndCrystal crystal = bestCrystal;
+        afterPositionSentAction = () -> {
+            mc.gameMode.attack(player, crystal);
+            recentlyAttackedCrystals.put(crystal.getId(), 0);
+        };
+
         return true;
     }
 
@@ -281,5 +411,23 @@ public class CrystalAura implements Module {
         }
 
         return targetDamage;
+    }
+
+    private boolean hasCrystalOnHotbar(LocalPlayer player) {
+        if (player.getMainHandItem().is(Items.END_CRYSTAL)) {
+            return true;
+        }
+        if (player.getOffhandItem().is(Items.END_CRYSTAL)) {
+            return true;
+        }
+
+        Inventory inventory = player.getInventory();
+        for (int i = 0; i < 9; i++) {
+            if (inventory.getItem(i).is(Items.END_CRYSTAL)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
