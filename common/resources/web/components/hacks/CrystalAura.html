@@ -144,7 +144,9 @@
                         <span class="field-description">Fast-Break:</span>
                     </td>
                     <td style="text-align: center;">
-                        <switch-checkbox v-model="config.fastBreak" style="vertical-align: middle;" @change="update()"></switch-checkbox>
+                        <div class="input-container w3">
+                            <switch-checkbox v-model="config.fastBreak" @change="update()"></switch-checkbox>
+                        </div>
                     </td>
                     <td>
                         <Description>
