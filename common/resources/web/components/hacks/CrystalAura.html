@@ -1,0 +1,145 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Crystal PvP
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                General
+            </legend>
+            <table>
+                <tr>
+                    <td>
+                        <span class="field-description">Min Target Damage:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.minTargetDamage" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Max Self Damage:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.maxSelfDamage" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Crystal Age:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.crystalAge" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">How old crystal should be so module considers to break it, in ticks. Setting it more than Break Delay may cause module to place multiple crystals before breaking first of them.</div>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoRotate" @change="update()">Auto-Rotate</switch-checkbox>
+            </legend>
+            abc
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoPlace" @change="update()">Auto-Place</switch-checkbox>
+            </legend>
+            <table>
+                <tr>
+                    <td>
+                        <span class="field-description">Range:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.placeRange" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">
+                            Interaction range for placing crystals.
+                            Setting this more than Break Range may cause module to place multiple crystals before breaking one of them.
+                            This is client-side max range for attempting crystal placement.
+                            Servers may accept or reject different ranges depending on reach settings, lag compensation, and plugins.
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Delay:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.placeDelay" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">
+                            How many ticks to wait after crystal exploded before placing new one
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoPlaceSupport" @change="update()">Auto-Support</switch-checkbox>
+            </legend>
+            <table>
+                <tr>
+                    <td>
+                        <span class="field-description">Delay:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.placeSupportDelay" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">
+                            How many ticks to wait after placing support block, before placing crystal
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoBreak" @change="update()">Auto-Break</switch-checkbox>
+            </legend>
+            <table>
+                <tr>
+                    <td>
+                        <span class="field-description">Range:</span>
+                    </td>
+                    <td>
+                        <input type="text" class="w3" v-model="config.breakRange" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">
+                            Interaction range for attacking crystals.
+                            This is client-side max range for attempting crystal attacks.
+                            Servers may accept or reject different ranges depending on reach settings, lag compensation, and plugins.
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Delay:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.breakDelay" @change="update()">
+                    </td>
+                    <td>
+                        <div class="input-description">How many ticks to wait after placing crystal</div>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</div>

@@ -82,6 +82,7 @@ public class Modules {
         register(AutoTool.instance);
         register(AirPlace.instance);
         register(ContainerSummary.instance);
+        register(CrystalAura.instance);
 
         register(TickEndExecutor.instance);
 

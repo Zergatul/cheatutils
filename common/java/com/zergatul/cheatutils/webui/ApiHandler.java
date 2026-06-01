@@ -1006,6 +1006,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().privacyConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("crystal-aura", CrystalAuraConfig.class) {
+            @Override
+            protected CrystalAuraConfig getConfig() {
+                return ConfigStore.instance.getConfig().crystalAuraConfig;
+            }
+
+            @Override
+            protected void setConfig(CrystalAuraConfig config) {
+                ConfigStore.instance.getConfig().crystalAuraConfig = config;
+            }
+        });
     }
 
     @Override
