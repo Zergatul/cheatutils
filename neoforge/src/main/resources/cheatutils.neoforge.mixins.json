@@ -11,6 +11,8 @@
     "neoforge.schematics.MixinSectionCompiler",
     "neoforge.MixinGui",
     "neoforge.MixinGuiGraphics",
+    "neoforge.MixinKeyboardHandler",
+    "neoforge.MixinKeyMapping",
     "neoforge.MixinLevelRenderer",
     "neoforge.MixinLightTexture",
     "neoforge.MixinMultiPlayerGameMode"

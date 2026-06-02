@@ -1,11 +1,8 @@
-package com.zergatul.cheatutils.mixins.fabric;
+package com.zergatul.cheatutils.mixins.neoforge;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
 import net.minecraft.client.input.KeyEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,16 +22,8 @@ public abstract class MixinKeyboardHandler {
             method = "keyPress",
             at = @At("TAIL"))
     private void onKeyPress(long handle, int action, KeyEvent event, CallbackInfo info) {
-        if (handle == this.minecraft.getWindow().handle() && action != 0) {
-            InputConstants.Key key = InputConstants.getKey(event);
-            Options options = this.minecraft.options;
-            if (options.keyDebugModifier.matches(event)) {
-                return;
-            }
-            if (this.minecraft.screen != null && InvMove.instance.shouldPassEvents(this.minecraft.screen)) {
-                KeyMapping.set(key, true);
-                KeyMapping.click(key);
-            }
+        if (handle == this.minecraft.getWindow().handle()) {
+            InvMove.instance.onKeyPress(action, event);
         }
     }
 }

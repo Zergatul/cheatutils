@@ -10,4 +10,10 @@ public interface KeyMappingAccessor {
 
     @Accessor("key")
     InputConstants.Key getKey_CU();
+
+    @Accessor("clickCount")
+    int getClickCount_CU();
+
+    @Accessor("clickCount")
+    void setClickCount_CU(int value);
 }

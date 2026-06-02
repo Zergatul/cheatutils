@@ -164,9 +164,9 @@ public abstract class MixinMinecraft {
 
     @Redirect(
             method = "tick",
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 6))
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 7))
     private Screen onTickScreenPassEvents(Minecraft mc) {
-        return InvMove.instance.overrideGetScreen(mc);
+        return InvMove.instance.overrideCurrentScreen(mc.screen);
     }
 
     @Inject(at = @At(value = "TAIL"), method = "resizeDisplay()V")
@@ -177,5 +177,15 @@ public abstract class MixinMinecraft {
     @Inject(method = "startUseItem", at = @At("HEAD"))
     private void onBeforeStartUseItem(CallbackInfo info) {
         AirPlace.instance.onBeforeStartUseItem();
+    }
+
+    @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V"))
+    private void onSetScreenBeforeReleasingAllKeys(Screen screen, CallbackInfo info) {
+        InvMove.instance.onOpenScreenStoreKeys(screen);
+    }
+
+    @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V", shift = At.Shift.AFTER))
+    private void onSetScreenAfterReleasingAllKeys(Screen screen, CallbackInfo info) {
+        InvMove.instance.onOpenScreenRestoreKeys(screen);
     }
 }
