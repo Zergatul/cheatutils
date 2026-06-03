@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.mixins.forge;
+package com.zergatul.cheatutils.mixins.neoforge;
 
 import com.zergatul.cheatutils.modules.hacks.InvMove;
 import net.minecraft.client.KeyboardHandler;

@@ -165,7 +165,17 @@ public abstract class MixinMinecraft {
             method = "tick",
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 7))
     private Screen onTickScreenPassEvents(Minecraft mc) {
-        return InvMove.instance.overrideGetScreen(mc);
+        return InvMove.instance.overrideCurrentScreen(mc.screen);
+    }
+
+    @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V"))
+    private void onSetScreenBeforeReleasingAllKeys(Screen screen, CallbackInfo info) {
+        InvMove.instance.onOpenScreenStoreKeys(screen);
+    }
+
+    @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V", shift = At.Shift.AFTER))
+    private void onSetScreenAfterReleasingAllKeys(Screen screen, CallbackInfo info) {
+        InvMove.instance.onOpenScreenRestoreKeys(screen);
     }
 
     @Inject(at = @At(value = "TAIL"), method = "resizeGui()V")

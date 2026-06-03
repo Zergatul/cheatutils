@@ -12,6 +12,8 @@
     "neoforge.MixinCamera",
     "neoforge.MixinGui",
     "neoforge.MixinGuiGraphicsExtractor",
+    "neoforge.MixinKeyboardHandler",
+    "neoforge.MixinKeyMapping",
     "neoforge.MixinLevelRenderer",
     "neoforge.MixinMinecraft",
     "neoforge.MixinMultiPlayerGameMode"
