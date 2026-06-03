@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -65,8 +64,8 @@ public class TextureWrapper {
                 .writeToTexture(
                         texture,
                         buffer,
-                        NativeImage.Format.RGBA,
-                        0, 0,
+                        0,
+                        0,
                         x, y,
                         image.getWidth(),
                         image.getHeight());

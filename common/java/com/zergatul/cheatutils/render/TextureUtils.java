@@ -34,14 +34,14 @@ public class TextureUtils {
 
         int width = texture.getWidth(0);
         int height = texture.getHeight(0);
-        int size = width * height * texture.getFormat().pixelSize();
+        int size = width * height * texture.getFormat().blockSize();
         GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Texture dump buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, size);
         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(texture, buffer, 0L, () -> {
             try (GpuBufferSlice.MappedView read = buffer.map(true, false);) {
                 try (NativeImage image = new NativeImage(width, height, true)) {
                     for (int y = 0; y < height; y++) {
                         for (int x = 0; x < width; x++) {
-                            image.setPixelABGR(x, y, read.data().getInt((x + y * width) * texture.getFormat().pixelSize()));
+                            image.setPixelABGR(x, y, read.data().getInt((x + y * width) * texture.getFormat().blockSize()));
                         }
                     }
 

@@ -65,6 +65,7 @@
     "common.MixinFramerateLimitTracker",
     "common.MixinGameRenderer",
     "common.MixinGlCommandEncoder",
+    "common.MixinGui",
     "common.MixinGuiGraphicsExtractor",
     "common.MixinHud",
     "common.MixinHudFreeCam",
