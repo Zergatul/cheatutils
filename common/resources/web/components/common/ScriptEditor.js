@@ -460,8 +460,10 @@ export function createComponent(template) {
                 'autoClosingBrackets': true,
                 'semanticHighlighting.enabled': true,
                 automaticLayout: true,       // automatically resize editor based on container size
-                fixedOverflowWidgets: true,  // fix hover to be above parent->parent
                 wordBasedSuggestions: 'off', // disable default all words from current document suggestions if API returns []
+                suggest: {
+                    showStatusBar: true
+                },
                 ...settings
             });
             this.editor.onDidBlurEditorWidget(() => {

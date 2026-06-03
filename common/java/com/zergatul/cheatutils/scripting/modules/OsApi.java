@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.scripting.AdvancedApi;
+import com.zergatul.cheatutils.scripting.CurseForgeRestricted;
 import com.zergatul.scripting.MethodDescription;
 
 import java.io.IOException;
@@ -17,38 +18,24 @@ public class OsApi {
 
     public final FilesApi files = new FilesApi();
 
+    @CurseForgeRestricted
     @MethodDescription("""
             Starts external program and returns exit code
             """)
     public CompletableFuture<Integer> execute(String path) {
-        Process process;
-        try {
-            process = new ProcessBuilder(path).start();
-        } catch (IOException e) {
-            return CompletableFuture.failedFuture(e);
-        }
-
-        return process.onExit().thenApplyAsync(Process::exitValue, TickEndExecutor.instance);
+        return CurseForgeExcluded.execute(path);
     }
 
+    @CurseForgeRestricted
     @MethodDescription("""
             Starts external program and returns exit code
             """)
     public CompletableFuture<Integer> execute(String path, String[] arguments) {
-        List<String> list = new ArrayList<>();
-        list.add(path);
-        list.addAll(Arrays.asList(arguments));
-
-        Process process;
-        try {
-            process = new ProcessBuilder(list).start();
-        } catch (IOException e) {
-            return CompletableFuture.failedFuture(e);
-        }
-
-        return process.onExit().thenApplyAsync(Process::exitValue, TickEndExecutor.instance);
+        return CurseForgeExcluded.execute(path, arguments);
     }
 
+    @SuppressWarnings("unused")
+    @AdvancedApi
     public static class FilesApi {
 
         public String[] readAllLines(String path) {
@@ -83,6 +70,35 @@ public class OsApi {
             } catch (IOException e) {
                 return false;
             }
+        }
+    }
+
+    private static class CurseForgeExcluded {
+
+        public static CompletableFuture<Integer> execute(String path) {
+            Process process;
+            try {
+                process = new ProcessBuilder(path).start();
+            } catch (IOException e) {
+                return CompletableFuture.failedFuture(e);
+            }
+
+            return process.onExit().thenApplyAsync(Process::exitValue, TickEndExecutor.instance);
+        }
+
+        public static CompletableFuture<Integer> execute(String path, String[] arguments) {
+            List<String> list = new ArrayList<>();
+            list.add(path);
+            list.addAll(Arrays.asList(arguments));
+
+            Process process;
+            try {
+                process = new ProcessBuilder(list).start();
+            } catch (IOException e) {
+                return CompletableFuture.failedFuture(e);
+            }
+
+            return process.onExit().thenApplyAsync(Process::exitValue, TickEndExecutor.instance);
         }
     }
 }
