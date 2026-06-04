@@ -46,7 +46,7 @@ public class Modules {
         register(WorldDownloadController.instance);
         register(EntityTitle.instance);
         register(ContainerButtonsController.instance);
-        register(TeleportHackController.instance);
+        register(TeleportHack.instance);
         register(WorldMarkers.instance);
         register(TpsCounterController.instance);
         register(BlockAutomation.instance);

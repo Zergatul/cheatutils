@@ -45,6 +45,52 @@ public class InvMove implements Module {
         mc.options.keySprint.setDown(storedInputState.sprint());
     }
 
+    public void onKeyPress(int action, KeyEvent event) {
+        if (!shouldPassEvents(mc.screen)) {
+            return;
+        }
+
+        InputConstants.Key key = InputConstants.getKey(event);
+        if (isContainerScreenKey(key)) {
+            return;
+        }
+
+        for (KeyMapping mapping : mc.options.keyMappings) {
+            if (mapping == mc.options.keyDebugModifier) {
+                continue;
+            }
+            if (((KeyMappingAccessor) mapping).getKey_CU().equals(key)) {
+                mapping.setDown(action != 0);
+                if (action != 0) {
+                    KeyMappingAccessor accessor = (KeyMappingAccessor) mapping;
+                    accessor.setClickCount_CU(accessor.getClickCount_CU() + 1);
+                }
+            }
+        }
+    }
+
+    public boolean isContainerScreenKey(InputConstants.Key key) {
+        if (((KeyMappingAccessor) mc.options.keyDebugModifier).getKey_CU().equals(key)) {
+            return false;
+        }
+
+        for (KeyMapping mapping : mc.options.keyMappings) {
+            if (isContainerScreenKey(mapping) && ((KeyMappingAccessor) mapping).getKey_CU().equals(key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean shouldIgnoreForgeKeyContext(KeyMapping mapping) {
+        return shouldIgnoreKeyContext(mapping);
+    }
+
+    public boolean shouldIgnoreKeyContext(KeyMapping mapping) {
+        return shouldPassEvents(mc.screen) && isRegisteredKeyMapping(mapping);
+    }
+
     public Screen overrideCurrentScreen(Screen screen) {
         if (screen != null && InvMove.instance.shouldPassEvents(screen)) {
             return null;
@@ -59,5 +105,38 @@ public class InvMove implements Module {
 
     private boolean isValidScreen(Screen screen) {
         return screen instanceof AbstractContainerScreen;
+    }
+
+    private boolean isContainerScreenKey(KeyMapping mapping) {
+        if (mapping == mc.options.keyInventory) {
+            return true;
+        }
+        if (mapping == mc.options.keyDrop) {
+            return true;
+        }
+        if (mapping == mc.options.keySwapOffhand) {
+            return true;
+        }
+        if (mapping == mc.options.keyPickItem) {
+            return true;
+        }
+        for (KeyMapping hotbarMapping : mc.options.keyHotbarSlots) {
+            if (mapping == hotbarMapping) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isRegisteredKeyMapping(KeyMapping mapping) {
+        if (mapping == mc.options.keyDebugModifier) {
+            return false;
+        }
+        for (KeyMapping registered : mc.options.keyMappings) {
+            if (registered == mapping) {
+                return true;
+            }
+        }
+        return false;
     }
 }
