@@ -55,6 +55,10 @@ public class InvMove implements Module {
         }
 
         InputConstants.Key key = InputConstants.getKey(event);
+        if (isContainerScreenKey(key)) {
+            return;
+        }
+
         for (KeyMapping mapping : mc.options.keyMappings) {
             if (mapping == mc.options.keyDebugModifier) {
                 continue;
@@ -67,6 +71,20 @@ public class InvMove implements Module {
                 }
             }
         }
+    }
+
+    public boolean isContainerScreenKey(InputConstants.Key key) {
+        if (((KeyMappingAccessor) mc.options.keyDebugModifier).getKey_CU().equals(key)) {
+            return false;
+        }
+
+        for (KeyMapping mapping : mc.options.keyMappings) {
+            if (isContainerScreenKey(mapping) && ((KeyMappingAccessor) mapping).getKey_CU().equals(key)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean shouldIgnoreForgeKeyContext(KeyMapping mapping) {
@@ -91,6 +109,27 @@ public class InvMove implements Module {
 
     private boolean isValidScreen(Screen screen) {
         return screen instanceof AbstractContainerScreen;
+    }
+
+    private boolean isContainerScreenKey(KeyMapping mapping) {
+        if (mapping == mc.options.keyInventory) {
+            return true;
+        }
+        if (mapping == mc.options.keyDrop) {
+            return true;
+        }
+        if (mapping == mc.options.keySwapOffhand) {
+            return true;
+        }
+        if (mapping == mc.options.keyPickItem) {
+            return true;
+        }
+        for (KeyMapping hotbarMapping : mc.options.keyHotbarSlots) {
+            if (mapping == hotbarMapping) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isRegisteredKeyMapping(KeyMapping mapping) {

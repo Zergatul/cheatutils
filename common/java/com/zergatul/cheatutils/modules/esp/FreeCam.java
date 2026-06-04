@@ -85,12 +85,26 @@ public class FreeCam implements Module {
         return z;
     }
 
+    public Vec3 getPosition() {
+        return new Vec3(x, y, z);
+    }
+
     public float getXRot() {
         return xRot;
     }
 
     public float getYRot() {
         return yRot;
+    }
+
+    public Vec3 getViewVector() {
+        float xRotRadians = xRot * (float) (Math.PI / 180.0);
+        float yRotRadians = -yRot * (float) (Math.PI / 180.0);
+        float cosYRot = Mth.cos(yRotRadians);
+        float sinYRot = Mth.sin(yRotRadians);
+        float cosXRot = Mth.cos(xRotRadians);
+        float sinXRot = Mth.sin(xRotRadians);
+        return new Vec3(sinYRot * cosXRot, -sinXRot, cosYRot * cosXRot);
     }
 
     public FreeCamPath getPath() {
