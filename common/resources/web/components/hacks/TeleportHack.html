@@ -1,35 +1,70 @@
 <div class="module-main">
     <div class="description">
         Use Keybindings to assign keys.<br>
-        Module can trick the server think you are lagging.
-        Second parameter for teleport methods called "repeats" sends your current position packet to server "repeats" times.
-        Vanilla server will reject more than 5 packets sent during single server tick.<br>
-        More packets you send - farther you can teleport.
-        I would not set this more than 5 since any basic anticheat will mark you suspicious, but you are free to set it up to 100.
-        Lowest accepted value = 0.
+        Most useful examples:
+        <br><b>teleport.toCrosshair(20);</b> - teleport toward crosshair, up to 20 blocks. Packet count is automatic.
+        <br><b>teleport.toCrosshair(20, 5);</b> - same, but send exactly 5 MovePlayer packets.
+        <br><b>teleport.vertical(-50);</b> - teleport up to 50 blocks down. Use positive values to go up.
+        <br><b>teleport.vertical(-50, 5);</b> - same, but send exactly 5 MovePlayer packets.
+        <br><b>teleport.vertical(-1, -50, true);</b> - search downward for empty space with a block below your feet.
     </div>
 
     <div class="module-sections">
-        <div class="description">
-            Example 1: <b>teleport.toCrosshair(20, 5);</b> - module will attempt to teleport you not more than 20 block away.
-            It uses your crosshair as the direction for teleport.
-            If your crosshair intersects block, module tries to place you at this position (just like ender pearl).
-            If your bounding box collides with blocks in the destination, module tries to find acceptable position for player with no collision (by moving through the line of sight).
-            If this destination position is closer than 1 block, there will be no teleport.
-            You cannot use Free Cam to target something different.
-            Method returns boolean indicating if there was teleport attempt.
-        </div>
-        <div class="description">
-            Example 2: <b>teleport.vertical(-50, 5);</b> - module will attempt to teleport you -50 blocks on Y axis.
-            In other words - 50 blocks below. Use positive value to teleport upwards.
-            If you collide with blocks in the destination position, it will search for empty space just like in the example above.
-            Servers are more forgiving for vertical teleports allowing you to go through any blocks for a long distance.
-        </div>
-        <div class="description">
-            Example 3: <b>teleport.vertical(-1, -50, true, 5);</b> - module tries to find appropriate position with some block below your feet.
-            It starts from 1 block below and goes down to 50 blocks below.
-            In other words module tries to find empty space with block belows in range -1..-50.
-            You can swap -1 and -50 and module with try to find destination point from -50 and go back to -1.
-        </div>
+        <fieldset>
+            <legend>Crosshair teleport</legend>
+            <div class="description">
+                If your crosshair hits a block, your feet are placed at the hit location, similar to an ender pearl.
+                Blocks without collision, such as grass or flowers, are ignored by the raycast.
+                If you aim at the sky, the target is the point at the specified distance in your view direction.
+                Free Cam position and view direction are used when Free Cam is enabled.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Vertical teleport</legend>
+            <div class="description">
+                <b>teleport.vertical(distance)</b> tries to teleport by that Y distance.
+                Negative values go down, positive values go up.
+                If the exact destination is not valid, it backs off toward you until it finds a valid position.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Vertical range search</legend>
+            <div class="description">
+                <b>teleport.vertical(fromDistance, toDistance, findSurface)</b> searches from one vertical offset to another.
+                Example: <b>teleport.vertical(-1, -50, true);</b> starts 1 block below you and searches down to 50 blocks below you.
+                If <b>findSurface</b> is true, the target must have a block below your feet.
+                You can swap the range, for example <b>teleport.vertical(-50, -1, true);</b>, to search in the opposite direction.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Packet parameter</legend>
+            <div class="description">
+                Methods with a <b>packets</b> parameter send that many MovePlayer packets, including the final position packet.
+                Values less than 1 still send one final position packet.
+                These values are not clamped, so you can experiment with different servers.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Automatic packet count</legend>
+            <div class="description">
+                Methods without a <b>packets</b> parameter estimate packet count from vanilla movement checks.
+                Vanilla does not simply reject more than 5 movement packets in one server tick.
+                Instead, up to 5 packets can increase the allowed movement budget; after that, vanilla stops giving extra budget.
+                Automatic mode therefore backs off to a closer valid target if a teleport would need more than 5 packets.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Return value</legend>
+            <div class="description">
+                All methods return <b>true</b> only when a teleport packet was sent.
+                They return <b>false</b> if the distance is invalid, no player/world exists, no valid position is found,
+                or vanilla-style movement validation predicts the server would reject the movement.
+            </div>
+        </fieldset>
     </div>
 </div>
