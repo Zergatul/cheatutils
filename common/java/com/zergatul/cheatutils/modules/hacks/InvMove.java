@@ -1,10 +1,14 @@
 package com.zergatul.cheatutils.modules.hacks;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.mixins.common.accessors.KeyMappingAccessor;
 import com.zergatul.cheatutils.modules.Module;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.world.entity.player.Input;
 
 public class InvMove implements Module {
@@ -46,7 +50,7 @@ public class InvMove implements Module {
     }
 
     public void onKeyPress(int action, KeyEvent event) {
-        if (!shouldPassEvents(mc.screen)) {
+        if (!shouldPassEvents(mc.gui.screen())) {
             return;
         }
 
@@ -88,7 +92,7 @@ public class InvMove implements Module {
     }
 
     public boolean shouldIgnoreKeyContext(KeyMapping mapping) {
-        return shouldPassEvents(mc.screen) && isRegisteredKeyMapping(mapping);
+        return shouldPassEvents(mc.gui.screen()) && isRegisteredKeyMapping(mapping);
     }
 
     public Screen overrideCurrentScreen(Screen screen) {
