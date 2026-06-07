@@ -16,7 +16,7 @@ process
     $zip = [System.IO.Compression.ZipFile]::Open($cfJarPath, [System.IO.Compression.ZipArchiveMode]::Update)
     try
     {
-        $entry = $zip.GetEntry('com/zergatul/cheatutils/scripting/modules/OsApi$CurseForgeExcluded.class')
+        $entry = $zip.GetEntry('com/zergatul/cheatutils/scripting/modules/OsApiCurseForgeExcluded.class')
         if (-not $entry)
         {
             Write-Error 'Zip Entry not found'
