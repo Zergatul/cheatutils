@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.scripting.AdvancedApi;
 import com.zergatul.cheatutils.scripting.CurseForgeRestricted;
 import com.zergatul.scripting.MethodDescription;
@@ -8,9 +7,7 @@ import com.zergatul.scripting.MethodDescription;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @AdvancedApi
@@ -23,7 +20,7 @@ public class OsApi {
             Starts external program and returns exit code
             """)
     public CompletableFuture<Integer> execute(String path) {
-        return CurseForgeExcluded.execute(path);
+        return OsApiCurseForgeExcluded.execute(path);
     }
 
     @CurseForgeRestricted
@@ -31,7 +28,7 @@ public class OsApi {
             Starts external program and returns exit code
             """)
     public CompletableFuture<Integer> execute(String path, String[] arguments) {
-        return CurseForgeExcluded.execute(path, arguments);
+        return OsApiCurseForgeExcluded.execute(path, arguments);
     }
 
     @SuppressWarnings("unused")
@@ -70,35 +67,6 @@ public class OsApi {
             } catch (IOException e) {
                 return false;
             }
-        }
-    }
-
-    private static class CurseForgeExcluded {
-
-        public static CompletableFuture<Integer> execute(String path) {
-            Process process;
-            try {
-                process = new ProcessBuilder(path).start();
-            } catch (IOException e) {
-                return CompletableFuture.failedFuture(e);
-            }
-
-            return process.onExit().thenApplyAsync(Process::exitValue, TickEndExecutor.instance);
-        }
-
-        public static CompletableFuture<Integer> execute(String path, String[] arguments) {
-            List<String> list = new ArrayList<>();
-            list.add(path);
-            list.addAll(Arrays.asList(arguments));
-
-            Process process;
-            try {
-                process = new ProcessBuilder(list).start();
-            } catch (IOException e) {
-                return CompletableFuture.failedFuture(e);
-            }
-
-            return process.onExit().thenApplyAsync(Process::exitValue, TickEndExecutor.instance);
         }
     }
 }
