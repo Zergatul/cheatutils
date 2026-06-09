@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
@@ -82,7 +83,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "tick()V")
     private void onBeforeTick(CallbackInfo info) {
-        if (this.isGameLoadFinished()) {
+        if (this.isGameLoadFinished() && this.level != null && this.player != null) {
             Events.ClientTickStart.trigger();
         }
     }
@@ -98,7 +99,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("TAIL"), method = "tick()V")
     private void onAfterTick(CallbackInfo info) {
-        if (this.isGameLoadFinished()) {
+        if (this.isGameLoadFinished() && this.level != null && this.player != null) {
             Events.ClientTickEnd.trigger();
         }
     }
@@ -161,19 +162,19 @@ public abstract class MixinMinecraft {
         }
     }
 
-    @Redirect(
+    @WrapWithCondition(
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
-    private void onShouldContinueAttack(Minecraft instance, boolean down) {
+    private boolean onShouldContinueAttack(Minecraft instance, boolean down) {
         if (VillagerRoller.instance.isBreakingBlock()) {
-            return;
+            return false;
         }
 
         if (BlockAutomation.instance.isBreakingBlock()) {
-            return;
+            return false;
         }
 
-        this.continueAttack(down);
+        return true;
     }
 
     @ModifyExpressionValue(
