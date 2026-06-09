@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
@@ -115,15 +116,15 @@ public abstract class MixinMinecraft {
         }
     }
 
-    @Redirect(
+    @WrapWithCondition(
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
-    private void onShouldContinueAttack(Minecraft instance, boolean value) {
+    private boolean onShouldContinueAttack(Minecraft instance, boolean down) {
         if (VillagerRoller.instance.isBreakingBlock()) {
-            return;
+            return false;
         }
 
-        this.continueAttack(value);
+        return true;
     }
 
     @Redirect(
