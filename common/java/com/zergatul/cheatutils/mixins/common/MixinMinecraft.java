@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
+import com.zergatul.mixin.WrapMethodInsideIfCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -140,19 +141,19 @@ public abstract class MixinMinecraft {
         }
     }
 
-    @Redirect(
+    @WrapMethodInsideIfCondition(
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
-    private void onShouldContinueAttack(Minecraft instance, boolean value) {
+    private static boolean onShouldContinueAttack(Minecraft instance, boolean down) {
         if (VillagerRoller.instance.isBreakingBlock()) {
-            return;
+            return false;
         }
 
         if (BlockAutomation.instance.isBreakingBlock()) {
-            return;
+            return false;
         }
 
-        this.continueAttack(value);
+        return true;
     }
 
     @Redirect(
