@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.DamageUtils;
+import com.zergatul.cheatutils.utils.EndCrystalCalculationCache;
 import com.zergatul.cheatutils.utils.HotbarUtils;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -47,6 +49,7 @@ public class CrystalAura implements Module {
     private final List<LivingEntity> targets = new ArrayList<>();
     private final List<EndCrystal> spawnedCrystals = new ArrayList<>();
     private final Int2IntMap recentlyAttackedCrystals = new Int2IntArrayMap();
+    private final EndCrystalCalculationCache cache = new EndCrystalCalculationCache();
     private int placeCountdown;
     private int breakCountdown;
     private Runnable afterPositionSentAction;
@@ -73,7 +76,12 @@ public class CrystalAura implements Module {
     }
 
     private void onBeforeProcessQueuedPackets() {
+        if (mc.level == null || mc.player == null) {
+            return;
+        }
+
         spawnedCrystals.clear();
+        cache.begin(mc.level, getLevelSliceRadius(), mc.player.getEyePosition());
     }
 
     private void onEntityAdded(Entity entity) {
@@ -99,18 +107,22 @@ public class CrystalAura implements Module {
     }
 
     private void onAfterProcessQueuedPackets() {
-        if (spawnedCrystals.isEmpty()) {
+        if (mc.level == null || mc.player == null) {
             return;
         }
 
-        assert mc.level != null;
-        assert mc.player != null;
+        if (spawnedCrystals.isEmpty()) {
+            cache.end();
+            return;
+        }
+
         assert mc.gameMode != null;
 
         CrystalAuraConfig config = ConfigStore.instance.getConfig().crystalAuraConfig;
 
         findTargets();
         if (targets.isEmpty()) {
+            cache.end();
             return;
         }
 
@@ -124,7 +136,7 @@ public class CrystalAura implements Module {
                 continue;
             }
 
-            float damage = calculatePossibleDamage(mc.level, mc.player, crystal.position(), config);
+            float damage = calculatePossibleDamage(mc.player, crystal.position(), config);
             if (damage == 0) {
                 continue;
             }
@@ -135,9 +147,14 @@ public class CrystalAura implements Module {
         }
 
         targets.clear();
+        cache.end();
     }
 
     private void onTickStart() {
+        assert mc.level != null;
+        assert mc.player != null;
+
+        cache.begin(mc.level, getLevelSliceRadius(), mc.player.getEyePosition());
         targets.clear();
         afterPositionSentAction = null;
 
@@ -181,7 +198,7 @@ public class CrystalAura implements Module {
     }
 
     private void onTickEnd() {
-
+        cache.end();
     }
 
     private void findTargets() {
@@ -252,7 +269,7 @@ public class CrystalAura implements Module {
                     continue;
                 }
                 AABB bb = crystal.getBoundingBox();
-                if (inBreakRange(bb, eyePos, config) && calculatePossibleDamage(level, player, crystal.position(), config) > 0) {
+                if (inBreakRange(bb, eyePos, config) && calculatePossibleDamage(player, crystal.position(), config) > 0) {
                     return false;
                 }
             }
@@ -346,7 +363,7 @@ public class CrystalAura implements Module {
                 continue;
             }
 
-            float damage = calculatePossibleDamage(level, player, crystal.position(), config);
+            float damage = calculatePossibleDamage(player, crystal.position(), config);
             if (damage > bestDamage) {
                 bestCrystal = crystal;
                 bestDamage = damage;
@@ -374,6 +391,7 @@ public class CrystalAura implements Module {
     private @Nullable PotentialPlacement calculatePotentialPlacement(ClientLevel level, LocalPlayer player, Vec3 eyePos, CrystalAuraConfig config) {
         int radius = Mth.ceil(config.placeRange);
         double placeRangeSqr = config.placeRange * config.placeRange;
+        BlockGetter levelSlice = cache.getBlockGetter();
 
         float bestDamage = 0;
         BlockPos bestCrystalBlockPos = null;
@@ -385,13 +403,13 @@ public class CrystalAura implements Module {
                 pos.setY(player.blockPosition().getY() + dy);
                 for (int dz = -radius; dz <= radius; dz++) {
                     pos.setZ(player.blockPosition().getZ() + dz);
-                    BlockState state = level.getBlockState(pos);
+                    BlockState state = levelSlice.getBlockState(pos);
                     if (!state.is(Blocks.OBSIDIAN) && !state.is(Blocks.BEDROCK)) {
                         continue;
                     }
 
                     BlockPos crystalBlockPos = pos.above();
-                    if (!level.isEmptyBlock(crystalBlockPos)) {
+                    if (!levelSlice.getBlockState(crystalBlockPos).isAir()) {
                         continue;
                     }
 
@@ -401,7 +419,7 @@ public class CrystalAura implements Module {
 
                     Vec3 crystalEntityPosition = Vec3.atBottomCenterOf(crystalBlockPos);
 
-                    float damage = calculatePossibleDamage(level, player, crystalEntityPosition, config);
+                    float damage = calculatePossibleDamage(player, crystalEntityPosition, config);
                     if (damage <= bestDamage) {
                         continue;
                     }
@@ -439,6 +457,7 @@ public class CrystalAura implements Module {
 
         float bestDamage = 0;
         BlockPos bestSupportPos = null;
+        BlockPlacePlan bestSupportPlacePlan = null;
 
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int dx = -radius; dx <= radius; dx++) {
@@ -461,13 +480,6 @@ public class CrystalAura implements Module {
                         continue;
                     }
 
-                    Vec3 crystalEntityPosition = Vec3.atBottomCenterOf(crystalBlockPos);
-
-                    float damage = calculatePossibleDamage(level, player, crystalEntityPosition, pos, config);
-                    if (damage <= bestDamage) {
-                        continue;
-                    }
-
                     // bounding box for support block + crystal placement check
                     AABB bb = new AABB(
                             pos.getX(), pos.getY(), pos.getZ(),
@@ -479,8 +491,25 @@ public class CrystalAura implements Module {
                         continue;
                     }
 
+                    BlockPlacePlan plan = BlockPlacer.createPlan(
+                            Blocks.OBSIDIAN.defaultBlockState(),
+                            pos.immutable(),
+                            BlockPlacingMethod.ANY,
+                            new SupportPlacementInteractionConfig(config));
+                    if (plan == null) {
+                        continue;
+                    }
+
+                    Vec3 crystalEntityPosition = Vec3.atBottomCenterOf(crystalBlockPos);
+
+                    float damage = calculatePossibleDamage(level, player, crystalEntityPosition, pos, config);
+                    if (damage <= bestDamage) {
+                        continue;
+                    }
+
                     bestSupportPos = pos.immutable();
                     bestDamage = damage;
+                    bestSupportPlacePlan = plan;
                 }
             }
         }
@@ -489,16 +518,7 @@ public class CrystalAura implements Module {
             return null;
         }
 
-        BlockPlacePlan plan = BlockPlacer.createPlan(
-                Blocks.OBSIDIAN.defaultBlockState(),
-                bestSupportPos,
-                BlockPlacingMethod.ANY,
-                new SupportPlacementInteractionConfig(config));
-        if (plan == null) {
-            return null;
-        }
-
-        return new PotentialSupportPlacement(plan, bestSupportPos);
+        return new PotentialSupportPlacement(bestSupportPlacePlan, bestSupportPos);
     }
 
     private boolean inBreakRange(AABB crystalBB, Vec3 eyePos, CrystalAuraConfig config) {
@@ -506,18 +526,18 @@ public class CrystalAura implements Module {
     }
 
     // returns 0 if this EndCrystal is not good for blowing up
-    private float calculatePossibleDamage(ClientLevel level, LocalPlayer player, Vec3 crystalPos, CrystalAuraConfig config) {
+    private float calculatePossibleDamage(LocalPlayer player, Vec3 crystalPos, CrystalAuraConfig config) {
         // TODO: think if sum is better than max
         float targetDamage = 0;
         for (LivingEntity target : targets) {
-            targetDamage += DamageUtils.calculateEndCrystalDamage(level, crystalPos, target);
+            targetDamage += DamageUtils.calculateEndCrystalDamage(cache, crystalPos, target);
         }
 
         if (targetDamage < config.minTargetDamage) {
             return 0;
         }
 
-        float selfDamage = DamageUtils.calculateEndCrystalDamage(level, crystalPos, player);
+        float selfDamage = DamageUtils.calculateEndCrystalDamage(cache, crystalPos, player);
         if (selfDamage > config.maxSelfDamage) {
             return 0;
         }
@@ -534,21 +554,35 @@ public class CrystalAura implements Module {
             CrystalAuraConfig config
     ) {
         // TODO: think if sum is better than max
-        float targetDamage = 0;
-        for (LivingEntity target : targets) {
-            targetDamage += DamageUtils.calculateEndCrystalDamage(level, crystalPos, target, obsidianPos, Blocks.OBSIDIAN.defaultBlockState());
-        }
+        cache.pushBlockStateOverride(obsidianPos, Blocks.OBSIDIAN.defaultBlockState());
+        try {
+            float targetDamage = 0;
+            for (LivingEntity target : targets) {
+                targetDamage += DamageUtils.calculateEndCrystalDamage(cache, crystalPos, target);
 
-        if (targetDamage < config.minTargetDamage) {
-            return 0;
-        }
+            }
 
-        float selfDamage = DamageUtils.calculateEndCrystalDamage(level, crystalPos, player, obsidianPos, Blocks.OBSIDIAN.defaultBlockState());
-        if (selfDamage > config.maxSelfDamage) {
-            return 0;
-        }
+            if (targetDamage < config.minTargetDamage) {
+                return 0;
+            }
 
-        return targetDamage;
+            float selfDamage = DamageUtils.calculateEndCrystalDamage(cache, crystalPos, player);
+            if (selfDamage > config.maxSelfDamage) {
+                return 0;
+            }
+
+            return targetDamage;
+        } finally {
+            cache.popBlockStateOverride();
+        }
+    }
+
+    private int getLevelSliceRadius() {
+        return getLevelSliceRadius(ConfigStore.instance.getConfig().crystalAuraConfig);
+    }
+
+    private int getLevelSliceRadius(CrystalAuraConfig config) {
+        return Mth.ceil(Math.max(config.placeRange, config.breakRange) + DamageUtils.END_CRYSTAL_EXPLOSION_RADIUS) + 1;
     }
 
     private record PotentialPlacement(BlockPos crystalPos) {}

@@ -1,11 +1,10 @@
 package com.zergatul.cheatutils.utils;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -14,33 +13,19 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 public class DamageUtils {
 
-    private static final float END_CRYSTAL_EXPLOSION_RADIUS = 6.0F;
+    public static final float END_CRYSTAL_EXPLOSION_RADIUS = 6.0F;
 
-    public static float calculateEndCrystalDamage(ClientLevel level, EndCrystal crystal, LivingEntity entity) {
-        return calculateEndCrystalDamage(level, crystal.position(), entity);
-    }
-
-    public static float calculateEndCrystalDamage(ClientLevel level, Vec3 crystalPosition, LivingEntity entity) {
+    public static float calculateEndCrystalDamage(EndCrystalCalculationCache cache, Vec3 crystalPosition, LivingEntity entity) {
         float doubleRadius = END_CRYSTAL_EXPLOSION_RADIUS * 2.0F;
         double distanceModifier = Math.sqrt(entity.distanceToSqr(crystalPosition)) / doubleRadius;
         if (distanceModifier > 1.0) {
@@ -48,50 +33,31 @@ public class DamageUtils {
         }
 
         AABB bb = entity.getBoundingBox();
-        float exposure = getSeenPercent(level, crystalPosition, bb, entity);
+        float exposure = getSeenPercent(cache, crystalPosition, bb);
         double pow = (1.0 - distanceModifier) * exposure;
         float damage = (float) ((pow * pow + pow) / 2.0 * 7.0 * doubleRadius + 1.0);
-        return withReductions(level, entity, damage, level.damageSources().explosion(null));
+        return withReductions(cache.getDifficulty(), entity, damage, cache.getDamageSource());
     }
 
-    public static float calculateEndCrystalDamage(
-            ClientLevel level,
-            Vec3 crystalPosition,
-            LivingEntity entity,
-            BlockPos overridePos,
-            BlockState overrideState
-    ) {
-        float doubleRadius = END_CRYSTAL_EXPLOSION_RADIUS * 2.0F;
-        double distanceModifier = Math.sqrt(entity.distanceToSqr(crystalPosition)) / doubleRadius;
-        if (distanceModifier > 1.0) {
-            return 0;
-        }
+    // for future
+//    public static float calculateEndCrystalDamage(ClientLevel level, EndCrystal crystal, LivingEntity entity, Vec3 interpolatedPosition) {
+//        Vec3 explosionCenter = crystal.position();
+//        float doubleRadius = END_CRYSTAL_EXPLOSION_RADIUS * 2.0F;
+//        double distanceModifier = interpolatedPosition.distanceTo(explosionCenter) / doubleRadius;
+//        if (distanceModifier > 1.0) {
+//            return 0;
+//        }
+//
+//        AABB bb = entity.getBoundingBox().move(interpolatedPosition.subtract(entity.position()));
+//        float exposure = getSeenPercent(level, explosionCenter, bb, entity);
+//        double pow = (1.0 - distanceModifier) * exposure;
+//        float damage = (float) ((pow * pow + pow) / 2.0 * 7.0 * doubleRadius + 1.0);
+//        return withReductions(level.getDifficulty(), entity, damage, level.damageSources().explosion(null));
+//    }
 
-        AABB bb = entity.getBoundingBox();
-        float exposure = getSeenPercent(new InterpolatedLevel(level, overridePos, overrideState), crystalPosition, bb, entity);
-        double pow = (1.0 - distanceModifier) * exposure;
-        float damage = (float) ((pow * pow + pow) / 2.0 * 7.0 * doubleRadius + 1.0);
-        return withReductions(level, entity, damage, level.damageSources().explosion(null));
-    }
-
-    public static float calculateEndCrystalDamage(ClientLevel level, EndCrystal crystal, LivingEntity entity, Vec3 interpolatedPosition) {
-        Vec3 explosionCenter = crystal.position();
-        float doubleRadius = END_CRYSTAL_EXPLOSION_RADIUS * 2.0F;
-        double distanceModifier = interpolatedPosition.distanceTo(explosionCenter) / doubleRadius;
-        if (distanceModifier > 1.0) {
-            return 0;
-        }
-
-        AABB bb = entity.getBoundingBox().move(interpolatedPosition.subtract(entity.position()));
-        float exposure = getSeenPercent(level, explosionCenter, bb, entity);
-        double pow = (1.0 - distanceModifier) * exposure;
-        float damage = (float) ((pow * pow + pow) / 2.0 * 7.0 * doubleRadius + 1.0);
-        return withReductions(level, entity, damage, level.damageSources().explosion(null));
-    }
-
-    private static float withReductions(ClientLevel level, LivingEntity entity, float damage, DamageSource source) {
+    private static float withReductions(Difficulty difficulty, LivingEntity entity, float damage, DamageSource source) {
         if (source.scalesWithDifficulty() && entity instanceof Player) {
-            switch (level.getDifficulty()) {
+            switch (difficulty) {
                 case PEACEFUL -> { return 0; }
                 case EASY -> damage = Math.min(damage / 2 + 1, damage);
                 case HARD -> damage *= 1.5f;
@@ -147,7 +113,7 @@ public class DamageUtils {
         return CombatRules.getDamageAfterMagicAbsorb(damage, damageProtection);
     }
 
-    private static float getSeenPercent(BlockGetter level, Vec3 center, AABB bb, LivingEntity entity) {
+    private static float getSeenPercent(EndCrystalCalculationCache cache, Vec3 center, AABB bb) {
         double xs = 1.0 / ((bb.maxX - bb.minX) * 2.0 + 1.0);
         double ys = 1.0 / ((bb.maxY - bb.minY) * 2.0 + 1.0);
         double zs = 1.0 / ((bb.maxZ - bb.minZ) * 2.0 + 1.0);
@@ -166,10 +132,15 @@ public class DamageUtils {
                     double y = Mth.lerp(yy, bb.minY, bb.maxY);
                     double z = Mth.lerp(zz, bb.minZ, bb.maxZ);
                     Vec3 from = new Vec3(x + xOffset, y, z + zOffset);
-                    ClipContext context = new ClipContext(from, center, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity);
-                    if (level.clip(context).getType() == HitResult.Type.MISS) {
+                    if (cache.isLineOfSightClear(from, center)) {
                         hits++;
                     }
+
+                    // vanilla code was too bloated
+                    // ClipContext context = new ClipContext(from, center, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity);
+                    // if (cache.getBlockGetter().clip(context).getType() == HitResult.Type.MISS) {
+                    //     hits++;
+                    // }
 
                     count++;
                 }
@@ -177,52 +148,5 @@ public class DamageUtils {
         }
 
         return (float) hits / count;
-    }
-
-    @NullMarked
-    private static class InterpolatedLevel implements BlockGetter {
-
-        private final ClientLevel level;
-        private final BlockPos overridePos;
-        private final BlockState overrideState;
-
-        public InterpolatedLevel(ClientLevel level, BlockPos pos, BlockState state) {
-            this.level = level;
-            this.overridePos = pos;
-            this.overrideState = state;
-        }
-
-        @Override
-        public @Nullable BlockEntity getBlockEntity(BlockPos pos) {
-            return level.getBlockEntity(pos);
-        }
-
-        @Override
-        public BlockState getBlockState(BlockPos pos) {
-            if (pos.equals(overridePos)) {
-                return overrideState;
-            } else {
-                return level.getBlockState(pos);
-            }
-        }
-
-        @Override
-        public FluidState getFluidState(BlockPos pos) {
-            if (pos.equals(overridePos)) {
-                return Fluids.EMPTY.defaultFluidState();
-            } else {
-                return level.getFluidState(pos);
-            }
-        }
-
-        @Override
-        public int getHeight() {
-            return level.getHeight();
-        }
-
-        @Override
-        public int getMinY() {
-            return level.getMinY();
-        }
     }
 }
