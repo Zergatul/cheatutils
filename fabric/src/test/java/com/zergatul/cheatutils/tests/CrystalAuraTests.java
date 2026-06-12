@@ -121,4 +121,31 @@ public class CrystalAuraTests {
         Assertions.assertEquals(26.070002f, dmg1);
         Assertions.assertEquals(26.070002f, dmg2);
     }
+
+    @Test
+    public void complexTest1() {
+        MockLevel level = MockLevel.create();
+        level.platform(-64, -50, -50, 50, 50, Blocks.BEDROCK);
+        level.block(21, -63, 20, Blocks.OBSIDIAN);
+        level.block(21, -62, 20, Blocks.BLACKSTONE_SLAB.defaultBlockState());
+        level.block(22, -63, 19, Blocks.OBSIDIAN);
+
+        MockPlayer player = new MockPlayer(level, "Tester");
+        player.setPos(19.5, -63, 20.5);
+        level.addFreshEntity(player);
+
+        CrystalAuraConfig config = new CrystalAuraConfig();
+        config.placeRange = 4;
+        config.breakRange = 4;
+
+        CrystalAuraDamageCalculator calculator1 = new VanillaCrystalAuraDamageCalculator();
+        CrystalAuraDamageCalculator calculator2 = new FastCrystalAuraDamageCalculator();
+        calculator1.begin(level, config, player.getEyePosition());
+        calculator2.begin(level, config, player.getEyePosition());
+        float dmg1 = calculator1.calculateEndCrystalDamage(new Vec3(22.5, -62, 19.5), player);
+        float dmg2 = calculator1.calculateEndCrystalDamage(new Vec3(22.5, -62, 19.5), player);
+
+        Assertions.assertEquals(10.647066f, dmg1);
+        Assertions.assertEquals(10.647066f, dmg2);
+    }
 }

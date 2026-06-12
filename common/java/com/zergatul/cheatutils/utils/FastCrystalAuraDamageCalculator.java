@@ -3,8 +3,6 @@ package com.zergatul.cheatutils.utils;
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -175,9 +173,9 @@ public class FastCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCa
             states[index(pos)] = state;
         }
 
+        @SuppressWarnings("ConstantConditions")
         public void popOverride() {
-            BlockPos pos = overridePos;
-            states[index(pos)] = originalState;
+            states[index(overridePos)] = originalState;
             overridePos = null;
             originalState = null;
         }

@@ -46,6 +46,7 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
             return 0;
         }
 
+        // logic from ExplosionDamageCalculator.getEntityDamageAmount
         AABB bb = entity.getBoundingBox();
         float exposure = getSeenPercent(crystalPosition, bb, entity);
         double pow = (1.0 - distanceModifier) * exposure;
@@ -75,11 +76,9 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
     @Override
     public float calculatePossibleDamage(LocalPlayer self, List<LivingEntity> targets, Vec3 crystalPosition, BlockPos overridePos, BlockState overrideState) {
         pushBlockStateOverride(overridePos, overrideState);
-        try {
-            return calculatePossibleDamage(self, targets, crystalPosition);
-        } finally {
-            popBlockStateOverride();
-        }
+        float damage = calculatePossibleDamage(self, targets, crystalPosition);
+        popBlockStateOverride();
+        return damage;
     }
 
     protected abstract float getSeenPercent(Vec3 center, AABB bb, LivingEntity entity);

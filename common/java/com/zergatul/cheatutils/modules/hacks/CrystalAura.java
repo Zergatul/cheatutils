@@ -29,6 +29,7 @@ import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -390,7 +391,7 @@ public class CrystalAura implements Module {
         return true;
     }
 
-    private @Nullable PotentialPlacement calculatePotentialPlacement(ClientLevel level, LocalPlayer player, Vec3 eyePos, CrystalAuraConfig config) {
+    private @Nullable PotentialPlacement calculatePotentialPlacement(Level level, LocalPlayer player, Vec3 eyePos, CrystalAuraConfig config) {
         int radius = Mth.ceil(config.placeRange);
         double placeRangeSqr = config.placeRange * config.placeRange;
         BlockGetter levelSlice = calculator.getBlockGetter();
@@ -456,6 +457,7 @@ public class CrystalAura implements Module {
 
         int radius = Mth.ceil(config.placeRange);
         double placeRangeSqr = config.placeRange * config.placeRange;
+        BlockGetter levelSlice = calculator.getBlockGetter();
 
         float bestDamage = 0;
         BlockPos bestSupportPos = null;
@@ -468,13 +470,13 @@ public class CrystalAura implements Module {
                 pos.setY(player.blockPosition().getY() + dy);
                 for (int dz = -radius; dz <= radius; dz++) {
                     pos.setZ(player.blockPosition().getZ() + dz);
-                    BlockState state = level.getBlockState(pos);
+                    BlockState state = levelSlice.getBlockState(pos);
                     if (!state.canBeReplaced()) {
                         continue;
                     }
 
                     BlockPos crystalBlockPos = pos.above();
-                    if (!level.isEmptyBlock(crystalBlockPos)) {
+                    if (!levelSlice.getBlockState(crystalBlockPos).isAir()) {
                         continue;
                     }
 
