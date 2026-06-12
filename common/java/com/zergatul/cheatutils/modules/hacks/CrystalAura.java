@@ -51,6 +51,7 @@ public class CrystalAura implements Module {
     private final List<EndCrystal> spawnedCrystals = new ArrayList<>();
     private final Int2IntMap recentlyAttackedCrystals = new Int2IntArrayMap();
     private final CrystalAuraDamageCalculator calculator = new FastCrystalAuraDamageCalculator();
+    private CrystalAuraConfig config; // we snapshot config, so it doesn't get update mid-process
     private int placeCountdown;
     private int breakCountdown;
     private Runnable afterPositionSentAction;
@@ -77,23 +78,20 @@ public class CrystalAura implements Module {
     }
 
     private void onBeforeProcessQueuedPackets() {
+        config = ConfigStore.instance.getConfig().crystalAuraConfig;
+
         if (mc.level == null || mc.player == null) {
             return;
         }
 
         spawnedCrystals.clear();
-        CrystalAuraConfig config = ConfigStore.instance.getConfig().crystalAuraConfig;
-        calculator.begin(mc.level, config, mc.player.getEyePosition());
+        if (isFastBreakEnabled()) {
+            calculator.begin(mc.level, config, mc.player.getEyePosition());
+        }
     }
 
     private void onEntityAdded(Entity entity) {
-        CrystalAuraConfig config = ConfigStore.instance.getConfig().crystalAuraConfig;
-        if (!config.enabled) {
-            return;
-        }
-
-        // TODO: for now Fast-Break is disabled when Auto-Rotate is ON
-        if (!config.autoBreak || !config.fastBreak || config.autoRotate) {
+        if (!isFastBreakEnabled()) {
             return;
         }
 
@@ -113,14 +111,16 @@ public class CrystalAura implements Module {
             return;
         }
 
+        if (!isFastBreakEnabled()) {
+            return;
+        }
+
         if (spawnedCrystals.isEmpty()) {
             calculator.end();
             return;
         }
 
         assert mc.gameMode != null;
-
-        CrystalAuraConfig config = ConfigStore.instance.getConfig().crystalAuraConfig;
 
         findTargets();
         if (targets.isEmpty()) {
@@ -153,10 +153,14 @@ public class CrystalAura implements Module {
     }
 
     private void onTickStart() {
+        config = ConfigStore.instance.getConfig().crystalAuraConfig;
+        if (!config.enabled) {
+            return;
+        }
+
         assert mc.level != null;
         assert mc.player != null;
 
-        CrystalAuraConfig config = ConfigStore.instance.getConfig().crystalAuraConfig;
         calculator.begin(mc.level, config, mc.player.getEyePosition());
         targets.clear();
         afterPositionSentAction = null;
@@ -170,7 +174,6 @@ public class CrystalAura implements Module {
     }
 
     private void onAfterPlayerAiStep() {
-        CrystalAuraConfig config = ConfigStore.instance.getConfig().crystalAuraConfig;
         if (!config.enabled) {
             return;
         }
@@ -186,9 +189,9 @@ public class CrystalAura implements Module {
 
         findTargets();
 
-        if (tryBreakCrystal(config)) {
+        if (tryBreakCrystal()) {
             breakCountdown = config.breakDelay;
-        } else if (tryPlaceCrystal(config)) {
+        } else if (tryPlaceCrystal()) {
             placeCountdown = config.placeDelay;
         }
     }
@@ -247,7 +250,7 @@ public class CrystalAura implements Module {
         }
     }
 
-    private boolean tryPlaceCrystal(CrystalAuraConfig config) {
+    private boolean tryPlaceCrystal() {
         if (!config.autoPlace || targets.isEmpty() || placeCountdown > 0) {
             return false;
         }
@@ -336,7 +339,7 @@ public class CrystalAura implements Module {
         return true;
     }
 
-    private boolean tryBreakCrystal(CrystalAuraConfig config) {
+    private boolean tryBreakCrystal() {
         if (!config.autoBreak || targets.isEmpty() || breakCountdown > 0) {
             return false;
         }
@@ -527,6 +530,11 @@ public class CrystalAura implements Module {
 
     private boolean inBreakRange(AABB crystalBB, Vec3 eyePos, CrystalAuraConfig config) {
         return crystalBB.distanceToSqr(eyePos) <= config.breakRange * config.breakRange;
+    }
+
+    private boolean isFastBreakEnabled() {
+        // TODO: for now Fast-Break is disabled when Auto-Rotate is ON
+        return config.enabled && config.autoBreak && config.fastBreak && !config.autoRotate;
     }
 
     private record PotentialPlacement(BlockPos crystalPos) {}
