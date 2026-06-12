@@ -1,11 +1,13 @@
 package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -24,7 +26,7 @@ public class FastCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCa
     private LevelSlice levelSlice;
 
     @Override
-    public void begin(ClientLevel level, CrystalAuraConfig config, Vec3 center) {
+    public void begin(Level level, CrystalAuraConfig config, Vec3 center) {
         super.begin(level, config, center);
         this.levelSliceRadius = getLevelSliceRadius(config);
         this.levelSliceCenter = center;
@@ -105,8 +107,6 @@ public class FastCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCa
         private final int radius;
         private final int diameter;
         private final int diameterSqr;
-        private final int minY;
-        private final int height;
         private @Nullable BlockPos overridePos;
         private @Nullable BlockState originalState;
 
@@ -118,11 +118,9 @@ public class FastCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCa
             this.radius = radius;
             this.diameter = diameter;
             this.diameterSqr = diameter * diameter;
-            this.minY = minY;
-            this.height = height;
         }
 
-        public static LevelSlice create(ClientLevel level, Vec3 center, int radius) {
+        public static LevelSlice create(BlockGetter level, Vec3 center, int radius) {
             int xc = Mth.floor(center.x);
             int yc = Mth.floor(center.y);
             int zc = Mth.floor(center.z);
@@ -157,17 +155,18 @@ public class FastCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCa
         public FluidState getFluidState(BlockPos pos) {
             // we don't need this
             throw new UnsupportedOperationException();
-            //return Fluids.EMPTY.defaultFluidState();
         }
 
         @Override
         public int getHeight() {
-            return height;
+            // we don't need this
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public int getMinY() {
-            return minY;
+            // we don't need this
+            throw new UnsupportedOperationException();
         }
 
         public void pushOverride(BlockPos pos, BlockState state) {

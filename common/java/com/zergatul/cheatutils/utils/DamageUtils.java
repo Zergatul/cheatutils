@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.utils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
@@ -22,6 +23,8 @@ public class DamageUtils {
 
     public static final float END_CRYSTAL_EXPLOSION_RADIUS = 6.0F;
 
+    private static final int NUM_ARMOR_ITEMS = 4; // from CombatRules
+
     public static float applyReductions(Difficulty difficulty, LivingEntity entity, float damage, DamageSource source) {
         if (source.scalesWithDifficulty() && entity instanceof Player) {
             switch (difficulty) {
@@ -32,7 +35,7 @@ public class DamageUtils {
         }
 
         // TODO: what if server has plugin that hides enchantments? add option to "assume" some enchantments on all players?
-        damage = CombatRules.getDamageAfterAbsorb(entity, damage, source, entity.getArmorValue(), (float) entity.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
+        damage = getDamageAfterAbsorb(damage, entity.getArmorValue(), (float) entity.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
 
         if (!source.is(DamageTypeTags.BYPASSES_EFFECTS)) {
             // for non-LocalPlayer entities we will not have effects
@@ -42,13 +45,22 @@ public class DamageUtils {
                 damage = Math.max(0, damage * (1 - (lvl * 0.2f)));
             }
 
-            damage = withProtectionEnchantments(entity, damage, source);
+            damage = applyProtectionEnchantments(entity, damage, source);
         }
 
         return Math.max(0, damage);
     }
 
-    private static float withProtectionEnchantments(LivingEntity entity, float damage, DamageSource source) {
+    // logic from CombatRules.getDamageAfterAbsorb
+    public static float getDamageAfterAbsorb(float damage, float totalArmor, float armorToughness) {
+        float toughness = CombatRules.BASE_ARMOR_TOUGHNESS + armorToughness / NUM_ARMOR_ITEMS;
+        float realArmor = Mth.clamp(totalArmor - damage / toughness, totalArmor * CombatRules.MIN_ARMOR_RATIO, CombatRules.MAX_ARMOR);
+        float armorFraction = realArmor / CombatRules.ARMOR_PROTECTION_DIVIDER;
+        float damageMultiplier = 1.0F - armorFraction;
+        return damage * damageMultiplier;
+    }
+
+    private static float applyProtectionEnchantments(LivingEntity entity, float damage, DamageSource source) {
         if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return damage;
         }

@@ -1,12 +1,13 @@
 package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -15,17 +16,17 @@ import java.util.List;
 
 public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAuraDamageCalculator {
 
-    protected ClientLevel level;
-    private DamageSource damageSource;
+    protected BlockGetter level;
     private Difficulty difficulty;
+    private DamageSource damageSource;
     private double minTargetDamage;
     private double maxSelfDamage;
 
     @Override
-    public void begin(ClientLevel level, CrystalAuraConfig config, Vec3 center) {
+    public void begin(Level level, CrystalAuraConfig config, Vec3 center) {
         this.level = level;
-        this.damageSource = null;
-        this.difficulty = null;
+        this.difficulty = level.getDifficulty();
+        this.damageSource = level.damageSources().explosion(null);
         this.minTargetDamage = config.minTargetDamage;
         this.maxSelfDamage = config.maxSelfDamage;
     }
@@ -33,8 +34,8 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
     @Override
     public void end() {
         level = null;
-        damageSource = null;
         difficulty = null;
+        damageSource = null;
     }
 
     @Override
@@ -49,7 +50,7 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
         float exposure = getSeenPercent(crystalPosition, bb, entity);
         double pow = (1.0 - distanceModifier) * exposure;
         float damage = (float) ((pow * pow + pow) / 2.0 * 7.0 * doubleRadius + 1.0);
-        return DamageUtils.applyReductions(getDifficulty(), entity, damage, getDamageSource());
+        return DamageUtils.applyReductions(difficulty, entity, damage, damageSource);
     }
 
     @Override
@@ -87,23 +88,7 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
 
     protected abstract void popBlockStateOverride();
 
-    protected int getLevelSliceRadius(CrystalAuraConfig config) {
+    protected static int getLevelSliceRadius(CrystalAuraConfig config) {
         return (int) Math.ceil(Math.max(config.placeRange, config.breakRange) + DamageUtils.END_CRYSTAL_EXPLOSION_RADIUS) + 1;
-    }
-
-    private DamageSource getDamageSource() {
-        if (damageSource == null) {
-            damageSource = level.damageSources().explosion(null);
-        }
-
-        return damageSource;
-    }
-
-    private Difficulty getDifficulty() {
-        if (difficulty == null) {
-            difficulty = level.getDifficulty();
-        }
-
-        return difficulty;
     }
 }

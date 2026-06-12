@@ -1,18 +1,19 @@
 package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 public class VanillaCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCalculator {
@@ -20,7 +21,7 @@ public class VanillaCrystalAuraDamageCalculator extends AbstractCrystalAuraDamag
     private BlockGetter blockGetter;
 
     @Override
-    public void begin(ClientLevel level, CrystalAuraConfig config, Vec3 center) {
+    public void begin(Level level, CrystalAuraConfig config, Vec3 center) {
         super.begin(level, config, center);
         blockGetter = level;
     }
@@ -79,13 +80,14 @@ public class VanillaCrystalAuraDamageCalculator extends AbstractCrystalAuraDamag
         blockGetter = level;
     }
 
+    @NullMarked
     private static class OverrideBlockGetter implements BlockGetter {
 
-        private final ClientLevel level;
+        private final BlockGetter level;
         private final BlockPos overridePos;
         private final BlockState overrideState;
 
-        public OverrideBlockGetter(ClientLevel level, BlockPos overridePos, BlockState overrideState) {
+        public OverrideBlockGetter(BlockGetter level, BlockPos overridePos, BlockState overrideState) {
             this.level = level;
             this.overridePos = overridePos;
             this.overrideState = overrideState;
