@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.fabric;
+package com.zergatul.cheatutils.tests;
 
 import org.junit.jupiter.api.Test;
 

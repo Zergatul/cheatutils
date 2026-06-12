@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.utils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
@@ -18,44 +17,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 public class DamageUtils {
 
     public static final float END_CRYSTAL_EXPLOSION_RADIUS = 6.0F;
 
-    public static float calculateEndCrystalDamage(EndCrystalCalculationCache cache, Vec3 crystalPosition, LivingEntity entity) {
-        float doubleRadius = END_CRYSTAL_EXPLOSION_RADIUS * 2.0F;
-        double distanceModifier = Math.sqrt(entity.distanceToSqr(crystalPosition)) / doubleRadius;
-        if (distanceModifier > 1.0) {
-            return 0;
-        }
-
-        AABB bb = entity.getBoundingBox();
-        float exposure = getSeenPercent(cache, crystalPosition, bb);
-        double pow = (1.0 - distanceModifier) * exposure;
-        float damage = (float) ((pow * pow + pow) / 2.0 * 7.0 * doubleRadius + 1.0);
-        return withReductions(cache.getDifficulty(), entity, damage, cache.getDamageSource());
-    }
-
-    // for future
-//    public static float calculateEndCrystalDamage(ClientLevel level, EndCrystal crystal, LivingEntity entity, Vec3 interpolatedPosition) {
-//        Vec3 explosionCenter = crystal.position();
-//        float doubleRadius = END_CRYSTAL_EXPLOSION_RADIUS * 2.0F;
-//        double distanceModifier = interpolatedPosition.distanceTo(explosionCenter) / doubleRadius;
-//        if (distanceModifier > 1.0) {
-//            return 0;
-//        }
-//
-//        AABB bb = entity.getBoundingBox().move(interpolatedPosition.subtract(entity.position()));
-//        float exposure = getSeenPercent(level, explosionCenter, bb, entity);
-//        double pow = (1.0 - distanceModifier) * exposure;
-//        float damage = (float) ((pow * pow + pow) / 2.0 * 7.0 * doubleRadius + 1.0);
-//        return withReductions(level.getDifficulty(), entity, damage, level.damageSources().explosion(null));
-//    }
-
-    private static float withReductions(Difficulty difficulty, LivingEntity entity, float damage, DamageSource source) {
+    public static float applyReductions(Difficulty difficulty, LivingEntity entity, float damage, DamageSource source) {
         if (source.scalesWithDifficulty() && entity instanceof Player) {
             switch (difficulty) {
                 case PEACEFUL -> { return 0; }
@@ -111,42 +78,5 @@ public class DamageUtils {
         }
 
         return CombatRules.getDamageAfterMagicAbsorb(damage, damageProtection);
-    }
-
-    private static float getSeenPercent(EndCrystalCalculationCache cache, Vec3 center, AABB bb) {
-        double xs = 1.0 / ((bb.maxX - bb.minX) * 2.0 + 1.0);
-        double ys = 1.0 / ((bb.maxY - bb.minY) * 2.0 + 1.0);
-        double zs = 1.0 / ((bb.maxZ - bb.minZ) * 2.0 + 1.0);
-        double xOffset = (1.0 - Math.floor(1.0 / xs) * xs) / 2.0;
-        double zOffset = (1.0 - Math.floor(1.0 / zs) * zs) / 2.0;
-        if (xs < 0.0 || ys < 0.0 || zs < 0.0) {
-            return 0.0F;
-        }
-
-        int hits = 0;
-        int count = 0;
-        for (double xx = 0.0; xx <= 1.0; xx += xs) {
-            for (double yy = 0.0; yy <= 1.0; yy += ys) {
-                for (double zz = 0.0; zz <= 1.0; zz += zs) {
-                    double x = Mth.lerp(xx, bb.minX, bb.maxX);
-                    double y = Mth.lerp(yy, bb.minY, bb.maxY);
-                    double z = Mth.lerp(zz, bb.minZ, bb.maxZ);
-                    Vec3 from = new Vec3(x + xOffset, y, z + zOffset);
-                    if (cache.isLineOfSightClear(from, center)) {
-                        hits++;
-                    }
-
-                    // vanilla code was too bloated
-                    // ClipContext context = new ClipContext(from, center, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity);
-                    // if (cache.getBlockGetter().clip(context).getType() == HitResult.Type.MISS) {
-                    //     hits++;
-                    // }
-
-                    count++;
-                }
-            }
-        }
-
-        return (float) hits / count;
     }
 }

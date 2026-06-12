@@ -1,10 +1,10 @@
 package com.zergatul.cheatutils.utils;
 
+import com.zergatul.cheatutils.configs.CrystalAuraConfig;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,24 +17,21 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-public class EndCrystalCalculationCache {
+public class FastCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCalculator {
 
-    private ClientLevel level;
     private int levelSliceRadius;
     private Vec3 levelSliceCenter;
-    private DamageSource damageSource;
-    private Difficulty difficulty;
     private LevelSlice levelSlice;
 
-    public void begin(ClientLevel level, int levelSliceRadius, Vec3 levelSliceCenter) {
-        this.level = level;
-        this.levelSliceRadius = levelSliceRadius;
-        this.levelSliceCenter = levelSliceCenter;
-        this.damageSource = null;
-        this.difficulty = null;
+    @Override
+    public void begin(ClientLevel level, CrystalAuraConfig config, Vec3 center) {
+        super.begin(level, config, center);
+        this.levelSliceRadius = getLevelSliceRadius(config);
+        this.levelSliceCenter = center;
         this.levelSlice = null;
     }
 
+    @Override
     public BlockGetter getBlockGetter() {
         return getLevelSlice();
     }
@@ -51,35 +48,52 @@ public class EndCrystalCalculationCache {
         return levelSlice;
     }
 
-    public DamageSource getDamageSource() {
-        if (damageSource == null) {
-            damageSource = level.damageSources().explosion(null);
-        }
-
-        return damageSource;
-    }
-
-    public Difficulty getDifficulty() {
-        if (difficulty == null) {
-            difficulty = level.getDifficulty();
-        }
-
-        return difficulty;
-    }
-
+    @Override
     public void end() {
-        this.level = null;
-        this.damageSource = null;
-        this.difficulty = null;
+        super.end();
         this.levelSlice = null;
     }
 
-    public void pushBlockStateOverride(BlockPos pos, BlockState state) {
+    @Override
+    protected float getSeenPercent(Vec3 center, AABB bb, LivingEntity entity) {
+        double xs = 1.0 / ((bb.maxX - bb.minX) * 2.0 + 1.0);
+        double ys = 1.0 / ((bb.maxY - bb.minY) * 2.0 + 1.0);
+        double zs = 1.0 / ((bb.maxZ - bb.minZ) * 2.0 + 1.0);
+        double xOffset = (1.0 - Math.floor(1.0 / xs) * xs) / 2.0;
+        double zOffset = (1.0 - Math.floor(1.0 / zs) * zs) / 2.0;
+        if (xs < 0.0 || ys < 0.0 || zs < 0.0) {
+            return 0.0F;
+        }
+
+        int hits = 0;
+        int count = 0;
+        for (double xx = 0.0; xx <= 1.0; xx += xs) {
+            for (double yy = 0.0; yy <= 1.0; yy += ys) {
+                for (double zz = 0.0; zz <= 1.0; zz += zs) {
+                    double x = Mth.lerp(xx, bb.minX, bb.maxX);
+                    double y = Mth.lerp(yy, bb.minY, bb.maxY);
+                    double z = Mth.lerp(zz, bb.minZ, bb.maxZ);
+                    Vec3 from = new Vec3(x + xOffset, y, z + zOffset);
+                    if (isLineOfSightClear(from, center)) {
+                        hits++;
+                    }
+
+                    count++;
+                }
+            }
+        }
+
+        return (float) hits / count;
+    }
+
+    @Override
+    protected void pushBlockStateOverride(BlockPos pos, BlockState state) {
         getBlockGetter();
         levelSlice.pushOverride(pos, state);
     }
 
-    public void popBlockStateOverride() {
+    @Override
+    protected void popBlockStateOverride() {
         levelSlice.popOverride();
     }
 
