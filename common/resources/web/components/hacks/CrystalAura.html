@@ -50,14 +50,16 @@
 
         <fieldset>
             <legend>Targets</legend>
-            <ul class="packed-list">
+            <ul class="crystal-aura-targets">
                 <li class="new">
-                    Add new...
-                    <auto-complete></auto-complete>
+                    <span v-if="!showAddNew" @click="showAutoComplete()">Add new...</span>
+                    <auto-complete v-if="showAddNew"></auto-complete>
                 </li>
-                <li v-for="type in config.targets">
-                    {{ type }}
-                    <div class="remove"></div>
+                <li class="target" v-for="(type, index) in config.targets" :key="type + ':' + index">
+                    <span class="target-name">{{ type }}</span>
+                    <button type="button" class="remove" aria-label="Remove target" @click="removeTarget(index)">
+                        <span></span>
+                    </button>
                 </li>
             </ul>
         </fieldset>
