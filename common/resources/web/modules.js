@@ -385,7 +385,7 @@ module({
 });
 module({
     group: 'hacks',
-    name: 'Crystal Aura',
+    name: 'Crystal Aura (BETA)',
     component: 'CrystalAura',
     path: 'crystal-aura',
     tags: ['kill', 'crystal', 'aura', 'auto', 'attack', 'blow', 'explode']

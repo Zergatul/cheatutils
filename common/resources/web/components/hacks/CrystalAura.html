@@ -49,11 +49,25 @@
         </fieldset>
 
         <fieldset>
+            <legend>Targets</legend>
+            <ul class="packed-list">
+                <li class="new">
+                    Add new...
+                    <auto-complete></auto-complete>
+                </li>
+                <li v-for="type in config.targets">
+                    {{ type }}
+                    <div class="remove"></div>
+                </li>
+            </ul>
+        </fieldset>
+
+        <fieldset>
             <legend>
                 <switch-checkbox v-model="config.autoRotate" @change="update()">Auto-Rotate</switch-checkbox>
             </legend>
             <div class="section-description">
-                Automatically rotates player to the direction of crystal placements and attacks
+                Automatically rotates player to the direction of crystal placements, support block placements and crystal attacks
             </div>
         </fieldset>
 
@@ -109,9 +123,24 @@
                         <input type="number" class="w3" v-model="config.placeSupportDelay" @change="update()">
                     </td>
                     <td>
-                        <div class="input-description">
-                            How many ticks to wait after placing support block, before placing crystal
+                        <Description>
+                            How many ticks to wait after placing support obisidian block, before placing crystal
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Air Place:</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="input-container w3">
+                            <switch-checkbox v-model="config.airPlace" @change="update()"></switch-checkbox>
                         </div>
+                    </td>
+                    <td>
+                        <Description>
+                            Allows to place support obsidian not attached to anything
+                        </Description>
                     </td>
                 </tr>
             </table>
