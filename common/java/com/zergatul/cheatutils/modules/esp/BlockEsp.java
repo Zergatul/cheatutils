@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.google.common.base.Stopwatch;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
@@ -10,7 +9,6 @@ import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
-import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -19,7 +17,6 @@ import net.minecraft.world.phys.Vec3;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class BlockEsp {
 
@@ -63,19 +60,12 @@ public class BlockEsp {
 
         ProfilerFiller profiler = Profiler.get();
         profiler.push(Constants.MOD_ID + " : BlockEspRender");
-        var stopwatch = Stopwatch.createStarted();
-
-        lastFrameGpuTime = 0;
 
         renderCustomEntries(event);
         renderConfiguredEntries(event);
 
-        lastFrameRender = stopwatch.elapsed(TimeUnit.MICROSECONDS) / 1000f;
         profiler.pop();
     }
-
-    public double lastFrameRender;
-    public double lastFrameGpuTime;
 
     private void renderConfiguredEntries(RenderWorldLastEvent event) {
         ImmutableList<BlockEspConfig> configs = ConfigStore.instance.getConfig().blocks.getBlockConfigs();
@@ -173,10 +163,8 @@ public class BlockEsp {
             }
         }
 
-        var sw = Stopwatch.createStarted();
         lineRenderer.end(event.getMvp());
         cubeRenderer.end(event.getMvp());
-        lastFrameGpuTime += sw.elapsed(TimeUnit.MICROSECONDS) / 1000d;
     }
 
     private void renderBoundingBoxes(EspCubeLineRender renderer, float width, int color, RenderWorldLastEvent event) {
@@ -233,9 +221,7 @@ public class BlockEsp {
                     (float) (pos.getY() - cameraY),
                     (float) (pos.getZ() - cameraZ));
         }
-        var sw = Stopwatch.createStarted();
         renderer.end(event.getMvp(), color);
-        lastFrameGpuTime += sw.elapsed(TimeUnit.MICROSECONDS) / 1000d;
     }
 
     private void renderCustomEntries(RenderWorldLastEvent event) {
