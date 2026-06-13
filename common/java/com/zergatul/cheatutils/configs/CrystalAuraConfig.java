@@ -6,6 +6,8 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
 
     public double minTargetDamage;
     public double maxSelfDamage;
+    public String[] targets;
+
     public boolean autoRotate;
 
     public boolean autoPlace;
@@ -13,6 +15,7 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
     public int placeDelay;
 
     public boolean autoPlaceSupport;
+    public boolean airPlace;
     public int placeSupportDelay;
 
     public boolean autoBreak;
@@ -24,6 +27,8 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
     public CrystalAuraConfig() {
         minTargetDamage = 6;
         maxSelfDamage = 6;
+        targets = new String[] { "minecraft:player" };
+
         autoRotate = false;
 
         autoPlace = true;

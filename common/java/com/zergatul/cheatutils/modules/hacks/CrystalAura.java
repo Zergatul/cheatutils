@@ -1,15 +1,13 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.blocks.BlockPlacePlan;
-import com.zergatul.cheatutils.blocks.BlockPlacer;
-import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
+import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
-import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.CrystalAuraDamageCalculator;
+import com.zergatul.cheatutils.utils.CrystalAuraPositionCalculator;
 import com.zergatul.cheatutils.utils.FastCrystalAuraDamageCalculator;
 import com.zergatul.cheatutils.utils.HotbarUtils;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
@@ -55,7 +53,7 @@ public class CrystalAura implements Module {
     private int placeCountdown;
     private int breakCountdown;
     private Runnable afterPositionSentAction;
-    private CompletableFuture<Void> supportPlacingProcess;
+    private CompletableFuture<Boolean> supportPlacingProcess;
 
     private CrystalAura() {
         Events.BeforeProcessQueuedPackets.add(this::onBeforeProcessQueuedPackets);
@@ -281,15 +279,30 @@ public class CrystalAura implements Module {
             }
         }
 
-        BlockPos crystalPos;
-        PotentialPlacement placement = calculatePotentialPlacement(level, player, eyePos, config);
-        if (placement == null) {
+        BlockPos crystalPos = CrystalAuraPositionCalculator.calculatePotentialPlacement(
+                level,
+                player,
+                eyePos,
+                targets,
+                calculator,
+                config);
+        if (crystalPos == null) {
             if (!config.autoPlaceSupport) {
                 return false;
             }
 
-            PotentialSupportPlacement psp = calculatePotentialSupportPlacement(level, player, eyePos, config);
-            if (psp == null) {
+            if (!HotbarUtils.hasItem(player, Items.OBSIDIAN)) {
+                return false;
+            }
+
+            CrystalAuraPositionCalculator.SupportPlacement sp = CrystalAuraPositionCalculator.calculatePotentialSupportPlacement(
+                    level,
+                    player,
+                    eyePos,
+                    targets,
+                    calculator,
+                    config);
+            if (sp == null) {
                 return false;
             }
 
@@ -302,11 +315,9 @@ public class CrystalAura implements Module {
             // but this is too exotic case for now
             // also for simplicity we forget about potential crystal placement, and hope next tryPlaceCrystal call
             // picks up this spot, or chooses better one
-            supportPlacingProcess = psp.placePlan.apply(hand.get());
+            supportPlacingProcess = sp.placePlan().apply(hand.get());
             placeCountdown = config.placeSupportDelay;
             return false;
-        } else {
-            crystalPos = placement.crystalPos;
         }
 
         if (config.autoRotate) {
@@ -394,140 +405,6 @@ public class CrystalAura implements Module {
         return true;
     }
 
-    private @Nullable PotentialPlacement calculatePotentialPlacement(Level level, LocalPlayer player, Vec3 eyePos, CrystalAuraConfig config) {
-        int radius = Mth.ceil(config.placeRange);
-        double placeRangeSqr = config.placeRange * config.placeRange;
-        BlockGetter levelSlice = calculator.getBlockGetter();
-
-        float bestDamage = 0;
-        BlockPos bestCrystalBlockPos = null;
-
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int dx = -radius; dx <= radius; dx++) {
-            pos.setX(player.blockPosition().getX() + dx);
-            for (int dy = -radius; dy <= radius; dy++) {
-                pos.setY(player.blockPosition().getY() + dy);
-                for (int dz = -radius; dz <= radius; dz++) {
-                    pos.setZ(player.blockPosition().getZ() + dz);
-                    BlockState state = levelSlice.getBlockState(pos);
-                    if (!state.is(Blocks.OBSIDIAN) && !state.is(Blocks.BEDROCK)) {
-                        continue;
-                    }
-
-                    BlockPos crystalBlockPos = pos.above();
-                    if (!levelSlice.getBlockState(crystalBlockPos).isAir()) {
-                        continue;
-                    }
-
-                    if (new AABB(pos).distanceToSqr(eyePos) > placeRangeSqr) {
-                        continue;
-                    }
-
-                    Vec3 crystalEntityPosition = Vec3.atBottomCenterOf(crystalBlockPos);
-
-                    float damage = calculator.calculatePossibleDamage(player, targets, crystalEntityPosition);
-                    if (damage <= bestDamage) {
-                        continue;
-                    }
-
-                    AABB crystalBB = new AABB(
-                            crystalBlockPos.getX(), crystalBlockPos.getY(), crystalBlockPos.getZ(),
-                            crystalBlockPos.getX() + 1, crystalBlockPos.getY() + 2, crystalBlockPos.getZ() + 1);
-
-                    // TODO: possible optimization - return first entity
-                    List<Entity> collisions = level.getEntities(null, crystalBB);
-                    if (!collisions.isEmpty()) {
-                        continue;
-                    }
-
-                    bestCrystalBlockPos = crystalBlockPos;
-                    bestDamage = damage;
-                }
-            }
-        }
-
-        if (bestCrystalBlockPos != null) {
-            return new PotentialPlacement(bestCrystalBlockPos);
-        } else {
-            return null;
-        }
-    }
-
-    private @Nullable PotentialSupportPlacement calculatePotentialSupportPlacement(ClientLevel level, LocalPlayer player, Vec3 eyePos, CrystalAuraConfig config) {
-        if (!HotbarUtils.hasItem(player, Items.OBSIDIAN)) {
-            return null;
-        }
-
-        int radius = Mth.ceil(config.placeRange);
-        double placeRangeSqr = config.placeRange * config.placeRange;
-        BlockGetter levelSlice = calculator.getBlockGetter();
-
-        float bestDamage = 0;
-        BlockPos bestSupportPos = null;
-        BlockPlacePlan bestSupportPlacePlan = null;
-
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int dx = -radius; dx <= radius; dx++) {
-            pos.setX(player.blockPosition().getX() + dx);
-            for (int dy = -radius; dy <= radius; dy++) {
-                pos.setY(player.blockPosition().getY() + dy);
-                for (int dz = -radius; dz <= radius; dz++) {
-                    pos.setZ(player.blockPosition().getZ() + dz);
-                    BlockState state = levelSlice.getBlockState(pos);
-                    if (!state.canBeReplaced()) {
-                        continue;
-                    }
-
-                    BlockPos crystalBlockPos = pos.above();
-                    if (!levelSlice.getBlockState(crystalBlockPos).isAir()) {
-                        continue;
-                    }
-
-                    if (new AABB(pos).distanceToSqr(eyePos) > placeRangeSqr) {
-                        continue;
-                    }
-
-                    // bounding box for support block + crystal placement check
-                    AABB bb = new AABB(
-                            pos.getX(), pos.getY(), pos.getZ(),
-                            pos.getX() + 1, pos.getY() + 3, pos.getZ() + 1);
-
-                    // TODO: possible optimization - return first entity
-                    List<Entity> collisions = level.getEntities(null, bb);
-                    if (!collisions.isEmpty()) {
-                        continue;
-                    }
-
-                    BlockPlacePlan plan = BlockPlacer.createPlan(
-                            Blocks.OBSIDIAN.defaultBlockState(),
-                            pos.immutable(),
-                            BlockPlacingMethod.ANY,
-                            new SupportPlacementInteractionConfig(config));
-                    if (plan == null) {
-                        continue;
-                    }
-
-                    Vec3 crystalEntityPosition = Vec3.atBottomCenterOf(crystalBlockPos);
-
-                    float damage = calculator.calculatePossibleDamage(player, targets, crystalEntityPosition, pos, Blocks.OBSIDIAN.defaultBlockState());
-                    if (damage <= bestDamage) {
-                        continue;
-                    }
-
-                    bestSupportPos = pos.immutable();
-                    bestDamage = damage;
-                    bestSupportPlacePlan = plan;
-                }
-            }
-        }
-
-        if (bestSupportPos == null) {
-            return null;
-        }
-
-        return new PotentialSupportPlacement(bestSupportPlacePlan, bestSupportPos);
-    }
-
     private boolean inBreakRange(AABB crystalBB, Vec3 eyePos, CrystalAuraConfig config) {
         return crystalBB.distanceToSqr(eyePos) <= config.breakRange * config.breakRange;
     }
@@ -535,28 +412,5 @@ public class CrystalAura implements Module {
     private boolean isFastBreakEnabled() {
         // TODO: for now Fast-Break is disabled when Auto-Rotate is ON
         return config.enabled && config.autoBreak && config.fastBreak && !config.autoRotate;
-    }
-
-    private record PotentialPlacement(BlockPos crystalPos) {}
-
-    private record PotentialSupportPlacement(BlockPlacePlan placePlan, BlockPos supportPos) {}
-
-    private static class SupportPlacementInteractionConfig implements InteractionConfig {
-
-        private final CrystalAuraConfig config;
-
-        public SupportPlacementInteractionConfig(CrystalAuraConfig config) {
-            this.config = config;
-        }
-
-        @Override
-        public double getMaxRange() {
-            return config.placeRange;
-        }
-
-        @Override
-        public boolean shouldAutoRotate() {
-            return config.autoRotate;
-        }
     }
 }

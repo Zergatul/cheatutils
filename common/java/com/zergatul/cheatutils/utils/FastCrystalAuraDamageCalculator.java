@@ -36,18 +36,6 @@ public class FastCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCa
         return getLevelSlice();
     }
 
-    public boolean isLineOfSightClear(Vec3 from, Vec3 to) {
-        return getLevelSlice().isLineOfSightClear(from, to);
-    }
-
-    private LevelSlice getLevelSlice() {
-        if (levelSlice == null) {
-            levelSlice = LevelSlice.create(level, levelSliceCenter, levelSliceRadius);
-        }
-
-        return levelSlice;
-    }
-
     @Override
     public void end() {
         super.end();
@@ -95,6 +83,18 @@ public class FastCrystalAuraDamageCalculator extends AbstractCrystalAuraDamageCa
     @Override
     protected void popBlockStateOverride() {
         levelSlice.popOverride();
+    }
+
+    private boolean isLineOfSightClear(Vec3 from, Vec3 to) {
+        return getLevelSlice().isLineOfSightClear(from, to);
+    }
+
+    private LevelSlice getLevelSlice() {
+        if (levelSlice == null) {
+            levelSlice = LevelSlice.create(level, levelSliceCenter, levelSliceRadius);
+        }
+
+        return levelSlice;
     }
 
     @NullMarked

@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -55,7 +55,7 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
     }
 
     @Override
-    public float calculatePossibleDamage(LocalPlayer self, List<LivingEntity> targets, Vec3 crystalPosition) {
+    public float calculatePossibleDamage(LivingEntity self, List<LivingEntity> targets, Vec3 crystalPosition) {
         float targetDamage = 0;
         for (LivingEntity target : targets) {
             targetDamage += calculateEndCrystalDamage(crystalPosition, target);
@@ -74,8 +74,8 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
     }
 
     @Override
-    public float calculatePossibleDamage(LocalPlayer self, List<LivingEntity> targets, Vec3 crystalPosition, BlockPos overridePos, BlockState overrideState) {
-        pushBlockStateOverride(overridePos, overrideState);
+    public float calculatePossibleDamage(LivingEntity self, List<LivingEntity> targets, Vec3 crystalPosition, BlockPos overridePos) {
+        pushBlockStateOverride(overridePos, Blocks.OBSIDIAN.defaultBlockState());
         float damage = calculatePossibleDamage(self, targets, crystalPosition);
         popBlockStateOverride();
         return damage;
