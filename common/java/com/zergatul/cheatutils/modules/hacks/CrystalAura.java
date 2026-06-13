@@ -5,35 +5,29 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
+import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.utils.CrystalAuraDamageCalculator;
-import com.zergatul.cheatutils.utils.CrystalAuraPositionCalculator;
-import com.zergatul.cheatutils.utils.FastCrystalAuraDamageCalculator;
-import com.zergatul.cheatutils.utils.HotbarUtils;
+import com.zergatul.cheatutils.utils.*;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -208,8 +202,15 @@ public class CrystalAura implements Module {
     private void findTargets() {
         assert mc.level != null;
         assert mc.player != null;
+        assert mc.gameMode != null;
 
         targets.clear();
+        if (isPaused(mc.player, mc.gameMode)) {
+            return;
+        }
+
+        double maxRange = config.breakRange + DamageUtils.END_CRYSTAL_EXPLOSION_RADIUS;
+        double maxRangeSqr = maxRange * maxRange;
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity == mc.player) {
                 continue;
@@ -227,11 +228,16 @@ public class CrystalAura implements Module {
                 continue;
             }
 
-            if (mc.player.distanceToSqr(entity) > 100) {
+            if (mc.player.getEyePosition().distanceToSqr(entity.position()) > maxRangeSqr) {
                 continue;
             }
 
-            targets.add(living);
+            for (EntityType<?> type : config.targets) {
+                if (entity.getType() == type) {
+                    targets.add(living);
+                    break;
+                }
+            }
         }
     }
 
@@ -291,7 +297,8 @@ public class CrystalAura implements Module {
                 return false;
             }
 
-            if (!HotbarUtils.hasItem(player, Items.OBSIDIAN)) {
+            Optional<HotbarSlot> slot = HotbarUtils.findItem(player, Items.OBSIDIAN);
+            if (slot.isEmpty()) {
                 return false;
             }
 
@@ -306,16 +313,11 @@ public class CrystalAura implements Module {
                 return false;
             }
 
-            Optional<InteractionHand> hand = HotbarUtils.selectItem(player, Items.OBSIDIAN);
-            if (hand.isEmpty()) {
-                return false;
-            }
-
             // theoretically selected item may get changed by the time of sending UseItemOn packet
             // but this is too exotic case for now
             // also for simplicity we forget about potential crystal placement, and hope next tryPlaceCrystal call
             // picks up this spot, or chooses better one
-            supportPlacingProcess = sp.placePlan().apply(hand.get());
+            supportPlacingProcess = sp.placePlan().apply(slot.get(), isHotbarSilentSwitch());
             placeCountdown = config.placeSupportDelay;
             return false;
         }
@@ -333,14 +335,29 @@ public class CrystalAura implements Module {
                 false);
 
         afterPositionSentAction = () -> {
-            Optional<InteractionHand> hand = HotbarUtils.selectItem(player, Items.END_CRYSTAL);
-            if (hand.isEmpty()) {
+            Optional<HotbarSlot> slot = HotbarUtils.findItem(player, Items.END_CRYSTAL);
+            if (slot.isEmpty()) {
                 // rollback countdown: crystals disappeared from hotbar
                 placeCountdown = 0;
                 return;
             }
 
-            InteractionResult result = mc.gameMode.useItemOn(player, hand.get(), hit);
+            int uiSlot = -1;
+            if (slot.get().getHand() == InteractionHand.MAIN_HAND) {
+                if (isHotbarSilentSwitch()) {
+                    if (slot.get().getSlot() != player.getInventory().getSelectedSlot()) {
+                        uiSlot = player.getInventory().getSelectedSlot();
+                    }
+                }
+                player.getInventory().setSelectedSlot(slot.get().getSlot());
+            }
+
+            InteractionResult result = mc.gameMode.useItemOn(player, slot.get().getHand(), hit);
+
+            if (uiSlot >= 0) {
+                player.getInventory().setSelectedSlot(uiSlot);
+            }
+
             if (!result.consumesAction()) {
                 // rollback countdown: action failed on client
                 placeCountdown = 0;
@@ -405,6 +422,21 @@ public class CrystalAura implements Module {
         return true;
     }
 
+    private boolean isPaused(LocalPlayer player, MultiPlayerGameMode gameMode) {
+        if (config.pauseOnItemUse && player.isUsingItem()) {
+            return true;
+        }
+
+        if (config.pauseOnMining) {
+            MultiPlayerGameModeAccessor mode = (MultiPlayerGameModeAccessor) gameMode;
+            if (mode.getIsDestroying_CU()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private boolean inBreakRange(AABB crystalBB, Vec3 eyePos, CrystalAuraConfig config) {
         return crystalBB.distanceToSqr(eyePos) <= config.breakRange * config.breakRange;
     }
@@ -412,5 +444,9 @@ public class CrystalAura implements Module {
     private boolean isFastBreakEnabled() {
         // TODO: for now Fast-Break is disabled when Auto-Rotate is ON
         return config.enabled && config.autoBreak && config.fastBreak && !config.autoRotate;
+    }
+
+    private boolean isHotbarSilentSwitch() {
+        return CrystalAuraConfig.HOTBAR_SWITCH_SILENT.equals(config.hotbarSwitchMode);
     }
 }

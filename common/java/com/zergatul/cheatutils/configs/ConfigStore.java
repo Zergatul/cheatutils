@@ -36,6 +36,7 @@ public class ConfigStore {
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
+            .registerTypeAdapterFactory(new EntityTypeTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
             .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())

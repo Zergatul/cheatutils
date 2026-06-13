@@ -50,6 +50,7 @@ public class Root {
     public static StepUpApi stepUp = new StepUpApi();
     public static AimAssistApi aimAssist = new AimAssistApi();
     public static AirPlaceApi airPlace = new AirPlaceApi();
+    public static CrystalAuraApi crystalAura = new CrystalAuraApi();
 
     // visuals
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();

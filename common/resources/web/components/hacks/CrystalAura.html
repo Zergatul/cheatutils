@@ -45,6 +45,56 @@
                         </Description>
                     </td>
                 </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Hotbar Mode:</span>
+                    </td>
+                    <td>
+                        <select v-model="config.hotbarSwitchMode" @change="update()">
+                            <option value="NORMAL">Normal</option>
+                            <option value="SILENT">Silent</option>
+                        </select>
+                    </td>
+                    <td>
+                        <Description>
+                            How module selects crystals/obsidian on hotbar
+                            <template #additional>
+                                <div><b>Normal</b> - you can see module switches hotbar slots</div>
+                                <div><b>Silent</b> - module doesn't affect your selected slot visible on UI</div>
+                            </template>
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Pause on Item Use:</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="input-container w3">
+                            <switch-checkbox v-model="config.pauseOnItemUse" @change="update()"></switch-checkbox>
+                        </div>
+                    </td>
+                    <td>
+                        <Description>
+                            Pauses on consuming food, using bow, etc.
+                        </Description>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">
+                        <span class="field-description">Pause on Mining:</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="input-container w3">
+                            <switch-checkbox v-model="config.pauseOnMining" @change="update()"></switch-checkbox>
+                        </div>
+                    </td>
+                    <td>
+                        <Description>
+                            Pauses when you mine blocks
+                        </Description>
+                    </td>
+                </tr>
             </table>
         </fieldset>
 

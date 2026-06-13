@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.blocks;
 import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
 import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
 import com.zergatul.cheatutils.controllers.FakeRotation;
+import com.zergatul.cheatutils.utils.HotbarSlot;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,14 +38,14 @@ public final class SimpleBlockPlacer {
     private record Plan(Vec3 target, BlockPos neighbourPos, Direction direction, boolean autoRotate) implements SimpleBlockPlan {
 
         @Override
-        public CompletableFuture<Boolean> apply(InteractionHand hand) {
+        public CompletableFuture<Boolean> apply(HotbarSlot slot, boolean silentSwitch) {
             if (autoRotate) {
                 return CompletableFuture.completedFuture(true)
                         .thenApplyAsync(ignored -> rotate(), AfterPlayerAiStepExecutor.instance)
-                        .thenApplyAsync(rotated -> rotated && useItem(hand), AfterSendPlayerPosExecutor.instance);
+                        .thenApplyAsync(rotated -> rotated && useItem(slot, silentSwitch), AfterSendPlayerPosExecutor.instance);
             } else {
                 return CompletableFuture.completedFuture(true)
-                        .thenApplyAsync(ignored -> useItem(hand), AfterSendPlayerPosExecutor.instance);
+                        .thenApplyAsync(ignored -> useItem(slot, silentSwitch), AfterSendPlayerPosExecutor.instance);
             }
         }
 
@@ -53,17 +54,58 @@ public final class SimpleBlockPlacer {
             return true;
         }
 
-        private boolean useItem(InteractionHand hand) {
+        private boolean useItem(HotbarSlot slot, boolean silentSwitch) {
+            if (silentSwitch) {
+                return useItemSilently(slot);
+            } else {
+                return useItemNormally(slot);
+            }
+        }
+
+        private boolean useItemNormally(HotbarSlot slot) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null || mc.player == null || mc.gameMode == null) {
                 return false;
             }
 
+            if (slot.getHand() == InteractionHand.MAIN_HAND) {
+                mc.player.getInventory().setSelectedSlot(slot.getSlot());
+            }
+
             BlockHitResult hit = new BlockHitResult(target, direction, neighbourPos, false);
-            InteractionResult result = mc.gameMode.useItemOn(mc.player, hand, hit);
+            InteractionResult result = mc.gameMode.useItemOn(mc.player, slot.getHand(), hit);
             if (result.consumesAction()) {
                 if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                    mc.player.swing(hand);
+                    mc.player.swing(slot.getHand());
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        private boolean useItemSilently(HotbarSlot slot) {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level == null || mc.player == null || mc.gameMode == null) {
+                return false;
+            }
+
+            int uiSlot = -1;
+            if (slot.getHand() == InteractionHand.MAIN_HAND && slot.getSlot() != mc.player.getInventory().getSelectedSlot()) {
+                uiSlot = mc.player.getInventory().getSelectedSlot();
+                mc.player.getInventory().setSelectedSlot(slot.getSlot());
+            }
+
+            BlockHitResult hit = new BlockHitResult(target, direction, neighbourPos, false);
+            InteractionResult result = mc.gameMode.useItemOn(mc.player, slot.getHand(), hit);
+
+            if (uiSlot >= 0) {
+                mc.player.getInventory().setSelectedSlot(uiSlot);
+            }
+
+            if (result.consumesAction()) {
+                if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
+                    mc.player.swing(slot.getHand());
                 }
                 return true;
             }

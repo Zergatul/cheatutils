@@ -1,12 +1,23 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
+
+import java.util.Arrays;
+import java.util.Objects;
 
 public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
 
+    public static final String HOTBAR_SWITCH_NORMAL = "NORMAL";
+    public static final String HOTBAR_SWITCH_SILENT = "SILENT";
+
     public double minTargetDamage;
     public double maxSelfDamage;
-    public String[] targets;
+    public String hotbarSwitchMode;
+    public boolean pauseOnItemUse;
+    public boolean pauseOnMining;
+    public EntityType<?>[] targets;
 
     public boolean autoRotate;
 
@@ -27,7 +38,10 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
     public CrystalAuraConfig() {
         minTargetDamage = 6;
         maxSelfDamage = 6;
-        targets = new String[] { "minecraft:player" };
+        hotbarSwitchMode = HOTBAR_SWITCH_SILENT;
+        pauseOnItemUse = true;
+        pauseOnMining = true;
+        targets = new EntityType[] {EntityTypes.PLAYER };
 
         autoRotate = false;
 
@@ -49,6 +63,14 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
     public void sanitize() {
         minTargetDamage = MathUtils.clamp(minTargetDamage, 0, 100);
         maxSelfDamage = MathUtils.clamp(maxSelfDamage, 0, 100);
+        if (!HOTBAR_SWITCH_NORMAL.equals(hotbarSwitchMode) && !HOTBAR_SWITCH_SILENT.equals(hotbarSwitchMode)) {
+            hotbarSwitchMode = HOTBAR_SWITCH_SILENT;
+        }
+
+        if (targets == null) {
+            targets = new EntityType[0];
+        }
+        targets = Arrays.stream(targets).filter(Objects::nonNull).toArray(EntityType[]::new);
 
         placeDelay = MathUtils.clamp(placeDelay, 0, 20);
         placeRange = MathUtils.clamp(placeRange, 0, 10);
