@@ -1,8 +1,17 @@
+fieldset.crystal-aura-targets-fieldset {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+
 ul.crystal-aura-targets {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5em;
     list-style: none;
     margin: 0;
+    max-width: 100%;
+    min-width: 0;
     padding: 0;
 }
 
@@ -10,15 +19,21 @@ ul.crystal-aura-targets > li {
     align-items: center;
     border: 0.2em solid var(--color1);
     border-radius: 1em;
+    box-sizing: border-box;
     display: flex;
     gap: 0.25em;
     font-family: var(--font2);
+    max-width: 100%;
     padding: 0em 0.5em;
 }
 
 ul.crystal-aura-targets > li.new {
     background-color: var(--color2);
     cursor: pointer;
+}
+
+ul.crystal-aura-targets > li.new > span {
+    white-space: nowrap;
 }
 
 ul.crystal-aura-targets > li.target {
@@ -31,7 +46,9 @@ ul.crystal-aura-targets > li.target {
 ul.crystal-aura-targets > li.target > span.target-name {
     align-items: center;
     display: inline-flex;
+    overflow: hidden;
     padding: 0 0.5em;
+    white-space: nowrap;
 }
 
 ul.crystal-aura-targets > li.target > button.remove {
@@ -89,4 +106,7 @@ ul.crystal-aura-targets > li.target > button.remove > span::after {
 
 ul.crystal-aura-targets div.autocomplete > input {
     border: 0;
+    box-sizing: border-box;
+    max-width: 100%;
+    width: 25em;
 }

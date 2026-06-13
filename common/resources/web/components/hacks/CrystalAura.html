@@ -48,12 +48,20 @@
             </table>
         </fieldset>
 
-        <fieldset>
+        <fieldset class="crystal-aura-targets-fieldset">
             <legend>Targets</legend>
             <ul class="crystal-aura-targets">
                 <li class="new">
                     <span v-if="!showAddNew" @click="showAutoComplete()">Add new...</span>
-                    <auto-complete v-if="showAddNew" autofocus></auto-complete>
+                    <auto-complete
+                        v-if="showAddNew"
+                        value=""
+                        :list="entityTypes"
+                        autofocus
+                        cancel-on-blur
+                        apply-on-click
+                        @apply="addTarget"
+                        @cancel="cancelAddTarget"></auto-complete>
                 </li>
                 <li class="target" v-for="(type, index) in config.targets" :key="type + ':' + index">
                     <span class="target-name">{{ type }}</span>

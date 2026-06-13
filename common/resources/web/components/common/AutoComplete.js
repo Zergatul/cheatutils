@@ -18,13 +18,21 @@ export function createComponent(template) {
             autofocus: {
                 type: Boolean,
                 required: false
+            },
+            cancelOnBlur: {
+                type: Boolean,
+                required: false
+            },
+            applyOnClick: {
+                type: Boolean,
+                required: false
             }
         },
-        emits: [],
+        emits: ['apply', 'cancel'],
         setup(props, { emit }) {
             const input = ref(null);
             const ul = ref(null);
-            const { value, list, autofocus } = toRefs(props);
+            const { value, list, autofocus, cancelOnBlur, applyOnClick } = toRefs(props);
 
             let currentValue;
             let maxItems = DefaultMaxItems;
@@ -78,11 +86,18 @@ export function createComponent(template) {
                     const li = document.createElement('li');
                     li.classList.add('item');
                     li.textContent = item;
+                    li.addEventListener('mousedown', event => {
+                        event.preventDefault();
+                    });
                     li.addEventListener('click', () => {
                         currentValue = item;
                         input.value.value = currentValue;
-                        input.value.focus();
                         ul.value.style.display = 'none';
+                        if (applyOnClick.value) {
+                            emit('apply', currentValue);
+                        } else {
+                            input.value.focus();
+                        }
                     });
                     ul.value.appendChild(li);
                 });
@@ -92,6 +107,9 @@ export function createComponent(template) {
                     li.classList.add('more');
                     li.textContent = '...';
                     li.title = 'Show more';
+                    li.addEventListener('mousedown', event => {
+                        event.preventDefault();
+                    });
                     li.addEventListener('click', event => {
                         event.stopPropagation(); // don't propagate to document.click
                         maxItems *= 2;
@@ -112,12 +130,19 @@ export function createComponent(template) {
                 }
             };
 
+            const onBlur = () => {
+                if (cancelOnBlur.value) {
+                    emit('cancel');
+                }
+            };
+
             onMounted(() => {
                 currentValue = value.value || '';
                 input.value.value = currentValue;
 
                 input.value.addEventListener('input', onInput);
                 input.value.addEventListener('keydown', onKeyDown);
+                input.value.addEventListener('blur', onBlur);
                 document.addEventListener('click', onDocumentClick);
 
                 if (autofocus.value) {
@@ -126,6 +151,9 @@ export function createComponent(template) {
             });
 
             onUnmounted(() => {
+                input.value.removeEventListener('input', onInput);
+                input.value.removeEventListener('keydown', onKeyDown);
+                input.value.removeEventListener('blur', onBlur);
                 document.removeEventListener('click', onDocumentClick);
             });
 
