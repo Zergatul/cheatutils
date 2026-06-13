@@ -14,13 +14,17 @@ export function createComponent(template) {
             },
             list: {
                 required: true
+            },
+            autofocus: {
+                type: Boolean,
+                required: false
             }
         },
         emits: [],
         setup(props, { emit }) {
             const input = ref(null);
             const ul = ref(null);
-            const { value, list } = toRefs(props);
+            const { value, list, autofocus } = toRefs(props);
 
             let currentValue;
             let maxItems = DefaultMaxItems;
@@ -115,6 +119,10 @@ export function createComponent(template) {
                 input.value.addEventListener('input', onInput);
                 input.value.addEventListener('keydown', onKeyDown);
                 document.addEventListener('click', onDocumentClick);
+
+                if (autofocus.value) {
+                    input.value.focus();
+                }
             });
 
             onUnmounted(() => {

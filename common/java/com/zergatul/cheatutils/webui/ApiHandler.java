@@ -42,6 +42,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new BlockModelApi());
         apis.add(new BlockStateApi());
         apis.add(new RescanChunksApi());
+        apis.add(new EntityTypesApi());
         apis.add(new EntityInfoApi());
         apis.add(new EntitiesConfigApi());
         apis.add(new BlockColorApi());

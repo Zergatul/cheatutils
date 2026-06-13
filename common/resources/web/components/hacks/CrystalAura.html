@@ -53,7 +53,7 @@
             <ul class="crystal-aura-targets">
                 <li class="new">
                     <span v-if="!showAddNew" @click="showAutoComplete()">Add new...</span>
-                    <auto-complete v-if="showAddNew"></auto-complete>
+                    <auto-complete v-if="showAddNew" autofocus></auto-complete>
                 </li>
                 <li class="target" v-for="(type, index) in config.targets" :key="type + ':' + index">
                     <span class="target-name">{{ type }}</span>

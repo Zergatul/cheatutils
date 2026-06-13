@@ -1,9 +1,6 @@
-import * as FallbackLoader from '/fallback-loader.js'
 import { components } from '/components.js'
 import * as http from '/http.js'
 import { withCss } from '/components/Loader.js'
-
-const { nextTick } = await FallbackLoader.vue();
 
 export function createComponent(template) {
     const url = '/api/crystal-aura';
@@ -21,10 +18,8 @@ export function createComponent(template) {
             };
         },
         methods: {
-            async showAutoComplete() {
+            showAutoComplete() {
                 this.showAddNew = true;
-                await nextTick();
-                document.querySelector('ul.crystal-aura-targets div.autocomplete > input').focus();
             },
             removeTarget(index) {
                 this.config.targets.splice(index, 1);
