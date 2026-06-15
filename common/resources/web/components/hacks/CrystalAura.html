@@ -1,6 +1,6 @@
 <div class="module-main" v-if="config">
     <div class="description">
-        Crystal PvP
+        Crystal Aura in Beta. Report issues or suggest improvements.
     </div>
 
     <div class="module-sections">
@@ -15,10 +15,20 @@
             <table>
                 <tr>
                     <td style="text-align: right;">
-                        <span class="field-description">Min Target Damage:</span>
+                        <span class="field-description">Min Total Target Damage:</span>
                     </td>
                     <td>
                         <input type="text" class="w3" v-model="config.minTargetDamage" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            Minimum total target damage required to break a crystal
+                            <template #additional>
+                                Damage is summed across all matching targets in range.
+                                Example: if one target would take 3 damage and another would take 4, total target damage is 7.
+                                If <b>Min Total Target Damage</b> is 6, Crystal Aura can use this crystal.
+                            </template>
+                        </Description>
                     </td>
                 </tr>
                 <tr>
@@ -27,6 +37,11 @@
                     </td>
                     <td>
                         <input type="text" class="w3" v-model="config.maxSelfDamage" @change="update()">
+                    </td>
+                    <td>
+                        <Description>
+                            Maximum predicted damage to yourself allowed for crystal placement or attack
+                        </Description>
                     </td>
                 </tr>
                 <tr>
@@ -38,9 +53,9 @@
                     </td>
                     <td>
                         <Description>
-                            How old crystal should be so module considers to break it, in ticks
+                            Minimum crystal age before Auto-Break considers attacking it, in ticks
                             <template #additional>
-                                Setting it more than Break Delay may cause module to place multiple crystals before breaking first of them.
+                                Setting this higher than Break Delay may cause the module to place multiple crystals before breaking the first one.
                             </template>
                         </Description>
                     </td>
@@ -163,7 +178,7 @@
                     </td>
                     <td>
                         <Description>
-                            How many ticks to wait after crystal exploded before placing new one
+                            How many ticks to wait after placing a crystal before trying to place another one
                         </Description>
                     </td>
                 </tr>
@@ -174,6 +189,10 @@
             <legend>
                 <switch-checkbox v-model="config.autoPlaceSupport" @change="update()">Auto-Support</switch-checkbox>
             </legend>
+            <div class="section-description">
+                Requires <b>Auto-Place</b>. Uses the <b>Auto-Place</b> range setting.
+            </div>
+            <hr>
             <table v-if="config.autoPlaceSupport">
                 <tr>
                     <td style="text-align: right;">
@@ -184,7 +203,7 @@
                     </td>
                     <td>
                         <Description>
-                            How many ticks to wait after placing support obisidian block, before placing crystal
+                            How many ticks to wait after placing a support obsidian block before trying to place a crystal
                         </Description>
                     </td>
                 </tr>
@@ -199,7 +218,7 @@
                     </td>
                     <td>
                         <Description>
-                            Allows to place support obsidian not attached to anything
+                            Allows support obsidian to be placed without attaching it to another block
                         </Description>
                     </td>
                 </tr>
@@ -239,10 +258,10 @@
                     </td>
                     <td>
                         <Description>
-                            Break crystals as soon as they spawn
+                            Attacks crystals as soon as they spawn
                             <template #additional>
-                                In such case it ignores Delay and Crystal Age settings.<br>
-                                Fast break is implicitly disabled when Auto-Rotate is ON.
+                                Ignores <b>Auto-Break Delay</b> and <b>Crystal Age</b>.<br>
+                                <b>Fast-Break</b> is disabled while <b>Auto-Rotate</b> is enabled.
                             </template>
                         </Description>
                     </td>
@@ -256,7 +275,7 @@
                     </td>
                     <td>
                         <Description>
-                            How many ticks to wait after placing crystal
+                            How many ticks to wait after attacking a crystal before attacking another one
                         </Description>
                     </td>
                 </tr>
