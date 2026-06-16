@@ -24,7 +24,7 @@ jobs:
       - name: Build
         run: |
           cd universal
-          ./gradlew universalJar -PenabledLoaders=fabric
+          ./gradlew universalJar -Ploaders=fabric
 
       - name: Create CurseForge build
         shell: pwsh

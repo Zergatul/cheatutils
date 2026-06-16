@@ -10,8 +10,8 @@ def allLoaders = [
     neoforge: file('../neoforge')
 ]
 
-// can be overridden from command line: -PenabledLoaders=fabric,neoforge
-def enabledLoaders = (findProperty('enabledLoaders') ?: 'fabric,forge,neoforge')
+// can be overridden from command line: -Ploaders=fabric,neoforge
+def enabledLoaders = (findProperty('loaders') ?: 'fabric,forge,neoforge')
     .split(',')
     .collect { it.trim() }
     .findAll { !it.isEmpty() }
