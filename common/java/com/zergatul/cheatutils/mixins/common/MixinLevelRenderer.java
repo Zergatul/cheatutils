@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -27,6 +28,9 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
     @Unique
     private Matrix4f modifiedProjectionMatrix_CU;
 
+    @Unique
+    private Matrix4f storedModelViewMatrix_CU;
+
     public void setModifiedProjectionMatrix_CU(Matrix4f matrix) {
         this.modifiedProjectionMatrix_CU = matrix;
     }
@@ -46,7 +50,27 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
         Events.BeforeRenderWorld.trigger();
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelTargetBundle;clear()V"))
+    @Inject(
+            method = "render",
+            at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;"))
+    private void onRenderLevelRememberLastModelViewMatrix(
+            final GraphicsResourceAllocator resourceAllocator,
+            final DeltaTracker deltaTracker,
+            final boolean renderOutline,
+            final CameraRenderState cameraState,
+            final Matrix4fc modelViewMatrix,
+            final GpuBufferSlice terrainFog,
+            final Vector4f fogColor,
+            final boolean shouldRenderSky,
+            final CallbackInfo info
+    ) {
+        // fix for Iris compatibility
+        this.storedModelViewMatrix_CU = new Matrix4f(RenderSystem.getModelViewStack());
+    }
+
+    @Inject(
+            method = "render",
+            at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;", shift = At.Shift.AFTER))
     private void onRenderLevelEnd(
             final GraphicsResourceAllocator resourceAllocator,
             final DeltaTracker deltaTracker,
@@ -60,8 +84,14 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
     ) {
         ProfilerFiller profiler = Profiler.get();
         profiler.push(Constants.MOD_ID + " : AfterRenderWorld");
+        // fix for Iris compatibility
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().mul(this.storedModelViewMatrix_CU);
         Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
+        RenderSystem.getModelViewStack().popMatrix();
         profiler.pop();
+
         this.modifiedProjectionMatrix_CU = null;
+        this.storedModelViewMatrix_CU = null;
     }
 }

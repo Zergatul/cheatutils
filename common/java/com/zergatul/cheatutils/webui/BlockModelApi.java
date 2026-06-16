@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseFeatureSubmitsAccessor;
@@ -87,12 +88,7 @@ public class BlockModelApi extends ApiBase {
     }
 
     private void extractQuads(BlockModelFeatureRenderer.Submit submission, List<Quad> output) {
-        for (BlockStateModelPart part : submission.modelParts()) {
-            for (Direction direction : Direction.values()) {
-                extractQuads(part.getQuads(direction), submission.tintLayers(), submission.tintColor(), output);
-            }
-            extractQuads(part.getQuads(null), submission.tintLayers(), submission.tintColor(), output);
-        }
+        extractBlockModelQuads(submission.modelParts(), submission.tintLayers(), submission.tintColor(), output);
     }
 
     private void extractQuads(SimpleFeatureRenderPhase phase, List<Quad> output) {
@@ -124,6 +120,8 @@ public class BlockModelApi extends ApiBase {
             extractQuads(blockModel, output);
         } else if (submission instanceof ModelFeatureRenderer.Submit<?> model) {
             extractQuads(model, output);
+        } else {
+            ModLoaderBridgeInstance.get().extractQuads(submission, output);
         }
     }
 
@@ -157,9 +155,26 @@ public class BlockModelApi extends ApiBase {
         });
     }
 
-    private void extractQuads(List<BakedQuad> bakedQuads, int[] tintLayers, int baseTintColor, List<Quad> output) {
+    public static void extractBlockModelQuads(List<BlockStateModelPart> parts, int[] tintLayers, int baseTintColor, List<Quad> output) {
+        for (BlockStateModelPart part : parts) {
+            for (Direction direction : Direction.values()) {
+                extractBakedQuads(part.getQuads(direction), tintLayers, baseTintColor, output);
+            }
+            extractBakedQuads(part.getQuads(null), tintLayers, baseTintColor, output);
+        }
+    }
+
+    public static void extractBakedQuads(List<BakedQuad> bakedQuads, int[] tintLayers, int baseTintColor, List<Quad> output) {
         for (BakedQuad quad : bakedQuads) {
             output.add(new Quad(quad, tintLayers, baseTintColor));
+        }
+    }
+
+    public static int getBlockModelQuadColor(int tintIndex, int[] tintLayers, int baseTintColor) {
+        if (tintIndex >= 0 && tintIndex < tintLayers.length) {
+            return ColorUtils.Int.multiply(baseTintColor, tintLayers[tintIndex]);
+        } else {
+            return baseTintColor;
         }
     }
 
@@ -178,19 +193,10 @@ public class BlockModelApi extends ApiBase {
                 this.vertices[i].y = quad.position(i).y() - 0.5f;
                 this.vertices[i].z = quad.position(i).z() - 0.5f;
 
-                int tintIndex = quad.materialInfo().tintIndex();
-                if (quad.materialInfo().isTinted() && tintIndex >= 0 && tintIndex < tintLayers.length) {
-                    int color = ColorUtils.Int.multiply(baseTintColor, tintLayers[tintIndex]);
-                    this.vertices[i].r = ColorUtils.Int.r(color);
-                    this.vertices[i].g = ColorUtils.Int.g(color);
-                    this.vertices[i].b = ColorUtils.Int.b(color);
-                    this.vertices[i].a = ColorUtils.Int.a(color);
-                } else {
-                    this.vertices[i].r = ColorUtils.Int.r(baseTintColor);
-                    this.vertices[i].g = ColorUtils.Int.g(baseTintColor);
-                    this.vertices[i].b = ColorUtils.Int.b(baseTintColor);
-                    this.vertices[i].a = ColorUtils.Int.a(baseTintColor);
-                }
+                int color = quad.materialInfo().isTinted() ?
+                        getBlockModelQuadColor(quad.materialInfo().tintIndex(), tintLayers, baseTintColor) :
+                        baseTintColor;
+                this.vertices[i].setColor(color);
 
                 this.vertices[i].u = UVPair.unpackU(quad.packedUV(i));
                 this.vertices[i].v = UVPair.unpackV(quad.packedUV(i));
@@ -217,15 +223,21 @@ public class BlockModelApi extends ApiBase {
 
         public Vertex() {}
 
+        public Vertex(float x, float y, float z, int color, float u, float v) {
+            this.x = x - 0.5f;
+            this.y = y - 0.5f;
+            this.z = z - 0.5f;
+            setColor(color);
+            this.u = u;
+            this.v = v;
+        }
+
         public Vertex(PoseStack.Pose pose1, PoseStack.Pose pose2, @Nullable TextureAtlasSprite sprite, ModelPart.Vertex vertex, int color) {
             Vector3f pos = pose1.pose().mul(pose2.pose(), new Matrix4f()).transformPosition(vertex.worldX(), vertex.worldY(), vertex.worldZ(), new Vector3f());
             this.x = pos.x() - 0.5f;
             this.y = pos.y() - 0.5f;
             this.z = pos.z() - 0.5f;
-            this.r = ((color >>> 16) & 0xFF);
-            this.g = ((color >>> 8) & 0xFF);
-            this.b = ((color >>> 0) & 0xFF);
-            this.a = ((color >>> 24) & 0xFF);
+            setColor(color);
             if (sprite != null) {
                 this.u = sprite.getU(vertex.u());
                 this.v = sprite.getV(vertex.v());
@@ -233,6 +245,13 @@ public class BlockModelApi extends ApiBase {
                 this.u = vertex.u();
                 this.v = vertex.v();
             }
+        }
+
+        private void setColor(int color) {
+            this.r = ColorUtils.Int.r(color);
+            this.g = ColorUtils.Int.g(color);
+            this.b = ColorUtils.Int.b(color);
+            this.a = ColorUtils.Int.a(color);
         }
     }
 }

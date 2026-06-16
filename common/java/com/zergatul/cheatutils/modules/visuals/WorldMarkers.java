@@ -101,12 +101,13 @@ public class WorldMarkers implements FontBackendHolder {
 
             Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)x, (float)y, (float)z, 1));
             Vector4f v2 = event.getProjection().transform(v1);
-            if (v2.z / v2.w <= 0) {
+            if (v2.w <= 0) {
                 continue; // behind
             }
 
-            int xc = Math.round(v2.x / v2.w * halfScrWidth);
-            int yc = Math.round(-v2.y / v2.w * halfScrHeight);
+            float invW = 1 / v2.w;
+            int xc = Math.round(v2.x * invW * halfScrWidth);
+            int yc = Math.round(-v2.y * invW * halfScrHeight);
 
             int color = entry.color.getRGB();
             int inverse = ColorUtils.inverse(color);
