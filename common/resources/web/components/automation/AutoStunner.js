@@ -1,5 +1,7 @@
 import { createSimpleComponent } from '/components/SimpleModule.js';
 
 export function createComponent(template) {
-    return createSimpleComponent('/api/auto-stunner', template);
+    return createSimpleComponent('/api/auto-stunner', template, {
+        components: ['CodeBlock']
+    });
 }
