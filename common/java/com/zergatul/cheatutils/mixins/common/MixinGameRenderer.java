@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ResizeEvent;
@@ -64,6 +65,14 @@ public abstract class MixinGameRenderer {
         return matrix;
     }
 
+    @ModifyExpressionValue(
+            method = "renderLevel",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z", ordinal = 1))
+    private boolean onModifyIsFirstPerson3dCrosshair(boolean isFirstPerson) {
+        // maybe need priority=2000 like in another call site
+        return FreeCam.instance.onRenderCrosshairIsFirstPerson(isFirstPerson);
+    }
+
     @Inject(at = @At("HEAD"), method = "bobHurt", cancellable = true)
     private void onBobHurt(final CameraRenderState cameraState, final PoseStack poseStack, CallbackInfo info) {
         if (ConfigStore.instance.getConfig().bobHurtConfig.enabled) {
@@ -80,4 +89,6 @@ public abstract class MixinGameRenderer {
     private void onAfterLevelExtract(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo info) {
         FullBright.instance.shouldReturnNightVisionEffect = false;
     }
+
+
 }
