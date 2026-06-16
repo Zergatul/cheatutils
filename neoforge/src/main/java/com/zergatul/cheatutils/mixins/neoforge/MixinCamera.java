@@ -13,19 +13,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Camera.class)
 public abstract class MixinCamera {
 
-    @ModifyExpressionValue(method = "calculateFov", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;modifyFovBasedOnDeathOrFluid(FFZ)F"))
+    @ModifyExpressionValue(method = "calculateFov", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;modifyFovBasedOnDeathOrFluid(FF)F"))
     private float onModifyCalculatedFieldOfView(float original) {
         ModifyFieldOfViewEvent event = new ModifyFieldOfViewEvent(original);
         Events.ModifyCalculatedFieldOfView.trigger(event);
         return event.fov;
     }
 
-    @Inject(at = @At("HEAD"), method = "modifyFovBasedOnDeathOrFluid(FFZ)F", cancellable = true)
-    private void onModifyFovBasedOnDeathOrFluid(float partialTicks, float fov, boolean useFovSetting, CallbackInfoReturnable<Float> info) {
-        if (useFovSetting) {
-            if (Events.ModifyFieldOfViewBasedOnLiquid.trigger(new SimpleCancellableEvent())) {
-                info.setReturnValue(fov);
-            }
+    @Inject(at = @At("HEAD"), method = "modifyFovBasedOnDeathOrFluid(FF)F", cancellable = true)
+    private void onModifyFovBasedOnDeathOrFluid(float partialTicks, float fov, CallbackInfoReturnable<Float> info) {
+        if (Events.ModifyFieldOfViewBasedOnLiquid.trigger(new SimpleCancellableEvent())) {
+            info.setReturnValue(fov);
         }
     }
 }

@@ -1,18 +1,18 @@
 {
-  "required": false,
+  "required": true,
   "minVersion": "0.8.7",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_25",
   "injectors": {
-    "defaultRequire": 0
+    "defaultRequire": 1
   },
   "mixinPriority": 500,
   "client": [
     "neoforge.schematics.MixinSectionCompiler",
     "neoforge.MixinCamera",
-    "neoforge.MixinGui",
     "neoforge.MixinGuiGraphicsExtractor",
-    "neoforge.MixinLevelRenderer",
+    "neoforge.MixinHud",
+    "neoforge.MixinLevelExtractor",
     "neoforge.MixinMinecraft",
     "neoforge.MixinMultiPlayerGameMode"
   ]
