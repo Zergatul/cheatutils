@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8.7",
+  "package": "com.zergatul.cheatutils.mixins",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "com.zergatul.cheatutils.compatibility.SodiumMixinPlugin",
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "mixinPriority": 500,
+  "client": [
+    "common.sodium.MixinSodiumWorldRenderer"
+  ]
+}

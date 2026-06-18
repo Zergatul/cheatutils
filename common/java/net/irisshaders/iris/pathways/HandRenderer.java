@@ -5,6 +5,6 @@ import net.minecraft.client.renderer.GameRenderer;
 
 public class HandRenderer {
     private boolean canRender(Camera camera, GameRenderer gameRenderer) {
-        throw new AssertionError();
+        return !camera.isDetached();
     }
 }
