@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.world.entity.LivingEntity;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(GameRenderer.class)
 public abstract class MixinGameRenderer {
@@ -80,15 +82,10 @@ public abstract class MixinGameRenderer {
         }
     }
 
-    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LightmapRenderStateExtractor;extract(Lnet/minecraft/client/renderer/state/LightmapRenderState;F)V"))
-    private void onBeforeLevelExtract(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
-        FullBright.instance.shouldReturnNightVisionEffect = true;
+    @Inject(at = @At("HEAD"), method = "nightVisionScale", cancellable = true)
+    private static void onBeforeNightVisionScale(LivingEntity camera, float a, CallbackInfoReturnable<Float> info) {
+        if (FullBright.instance.shouldFakeNighVision()) {
+            info.setReturnValue(1f);
+        }
     }
-
-    @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/extract/LevelExtractor;extract(Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/client/Camera;F)V", shift = At.Shift.AFTER))
-    private void onAfterLevelExtract(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo info) {
-        FullBright.instance.shouldReturnNightVisionEffect = false;
-    }
-
-
 }
