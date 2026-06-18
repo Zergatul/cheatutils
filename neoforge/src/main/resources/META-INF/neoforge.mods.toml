@@ -16,6 +16,9 @@ description='''${mod_description}'''
 config="${mod_id}.common.mixins.json"
 
 [[mixins]]
+config="${mod_id}.sodium.mixins.json"
+
+[[mixins]]
 config="${mod_id}.iris.mixins.json"
 
 [[mixins]]
