@@ -12,7 +12,7 @@ public abstract class MixinSectionOcclusionGraph {
 
     @Redirect(
             method = "runUpdates",
-            at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/longs/LongOpenHashSet;contains(J)Z"))
+            at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/longs/LongOpenHashSet;contains(J)Z", ordinal = 1))
     private boolean onCheckIfNodeBelongToEmptySectionsSet(LongOpenHashSet set, long index) {
         if (!set.contains(index)) {
             return false;

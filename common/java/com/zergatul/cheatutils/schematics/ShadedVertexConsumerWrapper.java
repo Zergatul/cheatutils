@@ -36,7 +36,7 @@ public class ShadedVertexConsumerWrapper implements VertexConsumer {
 
     @Override
     public @NotNull VertexConsumer setColor(int r, int g, int b, int a) {
-        inner.setColor(Math.round(shadeR * r), Math.round(shadeG * g), Math.round(shadeB * g), Math.round(shadeA * a));
+        inner.setColor(Math.round(shadeR * r), Math.round(shadeG * g), Math.round(shadeB * b), Math.round(shadeA * a));
         return this;
     }
 
