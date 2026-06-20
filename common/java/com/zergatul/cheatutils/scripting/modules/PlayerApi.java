@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.blocks.HitResultHelper;
 import com.zergatul.cheatutils.controllers.DisconnectController;
 import com.zergatul.cheatutils.controllers.SpeedCounterController;
 import com.zergatul.cheatutils.mixins.common.accessors.LocalPlayerAccessor;
@@ -657,6 +658,37 @@ public class PlayerApi {
     }
 
     public static class InteractionsApi {
+
+        @MethodDescription("""
+                Tries to interact with block. Returns true on success.
+                """)
+        @ApiVisibility(ApiType.ACTION)
+        public boolean interactWithBlock(BlockPosWrapper pos, boolean offhand) {
+            return interactWithBlock(pos.getX(), pos.getY(), pos.getZ(), offhand);
+        }
+
+        @MethodDescription("""
+                Tries to interact with block. Returns true on success.
+                """)
+        @ApiVisibility(ApiType.ACTION)
+        public boolean interactWithBlock(int x, int y, int z, boolean offhand) {
+            if (mc.level == null || mc.player == null || mc.gameMode == null) {
+                return false;
+            }
+
+            BlockPos pos = new BlockPos(x, y, z);
+            BlockHitResult hit = HitResultHelper.calculate(mc.player, pos, mc.level.getBlockState(pos));
+            InteractionHand hand = offhand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+            InteractionResult result = mc.gameMode.useItemOn(mc.player, hand, hit);
+            if (result.consumesAction()) {
+                if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
+                    mc.player.swing(hand);
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         @ApiVisibility(ApiType.ACTION)
         public void interactWithEntity(int entityId) {
