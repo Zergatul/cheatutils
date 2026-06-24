@@ -14,6 +14,16 @@ public class CompoundTagWrapper extends TagWrapper {
         this.inner = tag;
     }
 
+    @Getter(name = "keys")
+    public String[] getKeys() {
+        String[] keys = new String[inner.size()];
+        int index = 0;
+        for (String key : inner.keySet()) {
+            keys[index++] = key;
+        }
+        return keys;
+    }
+
     @Getter(name = "size")
     public int getSize() {
         return inner.size();
