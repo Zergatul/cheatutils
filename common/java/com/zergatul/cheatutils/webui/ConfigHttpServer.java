@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.mcp.McpHttpHandler;
 import com.zergatul.cheatutils.scripting.monaco.Integration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,6 +82,7 @@ public class ConfigHttpServer {
         server.createContext("/local/", new LocalFilesHandler());
         server.createContext("/llm/cheatutils-llm-guide.md", new LargeLanguageModelGuideHandler());
         server.createContext("/llm/cheatutils-api.txt", new ApiGenHandler());
+        server.createContext("/mcp", new McpHttpHandler());
         server.createContext("/", new StaticFilesHandler());
 
         server.setExecutor(executor);
