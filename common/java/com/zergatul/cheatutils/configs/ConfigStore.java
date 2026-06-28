@@ -3,19 +3,19 @@ package com.zergatul.cheatutils.configs;
 import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
-import com.zergatul.cheatutils.modules.hacks.HitboxSize;
-import com.zergatul.cheatutils.modules.hacks.KillAura;
-import com.zergatul.cheatutils.modules.scripting.EventsScripting;
-import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
+import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
+import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
-import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -145,22 +145,22 @@ public class ConfigStore {
         WorldMarkers.instance.onFontChange();
         StatusOverlay.instance.onFontChange();
 
-        ScriptsController.instance.clear();
+        KeyBindings.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                ScriptsController.instance.add(toggleEspName, "esp.toggle();", false);
-                //KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
-                KeyBindingsController.instance.assign(0, toggleEspName);
+                KeyBindings.instance.add(toggleEspName, "esp.toggle();", false);
+                //KeyBindings.instance.getKeyMappingByIndex(0).setKey(InputConstants.getKey("key.keyboard.backslash"));
+                KeyBindings.instance.assign(0, toggleEspName);
             } catch (Throwable e) {
                 logger.error("Toggle ESP script initialization failed", e);
             }
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                ScriptsController.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
-                KeyBindingsController.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
-                KeyBindingsController.instance.assign(1, toggleFreeCamName);
+                KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
+                KeyBindings.instance.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
+                KeyBindings.instance.assign(1, toggleFreeCamName);
             } catch (Throwable e) {
                 logger.error("Toggle FreeCam script initialization failed", e);
             }
@@ -169,7 +169,7 @@ public class ConfigStore {
             config.keyBindingScriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    ScriptsController.instance.add(s.name, s.code, true);
+                    KeyBindings.instance.add(s.name, s.code, true);
                 } catch (Throwable e) {
                     logger.error("KeyBinding script '{}' initialization failed", s.name, e);
                 }
@@ -178,17 +178,15 @@ public class ConfigStore {
             String[] bindings = config.keyBindingsConfig.bindings;
             for (int i = 0; i < KeyBindingsConfig.KeysCount; i++) {
                 if (bindings[i] != null) {
-                    KeyBindingsController.instance.assign(i, bindings[i]);
+                    KeyBindings.instance.assign(i, bindings[i]);
                 }
             }
         }
 
         if (config.statusOverlayConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileOverlay(config.statusOverlayConfig.code);
-                if (result.getProgram() != null) {
-                    StatusOverlay.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.OVERLAY).init(config.statusOverlayConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Status Overlay: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -198,10 +196,8 @@ public class ConfigStore {
 
         if (config.blockAutomationConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileBlockAutomation(config.blockAutomationConfig.code);
-                if (result.getProgram() != null) {
-                    BlockAutomation.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_AUTOMATION).init(config.blockAutomationConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Block Automation: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -211,10 +207,8 @@ public class ConfigStore {
 
         if (config.villagerRollerConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
-                if (result.getProgram() != null) {
-                    VillagerRoller.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.VILLAGER_ROLLER).init(config.villagerRollerConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Villager Roller: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -224,10 +218,8 @@ public class ConfigStore {
 
         if (config.eventsScriptingConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileEvents(config.eventsScriptingConfig.code);
-                if (result.getProgram() != null) {
-                    EventsScripting.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.EVENTS).init(config.eventsScriptingConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Events Scripting: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -235,6 +227,7 @@ public class ConfigStore {
             }
         }
 
+        ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP)).clear();
         if (config.blocks != null && config.blocks.getBlockConfigs() != null) {
             for (BlockEspConfig blockConfig : config.blocks.getBlockConfigs()) {
                 if (blockConfig.code != null && blockConfig.code.isBlank()) {
@@ -243,10 +236,9 @@ public class ConfigStore {
 
                 if (blockConfig.code != null) {
                     try {
-                        CompilationResult result = ScriptsController.instance.compileBlockEsp(blockConfig.code);
-                        if (result.getProgram() != null) {
-                            blockConfig.script = result.getProgram();
-                        } else {
+                        String identifier = Registries.BLOCKS.getKey(blockConfig.blocks.stream().findFirst().orElseThrow()).toString();
+                        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP).init(identifier, blockConfig.code);
+                        if (!result.isSuccess()) {
                             result.getDiagnostics().forEach(m -> logger.error("Block ESP for {}: {}", blockConfig.blocks.stream().findFirst().get().getName(), m.message));
                         }
                     } catch (Throwable e) {
@@ -256,6 +248,7 @@ public class ConfigStore {
             }
         }
 
+        ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP)).clear();
         if (config.entities != null && config.entities.configs != null) {
             for (EntityEspConfig entityConfig : config.entities.configs) {
                 if (entityConfig.code != null && entityConfig.code.isBlank()) {
@@ -264,10 +257,8 @@ public class ConfigStore {
 
                 if (entityConfig.code != null) {
                     try {
-                        CompilationResult result = ScriptsController.instance.compileEntityEsp(entityConfig.code);
-                        if (result.getProgram() != null) {
-                            entityConfig.script = result.getProgram();
-                        } else {
+                        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP).init(entityConfig.clazz.getName(), entityConfig.code);
+                        if (!result.isSuccess()) {
                             result.getDiagnostics().forEach(m -> logger.error("Entity ESP for {}: {}", entityConfig.clazz.getName(), m.message));
                         }
                     } catch (Throwable e) {
@@ -279,10 +270,8 @@ public class ConfigStore {
 
         if (config.killAuraConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileKillAura(config.killAuraConfig.code);
-                if (result.getProgram() != null) {
-                    KillAura.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.KILL_AURA).init(config.killAuraConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Kill Aura: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -292,10 +281,8 @@ public class ConfigStore {
 
         if (config.hitboxSizeConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileHitboxSize(config.hitboxSizeConfig.code);
-                if (result.getProgram() != null) {
-                    HitboxSize.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.HITBOX_SIZE).init(config.hitboxSizeConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Hitbox Size: {}", m.message));
                 }
             } catch (Throwable e) {

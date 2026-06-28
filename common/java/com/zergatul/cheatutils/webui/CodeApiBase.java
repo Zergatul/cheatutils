@@ -1,33 +1,22 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 
-public abstract class CodeApiBase<T> extends ApiBase {
+public abstract class CodeApiBase extends ApiBase {
 
     @Override
     public String post(String code) {
         code = gson.fromJson(code, String.class);
 
-        if (code == null || code.isEmpty()) {
-            setCode(null);
-            ConfigStore.instance.requestWrite();
-            setProgram(null);
-            return "{ \"ok\": true }";
-        }
-
-        CompilationResult result = compile(code);
-        if (result.getProgram() != null) {
-            setCode(code);
-            ConfigStore.instance.requestWrite();
-            setProgram(result.getProgram());
+        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(getScriptType()).save(code);
+        if (result.isSuccess()) {
             return "{ \"ok\": true }";
         } else {
             return gson.toJson(result.getDiagnostics());
         }
     }
 
-    protected abstract CompilationResult compile(String code);
-    protected abstract void setCode(String code);
-    protected abstract void setProgram(T program);
+    protected abstract ScriptType getScriptType();
 }

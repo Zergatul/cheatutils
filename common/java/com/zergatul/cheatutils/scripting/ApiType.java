@@ -21,4 +21,6 @@ public enum ApiType {
     CURRENT_BLOCK_ESP,
 
     CURRENT_ENTITY_ESP,
+
+    EXEC_LOGGING,
 }

@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.font.StylizedText;
-import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.modules.esp.entity.EntityScriptResult;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
@@ -10,9 +10,9 @@ import com.zergatul.scripting.type.CustomType;
 @CustomType(name = "EntityEspEvent")
 public class EntityEspEvent {
 
-    private final EntityEsp.EntityScriptResult result;
+    private final EntityScriptResult result;
 
-    public EntityEspEvent(EntityEsp.EntityScriptResult result) {
+    public EntityEspEvent(EntityScriptResult result) {
         this.result = result;
     }
 

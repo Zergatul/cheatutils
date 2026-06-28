@@ -3,13 +3,16 @@ package com.zergatul.cheatutils.modules.esp;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.phys.Vec3;
@@ -26,6 +29,7 @@ public class BlockEsp {
     private final List<BlockPos> bbList = new ArrayList<>();
     private final List<BlockPos> tracerList = new ArrayList<>();
     private final List<BlockPos> overlayList = new ArrayList<>();
+    private final Map<BlockEspConfig, BlockEspConsumer> scripts = new IdentityHashMap<>();
     private boolean enabled = true;
 
     private BlockEsp() {
@@ -51,6 +55,22 @@ public class BlockEsp {
 
     public void removeCustom(BlockPos pos) {
         customEntries.removeIf(e -> e.pos.equals(pos));
+    }
+
+    public void setScript(BlockEspConfig config, @Nullable BlockEspConsumer script) {
+        // Have to run from the main thread, since BlockEsp module doesn't snapshot scripts
+        // and if update happens mid-frame it can cause NullReference exception.
+        TickEndExecutor.instance.execute(() -> {
+            if (script == null) {
+                scripts.remove(config);
+            } else {
+                scripts.put(config, script);
+            }
+        });
+    }
+
+    public void clearScripts() {
+        TickEndExecutor.instance.execute(scripts::clear);
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -101,7 +121,8 @@ public class BlockEsp {
             tracerList.clear();
             overlayList.clear();
 
-            if (config.scriptEnabled && config.script != null) {
+            BlockEspConsumer script = scripts.get(config);
+            if (config.scriptEnabled && script != null) {
                 BlockScriptResult result = new BlockScriptResult();
                 BlockEspEvent blockEspEvent = new BlockEspEvent(result);
                 for (BlockPos pos : set) {
@@ -115,7 +136,7 @@ public class BlockEsp {
                     }
 
                     result.reset();
-                    config.script.accept(new BlockPosWrapper(pos), blockEspEvent);
+                    script.accept(new BlockPosWrapper(pos), blockEspEvent);
 
                     if (distanceSqr < boundingBoxMaxDistanceSqr && result.shouldDrawOutline(config.drawBoundingBox)) {
                         bbList.add(pos);

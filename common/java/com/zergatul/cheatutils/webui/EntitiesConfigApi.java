@@ -3,6 +3,9 @@ package com.zergatul.cheatutils.webui;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
+import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 
 public class EntitiesConfigApi extends ApiBase {
 
@@ -69,7 +72,10 @@ public class EntitiesConfigApi extends ApiBase {
                 .findFirst()
                 .orElse(null);
 
-        ConfigStore.instance.getConfig().entities.remove(config);
+        if (config != null) {
+            ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP)).remove(config.clazz.getName());
+            ConfigStore.instance.getConfig().entities.remove(config);
+        }
         ConfigStore.instance.requestWrite();
 
         return "{ \"ok\": true }";

@@ -6,6 +6,9 @@ import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.BlocksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.esp.BlockFinder;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
+import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
@@ -83,6 +86,10 @@ public class BlocksConfigApi extends ApiBase {
         BlocksConfig blocksConfig = ConfigStore.instance.getConfig().blocks;
         BlockEspConfig config = blocksConfig.find(block);
         if (config != null) {
+            MultiScriptSlot slot = (MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP);
+            config.blocks.stream()
+                    .map(b -> Registries.BLOCKS.getKey(b).toString())
+                    .forEach(slot::remove);
             blocksConfig.remove(config);
         } else {
             throw new ApiException("Config doesn't exist for this block.", HttpResponseCodes.BAD_REQUEST);

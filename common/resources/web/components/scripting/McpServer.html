@@ -1,0 +1,50 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Allows you to connect CheatUtils to AI Agents.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset class="flex-column">
+            <legend>
+                <switch-checkbox v-model="config.allowSavingScripts" @change="update()">Allow Saving Scripts</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Enables agent to be able to update and apply scripts live.
+                Without this agent can only inspect compilation errors, read your scripts, compile its own scripts, but don't apply them or execute.
+            </div>
+        </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
+                <switch-checkbox v-model="config.allowEvaluatingExpressions" @change="update()">Allow Evaluating Expressions</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Enables agent to evaluate arbitrary scripting expressions on the main thread.
+                Expressions can mutate game or mod state and are not time-limited.
+            </div>
+        </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
+                <switch-checkbox v-model="config.allowExecutingCode" @change="update()">Allow Executing Code</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Enables agent to run arbitrary scripting code on the main thread and return records through executionLog.write().
+                Code can mutate game or mod state and is not time-limited.
+            </div>
+        </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
+                <switch-checkbox v-model="config.allowScreenshots" @change="update()">Allow Screenshots</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Enables agent to take screenshots and view current state of the game.
+            </div>
+        </fieldset>
+    </div>
+</div>

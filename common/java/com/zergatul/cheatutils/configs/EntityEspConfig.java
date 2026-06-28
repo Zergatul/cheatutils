@@ -1,7 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-import com.zergatul.cheatutils.configs.adapters.GsonSkip;
-import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import net.minecraft.world.entity.Entity;
 
 import java.awt.*;
@@ -24,9 +22,6 @@ public class EntityEspConfig extends EspConfigBase {
 
     public boolean scriptEnabled;
     public String code;
-
-    @GsonSkip
-    public EntityEspConsumer script;
 
     public boolean isValidEntity(Entity entity) {
         return clazz.isInstance(entity);

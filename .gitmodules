@@ -4,3 +4,6 @@
 [submodule "mixin-plugin"]
 	path = mixin-plugin
 	url = https://github.com/Zergatul/mixins.git
+[submodule "script-examples"]
+	path = script-examples
+	url = https://github.com/Zergatul/cheatutils-examples.git

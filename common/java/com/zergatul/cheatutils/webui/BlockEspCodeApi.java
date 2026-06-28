@@ -1,10 +1,11 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptsController;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import net.minecraft.world.level.block.Block;
 
 public class BlockEspCodeApi extends ApiBase {
@@ -26,22 +27,9 @@ public class BlockEspCodeApi extends ApiBase {
             throw new ApiException("Cannot find block config.", HttpResponseCodes.NOT_FOUND);
         }
 
-        if (request.code == null || request.code.isBlank()) {
-            TickEndExecutor.instance.execute(() -> {
-                config.code = null;
-                config.script = null;
-                ConfigStore.instance.requestWrite();
-            });
-            return "{ \"ok\": true }";
-        }
-
-        CompilationResult result = ScriptsController.instance.compileBlockEsp(request.code);
-        if (result.getProgram() != null) {
-            TickEndExecutor.instance.execute(() -> {
-                config.code = request.code;
-                config.script = result.getProgram();
-                ConfigStore.instance.requestWrite();
-            });
+        String identifier = Registries.BLOCKS.getKey(request.block).toString();
+        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP).save(identifier, request.code);
+        if (result.isSuccess()) {
             return "{ \"ok\": true }";
         } else {
             return gson.toJson(result.getDiagnostics());

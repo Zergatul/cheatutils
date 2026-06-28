@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.scripting.*;
 import com.zergatul.scripting.InterfaceHelper;
+import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.type.CustomType;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -24,7 +25,8 @@ public class ScriptsDocsApi extends ApiBase {
     public String get(String id) {
         ScriptType type = ScriptType.valueOf(id);
         List<String> refs = new ArrayList<>();
-        refs.add(formatFuncMethod(InterfaceHelper.getFuncInterfaceMethod(type.createParameters().getFunctionalInterface())));
+        CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(type);
+        refs.add(formatFuncMethod(InterfaceHelper.getFuncInterfaceMethod(compilationParameters.getFunctionalInterface())));
         refs.add("**********");
         refs.addAll(generateRootRefs(type.getApis()));
         return gson.toJson(refs);

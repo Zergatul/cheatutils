@@ -79,6 +79,7 @@ public class Config implements Sanitizable {
     public HandsViewConfig handsViewConfig = new HandsViewConfig();
     public PrivacyConfig privacyConfig = new PrivacyConfig();
     public CrystalAuraConfig crystalAuraConfig = new CrystalAuraConfig();
+    public McpServerConfig mcpServerConfig = new McpServerConfig();
 
     @Override
     public void sanitize() {

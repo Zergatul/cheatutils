@@ -11,11 +11,23 @@ import java.nio.file.Paths;
 public class ResourceHelper {
 
     public static InputStream get(String path) {
-        return ModLoaderBridgeInstance.get().isProduction() ? getProduction(path) : getDevelopment(path);
+        if (path.startsWith("web/")) {
+            return ModLoaderBridgeInstance.get().isProduction() ? getProduction(path) : getDevelopment(path);
+        } else {
+            return loadFromResource(path);
+        }
+    }
+
+    public static boolean has(String path) {
+        if (path.startsWith("web/")) {
+            return ModLoaderBridgeInstance.get().isProduction() ? hasProduction(path) : hasDevelopment(path);
+        } else {
+            return hasResource(path);
+        }
     }
 
     private static InputStream getDevelopment(String filename) {
-        return loadFromFile(Paths.get(System.getProperty("user.dir"), "../../common/resources", filename));
+        return loadFromFile(getLocalFilePath(filename));
     }
 
     private static InputStream getProduction(String filename) {
@@ -27,6 +39,23 @@ public class ResourceHelper {
         }
 
         return loadFromResource(filename);
+    }
+
+    private static boolean hasDevelopment(String filename) {
+        return getLocalFilePath(filename).toFile().exists();
+    }
+
+    private static boolean hasProduction(String filename) {
+        return hasResource(filename);
+    }
+
+    private static boolean hasResource(String filename) {
+        ClassLoader classLoader = ResourceHelper.class.getClassLoader();
+        return classLoader.getResource(filename) != null;
+    }
+
+    private static Path getLocalFilePath(String filename) {
+        return Paths.get(System.getProperty("user.dir"), "../../common/resources", filename);
     }
 
     private static InputStream loadFromResource(String filename) {

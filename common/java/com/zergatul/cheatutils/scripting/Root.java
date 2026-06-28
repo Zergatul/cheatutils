@@ -96,4 +96,5 @@ public class Root {
     public static DebugApi debug = new DebugApi();
     public static RenderApi render = new RenderApi();
     public static JsonConvertApi jsonConvert = new JsonConvertApi();
+    public static ExecutionLogApi executionLog = new ExecutionLogApi();
 }

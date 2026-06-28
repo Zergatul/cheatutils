@@ -1,12 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptsController;
-import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
-import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.cheatutils.scripting.ScriptType;
 
-public class BlockAutomationCodeApi extends CodeApiBase<BlockPosConsumer> {
+public class BlockAutomationCodeApi extends CodeApiBase {
 
     @Override
     public String getRoute() {
@@ -14,17 +10,7 @@ public class BlockAutomationCodeApi extends CodeApiBase<BlockPosConsumer> {
     }
 
     @Override
-    protected CompilationResult compile(String code) {
-        return ScriptsController.instance.compileBlockAutomation(code);
-    }
-
-    @Override
-    protected void setCode(String code) {
-        ConfigStore.instance.getConfig().blockAutomationConfig.code = code;
-    }
-
-    @Override
-    protected void setProgram(BlockPosConsumer program) {
-        BlockAutomation.instance.setScript(program);
+    protected ScriptType getScriptType() {
+        return ScriptType.BLOCK_AUTOMATION;
     }
 }

@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptsController;
+import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.scripting.DiagnosticMessage;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.List;
-import java.util.Optional;
 
 public class KeyBindingScriptsApi extends ApiBase {
 
@@ -18,7 +17,7 @@ public class KeyBindingScriptsApi extends ApiBase {
     @Override
     public String get() {
         String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
-        return gson.toJson(ScriptsController.instance.list().stream().map(s -> {
+        return gson.toJson(KeyBindings.instance.list().stream().map(s -> {
             int index = ArrayUtils.indexOf(bindings, s.name);
             return new Script(s.name, index);
         }).toArray());
@@ -26,18 +25,18 @@ public class KeyBindingScriptsApi extends ApiBase {
 
     @Override
     public String get(String id) {
-        Optional<ScriptsController.Script> optional = ScriptsController.instance.list().stream().filter(s -> s.name.equals(id)).findFirst();
-        if (optional.isEmpty()) {
+        KeyBindings.Script script = KeyBindings.instance.get(id);
+        if (script == null) {
             return gson.toJson((Object) null);
         } else {
-            return gson.toJson(new Script(optional.get()));
+            return gson.toJson(new Script(script));
         }
     }
 
     @Override
     public String put(String id, String body) {
         Script script = gson.fromJson(body, Script.class);
-        List<DiagnosticMessage> messages = ScriptsController.instance.update(id, script.name, script.code);
+        List<DiagnosticMessage> messages = KeyBindings.instance.update(id, script.name, script.code);
         if (!messages.isEmpty()) {
             return gson.toJson(messages);
         }
@@ -48,7 +47,7 @@ public class KeyBindingScriptsApi extends ApiBase {
     @Override
     public String post(String body) {
         Script script = gson.fromJson(body, Script.class);
-        List<DiagnosticMessage> messages = ScriptsController.instance.add(script.name, script.code, false);
+        List<DiagnosticMessage> messages = KeyBindings.instance.add(script.name, script.code, false);
         if (!messages.isEmpty()) {
             return gson.toJson(messages);
         }
@@ -58,7 +57,7 @@ public class KeyBindingScriptsApi extends ApiBase {
 
     @Override
     public String delete(String id) {
-        ScriptsController.instance.remove(id);
+        KeyBindings.instance.remove(id);
         ConfigStore.instance.requestWrite();
         return "true";
     }
@@ -73,7 +72,7 @@ public class KeyBindingScriptsApi extends ApiBase {
             this.key = key;
         }
 
-        public Script(ScriptsController.Script script) {
+        public Script(KeyBindings.Script script) {
             name = script.name;
             code = script.code;
         }
