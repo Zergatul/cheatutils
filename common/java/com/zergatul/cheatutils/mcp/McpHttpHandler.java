@@ -139,14 +139,19 @@ public class McpHttpHandler implements HttpHandler {
     private void handleToolsCallMethod(HttpExchange exchange, RpcRequest rpcRequest) throws IOException {
         CallToolRequest request = gson.fromJson(rpcRequest.parameters, CallToolRequest.class);
 
-        Arrays.stream(tools)
+        McpTool tool = Arrays.stream(tools)
                 .filter(t -> t.getName().equals(request.name()))
                 .findFirst()
-                .ifPresentOrElse(tool -> {
+                .orElse(null);
 
-                }, () -> {
-                    sendJsonRpcError(exchange, rpcRequest.id, -32002, "Resource not found");
-                });
+        if (tool == null) {
+            sendJsonRpcError(exchange, rpcRequest.id, -32002, "Resource not found");
+            return;
+        }
+
+        JsonElement result = tool.invoke(rpcRequest.parameters);
+        String resultJson = new String(serializeJson(result), StandardCharsets.UTF_8);
+        sendJsonRpcResult(exchange, rpcRequest.id, CallToolResult.ofText(resultJson));
     }
 
     private void handleResourcesListMethod(HttpExchange exchange, RpcRequest rpcRequest) {
@@ -175,10 +180,10 @@ public class McpHttpHandler implements HttpHandler {
     }
 
     private void sendJsonRpcResult(HttpExchange exchange, RequestId id, Object result) throws IOException {
-        JsonObject responseObject = createBaseJsonRpcResponse(id);
-        responseObject.add("result", gson.toJsonTree(result));
+        JsonObject response = createBaseJsonRpcResponse(id);
+        response.add("result", gson.toJsonTree(result));
 
-        sendJson(exchange, responseObject);
+        sendJson(exchange, response);
     }
 
     private void sendJsonRpcError(HttpExchange exchange, RequestId id, int code, String message) throws IOException {

@@ -2,11 +2,12 @@ package com.zergatul.cheatutils.mcp.tool;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.jspecify.annotations.Nullable;
 
 public interface McpTool {
     String getName();
-    String getTitle();
-    String getDescription();
+    @Nullable String getTitle();
+    @Nullable String getDescription();
     JsonObject getInputSchema();
     JsonObject getOutputSchema();
     JsonElement invoke(JsonElement arguments);
