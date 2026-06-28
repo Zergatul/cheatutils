@@ -13,6 +13,8 @@ import com.zergatul.cheatutils.mcp.resource.ScriptingApiResource;
 import com.zergatul.cheatutils.mcp.tool.ListScriptTypesTool;
 import com.zergatul.cheatutils.mcp.tool.McpTool;
 import com.zergatul.cheatutils.webui.HttpResponseCodes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +22,7 @@ import java.util.Arrays;
 
 public class McpHttpHandler implements HttpHandler {
 
+    private final Logger logger = LogManager.getLogger(McpHttpHandler.class);
     private final Gson gson = new Gson();
     private final McpTool[] tools;
     private final McpResource[] resources;
@@ -88,12 +91,11 @@ public class McpHttpHandler implements HttpHandler {
 
     private void handleMcpNotification(HttpExchange exchange, JsonObject input) throws IOException {
         String method = input.getAsJsonPrimitive("method").getAsString();
-        if (method.equals("notifications/initialized")) {
-            exchange.sendResponseHeaders(HttpResponseCodes.ACCEPTED, 0);
-            exchange.close();
-        } else {
-            sendJsonRpcError(exchange, -32601, "Method not found");
+        if (!method.equals("notifications/initialized")) {
+            logger.warn("Unsupported notification: {}", method);
         }
+        exchange.sendResponseHeaders(HttpResponseCodes.ACCEPTED, 0);
+        exchange.close();
     }
 
     private void handleMcpRequest(HttpExchange exchange, RpcRequest request) throws IOException {
@@ -163,9 +165,12 @@ public class McpHttpHandler implements HttpHandler {
             return;
         }
 
-        JsonElement result = tool.invoke(rpcRequest.parameters);
+        JsonObject result = tool.invoke(request.arguments());
         String resultJson = new String(serializeJson(result), StandardCharsets.UTF_8);
-        sendJsonRpcResult(exchange, rpcRequest.id, CallToolResult.ofText(resultJson));
+        sendJsonRpcResult(exchange, rpcRequest.id, new CallToolResult(
+                new ContentBlock[] { new TextContent(resultJson) },
+                result,
+                null));
     }
 
     private void handleResourcesListMethod(HttpExchange exchange, RpcRequest rpcRequest) throws IOException {
@@ -221,7 +226,7 @@ public class McpHttpHandler implements HttpHandler {
     private RpcRequest parseRpcRequest(JsonObject request) {
         RequestId id = parseRequestId(request.get("id").getAsJsonPrimitive());
         String method = request.get("method").getAsString();
-        JsonObject parameters = request.getAsJsonObject("parameters");
+        JsonObject parameters = request.getAsJsonObject("params");
         return new RpcRequest(id, method, parameters);
     }
 
@@ -320,7 +325,7 @@ public class McpHttpHandler implements HttpHandler {
         if (!methodElement.isJsonPrimitive()) {
             return false;
         }
-        if (!jsonRpcElement.getAsJsonPrimitive().isString()) {
+        if (!methodElement.getAsJsonPrimitive().isString()) {
             return false;
         }
 

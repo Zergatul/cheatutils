@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mcp.resource;
 
-import com.zergatul.cheatutils.mcp.URITemplate;
+import com.zergatul.cheatutils.mcp.utility.URITemplate;
 import com.zergatul.cheatutils.mcp.protocol.ResourceContents;
 import org.jspecify.annotations.Nullable;
 

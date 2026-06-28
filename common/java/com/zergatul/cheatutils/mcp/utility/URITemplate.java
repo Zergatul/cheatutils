@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.mcp;
+package com.zergatul.cheatutils.mcp.utility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class URITemplate {
             }
         }
 
-        return true;
+        return position == uri.length();
     }
 
     private static class Parser {

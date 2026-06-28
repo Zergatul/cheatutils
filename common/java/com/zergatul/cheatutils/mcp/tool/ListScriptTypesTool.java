@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mcp.tool;
 
 import com.google.gson.*;
+import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.scripting.compiler.CompilationParameters;
@@ -8,7 +9,7 @@ import com.zergatul.scripting.type.SType;
 
 public class ListScriptTypesTool implements McpTool {
 
-    private final JsonElement inputSchema = JsonParser.parseString("""
+    private final JsonObject inputSchema = JsonParser.parseString("""
             {
                 "type": "object",
                 "properties": {},
@@ -16,26 +17,33 @@ public class ListScriptTypesTool implements McpTool {
             }
             """).getAsJsonObject();
 
-    private final JsonElement outputSchema = JsonParser.parseString("""
+    private final JsonObject outputSchema = JsonParser.parseString("""
             {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "interface": {
-                            "type": "string",
-                            "description": "Functional interface this script type is compiled into"
-                        },
-                        "api_types": {
-                            "type": "array",
-                            "description": "List of API types this script type is allowed to call"
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                    },
-                    "required": ["interface", "api_types"]
-                }
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "interface": {
+                                    "type": "string",
+                                    "description": "Functional interface this script type is compiled into"
+                                },
+                                "api_types": {
+                                    "type": "array",
+                                    "description": "List of API types this script type is allowed to call",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": ["interface", "api_types"]
+                        }
+                    }
+                },
+                "required": ["items"],
+                "additionalProperties": false
             }
             """).getAsJsonObject();
 
@@ -65,7 +73,7 @@ public class ListScriptTypesTool implements McpTool {
     }
 
     @Override
-    public JsonElement invoke(JsonElement arguments) {
+    public JsonObject invoke(JsonElement arguments) {
         JsonArray result = new JsonArray();
         for (ScriptType type : ScriptType.values()) {
             CompilationParameters compilationParameters = type.createParameters();
@@ -79,6 +87,8 @@ public class ListScriptTypesTool implements McpTool {
             item.add("api_types", apiTypes);
             result.add(item);
         }
-        return result;
+        return new JsonObjectBuilder()
+                .withProperty("items", result)
+                .build();
     }
 }

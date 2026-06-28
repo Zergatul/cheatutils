@@ -10,5 +10,5 @@ public interface McpTool {
     @Nullable String getDescription();
     JsonObject getInputSchema();
     JsonObject getOutputSchema();
-    JsonElement invoke(JsonElement arguments);
+    JsonObject invoke(JsonElement arguments);
 }

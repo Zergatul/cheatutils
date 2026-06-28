@@ -1,10 +1,10 @@
 package com.zergatul.cheatutils.mcp.protocol;
 
+import com.google.gson.JsonObject;
 import org.jspecify.annotations.Nullable;
 
-public record CallToolResult(ContentBlock[] content, @Nullable Boolean isError) {
-
-    public static CallToolResult ofText(String text) {
-        return new CallToolResult(new ContentBlock[] { new TextContent(text) }, null);
-    }
-}
+public record CallToolResult(
+        ContentBlock[] content,
+        JsonObject structuredContent,
+        @Nullable Boolean isError
+) {}
