@@ -1,16 +1,15 @@
 package com.zergatul.cheatutils.mcp.resource;
 
+import com.zergatul.cheatutils.mcp.URITemplate;
 import com.zergatul.cheatutils.mcp.protocol.ResourceContents;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
-
-public interface McpResource {
+public interface McpResourceTemplate {
 
     /**
-     * The URI of this resource.
+     * A URI template (according to RFC 6570) that can be used to construct resource URIs.
      */
-    String getUri();
+    URITemplate getUriTemplate();
 
     /**
      * Intended for programmatic or logical use, but used as a display name in past specs or fallback
@@ -32,9 +31,10 @@ public interface McpResource {
     @Nullable String getDescription();
 
     /**
-     * The MIME type of this resource, if known.
+     * The MIME type for all resources that match this template.
+     * This should only be included if all resources matching this template have the same type.
      */
     @Nullable String getMimeType();
 
-    ResourceContents getContent() throws IOException;
+    ResourceContents getContent(String uri);
 }

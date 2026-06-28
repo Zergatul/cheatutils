@@ -6,6 +6,10 @@ import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.mcp.protocol.*;
+import com.zergatul.cheatutils.mcp.resource.LlmGuideResource;
+import com.zergatul.cheatutils.mcp.resource.McpResource;
+import com.zergatul.cheatutils.mcp.resource.McpResourceTemplate;
+import com.zergatul.cheatutils.mcp.resource.ScriptingApiResource;
 import com.zergatul.cheatutils.mcp.tool.ListScriptTypesTool;
 import com.zergatul.cheatutils.mcp.tool.McpTool;
 import com.zergatul.cheatutils.webui.HttpResponseCodes;
@@ -13,17 +17,23 @@ import com.zergatul.cheatutils.webui.HttpResponseCodes;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Optional;
 
 public class McpHttpHandler implements HttpHandler {
 
     private final Gson gson = new Gson();
     private final McpTool[] tools;
+    private final McpResource[] resources;
+    private final McpResourceTemplate[] resourceTemplates;
 
     public McpHttpHandler() {
         this.tools = new McpTool[] {
-                new ListScriptTypesTool()
+                new ListScriptTypesTool(),
         };
+        this.resources = new McpResource[] {
+                new LlmGuideResource(),
+                new ScriptingApiResource(),
+        };
+        this.resourceTemplates = new McpResourceTemplate[0];
     }
 
     @Override
@@ -73,7 +83,7 @@ public class McpHttpHandler implements HttpHandler {
         }
 
         RpcRequest request = parseRpcRequest(input);
-        //if (exchange.getRequestHeaders().)
+        handleMcpRequest(exchange, request);
     }
 
     private void handleMcpNotification(HttpExchange exchange, JsonObject input) throws IOException {
@@ -104,6 +114,10 @@ public class McpHttpHandler implements HttpHandler {
                 handleResourcesListMethod(exchange, request);
                 break;
 
+            case "resources/read":
+                handleResourceReadMethod(exchange, request);
+                break;
+
             case "resources/templates/list":
                 handleResourceTemplatesListMethod(exchange, request);
                 break;
@@ -119,7 +133,7 @@ public class McpHttpHandler implements HttpHandler {
 
         sendJsonRpcResult(exchange, rpcRequest.id, new InitializeResult(
                 Constants.VERSION,
-                new Implementation("CheatUtils MCP", "1.0"),
+                new Implementation(com.zergatul.cheatutils.Constants.MOD_NAME + " MCP Server", "1.0"),
                 new ServerCapabilities(
                         new ServerCapabilities.Resources(false, false),
                         new ServerCapabilities.Tools(false))));
@@ -154,12 +168,54 @@ public class McpHttpHandler implements HttpHandler {
         sendJsonRpcResult(exchange, rpcRequest.id, CallToolResult.ofText(resultJson));
     }
 
-    private void handleResourcesListMethod(HttpExchange exchange, RpcRequest rpcRequest) {
+    private void handleResourcesListMethod(HttpExchange exchange, RpcRequest rpcRequest) throws IOException {
+        Resource[] resources = Arrays.stream(this.resources).map(r -> new Resource(
+                r.getUri(),
+                r.getName(),
+                r.getTitle(),
+                r.getDescription(),
+                r.getMimeType())).toArray(Resource[]::new);
 
+        sendJsonRpcResult(exchange, rpcRequest.id, new ListResourcesResult(resources));
     }
 
-    private void handleResourceTemplatesListMethod(HttpExchange exchange, RpcRequest rpcRequest) {
+    private void handleResourceReadMethod(HttpExchange exchange, RpcRequest rpcRequest) throws IOException {
+        ReadResourceRequest request = gson.fromJson(rpcRequest.parameters, ReadResourceRequest.class);
 
+        McpResource resource = Arrays.stream(resources)
+                .filter(r -> r.getUri().equals(request.uri()))
+                .findFirst()
+                .orElse(null);
+
+        if (resource != null) {
+            ResourceContents content = resource.getContent();
+            sendJsonRpcResult(exchange, rpcRequest.id, ReadResourceResult.of(content));
+            return;
+        }
+
+        McpResourceTemplate template = Arrays.stream(resourceTemplates)
+                .filter(t -> t.getUriTemplate().matches(request.uri()))
+                .findFirst()
+                .orElse(null);
+
+        if (template != null) {
+            ResourceContents content = template.getContent(request.uri());
+            sendJsonRpcResult(exchange, rpcRequest.id, ReadResourceResult.of(content));
+            return;
+        }
+
+        sendJsonRpcError(exchange, rpcRequest.id, -32002, "Resource not found");
+    }
+
+    private void handleResourceTemplatesListMethod(HttpExchange exchange, RpcRequest rpcRequest) throws IOException {
+        ResourceTemplate[] templates = Arrays.stream(this.resourceTemplates).map(r -> new ResourceTemplate(
+                r.getUriTemplate().getTemplate(),
+                r.getName(),
+                r.getTitle(),
+                r.getDescription(),
+                r.getMimeType())).toArray(ResourceTemplate[]::new);
+
+        sendJsonRpcResult(exchange, rpcRequest.id, new ListResourceTemplatesResult(templates));
     }
 
     private RpcRequest parseRpcRequest(JsonObject request) {
