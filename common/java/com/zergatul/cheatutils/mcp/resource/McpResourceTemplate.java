@@ -4,6 +4,8 @@ import com.zergatul.cheatutils.mcp.utility.URITemplate;
 import com.zergatul.cheatutils.mcp.protocol.ResourceContents;
 import org.jspecify.annotations.Nullable;
 
+import java.io.IOException;
+
 public interface McpResourceTemplate {
 
     /**
@@ -38,5 +40,5 @@ public interface McpResourceTemplate {
 
     boolean hasResource(String uri);
 
-    ResourceContents getContent(String uri);
+    ResourceContents getContent(String uri) throws IOException;
 }

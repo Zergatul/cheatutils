@@ -8,8 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 public class ResourceHelper {
+
+    private static final Map<String, String> LOCAL_PATH_OVERRIDE = Map.of(
+            "llm/language.md", "../../java-scripting-language/README.md");
 
     public static InputStream get(String path) {
         return ModLoaderBridgeInstance.get().isProduction() ? getProduction(path) : getDevelopment(path);
@@ -44,6 +48,11 @@ public class ResourceHelper {
     }
 
     private static Path getLocalFilePath(String filename) {
+        String override = LOCAL_PATH_OVERRIDE.get(filename);
+        if (override != null) {
+            return Paths.get(System.getProperty("user.dir"), override);
+        }
+
         return Paths.get(System.getProperty("user.dir"), "../../common/resources", filename);
     }
 

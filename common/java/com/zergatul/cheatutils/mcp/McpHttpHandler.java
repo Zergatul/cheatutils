@@ -30,11 +30,12 @@ public class McpHttpHandler implements HttpHandler {
                 new ListScriptTypesTool(),
         };
         this.resources = new McpResource[] {
+                new LanguageDocumentationResource(),
                 new LlmGuideResource(),
                 new ScriptingApiResource(),
         };
         this.resourceTemplates = new McpResourceTemplate[] {
-                new ScriptTypeDocumentationResource()
+                new ScriptTypeDocumentationResource(),
         };
     }
 

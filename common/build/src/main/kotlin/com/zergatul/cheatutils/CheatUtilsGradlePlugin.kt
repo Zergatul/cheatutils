@@ -4,6 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.language.jvm.tasks.ProcessResources
@@ -83,8 +84,18 @@ class CheatUtilsGradlePlugin : Plugin<Project> {
             }
         }
 
+        val generateLanguageDocumentation = project.tasks.register(
+            "generateLanguageDocumentation",
+            Copy::class.java
+        ) {
+            from(project.layout.projectDirectory.file("../java-scripting-language/README.md"))
+            into(generatedResourcesDir.map { it.dir("llm") })
+            rename { "language.md" }
+        }
+
         project.tasks.withType(ProcessResources::class.java).configureEach {
             dependsOn("generateCommitsJson")
+            dependsOn(generateLanguageDocumentation)
         }
     }
 }
