@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +15,12 @@ public class ResourceHelper {
         return ModLoaderBridgeInstance.get().isProduction() ? getProduction(path) : getDevelopment(path);
     }
 
+    public static boolean has(String path) {
+        return ModLoaderBridgeInstance.get().isProduction() ? hasProduction(path) : hasDevelopment(path);
+    }
+
     private static InputStream getDevelopment(String filename) {
-        return loadFromFile(Paths.get(System.getProperty("user.dir"), "../../common/resources", filename));
+        return loadFromFile(getLocalFilePath(filename));
     }
 
     private static InputStream getProduction(String filename) {
@@ -27,6 +32,19 @@ public class ResourceHelper {
         }
 
         return loadFromResource(filename);
+    }
+
+    private static boolean hasDevelopment(String filename) {
+        return getLocalFilePath(filename).toFile().exists();
+    }
+
+    private static boolean hasProduction(String filename) {
+        ClassLoader classLoader = ResourceHelper.class.getClassLoader();
+        return classLoader.getResource(filename) != null;
+    }
+
+    private static Path getLocalFilePath(String filename) {
+        return Paths.get(System.getProperty("user.dir"), "../../common/resources", filename);
     }
 
     private static InputStream loadFromResource(String filename) {

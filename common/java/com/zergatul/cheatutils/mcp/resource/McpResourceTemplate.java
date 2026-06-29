@@ -36,5 +36,7 @@ public interface McpResourceTemplate {
      */
     @Nullable String getMimeType();
 
+    boolean hasResource(String uri);
+
     ResourceContents getContent(String uri);
 }

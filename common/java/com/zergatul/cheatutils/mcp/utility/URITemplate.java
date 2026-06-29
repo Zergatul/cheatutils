@@ -1,7 +1,12 @@
 package com.zergatul.cheatutils.mcp.utility;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class URITemplate {
 
@@ -23,18 +28,23 @@ public class URITemplate {
         return template;
     }
 
-    public boolean matches(String uri) {
+    public Optional<Map<String, String>> match(String uri) {
         int position = 0;
+        Map<String, String> variables = new Reference2ReferenceArrayMap<>();
         for (TemplateChunk chunk : chunks) {
             AdvanceResult result = chunk.tryAdvance(uri, position);
             if (!result.success) {
-                return false;
+                return Optional.empty();
             } else {
                 position += result.offset;
             }
         }
 
-        return position == uri.length();
+        if (position == uri.length()) {
+            return Optional.of(variables);
+        } else {
+            return Optional.empty();
+        }
     }
 
     private static class Parser {
@@ -147,18 +157,26 @@ public class URITemplate {
                 return AdvanceResult.fail();
             }
 
-            return AdvanceResult.success(offset);
+            return AdvanceResult.success(offset, name, value.toString());
         }
     }
 
-    private record AdvanceResult(boolean success, int offset) {
-
+    private record AdvanceResult(
+            boolean success,
+            int offset,
+            @Nullable String key,
+            @Nullable String value
+    ) {
         public static AdvanceResult fail() {
-            return new AdvanceResult(false, -1);
+            return new AdvanceResult(false, -1, null, null);
         }
 
         public static AdvanceResult success(int offset) {
-            return new AdvanceResult(true, offset);
+            return new AdvanceResult(true, offset, null, null);
+        }
+
+        public static AdvanceResult success(int offset, String key, String value) {
+            return new AdvanceResult(true, offset, key, value);
         }
     }
 }

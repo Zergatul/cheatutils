@@ -6,10 +6,7 @@ import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.mcp.protocol.*;
-import com.zergatul.cheatutils.mcp.resource.LlmGuideResource;
-import com.zergatul.cheatutils.mcp.resource.McpResource;
-import com.zergatul.cheatutils.mcp.resource.McpResourceTemplate;
-import com.zergatul.cheatutils.mcp.resource.ScriptingApiResource;
+import com.zergatul.cheatutils.mcp.resource.*;
 import com.zergatul.cheatutils.mcp.tool.ListScriptTypesTool;
 import com.zergatul.cheatutils.mcp.tool.McpTool;
 import com.zergatul.cheatutils.webui.HttpResponseCodes;
@@ -36,7 +33,9 @@ public class McpHttpHandler implements HttpHandler {
                 new LlmGuideResource(),
                 new ScriptingApiResource(),
         };
-        this.resourceTemplates = new McpResourceTemplate[0];
+        this.resourceTemplates = new McpResourceTemplate[] {
+                new ScriptTypeDocumentationResource()
+        };
     }
 
     @Override
@@ -199,7 +198,7 @@ public class McpHttpHandler implements HttpHandler {
         }
 
         McpResourceTemplate template = Arrays.stream(resourceTemplates)
-                .filter(t -> t.getUriTemplate().matches(request.uri()))
+                .filter(t -> t.hasResource(request.uri()))
                 .findFirst()
                 .orElse(null);
 
@@ -338,7 +337,7 @@ public class McpHttpHandler implements HttpHandler {
 
     private void sendBadRequest(HttpExchange exchange, String message) throws IOException {
         byte[] data = message.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().add("Content-Type", "text/plain");
+        exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=utf-8");
         exchange.sendResponseHeaders(HttpResponseCodes.BAD_REQUEST, data.length);
         exchange.getResponseBody().write(data);
         exchange.close();
@@ -346,7 +345,7 @@ public class McpHttpHandler implements HttpHandler {
 
     private void sendJson(HttpExchange exchange, JsonElement element) throws IOException {
         byte[] data = serializeJson(element);
-        exchange.getResponseHeaders().add("Content-Type", "application/json");
+        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
         exchange.sendResponseHeaders(HttpResponseCodes.OK, data.length);
         exchange.getResponseBody().write(data);
         exchange.close();
