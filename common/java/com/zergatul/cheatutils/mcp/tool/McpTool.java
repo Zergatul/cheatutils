@@ -4,6 +4,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.jspecify.annotations.Nullable;
 
+import java.io.IOException;
+
 public interface McpTool {
 
     /**
@@ -36,5 +38,5 @@ public interface McpTool {
      */
     JsonObject getOutputSchema();
 
-    JsonObject invoke(JsonElement arguments);
+    JsonObject invoke(JsonElement arguments) throws IOException;
 }

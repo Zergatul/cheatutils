@@ -38,6 +38,7 @@ public class McpHttpHandler implements HttpHandler {
         };
         this.resourceTemplates = new McpResourceTemplate[] {
                 new ScriptTypeDocumentationResource(),
+                new ScriptExampleResource(),
         };
     }
 
