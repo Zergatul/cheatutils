@@ -2,25 +2,28 @@ package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 public class ResourceHelper {
 
-    private static final Map<String, String> LOCAL_PATH_OVERRIDE = Map.of(
-            "llm/language.md", "../../java-scripting-language/README.md");
-
     public static InputStream get(String path) {
-        return ModLoaderBridgeInstance.get().isProduction() ? getProduction(path) : getDevelopment(path);
+        if (path.startsWith("web/")) {
+            return ModLoaderBridgeInstance.get().isProduction() ? getProduction(path) : getDevelopment(path);
+        } else {
+            return loadFromResource(path);
+        }
     }
 
     public static boolean has(String path) {
-        return ModLoaderBridgeInstance.get().isProduction() ? hasProduction(path) : hasDevelopment(path);
+        if (path.startsWith("web/")) {
+            return ModLoaderBridgeInstance.get().isProduction() ? hasProduction(path) : hasDevelopment(path);
+        } else {
+            return hasResource(path);
+        }
     }
 
     private static InputStream getDevelopment(String filename) {
@@ -43,16 +46,15 @@ public class ResourceHelper {
     }
 
     private static boolean hasProduction(String filename) {
+        return hasResource(filename);
+    }
+
+    private static boolean hasResource(String filename) {
         ClassLoader classLoader = ResourceHelper.class.getClassLoader();
         return classLoader.getResource(filename) != null;
     }
 
     private static Path getLocalFilePath(String filename) {
-        String override = LOCAL_PATH_OVERRIDE.get(filename);
-        if (override != null) {
-            return Paths.get(System.getProperty("user.dir"), override);
-        }
-
         return Paths.get(System.getProperty("user.dir"), "../../common/resources", filename);
     }
 
