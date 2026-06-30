@@ -93,9 +93,45 @@ class CheatUtilsGradlePlugin : Plugin<Project> {
             rename { "language.md" }
         }
 
+        val generateScriptExamples = project.tasks.register("generateScriptExamples") {
+            val inputDir = project.layout.projectDirectory.dir("../script-examples")
+            val outputDir = generatedResourcesDir.map { it.dir("llm/script-examples") }
+
+            inputs.dir(inputDir)
+            outputs.dir(outputDir)
+
+            doLast {
+                val source = inputDir.asFile
+                val target = outputDir.get().asFile
+
+                project.delete(target)
+                project.copy {
+                    from(source)
+                    into(target)
+                    exclude("LICENSE")
+                }
+
+                val resourcePaths = source
+                    .walkTopDown()
+                    .filter { it.isFile && it.extension.equals("cs", ignoreCase = true) }
+                    .map { file ->
+                        val relativePath = file.relativeTo(source).path.replace(File.separatorChar, '/')
+                        "llm/script-examples/$relativePath"
+                    }
+                    .sorted()
+                    .toList()
+
+                val indexFile = target.resolve("index")
+                indexFile.parentFile.mkdirs()
+                indexFile.writeText(resourcePaths.joinToString(separator = "\n", postfix = "\n"))
+            }
+        }
+
         project.tasks.withType(ProcessResources::class.java).configureEach {
             dependsOn("generateCommitsJson")
             dependsOn(generateLanguageDocumentation)
+            dependsOn(generateScriptExamples)
         }
     }
+
 }
