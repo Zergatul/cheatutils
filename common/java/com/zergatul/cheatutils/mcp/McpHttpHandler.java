@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.mcp.protocol.*;
 import com.zergatul.cheatutils.mcp.resource.*;
+import com.zergatul.cheatutils.mcp.tool.ListScriptExamplesTool;
 import com.zergatul.cheatutils.mcp.tool.ListScriptTypesTool;
 import com.zergatul.cheatutils.mcp.tool.McpTool;
 import com.zergatul.cheatutils.webui.HttpResponseCodes;
@@ -28,6 +29,7 @@ public class McpHttpHandler implements HttpHandler {
     public McpHttpHandler() {
         this.tools = new McpTool[] {
                 new ListScriptTypesTool(),
+                new ListScriptExamplesTool(),
         };
         this.resources = new McpResource[] {
                 new LanguageDocumentationResource(),
