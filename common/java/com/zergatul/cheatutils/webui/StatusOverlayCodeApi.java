@@ -1,11 +1,10 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
-import com.zergatul.cheatutils.controllers.ScriptsController;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.services.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
 
-public class StatusOverlayCodeApi extends CodeApiBase<Runnable> {
+public class StatusOverlayCodeApi extends ApiBase {
 
     @Override
     public String getRoute() {
@@ -13,17 +12,13 @@ public class StatusOverlayCodeApi extends CodeApiBase<Runnable> {
     }
 
     @Override
-    protected CompilationResult compile(String code) {
-        return ScriptsController.instance.compileOverlay(code);
-    }
-
-    @Override
-    protected void setCode(String code) {
-        ConfigStore.instance.getConfig().statusOverlayConfig.code = code;
-    }
-
-    @Override
-    protected void setProgram(Runnable program) {
-        StatusOverlay.instance.setScript(program);
+    public String post(String body) throws Throwable {
+        String code = gson.fromJson(body, String.class);
+        ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.OVERLAY).save(code);
+        if (result.isSuccess()) {
+            return "{ \"ok\": true }";
+        } else {
+            return gson.toJson(result.getDiagnostics());
+        }
     }
 }

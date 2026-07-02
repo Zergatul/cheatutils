@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting.structure;
+package com.zergatul.cheatutils.scripting.services;
 
 import com.zergatul.scripting.DiagnosticMessage;
 
