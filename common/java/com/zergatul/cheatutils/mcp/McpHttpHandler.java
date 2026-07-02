@@ -7,9 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.mcp.protocol.*;
 import com.zergatul.cheatutils.mcp.resource.*;
-import com.zergatul.cheatutils.mcp.tool.ListScriptExamplesTool;
-import com.zergatul.cheatutils.mcp.tool.ListScriptTypesTool;
-import com.zergatul.cheatutils.mcp.tool.McpTool;
+import com.zergatul.cheatutils.mcp.tool.*;
 import com.zergatul.cheatutils.webui.HttpResponseCodes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +28,10 @@ public class McpHttpHandler implements HttpHandler {
         this.tools = new McpTool[] {
                 new ListScriptTypesTool(),
                 new ListScriptExamplesTool(),
+                new ListScriptsTool(),
+                new GetScriptTool(),
+                new CompileScriptTool(),
+                new SaveScriptTool(),
         };
         this.resources = new McpResource[] {
                 new LanguageDocumentationResource(),

@@ -4,6 +4,7 @@ import com.zergatul.scripting.DiagnosticMessage;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ScriptCompileResult {
 
@@ -11,5 +12,13 @@ public class ScriptCompileResult {
 
     public ScriptCompileResult(@Nullable List<DiagnosticMessage> diagnostics) {
         this.diagnostics = diagnostics;
+    }
+
+    public boolean isSuccess() {
+        return diagnostics != null;
+    }
+
+    public List<DiagnosticMessage> getDiagnostics() {
+        return Objects.requireNonNull(diagnostics);
     }
 }

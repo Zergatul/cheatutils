@@ -13,12 +13,16 @@ import com.zergatul.scripting.lexer.LexerOutput;
 import com.zergatul.scripting.parser.Parser;
 import com.zergatul.scripting.parser.ParserOutput;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+@NullMarked
 public class ScriptWorkspaceService {
 
     public static final ScriptWorkspaceService INSTANCE = new ScriptWorkspaceService();
@@ -30,12 +34,21 @@ public class ScriptWorkspaceService {
     }
 
     public ScriptStorageDescriptor get(ScriptType type) {
-        return descriptors.get(type);
+        return Objects.requireNonNull(descriptors.get(type));
     }
 
+    public List<ScriptStorageDescriptor> getAll() {
+        return new ArrayList<>(descriptors.values());
+    }
+
+    @NullMarked
     private static class StatusOverlayDescriptor extends ScriptStorageDescriptor {
 
         private final ScriptInstance instance = new ScriptInstance();
+
+        public StatusOverlayDescriptor() {
+            super(new ScriptLocator(ScriptType.BLOCK_AUTOMATION));
+        }
 
         @Override
         public List<ScriptInstance> getInstances() {
@@ -43,7 +56,7 @@ public class ScriptWorkspaceService {
         }
 
         @Override
-        public String getCode(@Nullable String identifier) {
+        public @Nullable String getCode(@Nullable String identifier) {
             if (identifier != null) {
                 throw new IllegalStateException();
             }
@@ -52,7 +65,7 @@ public class ScriptWorkspaceService {
         }
 
         @Override
-        public String getLastAttemptedCode(@Nullable String identifier) {
+        public @Nullable String getLastAttemptedCode(@Nullable String identifier) {
             if (identifier != null) {
                 throw new IllegalStateException();
             }

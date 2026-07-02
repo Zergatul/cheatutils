@@ -12,6 +12,11 @@ public class JsonObjectBuilder {
         return object;
     }
 
+    public JsonObjectBuilder withProperty(String property, int value) {
+        object.add(property, new JsonPrimitive(value));
+        return this;
+    }
+
     public JsonObjectBuilder withProperty(String property, String value) {
         object.add(property, new JsonPrimitive(value));
         return this;

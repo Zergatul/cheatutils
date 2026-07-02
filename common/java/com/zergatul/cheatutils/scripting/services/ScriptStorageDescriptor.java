@@ -1,17 +1,29 @@
 package com.zergatul.cheatutils.scripting.services;
 
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+@NullMarked
 public abstract class ScriptStorageDescriptor {
 
-    public String getCode() {
+    private final ScriptLocator locator;
+
+    protected ScriptStorageDescriptor(ScriptLocator locator) {
+        this.locator = locator;
+    }
+
+    public @Nullable String getCode() {
         return getCode(null);
     }
 
-    public String getLastAttemptedCode() {
+    public @Nullable String getLastAttemptedCode() {
         return getLastAttemptedCode(null);
+    }
+
+    public ScriptLocator getLocator() {
+        return locator;
     }
 
     public ScriptSaveResult save(String code) {
