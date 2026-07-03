@@ -5,13 +5,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
-import com.zergatul.cheatutils.modules.hacks.HitboxSize;
-import com.zergatul.cheatutils.modules.hacks.KillAura;
-import com.zergatul.cheatutils.modules.scripting.EventsScripting;
-import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptType;
@@ -199,10 +194,8 @@ public class ConfigStore {
 
         if (config.blockAutomationConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileBlockAutomation(config.blockAutomationConfig.code);
-                if (result.getProgram() != null) {
-                    BlockAutomation.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.BLOCK_AUTOMATION).init(config.blockAutomationConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Block Automation: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -212,10 +205,8 @@ public class ConfigStore {
 
         if (config.villagerRollerConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
-                if (result.getProgram() != null) {
-                    VillagerRoller.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.VILLAGER_ROLLER).init(config.villagerRollerConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Villager Roller: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -225,10 +216,8 @@ public class ConfigStore {
 
         if (config.eventsScriptingConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileEvents(config.eventsScriptingConfig.code);
-                if (result.getProgram() != null) {
-                    EventsScripting.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.EVENTS).init(config.eventsScriptingConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Events Scripting: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -280,10 +269,8 @@ public class ConfigStore {
 
         if (config.killAuraConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileKillAura(config.killAuraConfig.code);
-                if (result.getProgram() != null) {
-                    KillAura.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.KILL_AURA).init(config.killAuraConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Kill Aura: {}", m.message));
                 }
             } catch (Throwable e) {
@@ -293,10 +280,8 @@ public class ConfigStore {
 
         if (config.hitboxSizeConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileHitboxSize(config.hitboxSizeConfig.code);
-                if (result.getProgram() != null) {
-                    HitboxSize.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.HITBOX_SIZE).init(config.hitboxSizeConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Hitbox Size: {}", m.message));
                 }
             } catch (Throwable e) {

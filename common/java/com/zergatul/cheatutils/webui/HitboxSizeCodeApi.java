@@ -1,12 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptsController;
-import com.zergatul.cheatutils.modules.hacks.HitboxSize;
-import com.zergatul.cheatutils.scripting.HitboxSizeFunction;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.cheatutils.scripting.ScriptType;
 
-public class HitboxSizeCodeApi extends CodeApiBase<HitboxSizeFunction> {
+public class HitboxSizeCodeApi extends CodeApiBase {
 
     @Override
     public String getRoute() {
@@ -14,17 +10,7 @@ public class HitboxSizeCodeApi extends CodeApiBase<HitboxSizeFunction> {
     }
 
     @Override
-    protected CompilationResult compile(String code) {
-        return ScriptsController.instance.compileHitboxSize(code);
-    }
-
-    @Override
-    protected void setCode(String code) {
-        ConfigStore.instance.getConfig().hitboxSizeConfig.code = code;
-    }
-
-    @Override
-    protected void setProgram(HitboxSizeFunction program) {
-        HitboxSize.instance.setScript(program);
+    protected ScriptType getScriptType() {
+        return ScriptType.HITBOX_SIZE;
     }
 }

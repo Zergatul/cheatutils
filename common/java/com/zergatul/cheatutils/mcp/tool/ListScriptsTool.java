@@ -75,12 +75,12 @@ public class ListScriptsTool implements McpTool {
     public JsonObject invoke(JsonElement arguments) throws IOException {
         return new JsonObjectBuilder()
                 .withProperty("items", new JsonArrayBuilder()
-                        .withItems(ScriptWorkspaceService.INSTANCE.getAll()
-                                .stream().map(descriptor -> {
-                                    var item = new JsonObject();
-                                    item.addProperty("type", descriptor.getLocator().type().toString());
-                                    if (descriptor.getLocator().identifier() != null) {
-                                        item.addProperty("identifier", descriptor.getLocator().identifier());
+                        .withItems(ScriptWorkspaceService.INSTANCE.getAllInstances()
+                                .stream().map(instance -> {
+                                    JsonObject item = new JsonObject();
+                                    item.addProperty("type", instance.locator.type().toString());
+                                    if (instance.locator.identifier() != null) {
+                                        item.addProperty("identifier", instance.locator.identifier());
                                     }
                                     return item;
                                 }))

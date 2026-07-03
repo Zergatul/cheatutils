@@ -1,11 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptsController;
-import com.zergatul.cheatutils.modules.automation.VillagerRoller;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.cheatutils.scripting.ScriptType;
 
-public class VillagerRollerCodeApi extends CodeApiBase<Runnable> {
+public class VillagerRollerCodeApi extends CodeApiBase {
 
     @Override
     public String getRoute() {
@@ -13,17 +10,7 @@ public class VillagerRollerCodeApi extends CodeApiBase<Runnable> {
     }
 
     @Override
-    protected CompilationResult compile(String code) {
-        return ScriptsController.instance.compileVillagerRoller(code);
-    }
-
-    @Override
-    protected void setCode(String code) {
-        ConfigStore.instance.getConfig().villagerRollerConfig.code = code;
-    }
-
-    @Override
-    protected void setProgram(Runnable program) {
-        VillagerRoller.instance.setScript(program);
+    protected ScriptType getScriptType() {
+        return ScriptType.VILLAGER_ROLLER;
     }
 }

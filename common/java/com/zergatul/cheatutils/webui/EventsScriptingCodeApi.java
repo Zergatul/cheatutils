@@ -1,11 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptsController;
-import com.zergatul.cheatutils.modules.scripting.EventsScripting;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.cheatutils.scripting.ScriptType;
 
-public class EventsScriptingCodeApi extends CodeApiBase<Runnable> {
+public class EventsScriptingCodeApi extends CodeApiBase {
 
     @Override
     public String getRoute() {
@@ -13,17 +10,7 @@ public class EventsScriptingCodeApi extends CodeApiBase<Runnable> {
     }
 
     @Override
-    protected CompilationResult compile(String code) {
-        return ScriptsController.instance.compileEvents(code);
-    }
-
-    @Override
-    protected void setCode(String code) {
-        ConfigStore.instance.getConfig().eventsScriptingConfig.code = code;
-    }
-
-    @Override
-    protected void setProgram(Runnable program) {
-        EventsScripting.instance.setScript(program);
+    protected ScriptType getScriptType() {
+        return ScriptType.EVENTS;
     }
 }

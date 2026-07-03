@@ -8,22 +8,12 @@ import java.util.List;
 @NullMarked
 public abstract class ScriptStorageDescriptor {
 
-    private final ScriptLocator locator;
-
-    protected ScriptStorageDescriptor(ScriptLocator locator) {
-        this.locator = locator;
-    }
-
     public @Nullable String getCode() {
         return getCode(null);
     }
 
     public @Nullable String getLastAttemptedCode() {
         return getLastAttemptedCode(null);
-    }
-
-    public ScriptLocator getLocator() {
-        return locator;
     }
 
     public ScriptSaveResult init(@Nullable String code) {
@@ -35,8 +25,8 @@ public abstract class ScriptStorageDescriptor {
     }
 
     public abstract List<ScriptInstance> getInstances();
-    public abstract String getCode(@Nullable String identifier);
-    public abstract String getLastAttemptedCode(@Nullable String identifier);
+    public abstract @Nullable String getCode(@Nullable String identifier);
+    public abstract @Nullable String getLastAttemptedCode(@Nullable String identifier);
     public abstract ScriptSaveResult init(@Nullable String identifier, @Nullable String code);
     public abstract ScriptCompileResult compile(String code);
     public abstract ScriptSaveResult save(@Nullable String identifier, @Nullable String code);

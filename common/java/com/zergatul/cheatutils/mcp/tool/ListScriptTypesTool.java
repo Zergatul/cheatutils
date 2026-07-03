@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.type.SType;
 
@@ -26,6 +27,10 @@ public class ListScriptTypesTool implements McpTool {
                         "items": {
                             "type": "object",
                             "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "description": "Script type"
+                                },
                                 "interface": {
                                     "type": "string",
                                     "description": "Functional interface this script type is compiled into"
@@ -38,7 +43,7 @@ public class ListScriptTypesTool implements McpTool {
                                     }
                                 }
                             },
-                            "required": ["interface", "api_types"]
+                            "required": ["type", "interface", "api_types"]
                         }
                     }
                 },
@@ -75,9 +80,10 @@ public class ListScriptTypesTool implements McpTool {
     @Override
     public JsonObject invoke(JsonElement arguments) {
         JsonArray result = new JsonArray();
-        for (ScriptType type : ScriptType.values()) {
+        for (ScriptType type : ScriptWorkspaceService.INSTANCE.getSupportedTypes()) {
             CompilationParameters compilationParameters = type.createParameters();
             JsonObject item = new JsonObject();
+            item.addProperty("type", type.name());
             SType funcInterface = SType.fromJavaType(compilationParameters.getFunctionalInterface());
             item.addProperty("interface", funcInterface.toString());
             JsonArray apiTypes = new JsonArray();
