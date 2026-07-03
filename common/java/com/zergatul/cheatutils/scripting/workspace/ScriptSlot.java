@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting.services;
+package com.zergatul.cheatutils.scripting.workspace;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 @NullMarked
-public abstract class ScriptStorageDescriptor {
+public abstract class ScriptSlot {
 
     public @Nullable String getCode() {
         return getCode(null);
@@ -24,7 +24,7 @@ public abstract class ScriptStorageDescriptor {
         return save(null, code);
     }
 
-    public abstract List<ScriptInstance> getInstances();
+    public abstract List<ScriptDocument> getInstances();
     public abstract @Nullable String getCode(@Nullable String identifier);
     public abstract @Nullable String getLastAttemptedCode(@Nullable String identifier);
     public abstract ScriptSaveResult init(@Nullable String identifier, @Nullable String code);

@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.zergatul.cheatutils.mcp.utility.JsonArrayBuilder;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
-import com.zergatul.cheatutils.scripting.services.*;
+import com.zergatul.cheatutils.scripting.workspace.*;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ public class SaveScriptTool implements McpTool {
             {
                 "type": "object",
                 "properties": {
-                    "locator": {
+                    "ref": {
                         "type": "object",
                         "properties": {
                             "type": {
@@ -35,7 +35,7 @@ public class SaveScriptTool implements McpTool {
                         "type": "string"
                     }
                 },
-                "required": ["locator", "code"],
+                "required": ["ref", "code"],
                 "additionalProperties": false
             }
             """).getAsJsonObject();
@@ -112,10 +112,10 @@ public class SaveScriptTool implements McpTool {
 
     @Override
     public JsonObject invoke(JsonElement arguments) throws IOException {
-        ScriptLocator locator = new Gson().fromJson(arguments.getAsJsonObject().getAsJsonObject("locator"), ScriptLocator.class);
+        ScriptRef ref = new Gson().fromJson(arguments.getAsJsonObject().getAsJsonObject("ref"), ScriptRef.class);
         String code = arguments.getAsJsonObject().getAsJsonPrimitive("code").getAsString();
-        ScriptStorageDescriptor descriptor = ScriptWorkspaceService.INSTANCE.get(locator.type());
-        ScriptSaveResult result = descriptor.save(locator.identifier(), code);
+        ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
+        ScriptSaveResult result = descriptor.save(ref.identifier(), code);
 
         JsonObject output = new JsonObject();
         output.addProperty("ok", result.isSuccess());

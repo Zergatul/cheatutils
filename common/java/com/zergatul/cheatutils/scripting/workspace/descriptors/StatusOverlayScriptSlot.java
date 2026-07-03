@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting.services.descriptors;
+package com.zergatul.cheatutils.scripting.workspace.descriptors;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ScriptsController;
@@ -9,9 +9,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class StatusOverlayDescriptor extends SingleScriptStorageDescriptor {
+public class StatusOverlayScriptSlot extends SingleScriptSlot {
 
-    public StatusOverlayDescriptor() {
+    public StatusOverlayScriptSlot() {
         super(ScriptType.OVERLAY);
     }
 

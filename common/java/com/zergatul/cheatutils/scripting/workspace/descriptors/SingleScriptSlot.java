@@ -1,8 +1,8 @@
-package com.zergatul.cheatutils.scripting.services.descriptors;
+package com.zergatul.cheatutils.scripting.workspace.descriptors;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.services.*;
+import com.zergatul.cheatutils.scripting.workspace.*;
 import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.compiler.CompilationResult;
@@ -18,18 +18,18 @@ import java.time.Instant;
 import java.util.List;
 
 @NullMarked
-public abstract class SingleScriptStorageDescriptor extends ScriptStorageDescriptor {
+public abstract class SingleScriptSlot extends ScriptSlot {
 
     private final ScriptType scriptType;
-    private final ScriptInstance instance;
+    private final ScriptDocument instance;
 
-    protected SingleScriptStorageDescriptor(ScriptType scriptType) {
+    protected SingleScriptSlot(ScriptType scriptType) {
         this.scriptType = scriptType;
-        this.instance = new ScriptInstance(new ScriptLocator(scriptType));
+        this.instance = new ScriptDocument(new ScriptRef(scriptType));
     }
 
     @Override
-    public List<ScriptInstance> getInstances() {
+    public List<ScriptDocument> getInstances() {
         return List.of(instance);
     }
 

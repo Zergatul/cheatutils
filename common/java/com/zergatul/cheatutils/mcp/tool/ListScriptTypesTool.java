@@ -4,7 +4,7 @@ import com.google.gson.*;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.type.SType;
 
@@ -80,7 +80,7 @@ public class ListScriptTypesTool implements McpTool {
     @Override
     public JsonObject invoke(JsonElement arguments) {
         JsonArray result = new JsonArray();
-        for (ScriptType type : ScriptWorkspaceService.INSTANCE.getSupportedTypes()) {
+        for (ScriptType type : ScriptWorkspace.INSTANCE.getSupportedTypes()) {
             CompilationParameters compilationParameters = type.createParameters();
             JsonObject item = new JsonObject();
             item.addProperty("type", type.name());

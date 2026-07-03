@@ -10,8 +10,8 @@ import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.services.ScriptSaveResult;
-import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.world.level.block.state.BlockState;
@@ -183,7 +183,7 @@ public class ConfigStore {
 
         if (config.statusOverlayConfig.code != null) {
             try {
-                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.OVERLAY).init(config.statusOverlayConfig.code);
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.OVERLAY).init(config.statusOverlayConfig.code);
                 if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Status Overlay: {}", m.message));
                 }
@@ -194,7 +194,7 @@ public class ConfigStore {
 
         if (config.blockAutomationConfig.code != null) {
             try {
-                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.BLOCK_AUTOMATION).init(config.blockAutomationConfig.code);
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_AUTOMATION).init(config.blockAutomationConfig.code);
                 if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Block Automation: {}", m.message));
                 }
@@ -205,7 +205,7 @@ public class ConfigStore {
 
         if (config.villagerRollerConfig.code != null) {
             try {
-                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.VILLAGER_ROLLER).init(config.villagerRollerConfig.code);
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.VILLAGER_ROLLER).init(config.villagerRollerConfig.code);
                 if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Villager Roller: {}", m.message));
                 }
@@ -216,7 +216,7 @@ public class ConfigStore {
 
         if (config.eventsScriptingConfig.code != null) {
             try {
-                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.EVENTS).init(config.eventsScriptingConfig.code);
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.EVENTS).init(config.eventsScriptingConfig.code);
                 if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Events Scripting: {}", m.message));
                 }
@@ -269,7 +269,7 @@ public class ConfigStore {
 
         if (config.killAuraConfig.code != null) {
             try {
-                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.KILL_AURA).init(config.killAuraConfig.code);
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.KILL_AURA).init(config.killAuraConfig.code);
                 if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Kill Aura: {}", m.message));
                 }
@@ -280,7 +280,7 @@ public class ConfigStore {
 
         if (config.hitboxSizeConfig.code != null) {
             try {
-                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.HITBOX_SIZE).init(config.hitboxSizeConfig.code);
+                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.HITBOX_SIZE).init(config.hitboxSizeConfig.code);
                 if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Hitbox Size: {}", m.message));
                 }

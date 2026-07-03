@@ -5,9 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
-import com.zergatul.cheatutils.scripting.services.ScriptLocator;
-import com.zergatul.cheatutils.scripting.services.ScriptStorageDescriptor;
-import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSlot;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 
 import java.io.IOException;
 
@@ -71,9 +71,9 @@ public class GetScriptTool implements McpTool {
 
     @Override
     public JsonObject invoke(JsonElement arguments) throws IOException {
-        ScriptLocator locator = new Gson().fromJson(arguments, ScriptLocator.class);
-        ScriptStorageDescriptor descriptor = ScriptWorkspaceService.INSTANCE.get(locator.type());
-        String code = descriptor.getCode(locator.identifier());
+        ScriptRef ref = new Gson().fromJson(arguments, ScriptRef.class);
+        ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
+        String code = descriptor.getCode(ref.identifier());
         return new JsonObjectBuilder()
                 .withProperty("code", code)
                 .build();

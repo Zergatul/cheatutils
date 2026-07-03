@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting.services;
+package com.zergatul.cheatutils.scripting.workspace;
 
 import com.zergatul.scripting.DiagnosticMessage;
 import org.jspecify.annotations.Nullable;

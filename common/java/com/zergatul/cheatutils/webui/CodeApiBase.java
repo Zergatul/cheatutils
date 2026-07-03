@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.services.ScriptSaveResult;
-import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 
 public abstract class CodeApiBase extends ApiBase {
 
@@ -10,7 +10,7 @@ public abstract class CodeApiBase extends ApiBase {
     public String post(String code) {
         code = gson.fromJson(code, String.class);
 
-        ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(getScriptType()).save(code);
+        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(getScriptType()).save(code);
         if (result.isSuccess()) {
             return "{ \"ok\": true }";
         } else {

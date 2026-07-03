@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.zergatul.cheatutils.mcp.utility.JsonArrayBuilder;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
-import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 
 import java.io.IOException;
 
@@ -75,12 +75,12 @@ public class ListScriptsTool implements McpTool {
     public JsonObject invoke(JsonElement arguments) throws IOException {
         return new JsonObjectBuilder()
                 .withProperty("items", new JsonArrayBuilder()
-                        .withItems(ScriptWorkspaceService.INSTANCE.getAllInstances()
+                        .withItems(ScriptWorkspace.INSTANCE.getAllInstances()
                                 .stream().map(instance -> {
                                     JsonObject item = new JsonObject();
-                                    item.addProperty("type", instance.locator.type().toString());
-                                    if (instance.locator.identifier() != null) {
-                                        item.addProperty("identifier", instance.locator.identifier());
+                                    item.addProperty("type", instance.ref.type().toString());
+                                    if (instance.ref.identifier() != null) {
+                                        item.addProperty("identifier", instance.ref.identifier());
                                     }
                                     return item;
                                 }))

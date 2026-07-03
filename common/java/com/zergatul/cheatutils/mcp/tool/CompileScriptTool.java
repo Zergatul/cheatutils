@@ -1,16 +1,14 @@
 package com.zergatul.cheatutils.mcp.tool;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.zergatul.cheatutils.mcp.utility.JsonArrayBuilder;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.services.ScriptCompileResult;
-import com.zergatul.cheatutils.scripting.services.ScriptLocator;
-import com.zergatul.cheatutils.scripting.services.ScriptStorageDescriptor;
-import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
+import com.zergatul.cheatutils.scripting.workspace.ScriptCompileResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSlot;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 
 import java.io.IOException;
 
@@ -108,7 +106,7 @@ public class CompileScriptTool implements McpTool {
         ScriptType type = ScriptType.valueOf(arguments.getAsJsonObject().getAsJsonPrimitive("type").getAsString());
         String code = arguments.getAsJsonObject().getAsJsonPrimitive("code").getAsString();
 
-        ScriptStorageDescriptor descriptor = ScriptWorkspaceService.INSTANCE.get(type);
+        ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(type);
         ScriptCompileResult result = descriptor.compile(code);
 
         JsonObject output = new JsonObject();

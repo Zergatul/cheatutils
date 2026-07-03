@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting.services.descriptors;
+package com.zergatul.cheatutils.scripting.workspace.descriptors;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ScriptsController;
@@ -10,9 +10,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class BlockAutomationDescriptor extends SingleScriptStorageDescriptor {
+public class BlockAutomationScriptSlot extends SingleScriptSlot {
 
-    public BlockAutomationDescriptor() {
+    public BlockAutomationScriptSlot() {
         super(ScriptType.BLOCK_AUTOMATION);
     }
 
