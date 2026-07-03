@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.scripting.workspace.descriptors;
+package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.ScriptType;

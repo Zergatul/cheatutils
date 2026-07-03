@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.scripting.workspace;
 
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.workspace.descriptors.*;
+import com.zergatul.cheatutils.scripting.workspace.slots.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import org.jspecify.annotations.NullMarked;
 
@@ -21,7 +21,7 @@ public class ScriptWorkspace {
         slots.put(ScriptType.BLOCK_AUTOMATION, new BlockAutomationScriptSlot());
         slots.put(ScriptType.VILLAGER_ROLLER, new VillagerRollerScriptSlot());
         slots.put(ScriptType.EVENTS, new EventsScriptingScriptSlot());
-        slots.put(ScriptType.KILL_AURA, new KillAuraDescriptor());
+        slots.put(ScriptType.KILL_AURA, new KillAuraScriptSlot());
         slots.put(ScriptType.HITBOX_SIZE, new HitboxSizeScriptSlot());
     }
 
