@@ -14,6 +14,9 @@ import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.services.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.services.ScriptWorkspaceService;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.world.level.block.state.BlockState;
@@ -185,10 +188,8 @@ public class ConfigStore {
 
         if (config.statusOverlayConfig.code != null) {
             try {
-                CompilationResult result = ScriptsController.instance.compileOverlay(config.statusOverlayConfig.code);
-                if (result.getProgram() != null) {
-                    StatusOverlay.instance.setScript(result.getProgram());
-                } else {
+                ScriptSaveResult result = ScriptWorkspaceService.INSTANCE.get(ScriptType.OVERLAY).init(config.statusOverlayConfig.code);
+                if (!result.isSuccess()) {
                     result.getDiagnostics().forEach(m -> logger.error("Status Overlay: {}", m.message));
                 }
             } catch (Throwable e) {

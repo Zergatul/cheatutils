@@ -26,6 +26,10 @@ public abstract class ScriptStorageDescriptor {
         return locator;
     }
 
+    public ScriptSaveResult init(@Nullable String code) {
+        return init(null, code);
+    }
+
     public ScriptSaveResult save(String code) {
         return save(null, code);
     }
@@ -33,6 +37,7 @@ public abstract class ScriptStorageDescriptor {
     public abstract List<ScriptInstance> getInstances();
     public abstract String getCode(@Nullable String identifier);
     public abstract String getLastAttemptedCode(@Nullable String identifier);
+    public abstract ScriptSaveResult init(@Nullable String identifier, @Nullable String code);
     public abstract ScriptCompileResult compile(String code);
     public abstract ScriptSaveResult save(@Nullable String identifier, @Nullable String code);
 }

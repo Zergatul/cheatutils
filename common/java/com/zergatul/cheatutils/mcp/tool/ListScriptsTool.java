@@ -34,7 +34,7 @@ public class ListScriptsTool implements McpTool {
                                 },
                                 "identifier": {
                                     "type": "string",
-                                    "description": "Script identifier",
+                                    "description": "Script identifier"
                                 }
                             },
                             "required": ["type"]

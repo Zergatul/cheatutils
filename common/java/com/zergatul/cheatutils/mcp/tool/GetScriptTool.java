@@ -23,7 +23,7 @@ public class GetScriptTool implements McpTool {
                     },
                     "identifier": {
                         "type": "string",
-                        "description": "Script identifier",
+                        "description": "Script identifier"
                     }
                 },
                 "required": ["type"],
@@ -36,7 +36,7 @@ public class GetScriptTool implements McpTool {
                 "type": "object",
                 "properties": {
                     "code": {
-                        "type": "string"
+                        "type": ["string", "null"]
                     }
                 },
                 "required": ["code"],

@@ -47,7 +47,7 @@ public class ScriptWorkspaceService {
         private final ScriptInstance instance = new ScriptInstance();
 
         public StatusOverlayDescriptor() {
-            super(new ScriptLocator(ScriptType.BLOCK_AUTOMATION));
+            super(new ScriptLocator(ScriptType.OVERLAY));
         }
 
         @Override
@@ -74,6 +74,28 @@ public class ScriptWorkspaceService {
         }
 
         @Override
+        public ScriptSaveResult init(@Nullable String identifier, @Nullable String code) {
+            if (identifier != null) {
+                throw new IllegalStateException();
+            }
+
+            if (code == null || code.isEmpty()) {
+                return ScriptSaveResult.success();
+            }
+
+            // initial code loaded from config may contain errors
+            instance.code = code;
+
+            CompilationResult compilationResult = ScriptsController.instance.compileOverlay(code);
+            if (compilationResult.getProgram() != null) {
+                StatusOverlay.instance.setScript(compilationResult.getProgram());
+                return ScriptSaveResult.success();
+            } else {
+                return ScriptSaveResult.fail(compilationResult.getDiagnostics());
+            }
+        }
+
+        @Override
         public ScriptCompileResult compile(String code) {
             LexerInput lexerInput = new LexerInput(code);
             Lexer lexer = new Lexer(lexerInput);
@@ -96,6 +118,8 @@ public class ScriptWorkspaceService {
             }
 
             if (code == null || code.isEmpty()) {
+                instance.code = null;
+
                 ConfigStore.instance.getConfig().statusOverlayConfig.code = null;
                 ConfigStore.instance.requestWrite();
 
@@ -111,6 +135,7 @@ public class ScriptWorkspaceService {
             instance.lastAttemptDiagnostics = compilationResult.getDiagnostics();
 
             if (compilationResult.getProgram() != null) {
+                instance.code = code;
                 ConfigStore.instance.getConfig().statusOverlayConfig.code = code;
                 ConfigStore.instance.requestWrite();
 
@@ -118,11 +143,6 @@ public class ScriptWorkspaceService {
 
                 return ScriptSaveResult.success();
             } else {
-                ConfigStore.instance.getConfig().statusOverlayConfig.code = null;
-                ConfigStore.instance.requestWrite();
-
-                StatusOverlay.instance.setScript(null);
-
                 return ScriptSaveResult.fail(compilationResult.getDiagnostics());
             }
         }

@@ -37,6 +37,9 @@ public class URITemplate {
                 return Optional.empty();
             } else {
                 position += result.offset;
+                if (result.key != null) {
+                    variables.put(result.key, result.value);
+                }
             }
         }
 

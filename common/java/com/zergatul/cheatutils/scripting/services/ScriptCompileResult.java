@@ -1,24 +1,24 @@
 package com.zergatul.cheatutils.scripting.services;
 
 import com.zergatul.scripting.DiagnosticMessage;
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
-import java.util.Objects;
 
+@NullMarked
 public class ScriptCompileResult {
 
-    private final @Nullable List<DiagnosticMessage> diagnostics;
+    private final List<DiagnosticMessage> diagnostics;
 
-    public ScriptCompileResult(@Nullable List<DiagnosticMessage> diagnostics) {
+    public ScriptCompileResult(List<DiagnosticMessage> diagnostics) {
         this.diagnostics = diagnostics;
     }
 
     public boolean isSuccess() {
-        return diagnostics != null;
+        return diagnostics.isEmpty();
     }
 
     public List<DiagnosticMessage> getDiagnostics() {
-        return Objects.requireNonNull(diagnostics);
+        return diagnostics;
     }
 }
