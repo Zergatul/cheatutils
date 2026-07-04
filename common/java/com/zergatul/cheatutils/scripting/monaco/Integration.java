@@ -9,8 +9,9 @@ import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.webui.WebHelper;
 import com.zergatul.scripting.TextRange;
+import com.zergatul.scripting.analysis.AnalysisResult;
+import com.zergatul.scripting.analysis.Analyzer;
 import com.zergatul.scripting.analysis.definition.DefinitionProvider;
-import com.zergatul.scripting.binding.Binder;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
@@ -20,8 +21,6 @@ import com.zergatul.scripting.highlighting.SemanticTokenModifier;
 import com.zergatul.scripting.highlighting.SemanticTokenType;
 import com.zergatul.scripting.hover.HoverProvider;
 import com.zergatul.scripting.lexer.*;
-import com.zergatul.scripting.parser.Parser;
-import com.zergatul.scripting.parser.ParserOutput;
 
 import java.awt.*;
 import java.io.IOException;
@@ -54,11 +53,8 @@ public class Integration {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         TokenizeRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), TokenizeRequest.class);
 
-                        Lexer lexer = new Lexer(new LexerInput(request.code));
-                        LexerOutput lexerOutput = lexer.lex();
-                        ParserOutput parserOutput = new Parser(lexerOutput).parse();
-                        BinderOutput binderOutput = new Binder(parserOutput, resolver.resolve(request.type)).bind();
-                        HighlightingProvider provider = new HighlightingProvider(lexerOutput, binderOutput);
+                        AnalysisResult result = new Analyzer().analyze(request.code, resolver.resolve(request.type));
+                        HighlightingProvider provider = new HighlightingProvider(result.lexerOutput(), result.binderOutput());
 
                         Json.sendResponse(exchange, provider.get().stream().map(MonacoSemanticToken::new).toList());
                     } else if (path.equals(prefix + "color-strings")) {
@@ -84,15 +80,7 @@ public class Integration {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         DiagnosticsRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), DiagnosticsRequest.class);
 
-                        LexerInput lexerInput = new LexerInput(request.code);
-                        Lexer lexer = new Lexer(lexerInput);
-                        LexerOutput lexerOutput = lexer.lex();
-
-                        Parser parser = new Parser(lexerOutput);
-                        ParserOutput parserOutput = parser.parse();
-
-                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
-                        BinderOutput binderOutput = binder.bind();
+                        BinderOutput binderOutput = new Analyzer().analyze(request.code, resolver.resolve(request.type)).binderOutput();
 
                         Json.sendResponse(exchange, binderOutput.diagnostics()
                                 .stream()
@@ -115,15 +103,7 @@ public class Integration {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         HoverRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), HoverRequest.class);
 
-                        LexerInput lexerInput = new LexerInput(request.code);
-                        Lexer lexer = new Lexer(lexerInput);
-                        LexerOutput lexerOutput = lexer.lex();
-
-                        Parser parser = new Parser(lexerOutput);
-                        ParserOutput parserOutput = parser.parse();
-
-                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
-                        BinderOutput binderOutput = binder.bind();
+                        BinderOutput binderOutput = new Analyzer().analyze(request.code, resolver.resolve(request.type)).binderOutput();
 
                         CustomHoverProvider provider = new CustomHoverProvider();
                         HoverProvider.HoverResponse response = provider.get(binderOutput, request.line, request.column);
@@ -132,31 +112,15 @@ public class Integration {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         HoverRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), HoverRequest.class);
 
-                        LexerInput lexerInput = new LexerInput(request.code);
-                        Lexer lexer = new Lexer(lexerInput);
-                        LexerOutput lexerOutput = lexer.lex();
-
-                        Parser parser = new Parser(lexerOutput);
-                        ParserOutput parserOutput = parser.parse();
-
-                        Binder binder = new Binder(parserOutput, resolver.resolve(request.type));
-                        BinderOutput binderOutput = binder.bind();
+                        BinderOutput binderOutput = new Analyzer().analyze(request.code, resolver.resolve(request.type)).binderOutput();
 
                         Json.sendResponse(exchange, new DefinitionProvider().get(binderOutput, request.line, request.column), TextRange.class);
                     } else if (path.equals(prefix + "completion")) {
                         byte[] data = exchange.getRequestBody().readAllBytes();
                         CompletionRequest request = gson.fromJson(new String(data, Charset.defaultCharset()), CompletionRequest.class);
 
-                        LexerInput lexerInput = new LexerInput(request.code);
-                        Lexer lexer = new Lexer(lexerInput);
-                        LexerOutput lexerOutput = lexer.lex();
-
-                        Parser parser = new Parser(lexerOutput);
-                        ParserOutput parserOutput = parser.parse();
-
                         CompilationParameters parameters = resolver.resolve(request.type);
-                        Binder binder = new Binder(parserOutput, parameters);
-                        BinderOutput binderOutput = binder.bind();
+                        BinderOutput binderOutput = new Analyzer().analyze(request.code, parameters).binderOutput();
 
                         Json.sendResponse(exchange, completionProviderFactory.getSuggestions(parameters, binderOutput, request.line, request.column));
                     } else {

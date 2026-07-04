@@ -3,14 +3,9 @@ package com.zergatul.cheatutils.scripting.workspace.slots;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.*;
-import com.zergatul.scripting.binding.Binder;
-import com.zergatul.scripting.binding.BinderOutput;
+import com.zergatul.scripting.analysis.AnalysisResult;
+import com.zergatul.scripting.analysis.Analyzer;
 import com.zergatul.scripting.compiler.CompilationResult;
-import com.zergatul.scripting.lexer.Lexer;
-import com.zergatul.scripting.lexer.LexerInput;
-import com.zergatul.scripting.lexer.LexerOutput;
-import com.zergatul.scripting.parser.Parser;
-import com.zergatul.scripting.parser.ParserOutput;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -75,18 +70,9 @@ public abstract class SingleScriptSlot extends ScriptSlot {
 
     @Override
     public ScriptCompileResult compile(String code) {
-        LexerInput lexerInput = new LexerInput(code);
-        Lexer lexer = new Lexer(lexerInput);
-        LexerOutput lexerOutput = lexer.lex();
-
-        Parser parser = new Parser(lexerOutput);
-        ParserOutput parserOutput = parser.parse();
-
         // TODO: optimize to not create parameters every time?
-        Binder binder = new Binder(parserOutput, scriptType.createParameters());
-        BinderOutput binderOutput = binder.bind();
-
-        return new ScriptCompileResult(binderOutput.diagnostics());
+        AnalysisResult result = new Analyzer().analyze(code, scriptType.createParameters());
+        return new ScriptCompileResult(result.binderOutput().diagnostics());
     }
 
     @Override
