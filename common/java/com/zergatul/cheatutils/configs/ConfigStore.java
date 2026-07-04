@@ -149,7 +149,7 @@ public class ConfigStore {
             final String toggleEspName = "Toggle ESP";
             try {
                 KeyBindings.instance.add(toggleEspName, "esp.toggle();", false);
-                //KeyBindings.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
+                //KeyBindings.instance.getKeyMappingByIndex(0).setKey(InputConstants.getKey("key.keyboard.backslash"));
                 KeyBindings.instance.assign(0, toggleEspName);
             } catch (Throwable e) {
                 logger.error("Toggle ESP script initialization failed", e);
@@ -158,7 +158,7 @@ public class ConfigStore {
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
                 KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
-                KeyBindings.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
+                KeyBindings.instance.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
                 KeyBindings.instance.assign(1, toggleFreeCamName);
             } catch (Throwable e) {
                 logger.error("Toggle FreeCam script initialization failed", e);

@@ -30,13 +30,12 @@ public class KeyBindings implements Module {
 
     public static final KeyBindings instance = new KeyBindings();
 
-    private final Map<String, AsyncRunnable> scripts;
-    public final KeyMapping[] keys;
     private final Minecraft mc = Minecraft.getInstance();
+    private final KeyMapping[] keys;
+    private final Map<String, AsyncRunnable> scripts;
     private final Optional<AsyncRunnable>[] actions;
     private final Optional<CompletableFuture<?>>[] futures;
 
-    @SuppressWarnings("unchecked")
     private KeyBindings() {
         this.scripts = new HashMap<>();
 
@@ -46,12 +45,16 @@ public class KeyBindings implements Module {
             this.keys[i] = new KeyMapping("key.zergatul.cheatutils.reserved" + i, InputConstants.UNKNOWN.getValue(), category);
         }
 
-        this.actions = new Optional[KeyBindingsConfig.KeysCount];
-        this.futures = new Optional[KeyBindingsConfig.KeysCount];
+        this.actions = createOptionalArray(KeyBindingsConfig.KeysCount);
+        this.futures = createOptionalArray(KeyBindingsConfig.KeysCount);
         clear();
 
         Events.RegisterKeyBindings.add(this::onRegisterKeyBindings);
         Events.AfterHandleKeyBindings.add(this::onHandleKeyBindings);
+    }
+
+    public KeyMapping getKeyMappingByIndex(int index) {
+        return this.keys[index];
     }
 
     public void clear() {
@@ -170,7 +173,8 @@ public class KeyBindings implements Module {
     public void assign(int index, String name) {
         @Nullable String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
         for (int i = 0; i < bindings.length; i++) {
-            if (bindings[i] != null && bindings[i].equals(name)) {
+            String binding = bindings[i];
+            if (binding != null && binding.equals(name)) {
                 actions[i] = Optional.empty();
                 futures[i] = Optional.empty();
                 bindings[i] = null;
@@ -217,7 +221,8 @@ public class KeyBindings implements Module {
         AsyncRunnable script = scripts.get(name);
         @Nullable String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
         for (int i = 0; i < bindings.length; i++) {
-            if (bindings[i] != null && bindings[i].equals(name)) {
+            String binding = bindings[i];
+            if (binding != null && binding.equals(name)) {
                 actions[i] = script == null ? Optional.empty() : Optional.of(script);
                 futures[i] = Optional.empty();
             }
@@ -251,6 +256,11 @@ public class KeyBindings implements Module {
 
     private KeyBindingScriptSlot slot() {
         return (KeyBindingScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.KEYBINDING);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Optional<T>[] createOptionalArray(int length) {
+        return new Optional[length];
     }
 
     public static class Script {
