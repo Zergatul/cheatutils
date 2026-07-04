@@ -1,12 +1,13 @@
 package com.zergatul.cheatutils.mcp.resource;
 
+import com.zergatul.cheatutils.mcp.McpItem;
 import com.zergatul.cheatutils.mcp.utility.URITemplate;
 import com.zergatul.cheatutils.mcp.protocol.ResourceContents;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 
-public interface McpResourceTemplate {
+public interface McpResourceTemplate extends McpItem {
 
     /**
      * A URI template (according to RFC 6570) that can be used to construct resource URIs.

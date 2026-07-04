@@ -4,6 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.zergatul.cheatutils.configs.McpServerConfig;
+import com.zergatul.cheatutils.mcp.McpItem;
+import com.zergatul.cheatutils.mcp.McpItemStatus;
 import com.zergatul.cheatutils.mcp.utility.Serializer;
 import com.zergatul.cheatutils.scripting.workspace.*;
 
@@ -110,6 +113,20 @@ public class SaveScriptTool implements McpTool {
     @Override
     public JsonObject getOutputSchema() {
         return outputSchema;
+    }
+
+    @Override
+    public McpItemStatus getStatus(McpServerConfig config) {
+        McpItemStatus status = McpTool.super.getStatus(config);
+        if (!status.isEnabled()) {
+            return status;
+        }
+
+        if (!config.allowSavingScripts) {
+            return McpItemStatus.disabled("Disabled by CheatUtils MCP Server settings: allowSavingScripts is false.");
+        }
+
+        return McpItemStatus.enabled();
     }
 
     @Override

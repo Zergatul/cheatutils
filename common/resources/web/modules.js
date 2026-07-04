@@ -573,6 +573,13 @@ module({
 });
 module({
     group: 'scripting',
+    name: 'MCP Server',
+    component: 'McpServer',
+    path: 'mcp-server',
+    tags: ['script', 'llm', 'ai', 'vibe', 'coding']
+});
+module({
+    group: 'scripting',
     name: 'LLM Guide.md',
     component: 'LLM-Guide',
     tags: ['llm', 'guide', 'docs', 'documentation'],

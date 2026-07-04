@@ -2,11 +2,14 @@ package com.zergatul.cheatutils.mcp.tool;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.zergatul.cheatutils.configs.McpServerConfig;
+import com.zergatul.cheatutils.mcp.McpItem;
+import com.zergatul.cheatutils.mcp.McpItemStatus;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 
-public interface McpTool {
+public interface McpTool extends McpItem {
 
     /**
      * Intended for programmatic or logical use, but used as a display name in past specs or fallback

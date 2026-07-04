@@ -5,9 +5,12 @@ import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.McpServerConfig;
 import com.zergatul.cheatutils.mcp.protocol.*;
 import com.zergatul.cheatutils.mcp.resource.*;
 import com.zergatul.cheatutils.mcp.tool.*;
+import com.zergatul.cheatutils.mcp.utility.JsonRpcErrorCodes;
 import com.zergatul.cheatutils.webui.HttpResponseCodes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -131,7 +134,7 @@ public class McpHttpHandler implements HttpHandler {
                 break;
 
             default:
-                sendJsonRpcError(exchange, request.id, -32601, "Method not found");
+                sendJsonRpcError(exchange, request.id, JsonRpcErrorCodes.METHOD_NOT_FOUND, "Method not found");
                 break;
         }
     }
@@ -167,7 +170,13 @@ public class McpHttpHandler implements HttpHandler {
                 .orElse(null);
 
         if (tool == null) {
-            sendJsonRpcError(exchange, rpcRequest.id, -32002, "Resource not found");
+            sendJsonRpcError(exchange, rpcRequest.id, JsonRpcErrorCodes.ITEM_NOT_FOUND, "Tool not found");
+            return;
+        }
+
+        McpItemStatus status = tool.getStatus(getConfig());
+        if (!status.isEnabled()) {
+            sendJsonRpcError(exchange, rpcRequest.id, JsonRpcErrorCodes.ITEM_DISABLED, status.getMessage());
             return;
         }
 
@@ -199,6 +208,12 @@ public class McpHttpHandler implements HttpHandler {
                 .orElse(null);
 
         if (resource != null) {
+            McpItemStatus status = resource.getStatus(getConfig());
+            if (!status.isEnabled()) {
+                sendJsonRpcError(exchange, rpcRequest.id, JsonRpcErrorCodes.ITEM_DISABLED, status.getMessage());
+                return;
+            }
+
             ResourceContents content = resource.getContent();
             sendJsonRpcResult(exchange, rpcRequest.id, ReadResourceResult.of(content));
             return;
@@ -210,12 +225,18 @@ public class McpHttpHandler implements HttpHandler {
                 .orElse(null);
 
         if (template != null) {
+            McpItemStatus status = template.getStatus(getConfig());
+            if (!status.isEnabled()) {
+                sendJsonRpcError(exchange, rpcRequest.id, JsonRpcErrorCodes.ITEM_DISABLED, status.getMessage());
+                return;
+            }
+
             ResourceContents content = template.getContent(request.uri());
             sendJsonRpcResult(exchange, rpcRequest.id, ReadResourceResult.of(content));
             return;
         }
 
-        sendJsonRpcError(exchange, rpcRequest.id, -32002, "Resource not found");
+        sendJsonRpcError(exchange, rpcRequest.id, JsonRpcErrorCodes.ITEM_NOT_FOUND, "Resource not found");
     }
 
     private void handleResourceTemplatesListMethod(HttpExchange exchange, RpcRequest rpcRequest) throws IOException {
@@ -367,6 +388,10 @@ public class McpHttpHandler implements HttpHandler {
                 }
             }
         }
+    }
+
+    private McpServerConfig getConfig() {
+        return ConfigStore.instance.getConfig().mcpServerConfig;
     }
 
     private record RpcRequest(RequestId id, String method, JsonObject parameters) {}

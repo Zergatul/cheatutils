@@ -1024,6 +1024,18 @@ public class ApiHandler implements HttpHandler {
                 }
             }
         });
+
+        apis.add(new SimpleConfigApi<>("mcp-server", McpServerConfig.class) {
+            @Override
+            protected McpServerConfig getConfig() {
+                return ConfigStore.instance.getConfig().mcpServerConfig;
+            }
+
+            @Override
+            protected void setConfig(McpServerConfig config) {
+                ConfigStore.instance.getConfig().mcpServerConfig = config;
+            }
+        });
     }
 
     @Override
