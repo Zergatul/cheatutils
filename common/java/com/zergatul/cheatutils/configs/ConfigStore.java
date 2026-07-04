@@ -227,8 +227,8 @@ public class ConfigStore {
             }
         }
 
+        ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP)).clear();
         if (config.blocks != null && config.blocks.getBlockConfigs() != null) {
-            ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP)).clearDocuments();
             for (BlockEspConfig blockConfig : config.blocks.getBlockConfigs()) {
                 if (blockConfig.code != null && blockConfig.code.isBlank()) {
                     blockConfig.code = null;
@@ -248,8 +248,8 @@ public class ConfigStore {
             }
         }
 
+        ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP)).clear();
         if (config.entities != null && config.entities.configs != null) {
-            ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP)).clearDocuments();
             for (EntityEspConfig entityConfig : config.entities.configs) {
                 if (entityConfig.code != null && entityConfig.code.isBlank()) {
                     entityConfig.code = null;

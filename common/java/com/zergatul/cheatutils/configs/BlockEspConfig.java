@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.configs.adapters.GsonSkip;
-import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import net.minecraft.world.level.block.Block;
 
 import java.awt.*;
@@ -14,9 +12,6 @@ public class BlockEspConfig extends EspConfigBase {
 
     public boolean scriptEnabled;
     public String code;
-
-    @GsonSkip
-    public BlockEspConsumer script;
 
     public void copyFrom(BlockEspConfig jsonConfig) {
         copyFromJsonTracerConfigBase(jsonConfig);

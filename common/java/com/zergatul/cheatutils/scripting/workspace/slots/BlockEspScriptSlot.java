@@ -4,8 +4,8 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.BlocksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.ScriptsController;
+import com.zergatul.cheatutils.modules.esp.BlockEsp;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import com.zergatul.scripting.compiler.CompilationResult;
@@ -23,6 +23,12 @@ public class BlockEspScriptSlot extends MultiScriptSlot {
     }
 
     @Override
+    public void clear() {
+        BlockEsp.instance.clearScripts();
+        clearDocuments();
+    }
+
+    @Override
     protected void updateConfigCode(String identifier, @Nullable String code) {
         BlockEspConfig config = findConfig(identifier);
         config.code = code;
@@ -36,9 +42,7 @@ public class BlockEspScriptSlot extends MultiScriptSlot {
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
         BlockEspConfig config = findConfig(identifier);
-        // Have to run from the main thread, since BlockEsp module doesn't snapshot scripts
-        // and if update happens mid-frame it can cause NullReference exception.
-        TickEndExecutor.instance.execute(() -> config.script = (BlockEspConsumer) program);
+        BlockEsp.instance.setScript(config, (BlockEspConsumer) program);
     }
 
     private BlockEspConfig findConfig(String identifier) {

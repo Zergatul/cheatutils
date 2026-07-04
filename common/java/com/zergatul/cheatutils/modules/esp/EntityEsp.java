@@ -4,12 +4,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.StylizedText;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
@@ -41,6 +43,7 @@ public class EntityEsp implements Module {
     private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
     private final RenderBuffers renderBuffers = new RenderBuffers(1);
     private final FeatureRenderDispatcher dispatcher;
+    private final Map<EntityEspConfig, EntityEspConsumer> scripts = new IdentityHashMap<>();
     private final Map<EntityScriptResultKey, EntityScriptResult> scriptResults = new HashMap<>();
     private boolean enabled = true;
 
@@ -64,6 +67,26 @@ public class EntityEsp implements Module {
 
     public void toggle() {
         enabled = !enabled;
+    }
+
+    public void setScript(EntityEspConfig config, @Nullable EntityEspConsumer script) {
+        // Have to run from the main thread, since EntityEsp module doesn't snapshot scripts
+        // and if update happens mid-frame it can cause NullReference exception.
+        TickEndExecutor.instance.execute(() -> {
+            if (script == null) {
+                scripts.remove(config);
+            } else {
+                scripts.put(config, script);
+            }
+            scriptResults.keySet().removeIf(key -> key.config == config);
+        });
+    }
+
+    public void clearScripts() {
+        TickEndExecutor.instance.execute(() -> {
+            scripts.clear();
+            scriptResults.clear();
+        });
     }
 
     public void captureEntityRenderState(Entity entity, EntityRenderState renderState) {
@@ -139,7 +162,8 @@ public class EntityEsp implements Module {
     }
 
     public StylizedText getTitleOverride(EntityEspConfig config, Entity entity) {
-        if (!config.scriptEnabled || config.script == null) {
+        EntityEspConsumer script = scripts.get(config);
+        if (!config.scriptEnabled || script == null) {
             return null;
         }
 
@@ -148,7 +172,7 @@ public class EntityEsp implements Module {
             return result.title;
         }
 
-        return executeScript(config, entity).title;
+        return executeScript(config, entity, script).title;
     }
 
     private void onBeforeRenderWorld() {
@@ -365,7 +389,8 @@ public class EntityEsp implements Module {
     }
 
     private Integer getTracerColorOverride(EntityEspConfig config, Entity entity) {
-        if (!config.scriptEnabled || config.script == null) {
+        EntityEspConsumer script = scripts.get(config);
+        if (!config.scriptEnabled || script == null) {
             return null;
         }
 
@@ -373,12 +398,13 @@ public class EntityEsp implements Module {
         if (result != null) {
             return result.tracerColorOverride;
         } else {
-            return executeScript(config, entity).tracerColorOverride;
+            return executeScript(config, entity, script).tracerColorOverride;
         }
     }
 
     private boolean getBooleanFromScript(EntityEspConfig config, Entity entity, Predicate<EntityScriptResult> predicate) {
-        if (!config.scriptEnabled || config.script == null) {
+        EntityEspConsumer script = scripts.get(config);
+        if (!config.scriptEnabled || script == null) {
             return false;
         }
 
@@ -387,15 +413,13 @@ public class EntityEsp implements Module {
             return predicate.test(result);
         }
 
-        return predicate.test(executeScript(config, entity));
+        return predicate.test(executeScript(config, entity, script));
     }
 
-    private EntityScriptResult executeScript(EntityEspConfig config, Entity entity) {
-        assert config.script != null;
-
+    private EntityScriptResult executeScript(EntityEspConfig config, Entity entity, EntityEspConsumer script) {
         EntityScriptResult result = new EntityScriptResult(entity.getId(), config);
         scriptResults.put(new EntityScriptResultKey(entity.getId(), config), result);
-        config.script.accept(entity.getId(), new EntityEspEvent(result));
+        script.accept(entity.getId(), new EntityEspEvent(result));
         return result;
     }
 

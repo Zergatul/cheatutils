@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.configs.*;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.ScriptsController;
+import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import com.zergatul.cheatutils.utils.ClassUtils;
@@ -15,6 +15,12 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
 
     public EntityEspScriptSlot() {
         super(ScriptType.ENTITY_ESP);
+    }
+
+    @Override
+    public void clear() {
+        EntityEsp.instance.clearScripts();
+        clearDocuments();
     }
 
     @Override
@@ -31,9 +37,7 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
         EntityEspConfig config = findConfig(identifier);
-        // Have to run from the main thread, since EntityEsp module doesn't snapshot scripts
-        // and if update happens mid-frame it can cause NullReference exception.
-        TickEndExecutor.instance.execute(() -> config.script = (EntityEspConsumer) program);
+        EntityEsp.instance.setScript(config, (EntityEspConsumer) program);
     }
 
     private EntityEspConfig findConfig(String className) {
