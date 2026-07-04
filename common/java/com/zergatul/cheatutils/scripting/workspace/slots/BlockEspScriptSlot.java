@@ -36,6 +36,8 @@ public class BlockEspScriptSlot extends MultiScriptSlot {
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
         BlockEspConfig config = findConfig(identifier);
+        // Have to run from the main thread, since BlockEsp module doesn't snapshot scripts
+        // and if update happens mid-frame it can cause NullReference exception.
         TickEndExecutor.instance.execute(() -> config.script = (BlockEspConsumer) program);
     }
 

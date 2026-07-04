@@ -31,6 +31,8 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
         EntityEspConfig config = findConfig(identifier);
+        // Have to run from the main thread, since EntityEsp module doesn't snapshot scripts
+        // and if update happens mid-frame it can cause NullReference exception.
         TickEndExecutor.instance.execute(() -> config.script = (EntityEspConsumer) program);
     }
 
