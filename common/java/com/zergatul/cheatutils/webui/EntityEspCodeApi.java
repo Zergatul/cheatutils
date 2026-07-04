@@ -26,6 +26,9 @@ public class EntityEspCodeApi extends ApiBase {
         }
 
         if (request.code == null || request.code.isBlank()) {
+            // have to run from the main thread, since EntityEsp module doesn't snapshot scripts
+            // and if update happens mid-frame it can cause NullReference exception
+            // TODO: EntityEsp should own compiled scripts, not config
             TickEndExecutor.instance.execute(() -> {
                 config.code = null;
                 config.script = null;
