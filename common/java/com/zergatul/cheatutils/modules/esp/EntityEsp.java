@@ -4,16 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
-import com.zergatul.cheatutils.font.StylizedText;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
-import com.zergatul.cheatutils.scripting.modules.EntityEspEvent;
-import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
@@ -29,7 +25,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.List;
-import java.util.function.Predicate;
 
 public class EntityEsp implements Module {
 
@@ -43,8 +38,7 @@ public class EntityEsp implements Module {
     private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
     private final RenderBuffers renderBuffers = new RenderBuffers(1);
     private final FeatureRenderDispatcher dispatcher;
-    private final Map<EntityEspConfig, EntityEspConsumer> scripts = new IdentityHashMap<>();
-    private final Map<EntityScriptResultKey, EntityScriptResult> scriptResults = new HashMap<>();
+    private final EntityEspScriptRuntime scriptRuntime;
     private boolean enabled = true;
 
     private EntityEsp() {
@@ -59,6 +53,8 @@ public class EntityEsp implements Module {
                 mc.getAtlasManager(),
                 mc.font,
                 mc.gameRenderer.gameRenderState());
+
+        this.scriptRuntime = EntityEspScriptRuntime.INSTANCE;
     }
 
     public boolean isEnabled() {
@@ -67,26 +63,6 @@ public class EntityEsp implements Module {
 
     public void toggle() {
         enabled = !enabled;
-    }
-
-    public void setScript(EntityEspConfig config, @Nullable EntityEspConsumer script) {
-        // Have to run from the main thread, since EntityEsp module doesn't snapshot scripts
-        // and if update happens mid-frame it can cause NullReference exception.
-        TickEndExecutor.instance.execute(() -> {
-            if (script == null) {
-                scripts.remove(config);
-            } else {
-                scripts.put(config, script);
-            }
-            scriptResults.keySet().removeIf(key -> key.config == config);
-        });
-    }
-
-    public void clearScripts() {
-        TickEndExecutor.instance.execute(() -> {
-            scripts.clear();
-            scriptResults.clear();
-        });
     }
 
     public void captureEntityRenderState(Entity entity, EntityRenderState renderState) {
@@ -161,22 +137,8 @@ public class EntityEsp implements Module {
         return null;
     }
 
-    public StylizedText getTitleOverride(EntityEspConfig config, Entity entity) {
-        EntityEspConsumer script = scripts.get(config);
-        if (!config.scriptEnabled || script == null) {
-            return null;
-        }
-
-        EntityScriptResult result = scriptResults.get(new EntityScriptResultKey(entity.getId(), config));
-        if (result != null) {
-            return result.title;
-        }
-
-        return executeScript(config, entity, script).title;
-    }
-
     private void onBeforeRenderWorld() {
-        scriptResults.clear();
+        scriptRuntime.clearScriptResults();
     }
 
     private void onAfterRenderWorld(RenderWorldLastEvent event) {
@@ -236,7 +198,7 @@ public class EntityEsp implements Module {
                             distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
             if (tracerConfig != null && !isTracerDisabledFromScript(tracerConfig, entity)) {
-                tracerList.add(new MatchedEntity(entity, tracerConfig, getTracerColorOverride(tracerConfig, entity)));
+                tracerList.add(new MatchedEntity(entity, tracerConfig, scriptRuntime.getTracerColorOverride(tracerConfig, entity)));
             }
         }
 
@@ -373,96 +335,19 @@ public class EntityEsp implements Module {
     }
 
     private boolean isCollisionBoxDisabledFromScript(EntityEspConfig config, Entity entity) {
-        return getBooleanFromScript(config, entity, result -> result.collisionBoxDisabled);
+        return scriptRuntime.getBooleanFromScript(config, entity, result -> result.collisionBoxDisabled);
     }
 
     private boolean isTracerDisabledFromScript(EntityEspConfig config, Entity entity) {
-        return getBooleanFromScript(config, entity, result -> result.tracerDisabled);
+        return scriptRuntime.getBooleanFromScript(config, entity, result -> result.tracerDisabled);
     }
 
     private boolean isOverlayDisabledFromScript(EntityEspConfig config, Entity entity) {
-        return getBooleanFromScript(config, entity, result -> result.overlayDisabled);
+        return scriptRuntime.getBooleanFromScript(config, entity, result -> result.overlayDisabled);
     }
 
     private boolean isOutlineDisabledFromScript(EntityEspConfig config, Entity entity) {
-        return getBooleanFromScript(config, entity, result -> result.outlineDisabled);
-    }
-
-    private Integer getTracerColorOverride(EntityEspConfig config, Entity entity) {
-        EntityEspConsumer script = scripts.get(config);
-        if (!config.scriptEnabled || script == null) {
-            return null;
-        }
-
-        EntityScriptResult result = scriptResults.get(new EntityScriptResultKey(entity.getId(), config));
-        if (result != null) {
-            return result.tracerColorOverride;
-        } else {
-            return executeScript(config, entity, script).tracerColorOverride;
-        }
-    }
-
-    private boolean getBooleanFromScript(EntityEspConfig config, Entity entity, Predicate<EntityScriptResult> predicate) {
-        EntityEspConsumer script = scripts.get(config);
-        if (!config.scriptEnabled || script == null) {
-            return false;
-        }
-
-        EntityScriptResult result = scriptResults.get(new EntityScriptResultKey(entity.getId(), config));
-        if (result != null) {
-            return predicate.test(result);
-        }
-
-        return predicate.test(executeScript(config, entity, script));
-    }
-
-    private EntityScriptResult executeScript(EntityEspConfig config, Entity entity, EntityEspConsumer script) {
-        EntityScriptResult result = new EntityScriptResult(entity.getId(), config);
-        scriptResults.put(new EntityScriptResultKey(entity.getId(), config), result);
-        script.accept(entity.getId(), new EntityEspEvent(result));
-        return result;
-    }
-
-    public static class EntityScriptResult {
-
-        public final int id;
-        public final EntityEspConfig config;
-        public boolean tracerDisabled;
-        public boolean outlineDisabled;
-        public boolean overlayDisabled;
-        public boolean collisionBoxDisabled;
-        public StylizedText title;
-        public Integer tracerColorOverride;
-
-        public EntityScriptResult(int id, EntityEspConfig config) {
-            this.id = id;
-            this.config = config;
-        }
-    }
-
-    private static class EntityScriptResultKey {
-
-        private final int id;
-        private final EntityEspConfig config;
-
-        public EntityScriptResultKey(int id, EntityEspConfig config) {
-            this.id = id;
-            this.config = config;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof EntityScriptResultKey other) {
-                return other.id == id && other.config == config;
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * id + config.hashCode();
-        }
+        return scriptRuntime.getBooleanFromScript(config, entity, result -> result.outlineDisabled);
     }
 
     private record MatchedEntity(Entity entity, EntityEspConfig config, @Nullable Integer colorOverride) {

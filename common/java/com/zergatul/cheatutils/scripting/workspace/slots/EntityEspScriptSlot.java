@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.ScriptsController;
-import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import com.zergatul.cheatutils.utils.ClassUtils;
@@ -19,7 +19,7 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
 
     @Override
     public void clear() {
-        EntityEsp.instance.clearScripts();
+        EntityEspScriptRuntime.INSTANCE.clearScripts();
         clearDocuments();
     }
 
@@ -37,7 +37,7 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
         EntityEspConfig config = findConfig(identifier);
-        EntityEsp.instance.setScript(config, (EntityEspConsumer) program);
+        EntityEspScriptRuntime.INSTANCE.setScript(config, (EntityEspConsumer) program);
     }
 
     private EntityEspConfig findConfig(String className) {

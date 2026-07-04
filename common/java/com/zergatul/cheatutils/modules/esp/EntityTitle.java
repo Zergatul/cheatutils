@@ -14,6 +14,7 @@ import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.modules.visuals.LogoutSpots;
 import com.zergatul.cheatutils.render.CacheItemRenderer;
 import com.zergatul.cheatutils.ui.*;
@@ -303,7 +304,7 @@ public class EntityTitle implements FontBackendHolder {
                     showEquippedItems |= entityConfig.showEquippedItems;
                     showOwner |= entityConfig.showOwner;
                     if (title == null) {
-                        title = EntityEsp.instance.getTitleOverride(entityConfig, entity);
+                        title = EntityEspScriptRuntime.INSTANCE.getTitleOverride(entityConfig, entity);
                     }
                 }
             }
