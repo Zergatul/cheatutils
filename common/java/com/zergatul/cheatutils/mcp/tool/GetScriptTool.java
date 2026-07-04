@@ -56,7 +56,10 @@ public class GetScriptTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Returns detailed information about requested script";
+        return
+                "Returns detailed information about requested script. " +
+                "Normally it returns only compiled and saved scripts. " +
+                "Except when broken script was loaded on game start.";
     }
 
     @Override
@@ -73,7 +76,7 @@ public class GetScriptTool implements McpTool {
     public JsonObject invoke(JsonElement arguments) throws IOException {
         ScriptRef ref = new Gson().fromJson(arguments, ScriptRef.class);
         ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
-        String code = descriptor.getCode(ref.identifier());
+        String code = descriptor.getInstance(ref.identifier()).code;
         return new JsonObjectBuilder()
                 .withProperty("code", code)
                 .build();

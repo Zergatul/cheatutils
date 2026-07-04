@@ -3,8 +3,7 @@ package com.zergatul.cheatutils.mcp.tool;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.zergatul.cheatutils.mcp.utility.JsonArrayBuilder;
-import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
+import com.zergatul.cheatutils.mcp.utility.Serializer;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptCompileResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSlot;
@@ -112,17 +111,7 @@ public class CompileScriptTool implements McpTool {
         JsonObject output = new JsonObject();
         output.addProperty("ok", result.isSuccess());
         if (!result.isSuccess()) {
-            output.add("diagnostics", new JsonArrayBuilder()
-                    .withItems(result.getDiagnostics().stream().map(diagnostic -> new JsonObjectBuilder()
-                            .withProperty("message", diagnostic.message)
-                            .withProperty("range", new JsonObjectBuilder()
-                                    .withProperty("line1", diagnostic.range.getLine1())
-                                    .withProperty("column1", diagnostic.range.getColumn1())
-                                    .withProperty("line2", diagnostic.range.getLine2())
-                                    .withProperty("column2", diagnostic.range.getColumn2())
-                                    .build())
-                            .build()))
-                    .build());
+            output.add("diagnostics", Serializer.serialize(result.getDiagnostics()));
         }
 
         return output;

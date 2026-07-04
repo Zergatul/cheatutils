@@ -4,37 +4,32 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.mcp.utility.Serializer;
-import com.zergatul.cheatutils.scripting.workspace.*;
+import com.zergatul.cheatutils.scripting.workspace.ScriptDocument;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSlot;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 
 import java.io.IOException;
+import java.time.Instant;
 
-public class SaveScriptTool implements McpTool {
+public class GetLastAttemptedScriptTool implements McpTool {
 
     private final JsonObject inputSchema = JsonParser.parseString("""
             {
                 "type": "object",
                 "properties": {
-                    "ref": {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "description": "Script type"
-                            },
-                            "identifier": {
-                                "type": "string",
-                                "description": "Script identifier"
-                            }
-                        },
-                        "required": ["type"],
-                        "additionalProperties": false
+                    "type": {
+                        "type": "string",
+                        "description": "Script type"
                     },
-                    "code": {
-                        "type": "string"
+                    "identifier": {
+                        "type": "string",
+                        "description": "Script identifier"
                     }
                 },
-                "required": ["ref", "code"],
+                "required": ["type"],
                 "additionalProperties": false
             }
             """).getAsJsonObject();
@@ -43,6 +38,9 @@ public class SaveScriptTool implements McpTool {
             {
                 "type": "object",
                 "properties": {
+                    "code": {
+                        "type": "string"
+                    },
                     "diagnostics": {
                         "type": "array",
                         "items": {
@@ -75,28 +73,35 @@ public class SaveScriptTool implements McpTool {
                             "additionalProperties": false
                         }
                     },
-                    "ok": {
-                        "type": "boolean"
+                    "at": {
+                        "type": "string",
+                        "description": "Time of last attempt"
+                    },
+                    "now": {
+                        "type": ["string"],
+                        "description": "Current time"
                     }
                 },
-                "required": ["ok"],
+                "required": ["now"],
                 "additionalProperties": false
             }
             """).getAsJsonObject();
 
     @Override
     public String getName() {
-        return "save_script";
+        return "get_last_attempted_script";
     }
 
     @Override
     public String getTitle() {
-        return "Save Script";
+        return "Get Last Attempted Script";
     }
 
     @Override
     public String getDescription() {
-        return "Compiles and saves script, updating corresponding module live.";
+        return
+                "Returns information about last attempt of saving script from web UI, or from MCP tools. " +
+                "Use it when user asks to fix the script, because scripts that didn't compile are not getting saved to config.";
     }
 
     @Override
@@ -111,17 +116,14 @@ public class SaveScriptTool implements McpTool {
 
     @Override
     public JsonObject invoke(JsonElement arguments) throws IOException {
-        ScriptRef ref = new Gson().fromJson(arguments.getAsJsonObject().getAsJsonObject("ref"), ScriptRef.class);
-        String code = arguments.getAsJsonObject().getAsJsonPrimitive("code").getAsString();
+        ScriptRef ref = new Gson().fromJson(arguments, ScriptRef.class);
         ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
-        ScriptSaveResult result = descriptor.save(ref.identifier(), code);
-
-        JsonObject output = new JsonObject();
-        output.addProperty("ok", result.isSuccess());
-        if (!result.isSuccess()) {
-            output.add("diagnostics", Serializer.serialize(result.getDiagnostics()));
-        }
-
-        return output;
+        ScriptDocument instance = descriptor.getInstance(ref.identifier());
+        return new JsonObjectBuilder()
+                .withOptionalProperty("code", instance.code)
+                .withOptionalProperty("diagnostics", Serializer.serialize(instance.lastAttemptDiagnostics))
+                .withOptionalProperty("at", instance.lastAttemptAt != null ? instance.lastAttemptAt.toString() : null)
+                .withProperty("now", Instant.now().toString())
+                .build();
     }
 }

@@ -29,21 +29,8 @@ public abstract class SingleScriptSlot extends ScriptSlot {
     }
 
     @Override
-    public @Nullable String getCode(@Nullable String identifier) {
-        if (identifier != null) {
-            throw new IllegalStateException();
-        }
-
-        return instance.code;
-    }
-
-    @Override
-    public @Nullable String getLastAttemptedCode(@Nullable String identifier) {
-        if (identifier != null) {
-            throw new IllegalStateException();
-        }
-
-        return instance.lastAttemptCode;
+    public ScriptDocument getInstance(@Nullable String identifier) {
+        return instance;
     }
 
     @Override

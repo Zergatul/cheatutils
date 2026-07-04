@@ -33,4 +33,20 @@ public class JsonObjectBuilder {
         object.add(property, value);
         return this;
     }
+
+    public JsonObjectBuilder withOptionalProperty(String property, @Nullable String value) {
+        if (value == null) {
+            return this;
+        } else {
+            return withProperty(property, new JsonPrimitive(value));
+        }
+    }
+
+    public JsonObjectBuilder withOptionalProperty(String property, JsonElement value) {
+        if (value.isJsonNull()) {
+            return this;
+        } else {
+            return withProperty(property, value);
+        }
+    }
 }

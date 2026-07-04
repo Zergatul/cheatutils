@@ -31,6 +31,20 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         return instances.values().stream().toList();
     }
 
+    @Override
+    public ScriptDocument getInstance(@Nullable String identifier) {
+        if (identifier == null) {
+            throw new IllegalStateException();
+        }
+
+        ScriptDocument instance = instances.get(identifier);
+        if (instance == null) {
+            throw new IllegalStateException();
+        }
+
+        return instance;
+    }
+
     public void clear() {
         for (String identifier : new ArrayList<>(instances.keySet())) {
             remove(identifier);
@@ -45,34 +59,6 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         if (instances.remove(identifier) != null) {
             applyScript(identifier, null);
         }
-    }
-
-    @Override
-    public @Nullable String getCode(@Nullable String identifier) {
-        if (identifier == null) {
-            throw new IllegalStateException();
-        }
-
-        ScriptDocument instance = instances.get(identifier);
-        if (instance == null) {
-            throw new IllegalStateException();
-        }
-
-        return instance.code;
-    }
-
-    @Override
-    public @Nullable String getLastAttemptedCode(@Nullable String identifier) {
-        if (identifier == null) {
-            throw new IllegalStateException();
-        }
-
-        ScriptDocument instance = instances.get(identifier);
-        if (instance == null) {
-            throw new IllegalStateException();
-        }
-
-        return instance.lastAttemptCode;
     }
 
     @Override
