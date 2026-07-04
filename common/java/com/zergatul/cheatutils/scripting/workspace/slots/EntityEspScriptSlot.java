@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
@@ -24,13 +25,13 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
 
     @Override
     protected CompilationResult compileScript(String code) {
-        return ScriptsController.instance.compileBlockEsp(code);
+        return ScriptsController.instance.compileEntityEsp(code);
     }
 
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
         EntityEspConfig config = findConfig(identifier);
-        config.script = (EntityEspConsumer) program;
+        TickEndExecutor.instance.execute(() -> config.script = (EntityEspConsumer) program);
     }
 
     private EntityEspConfig findConfig(String className) {

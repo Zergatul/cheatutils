@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.BlocksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
@@ -29,13 +30,13 @@ public class BlockEspScriptSlot extends MultiScriptSlot {
 
     @Override
     protected CompilationResult compileScript(String code) {
-        return ScriptsController.instance.compileEntityEsp(code);
+        return ScriptsController.instance.compileBlockEsp(code);
     }
 
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
         BlockEspConfig config = findConfig(identifier);
-        config.script = (BlockEspConsumer) program;
+        TickEndExecutor.instance.execute(() -> config.script = (BlockEspConsumer) program);
     }
 
     private BlockEspConfig findConfig(String identifier) {

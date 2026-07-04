@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.configs;
 import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
@@ -13,8 +14,8 @@ import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
+import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
-import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -227,6 +228,7 @@ public class ConfigStore {
         }
 
         if (config.blocks != null && config.blocks.getBlockConfigs() != null) {
+            ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP)).clearDocuments();
             for (BlockEspConfig blockConfig : config.blocks.getBlockConfigs()) {
                 if (blockConfig.code != null && blockConfig.code.isBlank()) {
                     blockConfig.code = null;
@@ -234,10 +236,9 @@ public class ConfigStore {
 
                 if (blockConfig.code != null) {
                     try {
-                        CompilationResult result = ScriptsController.instance.compileBlockEsp(blockConfig.code);
-                        if (result.getProgram() != null) {
-                            blockConfig.script = result.getProgram();
-                        } else {
+                        String identifier = Registries.BLOCKS.getKey(blockConfig.blocks.stream().findFirst().orElseThrow()).toString();
+                        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP).init(identifier, blockConfig.code);
+                        if (!result.isSuccess()) {
                             result.getDiagnostics().forEach(m -> logger.error("Block ESP for {}: {}", blockConfig.blocks.stream().findFirst().get().getName(), m.message));
                         }
                     } catch (Throwable e) {
@@ -248,6 +249,7 @@ public class ConfigStore {
         }
 
         if (config.entities != null && config.entities.configs != null) {
+            ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP)).clearDocuments();
             for (EntityEspConfig entityConfig : config.entities.configs) {
                 if (entityConfig.code != null && entityConfig.code.isBlank()) {
                     entityConfig.code = null;
@@ -255,10 +257,8 @@ public class ConfigStore {
 
                 if (entityConfig.code != null) {
                     try {
-                        CompilationResult result = ScriptsController.instance.compileEntityEsp(entityConfig.code);
-                        if (result.getProgram() != null) {
-                            entityConfig.script = result.getProgram();
-                        } else {
+                        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP).init(entityConfig.clazz.getName(), entityConfig.code);
+                        if (!result.isSuccess()) {
                             result.getDiagnostics().forEach(m -> logger.error("Entity ESP for {}: {}", entityConfig.clazz.getName(), m.message));
                         }
                     } catch (Throwable e) {

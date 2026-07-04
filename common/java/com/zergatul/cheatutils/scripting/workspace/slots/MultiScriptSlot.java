@@ -42,6 +42,10 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         }
     }
 
+    public void clearDocuments() {
+        instances.clear();
+    }
+
     public void remove(String identifier) {
         if (instances.remove(identifier) != null) {
             applyScript(identifier, null);
@@ -124,12 +128,11 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         }
 
         ScriptDocument instance = instances.get(identifier);
-        if (instance == null) {
-            throw new IllegalStateException();
-        }
 
         if (code == null || code.isEmpty()) {
-            instance.code = null;
+            if (instance != null) {
+                instance.code = null;
+            }
 
             updateConfigCode(identifier, null);
             ConfigStore.instance.requestWrite();
@@ -137,6 +140,11 @@ public abstract class MultiScriptSlot extends ScriptSlot {
             applyScript(identifier, null);
 
             return ScriptSaveResult.success();
+        }
+
+        if (instance == null) {
+            instance = new ScriptDocument(new ScriptRef(scriptType, identifier));
+            instances.put(identifier, instance);
         }
 
         CompilationResult compilationResult = compileScript(code);
