@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.mcp.tool;
 import com.google.gson.*;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.scripting.compiler.CompilationParameters;
@@ -89,7 +90,7 @@ public class ListScriptTypesTool implements McpTool {
     public JsonObject invoke(JsonElement arguments) {
         JsonArray result = new JsonArray();
         for (ScriptType type : ScriptWorkspace.INSTANCE.getSupportedTypes()) {
-            CompilationParameters compilationParameters = type.createParameters();
+            CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(type);
             JsonObject item = new JsonObject();
             item.addProperty("type", type.name());
             item.addProperty("module_name", type.getModuleName());

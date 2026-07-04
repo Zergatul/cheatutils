@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.ModLoaderBridge;
 import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
 import com.zergatul.cheatutils.utils.ModMetadata;
 import com.zergatul.cheatutils.utils.ResourceHelper;
+import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.type.*;
 import com.zergatul.scripting.type.operation.BinaryOperation;
 import com.zergatul.scripting.type.operation.IndexOperation;
@@ -40,13 +41,14 @@ public class ApiDocsGenerator {
         lines.add("");
         lines.add("// --- Script Types ---");
         for (ScriptType type : ScriptType.values()) {
+            CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(type);
             lines.add("");
             lines.add("/*");
             lines.add(
                     String.format(
                             "* module : %s / signature : %s / allowed ApiType's : [%s]",
                             type.getModuleName(),
-                            SFunctionalInterface.from(type.createParameters().getFunctionalInterface()),
+                            SFunctionalInterface.from(compilationParameters.getFunctionalInterface()),
                             String.join(", ", Arrays.stream(type.getApis()).map(Enum::name).toList())));
 
             if (includeScriptTypeDescriptions) {
@@ -75,7 +77,7 @@ public class ApiDocsGenerator {
 
         lines.add("");
         lines.add("// --- Custom Types ---");
-        for (Class<?> clazz : ScriptType.EVENTS.createParameters().getCustomTypes()) {
+        for (Class<?> clazz : ScriptCompilerRegistry.INSTANCE.getParameters(ScriptType.EVENTS).getCustomTypes()) {
             lines.add("");
             buildType(lines, SType.fromJavaType(clazz));
         }

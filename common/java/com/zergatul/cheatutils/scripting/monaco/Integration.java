@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.webui.WebHelper;
@@ -33,7 +34,7 @@ import java.util.regex.Pattern;
 public class Integration {
 
     public void attach(HttpServer server, String prefix) {
-        CompilationParametersResolver resolver = type -> ScriptType.valueOf(type).createParameters();
+        CompilationParametersResolver resolver = type -> ScriptCompilerRegistry.INSTANCE.getParameters(ScriptType.valueOf(type));
 
         DocumentationProvider documentationProvider = new DocumentationProvider();
         CompletionProviderFactory<Suggestion> completionProviderFactory = new CompletionProviderFactory<>(new MonacoSuggestionFactory(documentationProvider));

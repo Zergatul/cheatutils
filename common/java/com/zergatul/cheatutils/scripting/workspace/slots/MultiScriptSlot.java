@@ -1,10 +1,12 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.*;
 import com.zergatul.scripting.analysis.AnalysisResult;
 import com.zergatul.scripting.analysis.Analyzer;
+import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -88,8 +90,8 @@ public abstract class MultiScriptSlot extends ScriptSlot {
 
     @Override
     public ScriptCompileResult compile(String code) {
-        // TODO: optimize to not create parameters every time?
-        AnalysisResult result = new Analyzer().analyze(code, scriptType.createParameters());
+        CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(scriptType);
+        AnalysisResult result = new Analyzer().analyze(code, compilationParameters);
         return new ScriptCompileResult(result.binderOutput().diagnostics());
     }
 
