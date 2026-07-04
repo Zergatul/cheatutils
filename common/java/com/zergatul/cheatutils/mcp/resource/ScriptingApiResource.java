@@ -35,7 +35,7 @@ public class ScriptingApiResource implements McpResource {
 
     @Override
     public ResourceContents getContent() {
-        List<String> lines = ApiDocsGenerator.generateLines();
+        List<String> lines = ApiDocsGenerator.generateLines(false);
 
         StringBuilder builder = new StringBuilder();
         for (String line : lines) {

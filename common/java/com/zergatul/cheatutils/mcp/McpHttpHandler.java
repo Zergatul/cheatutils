@@ -36,7 +36,7 @@ public class McpHttpHandler implements HttpHandler {
         };
         this.resources = new McpResource[] {
                 new LanguageDocumentationResource(),
-                new LlmGuideResource(),
+                new AgentsGuideResource(),
                 new ScriptingApiResource(),
         };
         this.resourceTemplates = new McpResourceTemplate[] {

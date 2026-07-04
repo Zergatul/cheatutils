@@ -8,26 +8,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-public class LlmGuideResource implements McpResource {
+public class AgentsGuideResource implements McpResource {
 
     @Override
     public String getUri() {
-        return "cheatutils://docs/llm-guide";
+        return "cheatutils://docs/agents-guide";
     }
 
     @Override
     public String getName() {
-        return "llm_guide";
+        return "agents_guide";
     }
 
     @Override
     public String getTitle() {
-        return "LLM Guide";
+        return "Agents Guide";
     }
 
     @Override
     public String getDescription() {
-        return "General guidelines for LLMs about scripting";
+        return "General guidelines for coding agents about CheatUtils scripting";
     }
 
     @Override
@@ -37,7 +37,7 @@ public class LlmGuideResource implements McpResource {
 
     @Override
     public ResourceContents getContent() throws IOException {
-        InputStream stream = ResourceHelper.get("llm/cheatutils-llm-guide.md");
+        InputStream stream = ResourceHelper.get("llm/agents-guide.md");
         if (stream == null) {
             throw new IOException("Resource not found");
         }

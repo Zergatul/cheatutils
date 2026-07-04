@@ -20,6 +20,10 @@ import java.util.*;
 public class ApiDocsGenerator {
 
     public static List<String> generateLines() {
+        return generateLines(true);
+    }
+
+    public static List<String> generateLines(boolean includeScriptTypeDescriptions) {
         List<String> lines = new ArrayList<>();
         ModLoaderBridge bridge = ModLoaderBridgeInstance.get();
 
@@ -45,15 +49,17 @@ public class ApiDocsGenerator {
                             SFunctionalInterface.from(type.createParameters().getFunctionalInterface()),
                             String.join(", ", Arrays.stream(type.getApis()).map(Enum::name).toList())));
 
-            InputStream stream = ResourceHelper.get("llm/script-types/" + type);
-            if (stream != null) {
-                try (stream) {
-                    String content = IOUtils.toString(stream, StandardCharsets.UTF_8);
-                    for (String line : extractLines(content)) {
-                        lines.add("* " + line);
+            if (includeScriptTypeDescriptions) {
+                InputStream stream = ResourceHelper.get("llm/script-types/" + type);
+                if (stream != null) {
+                    try (stream) {
+                        String content = IOUtils.toString(stream, StandardCharsets.UTF_8);
+                        for (String line : extractLines(content)) {
+                            lines.add("* " + line);
+                        }
+                    } catch (IOException e) {
+                        // do nothing
                     }
-                } catch (IOException e) {
-                    // do nothing
                 }
             }
             lines.add("*/");

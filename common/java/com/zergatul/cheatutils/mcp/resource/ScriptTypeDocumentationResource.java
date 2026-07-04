@@ -33,12 +33,12 @@ public class ScriptTypeDocumentationResource implements McpResourceTemplate {
 
     @Override
     public String getDescription() {
-        return "Purpose, example use cases, tricks, and other information about particular script type.";
+        return "Purpose, execution model, rules, and examples for a particular script type.";
     }
 
     @Override
     public @Nullable String getMimeType() {
-        return "text/plain";
+        return "text/markdown";
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ScriptTypeDocumentationResource implements McpResourceTemplate {
         }
 
         String type = optional.get().get("type");
-        return ResourceHelper.has("llm/script-types/" + type);
+        return ResourceHelper.has("llm/script-types/" + type + ".md");
     }
 
     @Override
@@ -60,7 +60,7 @@ public class ScriptTypeDocumentationResource implements McpResourceTemplate {
         }
 
         String type = optional.get().get("type");
-        InputStream stream = ResourceHelper.get("llm/script-types/" + type);
+        InputStream stream = ResourceHelper.get("llm/script-types/" + type + ".md");
         if (stream == null) {
             throw new IllegalStateException();
         }
