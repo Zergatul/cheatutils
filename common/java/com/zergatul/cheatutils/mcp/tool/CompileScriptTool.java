@@ -19,10 +19,11 @@ public class CompileScriptTool implements McpTool {
                 "properties": {
                     "type": {
                         "type": "string",
-                        "description": "Script type"
+                        "description": "ScriptType enum name"
                     },
                     "code": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Script source to check"
                     }
                 },
                 "required": ["type", "code"],
@@ -40,7 +41,8 @@ public class CompileScriptTool implements McpTool {
                             "type": "object",
                             "properties": {
                                 "message": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Compiler diagnostic"
                                 },
                                 "range": {
                                     "type": "object",
@@ -67,7 +69,8 @@ public class CompileScriptTool implements McpTool {
                         }
                     },
                     "ok": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "True when compilation succeeds"
                     }
                 },
                 "required": ["ok"],
@@ -87,7 +90,7 @@ public class CompileScriptTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Compiles script and returns diagnostics if any problems";
+        return "Compile script without saving.";
     }
 
     @Override

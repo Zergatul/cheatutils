@@ -19,11 +19,11 @@ public class GetScriptTool implements McpTool {
                 "properties": {
                     "type": {
                         "type": "string",
-                        "description": "Script type"
+                        "description": "ScriptType enum name"
                     },
                     "identifier": {
                         "type": "string",
-                        "description": "Script identifier"
+                        "description": "Required for multi-instance script types"
                     }
                 },
                 "required": ["type"],
@@ -36,7 +36,8 @@ public class GetScriptTool implements McpTool {
                 "type": "object",
                 "properties": {
                     "code": {
-                        "type": ["string", "null"]
+                        "type": ["string", "null"],
+                        "description": "Saved code, or null when no script exists"
                     }
                 },
                 "required": ["code"],
@@ -56,10 +57,7 @@ public class GetScriptTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return
-                "Returns detailed information about requested script. " +
-                "Normally it returns only compiled and saved scripts. " +
-                "Except when broken script was loaded on game start.";
+        return "Get saved script code. Does not return failed save attempts.";
     }
 
     @Override

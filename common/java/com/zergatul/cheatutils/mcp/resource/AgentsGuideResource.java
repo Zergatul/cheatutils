@@ -27,7 +27,7 @@ public class AgentsGuideResource implements McpResource {
 
     @Override
     public String getDescription() {
-        return "General guidelines for coding agents about CheatUtils scripting";
+        return "Agent workflow and scripting rules.";
     }
 
     @Override

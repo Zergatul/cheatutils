@@ -25,7 +25,7 @@ public class ScriptingApiResource implements McpResource {
 
     @Override
     public String getDescription() {
-        return "Auto-generated API reference. Contains list of available classes/methods/properties accessible for scripting.";
+        return "Generated API signatures and visibility annotations.";
     }
 
     @Override

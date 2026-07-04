@@ -30,12 +30,15 @@ public class ListScriptExamplesTool implements McpTool {
                     "items": {
                         "type": "array",
                         "items": {
+                            "type": "object",
                             "properties": {
                                 "uri": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Resource URI for the example source"
                                 },
                                 "description": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Summary extracted from the example header"
                                 }
                             },
                             "required": ["uri", "description"],
@@ -60,7 +63,7 @@ public class ListScriptExamplesTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Returns list of available example scripts MCP resources";
+        return "List example script resource URIs.";
     }
 
     @Override

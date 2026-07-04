@@ -22,11 +22,11 @@ public class GetLastAttemptedScriptTool implements McpTool {
                 "properties": {
                     "type": {
                         "type": "string",
-                        "description": "Script type"
+                        "description": "ScriptType enum name"
                     },
                     "identifier": {
                         "type": "string",
-                        "description": "Script identifier"
+                        "description": "Required for multi-instance script types"
                     }
                 },
                 "required": ["type"],
@@ -39,7 +39,8 @@ public class GetLastAttemptedScriptTool implements McpTool {
                 "type": "object",
                 "properties": {
                     "code": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Last code passed to save_script or the web UI"
                     },
                     "diagnostics": {
                         "type": "array",
@@ -47,7 +48,8 @@ public class GetLastAttemptedScriptTool implements McpTool {
                             "type": "object",
                             "properties": {
                                 "message": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Compiler diagnostic"
                                 },
                                 "range": {
                                     "type": "object",
@@ -75,11 +77,11 @@ public class GetLastAttemptedScriptTool implements McpTool {
                     },
                     "at": {
                         "type": "string",
-                        "description": "Time of last attempt"
+                        "description": "ISO time of last attempt"
                     },
                     "now": {
-                        "type": ["string"],
-                        "description": "Current time"
+                        "type": "string",
+                        "description": "Current ISO time"
                     }
                 },
                 "required": ["now"],
@@ -99,9 +101,7 @@ public class GetLastAttemptedScriptTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return
-                "Returns information about last attempt of saving script from web UI, or from MCP tools. " +
-                "Use it when user asks to fix the script, because scripts that didn't compile are not getting saved to config.";
+        return "Get last attempted script code and diagnostics, including failed saves.";
     }
 
     @Override

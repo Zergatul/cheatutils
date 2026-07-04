@@ -22,12 +22,12 @@ public class LanguageDocumentationResource implements McpResource {
 
     @Override
     public String getTitle() {
-        return "Scripting Language README";
+        return "Scripting Language";
     }
 
     @Override
     public String getDescription() {
-        return "Short information about language features";
+        return "Language syntax and semantics.";
     }
 
     @Override

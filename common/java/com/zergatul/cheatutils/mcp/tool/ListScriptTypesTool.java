@@ -29,21 +29,23 @@ public class ListScriptTypesTool implements McpTool {
                             "properties": {
                                 "type": {
                                     "type": "string",
-                                    "description": "Script type"
+                                    "description": "ScriptType enum name"
                                 },
                                 "module_name": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "UI module name"
                                 },
                                 "documentation_uri": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Read this before writing this script type"
                                 },
                                 "interface": {
                                     "type": "string",
-                                    "description": "Functional interface this script type is compiled into"
+                                    "description": "Script signature"
                                 },
                                 "api_types": {
                                     "type": "array",
-                                    "description": "List of API types this script type is allowed to call",
+                                    "description": "Allowed @ApiVisibility values",
                                     "items": {
                                         "type": "string"
                                     }
@@ -70,7 +72,7 @@ public class ListScriptTypesTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Returns list of all supported script types";
+        return "List supported script types and their documentation URIs.";
     }
 
     @Override

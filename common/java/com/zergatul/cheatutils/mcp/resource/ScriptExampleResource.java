@@ -33,7 +33,7 @@ public class ScriptExampleResource implements McpResourceTemplate {
 
     @Override
     public String getDescription() {
-        return "Source code of example script";
+        return "Example script source.";
     }
 
     @Override
@@ -43,7 +43,8 @@ public class ScriptExampleResource implements McpResourceTemplate {
 
     @Override
     public boolean hasResource(String uri) {
-        return ResourceHelper.has(uriToResourcePath(uri));
+        Optional<String> path = tryUriToResourcePath(uri);
+        return path.isPresent() && ResourceHelper.has(path.get());
     }
 
     @Override
@@ -60,18 +61,22 @@ public class ScriptExampleResource implements McpResourceTemplate {
     }
 
     private String uriToResourcePath(String uri) {
+        return tryUriToResourcePath(uri).orElseThrow(IllegalStateException::new);
+    }
+
+    private Optional<String> tryUriToResourcePath(String uri) {
         Optional<Map<String, String>> optional = template.match(uri);
         if (optional.isEmpty()) {
-            throw new IllegalStateException();
+            return Optional.empty();
         }
 
         Map<String, String> variables = optional.get();
         String directory = variables.get("directory");
         String file = variables.get("file");
         if (directory == null || file == null) {
-            throw new IllegalStateException();
+            return Optional.empty();
         }
 
-        return "llm/script-examples/" + directory + "/" + file + ".cs";
+        return Optional.of("llm/script-examples/" + directory + "/" + file + ".cs");
     }
 }

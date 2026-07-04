@@ -20,18 +20,19 @@ public class SaveScriptTool implements McpTool {
                         "properties": {
                             "type": {
                                 "type": "string",
-                                "description": "Script type"
+                                "description": "ScriptType enum name"
                             },
                             "identifier": {
                                 "type": "string",
-                                "description": "Script identifier"
+                                "description": "Required for multi-instance script types"
                             }
                         },
                         "required": ["type"],
                         "additionalProperties": false
                     },
                     "code": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Script source to compile and save"
                     }
                 },
                 "required": ["ref", "code"],
@@ -49,7 +50,8 @@ public class SaveScriptTool implements McpTool {
                             "type": "object",
                             "properties": {
                                 "message": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Compiler diagnostic"
                                 },
                                 "range": {
                                     "type": "object",
@@ -76,7 +78,8 @@ public class SaveScriptTool implements McpTool {
                         }
                     },
                     "ok": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "True when save succeeds"
                     }
                 },
                 "required": ["ok"],
@@ -96,7 +99,7 @@ public class SaveScriptTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Compiles and saves script, updating corresponding module live.";
+        return "Compile and save script. Applies live if successful.";
     }
 
     @Override

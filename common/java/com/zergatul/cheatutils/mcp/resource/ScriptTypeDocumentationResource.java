@@ -28,12 +28,12 @@ public class ScriptTypeDocumentationResource implements McpResourceTemplate {
 
     @Override
     public String getTitle() {
-        return "Script Type Documentation";
+        return "Script Type Docs";
     }
 
     @Override
     public String getDescription() {
-        return "Purpose, execution model, rules, and examples for a particular script type.";
+        return "Rules for one ScriptType enum name.";
     }
 
     @Override

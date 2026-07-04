@@ -30,11 +30,11 @@ public class ListScriptsTool implements McpTool {
                             "properties": {
                                 "type": {
                                     "type": "string",
-                                    "description": "Script type"
+                                    "description": "ScriptType enum name"
                                 },
                                 "identifier": {
                                     "type": "string",
-                                    "description": "Script identifier"
+                                    "description": "Present for multi-instance script types"
                                 }
                             },
                             "required": ["type"]
@@ -58,7 +58,7 @@ public class ListScriptsTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Returns list of all scripts";
+        return "List configured script slots.";
     }
 
     @Override
