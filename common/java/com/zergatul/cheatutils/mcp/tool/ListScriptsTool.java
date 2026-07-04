@@ -72,8 +72,8 @@ public class ListScriptsTool implements McpTool {
     }
 
     @Override
-    public JsonObject invoke(JsonElement arguments) throws IOException {
-        return new JsonObjectBuilder()
+    public McpToolCallResult invoke(JsonElement arguments) throws IOException {
+        JsonObject result = new JsonObjectBuilder()
                 .withProperty("items", new JsonArrayBuilder()
                         .withItems(ScriptWorkspace.INSTANCE.getAllInstances()
                                 .stream().map(instance -> {
@@ -86,5 +86,6 @@ public class ListScriptsTool implements McpTool {
                                 }))
                         .build())
                 .build();
+        return McpToolCallResult.success(result);
     }
 }

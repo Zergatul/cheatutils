@@ -111,12 +111,11 @@ public class GetCompletionsTool implements McpTool {
     }
 
     @Override
-    public JsonObject invoke(JsonElement arguments) throws IOException {
+    public McpToolCallResult invoke(JsonElement arguments) throws IOException {
         ScriptType scriptType = ScriptType.valueOf(arguments.getAsJsonObject().get("type").getAsString());
         String code = arguments.getAsJsonObject().get("code").getAsString();
         if (!code.contains(CURSOR)) {
-            // TODO
-            throw new IOException("Invalid code");
+            return McpToolCallResult.error("Invalid code: include exactly one <cursor> marker at the completion point.");
         }
 
         int line = -1, column = -1;
@@ -138,14 +137,15 @@ public class GetCompletionsTool implements McpTool {
         McpSuggestionFactory suggestionFactory = new McpSuggestionFactory();
         CompletionProviderFactory<McpSuggestion> completionProviderFactory = new CompletionProviderFactory<>(suggestionFactory);
         CompilationParameters parameters = ScriptCompilerRegistry.INSTANCE.getParameters(scriptType);
-        AnalysisResult result = new Analyzer().analyze(code, parameters);
-        List<McpSuggestion> suggestions = completionProviderFactory.getSuggestions(parameters, result.binderOutput(), line, column);
-        return new JsonObjectBuilder()
+        AnalysisResult analysisResult = new Analyzer().analyze(code, parameters);
+        List<McpSuggestion> suggestions = completionProviderFactory.getSuggestions(parameters, analysisResult.binderOutput(), line, column);
+        JsonObject result = new JsonObjectBuilder()
                 .withProperty("items", new JsonArrayBuilder()
                         .withItems(suggestions.stream()
                                 .filter(Objects::nonNull)
                                 .map(McpSuggestion::toJson))
                         .build())
                 .build();
+        return McpToolCallResult.success(result);
     }
 }

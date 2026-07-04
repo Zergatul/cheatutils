@@ -41,5 +41,5 @@ public interface McpTool extends McpItem {
      */
     JsonObject getOutputSchema();
 
-    JsonObject invoke(JsonElement arguments) throws IOException;
+    McpToolCallResult invoke(JsonElement arguments) throws IOException;
 }

@@ -115,15 +115,16 @@ public class GetLastAttemptedScriptTool implements McpTool {
     }
 
     @Override
-    public JsonObject invoke(JsonElement arguments) throws IOException {
+    public McpToolCallResult invoke(JsonElement arguments) throws IOException {
         ScriptRef ref = new Gson().fromJson(arguments, ScriptRef.class);
         ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
         ScriptDocument instance = descriptor.getInstance(ref.identifier());
-        return new JsonObjectBuilder()
+        JsonObject result = new JsonObjectBuilder()
                 .withOptionalProperty("code", instance.lastAttemptCode)
                 .withOptionalProperty("diagnostics", Serializer.serialize(instance.lastAttemptDiagnostics))
                 .withOptionalProperty("at", instance.lastAttemptAt != null ? instance.lastAttemptAt.toString() : null)
                 .withProperty("now", Instant.now().toString())
                 .build();
+        return McpToolCallResult.success(result);
     }
 }

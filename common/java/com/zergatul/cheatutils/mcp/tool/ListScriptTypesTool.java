@@ -87,8 +87,8 @@ public class ListScriptTypesTool implements McpTool {
     }
 
     @Override
-    public JsonObject invoke(JsonElement arguments) {
-        JsonArray result = new JsonArray();
+    public McpToolCallResult invoke(JsonElement arguments) {
+        JsonArray items = new JsonArray();
         for (ScriptType type : ScriptWorkspace.INSTANCE.getSupportedTypes()) {
             CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(type);
             JsonObject item = new JsonObject();
@@ -102,10 +102,12 @@ public class ListScriptTypesTool implements McpTool {
                 apiTypes.add(api.toString());
             }
             item.add("api_types", apiTypes);
-            result.add(item);
+            items.add(item);
         }
-        return new JsonObjectBuilder()
-                .withProperty("items", result)
+
+        JsonObject result = new JsonObjectBuilder()
+                .withProperty("items", items)
                 .build();
+        return McpToolCallResult.success(result);
     }
 }

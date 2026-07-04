@@ -71,12 +71,13 @@ public class GetScriptTool implements McpTool {
     }
 
     @Override
-    public JsonObject invoke(JsonElement arguments) throws IOException {
+    public McpToolCallResult invoke(JsonElement arguments) throws IOException {
         ScriptRef ref = new Gson().fromJson(arguments, ScriptRef.class);
         ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
         String code = descriptor.getInstance(ref.identifier()).code;
-        return new JsonObjectBuilder()
+        JsonObject result = new JsonObjectBuilder()
                 .withProperty("code", code)
                 .build();
+        return McpToolCallResult.success(result);
     }
 }

@@ -104,7 +104,7 @@ public class CompileScriptTool implements McpTool {
     }
 
     @Override
-    public JsonObject invoke(JsonElement arguments) throws IOException {
+    public McpToolCallResult invoke(JsonElement arguments) throws IOException {
         ScriptType type = ScriptType.valueOf(arguments.getAsJsonObject().getAsJsonPrimitive("type").getAsString());
         String code = arguments.getAsJsonObject().getAsJsonPrimitive("code").getAsString();
 
@@ -117,6 +117,6 @@ public class CompileScriptTool implements McpTool {
             output.add("diagnostics", Serializer.serialize(result.getDiagnostics()));
         }
 
-        return output;
+        return McpToolCallResult.success(output);
     }
 }

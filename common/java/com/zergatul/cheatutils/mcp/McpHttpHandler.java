@@ -181,11 +181,19 @@ public class McpHttpHandler implements HttpHandler {
             return;
         }
 
-        JsonObject result = tool.invoke(request.arguments());
-        String resultJson = new String(serializeJson(result), StandardCharsets.UTF_8);
+        McpToolCallResult result = tool.invoke(request.arguments());
+        if (result.isError()) {
+            sendJsonRpcResult(exchange, rpcRequest.id, new CallToolResult(
+                    new ContentBlock[] { new TextContent(result.getErrorMessage()) },
+                    null,
+                    true));
+            return;
+        }
+
+        String resultJson = new String(serializeJson(result.getStructuredContent()), StandardCharsets.UTF_8);
         sendJsonRpcResult(exchange, rpcRequest.id, new CallToolResult(
                 new ContentBlock[] { new TextContent(resultJson) },
-                result,
+                result.getStructuredContent(),
                 null));
     }
 

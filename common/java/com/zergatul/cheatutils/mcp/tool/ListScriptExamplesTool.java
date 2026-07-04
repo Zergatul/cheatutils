@@ -77,7 +77,7 @@ public class ListScriptExamplesTool implements McpTool {
     }
 
     @Override
-    public JsonObject invoke(JsonElement arguments) throws IOException {
+    public McpToolCallResult invoke(JsonElement arguments) throws IOException {
         JsonArray items = new JsonArray();
         for (String resource : getExampleResources()) {
             if (resource.isEmpty()) {
@@ -90,9 +90,10 @@ public class ListScriptExamplesTool implements McpTool {
                     .build());
         }
 
-        return new JsonObjectBuilder()
+        JsonObject result = new JsonObjectBuilder()
                 .withProperty("items", items)
                 .build();
+        return McpToolCallResult.success(result);
     }
 
     private List<String> getExampleResources() throws IOException {

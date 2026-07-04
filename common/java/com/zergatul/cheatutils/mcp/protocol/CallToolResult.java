@@ -5,6 +5,6 @@ import org.jspecify.annotations.Nullable;
 
 public record CallToolResult(
         ContentBlock[] content,
-        JsonObject structuredContent,
+        @Nullable JsonObject structuredContent,
         @Nullable Boolean isError
 ) {}
