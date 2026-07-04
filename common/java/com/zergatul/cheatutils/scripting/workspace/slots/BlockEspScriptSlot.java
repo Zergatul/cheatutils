@@ -29,7 +29,7 @@ public class BlockEspScriptSlot extends MultiScriptSlot {
 
     @Override
     protected CompilationResult compileScript(String code) {
-        return ScriptsController.instance.compileBlockEsp(code);
+        return ScriptsController.instance.compileEntityEsp(code);
     }
 
     @Override
