@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.scripting.compiler.CompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +22,7 @@ public class EventsScriptingScriptSlot extends SingleScriptSlot {
 
     @Override
     protected CompilationResult compileScript(String code) {
-        return ScriptsController.instance.compileEvents(code);
+        return ScriptCompilerRegistry.INSTANCE.compile(ScriptType.EVENTS, code);
     }
 
     @Override

@@ -7,10 +7,10 @@ import com.zergatul.cheatutils.common.IKeyBindingRegistry;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingScriptsConfig;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
-import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.KeyBindingScriptSlot;
@@ -90,7 +90,7 @@ public class KeyBindings implements Module {
         validateNewScript(name, code);
 
         if (!addIfCompilationFails) {
-            CompilationResult result = ScriptsController.instance.compileKeys(code);
+            CompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
             if (result.getProgram() == null) {
                 assert result.getDiagnostics() != null;
                 return result.getDiagnostics();
@@ -130,7 +130,7 @@ public class KeyBindings implements Module {
             return List.of();
         }
 
-        CompilationResult compilationResult = ScriptsController.instance.compileKeys(code);
+        CompilationResult compilationResult = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
         if (compilationResult.getProgram() == null) {
             slot().save(oldName, code);
 

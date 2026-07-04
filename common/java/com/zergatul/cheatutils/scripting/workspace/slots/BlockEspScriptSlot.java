@@ -4,9 +4,9 @@ import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.BlocksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.cheatutils.modules.esp.BlockEsp;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.resources.Identifier;
@@ -36,7 +36,7 @@ public class BlockEspScriptSlot extends MultiScriptSlot {
 
     @Override
     protected CompilationResult compileScript(String code) {
-        return ScriptsController.instance.compileBlockEsp(code);
+        return ScriptCompilerRegistry.INSTANCE.compile(ScriptType.BLOCK_ESP, code);
     }
 
     @Override

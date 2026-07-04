@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.configs.*;
-import com.zergatul.cheatutils.controllers.ScriptsController;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.scripting.compiler.CompilationResult;
@@ -31,7 +31,7 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
 
     @Override
     protected CompilationResult compileScript(String code) {
-        return ScriptsController.instance.compileEntityEsp(code);
+        return ScriptCompilerRegistry.INSTANCE.compile(ScriptType.ENTITY_ESP, code);
     }
 
     @Override
