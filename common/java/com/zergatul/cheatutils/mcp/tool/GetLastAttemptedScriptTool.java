@@ -120,7 +120,7 @@ public class GetLastAttemptedScriptTool implements McpTool {
         ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
         ScriptDocument instance = descriptor.getInstance(ref.identifier());
         return new JsonObjectBuilder()
-                .withOptionalProperty("code", instance.code)
+                .withOptionalProperty("code", instance.lastAttemptCode)
                 .withOptionalProperty("diagnostics", Serializer.serialize(instance.lastAttemptDiagnostics))
                 .withOptionalProperty("at", instance.lastAttemptAt != null ? instance.lastAttemptAt.toString() : null)
                 .withProperty("now", Instant.now().toString())
