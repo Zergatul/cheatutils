@@ -103,7 +103,7 @@ public class Modules {
     }
 
     public static void registerKeyBindings() {
-        register(KeyBindingsController.instance);
+        register(KeyBindings.instance);
     }
 
     public static void lateRegister() {

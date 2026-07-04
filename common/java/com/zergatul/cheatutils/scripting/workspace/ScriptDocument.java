@@ -1,11 +1,13 @@
 package com.zergatul.cheatutils.scripting.workspace;
 
 import com.zergatul.scripting.DiagnosticMessage;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.List;
 
+@NullMarked
 public class ScriptDocument {
 
     public final ScriptRef ref;

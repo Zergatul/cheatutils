@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -7,7 +9,7 @@ public class KeyBindingsConfig implements Sanitizable, ModuleStateProvider {
 
     public static final int KeysCount = 30;
 
-    public String[] bindings = new String[KeysCount];
+    public @Nullable String[] bindings = new String[KeysCount];
 
     @Override
     public void sanitize() {

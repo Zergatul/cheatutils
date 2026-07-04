@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
+import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptType;
@@ -143,22 +144,22 @@ public class ConfigStore {
         WorldMarkers.instance.onFontChange();
         StatusOverlay.instance.onFontChange();
 
-        ScriptsController.instance.clear();
+        KeyBindings.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                ScriptsController.instance.add(toggleEspName, "esp.toggle();", false);
-                //KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
-                KeyBindingsController.instance.assign(0, toggleEspName);
+                KeyBindings.instance.add(toggleEspName, "esp.toggle();", false);
+                //KeyBindings.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
+                KeyBindings.instance.assign(0, toggleEspName);
             } catch (Throwable e) {
                 logger.error("Toggle ESP script initialization failed", e);
             }
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                ScriptsController.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
-                KeyBindingsController.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
-                KeyBindingsController.instance.assign(1, toggleFreeCamName);
+                KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
+                KeyBindings.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
+                KeyBindings.instance.assign(1, toggleFreeCamName);
             } catch (Throwable e) {
                 logger.error("Toggle FreeCam script initialization failed", e);
             }
@@ -167,7 +168,7 @@ public class ConfigStore {
             config.keyBindingScriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    ScriptsController.instance.add(s.name, s.code, true);
+                    KeyBindings.instance.add(s.name, s.code, true);
                 } catch (Throwable e) {
                     logger.error("KeyBinding script '{}' initialization failed", s.name, e);
                 }
@@ -176,7 +177,7 @@ public class ConfigStore {
             String[] bindings = config.keyBindingsConfig.bindings;
             for (int i = 0; i < KeyBindingsConfig.KeysCount; i++) {
                 if (bindings[i] != null) {
-                    KeyBindingsController.instance.assign(i, bindings[i]);
+                    KeyBindings.instance.assign(i, bindings[i]);
                 }
             }
         }

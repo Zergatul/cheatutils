@@ -17,6 +17,7 @@ public class ScriptWorkspace {
     private final Map<ScriptType, ScriptSlot> slots = new Object2ObjectArrayMap<>();
 
     private ScriptWorkspace() {
+        slots.put(ScriptType.KEYBINDING, new KeyBindingScriptSlot());
         slots.put(ScriptType.OVERLAY, new StatusOverlayScriptSlot());
         slots.put(ScriptType.BLOCK_AUTOMATION, new BlockAutomationScriptSlot());
         slots.put(ScriptType.VILLAGER_ROLLER, new VillagerRollerScriptSlot());
