@@ -31,6 +31,12 @@ public class ListScriptTypesTool implements McpTool {
                                     "type": "string",
                                     "description": "Script type"
                                 },
+                                "module_name": {
+                                    "type": "string"
+                                },
+                                "documentation_uri": {
+                                    "type": "string"
+                                },
                                 "interface": {
                                     "type": "string",
                                     "description": "Functional interface this script type is compiled into"
@@ -43,7 +49,7 @@ public class ListScriptTypesTool implements McpTool {
                                     }
                                 }
                             },
-                            "required": ["type", "interface", "api_types"]
+                            "required": ["type", "module_name", "documentation_uri", "interface", "api_types"]
                         }
                     }
                 },
@@ -84,6 +90,8 @@ public class ListScriptTypesTool implements McpTool {
             CompilationParameters compilationParameters = type.createParameters();
             JsonObject item = new JsonObject();
             item.addProperty("type", type.name());
+            item.addProperty("module_name", type.getModuleName());
+            item.addProperty("documentation_uri", "cheatutils://docs/script-type/" + type.name());
             SType funcInterface = SType.fromJavaType(compilationParameters.getFunctionalInterface());
             item.addProperty("interface", funcInterface.toString());
             JsonArray apiTypes = new JsonArray();

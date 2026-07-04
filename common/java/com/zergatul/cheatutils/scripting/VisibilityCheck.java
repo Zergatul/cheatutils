@@ -12,11 +12,11 @@ public class VisibilityCheck {
             return false;
         }
 
-        boolean isAdvApi =
+        boolean isAdvancedApi =
                 method.getDeclaringClass().isAnnotationPresent(AdvancedApi.class) ||
                 method.isAnnotationPresent(AdvancedApi.class);
-        if (isAdvApi) {
-            return ConfigStore.instance.getConfig().coreConfig.advancedScripting;
+        if (isAdvancedApi && !ConfigStore.instance.getConfig().coreConfig.advancedScripting) {
+            return false;
         }
 
         ApiVisibility visibility = method.getAnnotation(ApiVisibility.class);
