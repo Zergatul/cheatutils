@@ -13,6 +13,6 @@ public class AreaMineConfig extends ModuleConfig implements Sanitizable {
 
     @Override
     public void sanitize() {
-        return;
+        radius = MathUtils.clamp(radius, 1, 20);
     }
 }
