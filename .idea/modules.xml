@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/annotation-processor.main.iml" filepath="$PROJECT_DIR$/.idea/modules/annotation-processor.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/annotation-processor.test.iml" filepath="$PROJECT_DIR$/.idea/modules/annotation-processor.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/cheatutils.iml" filepath="$PROJECT_DIR$/.idea/cheatutils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fabric.main.iml" filepath="$PROJECT_DIR$/.idea/modules/fabric.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fabric.test.iml" filepath="$PROJECT_DIR$/.idea/modules/fabric.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/neoforge.main.iml" filepath="$PROJECT_DIR$/.idea/modules/neoforge.main.iml" />
+    </modules>
+  </component>
+</project>
