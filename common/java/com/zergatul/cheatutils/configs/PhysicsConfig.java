@@ -33,11 +33,11 @@ public class PhysicsConfig extends ModuleConfig implements Sanitizable {
 
     @Override
     public void sanitize() {
-//        if (playerFriction < 0) playerFriction = 0;
-//        if (boatFriction < 0) boatFriction = 0;
-//        if (lookSpeed < 0) lookSpeed = 0;
-//        if (lookSpeed > 2) lookSpeed = 2;
-//        if (verticalSpeed < 0) verticalSpeed = 0;
-//        if (verticalSpeed > 1) verticalSpeed = 1;
+        if (playerFriction < 0) playerFriction = 0;
+        if (boatFriction < 0) boatFriction = 0;
+        if (lookSpeed < 0) lookSpeed = 0;
+        if (lookSpeed > 2) lookSpeed = 2;
+        if (verticalSpeed < 0) verticalSpeed = 0;
+        if (verticalSpeed > 1) verticalSpeed = 1;
     }
 }
