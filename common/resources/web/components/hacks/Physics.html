@@ -1,0 +1,69 @@
+<div class="module-main" v-if="config">
+  <div class="description">
+    Modify physics behavior for player and boat movement.
+  </div>
+
+  <div class="module-sections">
+    <!-- === FRICTION === -->
+    <fieldset>
+      <legend>
+        <switch-checkbox v-model="config.overrideBoatFriction" @change="update()">Override Boat Friction</switch-checkbox>
+      </legend>
+      <div class="flex-row">
+        <span class="field-description">Friction:</span>
+        <input type="text" class="w4" v-model="config.boatFriction" @change="update()">
+      </div>
+      <div class="section-description">
+        Regular blocks = 0.6, Packed ice = 0.98.
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>
+        <switch-checkbox v-model="config.overridePlayerFriction" @change="update()">Override Player Friction</switch-checkbox>
+      </legend>
+      <div class="flex-row">
+        <span class="field-description">Friction:</span>
+        <input type="text" class="w4" v-model="config.playerFriction" @change="update()">
+      </div>
+    </fieldset>
+
+    <!-- === BOAT DIRECTION === -->
+    <fieldset>
+      <legend>
+        <switch-checkbox v-model="config.followLookDirection" @change="update()">Boat Follows Look Direction</switch-checkbox>
+      </legend>
+
+      <!-- SELECT: Driver vs Passenger -->
+      <div class="flex-row" v-if="config.followLookDirection">
+        <span class="field-description">Controlled by:</span>
+        <select class="w4" v-model="config.passengerControls" @change="update()">
+          <option :value="false">Driver</option>
+          <option :value="true">Passenger</option>
+        </select>
+      </div>
+
+      <div class="flex-row">
+        <span class="field-description">Speed:</span>
+        <input type="text" class="w4" v-model="config.lookSpeed" @change="update()">
+      </div>
+      <div class="section-description">
+        Boat moves in the direction someone is looking. Toggle between driver or passenger.
+      </div>
+    </fieldset>
+
+    <!-- === VERTICAL MODE === -->
+    <fieldset>
+      <legend>
+        <switch-checkbox v-model="config.verticalMode" @change="update()">Bubble Column Mode (Vertical)</switch-checkbox>
+      </legend>
+      <div class="flex-row">
+        <span class="field-description">Vertical Speed:</span>
+        <input type="text" class="w4" v-model="config.verticalSpeed" @change="update()">
+      </div>
+      <div class="section-description">
+        Look up to rise, look down to sink. Like a soul sand bubble column!
+      </div>
+    </fieldset>
+  </div>
+</div>

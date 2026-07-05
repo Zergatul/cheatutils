@@ -15,8 +15,8 @@ public class BoatHackConfig implements Sanitizable, ModuleStateProvider {
 
     @Override
     public void sanitize() {
-        horizontalFlySpeed = MathUtils.clamp(horizontalFlySpeed, 0, 100);
-        verticalFlySpeed = MathUtils.clamp(verticalFlySpeed, 0, 100);
+        horizontalFlySpeed = horizontalFlySpeed;
+        verticalFlySpeed = verticalFlySpeed;
     }
 
     @Override

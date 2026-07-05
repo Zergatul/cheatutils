@@ -81,8 +81,10 @@ public class Modules {
         register(LogoutSpots.instance);
         register(AutoTool.instance);
         register(AirPlace.instance);
+//        register(Physics.instance);
         register(ContainerSummary.instance);
         register(CrystalAura.instance);
+
 
         register(TickEndExecutor.instance);
 

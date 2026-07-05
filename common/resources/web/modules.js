@@ -391,6 +391,14 @@ module({
     tags: ['kill', 'crystal', 'aura', 'auto', 'attack', 'blow', 'explode']
 });
 
+module({
+    group: 'hacks',
+    name: 'Physics',
+    component: 'Physics',
+    path: 'physics',
+    tags: ['physics', 'friction', 'player', 'boat', 'movement']
+});
+
 // Visuals Modules ============================
 
 module({

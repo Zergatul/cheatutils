@@ -40,7 +40,8 @@
     "common.schematics.MixinRenderRegionCache",
     "common.schematics.MixinRenderSectionRegion",
     "common.schematics.MixinSectionOcclusionGraph",
-
+    "common.MixinPhysicsPlayer",
+    "common.MixinPhysicsBoat",
     "common.MixinAbstractBoat",
     "common.MixinAbstractContainerMenu",
     "common.MixinAbstractContainerScreen",

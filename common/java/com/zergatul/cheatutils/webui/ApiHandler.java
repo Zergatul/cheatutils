@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import com.zergatul.cheatutils.configs.PhysicsConfig;
 
 public class ApiHandler implements HttpHandler {
 
@@ -982,6 +983,18 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ParkourAssistConfig config) {
                 ConfigStore.instance.getConfig().parkourAssistConfig = config;
+            }
+        });
+
+        apis.add(new SimpleConfigApi<>("physics", PhysicsConfig.class) {
+            @Override
+            protected PhysicsConfig getConfig() {
+                return ConfigStore.instance.getConfig().physicsConfig;
+            }
+
+            @Override
+            protected void setConfig(PhysicsConfig config) {
+                ConfigStore.instance.getConfig().physicsConfig = config;
             }
         });
 
