@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilationResult;
 import com.zergatul.scripting.compiler.Compiler;
+import com.zergatul.scripting.compiler.ExpressionCompilationResult;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -25,6 +26,10 @@ public class ScriptCompilerRegistry {
 
     public CompilationResult compile(ScriptType scriptType, String code) {
         return compilers[scriptType.ordinal()].compile(code);
+    }
+
+    public ExpressionCompilationResult compileAsExpression(ScriptType scriptType, String code) {
+        return compilers[scriptType.ordinal()].compileAsExpression(code);
     }
 
     private void init() {

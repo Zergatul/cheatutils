@@ -21,6 +21,11 @@ public class JsonObjectBuilder {
         return this;
     }
 
+    public JsonObjectBuilder withProperty(String property, boolean value) {
+        object.add(property, new JsonPrimitive(value));
+        return this;
+    }
+
     public JsonObjectBuilder withProperty(String property, @Nullable String value) {
         if (value == null) {
             return withProperty(property, JsonNull.INSTANCE);

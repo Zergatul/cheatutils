@@ -17,5 +17,15 @@
                 Without this agent can only inspect compilation errors, read your scripts, compile its own scripts, but don't apply them or execute.
             </div>
         </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
+                <switch-checkbox v-model="config.allowEvaluatingExpressions" @change="update()">Allow Evaluating Expressions</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Enables agent to evaluate arbitrary scripting expressions on the main thread.
+                Expressions can mutate game or mod state and are not time-limited.
+            </div>
+        </fieldset>
     </div>
 </div>
