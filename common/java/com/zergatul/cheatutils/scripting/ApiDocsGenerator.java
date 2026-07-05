@@ -41,6 +41,10 @@ public class ApiDocsGenerator {
         lines.add("");
         lines.add("// --- Script Types ---");
         for (ScriptType type : ScriptType.values()) {
+            if (type == ScriptType.EXPR_EVAL) {
+                continue;
+            }
+
             CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(type);
             lines.add("");
             lines.add("/*");

@@ -19,10 +19,14 @@ import com.zergatul.scripting.compiler.CompilationParametersBuilder;
 import com.zergatul.scripting.compiler.JavaInteropPolicy;
 import com.zergatul.scripting.type.SType;
 import com.zergatul.scripting.type.SVoidType;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 
+@NullMarked
 public enum ScriptType {
 
     KEYBINDING(
@@ -84,21 +88,27 @@ public enum ScriptType {
             new Builder()
                     .setInterface(HitboxSizeFunction.class)
                     .setScriptClassName("HitboxSizeScript")
-                    .setModuleName("Hitbox Size"));
+                    .setModuleName("Hitbox Size")),
+
+    EXPR_EVAL(
+            new Builder()
+                    .setApis(ApiType.ACTION, ApiType.UPDATE)
+                    .setScriptClassName("EvalScript")
+                    .setModuleName("Eval"));
 
     private final ApiType[] apis;
     private final Class<?> funcInterface;
-    private final SType asyncReturnType;
+    private final @Nullable SType asyncReturnType;
     private final String scriptClassName;
     private final String moduleName;
 
     ScriptType(Builder builder) {
         builder.build();
         this.apis = builder.apis;
-        this.funcInterface = builder.funcInterface;
+        this.funcInterface = Objects.requireNonNull(builder.funcInterface);
         this.asyncReturnType = builder.asyncReturnType;
-        this.scriptClassName = builder.scriptClassName;
-        this.moduleName = builder.moduleName;
+        this.scriptClassName = Objects.requireNonNull(builder.scriptClassName);
+        this.moduleName = Objects.requireNonNull(builder.moduleName);
     }
 
     public ApiType[] getApis() {
@@ -201,15 +211,16 @@ public enum ScriptType {
     private static class Builder {
 
         private ApiType[] apis = new ApiType[0];
-        private Class<?> funcInterface;
-        private SType asyncReturnType;
-        private String scriptClassName;
-        private String moduleName;
+        private @Nullable Class<?> funcInterface;
+        private @Nullable SType asyncReturnType;
+        private @Nullable String scriptClassName;
+        private @Nullable String moduleName;
+
+        public Builder() {
+            this.funcInterface = Runnable.class;
+        }
 
         public void build() {
-            if (apis == null) {
-                throw new IllegalStateException();
-            }
             if (funcInterface == null) {
                 throw new IllegalStateException();
             }
@@ -222,7 +233,7 @@ public enum ScriptType {
         }
 
         public Builder setApis(ApiType... apis) {
-            this.apis = apis;
+            this.apis = Objects.requireNonNull(apis);
             return this;
         }
 
