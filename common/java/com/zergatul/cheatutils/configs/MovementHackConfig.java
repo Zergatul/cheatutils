@@ -19,8 +19,8 @@ public class MovementHackConfig implements Sanitizable, ModuleStateProvider {
     }
 
     public void sanitize() {
-        inputVectorFactor = inputVectorFactor;
-        jumpHeightFactor = jumpHeightFactor;
+        inputVectorFactor = MathUtils.clamp(inputVectorFactor, 0.01, 1000);
+        jumpHeightFactor = MathUtils.clamp(jumpHeightFactor, 0.01, 1000);
     }
 
     @Override
