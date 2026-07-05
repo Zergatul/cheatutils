@@ -27,5 +27,14 @@
                 Expressions can mutate game or mod state and are not time-limited.
             </div>
         </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
+                <switch-checkbox v-model="config.allowScreenshots" @change="update()">Allow Screenshots</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Enables agent to take screenshots and view current state of the game.
+            </div>
+        </fieldset>
     </div>
 </div>

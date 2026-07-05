@@ -39,7 +39,7 @@ public interface McpTool extends McpItem {
      * An optional JSON Schema object defining the structure of the tool’s output returned
      * in the structuredContent field of a CallToolResult.
      */
-    JsonObject getOutputSchema();
+    @Nullable JsonObject getOutputSchema();
 
     McpToolCallResult invoke(JsonElement arguments) throws IOException;
 }

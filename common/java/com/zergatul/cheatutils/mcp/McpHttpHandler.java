@@ -38,6 +38,7 @@ public class McpHttpHandler implements HttpHandler {
                 new GetLastAttemptedScriptTool(),
                 new GetCompletionsTool(),
                 new EvaluateExpressionTool(),
+                new ScreenshotTool(),
         };
         this.resources = new McpResource[] {
                 new LanguageDocumentationResource(),
@@ -191,10 +192,18 @@ public class McpHttpHandler implements HttpHandler {
             return;
         }
 
-        String resultJson = new String(serializeJson(result.getStructuredContent()), StandardCharsets.UTF_8);
+        if (result.isStructured()) {
+            String resultJson = new String(serializeJson(result.getStructuredContent()), StandardCharsets.UTF_8);
+            sendJsonRpcResult(exchange, rpcRequest.id, new CallToolResult(
+                    new ContentBlock[] { new TextContent(resultJson) },
+                    result.getStructuredContent(),
+                    null));
+            return;
+        }
+
         sendJsonRpcResult(exchange, rpcRequest.id, new CallToolResult(
-                new ContentBlock[] { new TextContent(resultJson) },
-                result.getStructuredContent(),
+                new ContentBlock[] { result.getContent() },
+                null,
                 null));
     }
 
