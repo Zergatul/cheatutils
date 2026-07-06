@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface MouseHandlerAccessor {
 
     @Invoker("onMove")
-    void onMove_CU(long windowHandle, double x, double y);
+    void onMove_CU(long handle, double x, double y);
 
     @Invoker("onButton")
-    void onButton_CU(long windowHandle, MouseButtonInfo mouseButtonInfo, int i /*int button, int action, int mods*/);
+    void onButton_CU(long handle, MouseButtonInfo mouseButtonInfo, int action);
 }

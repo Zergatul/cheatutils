@@ -21,6 +21,7 @@
     "common.accessors.HudAccessor",
     "common.accessors.HeightmapAccessor",
     "common.accessors.InputConstantsKeyAccessor",
+    "common.accessors.KeyboardHandlerAccessor",
     "common.accessors.KeyMappingAccessor",
     "common.accessors.LivingEntityAccessor",
     "common.accessors.LocalPlayerAccessor",

@@ -38,7 +38,9 @@ public class ScreenshotTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Take screenshot to verify game state or other purposes";
+        return
+                "Captures the current Minecraft client screen and returns it as a PNG image. " +
+                "Use only when visual inspection of game or UI state is useful and the agent can inspect returned images.";
     }
 
     @Override
