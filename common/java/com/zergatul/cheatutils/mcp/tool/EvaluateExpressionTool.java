@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.mcp.tool;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.McpServerConfig;
 import com.zergatul.cheatutils.mcp.McpItemStatus;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
@@ -13,6 +12,7 @@ import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.scripting.compiler.ExpressionCompilationResult;
 import com.zergatul.scripting.runtime.ExpressionEvaluationResult;
 import com.zergatul.scripting.runtime.ExpressionEvaluator;
+import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -191,7 +191,7 @@ public class EvaluateExpressionTool implements McpTool {
         CompletableFuture<ExpressionEvaluationResult> future = new CompletableFuture<>();
 
         try {
-            TickEndExecutor.instance.execute(() -> {
+            Minecraft.getInstance().execute(() -> {
                 try {
                     future.complete(program.evaluate());
                 } catch (Throwable e) {

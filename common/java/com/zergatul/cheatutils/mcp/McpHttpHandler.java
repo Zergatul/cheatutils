@@ -403,6 +403,7 @@ public class McpHttpHandler implements HttpHandler {
             try (OutputStreamWriter byteWriter = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
                 try (JsonWriter jsonWriter = new JsonWriter(byteWriter)) {
                     Streams.write(element, jsonWriter);
+                    jsonWriter.flush();
                     return stream.toByteArray();
                 }
             }

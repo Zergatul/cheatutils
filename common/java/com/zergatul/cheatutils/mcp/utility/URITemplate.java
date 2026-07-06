@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mcp.utility;
 
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class URITemplate {
 
     public Optional<Map<String, String>> match(String uri) {
         int position = 0;
-        Map<String, String> variables = new Reference2ReferenceArrayMap<>();
+        Map<String, String> variables = new Object2ObjectArrayMap<>();
         for (TemplateChunk chunk : chunks) {
             AdvanceResult result = chunk.tryAdvance(uri, position);
             if (!result.success) {
@@ -147,7 +147,8 @@ public class URITemplate {
                         'a' <= current && current <= 'z' ||
                         'A' <= current && current <= 'Z' ||
                         '0' <= current && current <= '9' ||
-                        current == '_';
+                        current == '_' ||
+                        current == '-';
                 if (isOk) {
                     value.append(current);
                     offset++;
