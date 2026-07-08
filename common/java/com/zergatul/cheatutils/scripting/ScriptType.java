@@ -94,7 +94,14 @@ public enum ScriptType {
             new Builder()
                     .setApis(ApiType.ACTION, ApiType.UPDATE)
                     .setScriptClassName("EvalScript")
-                    .setModuleName("Eval"));
+                    .setModuleName("Eval")),
+
+    EXEC_CODE(
+            new Builder()
+                    .setApis(ApiType.ACTION, ApiType.UPDATE, ApiType.EXEC_LOGGING)
+                    .setInterface(Runnable.class)
+                    .setScriptClassName("ExecCode")
+                    .setModuleName("Exec"));
 
     private final ApiType[] apis;
     private final Class<?> funcInterface;

@@ -38,6 +38,7 @@ public class McpHttpHandler implements HttpHandler {
                 new GetLastAttemptedScriptTool(),
                 new GetCompletionsTool(),
                 new EvaluateExpressionTool(),
+                new ExecCodeTool(),
                 new ScreenshotTool(),
         };
         this.resources = new McpResource[] {

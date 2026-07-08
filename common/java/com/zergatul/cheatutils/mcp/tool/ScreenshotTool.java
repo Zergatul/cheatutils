@@ -84,7 +84,10 @@ public class ScreenshotTool implements McpTool {
             byte[] image = imageFuture.get();
             String base64 = Base64.getEncoder().encodeToString(image);
             return McpToolCallResult.success(new ImageContent(base64, "image/png"));
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return McpToolCallResult.error("Interrupted while waiting for screenshot.");
+        } catch (ExecutionException e) {
             return McpToolCallResult.error(e.getMessage());
         }
     }

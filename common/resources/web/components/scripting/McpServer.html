@@ -30,6 +30,16 @@
 
         <fieldset class="flex-column">
             <legend>
+                <switch-checkbox v-model="config.allowExecutingCode" @change="update()">Allow Executing Code</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Enables agent to run arbitrary scripting code on the main thread and return records through executionLog.write().
+                Code can mutate game or mod state and is not time-limited.
+            </div>
+        </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
                 <switch-checkbox v-model="config.allowScreenshots" @change="update()">Allow Screenshots</switch-checkbox>
             </legend>
             <div class="section-description">
