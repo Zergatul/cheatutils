@@ -124,7 +124,8 @@ public class EvaluateExpressionTool implements McpTool {
     public String getDescription() {
         return
                 "Compile and evaluate a CheatUtils scripting expression using the Eval script context. " +
-                "Evaluation runs on the main thread, can mutate game or mod state, and has no timeout.";
+                "Evaluation runs on the main thread, can mutate game or mod state, and has no timeout. " +
+                "Unlike normal scripts, tool execution is wrapped in try/catch and reports failures through MCP.";
     }
 
     @Override

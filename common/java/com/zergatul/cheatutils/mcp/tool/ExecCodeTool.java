@@ -108,6 +108,7 @@ public class ExecCodeTool implements McpTool {
         return
                 "Compile and run CheatUtils scripting code using the Exec script context. " +
                 "Execution runs on the main thread, can mutate game or mod state, and has no timeout. " +
+                "Unlike normal scripts, tool execution is wrapped in try/catch and reports failures through MCP. " +
                 "Use executionLog.write(message) in the script to return records.";
     }
 

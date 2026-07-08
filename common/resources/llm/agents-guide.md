@@ -20,6 +20,8 @@ Do not rely on `cheatutils-api.txt` when MCP resources are available. That file 
 - Blocking a script blocks the game.
 - There is no parallel script execution.
 - Per-frame and per-tick scripts must stay small and predictable.
+- Runtime exceptions are not wrapped and usually crash the game.
+- Do not blanket-wrap scripts in `try/catch`; in-game exception display is poor, and example scripts intentionally leave crashes visible.
 
 Avoid expensive work in callbacks that run for many objects. Iterating over visible entities in a Status Overlay script can be acceptable because the script runs once per frame. Iterating over all entities from an Entity ESP script is usually wrong because that script already runs once per relevant entity.
 
