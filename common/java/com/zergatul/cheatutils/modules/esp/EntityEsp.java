@@ -161,8 +161,10 @@ public class EntityEsp implements Module {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        LineRenderer renderer = LineRenderer.getInstance();
-        renderer.begin();
+        LineRenderer lineRenderer = LineRenderer.getInstance();
+        lineRenderer.begin();
+        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        tracerRenderer.begin();
 
         bbList.clear();
         tracerList.clear();
@@ -203,10 +205,11 @@ public class EntityEsp implements Module {
         }
 
         if (!bbList.isEmpty() || !tracerList.isEmpty()) {
-            renderLines(renderer, event);
+            renderLines(lineRenderer, tracerRenderer, event);
         }
 
-        renderer.end(event.getMvp());
+        lineRenderer.end(event.getMvp());
+        tracerRenderer.end(event.getMvp());
 
         drawOverlays(list, event);
         drawOutlines(list, event);
@@ -226,23 +229,18 @@ public class EntityEsp implements Module {
         renderBuffers.close();
     }
 
-    private void renderLines(LineRenderer renderer, RenderWorldLastEvent event) {
+    private void renderLines(LineRenderer lineRenderer, TracerRenderer tracerRenderer, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
         double cameraZ = cameraPos.z;
-
-        Vec3 tracerCenter = event.getTracerCenter();
-        float tracerX = (float) (tracerCenter.x - cameraX);
-        float tracerY = (float) (tracerCenter.y - cameraY);
-        float tracerZ = (float) (tracerCenter.z - cameraZ);
 
         float partialTicks = event.getPartialTickTime();
 
         for (MatchedEntity entry : bbList) {
             Vec3 pos = entry.entity.getPosition(partialTicks);
             AABB box = entry.entity.getDimensions(entry.entity.getPose()).makeBoundingBox(pos);
-            renderer.cuboid(
+            lineRenderer.cuboid(
                     (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
                     (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
                     entry.config.boundingBoxColor.getRGB(),
@@ -251,8 +249,7 @@ public class EntityEsp implements Module {
 
         for (MatchedEntity entry : tracerList) {
             Vec3 pos = entry.entity.getPosition(partialTicks);
-            renderer.line(
-                    tracerX, tracerY, tracerZ,
+            tracerRenderer.tracer(
                     (float) (pos.x - cameraX), (float) (pos.y - cameraY), (float) (pos.z - cameraZ),
                     entry.colorOverride != null ? entry.colorOverride : entry.config.tracerColor.getRGB(),
                     (float) entry.config.tracerWidth);

@@ -18,6 +18,12 @@ public class VertexFormats {
             .addAttribute("inLineWidth", LINE_WIDTH_FORMAT)
             .build();
 
+    public static final VertexFormat TRACERS_INSTANCED = VertexFormat.builder(1)
+            .addAttribute("inTarget", POSITION_3D_FORMAT)
+            .addAttribute("inColor", COLOR_FORMAT)
+            .addAttribute("inLineWidth", LINE_WIDTH_FORMAT)
+            .build();
+
     public static final VertexFormat CUBE_LINES_INSTANCED = VertexFormat.builder(1)
             .addAttribute("inOrigin", POSITION_3D_FORMAT)
             .addAttribute("inColor", COLOR_FORMAT)
