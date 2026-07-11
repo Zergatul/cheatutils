@@ -498,20 +498,14 @@ public class Schematica {
         }
 
         if (config.showMissingBlockTracers) {
-            Vec3 tracerCenter = event.getTracerCenter();
-            double tracerX = tracerCenter.x;
-            double tracerY = tracerCenter.y;
-            double tracerZ = tracerCenter.z;
-
-            LineRenderer renderer = LineRenderer.getInstance();
+            TracerRenderer renderer = TracerRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
-                    renderer.line(
+                    renderer.tracer(
                             event.getCameraPos(),
-                            tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                             color.getRGB(), 1f);
                 });
@@ -541,20 +535,14 @@ public class Schematica {
         }
 
         if (config.showWrongBlockTracers) {
-            Vec3 tracerCenter = event.getTracerCenter();
-            double tracerX = tracerCenter.x;
-            double tracerY = tracerCenter.y;
-            double tracerZ = tracerCenter.z;
-
-            LineRenderer renderer = LineRenderer.getInstance();
+            TracerRenderer renderer = TracerRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
-                    renderer.line(
+                    renderer.tracer(
                             event.getCameraPos(),
-                            tracerX, tracerY, tracerZ,
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                             color.getRGB(), 1f);
                 });

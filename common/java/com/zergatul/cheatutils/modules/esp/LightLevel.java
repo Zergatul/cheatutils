@@ -153,20 +153,16 @@ public class LightLevel implements Module {
 
         textureRenderer.end(event.getMvp(), textureView);
 
-        Vec3 tracerCenter = event.getTracerCenter();
-        double tracerX = tracerCenter.x;
-        double tracerY = tracerCenter.y;
-        double tracerZ = tracerCenter.z;
-
         LineRenderer lineRenderer = LineRenderer.getInstance();
         lineRenderer.begin();
+        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        tracerRenderer.begin();
 
         for (BlockPos pos: listTracers) {
             double y = pos.getY() + 0.05;
             if (config.showTracers) {
-                lineRenderer.line(
+                tracerRenderer.tracer(
                         event.getCameraPos(),
-                        tracerX, tracerY, tracerZ,
                         pos.getX() + 0.5, y, pos.getZ() + 0.5,
                         0x7FFFFFFF, 1f);
             }
@@ -184,6 +180,7 @@ public class LightLevel implements Module {
         }
 
         lineRenderer.end(event.getMvp());
+        tracerRenderer.end(event.getMvp());
     }
 
     public List<BlockPos> getBlockForRendering() {

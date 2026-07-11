@@ -78,8 +78,8 @@ public class BlockEsp {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        LineRenderer lineRenderer = LineRenderer.getInstance();
-        lineRenderer.begin();
+        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        tracerRenderer.begin();
         EspCubeLineRender cubeRenderer = EspCubeLineRender.getInstance();
         cubeRenderer.begin();
 
@@ -155,7 +155,7 @@ public class BlockEsp {
             }
 
             if (!tracerList.isEmpty()) {
-                renderTracers(lineRenderer, (float) config.tracerWidth, config.tracerColor.getRGB(), event);
+                renderTracers(tracerRenderer, (float) config.tracerWidth, config.tracerColor.getRGB(), event);
             }
 
             if (!overlayList.isEmpty()) {
@@ -163,7 +163,7 @@ public class BlockEsp {
             }
         }
 
-        lineRenderer.end(event.getMvp());
+        tracerRenderer.end(event.getMvp());
         cubeRenderer.end(event.getMvp());
     }
 
@@ -186,20 +186,14 @@ public class BlockEsp {
         }
     }
 
-    private void renderTracers(LineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderTracers(TracerRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
         double cameraZ = cameraPos.z;
 
-        Vec3 tracerCenter = event.getTracerCenter();
-        float tracerX = (float) (tracerCenter.x - cameraX);
-        float tracerY = (float) (tracerCenter.y - cameraY);
-        float tracerZ = (float) (tracerCenter.z - cameraZ);
-
         for (BlockPos pos : tracerList) {
-            renderer.line(
-                    tracerX, tracerY, tracerZ,
+            renderer.tracer(
                     (float) (pos.getX() + 0.5 - cameraX),
                     (float) (pos.getY() + 0.5 - cameraY),
                     (float) (pos.getZ() + 0.5 - cameraZ),
