@@ -6,6 +6,11 @@
   "plugin": "com.zergatul.cheatutils.compatibility.SodiumMixinPlugin",
   "mixinPriority": 500,
   "client": [
+    "common.sodium.MixinBlockRenderCache",
+    "common.sodium.MixinBlockRenderer",
+    "common.sodium.MixinChunkBuilderMeshingTask",
+    "common.sodium.MixinLevelSlice",
+    "common.sodium.MixinRenderSectionManager",
     "common.sodium.MixinSodiumWorldRenderer"
   ]
 }
