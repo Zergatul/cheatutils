@@ -1,4 +1,4 @@
-<div class="module-main block-esp">
+<div class="module-main block-esp" ref="root">
     <div class="description">
         <div>Lines thicker than 1 pixel cost more CPU/GPU resources.</div>
         <div>You can try Rescan if something is wrong with block ESP.</div>
@@ -77,13 +77,11 @@
             </div>
             <div class="filter">
                 <span>Filter:</span>
-                <input type="text" class="search"
-                    v-model="search"
-                    @input="filterBlockList()">
+                <input type="text" class="search" v-model="search">
             </div>
-            <div class="block-list">
+            <div class="block-list" ref="blockListDiv1">
                 <table>
-                    <tr v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
+                    <tr v-for="item in visibleItems" :key="item.id" v-bind="{ 'data-id': item.id }">
                         <td class="pad-cell">
                             <div class="canvas"></div>
                         </td>
@@ -236,13 +234,11 @@
             </div>
             <div class="filter">
                 <span>Filter:</span>
-                <input type="text" class="search"
-                    v-model="search"
-                    @input="filterBlockList()">
+                <input type="text" class="search" v-model="search">
             </div>
-            <div class="block-list">
+            <div class="block-list" ref="blockListDiv2">
                 <table>
-                    <tr v-for="item in blockListFiltered" :key="item.id" v-bind="{ 'data-id': item.id }">
+                    <tr v-for="item in visibleItems" :key="item.id" v-bind="{ 'data-id': item.id }">
                         <td class="pad-cell">
                             <input type="checkbox" class="cb"
                                 v-if="groupEditShouldShowCheckbox(item)"

@@ -1,8 +1,10 @@
-import { ref, nextTick, onUnmounted } from '/vue.esm-browser.js'
+import { ref, nextTick, onMounted, onUnmounted } from '/vue.esm-browser.js'
 import { withCss } from '/components/Loader.js'
-import { createBlockRenderer, removeBlockRenderer } from './BlockRenderer.js'
+import { BlockRenderingCanvas } from './BlockRenderer.js'
 import * as http from '/http.js';
 import { components } from '../../components.js';
+import { SearchSession } from '../../common/SearchSession.js'
+import { useIncrementalSearch } from '../../common/IncrementalSearch.js'
 
 const blockInfoPromise = http.get('/api/block-info').then(blocksList => {
     const blocksMap = {};
@@ -17,6 +19,7 @@ export function createComponent(template) {
     const args = {
         template: template,
         setup() {
+            const root = ref(null);
             const state = ref('list');
             const search = ref('');
             const blocksList = ref(null);
@@ -24,7 +27,40 @@ export function createComponent(template) {
             const blocksConfigList = ref(null);
             const blocksConfigMap = ref(null);
             const selectedConfig = ref(null);
-            const blockListFiltered = ref(null);
+
+            const blockListDiv1 = ref(null);
+            const blockListDiv2 = ref(null);
+            const visibleItems = ref([]);
+            const session = new SearchSession(blocksList, (block, query) => {
+                if (query == '') {
+                    return true;
+                }
+                if (block.name != null && block.name.toLocaleLowerCase().indexOf(query) >= 0) {
+                    return true;
+                }
+                if (block.id != null && block.id.toLocaleLowerCase().indexOf(query) >= 0) {
+                    return true;
+                }
+                return false;
+            });
+
+            const restartAddNewSearch = useIncrementalSearch({
+                queryRef: search,
+                itemsRef: visibleItems,
+                scrollRootRef: blockListDiv1,
+                session,
+                onNewItemsAdded: () => nextTick(() => setupObserver()),
+                batchSize: 20
+            });
+
+            const restartEditGroupSearch = useIncrementalSearch({
+                queryRef: search,
+                itemsRef: visibleItems,
+                scrollRootRef: blockListDiv2,
+                session,
+                onNewItemsAdded: () => nextTick(() => setupObserver()),
+                batchSize: 20
+            });
 
             const blockRenderingKey = 'disableBlockRendering';
             const disableBlockRendering = ref(localStorage.getItem(blockRenderingKey) != null);
@@ -50,31 +86,10 @@ export function createComponent(template) {
                 state.value = 'edit';
             };
 
-            const filterBlockList = () => {
-                let searchLower = search.value.toLocaleLowerCase();
-                blockListFiltered.value = blocksList.value.filter(block => {
-                    if (block.name != null) {
-                        let name = block.name.toLocaleLowerCase();
-                        if (name.indexOf(searchLower) >= 0) {
-                            return true;
-                        }
-                    }
-                    if (block.id != null) {
-                        let id = block.id.toLocaleLowerCase();
-                        if (id.indexOf(searchLower) >= 0) {
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-
-                nextTick(() => setupObserver());
-            };
-
             const openAdd = () => {
                 state.value = 'add';
                 search.value = '';
-                filterBlockList();
+                restartAddNewSearch();
             };
 
             const openEdit = id => {
@@ -94,7 +109,7 @@ export function createComponent(template) {
 
             const editGroup = () => {
                 state.value = 'edit-group';
-                filterBlockList();
+                restartEditGroupSearch();
             };
 
             const remove = () => {
@@ -185,6 +200,8 @@ export function createComponent(template) {
                 }
             };
 
+            const renderer = new BlockRenderingCanvas();
+
             const setupObserver = () => {
                 removeObserver();
 
@@ -203,9 +220,9 @@ export function createComponent(template) {
                         entries.forEach(entry => {
                             if (entry.isIntersecting) {
                                 const id = entry.target.getAttribute('data-id');
-                                createBlockRenderer(entry.target.querySelector('div.canvas'), id);
+                                renderer.createCanvas(entry.target.querySelector('div.canvas'), id);
                             } else {
-                                removeBlockRenderer(entry.target.querySelector('div.canvas'));
+                                renderer.deleteCanvas(entry.target.querySelector('div.canvas'));
                             }
                         });
                       }, {
@@ -237,11 +254,33 @@ export function createComponent(template) {
                 nextTick(() => setupObserver());
             });
 
+            let mutationObserver = null;
+            onMounted(() => {
+                mutationObserver = new MutationObserver(mutations => {
+                    mutations.forEach(mutation => {
+                        if (mutation.type === 'childList') {
+                            for (let node of mutation.removedNodes) {
+                                if (node instanceof HTMLElement) {
+                                    node.querySelectorAll('div.canvas').forEach(div => renderer.deleteCanvas(div));
+                                }
+                            }
+                        }
+                    });
+                });
+                mutationObserver.observe(root.value, { childList: true, subtree: true });
+            });
+
             onUnmounted(() => {
                 removeObserver();
+                if (mutationObserver) {
+                    mutationObserver.disconnect();
+                }
+                renderer.dispose();
             });
 
             return {
+                root,
+
                 state,
                 search,
                 blocksList,
@@ -249,12 +288,13 @@ export function createComponent(template) {
                 blocksConfigList,
                 blocksConfigMap,
                 selectedConfig,
-                blockListFiltered,
                 disableBlockRendering,
+                blockListDiv1,
+                blockListDiv2,
+                visibleItems,
 
                 backToList,
                 backToEdit,
-                filterBlockList,
                 openAdd,
                 openEdit,
                 editGroup,
