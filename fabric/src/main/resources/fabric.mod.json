@@ -25,6 +25,7 @@
   "accessWidener": "cheatutils.classtweaker",
   "mixins": [
     "cheatutils.common.mixins.json",
+    "cheatutils.sodium.mixins.json",
     "cheatutils.iris.mixins.json",
     "cheatutils.fabric.mixins.json"
   ],
