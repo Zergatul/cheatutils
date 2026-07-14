@@ -5,7 +5,9 @@ import net.caffeinemc.mods.sodium.client.world.cloned.ClonedChunkSectionCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
 /**
@@ -17,6 +19,7 @@ public final class LevelSlice {
     private int originBlockX;
     private int originBlockY;
     private int originBlockZ;
+    private BoundingBox volume;
 
     public LevelSlice(ClientLevel level) {}
 
@@ -27,4 +30,10 @@ public final class LevelSlice {
     }
 
     public void copyData(ChunkRenderContext context) {}
+
+    public BlockState getBlockState(int x, int y, int z) {
+        return Blocks.AIR.defaultBlockState();
+    }
+
+    public void reset() {}
 }
