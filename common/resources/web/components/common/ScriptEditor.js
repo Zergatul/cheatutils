@@ -438,6 +438,11 @@ export function createComponent(template) {
             'type'
         ],
         emits: ['update:modelValue'],
+        data() {
+            return {
+                isFullscreen: false
+            };
+        },
         async mounted() {
             await languageSettingsConstructor;
 
@@ -453,7 +458,7 @@ export function createComponent(template) {
                 settings = {};
             }
 
-            let element = this.$.subTree.el;
+            let element = this.$refs.editor;
             this.editor = monaco.editor.create(element, {
                 value: this.modelValue,
                 language: languageId,
@@ -476,6 +481,7 @@ export function createComponent(template) {
             });
         },
         unmounted() {
+            document.body.classList.remove('script-editor-fullscreen');
             this.editor.dispose();
             for (let i = 0; i < map.length; i++) {
                 if (map[i].editor == this.editor) {
@@ -484,7 +490,13 @@ export function createComponent(template) {
                 }
             }
         },
-        methods: {},
+        methods: {
+            toggleFullscreen() {
+                this.isFullscreen = !this.isFullscreen;
+                document.body.classList.toggle('script-editor-fullscreen', this.isFullscreen);
+                this.$nextTick(() => this.editor.focus());
+            }
+        },
         watch: {
             modelValue(value) {
                 if (this.editor == null) {
