@@ -14,8 +14,6 @@ import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,8 +26,7 @@ public class AutoFish implements Module {
     private static final long PULL_IN_DELAY_MS = 500;
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Logger logger = LogManager.getLogger(AutoFish.class);
-    private volatile State state;
+    private volatile State state = State.NONE;
     private Optional<FishingHook> bobber = Optional.empty();
     private long lastPullInTime;
 
