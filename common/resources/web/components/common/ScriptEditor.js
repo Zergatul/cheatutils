@@ -59,6 +59,10 @@ const languageSettingsConstructor = (async () => {
     monaco.languages.register({ id: languageId });
 
     monaco.languages.setLanguageConfiguration(languageId, {
+        comments: {
+            lineComment: '//',
+            blockComment: ['/*', '*/']
+        },
         autoClosingPairs: [
             { open: '{', close: '}' },
             { open: '[', close: ']' },
