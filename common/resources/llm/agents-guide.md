@@ -73,10 +73,9 @@ CurseForge builds can also disable methods annotated as CurseForge-restricted. P
 - Validate numeric ranges, entity ids, block positions, inventory slots, and user-provided strings.
 - Do not pass null values to CheatUtils APIs.
 - CheatUtils APIs normally do not return null. Do not generate defensive null guards around ordinary API calls.
-- Methods or properties returning `UUID` may return null when no UUID is available.
-- Prefer API methods that expose safe default objects or explicit `has*` checks.
+- When a method or property description says it may return null, guard the result before using it.
+- Do not infer nullability from the return type alone.
 - When a type exposes a `has*` property, check it before using the matching optional value.
-- Future generated API references may include property-level descriptions with more precise nullability notes.
 - Do not assume raw Java interop names are stable across loaders.
 
 ## Performance rules

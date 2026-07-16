@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
-import com.zergatul.scripting.hover.HoverProvider;
+import com.zergatul.scripting.analysis.hover.HoverProvider;
 import com.zergatul.scripting.type.SClassType;
 import com.zergatul.scripting.type.SType;
 

@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.types;
 
+import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
 
 import java.net.URI;
@@ -46,6 +47,7 @@ public class HttpRequestBuilderWrapper {
         return this;
     }
 
+    @MethodDescription("URL must be an absolute HTTP(S) URI.")
     public HttpRequestBuilderWrapper url(String url) {
         URI uri = null;
         try {
@@ -70,6 +72,7 @@ public class HttpRequestBuilderWrapper {
         return this;
     }
 
+    @MethodDescription("Returns an invalid request when the URL or a header is invalid, or the URL is missing.")
     public HttpRequestWrapper build() {
         if (invalid) {
             return HttpRequestWrapper.INVALID;

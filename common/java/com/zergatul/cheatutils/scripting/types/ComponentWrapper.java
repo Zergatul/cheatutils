@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.types;
 
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.Lazy;
+import com.zergatul.scripting.PropertyDescription;
 import com.zergatul.scripting.type.CustomType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -28,6 +29,7 @@ public class ComponentWrapper {
         return inner.getString();
     }
 
+    @PropertyDescription("Flattened text runs with their resolved styles.")
     @Getter(name = "components")
     public FormattedTextComponent[] getComponents() {
         return components.value();

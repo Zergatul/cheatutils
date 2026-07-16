@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.types;
 
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.IndexGetter;
+import com.zergatul.scripting.PropertyDescription;
 import com.zergatul.scripting.type.CustomType;
 
 import java.util.regex.MatchResult;
@@ -15,6 +16,7 @@ public class MatchGroups {
         this.result = result;
     }
 
+    @PropertyDescription("Number of capture groups, excluding group 0.")
     @Getter(name = "count")
     public int getCount() {
         return result.groupCount();

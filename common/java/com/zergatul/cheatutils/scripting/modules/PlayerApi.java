@@ -63,7 +63,7 @@ public class PlayerApi {
     }
 
     @MethodDescription("""
-            Sends ingame command to the server
+            Sends ingame command to the server. First character must be slash.
             """)
     @ApiVisibility(ApiType.ACTION)
     public void command(String text) {
@@ -214,6 +214,7 @@ public class PlayerApi {
         return mc.player.getZ();
     }
 
+    @MethodDescription("Player pitch in degrees.")
     public double getXRot() {
         if (mc.player == null) {
             return 0;
@@ -221,6 +222,7 @@ public class PlayerApi {
         return mc.player.getXRot();
     }
 
+    @MethodDescription("Player yaw in degrees.")
     public double getYRot() {
         if (mc.player == null) {
             return 0;
@@ -228,6 +230,7 @@ public class PlayerApi {
         return mc.player.getYRot();
     }
 
+    @MethodDescription("Sets player pitch in degrees.")
     @ApiVisibility(ApiType.ACTION)
     public void setXRot(double value) {
         if (mc.player == null) {
@@ -236,6 +239,7 @@ public class PlayerApi {
         mc.player.setXRot((float) value);
     }
 
+    @MethodDescription("Sets player yaw in degrees.")
     @ApiVisibility(ApiType.ACTION)
     public void setYRot(double value) {
         if (mc.player == null) {

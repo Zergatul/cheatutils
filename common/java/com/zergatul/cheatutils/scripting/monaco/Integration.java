@@ -13,6 +13,7 @@ import com.zergatul.scripting.TextRange;
 import com.zergatul.scripting.analysis.AnalysisResult;
 import com.zergatul.scripting.analysis.Analyzer;
 import com.zergatul.scripting.analysis.definition.DefinitionProvider;
+import com.zergatul.scripting.analysis.hover.HoverProvider;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
@@ -20,7 +21,6 @@ import com.zergatul.scripting.highlighting.HighlightingProvider;
 import com.zergatul.scripting.highlighting.SemanticToken;
 import com.zergatul.scripting.highlighting.SemanticTokenModifier;
 import com.zergatul.scripting.highlighting.SemanticTokenType;
-import com.zergatul.scripting.hover.HoverProvider;
 import com.zergatul.scripting.lexer.*;
 
 import java.awt.*;

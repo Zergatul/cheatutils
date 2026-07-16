@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.types;
 
 import com.zergatul.scripting.Getter;
+import com.zergatul.scripting.PropertyDescription;
 import com.zergatul.scripting.type.CustomType;
 
 import java.util.regex.MatchResult;
@@ -16,6 +17,7 @@ public class MatchGroup {
         this.index = index;
     }
 
+    @PropertyDescription("Capture group number; 0 represents the full match.")
     @Getter(name = "index")
     public int getIndex() {
         return index;
@@ -30,6 +32,7 @@ public class MatchGroup {
         }
     }
 
+    @PropertyDescription("May return null when an optional group did not match.")
     @Getter(name = "value")
     public String getValue() {
         if (0 <= index && index <= result.groupCount()) {
@@ -39,6 +42,7 @@ public class MatchGroup {
         }
     }
 
+    @PropertyDescription("True when the group exists; it may still be unmatched.")
     @Getter(name = "valid")
     public boolean getValid() {
         return 0 <= index && index <= result.groupCount();

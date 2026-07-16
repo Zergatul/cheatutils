@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.types.json;
 import com.google.gson.*;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
+import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.io.StringWriter;
 @CustomType(name = "JsonElement")
 public abstract class JsonElementWrapper {
 
+    @MethodDescription("Returns JsonInvalid when the input is not valid JSON.")
     public static JsonElementWrapper parse(String json) {
         try {
             return from(JsonParser.parseString(json));
@@ -28,6 +30,7 @@ public abstract class JsonElementWrapper {
         return toStringFormatted(4);
     }
 
+    @MethodDescription("Pretty-prints using the specified non-negative number of spaces per indent.")
     public String toStringFormatted(int spaces) {
         try {
             StringWriter stringWriter = new StringWriter();

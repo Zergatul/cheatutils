@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.types;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.Lazy;
+import com.zergatul.scripting.PropertyDescription;
 import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -53,6 +54,7 @@ public class ItemStackWrapper {
         return inner.isDamageableItem();
     }
 
+    @PropertyDescription("Remaining durability.")
     @Getter(name = "durability")
     public int getDurability() {
         return inner.getMaxDamage() - inner.getDamageValue();
@@ -68,6 +70,7 @@ public class ItemStackWrapper {
         return inner.isEmpty();
     }
 
+    @PropertyDescription("Maximum stack size.")
     @Getter(name = "stackSize")
     public int getStackSize() {
         return inner.getMaxStackSize();

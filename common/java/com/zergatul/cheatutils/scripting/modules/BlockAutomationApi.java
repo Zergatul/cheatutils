@@ -87,6 +87,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
         BlockAutomation.instance.useItem(InteractionHand.MAIN_HAND, BlockPlacingMethod.ANY);
     }
 
+    @MethodDescription("Uses the main-hand item at current coordinates. See useItem(..., method) for allowed method values.")
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useWithMainHand(String method) {
         BlockAutomation.instance.useItem(InteractionHand.MAIN_HAND, BlockPlacingMethod.parse(method));
@@ -97,6 +98,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
         BlockAutomation.instance.useItem(InteractionHand.OFF_HAND, BlockPlacingMethod.ANY);
     }
 
+    @MethodDescription("Uses the off-hand item at current coordinates. See useItem(..., method) for allowed method values.")
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useWithOffHand(String method) {
         BlockAutomation.instance.useItem(InteractionHand.OFF_HAND, BlockPlacingMethod.parse(method));

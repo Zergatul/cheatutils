@@ -62,6 +62,7 @@ public class EntitiesApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
     @ApiVisibility(ApiType.UPDATE)
     public void setTracerColor(String className, String color) {
         Color colorValue = ColorUtils.parseColor2(color);
@@ -78,6 +79,7 @@ public class EntitiesApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
     @ApiVisibility(ApiType.UPDATE)
     public void setOutlineColor(String className, String color) {
         Color colorValue = ColorUtils.parseColor2(color);
@@ -94,6 +96,7 @@ public class EntitiesApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
     @ApiVisibility(ApiType.UPDATE)
     public void setCollisionBoxColor(String className, String color) {
         Color colorValue = ColorUtils.parseColor2(color);
@@ -110,6 +113,7 @@ public class EntitiesApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
     @ApiVisibility(ApiType.UPDATE)
     public void setOverlayColor(String className, String color) {
         Color colorValue = ColorUtils.parseColor2(color);

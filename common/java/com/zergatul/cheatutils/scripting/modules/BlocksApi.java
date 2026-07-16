@@ -71,6 +71,7 @@ public class BlocksApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
     @ApiVisibility(ApiType.UPDATE)
     public void setTracerColor(String blockId, String color) {
         Color colorValue = ColorUtils.parseColor2(color);
@@ -87,6 +88,7 @@ public class BlocksApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
     @ApiVisibility(ApiType.UPDATE)
     public void setBoundingBoxColor(String blockId, String color) {
         Color colorValue = ColorUtils.parseColor2(color);
@@ -103,6 +105,7 @@ public class BlocksApi {
         ConfigStore.instance.requestWrite();
     }
 
+    @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
     @ApiVisibility(ApiType.UPDATE)
     public void setOverlayColor(String blockId, String color) {
         Color colorValue = ColorUtils.parseColor2(color);
@@ -174,14 +177,14 @@ public class BlocksApi {
     }
 
     @MethodDescription("""
-            Adds specified block position for ESP.
+            Adds specified block position for ESP. Color format: #RRGGBB or #RRGGBBAA.
             """)
     public void addCustom(BlockPosWrapper pos, String color) {
         addCustom(pos.getX(), pos.getY(), pos.getZ(), color);
     }
 
     @MethodDescription("""
-            Adds specified block position for ESP.
+            Adds specified block position for ESP. Color format: #RRGGBB or #RRGGBBAA.
             """)
     public void addCustom(int x, int y, int z, String color) {
         Integer colorInt = ColorUtils.parseColor(color);
@@ -191,14 +194,14 @@ public class BlocksApi {
     }
 
     @MethodDescription("""
-            Adds specified block position for ESP.
+            Removes specified custom block position from ESP.
             """)
     public void removeCustom(BlockPosWrapper pos) {
         removeCustom(pos.getX(), pos.getY(), pos.getZ());
     }
 
     @MethodDescription("""
-            Adds specified block position for ESP.
+            Removes specified custom block position from ESP.
             """)
     public void removeCustom(int x, int y, int z) {
         BlockEsp.instance.removeCustom(new BlockPos(x, y, z));

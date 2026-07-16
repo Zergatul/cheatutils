@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.types;
 
+import com.zergatul.scripting.MethodDescription;
 import com.zergatul.scripting.type.CustomType;
 
 import java.util.regex.Matcher;
@@ -23,6 +24,7 @@ public class Regex {
         this.valid = valid;
     }
 
+    @MethodDescription("Returns an invalid Regex when the pattern is invalid; its match methods return no matches.")
     public static Regex compile(String regex) {
         try {
             return new Regex(Pattern.compile(regex));
@@ -31,6 +33,7 @@ public class Regex {
         }
     }
 
+    @MethodDescription("Flags are a bit mask of java.util.regex.Pattern constants. Invalid patterns return an invalid Regex.")
     public static Regex compile(String regex, int flags) {
         try {
             return new Regex(Pattern.compile(regex, flags));
@@ -39,6 +42,7 @@ public class Regex {
         }
     }
 
+    @MethodDescription("Splits around matches; trailing empty strings are omitted.")
     public String[] split(String input) {
         if (!this.valid) {
             return new String[0];
@@ -46,6 +50,7 @@ public class Regex {
         return pattern.split(input);
     }
 
+    @MethodDescription("Checks whether the entire input matches the pattern.")
     public boolean isMatch(String input) {
         if (!this.valid) {
             return false;
@@ -53,6 +58,7 @@ public class Regex {
         return pattern.matcher(input).matches();
     }
 
+    @MethodDescription("Returns the first match, or an unsuccessful Match when none is found.")
     public Match match(String input) {
         if (!this.valid) {
             return Match.EMPTY;
@@ -66,6 +72,7 @@ public class Regex {
         }
     }
 
+    @MethodDescription("Returns all non-overlapping matches.")
     public Match[] matches(String input) {
         if (!this.valid) {
             return new Match[0];

@@ -74,7 +74,7 @@ public class HttpResponseWrapper {
     }
 
     @MethodDescription("""
-            Returns header value or empty string if headers is not present
+            Returns header value or empty string if the header is not present
             """)
     public String header(String name) {
         return response.headers().firstValue(name).orElse("");

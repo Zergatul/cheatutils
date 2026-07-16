@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.scripting.AdvancedApi;
 import com.zergatul.cheatutils.scripting.types.HttpRequestWrapper;
 import com.zergatul.cheatutils.scripting.types.HttpResponseWrapper;
+import com.zergatul.scripting.MethodDescription;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +18,7 @@ public class HttpApi {
 
     private final HttpClient client = HttpClient.newHttpClient();
 
+    @MethodDescription("URL must be an absolute HTTP(S) URI. A syntactically invalid URI returns the literal string '<INVALID URI>'.")
     public CompletableFuture<String> get(String url) {
         URI uri;
         try {
@@ -33,6 +35,7 @@ public class HttpApi {
         return future.thenApplyAsync(HttpResponse::body, TickEndExecutor.instance);
     }
 
+    @MethodDescription("An invalid request returns status code 0 and the literal body '<INVALID REQUEST>'.")
     public CompletableFuture<HttpResponseWrapper> send(HttpRequestWrapper request) {
         if (request == HttpRequestWrapper.INVALID) {
             return CompletableFuture.completedFuture(HttpResponseWrapper.INVALID_REQUEST);

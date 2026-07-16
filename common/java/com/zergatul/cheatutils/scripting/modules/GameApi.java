@@ -179,6 +179,7 @@ public class GameApi {
         return listener.getOnlinePlayers().stream().map(PlayerInfoWrapper::new).toArray(PlayerInfoWrapper[]::new);
     }
 
+    @MethodDescription("Ray casts from the specified entity's eyes in its look direction.")
     public HitResultWrapper rayCast(int entityId, double maxRange) {
         if (mc.level == null) {
             return new HitResultWrapper();
@@ -193,6 +194,7 @@ public class GameApi {
         return new HitResultWrapper(LocalPlayerAccessor.pick_CU(entity, maxRange, maxRange, partialTicks));
     }
 
+    @MethodDescription("Returns a direct ray hit, or otherwise the pickable entity closest to the ray direction within range.")
     public RayCastEntityResult rayCastClosestEntity(Position3d origin, Position3d dir, double range) {
         return new RayCastEntityResult(RayCast.findClosestEntity(origin.asVec3(), dir.asVec3(), range));
     }
@@ -377,10 +379,12 @@ public class GameApi {
             return getDoubleValue(entityId, Entity::getZ);
         }
 
+        @MethodDescription("Entity pitch in degrees.")
         public double getXRot(int entityId) {
             return getDoubleValue(entityId, entity -> (double) entity.getXRot());
         }
 
+        @MethodDescription("Entity yaw in degrees.")
         public double getYRot(int entityId) {
             return getDoubleValue(entityId, entity -> (double) entity.getYRot());
         }
@@ -449,6 +453,7 @@ public class GameApi {
             return info.clazz.isAssignableFrom(entity.getClass());
         }
 
+        @MethodDescription("Horse movement speed in blocks per second, or NaN when unavailable.")
         public double getHorseMovementSpeed(int entityId) {
             return getDoubleValue(entityId, entity -> {
                 if (entity instanceof LivingEntity living) {
@@ -460,6 +465,7 @@ public class GameApi {
             });
         }
 
+        @MethodDescription("Horse jump height in blocks, or NaN when unavailable.")
         public double getHorseJumpHeight(int entityId) {
             return getDoubleValue(entityId, entity -> {
                 if (entity instanceof LivingEntity living) {
@@ -496,6 +502,7 @@ public class GameApi {
             return getIntegerArrayValue(entityId, entity -> entity.getPassengers().stream().mapToInt(Entity::getId).toArray());
         }
 
+        @MethodDescription("Checks effect particles by color, not effect data. Color format: #RRGGBB or #RRGGBBAA.")
         public boolean hasEffectByColor(int entityId, String color) {
             return getBooleanValue(entityId, entity -> {
                 if (entity instanceof LivingEntityExtension living) {
@@ -628,6 +635,7 @@ public class GameApi {
             }, () -> new CompoundTagWrapper(new CompoundTag()));
         }
 
+        @MethodDescription("Returns a numeric NBT tag from a living entity, or Integer.MIN_VALUE when unavailable.")
         public int getIntTag(int entityId, String tag) {
             return getIntegerValue(entityId, entity -> {
                 if (entity instanceof LivingEntity living) {
@@ -916,6 +924,7 @@ public class GameApi {
             return mc.level.getBlockState(new BlockPos(x, y, z)).getFluidState().isSource();
         }
 
+        @MethodDescription("Returns block-emitted light level in [0, 15].")
         public int getBlockLightLevel(int x, int y, int z) {
             if (mc.level == null) {
                 return Integer.MIN_VALUE;
@@ -923,6 +932,7 @@ public class GameApi {
             return mc.level.getBrightness(LightLayer.BLOCK, new BlockPos(x, y, z));
         }
 
+        @MethodDescription("Returns sky light level in [0, 15].")
         public int getSkyLightLevel(int x, int y, int z) {
             if (mc.level == null) {
                 return Integer.MIN_VALUE;
@@ -930,10 +940,12 @@ public class GameApi {
             return mc.level.getBrightness(LightLayer.SKY, new BlockPos(x, y, z));
         }
 
+        @MethodDescription("Checks whether the block state has a property with the specified name.")
         public boolean hasTag(BlockPosWrapper pos, String tag) {
             return hasTag(pos.getX(), pos.getY(), pos.getZ(), tag);
         }
 
+        @MethodDescription("Checks whether the block state has a property with the specified name.")
         public boolean hasTag(int x, int y, int z, String tag) {
             if (mc.level == null) {
                 return false;
@@ -944,16 +956,16 @@ public class GameApi {
         }
 
         @MethodDescription("""
-                Returns integer tag of BlockState at specified coordinates.
-                For example you can check tag "age" for "minecraft:wheat" to see when crops are ready to be harvested.
+                Returns integer property of BlockState at specified coordinates.
+                For example, property "age" for "minecraft:wheat" indicates when crops are ready to harvest.
                 """)
         public int getIntegerTag(BlockPosWrapper pos, String tag) {
             return getIntegerTag(pos.getX(), pos.getY(), pos.getZ(), tag);
         }
 
         @MethodDescription("""
-                Returns integer tag of BlockState at specified coordinates.
-                For example you can check tag "age" for "minecraft:wheat" to see when crops are ready to be harvested.
+                Returns integer property of BlockState at specified coordinates.
+                For example, property "age" for "minecraft:wheat" indicates when crops are ready to harvest.
                 """)
         public int getIntegerTag(int x, int y, int z, String tag) {
             if (mc.level == null) {
@@ -974,14 +986,14 @@ public class GameApi {
         }
 
         @MethodDescription("""
-                Returns enum tag of BlockState at specified coordinates.
+                Returns enum property of BlockState at specified coordinates.
                 """)
         public String getEnumTag(BlockPosWrapper pos, String tag) {
             return getEnumTag(pos.getX(), pos.getY(), pos.getZ(), tag);
         }
 
         @MethodDescription("""
-                Returns enum tag of BlockState at specified coordinates.
+                Returns enum property of BlockState at specified coordinates.
                 """)
         public String getEnumTag(int x, int y, int z, String tag) {
             if (mc.level == null) {
@@ -1002,14 +1014,14 @@ public class GameApi {
         }
 
         @MethodDescription("""
-                Returns boolean tag of BlockState at specified coordinates.
+                Returns boolean property of BlockState at specified coordinates.
                 """)
         public boolean getBooleanTag(BlockPosWrapper pos, String tag) {
             return getBooleanTag(pos.getX(), pos.getY(), pos.getZ(), tag);
         }
 
         @MethodDescription("""
-                Returns enum tag of BlockState at specified coordinates.
+                Returns boolean property of BlockState at specified coordinates.
                 """)
         public boolean getBooleanTag(int x, int y, int z, String tag) {
             if (mc.level == null) {

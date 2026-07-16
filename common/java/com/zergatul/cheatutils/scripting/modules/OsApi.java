@@ -35,6 +35,7 @@ public class OsApi {
     @AdvancedApi
     public static class FilesApi {
 
+        @MethodDescription("Returns an empty array on I/O failure.")
         public String[] readAllLines(String path) {
             try {
                 return Files.readAllLines(Path.of(path)).toArray(String[]::new);
@@ -43,6 +44,7 @@ public class OsApi {
             }
         }
 
+        @MethodDescription("Returns an empty string on I/O failure.")
         public String readAllText(String path) {
             try {
                 return Files.readString(Path.of(path));

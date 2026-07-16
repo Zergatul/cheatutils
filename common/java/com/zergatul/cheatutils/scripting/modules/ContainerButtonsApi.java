@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
 import com.zergatul.cheatutils.controllers.ContainerButtonsController;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.scripting.MethodDescription;
 
 @SuppressWarnings("unused")
 public class ContainerButtonsApi {
@@ -52,6 +53,7 @@ public class ContainerButtonsApi {
         ContainerButtonsController.instance.takeAll(autoClose);
     }
 
+    @MethodDescription("Moves inventory items into the container only when the container already has the same item type.")
     @ApiVisibility(ApiType.ACTION)
     public void smartPut() {
         ContainerButtonsController.instance.smartPut();

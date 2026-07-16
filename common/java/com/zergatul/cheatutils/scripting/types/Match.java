@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.types;
 
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.Lazy;
+import com.zergatul.scripting.PropertyDescription;
 import com.zergatul.scripting.type.CustomType;
 
 import java.util.regex.MatchResult;
@@ -19,6 +20,7 @@ public class Match {
         this.groups = new Lazy<>(() -> new MatchGroups(result));
     }
 
+    @PropertyDescription("Zero-based start index in the input, or -1 when unsuccessful.")
     @Getter(name = "index")
     public int getIndex() {
         return result.start();

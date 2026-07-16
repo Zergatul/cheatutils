@@ -32,6 +32,7 @@ public class ColorApi {
 
     @MethodDescription("""
             Creates hex encoded string from gradient color value between 2 colors.
+            Colors must use #RRGGBB or #RRGGBBAA format.
             Value should be in range of 0..1
             """)
     public String gradient(String color1, String color2, double value) {

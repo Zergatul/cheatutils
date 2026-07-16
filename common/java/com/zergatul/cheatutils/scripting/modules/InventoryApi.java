@@ -108,7 +108,7 @@ public class InventoryApi {
     }
 
     @MethodDescription("""
-            Equips item by its index to corresponding slot
+            Equips item by its inventory index in [0, 36) to the corresponding equipment slot.
             """)
     @ApiVisibility(ApiType.ACTION)
     public boolean equip(int index) {

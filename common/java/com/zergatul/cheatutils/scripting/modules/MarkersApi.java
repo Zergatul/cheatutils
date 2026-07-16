@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
 import com.zergatul.cheatutils.utils.ColorUtils;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 
 import java.awt.*;
@@ -12,6 +13,7 @@ public class MarkersApi {
 
     private final Minecraft mc = Minecraft.getInstance();
 
+    @MethodDescription("Adds or replaces a marker in the current dimension. It is hidden within minDistance blocks. Color format: #RRGGBB or #RRGGBBAA.")
     public void add(String name, double x, double y, double z, double minDistance, String color) {
         if (mc.level == null) {
             return;

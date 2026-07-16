@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.scripting.types;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.MethodDescription;
+import com.zergatul.scripting.PropertyDescription;
 import com.zergatul.scripting.type.CustomType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -135,6 +136,7 @@ public class StyleWrapper {
         };
     }
 
+    @PropertyDescription("May return null")
     @Getter(name = "hoverEntity")
     public UUIDWrapper getHoverEntity() {
         HoverEvent event = inner.getHoverEvent();
@@ -148,6 +150,7 @@ public class StyleWrapper {
         };
     }
 
+    @PropertyDescription("Click event payload: URL, file path, command, or clipboard text; empty when absent.")
     @Getter(name = "clickCommand")
     public String getClickCommand() {
         ClickEvent event = inner.getClickEvent();
