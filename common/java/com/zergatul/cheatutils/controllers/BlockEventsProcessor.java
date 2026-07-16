@@ -301,8 +301,8 @@ public class BlockEventsProcessor {
         }
 
         public void clear() {
-            this.size = 0;
             Arrays.fill(this.elements, 0, this.size, null);
+            this.size = 0;
         }
 
         public void forEach(Consumer<ChunkScanTaskGroup> consumer) {
@@ -353,6 +353,7 @@ public class BlockEventsProcessor {
                     // if we detect that array is not nearly sorted we fall back to default implementation
                     // however it allocates new array for merging
                     if (moves > movesLimit) {
+                        elements[j + 1] = element;
                         Arrays.sort(elements, 0, size, comparator);
                         break outerLoop;
                     }
