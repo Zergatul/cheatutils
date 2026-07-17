@@ -6,17 +6,19 @@ import com.google.gson.JsonParser;
 import com.zergatul.cheatutils.mcp.utility.JsonArrayBuilder;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.mcp.utility.McpSuggestion;
-import com.zergatul.cheatutils.mcp.utility.McpSuggestionFactory;
+import com.zergatul.cheatutils.mcp.utility.McpSuggestionMapper;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.scripting.analysis.AnalysisResult;
 import com.zergatul.scripting.analysis.Analyzer;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
+import com.zergatul.scripting.completion.MappedSuggestionFactory;
+import com.zergatul.scripting.completion.SuggestionInfoFactory;
+import com.zergatul.scripting.formatting.TypeDisplayFormatter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 public class GetCompletionsTool implements McpTool {
 
@@ -55,7 +57,7 @@ public class GetCompletionsTool implements McpTool {
                                 },
                                 "kind": {
                                     "type": "string",
-                                    "description": "Suggestion category, such as keyword, type, property, method, value, variable, or function"
+                                    "description": "Suggestion category, such as keyword, type, property, method, constant, variable, or function"
                                 },
                                 "type": {
                                     "type": "string",
@@ -134,15 +136,18 @@ public class GetCompletionsTool implements McpTool {
 
         code = code.replace(CURSOR, "");
 
-        McpSuggestionFactory suggestionFactory = new McpSuggestionFactory();
-        CompletionProviderFactory<McpSuggestion> completionProviderFactory = new CompletionProviderFactory<>(suggestionFactory);
+        TypeDisplayFormatter typeFormatter = new TypeDisplayFormatter(clazz ->
+                clazz.getName().startsWith("com.zergatul.cheatutils.scripting") ? clazz.getSimpleName() : clazz.getName());
+        CompletionProviderFactory<McpSuggestion> completionProviderFactory = new CompletionProviderFactory<>(
+                new MappedSuggestionFactory<>(
+                        new SuggestionInfoFactory(typeFormatter),
+                        new McpSuggestionMapper()));
         CompilationParameters parameters = ScriptCompilerRegistry.INSTANCE.getParameters(scriptType);
         AnalysisResult analysisResult = new Analyzer().analyze(code, parameters);
         List<McpSuggestion> suggestions = completionProviderFactory.getSuggestions(parameters, analysisResult.binderOutput(), line, column);
         JsonObject result = new JsonObjectBuilder()
                 .withProperty("items", new JsonArrayBuilder()
                         .withItems(suggestions.stream()
-                                .filter(Objects::nonNull)
                                 .map(McpSuggestion::toJson))
                         .build())
                 .build();

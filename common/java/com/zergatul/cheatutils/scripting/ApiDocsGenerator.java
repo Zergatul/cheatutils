@@ -5,6 +5,8 @@ import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
 import com.zergatul.cheatutils.utils.ModMetadata;
 import com.zergatul.cheatutils.utils.ResourceHelper;
 import com.zergatul.scripting.compiler.CompilationParameters;
+import com.zergatul.scripting.formatting.TypeDisplayFormatter;
+import com.zergatul.scripting.parser.BinaryOperator;
 import com.zergatul.scripting.type.*;
 import com.zergatul.scripting.type.operation.BinaryOperation;
 import com.zergatul.scripting.type.operation.IndexOperation;
@@ -19,6 +21,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class ApiDocsGenerator {
+
+    private static final String SCRIPTING_PACKAGE = "com.zergatul.cheatutils.scripting";
+    private static final TypeDisplayFormatter TYPE_FORMATTER = new TypeDisplayFormatter(clazz -> {
+        String packageName = clazz.getPackageName();
+        if (packageName.equals(SCRIPTING_PACKAGE) || packageName.startsWith(SCRIPTING_PACKAGE + ".")) {
+            return clazz.getSimpleName();
+        }
+        return "Java<" + clazz.getName() + ">";
+    });
 
     public static List<String> generateLines() {
         return generateLines(true);
@@ -92,6 +103,7 @@ public class ApiDocsGenerator {
         lines.add("// --- Available APIs ---");
         lines.add("");
         for (PropertyReference property : apis) {
+            formatDescription(lines, "", property.getDescription());
             lines.add(String.format("static %s %s { get; }", formatType(property.getType()), property.getName()));
         }
 
@@ -123,6 +135,12 @@ public class ApiDocsGenerator {
     }
 
     private static void buildType(List<String> lines, SType type) {
+        if (type instanceof SClassType classType) {
+            if (classType.getJavaClass().isAnnotationPresent(AdvancedApi.class)) {
+                lines.add("@AdvancedApi");
+            }
+        }
+
         Class<?> baseClass = type.getJavaClass().getSuperclass();
         lines.add(
                 String.format("%s%s %s%s {",
@@ -131,32 +149,50 @@ public class ApiDocsGenerator {
                         formatType(type),
                         baseClass != null && baseClass != Object.class ? " : " + formatType(SType.fromJavaType(type.getJavaClass().getSuperclass())) : ""));
 
-        for (PropertyReference property : type.getStaticProperties()) {
-            lines.add(String.format("\tstatic %s %s { %s%s }", property.getType(), property.getName(), property.canLoad() ? "get;" : "", property.canStore() ? "set;" : ""));
+        for (PropertyReference property : sortedProperties(type.getStaticProperties())) {
+            formatProperty(lines, "static ", property);
         }
-        for (MethodReference method : type.getStaticMethods()) {
+        for (MethodReference method : sortedMethods(type.getStaticMethods())) {
             formatMethod(lines, "static ", method);
         }
-        for (ConstructorReference constructor : type.getConstructors()) {
-            lines.add(String.format("\tconstructor(%s);", formatParameters(constructor.getParameters())));
+        if (shouldIncludeConstructors(type)) {
+            for (ConstructorReference constructor : type.getConstructors()) {
+                lines.add(String.format("\tconstructor(%s);", formatParameters(constructor.getParameters())));
+            }
         }
-        for (PropertyReference property : type.getInstanceProperties()) {
-            lines.add(String.format("\t%s %s { %s%s }", formatType(property.getType()), property.getName(), property.canLoad() ? "get;" : "", property.canStore() ? "set;" : ""));
+        for (PropertyReference property : sortedProperties(type.getInstanceProperties())) {
+            formatProperty(lines, "", property);
         }
-        for (MethodReference method : type.getDeclaredInstanceMethods()) {
+        for (MethodReference method : sortedMethods(type.getDeclaredInstanceMethods())) {
             formatMethod(lines, "", method);
         }
         for (IndexOperation operation : type.getIndexOperations()) {
-            lines.add(String.format("\t%s this[%s index] { %s%s }", operation.returnType, operation.indexType, operation.canGet() ? "get;" : "", operation.canSet() ? "set;" : ""));
+            lines.add(String.format(
+                    "\t%s this[%s index] %s",
+                    formatType(operation.returnType),
+                    formatType(operation.indexType),
+                    formatGetSet(operation.canGet(), operation.canSet())));
         }
         for (UnaryOperation operation : type.getUnaryOperations()) {
-            lines.add(String.format("\toperator [%s] %s(%s arg);", operation.getOperator(), operation.getResultType(), operation.getOperandType()));
+            lines.add(String.format(
+                    "\toperator [%s] %s(%s arg);",
+                    operation.getOperator(),
+                    formatType(operation.getResultType()),
+                    formatType(operation.getOperandType())));
         }
         for (BinaryOperation operation : type.getBinaryOperations()) {
             if (operation.getLeft() == SJavaObject.instance && operation.getRight() == SJavaObject.instance) {
                 continue;
             }
-            lines.add(String.format("\toperator [%s] %s(%s left, %s right);", operation.getOperator(), operation.getResultType(), operation.getLeft(), operation.getRight()));
+            if (operation.getOperator() == BinaryOperator.NULL_COALESCING) {
+                continue;
+            }
+            lines.add(String.format(
+                    "\toperator [%s] %s(%s left, %s right);",
+                    operation.getOperator(),
+                    formatType(operation.getResultType()),
+                    formatType(operation.getLeft()),
+                    formatType(operation.getRight())));
         }
 
         if (type instanceof SClassType) {
@@ -175,32 +211,70 @@ public class ApiDocsGenerator {
         lines.add("}");
     }
 
+    private static List<PropertyReference> sortedProperties(List<PropertyReference> properties) {
+        return properties.stream().sorted(Comparator.comparing(PropertyReference::getName)).toList();
+    }
+
+    private static List<MethodReference> sortedMethods(List<MethodReference> properties) {
+        return properties.stream().sorted(
+                Comparator.comparing(MethodReference::getName).
+                        thenComparing(ref -> ref.getParameters().size()))
+                .toList();
+    }
+
+    private static void formatProperty(List<String> lines, String prefix, PropertyReference property) {
+        if (!property.isPublic()) {
+            return;
+        }
+
+        formatDescription(lines, "\t", property.getDescription());
+        lines.add(String.format("\t%s%s %s %s", prefix, formatType(property.getType()), property.getName(), formatGetSet(property.canLoad(), property.canStore())));
+    }
+
     private static void formatMethod(List<String> lines, String prefix, MethodReference method) {
-        method.getDescription().ifPresent(description -> {
-            String[] lines2 = extractLines(description);
-            if (lines2.length == 1) {
-                lines.add(String.format("\t/* %s */", lines2[0]));
-            } else {
-                lines.add("\t/*");
-                for (String line : lines2) {
-                    lines.add(String.format("\t* %s", line));
-                }
-                lines.add("\t*/");
-            }
-        });
+        if (!method.isPublic()) {
+            return;
+        }
+
         if (method instanceof NativeMethodReference nativeMethod) {
+            if (nativeMethod.getUnderlying().isAnnotationPresent(HiddenMethod.class)) {
+                return;
+            }
+        }
+
+        formatDescription(lines, "\t", method.getDescription());
+        if (method instanceof NativeMethodReference nativeMethod) {
+            if (nativeMethod.getUnderlying().isAnnotationPresent(AdvancedApi.class)) {
+                lines.add("\t@AdvancedApi");
+            }
+
             ApiVisibility visibility = nativeMethod.getUnderlying().getAnnotation(ApiVisibility.class);
             if (visibility != null) {
                 lines.add(String.format("\t@ApiVisibility(%s)", String.join(", ", Arrays.stream(visibility.value()).map(ApiType::name).toList())));
             }
         }
-        lines.add(String.format("\t%s%s %s(%s);", prefix, method.getReturn(), method.getName(), formatParameters(method.getParameters())));
+        lines.add(String.format("\t%s%s %s(%s);", prefix, formatType(method.getReturn()), method.getName(), formatParameters(method.getParameters())));
+    }
+
+    private static void formatDescription(List<String> lines, String indent, Optional<String> description) {
+        description.ifPresent(value -> {
+            String[] lines2 = extractLines(value);
+            if (lines2.length == 1) {
+                lines.add(String.format("%s/* %s */", indent, lines2[0]));
+            } else {
+                lines.add(indent + "/*");
+                for (String line : lines2) {
+                    lines.add(String.format("%s* %s", indent, line));
+                }
+                lines.add(indent + "*/");
+            }
+        });
     }
 
     private static String formatParameters(List<MethodParameter> parameters) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < parameters.size(); i++) {
-            builder.append(parameters.get(i).type());
+            builder.append(formatType(parameters.get(i).type()));
             builder.append(' ');
             builder.append(parameters.get(i).name());
             if (i < parameters.size() - 1) {
@@ -211,13 +285,16 @@ public class ApiDocsGenerator {
     }
 
     private static String formatType(SType type) {
+        return TYPE_FORMATTER.format(type);
+    }
+
+    private static boolean shouldIncludeConstructors(SType type) {
         if (type instanceof SClassType classType) {
             Class<?> clazz = classType.getJavaClass();
-            if (clazz.getPackageName().startsWith("com.zergatul.cheatutils.scripting.")) {
-                return clazz.getName().substring(clazz.getPackageName().length() + 1);
-            }
+            return !clazz.getPackageName().startsWith("com.zergatul.cheatutils.scripting.modules");
+        } else {
+            return true;
         }
-        return type.toString();
     }
 
     private static List<SType> getPrimitiveTypes() {
@@ -231,6 +308,19 @@ public class ApiDocsGenerator {
                 SFloat.instance,
                 SChar.instance,
                 SString.instance);
+    }
+
+    private static String formatGetSet(boolean canGet, boolean canSet) {
+        if (canGet && canSet) {
+            return "{ get; set; }";
+        }
+        if (canGet) {
+            return  "{ get; }";
+        }
+        if (canSet) {
+            return "{ set; }";
+        }
+        return "<error>";
     }
 
     private static String[] extractLines(String str) {

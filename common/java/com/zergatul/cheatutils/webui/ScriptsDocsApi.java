@@ -136,8 +136,4 @@ public class ScriptsDocsApi extends ApiBase {
         }).toList());
         return "(" + parameters + ")" + space + "=>" + space + formatClass(method.getReturnType());
     }
-
-    private String formatComment(String text) {
-        return "<span class=\"comment\">&nbsp;" + StringEscapeUtils.escapeHtml4(text) + "</span>";
-    }
 }

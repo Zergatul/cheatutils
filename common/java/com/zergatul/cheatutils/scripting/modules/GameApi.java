@@ -67,9 +67,9 @@ public class GameApi {
 
     private static final Minecraft mc = Minecraft.getInstance();
 
-    public DimensionApi dimension = new DimensionApi();
-    public BlocksApi blocks = new BlocksApi();
-    public EntitiesApi entities = new EntitiesApi();
+    public final DimensionApi dimension = new DimensionApi();
+    public final BlocksApi blocks = new BlocksApi();
+    public final EntitiesApi entities = new EntitiesApi();
 
     @MethodDescription("""
             Returns true is you are in single player world

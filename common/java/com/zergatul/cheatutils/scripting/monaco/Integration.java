@@ -13,10 +13,15 @@ import com.zergatul.scripting.TextRange;
 import com.zergatul.scripting.analysis.AnalysisResult;
 import com.zergatul.scripting.analysis.Analyzer;
 import com.zergatul.scripting.analysis.definition.DefinitionProvider;
+import com.zergatul.scripting.analysis.hover.HoverInfoFactory;
 import com.zergatul.scripting.analysis.hover.HoverProvider;
+import com.zergatul.scripting.analysis.hover.MappedHoverFactory;
 import com.zergatul.scripting.binding.BinderOutput;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.completion.CompletionProviderFactory;
+import com.zergatul.scripting.completion.MappedSuggestionFactory;
+import com.zergatul.scripting.completion.SuggestionInfoFactory;
+import com.zergatul.scripting.formatting.TypeDisplayFormatter;
 import com.zergatul.scripting.highlighting.HighlightingProvider;
 import com.zergatul.scripting.highlighting.SemanticToken;
 import com.zergatul.scripting.highlighting.SemanticTokenModifier;
@@ -36,8 +41,16 @@ public class Integration {
     public void attach(HttpServer server, String prefix) {
         CompilationParametersResolver resolver = type -> ScriptCompilerRegistry.INSTANCE.getParameters(ScriptType.valueOf(type));
 
-        DocumentationProvider documentationProvider = new DocumentationProvider();
-        CompletionProviderFactory<Suggestion> completionProviderFactory = new CompletionProviderFactory<>(new MonacoSuggestionFactory(documentationProvider));
+        TypeDisplayFormatter typeFormatter = new TypeDisplayFormatter(clazz ->
+                clazz.getName().startsWith("com.zergatul.cheatutils.scripting") ? clazz.getSimpleName() : clazz.getName());
+        CompletionProviderFactory<Suggestion> completionProviderFactory = new CompletionProviderFactory<>(
+                new MappedSuggestionFactory<>(
+                        new SuggestionInfoFactory(typeFormatter),
+                        new MonacoSuggestionMapper()));
+        HoverProvider<List<String>> hoverProvider = new HoverProvider<>(
+                new MappedHoverFactory<>(
+                        new HoverInfoFactory(typeFormatter),
+                        new MonacoHoverMapper()));
 
         Pattern regex = Pattern.compile("Java<com\\.zergatul\\.cheatutils\\.scripting\\.modules\\.(.+)>");
         Pattern rgbRegex = Pattern.compile("^#[0-9a-fA-F]{6}$");
@@ -106,8 +119,7 @@ public class Integration {
 
                         BinderOutput binderOutput = new Analyzer().analyze(request.code, resolver.resolve(request.type)).binderOutput();
 
-                        CustomHoverProvider provider = new CustomHoverProvider();
-                        HoverProvider.HoverResponse response = provider.get(binderOutput, request.line, request.column);
+                        HoverProvider.HoverResponse<List<String>> response = hoverProvider.get(binderOutput, request.line, request.column);
                         Json.sendResponse(exchange, response);
                     } else if (path.equals(prefix + "definition")) {
                         byte[] data = exchange.getRequestBody().readAllBytes();

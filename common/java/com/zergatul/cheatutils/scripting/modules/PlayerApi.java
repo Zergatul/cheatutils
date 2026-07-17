@@ -47,9 +47,9 @@ public class PlayerApi {
 
     private final static Minecraft mc = Minecraft.getInstance();
 
-    public TargetApi target = new TargetApi();
-    public EffectsApi effects = new EffectsApi();
-    public InteractionsApi interactions = new InteractionsApi();
+    public final TargetApi target = new TargetApi();
+    public final EffectsApi effects = new EffectsApi();
+    public final InteractionsApi interactions = new InteractionsApi();
 
     @MethodDescription("""
             Sends text to ingame chat. To send commands use player.command(...) method.
