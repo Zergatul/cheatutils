@@ -40,7 +40,7 @@ public class ClassPathExplorer implements JavaInteropSuggestionProvider {
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         List<String> result = new ArrayList<>();
         for (String className : classes) {
-            if (pattern.matcher(className).matches()) {
+            if (pattern.matcher(className).find()) {
                 result.add(className);
                 if (result.size() >= limit) {
                     break;

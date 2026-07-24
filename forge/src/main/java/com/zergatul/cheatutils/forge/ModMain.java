@@ -33,9 +33,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.versions.forge.ForgeVersion;
 
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 @Mod(Constants.MOD_ID)
 public final class ModMain {
@@ -141,6 +144,18 @@ public final class ModMain {
         @Override
         public boolean hasMod(String modId) {
             return ModList.getModFileById(modId) != null;
+        }
+
+        @Override
+        public List<String> getModsJars() {
+            return ModList.getModFiles().stream()
+                    .map(info -> info.getFile().getFilePath())
+                    .filter(path -> path.getFileSystem() == FileSystems.getDefault())
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar"))
+                    .map(path -> path.toAbsolutePath().normalize().toString())
+                    .distinct()
+                    .toList();
         }
     }
 
