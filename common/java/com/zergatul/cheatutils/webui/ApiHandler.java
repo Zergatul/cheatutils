@@ -79,9 +79,6 @@ public class ApiHandler implements HttpHandler {
         apis.add(new GeneralInformationApi());
         apis.add(new CommitsApi());
 
-        // TODO: remove
-        apis.add(new ClassPathApi());
-
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
             protected FullBrightConfig getConfig() {

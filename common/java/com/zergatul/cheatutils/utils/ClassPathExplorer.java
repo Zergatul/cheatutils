@@ -1,24 +1,30 @@
 package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.scripting.completion.ClassSuggestion;
+import com.zergatul.scripting.completion.ClassSuggestionType;
+import com.zergatul.scripting.completion.JavaInteropSuggestionProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.io.*;
+import java.lang.module.ModuleReader;
+import java.lang.module.ResolvedModule;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 @NullMarked
-public class ClassPathExplorer {
+public class ClassPathExplorer implements JavaInteropSuggestionProvider {
 
     public static final ClassPathExplorer INSTANCE = new ClassPathExplorer();
 
@@ -27,16 +33,65 @@ public class ClassPathExplorer {
 
     private ClassPathExplorer() {}
 
-    public synchronized List<String> getClasses() {
-        if (classes == null) {
-            classes = getClassesInternal();
+    public List<String> find(String regex, int limit) {
+        ensureInitialized();
+        assert classes != null;
+
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        List<String> result = new ArrayList<>();
+        for (String className : classes) {
+            if (pattern.matcher(className).matches()) {
+                result.add(className);
+                if (result.size() >= limit) {
+                    break;
+                }
+            }
         }
 
-        return classes;
+        return result;
+    }
+
+    public List<ClassSuggestion> suggest(String prefix) {
+        ensureInitialized();
+        assert classes != null;
+
+        if (!prefix.isEmpty()) {
+            prefix += '.';
+        }
+
+        Set<ClassSuggestion> result = new HashSet<>();
+        for(String className : classes) {
+            if (!className.startsWith(prefix)) {
+                continue;
+            }
+
+            int nextSeparator = className.indexOf('.', prefix.length());
+            if (nextSeparator == -1) {
+                result.add(new ClassSuggestion(className.substring(prefix.length()), ClassSuggestionType.CLASS));
+            } else {
+                result.add(new ClassSuggestion(className.substring(prefix.length(), nextSeparator), ClassSuggestionType.PACKAGE));
+            }
+        }
+
+        return new ArrayList<>(result);
+    }
+
+    private synchronized void ensureInitialized() {
+        if (classes == null) {
+            long start = System.nanoTime();
+            try {
+                classes = getClassesInternal();
+            } finally {
+                logger.info("Finished scanning in {} ms", (System.nanoTime() - start) / 1_000_000);
+            }
+        }
     }
 
     private List<String> getClassesInternal() {
         Set<String> output = new HashSet<>(32768);
+        for (ResolvedModule module : ModuleLayer.boot().configuration().modules()) {
+            getClassesByModule(module, output);
+        }
         for (String path : getClassPaths()) {
             getClassesByPath(path, output);
         }
@@ -47,6 +102,21 @@ public class ClassPathExplorer {
         List<String> result = new ArrayList<>(output);
         result.sort(String.CASE_INSENSITIVE_ORDER);
         return Collections.unmodifiableList(result);
+    }
+
+    private void getClassesByModule(ResolvedModule module, Set<String> output) {
+        try (ModuleReader reader = module.reference().open()) {
+            Iterator<String> iterator = reader.list().iterator();
+            while (iterator.hasNext()) {
+                String resource = iterator.next();
+                if (resource.endsWith(".class")) {
+                    String className = relativeToClassName(resource);
+                    addClass(className, output);
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e);
+        }
     }
 
     private List<String> getClassPaths() {
@@ -149,7 +219,55 @@ public class ClassPathExplorer {
             return;
         }
 
+        // exclude compiler generated classes like "net.minecraft.client.Minecraft$1"
+        // they are not usable from scripting language anyway
+        int start = 0;
+        int length = 0;
+        for (int i = 0; i < className.length(); i++) {
+            char ch = className.charAt(i);
+            if (ch == '.' || ch == '$') {
+                if (!isValidIdentifier(className, start, length)) {
+                    return;
+                }
+                start = i + 1;
+                length = 0;
+            } else {
+                length++;
+            }
+        }
+
+        if (!isValidIdentifier(className, start, length)) {
+            return;
+        }
+
         output.add(className);
+    }
+
+    // identifier rules copied from scripting language, not from Java
+    private static boolean isValidIdentifier(String value, int start, int length) {
+        if (value.isEmpty()) {
+            return false;
+        }
+
+        if (!isIdentifierStart(value.charAt(start))) {
+            return false;
+        }
+
+        for (int i = 1; i < length; i++) {
+            if (!isIdentifier(value.charAt(start + i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean isIdentifierStart(int ch) {
+        return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ch == '_';
+    }
+
+    private static boolean isIdentifier(int ch) {
+        return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ('0' <= ch && ch <= '9') || ch == '_';
     }
 
     private static String relativeToClassName(String path) {

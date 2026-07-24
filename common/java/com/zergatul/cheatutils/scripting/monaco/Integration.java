@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.utils.ClassPathExplorer;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.webui.WebHelper;
 import com.zergatul.scripting.TextRange;
@@ -46,7 +47,8 @@ public class Integration {
         CompletionProviderFactory<Suggestion> completionProviderFactory = new CompletionProviderFactory<>(
                 new MappedSuggestionFactory<>(
                         new SuggestionInfoFactory(typeFormatter),
-                        new MonacoSuggestionMapper()));
+                        new MonacoSuggestionMapper()),
+                ClassPathExplorer.INSTANCE);
         HoverProvider<List<String>> hoverProvider = new HoverProvider<>(
                 new MappedHoverFactory<>(
                         new HoverInfoFactory(typeFormatter),
