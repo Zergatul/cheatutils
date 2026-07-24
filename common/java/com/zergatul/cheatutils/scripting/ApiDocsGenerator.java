@@ -97,7 +97,7 @@ public class ApiDocsGenerator {
             buildType(lines, SType.fromJavaType(clazz));
         }
 
-        List<PropertyReference> apis = SType.fromJavaType(Root.class).getStaticProperties();
+        List<PropertyReference> apis = getStaticProperties(SType.fromJavaType(Root.class));
 
         lines.add("");
         lines.add("// --- Available APIs ---");
@@ -149,10 +149,10 @@ public class ApiDocsGenerator {
                         formatType(type),
                         baseClass != null && baseClass != Object.class ? " : " + formatType(SType.fromJavaType(type.getJavaClass().getSuperclass())) : ""));
 
-        for (PropertyReference property : sortedProperties(type.getStaticProperties())) {
+        for (PropertyReference property : sortedProperties(getStaticProperties(type))) {
             formatProperty(lines, "static ", property);
         }
-        for (MethodReference method : sortedMethods(type.getStaticMethods())) {
+        for (MethodReference method : sortedMethods(getStaticMethods(type))) {
             formatMethod(lines, "static ", method);
         }
         if (shouldIncludeConstructors(type)) {
@@ -160,10 +160,10 @@ public class ApiDocsGenerator {
                 lines.add(String.format("\tconstructor(%s);", formatParameters(constructor.getParameters())));
             }
         }
-        for (PropertyReference property : sortedProperties(type.getInstanceProperties())) {
+        for (PropertyReference property : sortedProperties(getInstanceProperties(type))) {
             formatProperty(lines, "", property);
         }
-        for (MethodReference method : sortedMethods(type.getDeclaredInstanceMethods())) {
+        for (MethodReference method : sortedMethods(getInstanceMethods(type))) {
             formatMethod(lines, "", method);
         }
         for (IndexOperation operation : type.getIndexOperations()) {
@@ -222,8 +222,44 @@ public class ApiDocsGenerator {
                 .toList();
     }
 
+    private static List<PropertyReference> getStaticProperties(SType type) {
+        return type
+                .getDeclaredProperties()
+                .stream()
+                .filter(p -> p.getVisibility() == Visibility.PUBLIC)
+                .filter(MemberReference::isStatic)
+                .toList();
+    }
+
+    private static List<MethodReference> getStaticMethods(SType type) {
+        return type
+                .getDeclaredMethods()
+                .stream()
+                .filter(m -> m.getVisibility() == Visibility.PUBLIC)
+                .filter(MemberReference::isStatic)
+                .toList();
+    }
+
+    private static List<PropertyReference> getInstanceProperties(SType type) {
+        return type
+                .getDeclaredProperties()
+                .stream()
+                .filter(p -> p.getVisibility() == Visibility.PUBLIC)
+                .filter(p -> !p.isStatic())
+                .toList();
+    }
+
+    private static List<MethodReference> getInstanceMethods(SType type) {
+        return type
+                .getDeclaredMethods()
+                .stream()
+                .filter(m -> m.getVisibility() == Visibility.PUBLIC)
+                .filter(m -> !m.isStatic())
+                .toList();
+    }
+
     private static void formatProperty(List<String> lines, String prefix, PropertyReference property) {
-        if (!property.isPublic()) {
+        if (property.getVisibility() != Visibility.PUBLIC) {
             return;
         }
 
@@ -232,7 +268,7 @@ public class ApiDocsGenerator {
     }
 
     private static void formatMethod(List<String> lines, String prefix, MethodReference method) {
-        if (!method.isPublic()) {
+        if (method.getVisibility() != Visibility.PUBLIC) {
             return;
         }
 
