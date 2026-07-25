@@ -1,20 +1,21 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
 layout(std140) uniform Inputs {
     mat4 MVP;
     vec2 ViewportSize;
 };
 
-in vec3 inPointA;
-in vec3 inPointB;
-in vec4 inColor;
-in float inLineWidth;
+layout(location = 0) in vec3 inPointA;
+layout(location = 1) in vec3 inPointB;
+layout(location = 2) in vec4 inColor;
+layout(location = 3) in float inLineWidth;
 
-noperspective out float vAlongPx;
-noperspective out float vSidePx;
-noperspective out vec4 vColor;
-noperspective out float vLineLengthPx;
-noperspective out float vHalfWidthPx;
+layout(location = 0) noperspective out float vAlongPx;
+layout(location = 1) noperspective out float vSidePx;
+layout(location = 2) noperspective out vec4 vColor;
+layout(location = 3) noperspective out float vLineLengthPx;
+layout(location = 4) noperspective out float vHalfWidthPx;
 
 const float T_VALUES[6] = float[](0.0, 0.0, 1.0, 0.0, 1.0, 1.0);
 const float SIDE_VALUES[6] = float[](-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
@@ -75,7 +76,7 @@ void main() {
         return;
     }
 
-    int vertex = gl_VertexID % 6;
+    int vertex = gl_VertexIndex % 6;
     float inT = T_VALUES[vertex];
     float inSide = SIDE_VALUES[vertex];
 

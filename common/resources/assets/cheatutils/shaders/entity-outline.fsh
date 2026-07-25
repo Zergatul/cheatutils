@@ -1,4 +1,5 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
 uniform sampler2D Texture0;
 
@@ -8,9 +9,9 @@ layout(std140) uniform Inputs {
     float PixelHeight;
 };
 
-in vec2 TexCoordinates;
+layout(location = 0) in vec2 TexCoordinates;
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
 
 void main() {
     float x1 = TexCoordinates.x - PixelWidth;
