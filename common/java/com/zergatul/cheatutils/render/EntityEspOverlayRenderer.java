@@ -12,6 +12,7 @@ import com.mojang.renderpearl.api.textures.FilterMode;
 import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
 
@@ -19,6 +20,7 @@ import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class EntityEspOverlayRenderer {
 
@@ -52,15 +54,23 @@ public class EntityEspOverlayRenderer {
                 Objects.requireNonNull(renderTarget.getColorTexture()),
                 GuiRenderer.CLEAR_COLOR,
                 Objects.requireNonNull(renderTarget.getDepthTexture()),
-                1.0);
-        RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
-        RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
+                0.0);
+    }
+
+    public void draw(FeatureRenderDispatcher.PreparedFrame frame) {
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                () -> Constants.MOD_ID + ": Entity overlay mask",
+                Objects.requireNonNull(renderTarget.getColorTextureView()),
+                Optional.empty(),
+                Objects.requireNonNull(renderTarget.getDepthTextureView()),
+                OptionalDouble.empty())
+        ) {
+            RenderSystem.bindDefaultUniforms(renderPass);
+            frame.executeOutline(renderPass);
+        }
     }
 
     public void end(Color color) {
-        RenderSystem.outputColorTextureOverride = null;
-        RenderSystem.outputDepthTextureOverride = null;
-
         try (MemoryStack stack = MemoryStack.stackPush()) {
             ByteBuffer buffer = stack.malloc(16);
             buffer.putFloat(color.getRed() / 255f);
@@ -76,8 +86,8 @@ public class EntityEspOverlayRenderer {
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty())
         ) {
-            renderPass.setPipeline(pipeline);
-            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+            renderPass.setUniform(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.draw(3, 1, 0, 0);
         }

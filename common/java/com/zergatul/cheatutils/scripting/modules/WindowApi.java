@@ -47,7 +47,7 @@ public class WindowApi {
             """)
     public void emulateMouseMove(int x, int y) {
         MouseHandlerAccessor handler = (MouseHandlerAccessor) mc.mouseHandler;
-        handler.onMove_CU(window.handle(), x, y);
+        handler.onMove_CU(window.handle(), x, y, x - handler.getXPos_CU(), y - handler.getYPos_CU());
     }
 
     @MethodDescription("""

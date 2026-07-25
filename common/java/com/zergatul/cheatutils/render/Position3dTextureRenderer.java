@@ -98,8 +98,8 @@ public class Position3dTextureRenderer {
                 mainRenderTarget.getDepthTextureView(),
                 OptionalDouble.empty())
         ) {
-            renderPass.setPipeline(pipeline);
-            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+            renderPass.setUniform(BindGroupLayouts.TEXTURE0_NAME, texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.draw(bufferBuilder.getVertexCount(), 1, 0, 0);

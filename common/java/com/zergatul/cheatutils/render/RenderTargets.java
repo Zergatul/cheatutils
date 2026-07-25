@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.renderpearl.api.GpuFormat;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import net.minecraft.client.Minecraft;
@@ -24,8 +24,8 @@ public class RenderTargets {
                 "[" + Constants.MOD_ID + "] ESP",
                 windowState.width,
                 windowState.height,
-                true,
-                GpuFormat.RGBA8_UNORM);
+                GpuFormat.RGBA8_UNORM,
+                GpuFormat.D32_FLOAT);
         Events.FramebuffersResize.add(event -> result.resize(event.width(), event.height()));
         return result;
     }
@@ -36,8 +36,8 @@ public class RenderTargets {
                 "[" + Constants.MOD_ID + "] Status Overlay",
                 windowState.width,
                 windowState.height,
-                false,
-                GpuFormat.RGBA8_UNORM);
+                GpuFormat.RGBA8_UNORM,
+                null);
         Events.FramebuffersResize.add(event -> result.resize(event.width(), event.height()));
         return result;
     }

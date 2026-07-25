@@ -18,7 +18,7 @@ import java.util.List;
 public abstract class MixinScreen {
 
     @Inject(at = @At("TAIL"), method = "getTooltipFromItem", cancellable = true)
-    private static void onGetTooltipFromItem(Minecraft mc, ItemStack itemStack, CallbackInfoReturnable<List<Component>> info) {
+    private static void onGetTooltipFromItem(Minecraft minecraft, ItemStack itemStack, CallbackInfoReturnable<List<Component>> info) {
         List<Component> list = new ArrayList<>();
         Events.GatherTooltipComponents.trigger(new GatherTooltipComponentsEvent(itemStack, list));
         if (!list.isEmpty()) {

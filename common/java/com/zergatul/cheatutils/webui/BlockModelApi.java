@@ -18,12 +18,14 @@ import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.feature.BlockModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.feature.phase.FeatureRenderPhase;
 import net.minecraft.client.renderer.feature.phase.SimpleFeatureRenderPhase;
 import net.minecraft.client.renderer.feature.phase.TranslucentFeatureRenderPhase;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.client.renderer.feature.submit.TranslucentSubmit;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -91,6 +93,14 @@ public class BlockModelApi extends ApiBase {
         extractBlockModelQuads(submission.modelParts(), submission.tintLayers(), submission.tintColor(), output);
     }
 
+    private void extractQuads(FeatureRenderPhase<?> phase, List<Quad> output) {
+        if (phase instanceof SimpleFeatureRenderPhase simple) {
+            extractQuads(simple, output);
+        } else if (phase instanceof TranslucentFeatureRenderPhase translucent) {
+            extractQuads(translucent, output);
+        }
+    }
+
     private void extractQuads(SimpleFeatureRenderPhase phase, List<Quad> output) {
         for (SimpleFeatureRenderPhase.FeatureSubmits<SubmitNode> submits : ((SimpleFeatureRenderPhaseAccessor) phase).getSubmitsByFeature_CU()) {
             if (submits == null) {
@@ -130,7 +140,8 @@ public class BlockModelApi extends ApiBase {
     }
 
     private <S> void extractQuads(RenderType renderType, ModelFeatureRenderer.Submit<S> submission, List<Quad> output) {
-        TextureAtlasSprite sprite = submission.sprite();
+        UvMapping uvMapping = submission.uvMapping();
+        TextureAtlasSprite sprite = uvMapping instanceof TextureAtlasSprite atlasSprite ? atlasSprite : null;
         String textureLocation;
         if (sprite != null) {
             textureLocation = sprite.atlasLocation().toString();
@@ -147,10 +158,10 @@ public class BlockModelApi extends ApiBase {
             for (ModelPart.Polygon polygon : cube.polygons) {
                 output.add(new Quad(
                         textureLocation,
-                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[0], submission.tintedColor()),
-                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[1], submission.tintedColor()),
-                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[2], submission.tintedColor()),
-                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[3], submission.tintedColor())));
+                        new Vertex(submission.pose(), pose, uvMapping, polygon.vertices()[0], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, uvMapping, polygon.vertices()[1], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, uvMapping, polygon.vertices()[2], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, uvMapping, polygon.vertices()[3], submission.tintedColor())));
             }
         });
     }
@@ -232,15 +243,15 @@ public class BlockModelApi extends ApiBase {
             this.v = v;
         }
 
-        public Vertex(PoseStack.Pose pose1, PoseStack.Pose pose2, @Nullable TextureAtlasSprite sprite, ModelPart.Vertex vertex, int color) {
+        public Vertex(PoseStack.Pose pose1, PoseStack.Pose pose2, @Nullable UvMapping uvMapping, ModelPart.Vertex vertex, int color) {
             Vector3f pos = pose1.pose().mul(pose2.pose(), new Matrix4f()).transformPosition(vertex.worldX(), vertex.worldY(), vertex.worldZ(), new Vector3f());
             this.x = pos.x() - 0.5f;
             this.y = pos.y() - 0.5f;
             this.z = pos.z() - 0.5f;
             setColor(color);
-            if (sprite != null) {
-                this.u = sprite.getU(vertex.u());
-                this.v = sprite.getV(vertex.v());
+            if (uvMapping != null) {
+                this.u = uvMapping.getU(vertex.u());
+                this.v = uvMapping.getV(vertex.v());
             } else {
                 this.u = vertex.u();
                 this.v = vertex.v();

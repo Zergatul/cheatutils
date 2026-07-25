@@ -7,13 +7,12 @@ import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
-import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -38,13 +37,12 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
     @Inject(method = "render", at = @At("HEAD"))
     private void onRenderLevelBegin(
             final GraphicsResourceAllocator resourceAllocator,
-            final DeltaTracker deltaTracker,
             final boolean renderOutline,
             final CameraRenderState cameraState,
-            final Matrix4fc modelViewMatrix,
             final GpuBufferSlice terrainFog,
             final Vector4f fogColor,
             final boolean shouldRenderSky,
+            final boolean consistentDepthRequired,
             final CallbackInfo info
     ) {
         Events.BeforeRenderWorld.trigger();
@@ -55,13 +53,12 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;"))
     private void onRenderLevelRememberLastModelViewMatrix(
             final GraphicsResourceAllocator resourceAllocator,
-            final DeltaTracker deltaTracker,
             final boolean renderOutline,
             final CameraRenderState cameraState,
-            final Matrix4fc modelViewMatrix,
             final GpuBufferSlice terrainFog,
             final Vector4f fogColor,
             final boolean shouldRenderSky,
+            final boolean consistentDepthRequired,
             final CallbackInfo info
     ) {
         // fix for Iris compatibility
@@ -73,13 +70,12 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             at = @At(value = "INVOKE", target = "Lorg/joml/Matrix4fStack;popMatrix()Lorg/joml/Matrix4fStack;", shift = At.Shift.AFTER))
     private void onRenderLevelEnd(
             final GraphicsResourceAllocator resourceAllocator,
-            final DeltaTracker deltaTracker,
             final boolean renderOutline,
             final CameraRenderState cameraState,
-            final Matrix4fc modelViewMatrix,
             final GpuBufferSlice terrainFog,
             final Vector4f fogColor,
             final boolean shouldRenderSky,
+            final boolean consistentDepthRequired,
             final CallbackInfo info
     ) {
         ProfilerFiller profiler = Profiler.get();
@@ -87,7 +83,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
         // fix for Iris compatibility
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().mul(this.storedModelViewMatrix_CU);
-        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, deltaTracker));
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent(cameraState, this.modifiedProjectionMatrix_CU, Minecraft.getInstance().getDeltaTracker()));
         RenderSystem.getModelViewStack().popMatrix();
         profiler.pop();
 

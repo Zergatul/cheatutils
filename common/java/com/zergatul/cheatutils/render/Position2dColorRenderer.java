@@ -69,7 +69,7 @@ public class Position2dColorRenderer {
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
                 Optional.empty()
         )) {
-            renderPass.setPipeline(pipeline);
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.draw(buffer.getVertexCount(), 1, 0, 0);

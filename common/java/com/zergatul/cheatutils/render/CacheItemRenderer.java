@@ -1,19 +1,21 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -193,18 +195,24 @@ public class CacheItemRenderer {
         poseStack.pushPose();
         poseStack.translate(left + halfSlot, top + halfSlot, 0.0F);
         poseStack.scale(slotSize, -slotSize, slotSize);
-        RenderSystem.outputColorTextureOverride = textureView;
-        RenderSystem.outputDepthTextureOverride = depthTextureView;
         projection.setupOrtho(-1000.0F, 1000.0F, textureSize, textureSize, true);
         RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(projection), ProjectionType.ORTHOGRAPHIC);
         RenderSystem.enableScissorForRenderTypeDraws(left, textureSize - bottom, slotSize, slotSize);
         Lighting.Entry lighting = renderState.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
         mc.gameRenderer.lighting().setupFor(lighting);
         renderState.submit(poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, 0);
-        mc.gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
+        FeatureRenderDispatcher dispatcher = mc.gameRenderer.featureRenderDispatcher();
+        try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage);
+             RenderPass renderPass = device.createCommandEncoder().createRenderPass(
+                     () -> Constants.MOD_ID + ": Items atlas",
+                     textureView,
+                     Optional.empty(),
+                     depthTextureView,
+                     OptionalDouble.empty())) {
+            RenderSystem.bindDefaultUniforms(renderPass);
+            FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
+        }
         RenderSystem.disableScissorForRenderTypeDraws();
-        RenderSystem.outputColorTextureOverride = null;
-        RenderSystem.outputDepthTextureOverride = null;
         poseStack.popPose();
     }
 

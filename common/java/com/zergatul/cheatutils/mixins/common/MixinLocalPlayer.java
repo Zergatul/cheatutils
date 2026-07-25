@@ -15,6 +15,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Final;
@@ -128,7 +129,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     }
 
     @Inject(at = @At("HEAD"), method = "openTextEdit", cancellable = true)
-    private void onOpenTextEdit(SignBlockEntity sign, boolean isFrontText, CallbackInfo info) {
+    private void onOpenTextEdit(SignBlockEntity sign, SignTextSlot slot, CallbackInfo info) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
         Privacy privacy = Privacy.instance;
 
@@ -144,8 +145,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         }
 
         Optional.<Component>empty()
-                .or(() -> privacy.checkExploitable(sign.getBackText()))
-                .or(() -> privacy.checkExploitable(sign.getFrontText()))
+                .or(() -> privacy.checkExploitable(sign.getText(SignTextSlot.BACK)))
+                .or(() -> privacy.checkExploitable(sign.getText(SignTextSlot.FRONT)))
                 .ifPresent(reason -> {
                     this.connection.getConnection().disconnect(reason);
                     info.cancel();

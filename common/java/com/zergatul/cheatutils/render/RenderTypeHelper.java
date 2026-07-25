@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderSetupAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.RenderTypeAccessor;
 import net.minecraft.client.renderer.rendertype.RenderSetup;

@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -193,6 +193,11 @@ public class CustomizableVanillaFontRenderer {
 
         @Override
         public @NotNull VertexConsumer setUv2(int i, int j) {
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setUv3(float u, float v) {
             return this;
         }
 

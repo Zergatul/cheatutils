@@ -59,6 +59,12 @@ public class ShadedVertexConsumerWrapper implements VertexConsumer {
     }
 
     @Override
+    public @NotNull VertexConsumer setUv3(float u, float v) {
+        inner.setUv3(u, v);
+        return this;
+    }
+
+    @Override
     public @NotNull VertexConsumer setNormal(float x, float y, float z) {
         inner.setNormal(x, y, z);
         return this;

@@ -9,7 +9,7 @@ public class BindGroupLayouts {
     public static final String UNIFORM_BLOCK_NAME = "Inputs";
 
     public static final BindGroupLayout TEXTURE0 = BindGroupLayout.builder()
-            .withSampler(TEXTURE0_NAME)
+            .withUniform(TEXTURE0_NAME, UniformType.COMBINED_IMAGE_SAMPLER)
             .build();
 
     public static final BindGroupLayout INPUTS = BindGroupLayout.builder()

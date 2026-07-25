@@ -9,7 +9,6 @@ import com.zergatul.cheatutils.extensions.LevelRendererExtension;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.modules.visuals.FullBright;
 import net.minecraft.client.CameraType;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.state.GameRenderState;
@@ -45,23 +44,23 @@ public abstract class MixinGameRenderer {
     }
 
     @Inject(method = "render", at = @At("HEAD"))
-    private void onBeforeRender(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo info) {
-        Events.RenderTickStart.trigger(deltaTracker);
+    private void onBeforeRender(CallbackInfo info) {
+        Events.RenderTickStart.trigger(this.minecraft.getDeltaTracker());
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resize(II)V"))
-    private void onResizeFramebuffers(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
+    private void onResizeFramebuffers(CallbackInfo info) {
         Events.FramebuffersResize.trigger(new ResizeEvent(this.gameRenderState.windowRenderState.width, this.gameRenderState.windowRenderState.height));
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderBuffers;endFrame()V"))
-    private void onRenderBuffersEndFrame(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
+    private void onRenderBuffersEndFrame(CallbackInfo info) {
         Events.RenderBuffersCleanUp.trigger();
     }
 
     @ModifyArg(
             method = "renderLevel",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ProjectionMatrixBuffer;getBuffer(Lorg/joml/Matrix4f;)Lcom/mojang/blaze3d/buffers/GpuBufferSlice;"))
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ProjectionMatrixBuffer;getBuffer(Lorg/joml/Matrix4f;)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;"))
     private Matrix4f onCaptureModifiedProjectionMatrix(Matrix4f matrix) {
         ((LevelRendererExtension) this.minecraft.levelRenderer).setModifiedProjectionMatrix_CU(matrix);
         return matrix;

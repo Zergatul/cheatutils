@@ -10,6 +10,7 @@ import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
@@ -91,7 +92,7 @@ public class BlockEspOverlayRenderer {
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
                 Optional.of(GuiRenderer.CLEAR_COLOR))
         ) {
-            renderPass.setPipeline(drawPipeline);
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(drawPipeline));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, drawUbo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.draw(36, bufferBuilder.getBlockCount(), 0, 0);
@@ -112,8 +113,8 @@ public class BlockEspOverlayRenderer {
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty())
         ) {
-            renderPass.setPipeline(blitPipeline);
-            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(blitPipeline));
+            renderPass.setUniform(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, blitUbo);
             renderPass.draw(3, 1, 0, 0);
         }
