@@ -35,9 +35,12 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.NeoForgeVersion;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import static com.zergatul.cheatutils.common.Events.*;
 
@@ -144,6 +147,18 @@ public class ModMain {
         @Override
         public boolean hasMod(String modId) {
             return ModList.get().getModFileById(modId) != null;
+        }
+
+        @Override
+        public List<String> getModsJars() {
+            return ModList.get().getModFiles().stream()
+                    .map(info -> info.getFile().getFilePath())
+                    .filter(path -> path.getFileSystem() == FileSystems.getDefault())
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar"))
+                    .map(path -> path.toAbsolutePath().normalize().toString())
+                    .distinct()
+                    .toList();
         }
     }
 

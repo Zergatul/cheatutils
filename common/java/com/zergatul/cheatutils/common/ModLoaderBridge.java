@@ -22,6 +22,7 @@ public interface ModLoaderBridge {
     String getModVersion();
     int getModCount();
     boolean hasMod(String modId);
+    List<String> getModsJars();
 
     default void extractQuads(SubmitNode submission, List<BlockModelApi.Quad> output) {}
 }

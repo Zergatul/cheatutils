@@ -20,6 +20,7 @@ public class MonacoSuggestionMapper implements SuggestionMapper<Suggestion> {
         return switch (kind) {
             case KEYWORD -> CompletionItemKind.KEYWORD;
             case TYPE -> CompletionItemKind.CLASS;
+            case PACKAGE -> CompletionItemKind.MODULE;
             case PROPERTY -> CompletionItemKind.PROPERTY;
             case METHOD -> CompletionItemKind.METHOD;
             case CONSTANT -> CompletionItemKind.CONSTANT;

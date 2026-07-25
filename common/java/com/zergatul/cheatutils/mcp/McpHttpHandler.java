@@ -37,6 +37,7 @@ public class McpHttpHandler implements HttpHandler {
                 new SaveScriptTool(),
                 new GetLastAttemptedScriptTool(),
                 new GetCompletionsTool(),
+                new SearchClassesTool(),
                 new EvaluateExpressionTool(),
                 new ExecCodeTool(),
                 new ScreenshotTool(),

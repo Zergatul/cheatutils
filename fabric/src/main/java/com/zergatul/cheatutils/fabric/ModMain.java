@@ -18,6 +18,8 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadView;
 import net.fabricmc.fabric.api.client.renderer.v1.render.submit.ExtendedBlockModelSubmit;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.ModOrigin;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,6 +30,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import org.joml.Vector3f;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -109,6 +113,23 @@ public class ModMain implements ClientModInitializer {
         @Override
         public boolean hasMod(String modId) {
             return FabricLoader.getInstance().isModLoaded(modId);
+        }
+
+        @Override
+        public List<String> getModsJars() {
+            List<String> result = new ArrayList<>();
+            for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
+                if (mod.getOrigin().getKind() != ModOrigin.Kind.PATH) {
+                    continue;
+                }
+
+                for (Path path : mod.getOrigin().getPaths()) {
+                    if (path.toString().endsWith(".jar")) {
+                        result.add(path.toString());
+                    }
+                }
+            }
+            return result;
         }
 
         @Override
