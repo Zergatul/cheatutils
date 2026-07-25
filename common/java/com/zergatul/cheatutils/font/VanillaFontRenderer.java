@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.font;
 
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.render.VanillaFontHelper;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
@@ -250,6 +250,11 @@ public class VanillaFontRenderer extends FontRenderer {
 
         @Override
         public @NotNull VertexConsumer setUv2(int i, int j) {
+            return this;
+        }
+
+        @Override
+        public @NotNull VertexConsumer setUv3(float i, float j) {
             return this;
         }
 
