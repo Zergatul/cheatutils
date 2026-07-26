@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
@@ -79,7 +79,7 @@ public class LightLevel implements Module {
     }
 
     public void onChanged() {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             boolean value = ConfigStore.instance.getConfig().lightLevelConfig.enabled;
             if (active != value) {
                 active = value;

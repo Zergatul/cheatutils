@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
 import com.zergatul.cheatutils.font.*;
@@ -36,7 +36,7 @@ public class WorldMarkers implements FontBackendHolder {
     }
 
     public void onFontChange() {
-        TickEndExecutor.instance.execute(() -> fontChanged = true);
+        ClientTickEndExecutor.instance.execute(() -> fontChanged = true);
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {

@@ -6,7 +6,7 @@ import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.services.ProfileResult;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTitleConfig;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
@@ -96,11 +96,11 @@ public class EntityTitle implements FontBackendHolder {
     }
 
     public void onTitleFontChange() {
-        TickEndExecutor.instance.execute(() -> titleFontChanged = true);
+        ClientTickEndExecutor.instance.execute(() -> titleFontChanged = true);
     }
 
     public void onEnchantmentFontChange() {
-        TickEndExecutor.instance.execute(() -> enchantmentFontChanged = true);
+        ClientTickEndExecutor.instance.execute(() -> enchantmentFontChanged = true);
     }
 
     private void onPreRenderGui(RenderGuiEvent event) {

@@ -20,7 +20,7 @@ public class AutoHotbar implements Module {
     private ItemStack lastTickOffhand;
 
     private AutoHotbar() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
         clear();
     }
 

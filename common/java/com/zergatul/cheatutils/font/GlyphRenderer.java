@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.font;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.render.AtlasTexture;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -45,7 +45,7 @@ public abstract class GlyphRenderer extends FontBackend {
         @Override
         public void run() {
             LOGGER.info("Releasing atlas texture: {}", rendererName);
-            TickEndExecutor.instance.execute(texture::dispose);
+            ClientTickEndExecutor.instance.execute(texture::dispose);
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.font;
 
-import com.zergatul.cheatutils.utils.GlobalTicks;
+import com.zergatul.cheatutils.utils.ClientTicks;
 
 public abstract class FontBackend {
 
@@ -13,10 +13,10 @@ public abstract class FontBackend {
     public abstract FontRenderer createFontRenderer(FontRenderDetails details);
 
     protected boolean isStale() {
-        return (GlobalTicks.get() - lastUsed) > 10 * 60 * 20; // 10 minutes
+        return (ClientTicks.get() - lastUsed) > 10 * 60 * 20; // 10 minutes
     }
 
     protected void markUse() {
-        lastUsed = GlobalTicks.get();
+        lastUsed = ClientTicks.get();
     }
 }

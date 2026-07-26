@@ -38,7 +38,7 @@ public class AimAssist implements Module {
     private Entity targetLockEntity;
 
     private AimAssist() {
-        Events.ClientTickEnd.add(this::onTickEnd);
+        Events.InGameTickEnd.add(this::onTickEnd);
         Events.PlayerReleaseUsingItem.add(this::onPlayerReleaseUsingItem);
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);

@@ -84,7 +84,8 @@ public class Modules {
         register(ContainerSummary.instance);
         register(CrystalAura.instance);
 
-        register(TickEndExecutor.instance);
+        register(ClientTickEndExecutor.instance);
+        register(InGameTickEndExecutor.instance);
 
         // new order independent modules
         //==========================================

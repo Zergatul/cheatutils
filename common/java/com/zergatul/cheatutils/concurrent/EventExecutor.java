@@ -56,6 +56,10 @@ public abstract class EventExecutor extends AbstractExecutorService {
         }
     }
 
+    protected void clearQueue() {
+        queue.clear();
+    }
+
     protected void processQueue() {
         Runnable task;
         while ((task = queue.poll()) != null) {

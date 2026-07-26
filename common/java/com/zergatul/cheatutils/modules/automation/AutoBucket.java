@@ -17,11 +17,9 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -54,7 +52,7 @@ public class AutoBucket implements Module {
     private BlockPos itemAppliedRealPos;
 
     private AutoBucket() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.RawBlockUpdated.add(this::onBlockUpdated);
     }
 

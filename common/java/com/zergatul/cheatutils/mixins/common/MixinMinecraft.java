@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -83,7 +82,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "tick()V")
     private void onBeforeTick(CallbackInfo info) {
-        if (this.isGameLoadFinished() && this.level != null && this.player != null) {
+        if (this.isGameLoadFinished()) {
             Events.ClientTickStart.trigger();
         }
     }
@@ -99,7 +98,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("TAIL"), method = "tick()V")
     private void onAfterTick(CallbackInfo info) {
-        if (this.isGameLoadFinished() && this.level != null && this.player != null) {
+        if (this.isGameLoadFinished()) {
             Events.ClientTickEnd.trigger();
         }
     }

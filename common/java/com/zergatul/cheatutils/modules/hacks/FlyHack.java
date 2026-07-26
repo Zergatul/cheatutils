@@ -25,7 +25,7 @@ public class FlyHack implements Module {
         NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
         Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
-        Events.ClientTickEnd.add(this::onTickEnd);
+        Events.InGameTickEnd.add(this::onTickEnd);
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {

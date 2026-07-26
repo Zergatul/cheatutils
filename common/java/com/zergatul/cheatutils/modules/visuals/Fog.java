@@ -12,7 +12,7 @@ public class Fog implements Module {
     public static final Fog instance = new Fog();
 
     private Fog() {
-        Events.ClientTickStart.add(this::onClientTickStart);
+        Events.InGameTickStart.add(this::onClientTickStart);
     }
 
     public void onClientTickStart() {

@@ -29,7 +29,7 @@ public class ContainerButtonsController {
     private final Minecraft mc = Minecraft.getInstance();
 
     private ContainerButtonsController() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     public boolean isValidScreen(Screen screen) {

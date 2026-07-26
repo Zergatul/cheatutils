@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.scripting.AdvancedApi;
 import com.zergatul.cheatutils.scripting.types.HttpRequestWrapper;
 import com.zergatul.cheatutils.scripting.types.HttpResponseWrapper;
@@ -18,7 +18,10 @@ public class HttpApi {
 
     private final HttpClient client = HttpClient.newHttpClient();
 
-    @MethodDescription("URL must be an absolute HTTP(S) URI. A syntactically invalid URI returns the literal string '<INVALID URI>'.")
+    @MethodDescription("""
+            URL must be an absolute HTTP(S) URI. A syntactically invalid URI returns the literal string '<INVALID URI>'.
+            On successful response continuation will run from tick end event, and may run after world unload.
+            """)
     public CompletableFuture<String> get(String url) {
         URI uri;
         try {
@@ -32,16 +35,19 @@ public class HttpApi {
                 .uri(uri)
                 .build();
         CompletableFuture<HttpResponse<String>> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
-        return future.thenApplyAsync(HttpResponse::body, TickEndExecutor.instance);
+        return future.thenApplyAsync(HttpResponse::body, ClientTickEndExecutor.instance);
     }
 
-    @MethodDescription("An invalid request returns status code 0 and the literal body '<INVALID REQUEST>'.")
+    @MethodDescription("""
+            An invalid request returns status code 0 and the literal body '<INVALID REQUEST>'.
+            On successful response continuation will run from tick end event, and may run after world unload.
+            """)
     public CompletableFuture<HttpResponseWrapper> send(HttpRequestWrapper request) {
         if (request == HttpRequestWrapper.INVALID) {
             return CompletableFuture.completedFuture(HttpResponseWrapper.INVALID_REQUEST);
         }
 
         CompletableFuture<HttpResponse<String>> future = client.sendAsync(request.getRequest(), HttpResponse.BodyHandlers.ofString());
-        return future.thenApplyAsync(HttpResponseWrapper::new, TickEndExecutor.instance);
+        return future.thenApplyAsync(HttpResponseWrapper::new, ClientTickEndExecutor.instance);
     }
 }

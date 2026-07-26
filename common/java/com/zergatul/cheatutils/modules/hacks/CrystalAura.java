@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
@@ -53,10 +52,10 @@ public class CrystalAura implements Module {
         Events.BeforeProcessQueuedPackets.add(this::onBeforeProcessQueuedPackets);
         Events.EntityAdded.add(this::onEntityAdded);
         Events.AfterProcessQueuedPackets.add(this::onAfterProcessQueuedPackets);
-        Events.ClientTickStart.add(this::onTickStart);
+        Events.InGameTickStart.add(this::onTickStart);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos);
-        Events.ClientTickEnd.add(this::onTickEnd);
+        Events.InGameTickEnd.add(this::onTickEnd);
     }
 
     public void onEnableStateChanged() {

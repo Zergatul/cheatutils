@@ -15,7 +15,7 @@ public class ClientTickController {
     private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
 
     private ClientTickController() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     public <T> T getResult(Supplier<T> supplier, int timeout) {

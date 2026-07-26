@@ -17,10 +17,10 @@ public class ElytraFly implements Module {
     private boolean applyFly;
 
     private ElytraFly() {
-        Events.ClientTickStart.add(this::onClientTickStart);
+        Events.InGameTickStart.add(this::onClientTickStart);
         Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     public Vec3 onModifyDeltaMove(Vec3 delta) {

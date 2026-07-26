@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.modules.esp;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.render.*;
@@ -60,7 +60,7 @@ public class BlockEsp {
     public void setScript(BlockEspConfig config, @Nullable BlockEspConsumer script) {
         // Have to run from the main thread, since BlockEsp module doesn't snapshot scripts
         // and if update happens mid-frame it can cause NullReference exception.
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (script == null) {
                 scripts.remove(config);
             } else {
@@ -70,7 +70,7 @@ public class BlockEsp {
     }
 
     public void clearScripts() {
-        TickEndExecutor.instance.execute(scripts::clear);
+        ClientTickEndExecutor.instance.execute(scripts::clear);
     }
 
     private void render(RenderWorldLastEvent event) {

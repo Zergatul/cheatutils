@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.font;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
-import com.zergatul.cheatutils.utils.GlobalTicks;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
+import com.zergatul.cheatutils.utils.ClientTicks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +20,7 @@ public class FontLibrary {
     private final Map<FontParameters, FontBackendEntry> backends = new HashMap<>();
 
     private FontLibrary() {
-        Events.ClientTickStart.add(this::onTickStart);
+        Events.InGameTickStart.add(this::onTickStart);
     }
 
     public CompletableFuture<FontBackend> createBackend(FontParameters parameters) {
@@ -49,7 +49,7 @@ public class FontLibrary {
                 fonts.put(key, entry);
                 fontFutures.remove(key);
                 return entry;
-            }, TickEndExecutor.instance);
+            }, ClientTickEndExecutor.instance);
             fontFutures.put(key, fontFuture);
         }
 
@@ -59,13 +59,13 @@ public class FontLibrary {
             logger.info("Created font backend asynchronously: {}", parameters);
             backends.put(parameters, new FontBackendEntry(renderer, entry));
             future.complete(renderer);
-        }, TickEndExecutor.instance);
+        }, ClientTickEndExecutor.instance);
 
         return future;
     }
 
     private void onTickStart() {
-        if (GlobalTicks.get() % 100 == 0) {
+        if (ClientTicks.get() % 100 == 0) {
             if (removeStaleFontBackends()) {
                 removeUnusedFonts();
             }

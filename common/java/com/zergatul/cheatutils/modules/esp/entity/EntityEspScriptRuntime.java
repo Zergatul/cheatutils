@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.esp.entity;
 
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.StylizedText;
 import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
@@ -23,7 +23,7 @@ public class EntityEspScriptRuntime {
     private EntityEspScriptRuntime() {}
 
     public void clearScripts() {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             scripts.clear();
             scriptResults.clear();
         });
@@ -32,7 +32,7 @@ public class EntityEspScriptRuntime {
     public void setScript(EntityEspConfig config, @Nullable EntityEspConsumer script) {
         // Have to run from the main thread, since EntityEsp module doesn't snapshot scripts
         // and if update happens mid-frame it can cause NullReference exception.
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (script == null) {
                 scripts.remove(config);
             } else {

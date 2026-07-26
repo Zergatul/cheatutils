@@ -19,7 +19,7 @@ public class AutoTotem implements Module {
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoTotem() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     private void onClientTickEnd() {

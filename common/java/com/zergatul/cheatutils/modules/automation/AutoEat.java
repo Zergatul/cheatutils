@@ -19,7 +19,7 @@ public class AutoEat {
     private State state;
 
     private AutoEat() {
-        Events.ClientTickStart.add(this::onClickTickStart);
+        Events.InGameTickStart.add(this::onClickTickStart);
         Events.PlayerReleaseUsingItem.add(this::onPlayerReleaseUsingItem);
         state = State.NONE;
     }

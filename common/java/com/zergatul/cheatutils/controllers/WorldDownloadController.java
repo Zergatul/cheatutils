@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.mojang.serialization.Codec;
 import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.mixins.common.accessors.RegionalFileStorageAccessor;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class WorldDownloadController {
 
@@ -43,8 +44,8 @@ public class WorldDownloadController {
     }
 
     public void start(String name) {
-        final Object syncObject = new Object();
-        TickEndExecutor.instance.execute(() -> {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        ClientTickEndExecutor.instance.execute(() -> {
             try {
                 stopInternal();
 
@@ -60,40 +61,24 @@ public class WorldDownloadController {
                 logger.error("Cannot start World Download", e);
                 stopInternal();
             } finally {
-                synchronized (syncObject) {
-                    syncObject.notify();
-                }
+                future.complete(null);
             }
         });
 
-        try {
-            synchronized (syncObject) {
-                syncObject.wait();
-            }
-        } catch (InterruptedException e) {
-            // do nothing
-        }
+        future.join();
     }
 
     public void stop() {
-        final Object syncObject = new Object();
-        TickEndExecutor.instance.execute(() -> {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        ClientTickEndExecutor.instance.execute(() -> {
             try {
                 stopInternal();
             } finally {
-                synchronized (syncObject) {
-                    syncObject.notify();
-                }
+                future.complete(null);
             }
         });
 
-        try {
-            synchronized (syncObject) {
-                syncObject.wait();
-            }
-        } catch (InterruptedException e) {
-            // do nothing
-        }
+        future.join();
     }
 
     public void onChunkFilledFromPacket(LevelChunk chunk) {
@@ -127,7 +112,6 @@ public class WorldDownloadController {
             ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).onEnabledChanged();
         } catch (Throwable e) {
             logger.error("Cannot stop World Download", e);
-            stop();
         }
     }
 

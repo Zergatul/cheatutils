@@ -17,7 +17,8 @@ public class OsApi {
 
     @CurseForgeRestricted
     @MethodDescription("""
-            Starts external program and returns exit code
+            Starts external program and returns exit code.
+            Continuation will run from tick end event, and may run after world unload.
             """)
     public CompletableFuture<Integer> execute(String path) {
         return OsApiCurseForgeExcluded.execute(path);
@@ -26,6 +27,7 @@ public class OsApi {
     @CurseForgeRestricted
     @MethodDescription("""
             Starts external program and returns exit code
+            Continuation will run from tick end event, and may run after world unload.
             """)
     public CompletableFuture<Integer> execute(String path, String[] arguments) {
         return OsApiCurseForgeExcluded.execute(path, arguments);

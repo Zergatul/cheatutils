@@ -15,7 +15,7 @@ public class LockInputsController {
     private boolean lastHoldUse;
 
     private LockInputsController() {
-        Events.ClientTickStart.add(this::onClientTickStart);
+        Events.InGameTickStart.add(this::onClientTickStart);
     }
 
     private void onClientTickStart() {

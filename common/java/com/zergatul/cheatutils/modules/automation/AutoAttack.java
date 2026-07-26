@@ -16,7 +16,7 @@ public class AutoAttack implements Module {
     private int nextExtraTicks = Integer.MIN_VALUE;
 
     private AutoAttack() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     private void onClientTickEnd() {

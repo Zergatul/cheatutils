@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ class OsApiCurseForgeExcluded {
             return CompletableFuture.failedFuture(e);
         }
 
-        return process.onExit().thenApplyAsync(Process::exitValue, TickEndExecutor.instance);
+        return process.onExit().thenApplyAsync(Process::exitValue, ClientTickEndExecutor.instance);
     }
 
     public static CompletableFuture<Integer> execute(String path, String[] arguments) {
@@ -33,6 +33,6 @@ class OsApiCurseForgeExcluded {
             return CompletableFuture.failedFuture(e);
         }
 
-        return process.onExit().thenApplyAsync(Process::exitValue, TickEndExecutor.instance);
+        return process.onExit().thenApplyAsync(Process::exitValue, ClientTickEndExecutor.instance);
     }
 }

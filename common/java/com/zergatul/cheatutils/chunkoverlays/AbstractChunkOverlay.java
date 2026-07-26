@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.client.Minecraft;
@@ -35,7 +35,7 @@ public abstract class AbstractChunkOverlay {
     }
 
     public final void onEnabledChanged() {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (isEnabled()) {
                 AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
                 for (int i = 0; i < chunks.length(); i++) {

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.blocks;
 
 import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
 import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.InGameTickEndExecutor;
 import com.zergatul.cheatutils.configs.BlockPlacerConfig;
 import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
@@ -206,9 +206,9 @@ public class BlockPlacer {
 
                         return CompletableFuture.completedFuture(null)
                                 .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
-                                .thenRunAsync(() -> {}, TickEndExecutor.instance)
+                                .thenCompose(unused -> InGameTickEndExecutor.instance.waitTicks(0))
                                 .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
-                                .thenRunAsync(() -> {}, TickEndExecutor.instance)
+                                .thenCompose(unused -> InGameTickEndExecutor.instance.waitTicks(0))
                                 .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
                                 .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
                     }
