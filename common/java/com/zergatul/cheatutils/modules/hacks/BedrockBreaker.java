@@ -61,7 +61,7 @@ public class BedrockBreaker implements Module {
     private int tickCount;
 
     private BedrockBreaker() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     public void process() {

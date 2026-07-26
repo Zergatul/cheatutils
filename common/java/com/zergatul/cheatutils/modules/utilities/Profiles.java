@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.google.gson.*;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ConfigWriterQueue;
 import com.zergatul.cheatutils.modules.Module;
@@ -221,7 +221,7 @@ public class Profiles implements Module {
         if (RenderSystem.isOnRenderThread()) {
             runnable.run();
         } else {
-            TickEndExecutor.instance.execute(runnable);
+            ClientTickEndExecutor.instance.execute(runnable);
         }
     }
 

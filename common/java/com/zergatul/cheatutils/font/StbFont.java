@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.font;
 
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
@@ -49,7 +49,7 @@ public class StbFont {
         @Override
         public void run() {
             LOGGER.info("Releasing STB font: {}", fontName);
-            TickEndExecutor.instance.execute(() -> {
+            ClientTickEndExecutor.instance.execute(() -> {
                 stbInfo.free();
                 buffer.clear();
             });

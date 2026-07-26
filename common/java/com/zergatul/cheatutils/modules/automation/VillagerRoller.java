@@ -61,7 +61,7 @@ public class VillagerRoller implements Module {
     private Runnable script;
 
     private VillagerRoller() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.RawBlockUpdated.add(this::onBlockChanged);
         Events.EntityInteract.add(this::onEntityInteract);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);

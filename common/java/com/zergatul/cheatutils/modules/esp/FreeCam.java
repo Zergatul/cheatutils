@@ -61,7 +61,7 @@ public class FreeCam implements Module {
 
     private FreeCam() {
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
-        Events.ClientTickStart.add(this::onClientTickStart);
+        Events.InGameTickStart.add(this::onClientTickStart);
         Events.ModifyFieldOfViewAnimation.add(this::onModifyFieldOfViewAnimation);
         Events.ModifyFieldOfViewBasedOnLiquid.add(this::onModifyFieldOfViewBasedOnLiquid);
         Events.RenderTickStart.add(this::onRenderTickStart);

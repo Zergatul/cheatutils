@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.common;
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -28,6 +29,7 @@ public class Events {
     public static final SimpleEventHandler AfterProcessQueuedPackets = new SimpleEventHandler();
 
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
+    public static final SimpleEventHandler InGameTickStart = new SimpleEventHandler();
     // GameRenderer.pick(1)
     public static final ParameterizedEventHandler<DeltaTracker> RenderTickStart = new ParameterizedEventHandler<>();
     // GameRenderer.pick(partial)
@@ -56,6 +58,7 @@ public class Events {
     public static final SimpleEventHandler AfterSendPlayerPos = new SimpleEventHandler();
 
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
+    public static final SimpleEventHandler InGameTickEnd = new SimpleEventHandler();
 
     public static final SimpleEventHandler RenderBuffersCleanUp = new SimpleEventHandler();
 
@@ -112,6 +115,22 @@ public class Events {
     public static final SimpleEventHandler BeforeStartAttack = new SimpleEventHandler();
     public static final SimpleEventHandler AfterStartAttack = new SimpleEventHandler();
     //=====================================
+
+    static {
+        ClientTickStart.add(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level != null && mc.player != null) {
+                InGameTickStart.trigger();
+            }
+        });
+        ClientTickEnd.add(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level != null && mc.player != null) {
+                InGameTickEnd.trigger();
+            }
+        });
+    }
+
     /**
      * binds 2 functions to the beforeAttack and afterAttack event respectively.
      * Tries to ensure that the order of module execution is preserved <br>

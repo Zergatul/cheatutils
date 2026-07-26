@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.LocalPlayerAccessor;
@@ -12,6 +12,7 @@ import com.zergatul.cheatutils.scripting.types.*;
 import com.zergatul.cheatutils.scripting.types.nbt.CompoundTagWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.EntityUtils;
+import com.zergatul.cheatutils.utils.ClientTicks;
 import com.zergatul.cheatutils.utils.RayCast;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
@@ -135,26 +136,35 @@ public class GameApi {
             public void run() {
                 boolean shouldWait = mc.gui.screen() instanceof ConnectScreen || mc.gui.screen() instanceof LevelLoadingScreen;
                 if (shouldWait) {
-                    TickEndExecutor.instance.waitTicks(1, this);
+                    ClientTickEndExecutor.instance.waitTicks(1).thenRun(this);
                 } else {
                     result.complete(!(mc.gui.screen() instanceof DisconnectedScreen));
                 }
             }
         }
 
-        TickEndExecutor.instance.execute(new ScreenCheck());
+        ClientTickEndExecutor.instance.execute(new ScreenCheck());
 
         return result;
     }
 
     @MethodDescription("""
-            Returns current game tick number
+            Returns the current world's game-time tick as seen by the client, or 0 when no world is loaded.
+            The value is initialized or resynchronized by the server and advances while the client world is ticking.
             """)
     public int getTick() {
         if (mc.level == null) {
             return 0;
         }
         return (int) mc.level.getGameTime();
+    }
+
+    @MethodDescription("""
+            Returns the number of client ticks since startup.
+            This counter advances in menus and continues across world and server changes.
+            """)
+    public long getClientTickCount() {
+        return ClientTicks.get();
     }
 
     public boolean isRaining() {

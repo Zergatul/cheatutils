@@ -9,7 +9,6 @@ import com.zergatul.cheatutils.configs.LogoutSpotsConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.Connection;
@@ -36,7 +35,7 @@ public class LogoutSpots implements Module {
         Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
         Events.DimensionChange.add(this::onDimensionChanged);
         Events.PlayerInfoUpdated.add(this::onPlayerInfoUpdated);
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld); // move before other ESPs?
     }
 

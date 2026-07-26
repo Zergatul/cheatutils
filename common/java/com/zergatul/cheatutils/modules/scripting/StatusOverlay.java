@@ -7,7 +7,7 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
 import com.zergatul.cheatutils.font.*;
@@ -59,7 +59,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
     }
 
     public void onFontChange() {
-        TickEndExecutor.instance.execute(() -> fontChanged = true);
+        ClientTickEndExecutor.instance.execute(() -> fontChanged = true);
     }
 
     public void setScript(Runnable script) {

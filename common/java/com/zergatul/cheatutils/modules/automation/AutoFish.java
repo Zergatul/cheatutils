@@ -32,7 +32,7 @@ public class AutoFish implements Module {
 
     private AutoFish() {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     private void onClientTickEnd() {

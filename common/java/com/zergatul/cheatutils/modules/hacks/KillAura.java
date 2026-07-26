@@ -37,7 +37,7 @@ public class KillAura implements Module {
     private KillAura() {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos);
-        Events.ClientTickStart.add(this::onClientTickStart);
+        Events.InGameTickStart.add(this::onClientTickStart);
         Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
         Events.DimensionChange.add(this::onDimensionChange);
     }

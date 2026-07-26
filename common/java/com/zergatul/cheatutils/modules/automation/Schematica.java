@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
@@ -72,7 +72,7 @@ public class Schematica {
 
     public List<EntrySummary> getSummary() {
         CompletableFuture<List<EntrySummary>> future = new CompletableFuture<>();
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             future.complete(entries.stream().map(Entry::asSummary).toList());
         });
         try {
@@ -134,7 +134,7 @@ public class Schematica {
     }
 
     public void onBlockRenderingStateChanged() {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             boolean renderBlocks = isBlockRenderingEnabled();
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
@@ -148,7 +148,7 @@ public class Schematica {
     }
 
     public void place(SchemaFile file, String name, PlacingSettings placing) {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             final Entry entry = new Entry(file, name, placing);
             entries.add(entry);
 
@@ -184,7 +184,7 @@ public class Schematica {
     }
 
     public void remove(int index) {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -223,7 +223,7 @@ public class Schematica {
     }
 
     public void clear() {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
                     mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
@@ -236,7 +236,7 @@ public class Schematica {
     }
 
     public void rescan(int index) {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -264,7 +264,7 @@ public class Schematica {
     }
 
     public void move(int index, int x, int y, int z) {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -335,21 +335,23 @@ public class Schematica {
     }
 
     public DownloadInfo download(String format, int x1, int y1, int z1, int x2, int y2, int z2) {
-        if (mc.level == null) {
-            return DownloadInfo.of("You have to join Minecraft world");
-        }
-
-        Function<SchematicaOutputData, DownloadInfo> create;
-        switch (format) {
-            case "litematic" -> create = LitematicaOutputFile::create;
-            case "schem-v1" -> create = SpongeSchematicaVersion1OutputFile::create;
-            default -> {
-                return DownloadInfo.of(String.format("Format '%s' is not supported", format));
-            }
-        }
-
         CompletableFuture<DownloadInfo> future = new CompletableFuture<>();
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (mc.level == null) {
+                future.complete(DownloadInfo.of("You have to join Minecraft world"));
+                return;
+            }
+
+            Function<SchematicaOutputData, DownloadInfo> create;
+            switch (format) {
+                case "litematic" -> create = LitematicaOutputFile::create;
+                case "schem-v1" -> create = SpongeSchematicaVersion1OutputFile::create;
+                default -> {
+                    future.complete(DownloadInfo.of(String.format("Format '%s' is not supported", format)));
+                    return;
+                }
+            }
+
             ClientChunkCache source = mc.level.getChunkSource();
             for (int x = x1; x <= x2; x += 16) {
                 for (int z = z1; z < z2; z += 16) {

@@ -17,7 +17,7 @@ public class FakeRotation {
     //private Runnable afterSent;
 
     private FakeRotation() {
-        Events.ClientTickStart.add(this::onTickStart);
+        Events.InGameTickStart.add(this::onTickStart);
         Events.BeforeSendPlayerPos.add(this::onBeforeSendPosition);
         Events.AfterSendPlayerPos.add(this::onAfterSendPosition);
     }

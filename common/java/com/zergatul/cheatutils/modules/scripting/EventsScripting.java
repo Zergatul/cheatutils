@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.scripting;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
@@ -50,20 +50,22 @@ public class EventsScripting implements Module {
         });
 
         Events.ClientTickEnd.add(() -> {
+            if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
+                if (mc.level == null && mc.player == null) {
+                    for (Runnable handler : onMenuTickEnd) {
+                        handler.run();
+                    }
+                }
+            }
+        });
+
+        Events.InGameTickEnd.add(() -> {
             if (canTrigger()) {
                 for (Runnable handler : onTickEnd) {
                     handler.run();
                 }
             }
-        });
-
-        Events.ClientTickEnd.add(() -> {
-            if (mc.player == null && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
-                for (Runnable handler : onMenuTickEnd) {
-                    handler.run();
-                }
-            }
-        });
+        }, 1000); // we want to run this after all modules finish their job
 
         Events.EntityAdded.add(entity -> {
             if (canTrigger() && entity instanceof RemotePlayer) {
@@ -145,12 +147,12 @@ public class EventsScripting implements Module {
     public void setScript(Runnable runnable) {
         clear();
         if (runnable != null) {
-            TickEndExecutor.instance.execute(runnable);
+            ClientTickEndExecutor.instance.execute(runnable);
         }
     }
 
     public void clear() {
-        TickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             onHandleKeys.clear();
             onTickEnd.clear();
             onMenuTickEnd.clear();

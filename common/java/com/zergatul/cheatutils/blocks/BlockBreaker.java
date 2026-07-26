@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.blocks;
 
 import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
 import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
-import com.zergatul.cheatutils.concurrent.TickEndExecutor;
+import com.zergatul.cheatutils.concurrent.InGameTickEndExecutor;
 import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
@@ -58,7 +58,12 @@ public class BlockBreaker {
     }
 
     private static void queueCheckBreakingProgress(BlockPos pos, InteractionConfig config, CompletableFuture<Void> future) {
-        TickEndExecutor.instance.execute(() -> {
+        InGameTickEndExecutor.instance.waitTicks(0).whenComplete((unused, exception) -> {
+            if (exception != null) {
+                future.completeExceptionally(exception);
+                return;
+            }
+
             if (config.shouldAutoRotate()) {
                 AfterPlayerAiStepExecutor.instance.execute(() -> {
                     FakeRotation.instance.setServerRotation(Vec3.atCenterOf(pos));

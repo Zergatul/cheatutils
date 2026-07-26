@@ -30,7 +30,7 @@ public class AutoCraft {
     private State state = State.NONE;
 
     private AutoCraft() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     private void onClientTickEnd() {

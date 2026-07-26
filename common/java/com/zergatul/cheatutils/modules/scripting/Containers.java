@@ -21,7 +21,7 @@ public class Containers implements Module {
     private static final List<BooleanSupplier> handlers = new ArrayList<>();
 
     private Containers() {
-        Events.ClientTickEnd.add(this::onTickEnd);
+        Events.InGameTickEnd.add(this::onTickEnd);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
     }
 

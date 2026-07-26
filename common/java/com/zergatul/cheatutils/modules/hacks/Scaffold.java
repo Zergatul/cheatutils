@@ -34,7 +34,7 @@ public class Scaffold implements Module {
     private final List<BlockPos> list = new ArrayList<>();
 
     private Scaffold() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     private void onClientTickEnd() {

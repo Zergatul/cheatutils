@@ -15,7 +15,7 @@ public class SpeedCounterController {
     private final LinkedList<Entry> list = new LinkedList<>();
 
     private SpeedCounterController() {
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.InGameTickEnd.add(this::onClientTickEnd);
     }
 
     public double getHorizontalSpeed() {
