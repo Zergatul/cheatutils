@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Zergatul Cheat Utils</title>
     <link rel="icon" href="/images/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,9 +22,8 @@
                     → <a :href="'/#/' + module.path">{{ module.name }}</a>
                 </template>
             </div>
-            <div class="search">
+            <div class="search" v-if="isMain()">
                 <input type="text" placeholder="Search modules..."
-                    v-if="isMain()"
                     v-model="search"
                     ref="searchInput"
                     @input="onFilterInput()"
