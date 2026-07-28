@@ -1,8 +1,10 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.controllers.ClientTickController;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.concurrent.ExecutionException;
 
 public class CoordinatesApi extends ApiBase {
 
@@ -12,19 +14,15 @@ public class CoordinatesApi extends ApiBase {
     }
 
     @Override
-    public String get() {
-        Vec3 pos = ClientTickController.instance.getResult(() -> {
+    public String get() throws ExecutionException, InterruptedException {
+        return gson.toJson(ClientTickEndExecutor.instance.submit(() -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null) {
                 return null;
             }
-            return mc.player.getPosition(1.0f);
-        }, 1000);
-        if (pos == null) {
-            return gson.toJson(null);
-        } else {
-            return gson.toJson(new Response(pos));
-        }
+            Vec3 pos = mc.player.getPosition(1.0f);
+            return new Response(pos);
+        }).get());
     }
 
     public static class Response {
