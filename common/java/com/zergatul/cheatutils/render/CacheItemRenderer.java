@@ -189,7 +189,7 @@ public class CacheItemRenderer {
         GpuDevice device = RenderSystem.getDevice();
         device.createCommandEncoder().clearColorAndDepthTextures(
                 texture, GuiRenderer.CLEAR_COLOR, depthTexture, 0.0,
-                left, textureSize - bottom, slotSize, slotSize);
+                left, textureSize - bottom, slotSize, slotSize, 0);
 
         PoseStack poseStack = new PoseStack();
         poseStack.pushPose();
