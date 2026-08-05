@@ -65,7 +65,9 @@ public class ContainerSummary implements Module {
                         if (slot.container instanceof ResultContainer) {
                             continue;
                         }
-                        items.add(slot.getItem());
+                        if (!slot.getItem().isEmpty()) {
+                            items.add(slot.getItem());
+                        }
                     }
                 }
             }
