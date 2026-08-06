@@ -13,6 +13,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ServerboundAttackPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -156,7 +157,8 @@ public class KillAura implements Module {
         if (target != null) {
             LocalPlayer player = mc.player;
             mc.gameMode.attack(player, target);
-            mc.player.swing(InteractionHand.MAIN_HAND);
+            mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
+            mc.player.connection.send(ServerboundPunchPacket.INSTANCE);
             target = null;
 
             lastAttackTick = ticks;
@@ -167,7 +169,8 @@ public class KillAura implements Module {
             for (int i = 1; i < targets.size(); i++) {
                 NetworkPacketsController.instance.sendPacket(new ServerboundAttackPacket(targets.get(i).getId()));
             }
-            mc.player.swing(InteractionHand.MAIN_HAND);
+            mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
+            mc.player.connection.send(ServerboundPunchPacket.INSTANCE);
             targets.clear();
 
             lastAttackTick = ticks;

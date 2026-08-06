@@ -75,8 +75,8 @@ public final class SimpleBlockPlacer {
             BlockHitResult hit = new BlockHitResult(target, direction, neighbourPos, false);
             InteractionResult result = mc.gameMode.useItemOn(mc.player, slot.getHand(), hit);
             if (result.consumesAction()) {
-                if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                    mc.player.swing(slot.getHand());
+                if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+                    mc.player.swing(slot.getHand(), mc.player.getItemInHand(slot.getHand()).getInteractAnimation(), false);
                 }
                 return true;
             }
@@ -104,8 +104,8 @@ public final class SimpleBlockPlacer {
             }
 
             if (result.consumesAction()) {
-                if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                    mc.player.swing(slot.getHand());
+                if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+                    mc.player.swing(slot.getHand(), mc.player.getItemInHand(slot.getHand()).getInteractAnimation(), false);
                 }
                 return true;
             }

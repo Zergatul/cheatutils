@@ -44,7 +44,7 @@ public class BlockBreaker {
                         if (!instamined) {
                             mc.gameMode.continueDestroyBlock(pos, Direction.UP);
                         }
-                        mc.player.swing(InteractionHand.MAIN_HAND);
+                        mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), true);
                         if (instamined) {
                             future.complete(null);
                         } else {
@@ -87,7 +87,7 @@ public class BlockBreaker {
                 // check distance to block
                 if (isInRange(pos, config)) {
                     if (mc.gameMode.continueDestroyBlock(pos, Direction.UP)) {
-                        mc.player.swing(InteractionHand.MAIN_HAND);
+                        mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
                         queueCheckBreakingProgress(pos, config, future);
                     } else {
                         // block destroyed

@@ -19,6 +19,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -395,7 +396,8 @@ public class PlayerApi {
 
         Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
         mc.gameMode.attack(mc.player, entity);
-        mc.player.swing(InteractionHand.MAIN_HAND);
+        mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
+        mc.player.connection.send(ServerboundPunchPacket.INSTANCE);
         return true;
     }
 
@@ -422,7 +424,8 @@ public class PlayerApi {
         }
 
         mc.gameMode.attack(mc.player, entity);
-        mc.player.swing(InteractionHand.MAIN_HAND);
+        mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
+        mc.player.connection.send(ServerboundPunchPacket.INSTANCE);
         return true;
     }
 
@@ -685,8 +688,8 @@ public class PlayerApi {
             InteractionHand hand = offhand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
             InteractionResult result = mc.gameMode.useItemOn(mc.player, hand, hit);
             if (result.consumesAction()) {
-                if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                    mc.player.swing(hand);
+                if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+                    mc.player.swing(hand, mc.player.getItemInHand(hand).getInteractAnimation(), false);
                     return true;
                 }
             }
@@ -740,8 +743,8 @@ public class PlayerApi {
                 mc.player.input.keyPresses = new InputBuilder(oldInput).shift(true).build();
 
                 if (mc.gameMode.interact(mc.player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND) instanceof InteractionResult.Success success) {
-                    if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                        mc.player.swing(InteractionHand.MAIN_HAND);
+                    if (success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+                        mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getInteractAnimation(), false);
                     }
                 }
 
@@ -770,8 +773,8 @@ public class PlayerApi {
 
             // copy from Minecraft.startUseItem
             if (mc.gameMode.interact(mc.player, entity, new EntityHitResult(entity), hand) instanceof InteractionResult.Success success) {
-                if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                    mc.player.swing(hand);
+                if (success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+                    mc.player.swing(hand, mc.player.getMainHandItem().getInteractAnimation(), false);
                 }
             }
         }
