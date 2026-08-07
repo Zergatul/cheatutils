@@ -190,81 +190,81 @@ public class EntityTitle implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        RenderingContext context = new RenderingContext(matrix, itemScale);
+        try (RenderingContext context = new RenderingContext(matrix, itemScale)) {
+            List<ItemStack> items = new ArrayList<>();
+            List<List<EnchantmentEntry>> enchantments = new ArrayList<>();
 
-        List<ItemStack> items = new ArrayList<>();
-        List<List<EnchantmentEntry>> enchantments = new ArrayList<>();
-
-        for (EntityEntry entry : entities) {
-            Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
-            Vector4f v2 = event.getProjection().transform(v1);
-            if (v2.w <= 0) {
-                continue; // behind
-            }
-
-            float invW = 1 / v2.w;
-            int xc = Math.round(v2.x * invW * halfScrWidth);
-            int yc = Math.round(-v2.y * invW * halfScrHeight);
-
-            StylizedText text = getEntityText(config, entry);
-            FlexColumnElement flex = new FlexColumnElement().setGap(scale);
-
-            if (text != null) {
-                flex.append(
-                        new DivisionElement()
-                                .setMargin(scale)
-                                .setBackgroundColor(Color.BLACK.getRGB() & 0x40000000)
-                                .setContent(
-                                        new TextElement(titleFontRenderer, text)
-                                                .setCompactHeight(true)));
-            }
-
-            if (entry.showOwner) {
-                UUID owner = entry.entityLike.getOwner();
-                if (owner != null) {
-                    usernameCache.getUnchecked(owner).ifPresent(s -> {
-                        flex.insertAt(0, new DivisionElement()
-                                .setMargin(scale)
-                                .setBackgroundColor(Color.BLACK.getRGB() & 0x40000000)
-                                .setContent(
-                                        new TextElement(titleFontRenderer, StylizedText.of("Owner: " + s))
-                                                .setCompactHeight(true)));
-                    });
+            for (EntityEntry entry : entities) {
+                Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)entry.position.x, (float)entry.position.y, (float)entry.position.z, 1));
+                Vector4f v2 = event.getProjection().transform(v1);
+                if (v2.w <= 0) {
+                    continue; // behind
                 }
-            }
 
-            if (entry.showEquippedItems && enchantmentFontRenderer != null) {
-                entry.entityLike.collectEquipment(items);
+                float invW = 1 / v2.w;
+                int xc = Math.round(v2.x * invW * halfScrWidth);
+                int yc = Math.round(-v2.y * invW * halfScrHeight);
 
-                if (!items.isEmpty()) {
-                    ItemOwner owner = entry.entityLike.getEquipmentOwner();
+                StylizedText text = getEntityText(config, entry);
+                FlexColumnElement flex = new FlexColumnElement().setGap(scale);
 
-                    int maxEnchantments = 0;
-                    enchantments.clear();
-                    for (ItemStack item : items) {
-                        List<EnchantmentEntry> entries = getEnchantments(item);
-                        enchantments.add(entries);
-                        if (entries.size() > maxEnchantments) {
-                            maxEnchantments = entries.size();
-                        }
-                    }
-
-                    TableElement table = new TableElement(1 + maxEnchantments, items.size());
-                    //table.setBorderWidth(1);
-                    for (int i = 0; i < items.size(); i++) {
-                        List<EnchantmentEntry> itemEnchantments = enchantments.get(i);
-                        for (int j = 0; j < itemEnchantments.size(); j++) {
-                            table.setContent(maxEnchantments - itemEnchantments.size() + j, i,
-                                    new TextElement(enchantmentFontRenderer, itemEnchantments.get(j).getText()));
-                        }
-                        table.setContent(maxEnchantments, i, new ItemStackElement(owner, items.get(i)));
-                    }
-
-                    flex.insertAt(0, table);
+                if (text != null) {
+                    flex.append(
+                            new DivisionElement()
+                                    .setMargin(scale)
+                                    .setBackgroundColor(Color.BLACK.getRGB() & 0x40000000)
+                                    .setContent(
+                                            new TextElement(titleFontRenderer, text)
+                                                    .setCompactHeight(true)));
                 }
-            }
 
-            context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
+                if (entry.showOwner) {
+                    UUID owner = entry.entityLike.getOwner();
+                    if (owner != null) {
+                        usernameCache.getUnchecked(owner).ifPresent(s -> {
+                            flex.insertAt(0, new DivisionElement()
+                                    .setMargin(scale)
+                                    .setBackgroundColor(Color.BLACK.getRGB() & 0x40000000)
+                                    .setContent(
+                                            new TextElement(titleFontRenderer, StylizedText.of("Owner: " + s))
+                                                    .setCompactHeight(true)));
+                        });
+                    }
+                }
+
+                if (entry.showEquippedItems && enchantmentFontRenderer != null) {
+                    entry.entityLike.collectEquipment(items);
+
+                    if (!items.isEmpty()) {
+                        ItemOwner owner = entry.entityLike.getEquipmentOwner();
+
+                        int maxEnchantments = 0;
+                        enchantments.clear();
+                        for (ItemStack item : items) {
+                            List<EnchantmentEntry> entries = getEnchantments(item);
+                            enchantments.add(entries);
+                            if (entries.size() > maxEnchantments) {
+                                maxEnchantments = entries.size();
+                            }
+                        }
+
+                        TableElement table = new TableElement(1 + maxEnchantments, items.size());
+                        //table.setBorderWidth(1);
+                        for (int i = 0; i < items.size(); i++) {
+                            List<EnchantmentEntry> itemEnchantments = enchantments.get(i);
+                            for (int j = 0; j < itemEnchantments.size(); j++) {
+                                table.setContent(maxEnchantments - itemEnchantments.size() + j, i,
+                                        new TextElement(enchantmentFontRenderer, itemEnchantments.get(j).getText()));
+                            }
+                            table.setContent(maxEnchantments, i, new ItemStackElement(owner, items.get(i)));
+                        }
+
+                        flex.insertAt(0, table);
+                    }
+                }
+
+                context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
+            }
         }
     }
 

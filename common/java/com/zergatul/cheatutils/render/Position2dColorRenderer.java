@@ -79,7 +79,7 @@ public class Position2dColorRenderer {
         }
     }
 
-    public static class BufferBuilder {
+    public static class BufferBuilder implements AutoCloseable {
 
         private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x1000);
         private int vertices;
@@ -99,6 +99,11 @@ public class Position2dColorRenderer {
 
         public boolean isEmpty() {
             return vertices == 0;
+        }
+
+        @Override
+        public void close() {
+            vertexBuffer.close();
         }
 
         public void rect(

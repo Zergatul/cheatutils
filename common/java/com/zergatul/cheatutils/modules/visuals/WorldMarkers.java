@@ -81,52 +81,52 @@ public class WorldMarkers implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        RenderingContext context = new RenderingContext(matrix, scale);
+        try (RenderingContext context = new RenderingContext(matrix, scale)) {
+            String dimension = mc.level.dimension().identifier().toString();
+            for (WorldMarkersConfig.Entry entry : config.entries) {
+                if (!entry.enabled) {
+                    continue;
+                }
+                if (!dimension.equals(entry.dimension)) {
+                    continue;
+                }
 
-        String dimension = mc.level.dimension().identifier().toString();
-        for (WorldMarkersConfig.Entry entry : config.entries) {
-            if (!entry.enabled) {
-                continue;
+                double x = entry.x - view.x;
+                double y = entry.y - view.y;
+                double z = entry.z - view.z;
+                if (x * x + y * y + z * z < entry.minDistance * entry.minDistance) {
+                    continue;
+                }
+
+                Vector4f v1 = event.getViewRotation().transform(new Vector4f((float) x, (float) y, (float) z, 1));
+                Vector4f v2 = event.getProjection().transform(v1);
+                if (v2.w <= 0) {
+                    continue; // behind
+                }
+
+                float invW = 1 / v2.w;
+                int xc = Math.round(v2.x * invW * halfScrWidth);
+                int yc = Math.round(-v2.y * invW * halfScrHeight);
+
+                int color = entry.color.getRGB();
+                int inverse = ColorUtils.inverse(color);
+
+                StylizedText text = StylizedText.of(entry.name, entry.color.getRGB());
+                FlexColumnElement flex = new FlexColumnElement();
+                flex.append(
+                        new DivisionElement()
+                                .setBackgroundColor(inverse & 0x40FFFFFF)
+                                .setBorderWidth(config.borderWidth)
+                                .setBorderColor(entry.color.getRGB())
+                                .setMargin(scale)
+                                .setContent(
+                                        new TextElement(fontRenderer, text)
+                                                .setCompactHeight(true)));
+                flex.append(
+                        new RectangleElement(config.borderWidth, (int) fontRenderer.getLineHeight(), entry.color.getRGB()));
+
+                context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
             }
-            if (!dimension.equals(entry.dimension)) {
-                continue;
-            }
-
-            double x = entry.x - view.x;
-            double y = entry.y - view.y;
-            double z = entry.z - view.z;
-            if (x * x + y * y + z * z < entry.minDistance * entry.minDistance) {
-                continue;
-            }
-
-            Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)x, (float)y, (float)z, 1));
-            Vector4f v2 = event.getProjection().transform(v1);
-            if (v2.w <= 0) {
-                continue; // behind
-            }
-
-            float invW = 1 / v2.w;
-            int xc = Math.round(v2.x * invW * halfScrWidth);
-            int yc = Math.round(-v2.y * invW * halfScrHeight);
-
-            int color = entry.color.getRGB();
-            int inverse = ColorUtils.inverse(color);
-
-            StylizedText text = StylizedText.of(entry.name, entry.color.getRGB());
-            FlexColumnElement flex = new FlexColumnElement();
-            flex.append(
-                    new DivisionElement()
-                            .setBackgroundColor(inverse & 0x40FFFFFF)
-                            .setBorderWidth(config.borderWidth)
-                            .setBorderColor(entry.color.getRGB())
-                            .setMargin(scale)
-                            .setContent(
-                                    new TextElement(fontRenderer, text)
-                                            .setCompactHeight(true)));
-            flex.append(
-                    new RectangleElement(config.borderWidth, (int) fontRenderer.getLineHeight(), entry.color.getRGB()));
-
-            context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
         }
     }
 }
