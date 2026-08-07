@@ -115,6 +115,8 @@ public class AtlasTexture {
 
         GlStateManager._glDeleteFramebuffers(srcFBO);
         GlStateManager._glDeleteFramebuffers(dstFBO);
+
+        oldTexture.dispose();
     }
 
     private void copyToLine(Line line, Item item) {

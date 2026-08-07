@@ -52,7 +52,9 @@ public abstract class AbstractChunkOverlay {
                     }
                     segments.clear();
                 }
+                updatedSegments.clear();
             }
+            onEnabledChangedInternal();
         });
     }
 
@@ -106,6 +108,8 @@ public abstract class AbstractChunkOverlay {
     public void onPostDrawSegments(Dimension dimension, Matrix4f matrix, float xp, float zp, float xc, float zc, float multiplier) {
 
     }
+
+    protected void onEnabledChangedInternal() {}
 
     protected final Map<SegmentPos, Segment> getSegmentsMap(Dimension dimension) {
         return dimensions.computeIfAbsent(dimension, d -> new ConcurrentHashMap<>());
