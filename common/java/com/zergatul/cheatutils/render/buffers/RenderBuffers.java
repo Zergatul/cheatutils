@@ -15,7 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class RenderBuffers {
+public class RenderBuffers implements AutoCloseable {
 
     public static final int BACKGROUNDS = -4;
     public static final int ITEMS = 0;
@@ -71,6 +71,22 @@ public class RenderBuffers {
 
         tasks.sort(Comparator.comparingInt(t -> t.zIndex));
         tasks.forEach(t -> t.task.run());
+    }
+
+    @Override
+    public void close() {
+        if (this.color2dMap != null) {
+            this.color2dMap.values().forEach(Position2dColorRenderer.BufferBuilder::close);
+            this.color2dMap.clear();
+        }
+
+        if (this.texColor2dMap != null) {
+            this.texColor2dMap.values().forEach(map -> {
+                map.values().forEach(Position2dTextureColorRenderer.BufferBuilder::close);
+                map.clear();
+            });
+            this.texColor2dMap.clear();
+        }
     }
 
     private boolean hasTexColor2dData(Object2ObjectMap<GpuTextureView, Position2dTextureColorRenderer.BufferBuilder> map) {

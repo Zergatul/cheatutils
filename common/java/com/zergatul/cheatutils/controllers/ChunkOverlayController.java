@@ -91,23 +91,24 @@ public class ChunkOverlayController {
         float multiplier = 1f / (16 * SegmentSize) * scale;
         Dimension dimension = Dimension.get(mc.level);
 
-        Position2dTextureColorRenderer.BufferBuilder buffer = new Position2dTextureColorRenderer.BufferBuilder();
-        for (AbstractChunkOverlay overlay : overlays) {
-            for (Segment segment: overlay.getSegments(dimension)) {
-                if (segment.texture == null) {
-                    continue;
+        try (Position2dTextureColorRenderer.BufferBuilder buffer = new Position2dTextureColorRenderer.BufferBuilder()) {
+            for (AbstractChunkOverlay overlay : overlays) {
+                for (Segment segment : overlay.getSegments(dimension)) {
+                    if (segment.texture == null) {
+                        continue;
+                    }
+
+                    float x = (segment.pos.x * 16 * SegmentSize - xc) * multiplier;
+                    float y = (segment.pos.z * 16 * SegmentSize - zc) * multiplier;
+
+                    buffer.clear();
+                    buffer.rect(x, y, scale, scale, Color.WHITE.getRGB());
+                    Position2dTextureColorRenderer.getInstance().draw(
+                            mc.gameRenderer.mainRenderTarget(),
+                            segment.texture.getTextureView(),
+                            matrix,
+                            buffer);
                 }
-
-                float x = (segment.pos.x * 16 * SegmentSize - xc) * multiplier;
-                float y = (segment.pos.z * 16 * SegmentSize - zc) * multiplier;
-
-                buffer.clear();
-                buffer.rect(x, y, scale, scale, Color.WHITE.getRGB());
-                Position2dTextureColorRenderer.getInstance().draw(
-                        mc.gameRenderer.mainRenderTarget(),
-                        segment.texture.getTextureView(),
-                        matrix,
-                        buffer);
             }
         }
 

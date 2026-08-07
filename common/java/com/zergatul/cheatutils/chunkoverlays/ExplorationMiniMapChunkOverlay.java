@@ -72,48 +72,48 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     public void onPostDrawSegments(Dimension dimension, Matrix4f matrix, float xp, float zp, float xc, float zc, float multiplier) {
         final int ImageSize = 8;
 
-        Position2dTextureColorRenderer.BufferBuilder buffer = new Position2dTextureColorRenderer.BufferBuilder();
+        try (Position2dTextureColorRenderer.BufferBuilder buffer = new Position2dTextureColorRenderer.BufferBuilder()) {
+            buffer.clear();
+            for (Marker marker : markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
+                buffer.rect(
+                        -ImageSize / 2f + ((float) marker.x - xc) * multiplier,
+                        -ImageSize / 2f + ((float) marker.z - zc) * multiplier,
+                        ImageSize, ImageSize,
+                        Color.WHITE.getRGB());
+            }
+            Position2dTextureColorRenderer.getInstance().draw(
+                    mc.gameRenderer.mainRenderTarget(),
+                    mc.getTextureManager().getTexture(MarkerTexture).getTextureView(),
+                    matrix,
+                    buffer);
 
-        buffer.clear();
-        for (Marker marker : markers.computeIfAbsent(dimension, d -> new ArrayList<>())) {
-            buffer.rect(
-                    -ImageSize / 2f + ((float) marker.x - xc) * multiplier,
-                    -ImageSize / 2f + ((float) marker.z - zc) * multiplier,
-                    ImageSize, ImageSize,
-                    Color.WHITE.getRGB());
-        }
-        Position2dTextureColorRenderer.getInstance().draw(
-                mc.gameRenderer.mainRenderTarget(),
-                mc.getTextureManager().getTexture(MarkerTexture).getTextureView(),
-                matrix,
-                buffer);
+            double distanceToPlayer = Math.sqrt((xp - xc) * (xp - xc) + (zp - zc) * (zp - zc));
+            if (distanceToPlayer * multiplier > 2 * ImageSize) {
+                buffer.clear();
+                buffer.rect(
+                        -ImageSize / 2f,
+                        -ImageSize / 2f,
+                        ImageSize, ImageSize,
+                        Color.WHITE.getRGB());
+                Position2dTextureColorRenderer.getInstance().draw(
+                        mc.gameRenderer.mainRenderTarget(),
+                        mc.getTextureManager().getTexture(CenterPosTexture).getTextureView(),
+                        matrix,
+                        buffer);
+            }
 
-        double distanceToPlayer = Math.sqrt((xp - xc) * (xp - xc) + (zp - zc) * (zp - zc));
-        if (distanceToPlayer * multiplier > 2 * ImageSize) {
             buffer.clear();
             buffer.rect(
-                    -ImageSize / 2f,
-                    -ImageSize / 2f,
+                    -ImageSize / 2f + (xp - xc) * multiplier,
+                    -ImageSize / 2f + (zp - zc) * multiplier,
                     ImageSize, ImageSize,
                     Color.WHITE.getRGB());
             Position2dTextureColorRenderer.getInstance().draw(
                     mc.gameRenderer.mainRenderTarget(),
-                    mc.getTextureManager().getTexture(CenterPosTexture).getTextureView(),
+                    mc.getTextureManager().getTexture(PlayerPosTexture).getTextureView(),
                     matrix,
                     buffer);
         }
-
-        buffer.clear();
-        buffer.rect(
-                -ImageSize / 2f + (xp - xc) * multiplier,
-                -ImageSize / 2f + (zp - zc) * multiplier,
-                ImageSize, ImageSize,
-                Color.WHITE.getRGB());
-        Position2dTextureColorRenderer.getInstance().draw(
-                mc.gameRenderer.mainRenderTarget(),
-                mc.getTextureManager().getTexture(PlayerPosTexture).getTextureView(),
-                matrix,
-                buffer);
     }
 
     @Override

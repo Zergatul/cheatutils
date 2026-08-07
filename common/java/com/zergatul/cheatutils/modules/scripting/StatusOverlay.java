@@ -151,38 +151,39 @@ public class StatusOverlay implements Module, FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(0, scrWidth, scrHeight, 0, -1, 1);
 
-        RenderingContext context = new RenderingContext(matrix, mc.getWindow().getGuiScale(), RenderTargets.getStatusOverlay());
-        context.clearTarget();
+        try (RenderingContext context = new RenderingContext(matrix, mc.getWindow().getGuiScale(), RenderTargets.getStatusOverlay())) {
+            context.clearTarget();
 
-        for (Align align : Align.values()) {
-            List<AlignedText> list = texts.get(align);
-            if (list.isEmpty()) {
-                continue;
+            for (Align align : Align.values()) {
+                List<AlignedText> list = texts.get(align);
+                if (list.isEmpty()) {
+                    continue;
+                }
+
+                FlexColumnElement flex = new FlexColumnElement().setAlign(align.hAlign);
+                for (AlignedText item : list) {
+                    flex.append(new TextElement(fontRenderer, item.text).setBackgroundColor(item.background));
+                }
+
+                int x = switch (align.hAlign) {
+                    case LEFT -> 2 * scale;
+                    case CENTER -> halfScrWidth;
+                    case RIGHT -> scrWidth - 2 * scale;
+                };
+                int y = switch (align.vAlign) {
+                    case TOP -> 2 * scale;
+                    case MIDDLE -> halfScrHeight;
+                    case BOTTOM -> scrHeight - 2 * scale;
+                };
+
+                context.render(flex, x, y, align.hAlign, align.vAlign);
             }
 
-            FlexColumnElement flex = new FlexColumnElement().setAlign(align.hAlign);
-            for (AlignedText item : list) {
-                flex.append(new TextElement(fontRenderer, item.text).setBackgroundColor(item.background));
+            for (FreeText item : freeTexts) {
+                context.render(
+                        new TextElement(fontRenderer, item.text).setBackgroundColor(item.background),
+                        item.x, item.y, HorizontalAlign.LEFT, VerticalAlign.TOP);
             }
-
-            int x = switch (align.hAlign) {
-                case LEFT -> 2 * scale;
-                case CENTER -> halfScrWidth;
-                case RIGHT -> scrWidth - 2 * scale;
-            };
-            int y = switch (align.vAlign) {
-                case TOP -> 2 * scale;
-                case MIDDLE -> halfScrHeight;
-                case BOTTOM -> scrHeight - 2 * scale;
-            };
-
-            context.render(flex, x, y, align.hAlign, align.vAlign);
-        }
-
-        for (FreeText item : freeTexts) {
-            context.render(
-                    new TextElement(fontRenderer, item.text).setBackgroundColor(item.background),
-                    item.x, item.y, HorizontalAlign.LEFT, VerticalAlign.TOP);
         }
 
         graphics.guiRenderState.addGuiElement(new MyGuiRenderElement());

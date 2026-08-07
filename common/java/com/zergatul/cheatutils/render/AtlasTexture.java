@@ -108,6 +108,8 @@ public class AtlasTexture {
                 }
             }
         }
+
+        oldTexture.dispose();
     }
 
     private void copyToLine(TextureWrapper oldTexture, TextureWrapper newTexture, Line line, Item item) {

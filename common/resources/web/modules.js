@@ -576,7 +576,7 @@ module({
     name: 'MCP Server',
     component: 'McpServer',
     path: 'mcp-server',
-    tags: ['script', 'llm', 'ai', 'vibe', 'coding']
+    tags: ['script', 'mcp', 'llm', 'ai', 'vibe', 'coding']
 });
 module({
     group: 'scripting',

@@ -6,12 +6,10 @@ import com.zergatul.cheatutils.render.buffers.RenderBuffers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 
 import java.util.Objects;
 
-public class RenderingContext {
+public class RenderingContext implements AutoCloseable {
 
     private final int itemScale;
     private final RenderBuffers buffers;
@@ -63,5 +61,10 @@ public class RenderingContext {
         element.render(this);
 
         buffers.render(this.renderTarget);
+    }
+
+    @Override
+    public void close() {
+        buffers.close();
     }
 }
