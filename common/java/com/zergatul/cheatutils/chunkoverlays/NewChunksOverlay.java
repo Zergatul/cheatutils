@@ -44,6 +44,13 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
     }
 
     @Override
+    protected void onEnabledChangedInternal() {
+        if (!isEnabled()) {
+            dimensions.clear();
+        }
+    }
+
+    @Override
     protected void drawChunk(Dimension dimension, LevelChunk chunk, Map<SegmentPos, Segment> segments) {
         ChunkPos chunkPos = chunk.getPos();
         Map<ChunkPos, ChunkEntry> chunks = dimensions.computeIfAbsent(dimension, k -> new ConcurrentHashMap<>());
