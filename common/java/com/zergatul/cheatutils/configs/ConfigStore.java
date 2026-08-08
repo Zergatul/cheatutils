@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
@@ -10,10 +9,9 @@ import com.zergatul.cheatutils.modules.automation.AutoDisconnect;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
+import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,14 +19,14 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ConfigStore {
 
     public static final ConfigStore instance = new ConfigStore();
 
-    private static final String FILE = "zergatulcheatutils.json";
-    private static long WRITE_FILE_DELAY = 15 * 1000000000L;
+    private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
 
     public final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
@@ -43,140 +41,81 @@ public class ConfigStore {
             .setPrettyPrinting()
             .create();
 
-    private Config config;
     private final Logger logger = LogManager.getLogger(ConfigStore.class);
-    private final Thread thread;
-    private final Object writeEvent = new Object();
-    private volatile long lastWriteRequest = 0;
+    private Config config;
+    private File currentFile;
 
     private ConfigStore() {
-        config = new Config();
-        thread = new Thread(this::delayedWriteThreadFunc);
-        thread.start();
+        setConfig(new Config());
     }
 
     public Config getConfig() {
         return config;
     }
 
-    public void read() {
-        File file = getFile();
+    public synchronized void read(File file) {
+        Config newConfig = new Config();
         if (file.exists()) {
             Config readCfg = null;
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(file));
-                readCfg = gson.fromJson(reader, Config.class);
-                reader.close();
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                JsonElement element = JsonParser.parseReader(reader);
+                readCfg = gson.fromJson(element, Config.class);
             } catch (Exception e) {
-                logger.warn("Cannot read config");
-                e.printStackTrace();
+                logger.error("Cannot read config", e);
             }
 
             if (readCfg != null) {
-                config = readCfg;
+                newConfig = readCfg;
             }
         }
 
+        currentFile = file;
+        setConfig(newConfig);
         onConfigLoaded();
     }
 
     public void requestWrite() {
-        lastWriteRequest = System.nanoTime();
-        synchronized (writeEvent) {
-            writeEvent.notify();
+        ConfigWriterQueue.instance.queue(this.currentFile, WRITE_FILE_DELAY, getWriteToFileTask());
+    }
+
+    public Runnable getWriteToFileTask() {
+        File file = this.currentFile;
+        Config config = this.config;
+        return () -> {
+            logger.debug("Saving config to file {}", file.getName());
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                gson.toJson(config, writer);
+            } catch (Throwable e) {
+                logger.error("Cannot write config", e);
+            }
+        };
+    }
+
+    public static <T> void updateFromApi(Function<Config, T> extract, Consumer<T> update) {
+        ConfigStore store = instance;
+        Config config = store.getConfig();
+        T moduleConfig = extract.apply(config);
+        update.accept(moduleConfig);
+        if (moduleConfig instanceof Sanitizable sanitizable) {
+            sanitizable.sanitize();
         }
+        store.requestWrite();
     }
 
     public void onClose() {
-        thread.interrupt();
+        ConfigWriterQueue.instance.onClose();
     }
 
-    private void delayedWriteThreadFunc() {
-        boolean writeQeued = false;
-        try {
-            while (true) {
-                writeQeued = false;
-                synchronized (writeEvent) {
-                    writeEvent.wait();
-                }
-                writeQeued = true;
-                long lastValue = lastWriteRequest;
-                Thread.sleep(WRITE_FILE_DELAY / 1000000);
-                while (lastWriteRequest != lastValue) {
-                    lastValue = lastWriteRequest;
-                    long waitNs = lastWriteRequest + WRITE_FILE_DELAY - System.nanoTime();
-                    Thread.sleep(waitNs / 1000000);
-                }
-                write();
-            }
-        }
-        catch (InterruptedException e) {
-            if (writeQeued) {
-                write();
-            }
-        }
-    }
-
-    private void write() {
-        logger.debug("Saving config to file");
-        File file = getFile();
-        try {
-            synchronized (this) {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-                gson.toJson(config, writer);
-                writer.close();
-            }
-        }
-        catch (Exception e) {
-            logger.warn("Cannot write config");
-            e.printStackTrace();
-        }
-    }
-
-    private File getFile() {
-        File configDir = new File(Minecraft.getInstance().gameDirectory, "config");
-        if (!configDir.exists()) {
-            configDir.mkdirs();
-        }
-
-        return new File(configDir.getPath(), FILE);
+    // only this method should update this.config
+    private void setConfig(Config config) {
+        this.config = config;
     }
 
     private void onConfigLoaded() {
-        LightLevel.instance.onChanged();
-
-        // remove blocks that can't get deserialized, probably from removed mod
-        config.blocks.configs = config.blocks.configs
-                .removeIf(Objects::isNull)
-                .removeIf(c -> c.block == null)
-                .removeIf(c -> c.block == Blocks.AIR);
+        config.sanitize();
         config.blocks.apply();
 
-        // clazz==null can occur after removing mod with custom entities
-        config.entities.configs = config.entities.configs.removeIf(c -> c.clazz == null);
-
-        // TODO: use reflection to automatically find ValidatableConfig's?
-        config.killAuraConfig.validate();
-        config.movementHackConfig.validate();
-        config.fastBreakConfig.validate();
-        config.elytraHackConfig.validate();
-        config.freeCamConfig.validate();
-        config.flyHackConfig.validate();
-        config.boatHackConfig.validate();
-        config.explorationMiniMapConfig.validate();
-        config.reachConfig.validate();
-        config.lightLevelConfig.validate();
-        config.schematicaConfig.validate();
-        config.autoBucketConfig.validate();
-        config.performanceConfig.validate();
-        config.entityTitleConfig.validate();
-        config.keyBindingsConfig.validate();
-        config.worldMarkersConfig.validate();
-        config.autoAttackConfig.validate();
-        config.projectilePathConfig.validate();
-        config.chatUtilitiesConfig.validate();
-        config.areaMineConfig.validate();
-        config.hitboxSizeConfig.validate();
+        LightLevel.instance.onChanged();
 
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);

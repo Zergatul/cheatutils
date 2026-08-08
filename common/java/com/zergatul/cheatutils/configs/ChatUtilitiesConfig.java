@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 
 import java.time.format.DateTimeFormatter;
 
-public class ChatUtilitiesConfig implements ValidatableConfig {
+public class ChatUtilitiesConfig implements Sanitizable {
 
     public boolean dontCloseChatOnEnter;
     public boolean overrideMessageLimit;
@@ -35,7 +35,7 @@ public class ChatUtilitiesConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         messageLimit = MathUtils.clamp(messageLimit, 20, 1000000);
         if (getFormatter() == null) {
             showTime = false;

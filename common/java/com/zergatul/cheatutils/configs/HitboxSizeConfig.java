@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 
 import java.util.Objects;
 
-public class HitboxSizeConfig extends ModuleConfig implements ValidatableConfig {
+public class HitboxSizeConfig extends ModuleConfig implements Sanitizable {
 
     public static final String MODE_PERCENT = "PERCENT";
     public static final String MODE_ABSOLUTE = "ABSOLUTE";
@@ -27,7 +27,7 @@ public class HitboxSizeConfig extends ModuleConfig implements ValidatableConfig 
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         if (!Objects.equals(widthMode, MODE_ABSOLUTE) && !Objects.equals(widthMode, MODE_ABSOLUTE)) {
             widthMode = MODE_PERCENT;
         }

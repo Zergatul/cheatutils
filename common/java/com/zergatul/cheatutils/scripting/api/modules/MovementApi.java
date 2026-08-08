@@ -30,7 +30,7 @@ public class MovementApi {
     public void setSpeedMultiplierFactor(double value) {
         var config = getConfig();
         config.inputVectorFactor = value;
-        config.validate();
+        config.sanitize();
         ConfigStore.instance.requestWrite();
     }
 
@@ -55,7 +55,7 @@ public class MovementApi {
     public void setJumpFactor(double value) {
         var config = getConfig();
         config.jumpHeightFactor = value;
-        config.validate();
+        config.sanitize();
         ConfigStore.instance.requestWrite();
     }
 

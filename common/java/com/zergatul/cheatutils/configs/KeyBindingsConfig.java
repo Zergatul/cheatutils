@@ -2,14 +2,14 @@ package com.zergatul.cheatutils.configs;
 
 import java.util.Arrays;
 
-public class KeyBindingsConfig implements ValidatableConfig {
+public class KeyBindingsConfig implements Sanitizable {
 
     public static final int KeysCount = 20;
 
     public String[] bindings = new String[KeysCount];
 
     @Override
-    public void validate() {
+    public void sanitize() {
         if (bindings == null) {
             bindings = new String[KeysCount];
         }

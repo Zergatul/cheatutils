@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class LightLevelConfig extends ModuleConfig implements ValidatableConfig {
+public class LightLevelConfig extends ModuleConfig implements Sanitizable {
 
     public boolean showLocations;
     public boolean showTracers;
@@ -18,7 +18,7 @@ public class LightLevelConfig extends ModuleConfig implements ValidatableConfig 
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         maxDistance = MathUtils.clamp(maxDistance, 1, 1000);
     }
 }

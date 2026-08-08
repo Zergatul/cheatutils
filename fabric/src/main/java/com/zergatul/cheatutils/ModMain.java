@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
+import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.visuals.*;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.cheatutils.wrappers.FabricEvents;
@@ -31,8 +31,8 @@ public class ModMain implements ClientModInitializer {
 	public void onInitializeClient() {
 		FabricEvents.setup();
 
+		Profiles.instance.init();
 		ConfigHttpServer.instance.start();
-		ConfigStore.instance.read();
 
 		register(KeyBindingsController.instance);
 		register(ChunkController.instance);

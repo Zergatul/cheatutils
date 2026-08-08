@@ -131,8 +131,8 @@ public class ModMain {
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
+        Profiles.instance.init();
         ConfigHttpServer.instance.start();
-        ConfigStore.instance.read();
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {

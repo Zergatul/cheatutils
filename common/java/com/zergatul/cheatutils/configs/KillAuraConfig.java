@@ -14,7 +14,7 @@ import net.minecraft.world.entity.projectile.ShulkerBullet;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
+public class KillAuraConfig extends ModuleConfig implements Sanitizable {
 
     public static final String ConstDelay = "ConstDelay";
     public static final String Cooldown = "Cooldown";
@@ -42,7 +42,7 @@ public class KillAuraConfig extends ModuleConfig implements ValidatableConfig {
         customEntries = new ImmutableList<>();
     }
 
-    public void validate() {
+    public void sanitize() {
         maxRange = MathUtils.clamp(maxRange, 1, 100);
         attackTickInterval = MathUtils.clamp(attackTickInterval, 1, 100);
         extraTicks = MathUtils.clamp(extraTicks, -10, 10);

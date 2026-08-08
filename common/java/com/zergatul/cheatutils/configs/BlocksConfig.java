@@ -2,8 +2,11 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.controllers.BlockFinderController;
+import net.minecraft.world.level.block.Blocks;
 
-public class BlocksConfig {
+import java.util.Objects;
+
+public class BlocksConfig implements Sanitizable {
 
     public ImmutableList<BlockTracerConfig> configs = new ImmutableList<>();
 
@@ -22,5 +25,13 @@ public class BlocksConfig {
     public void remove(BlockTracerConfig config) {
         configs = configs.remove(config);
         BlockFinderController.instance.removeConfig(config);
+    }
+
+    @Override
+    public void sanitize() {
+        configs = configs
+                .removeIf(Objects::isNull)
+                .removeIf(c -> c.block == null)
+                .removeIf(c -> c.block == Blocks.AIR);
     }
 }

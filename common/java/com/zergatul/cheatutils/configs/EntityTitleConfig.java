@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class EntityTitleConfig implements ValidatableConfig {
+public class EntityTitleConfig implements Sanitizable {
 
     public int fontSize;
     public boolean antiAliasing;
@@ -15,7 +15,7 @@ public class EntityTitleConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         fontSize = MathUtils.clamp(fontSize, 8, 100);
         enchFontSize = MathUtils.clamp(enchFontSize, 8, 100);
     }

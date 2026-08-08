@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-public class Config {
+public class Config implements Sanitizable {
     public boolean esp;
     public FullBrightConfig fullBrightConfig = new FullBrightConfig();
     public AutoFishConfig autoFishConfig = new AutoFishConfig();
@@ -70,5 +70,32 @@ public class Config {
 
     public Config() {
         esp = true;
+    }
+
+    @Override
+    public void sanitize() {
+        blocks.sanitize();
+        entities.sanitize();
+        killAuraConfig.sanitize();
+        movementHackConfig.sanitize();
+        fastBreakConfig.sanitize();
+        elytraHackConfig.sanitize();
+        freeCamConfig.sanitize();
+        flyHackConfig.sanitize();
+        boatHackConfig.sanitize();
+        explorationMiniMapConfig.sanitize();
+        reachConfig.sanitize();
+        lightLevelConfig.sanitize();
+        schematicaConfig.sanitize();
+        autoBucketConfig.sanitize();
+        performanceConfig.sanitize();
+        entityTitleConfig.sanitize();
+        keyBindingsConfig.sanitize();
+        worldMarkersConfig.sanitize();
+        autoAttackConfig.sanitize();
+        projectilePathConfig.sanitize();
+        chatUtilitiesConfig.sanitize();
+        areaMineConfig.sanitize();
+        hitboxSizeConfig.sanitize();
     }
 }
