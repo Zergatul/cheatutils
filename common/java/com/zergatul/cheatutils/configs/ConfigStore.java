@@ -124,7 +124,7 @@ public class ConfigStore {
                 KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
                 KeyBindingsController.instance.assign(0, toggleEspName);
             } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                logger.error("Toggle ESP script initialization failed", e);
             }
 
             final String toggleFreeCamName = "Toggle FreeCam";
@@ -133,7 +133,7 @@ public class ConfigStore {
                 KeyBindingsController.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
                 KeyBindingsController.instance.assign(1, toggleFreeCamName);
             } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                logger.error("Toggle FreeCam script initialization failed", e);
             }
         } else {
             ArrayList<ScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.scriptsConfig.scripts);
@@ -142,7 +142,7 @@ public class ConfigStore {
                 try {
                     ScriptController.instance.add(s.name, s.code, true);
                 } catch (ParseException | ScriptCompileException e) {
-                    e.printStackTrace();
+                    logger.error("Key binding script '{}' initialization failed", s.name, e);
                 }
             });
 
@@ -159,7 +159,7 @@ public class ConfigStore {
                 Runnable script = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
                 StatusOverlay.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                logger.error("Status Overlay script initialization failed", e);
             }
         }
 
@@ -168,7 +168,7 @@ public class ConfigStore {
                 Runnable script = ScriptController.instance.compileKeys(config.gameTickScriptingConfig.code);
                 GameTickScriptingController.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                logger.error("Game Tick script initialization failed", e);
             }
         }
 
@@ -177,7 +177,7 @@ public class ConfigStore {
                 Runnable script = ScriptController.instance.compileBlockPlacer(config.scriptedBlockPlacerConfig.code);
                 ScriptedBlockPlacerController.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                logger.error("Scripted Block Placer script initialization failed", e);
             }
         }
 
@@ -186,7 +186,7 @@ public class ConfigStore {
                 Runnable script = ScriptController.instance.compileAutoDisconnect(config.autoDisconnectConfig.code);
                 AutoDisconnect.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                logger.error("Auto Disconnect script initialization failed", e);
             }
         }
 
@@ -195,7 +195,7 @@ public class ConfigStore {
                 Runnable script = ScriptController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
                 VillagerRoller.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                logger.error("Villager Roller script initialization failed", e);
             }
         }
     }

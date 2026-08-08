@@ -33,8 +33,8 @@ public class EntitiesConfigApi extends ApiBase {
         }
 
         config = EntityTracerConfig.createDefault(jsonConfig.clazz);
-        ConfigStore.instance.getConfig().entities.add(config);
-        ConfigStore.instance.requestWrite();
+        EntityTracerConfig created = config;
+        ConfigStore.updateFromApi(c -> c.entities, entities -> entities.add(created));
 
         return gson.toJson(config);
     }
@@ -55,8 +55,7 @@ public class EntitiesConfigApi extends ApiBase {
             throw new MethodNotSupportedException("Cannot find entity config.");
         }
 
-        config.copyFrom(jsonConfig);
-        ConfigStore.instance.requestWrite();
+        ConfigStore.updateFromApi(c -> c.entities, entities -> config.copyFrom(jsonConfig));
 
         return gson.toJson(config);
     }
@@ -69,8 +68,7 @@ public class EntitiesConfigApi extends ApiBase {
                 .findFirst()
                 .orElse(null);
 
-        ConfigStore.instance.getConfig().entities.remove(config);
-        ConfigStore.instance.requestWrite();
+        ConfigStore.updateFromApi(c -> c.entities, entities -> entities.remove(config));
 
         return "{ ok: true }";
     }

@@ -34,8 +34,8 @@ public class BlocksConfigApi extends ApiBase {
         }
 
         config = BlockTracerConfig.createDefault(jsonConfig.block);
-        ConfigStore.instance.getConfig().blocks.add(config);
-        ConfigStore.instance.requestWrite();
+        BlockTracerConfig created = config;
+        ConfigStore.updateFromApi(c -> c.blocks, blocks -> blocks.add(created));
 
         return gson.toJson(config);
     }
@@ -56,8 +56,7 @@ public class BlocksConfigApi extends ApiBase {
             throw new MethodNotSupportedException("Cannot find block config.");
         }
 
-        config.copyFrom(jsonConfig);
-        ConfigStore.instance.requestWrite();
+        ConfigStore.updateFromApi(c -> c.blocks, blocks -> config.copyFrom(jsonConfig));
 
         return gson.toJson(config);
     }
@@ -74,8 +73,7 @@ public class BlocksConfigApi extends ApiBase {
             throw new MethodNotSupportedException("Cannot find block config.");
         }
 
-        ConfigStore.instance.getConfig().blocks.remove(config);
-        ConfigStore.instance.requestWrite();
+        ConfigStore.updateFromApi(c -> c.blocks, blocks -> blocks.remove(config));
 
         return "{ ok: true }";
     }
