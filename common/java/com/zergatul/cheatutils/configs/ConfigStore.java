@@ -102,6 +102,14 @@ public class ConfigStore {
         store.requestWrite();
     }
 
+    public static <T> void replaceFromApi(T moduleConfig, Consumer<T> replace) {
+        if (moduleConfig instanceof Sanitizable sanitizable) {
+            sanitizable.sanitize();
+        }
+        replace.accept(moduleConfig);
+        instance.requestWrite();
+    }
+
     // only this method should update this.config
     private void setConfig(Config config) {
         this.config = config;

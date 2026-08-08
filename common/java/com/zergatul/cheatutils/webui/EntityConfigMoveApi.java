@@ -39,12 +39,8 @@ public class EntityConfigMoveApi extends ApiBase {
             return gson.toJson(new Response(true, "Cannot move down"));
         }
 
-        if (up) {
-            ConfigStore.instance.getConfig().entities.configs = list.swap(index, index - 1);
-        } else {
-            ConfigStore.instance.getConfig().entities.configs = list.swap(index, index + 1);
-        }
-        ConfigStore.instance.requestWrite();
+        ImmutableList<EntityTracerConfig> updated = up ? list.swap(index, index - 1) : list.swap(index, index + 1);
+        ConfigStore.updateFromApi(c -> c.entities, entities -> entities.configs = updated);
 
         return gson.toJson(new Response(true, null));
     }
