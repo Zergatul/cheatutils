@@ -9,4 +9,7 @@ public interface MinecraftAccessor {
 
     @Invoker("startUseItem")
     void startUseItem_CU();
+
+    @Invoker("startAttack")
+    boolean startAttack_CU();
 }

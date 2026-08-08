@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-public class Config {
-    public boolean esp;
+public class Config implements Sanitizable {
     public FullBrightConfig fullBrightConfig = new FullBrightConfig();
     public AutoFishConfig autoFishConfig = new AutoFishConfig();
     public ArmorOverlayConfig armorOverlayConfig = new ArmorOverlayConfig();
@@ -10,7 +9,6 @@ public class Config {
     public LightLevelConfig lightLevelConfig = new LightLevelConfig();
     public KillAuraConfig killAuraConfig = new KillAuraConfig();
     public BoatHackConfig boatHackConfig = new BoatHackConfig();
-    public AutoDisconnectConfig autoDisconnectConfig = new AutoDisconnectConfig();
     public ShulkerTooltipConfig shulkerTooltipConfig = new ShulkerTooltipConfig();
     public ProjectilePathConfig projectilePathConfig = new ProjectilePathConfig();
     public ElytraHackConfig elytraHackConfig = new ElytraHackConfig();
@@ -28,8 +26,7 @@ public class Config {
     public ScaffoldConfig scaffoldConfig = new ScaffoldConfig();
     public AdvancedTooltipsConfig advancedTooltipsConfig = new AdvancedTooltipsConfig();
     public FogConfig fogConfig = new FogConfig();
-    public InstantDisconnectConfig instantDisconnectConfig = new InstantDisconnectConfig();
-    public ScriptsConfig scriptsConfig = new ScriptsConfig();
+    public KeyBindingScriptsConfig keyBindingScriptsConfig = new KeyBindingScriptsConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
     public WorldMarkersConfig worldMarkersConfig = new WorldMarkersConfig();
     public UserNameConfig userNameConfig = new UserNameConfig();
@@ -47,18 +44,16 @@ public class Config {
     public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();
     public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
     public ReachConfig reachConfig = new ReachConfig();
-    public GameTickScriptingConfig gameTickScriptingConfig = new GameTickScriptingConfig();
+    public EventsScriptingConfig eventsScriptingConfig = new EventsScriptingConfig();
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();
     public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
-    public CoordinateLeakProtectionConfig coordinateLeakProtectionConfig = new CoordinateLeakProtectionConfig();
-    public ScriptedBlockPlacerConfig scriptedBlockPlacerConfig = new ScriptedBlockPlacerConfig();
+    public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
     public BobHurtConfig bobHurtConfig = new BobHurtConfig();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
     public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
     public FakeWeatherConfig fakeWeatherConfig = new FakeWeatherConfig();
-    public AutoAimConfig autoAimConfig = new AutoAimConfig();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
     public ExecConfig execConfig = new ExecConfig();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
@@ -67,8 +62,37 @@ public class Config {
     public AreaMineConfig areaMineConfig = new AreaMineConfig();
     public ServerPluginsConfig serverPluginsConfig = new ServerPluginsConfig();
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
+    public CoreConfig coreConfig = new CoreConfig();
+    public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
 
-    public Config() {
-        esp = true;
+    public Config() {}
+
+    @Override
+    public void sanitize() {
+        blocks.sanitize();
+        entities.sanitize();
+        killAuraConfig.sanitize();
+        movementHackConfig.sanitize();
+        fastBreakConfig.sanitize();
+        elytraHackConfig.sanitize();
+        freeCamConfig.sanitize();
+        flyHackConfig.sanitize();
+        boatHackConfig.sanitize();
+        explorationMiniMapConfig.sanitize();
+        reachConfig.sanitize();
+        lightLevelConfig.sanitize();
+        schematicaConfig.sanitize();
+        autoBucketConfig.sanitize();
+        performanceConfig.sanitize();
+        entityTitleConfig.sanitize();
+        keyBindingsConfig.sanitize();
+        worldMarkersConfig.sanitize();
+        autoAttackConfig.sanitize();
+        projectilePathConfig.sanitize();
+        blockAutomationConfig.sanitize();
+        chatUtilitiesConfig.sanitize();
+        areaMineConfig.sanitize();
+        hitboxSizeConfig.sanitize();
+        coreConfig.sanitize();
     }
 }

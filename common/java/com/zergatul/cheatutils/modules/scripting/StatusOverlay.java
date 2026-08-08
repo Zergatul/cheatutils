@@ -11,6 +11,7 @@ import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.MutableComponent;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
@@ -20,13 +21,16 @@ public class StatusOverlay implements Module {
     public static final StatusOverlay instance = new StatusOverlay();
 
     private static final int TranslateZ = 200;
+    private static final int DEFAULT_BACKGROUND = 0x90505050;
 
     private static final Minecraft mc = Minecraft.getInstance();
-    private Runnable script;
-    private Map<Align, List<MutableComponent>> texts = new HashMap<>();
+
+    private @Nullable Runnable script;
+    private Map<Align, List<AlignedText>> texts = new HashMap<>();
     private List<FreeText> freeTexts = new ArrayList<>();
     private HorizontalAlign hAlign;
     private VerticalAlign vAlign;
+    private int backgroundColor;
 
     private StatusOverlay() {
         for (Align align: Align.values()) {
@@ -36,16 +40,24 @@ public class StatusOverlay implements Module {
         Events.PostRenderGui.add(this::render);
     }
 
-    public void setScript(Runnable script) {
+    public void setScript(@Nullable Runnable script) {
         this.script = script;
     }
 
     public void addText(MutableComponent message) {
-        texts.get(Align.get(vAlign, hAlign)).add(message);
+        addText(backgroundColor, message);
+    }
+
+    public void addText(int background, MutableComponent message) {
+        texts.get(Align.get(vAlign, hAlign)).add(new AlignedText(background, message));
     }
 
     public void addFreeText(int x, int y, MutableComponent message) {
-        freeTexts.add(new FreeText(x, y, message));
+        addFreeText(x, y, backgroundColor, message);
+    }
+
+    public void addFreeText(int x, int y, int background, MutableComponent message) {
+        freeTexts.add(new FreeText(x, y, background, message));
     }
 
     public void setHorizontalAlign(HorizontalAlign align) {
@@ -54,6 +66,10 @@ public class StatusOverlay implements Module {
 
     public void setVerticalAlign(VerticalAlign align) {
         vAlign = align;
+    }
+
+    public void setDefaultBackgroundColor(int color) {
+        backgroundColor = color;
     }
 
     private void render(RenderGuiEvent event) {
@@ -74,6 +90,7 @@ public class StatusOverlay implements Module {
 
         hAlign = HorizontalAlign.RIGHT;
         vAlign = VerticalAlign.BOTTOM;
+        backgroundColor = DEFAULT_BACKGROUND;
         script.run();
 
         PoseStack poseStack = event.getGuiGraphics().pose();
@@ -91,23 +108,23 @@ public class StatusOverlay implements Module {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         for (Align align: Align.values()) {
-            List<MutableComponent> list = texts.get(align);
+            List<AlignedText> list = texts.get(align);
             if (list.isEmpty()) {
                 continue;
             }
             for (int i = 0; i < list.size(); i++) {
-                MutableComponent text = list.get(i);
-                int width = mc.font.width(text);
+                AlignedText item = list.get(i);
+                int width = mc.font.width(item.component);
                 int x = getLeft(align.hAlign, mc.getWindow().getGuiScaledWidth(), width);
                 int y = getTop(align.vAlign, mc.getWindow().getGuiScaledHeight(), mc.font.lineHeight, i, list.size());
-                Primitives.fill(poseStack, x, y, x + width, y + mc.font.lineHeight, -1873784752);
-                event.getGuiGraphics().drawString(mc.font, text, x, y, 16777215);
+                Primitives.fill(poseStack, x, y, x + width, y + mc.font.lineHeight, item.background);
+                event.getGuiGraphics().drawString(mc.font, item.component, x, y, 16777215);
             }
         }
 
         for (FreeText text: freeTexts) {
             int width = mc.font.width(text.component);
-            Primitives.fill(poseStack, text.x, text.y, text.x + width, text.y + mc.font.lineHeight, -1873784752);
+            Primitives.fill(poseStack, text.x, text.y, text.x + width, text.y + mc.font.lineHeight, text.background);
             event.getGuiGraphics().drawString(mc.font, text.component, text.x, text.y, 16777215);
         }
 
@@ -183,5 +200,7 @@ public class StatusOverlay implements Module {
         }
     }
 
-    private record FreeText(int x, int y, MutableComponent component) {}
+    private record AlignedText(int background, MutableComponent component) {}
+
+    private record FreeText(int x, int y, int background, MutableComponent component) {}
 }

@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
-import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
+import com.zergatul.cheatutils.concurrent.ProfilerSingleThreadExecutor;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Minecraft;
 
@@ -21,22 +20,15 @@ public class DebugScreenController {
 
     public void onGetGameInformation(List<String> list) {
         list.add("");
-        list.add("Zergatul Cheat Utils");
+        list.add("Cheat Utils");
         list.add("Loaded chunks: " + ChunkController.instance.getLoadedChunksCount());
-        list.add(String.format("BlockFinder scan thread: queue size=%s; load=%s; state=%s;",
-                    BlockFinderController.instance.getScanningQueueCount(),
-                    format.format(BlockFinderController.instance.getScanningThreadLoadPercent()) + "%",
-                    BlockFinderController.instance.getThreadState()));
-
-        ExplorationMiniMapChunkOverlay miniMapChunkOverlay = ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class);
-        list.add(String.format("ExplMiniMap scan thread: queue size=%s; state=%s;",
-                miniMapChunkOverlay.getScanningQueueCount(),
-                miniMapChunkOverlay.getThreadState()));
-
-        NewChunksOverlay newChunksOverlay = ChunkOverlayController.instance.ofType(NewChunksOverlay.class);
-        list.add(String.format("NewChunks scan thread: queue size=%s; state=%s;",
-                newChunksOverlay.getScanningQueueCount(),
-                newChunksOverlay.getThreadState()));
+        ProfilerSingleThreadExecutor executor = BlockEventsProcessor.instance.getExecutor();
+        list.add(String.format("CheatUtils BlockEvents thread: queue size=%s; successful=%d; failed=%d; rejected=%d; busy=%s;",
+                executor.getQueueSize(),
+                executor.getSuccessful(),
+                executor.getFailed(),
+                executor.getRejected(),
+                format.format(executor.getBusyPercentage()) + "%"));
 
         FreeCam.instance.onRenderDebugScreenLeft(list);
     }

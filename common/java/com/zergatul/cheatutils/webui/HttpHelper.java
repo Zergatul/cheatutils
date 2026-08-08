@@ -17,6 +17,7 @@ public class HttpHelper {
             case "html": headers.add("Content-Type", "text/html"); break;
             case "js": headers.add("Content-Type", "text/javascript"); break;
             case "css": headers.add("Content-Type", "text/css"); break;
+            case "ttf": headers.add("Content-Type", "font/ttf"); break;
         }
     }
 

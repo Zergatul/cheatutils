@@ -1,0 +1,2 @@
+Runs whenever Villager Roller receives a new enchanted-book trade.
+Use the villagerRoller API to inspect the current trade and stop the module when the desired trade appears.

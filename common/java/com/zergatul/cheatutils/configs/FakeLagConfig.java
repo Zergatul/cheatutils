@@ -1,5 +1,4 @@
 package com.zergatul.cheatutils.configs;
 
-public class FakeLagConfig {
-    public boolean enabled;
+public class FakeLagConfig extends ModuleConfig {
 }

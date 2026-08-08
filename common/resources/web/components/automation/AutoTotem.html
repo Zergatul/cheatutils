@@ -1,0 +1,20 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Automatically puts Totem of Undying into your offhand slot, if this slot is empty and you have totem in your inventory.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.skipIfUsingItem" @change="update()">Don't activate when using items</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Don't active auto totem if you are currently using item: consuming food, loading bow, etc.
+            </div>
+        </fieldset>
+    </div>
+</div>

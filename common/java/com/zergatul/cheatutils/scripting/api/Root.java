@@ -4,10 +4,9 @@ import com.zergatul.cheatutils.scripting.api.modules.*;
 
 public class Root {
 
-    public static MainApi main = new MainApi();
+    public static EspApi esp = new EspApi();
 
     // automation
-    public static AutoDisconnectApi autoDisconnect = new AutoDisconnectApi();
     public static AutoDropApi autoDrop = new AutoDropApi();
     public static AutoEatApi autoEat = new AutoEatApi();
     public static ContainerButtonsApi containerButtons = new ContainerButtonsApi();
@@ -46,14 +45,19 @@ public class Root {
     public static FullBrightApi fullBright = new FullBrightApi();
 
     // scripting
+    public static OverlayApi overlay = new OverlayApi();
+    public static BlockAutomationApi blockAutomation = new BlockAutomationApi();
     public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
+    public static EventsApi events = new EventsApi();
 
     // utility
     public static LockInputsApi lockInputs = new LockInputsApi();
     public static TpsApi tps = new TpsApi();
+    public static ProfilesApi profiles = new ProfilesApi();
 
     // others
     public static GameApi game = new GameApi();
+    public static UIApi ui = new UIApi();
     public static InputApi input = new InputApi();
     public static KeysApi keys = new KeysApi();
     public static PlayerApi player = new PlayerApi();
@@ -62,12 +66,9 @@ public class Root {
     public static MathApi math = new MathApi();
     public static ColorApi color = new ColorApi();
     public static TimeApi time = new TimeApi();
-    public static ConvertApi convert = new ConvertApi();
     public static PacketApi packet = new PacketApi();
     public static WindowApi window = new WindowApi();
     public static FontApi font = new FontApi();
-
-    // specific
-    public static CurrentBlockApi currentBlock = new CurrentBlockApi();
-    public static BlockPlacerApi blockPlacer = new BlockPlacerApi();
+    public static DelayApi delay = new DelayApi();
+    public static DebugApi debug = new DebugApi();
 }

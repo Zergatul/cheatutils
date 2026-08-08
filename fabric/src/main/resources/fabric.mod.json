@@ -4,10 +4,9 @@
   "version": "${version}",
 
   "name": "CheatUtils",
-  "description": "Open http://localhost:5005/ in your browser to access mod settings.\nYou can find tutorial videos on curseforge page: https://www.curseforge.com/minecraft/mc-mods/cheatutils-by-zergatul\nSource code: https://github.com/Zergatul/cheatutils",
-  "authors": [
-    "Zergatul"
-  ],
+  "icon": "web/images/favicon.png",
+  "description": "Open http://localhost:5005/ in your browser to access mod settings.",
+  "authors": ["Zergatul"],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/cheatutils-by-zergatul",
     "sources": "https://github.com/Zergatul/cheatutils",
@@ -18,13 +17,10 @@
 
   "environment": "client",
   "entrypoints": {
-    "client": [
-      "com.zergatul.cheatutils.ModMain"
-    ]
+    "client": ["com.zergatul.cheatutils.ModMain"]
   },
-  "mixins": [
-    "cheatutils.mixins.json"
-  ],
+  "accessWidener": "cheatutils.classtweaker",
+  "mixins": ["cheatutils.mixins.json"],
 
   "depends": {
     "fabricloader": ">=0.15.0",

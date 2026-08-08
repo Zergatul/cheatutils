@@ -74,18 +74,15 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
 
         SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
 
-        addToRenderQueue(new RenderThreadQueueItem(() -> {
-            if (!segments.containsKey(segmentPos)) {
-                segments.put(segmentPos, new Segment(segmentPos, segmentSize));
-            }
-        }, () -> {
-            Segment segment = segments.get(segmentPos);
-            int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-            int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
-            redrawChunk(entry, segment, xf, yf);
+        if (!segments.containsKey(segmentPos)) {
+            segments.put(segmentPos, new Segment(segmentPos, segmentSize));
+        }
 
-            addToRenderQueue(new RenderThreadQueueItem(segment::onChange));
-        }));
+        Segment segment = segments.get(segmentPos);
+        int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
+        int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+        redrawChunk(entry, segment, xf, yf);
+        segment.onChange();
 
         return true;
     }
@@ -113,11 +110,6 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
             segment.updateTime = System.nanoTime();
             addUpdatedSegment(segment);
         }
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "NewChunksScanThread";
     }
 
     private void redrawChunk(ChunkEntry chunk, Segment segment, int xf, int yf) {

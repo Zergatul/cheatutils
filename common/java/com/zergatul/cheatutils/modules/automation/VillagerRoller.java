@@ -32,6 +32,7 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jspecify.annotations.Nullable;
 
 public class VillagerRoller implements Module {
 
@@ -55,11 +56,11 @@ public class VillagerRoller implements Module {
     private int maxLevel;
     private int minPrice;
     private int maxPrice;
-    private Runnable script;
+    private @Nullable Runnable script;
 
     private VillagerRoller() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
-        Events.ScannerBlockUpdated.add(this::onBlockChanged);
+        Events.BlockUpdated.add(this::onBlockChanged);
         Events.EntityInteract.add(this::onEntityInteract);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
@@ -105,7 +106,7 @@ public class VillagerRoller implements Module {
         return state.toString();
     }
 
-    public void setScript(Runnable script) {
+    public void setScript(@Nullable Runnable script) {
         this.script = script;
     }
 

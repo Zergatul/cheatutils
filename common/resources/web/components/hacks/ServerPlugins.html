@@ -1,0 +1,28 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Use <b>serverPlugins.get();</b> or <b>serverPlugins.getBukkit();</b> to scan for server plugins. AntiCheats may disable this approach, in this case these methods return empty array.
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.autoPrint" @change="update()">Auto Print</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Automatically prints plugins lists in system chat as soon as module receives them from the server. You have to call API method(s) in order to trigger plugin scan.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Wait Ticks
+            </legend>
+            <div>
+                <input type="text" class="w3" v-model="config.waitTicks" @change="update()">
+            </div>
+            <div class="section-description">
+                Don't attempt to scan plugins before X ticks passed after login.
+            </div>
+        </fieldset>
+    </div>
+</div>

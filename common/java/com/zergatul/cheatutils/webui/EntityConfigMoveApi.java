@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.configs.EntityEspConfig;
 import org.apache.http.HttpException;
 
 public class EntityConfigMoveApi extends ApiBase {
@@ -13,19 +13,23 @@ public class EntityConfigMoveApi extends ApiBase {
     }
 
     @Override
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
     public String post(String body) throws HttpException {
-        Request request = gson.fromJson(body, Request.class);
-        if (request.clazz == null) {
-            return gson.toJson(new Response(false, "Class is null"));
-        }
+        Request request = WebHelper.parseJson(gson, body, Request.class);
+        WebHelper.requireField(request.clazz, "clazz");
+        WebHelper.requireField(request.direction, "direction");
 
         boolean up = request.direction.equals("up");
         boolean down = request.direction.equals("down");
         if (!up && !down) {
-            return gson.toJson(new Response(false, "Invalid direction"));
+            throw new ApiException("Invalid direction: " + request.direction, HttpResponseCodes.BAD_REQUEST);
         }
 
-        ImmutableList<EntityTracerConfig> list = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
         int index = list.indexOf(c -> c.clazz == request.clazz);
         if (index < 0) {
             return gson.toJson(new Response(false, "Cannot find class in list"));
@@ -39,12 +43,8 @@ public class EntityConfigMoveApi extends ApiBase {
             return gson.toJson(new Response(true, "Cannot move down"));
         }
 
-        if (up) {
-            ConfigStore.instance.getConfig().entities.configs = list.swap(index, index - 1);
-        } else {
-            ConfigStore.instance.getConfig().entities.configs = list.swap(index, index + 1);
-        }
-        ConfigStore.instance.requestWrite();
+        ImmutableList<EntityEspConfig> updated = up ? list.swap(index, index - 1) : list.swap(index, index + 1);
+        ConfigStore.updateFromApi(c -> c.entities, entities -> entities.configs = updated);
 
         return gson.toJson(new Response(true, null));
     }

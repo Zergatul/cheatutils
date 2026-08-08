@@ -3,9 +3,8 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KillAuraConfig;
-import com.zergatul.cheatutils.controllers.FakeRotationController;
+import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
-import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.MathUtils;
 import com.zergatul.cheatutils.wrappers.AttackRange;
@@ -34,7 +33,7 @@ public class KillAura implements Module {
     private final List<Entity> targets = new ArrayList<>();
 
     private KillAura() {
-        PlayerMotionController.instance.addOnAfterSendPosition(this::onAfterSendPosition);
+        Events.AfterSendPlayerPos.add(this::onAfterSendPosition);
         Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.DimensionChange.add(this::onDimensionChange);
@@ -133,7 +132,7 @@ public class KillAura implements Module {
         }
 
         if (target != null) {
-            FakeRotationController.instance.setServerRotation(getAttackPoint(target));
+            FakeRotation.instance.setServerRotation(getAttackPoint(target));
         }
 
         if (targets.size() > 0) {

@@ -1,9 +1,12 @@
 import java.nio.file.Paths
 
 plugins {
-	id 'fabric-loom' version '1.6-SNAPSHOT'
+	id 'fabric-loom' version '1.8.12'
 	id 'maven-publish'
+	id 'cheatutils'
 }
+
+ext.mod_version = cheatutils.getModVersion()
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -33,15 +36,27 @@ dependencies {
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
 
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
+
+	compileOnly("org.jspecify:jspecify:1.0.0")
+}
+
+loom {
+	accessWidenerPath = file('src/main/resources/cheatutils.classtweaker')
 }
 
 sourceSets {
     main {
         java {
             srcDir '../common/java'
+            srcDir '../java-scripting-language/src/main/java'
         }
         resources {
             srcDir '../common/resources'
+        }
+    }
+    test {
+        java {
+            srcDir '../common/test'
         }
     }
 }
@@ -70,6 +85,8 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
+
+	exclude("net/irisshaders/**")
 }
 
 // configure the maven publication
@@ -91,6 +108,22 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.compilerArgs.add("-parameters")
+}
+
+tasks.register("scriptingSmokeTest", JavaExec) {
+    group = "verification"
+    description = "Compiles and executes synchronous and asynchronous scripts on the Fabric runtime classpath."
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "com.zergatul.cheatutils.scripting.ScriptingRuntimeSmokeTest"
+}
+
+tasks.register("httpApiSmokeTest", JavaExec) {
+    group = "verification"
+    description = "Exercises HTTP API routing, status codes, validation, and response handling."
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "com.zergatul.cheatutils.webui.HttpApiSmokeTest"
 }
 
 tasks.build.doLast {

@@ -6,18 +6,19 @@ import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
+import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Minecraft;
-import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,25 +27,33 @@ import java.util.Optional;
 
 public class ApiHandler implements HttpHandler {
 
+    private final Logger logger = LogManager.getLogger(ApiHandler.class);
     private final List<ApiBase> apis = new ArrayList<>();
 
     public ApiHandler() {
         apis.add(new UserApi());
+        apis.add(new ModulesStatusApi());
+        apis.add(new GeneralInformationApi());
+        apis.add(new ScriptTypesApi());
+        apis.add(new ScriptWorkspaceApi());
+        apis.add(new ScriptCompileApi());
         apis.add(new BlocksConfigApi());
+        apis.add(new BlocksConfigApi.Add());
         apis.add(new BlockInfoApi());
+        apis.add(new BlockModelApi());
         apis.add(new EntityInfoApi());
         apis.add(new EntitiesConfigApi());
         apis.add(new BlockColorApi());
         apis.add(new KillAuraInfoApi());
         apis.add(new ExplorationMiniMapMarkersApi());
-        apis.add(new ScriptsApi());
+        apis.add(new KeyBindingScriptsApi());
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
         apis.add(new ItemInfoApi());
-        apis.add(new StatusOverlayApi());
+        apis.add(new StatusOverlayCodeApi());
         apis.add(new ClassNameApi());
         apis.add(new BlockEspRestartApi());
-        apis.add(new GameTickScriptingCodeApi());
+        apis.add(new EventsScriptingCodeApi());
         apis.add(new SchematicaUploadApi());
         apis.add(new SchematicaPlaceApi());
         apis.add(new WorldDownloadApi());
@@ -52,13 +61,16 @@ public class ApiHandler implements HttpHandler {
         apis.add(new FreeCamPathApi());
         apis.add(new DimensionApi());
         apis.add(new CoordinatesApi());
-        apis.add(new ScriptedBlockPlacerCodeApi());
-        apis.add(new AutoDisconnectCodeApi());
+        apis.add(new BlockAutomationCodeApi());
         apis.add(new GenerateEntityMappingApi());
         apis.add(new FakeWeatherSetTimeApi());
         apis.add(new FakeWeatherSetRainApi());
         apis.add(new VillagerRollerCodeApi());
         apis.add(new VillagerRollerStatusApi());
+        apis.add(new CoreConfigApi());
+        apis.add(new DebuggingApi());
+        apis.add(new CommitsApi());
+        apis.add(new ProfilesApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override
@@ -93,19 +105,6 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ArmorOverlayConfig config) {
                 ConfigStore.instance.getConfig().armorOverlayConfig = config;
-            }
-        });
-
-        apis.add(new SimpleConfigApi<>("auto-disconnect", AutoDisconnectConfig.class) {
-            @Override
-            protected AutoDisconnectConfig getConfig() {
-                return ConfigStore.instance.getConfig().autoDisconnectConfig;
-            }
-
-            @Override
-            protected void setConfig(AutoDisconnectConfig config) {
-                AutoDisconnectConfig current = ConfigStore.instance.getConfig().autoDisconnectConfig;
-                config.copyTo(current);
             }
         });
 
@@ -374,7 +373,7 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().worldMarkersConfig = config;
 
                 if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
-                    WorldMarkersController.instance.onFontChange(config);
+                    WorldMarkers.instance.onFontChange(config);
                 }
             }
         });
@@ -560,15 +559,15 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("game-tick-scripting", GameTickScriptingConfig.class) {
+        apis.add(new SimpleConfigApi<>("events-scripting", EventsScriptingConfig.class) {
             @Override
-            protected GameTickScriptingConfig getConfig() {
-                return ConfigStore.instance.getConfig().gameTickScriptingConfig;
+            protected EventsScriptingConfig getConfig() {
+                return ConfigStore.instance.getConfig().eventsScriptingConfig;
             }
 
             @Override
-            protected void setConfig(GameTickScriptingConfig config) {
-                ConfigStore.instance.getConfig().gameTickScriptingConfig.enabled = config.enabled;
+            protected void setConfig(EventsScriptingConfig config) {
+                ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = config.enabled;
             }
         });
 
@@ -620,11 +619,11 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().entityTitleConfig = config;
 
                 if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
-                    EntityTitleController.instance.onFontChange(config);
+                    EntityTitle.instance.onFontChange(config);
                 }
 
                 if (oldConfig.enchFontSize != config.enchFontSize || oldConfig.enchAntiAliasing != config.enchAntiAliasing) {
-                    EntityTitleController.instance.onEnchantmentFontChange(config);
+                    EntityTitle.instance.onEnchantmentFontChange(config);
                 }
             }
         });
@@ -641,27 +640,15 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("coordinate-leak-protection", CoordinateLeakProtectionConfig.class) {
+        apis.add(new SimpleConfigApi<>("block-automation", BlockAutomationConfig.class) {
             @Override
-            protected CoordinateLeakProtectionConfig getConfig() {
-                return ConfigStore.instance.getConfig().coordinateLeakProtectionConfig;
+            protected BlockAutomationConfig getConfig() {
+                return ConfigStore.instance.getConfig().blockAutomationConfig;
             }
 
             @Override
-            protected void setConfig(CoordinateLeakProtectionConfig config) {
-                ConfigStore.instance.getConfig().coordinateLeakProtectionConfig = config;
-            }
-        });
-
-        apis.add(new SimpleConfigApi<>("scripted-block-placer", ScriptedBlockPlacerConfig.class) {
-            @Override
-            protected ScriptedBlockPlacerConfig getConfig() {
-                return ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
-            }
-
-            @Override
-            protected void setConfig(ScriptedBlockPlacerConfig config) {
-                ScriptedBlockPlacerConfig current = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+            protected void setConfig(BlockAutomationConfig config) {
+                BlockAutomationConfig current = ConfigStore.instance.getConfig().blockAutomationConfig;
                 config.copyTo(current);
             }
         });
@@ -814,153 +801,119 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().hitboxSizeConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("monaco-editor-settings", MonacoEditorConfig.class) {
+            @Override
+            protected MonacoEditorConfig getConfig() {
+                return ConfigStore.instance.getConfig().monacoEditor;
+            }
+
+            @Override
+            protected void setConfig(MonacoEditorConfig config) {
+                ConfigStore.instance.getConfig().monacoEditor = config;
+            }
+        });
+    }
+
+    ApiHandler(List<ApiBase> apis) {
+        this.apis.addAll(List.copyOf(apis));
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String[] parts = exchange.getRequestURI().getRawPath().split("/");
-        for (int i = 0; i < parts.length; i++) {
-            parts[i] = URLDecoder.decode(parts[i], Charset.defaultCharset());
+        try {
+            RequestPath path = parsePath(exchange);
+            ApiBase api;
+            synchronized (apis) {
+                Optional<ApiBase> optional = apis.stream().filter(a -> a.getRoute().equals(path.route())).findFirst();
+                if (optional.isEmpty()) {
+                    throw new NotFoundHttpException("API handler not found");
+                }
+                api = optional.get();
+            }
+
+            switch (exchange.getRequestMethod()) {
+                case "GET" -> processGet(path, api, exchange);
+                case "POST" -> processPost(path, api, exchange);
+                case "PUT" -> processPut(path, api, exchange);
+                case "DELETE" -> processDelete(path, api, exchange);
+                default -> throw new ApiException("Method not allowed", HttpResponseCodes.METHOD_NOT_ALLOWED);
+            }
+        } catch (ApiException e) {
+            WebHelper.sendException(exchange, e.getCode(), e);
+        } catch (MethodNotSupportedException e) {
+            WebHelper.sendException(exchange, HttpResponseCodes.BAD_REQUEST, e);
+        } catch (HttpException e) {
+            WebHelper.sendException(exchange, HttpResponseCodes.BAD_REQUEST, e);
+        } catch (Throwable e) {
+            logger.error("Unhandled HTTP API error.", e);
+            WebHelper.sendException(exchange, HttpResponseCodes.INTERNAL_SERVER_ERROR, e);
+        }
+    }
+
+    private void processGet(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
+        String response = path.id() == null ? api.get() : api.get(path.id());
+        WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
+    }
+
+    private void processPost(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
+        requireNoId(path, "POST");
+        if (api.requiresJsonContentType()) {
+            WebHelper.requireJsonContentType(exchange);
+        }
+        String response = api.post(WebHelper.readBody(exchange));
+        WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
+    }
+
+    private void processPut(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
+        String id = requireId(path, "PUT");
+        if (api.requiresJsonContentType()) {
+            WebHelper.requireJsonContentType(exchange);
+        }
+        String response = api.put(id, WebHelper.readBody(exchange));
+        WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
+    }
+
+    private void processDelete(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
+        String response = api.delete(requireId(path, "DELETE"));
+        WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
+    }
+
+    private RequestPath parsePath(HttpExchange exchange) throws ApiException {
+        String rawPath = exchange.getRequestURI().getRawPath();
+        if (!rawPath.startsWith("/api/")) {
+            throw new NotFoundHttpException("API handler not found");
         }
 
-        Optional<ApiBase> api;
-        synchronized (apis) {
-            api = apis.stream().filter(a -> a.getRoute().equals(parts[2])).findFirst();
-        }
-
-        if (!api.isPresent()) {
-            exchange.sendResponseHeaders(404, 0);
-            exchange.close();
-            return;
+        String remaining = rawPath.substring("/api/".length());
+        int separator = remaining.indexOf('/');
+        String rawRoute = separator < 0 ? remaining : remaining.substring(0, separator);
+        String rawId = separator < 0 ? null : remaining.substring(separator + 1);
+        if (rawRoute.isEmpty() || rawId != null && (rawId.isEmpty() || rawId.indexOf('/') >= 0)) {
+            throw new NotFoundHttpException("API handler not found");
         }
 
         try {
-            switch (exchange.getRequestMethod()) {
-                case "GET":
-                    processGet(parts, api.get(), exchange);
-                    break;
-                case "POST":
-                    processPost(api.get(), exchange);
-                    break;
-                case "PUT":
-                    processPut(parts, api.get(), exchange);
-                    break;
-                case "DELETE":
-                    processDelete(parts, api.get(), exchange);
-                    break;
-            }
-        }
-        catch (MethodNotSupportedException e) {
-            exchange.sendResponseHeaders(404, 0);
-            exchange.close();
-        }
-        catch (NotFoundHttpException e) {
-            byte[] data = e.getMessage().getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(404, 0);
-            OutputStream stream = exchange.getResponseBody();
-            stream.write(data);
-            stream.close();
-            exchange.close();
-        }
-        catch (HttpException e) {
-            sendException(exchange, 503, e);
-        }
-        catch (Throwable e) {
-            sendException(exchange, 500, e);
+            String route = URLDecoder.decode(rawRoute, StandardCharsets.UTF_8);
+            String id = rawId == null ? null : URLDecoder.decode(rawId, StandardCharsets.UTF_8);
+            return new RequestPath(route, id);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException("Invalid URL encoding", HttpResponseCodes.BAD_REQUEST);
         }
     }
 
-    private void processGet(String[] parts, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
-        String response;
-        if (parts.length == 3) {
-            response = api.get();
-        } else {
-            response = api.get(parts[3]);
+    private static String requireId(RequestPath path, String method) throws ApiException {
+        if (path.id() == null) {
+            throw new ApiException(method + " requires id", HttpResponseCodes.BAD_REQUEST);
         }
-        byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        HttpHelper.setJsonContentType(exchange);
-        exchange.sendResponseHeaders(200, data.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(data);
-        stream.close();
-        exchange.close();
+        return path.id();
     }
 
-    private void processPost(ApiBase api, HttpExchange exchange) throws HttpException, IOException {
-
-        String body = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
-        String response = api.post(body);
-
-        byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        HttpHelper.setJsonContentType(exchange);
-        exchange.sendResponseHeaders(200, data.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(data);
-        stream.close();
-        exchange.close();
-    }
-
-    private void processPut(String[] parts, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
-
-        if (parts.length < 4) {
-            throw new MethodNotSupportedException("PUT requires id");
+    private static void requireNoId(RequestPath path, String method) throws ApiException {
+        if (path.id() != null) {
+            throw new ApiException(method + " does not accept id", HttpResponseCodes.BAD_REQUEST);
         }
-
-        String body = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
-        api.put(parts[3], body);
-
-        byte[] data = "{}".getBytes(StandardCharsets.UTF_8);
-        HttpHelper.setJsonContentType(exchange);
-        exchange.sendResponseHeaders(200, data.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(data);
-        stream.close();
-        exchange.close();
-
     }
 
-    private void processDelete(String[] parts, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
-
-        if (parts.length < 4) {
-            throw new MethodNotSupportedException("DELETE requires id");
-        }
-
-        String response = api.delete(parts[3]);
-        byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        HttpHelper.setJsonContentType(exchange);
-        exchange.sendResponseHeaders(200, data.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(data);
-        stream.close();
-        exchange.close();
-
-    }
-
-    private void sendMessage(HttpExchange exchange, int code, String message) throws IOException {
-        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
-        exchange.sendResponseHeaders(code, bytes.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(bytes);
-        stream.close();
-        exchange.close();
-    }
-
-    private void sendException(HttpExchange exchange, int code, Throwable throwable) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        builder.append(throwable.getMessage()).append("\n");
-        builder.append("**********").append("\n");
-
-        for (StackTraceElement element : throwable.getStackTrace())
-            builder.append("\tat ").append(element).append("\n");
-
-        // inner exceptions?
-
-        byte[] bytes = builder.toString().getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/plain");
-        exchange.sendResponseHeaders(code, bytes.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(bytes);
-        stream.close();
-        exchange.close();
-    }
+    private record RequestPath(String route, String id) {}
 }

@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-public class PigHackConfig {
-
-    public boolean enabled;
+public class PigHackConfig extends ModuleConfig {
     public boolean allowRideWithoutCarrot;
     public boolean overrideSteeringSpeed;
     public float steeringSpeed;

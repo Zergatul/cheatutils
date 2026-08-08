@@ -10,13 +10,11 @@ public enum ApiType {
     // in-game action leading to interaction with server
     ACTION,
 
-    CURRENT_BLOCK,
-
-    BLOCK_PLACER,
-
-    DISCONNECT,
+    BLOCK_AUTOMATION,
 
     VILLAGER_ROLLER,
 
-    LOGGING
+    LOGGING,
+
+    EVENTS
 }

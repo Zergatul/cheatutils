@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.configs.AutoTotemConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
@@ -22,26 +23,33 @@ public class AutoTotem implements Module {
     }
 
     private void onClientTickEnd() {
-        if (ConfigStore.instance.getConfig().autoTotemConfig.enabled) {
-            if (mc.player == null) {
-                return;
+        if (mc.player == null) {
+            return;
+        }
+
+        AutoTotemConfig config = ConfigStore.instance.getConfig().autoTotemConfig;
+        if (!config.enabled) {
+            return;
+        }
+
+        if (config.skipIfUsingItem && mc.player.isUsingItem()) {
+            return;
+        }
+
+        ItemStack offhand = mc.player.getItemBySlot(EquipmentSlot.OFFHAND);
+        if (offhand.isEmpty()) {
+            Inventory inventory = mc.player.getInventory();
+            int totemSlot = -1;
+            for (int i = 0; i < 36; i++) {
+                ItemStack itemStack = inventory.getItem(i);
+                if (itemStack.getItem() == Items.TOTEM_OF_UNDYING) {
+                    totemSlot = i;
+                    break;
+                }
             }
 
-            ItemStack offhand = mc.player.getItemBySlot(EquipmentSlot.OFFHAND);
-            if (offhand.isEmpty()) {
-                Inventory inventory = mc.player.getInventory();
-                int totemSlot = -1;
-                for (int i = 0; i < 36; i++) {
-                    ItemStack itemStack = inventory.getItem(i);
-                    if (itemStack.getItem() == Items.TOTEM_OF_UNDYING) {
-                        totemSlot = i;
-                        break;
-                    }
-                }
-
-                if (totemSlot >= 0) {
-                    InventoryUtils.moveItemStack(new InventorySlot(totemSlot), new InventorySlot(EquipmentSlot.OFFHAND));
-                }
+            if (totemSlot >= 0) {
+                InventoryUtils.moveItemStack(new InventorySlot(totemSlot), new InventorySlot(EquipmentSlot.OFFHAND));
             }
         }
     }

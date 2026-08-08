@@ -1,19 +1,20 @@
 package com.zergatul.cheatutils.configs;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.modules.automation.AutoDisconnect;
-import com.zergatul.cheatutils.modules.automation.VillagerRoller;
+import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
-import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
-import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
-import com.zergatul.cheatutils.scripting.generated.ParseException;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.level.block.Blocks;
+import com.zergatul.cheatutils.modules.scripting.KeyBindings;
+import com.zergatul.cheatutils.modules.utilities.Profiles;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
+import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,247 +22,345 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ConfigStore {
 
     public static final ConfigStore instance = new ConfigStore();
 
-    private static final String FILE = "zergatulcheatutils.json";
-    private static long WRITE_FILE_DELAY = 15 * 1000000000L;
+    private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
 
     public final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
-            .registerTypeAdapter(BlockTracerConfig.class, new BlockTracerConfigTypeAdapter())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
-            .registerTypeAdapter(Class.class, new ClassTypeAdapter())
+            .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
             .setPrettyPrinting()
             .create();
 
-    private Config config;
     private final Logger logger = LogManager.getLogger(ConfigStore.class);
-    private final Thread thread;
-    private final Object writeEvent = new Object();
-    private volatile long lastWriteRequest = 0;
+    private Config config;
+    private File currentFile;
 
     private ConfigStore() {
-        config = new Config();
-        thread = new Thread(this::delayedWriteThreadFunc);
-        thread.start();
+        setConfig(new Config());
     }
 
     public Config getConfig() {
         return config;
     }
 
-    public void read() {
-        File file = getFile();
+    public synchronized void read(File file) {
+        Config newConfig = new Config();
         if (file.exists()) {
             Config readCfg = null;
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(file));
-                readCfg = gson.fromJson(reader, Config.class);
-                reader.close();
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                JsonElement element = JsonParser.parseReader(reader);
+                migrateConfigTree(element);
+                readCfg = gson.fromJson(element, Config.class);
             } catch (Exception e) {
-                logger.warn("Cannot read config");
-                e.printStackTrace();
+                logger.error("Cannot read config", e);
             }
 
             if (readCfg != null) {
-                config = readCfg;
+                newConfig = readCfg;
             }
         }
 
+        ScriptExecutionManager.instance.cancelAll();
+        currentFile = file;
+        setConfig(newConfig);
         onConfigLoaded();
     }
 
+    public synchronized void switchFile(File file) {
+        currentFile = file;
+        requestWrite();
+    }
+
+    public synchronized void createNew(File file) {
+        ScriptExecutionManager.instance.cancelAll();
+        currentFile = file;
+        setConfig(new Config());
+        onConfigLoaded();
+        requestWrite();
+    }
+
     public void requestWrite() {
-        lastWriteRequest = System.nanoTime();
-        synchronized (writeEvent) {
-            writeEvent.notify();
+        File file = currentFile;
+        if (file == null) {
+            return;
         }
+        ConfigWriterQueue.instance.queue(file, WRITE_FILE_DELAY, getWriteToFileTask());
     }
 
-    public void onClose() {
-        thread.interrupt();
-    }
-
-    private void delayedWriteThreadFunc() {
-        boolean writeQeued = false;
-        try {
-            while (true) {
-                writeQeued = false;
-                synchronized (writeEvent) {
-                    writeEvent.wait();
-                }
-                writeQeued = true;
-                long lastValue = lastWriteRequest;
-                Thread.sleep(WRITE_FILE_DELAY / 1000000);
-                while (lastWriteRequest != lastValue) {
-                    lastValue = lastWriteRequest;
-                    long waitNs = lastWriteRequest + WRITE_FILE_DELAY - System.nanoTime();
-                    Thread.sleep(waitNs / 1000000);
-                }
-                write();
-            }
-        }
-        catch (InterruptedException e) {
-            if (writeQeued) {
-                write();
-            }
-        }
-    }
-
-    private void write() {
-        logger.debug("Saving config to file");
-        File file = getFile();
-        try {
-            synchronized (this) {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+    public Runnable getWriteToFileTask() {
+        File file = this.currentFile;
+        Config config = this.config;
+        return () -> {
+            logger.debug("Saving config to file {}", file.getName());
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                 gson.toJson(config, writer);
-                writer.close();
+            } catch (Throwable e) {
+                logger.error("Cannot write config", e);
             }
-        }
-        catch (Exception e) {
-            logger.warn("Cannot write config");
-            e.printStackTrace();
-        }
+        };
     }
 
-    private File getFile() {
-        File configDir = new File(Minecraft.getInstance().gameDirectory, "config");
-        if (!configDir.exists()) {
-            configDir.mkdirs();
+    public static <T> void updateFromApi(Function<Config, T> extract, Consumer<T> update) {
+        ConfigStore store = instance;
+        Config config = store.getConfig();
+        T moduleConfig = extract.apply(config);
+        update.accept(moduleConfig);
+        if (moduleConfig instanceof Sanitizable sanitizable) {
+            sanitizable.sanitize();
         }
+        store.requestWrite();
+    }
 
-        return new File(configDir.getPath(), FILE);
+    public static <T> void replaceFromApi(T moduleConfig, Consumer<T> replace) {
+        if (moduleConfig instanceof Sanitizable sanitizable) {
+            sanitizable.sanitize();
+        }
+        replace.accept(moduleConfig);
+        instance.requestWrite();
+    }
+
+    // only this method should update this.config
+    private void setConfig(Config config) {
+        this.config = config;
     }
 
     private void onConfigLoaded() {
-        LightLevel.instance.onChanged();
-
-        // remove blocks that can't get deserialized, probably from removed mod
-        config.blocks.configs = config.blocks.configs
-                .removeIf(Objects::isNull)
-                .removeIf(c -> c.block == null)
-                .removeIf(c -> c.block == Blocks.AIR);
+        config.sanitize();
         config.blocks.apply();
 
-        // clazz==null can occur after removing mod with custom entities
-        config.entities.configs = config.entities.configs.removeIf(c -> c.clazz == null);
+        LightLevel.instance.onChanged();
+        CompletableFuture.delayedExecutor(250, TimeUnit.MILLISECONDS).execute(ConfigHttpServer.instance::onConfigUpdated);
 
-        // TODO: use reflection to automatically find ValidatableConfig's?
-        config.killAuraConfig.validate();
-        config.movementHackConfig.validate();
-        config.fastBreakConfig.validate();
-        config.elytraHackConfig.validate();
-        config.freeCamConfig.validate();
-        config.flyHackConfig.validate();
-        config.boatHackConfig.validate();
-        config.explorationMiniMapConfig.validate();
-        config.reachConfig.validate();
-        config.lightLevelConfig.validate();
-        config.schematicaConfig.validate();
-        config.autoBucketConfig.validate();
-        config.performanceConfig.validate();
-        config.entityTitleConfig.validate();
-        config.keyBindingsConfig.validate();
-        config.worldMarkersConfig.validate();
-        config.autoAttackConfig.validate();
-        config.projectilePathConfig.validate();
-        config.chatUtilitiesConfig.validate();
-        config.areaMineConfig.validate();
-        config.hitboxSizeConfig.validate();
+        EntityTitle.instance.onFontChange(config.entityTitleConfig);
+        EntityTitle.instance.onEnchantmentFontChange(config.entityTitleConfig);
+        WorldMarkers.instance.onFontChange(config.worldMarkersConfig);
 
-        EntityTitleController.instance.onFontChange(config.entityTitleConfig);
-        EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
-        WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
-
-        if (config.scriptsConfig.scripts.size() == 0) {
+        KeyBindings.instance.clear();
+        if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                ScriptController.instance.add(toggleEspName, "main.toggleEsp();", false);
-                KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
-                KeyBindingsController.instance.assign(0, toggleEspName);
-            } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                KeyBindings.instance.add(toggleEspName, "esp.toggle();", false);
+                KeyBindings.instance.assign(0, toggleEspName);
+            } catch (Throwable e) {
+                logger.error("Toggle ESP script initialization failed", e);
             }
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
-                KeyBindingsController.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
-                KeyBindingsController.instance.assign(1, toggleFreeCamName);
-            } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+                KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
+                KeyBindings.instance.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
+                KeyBindings.instance.assign(1, toggleFreeCamName);
+            } catch (Throwable e) {
+                logger.error("Toggle FreeCam script initialization failed", e);
             }
         } else {
-            ArrayList<ScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.scriptsConfig.scripts);
-            config.scriptsConfig.scripts.clear();
+            ArrayList<KeyBindingScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.keyBindingScriptsConfig.scripts);
+            config.keyBindingScriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    ScriptController.instance.add(s.name, s.code, true);
-                } catch (ParseException | ScriptCompileException e) {
-                    e.printStackTrace();
+                    KeyBindings.instance.add(s.name, s.code, true);
+                } catch (Throwable e) {
+                    logger.error("Key binding script '{}' initialization failed", s.name, e);
                 }
             });
 
             String[] bindings = config.keyBindingsConfig.bindings;
             for (int i = 0; i < KeyBindingsConfig.KeysCount; i++) {
                 if (bindings[i] != null) {
-                    KeyBindingsController.instance.assign(i, bindings[i]);
+                    KeyBindings.instance.assign(i, bindings[i]);
                 }
             }
         }
 
-        if (config.statusOverlayConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
-                StatusOverlay.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.OVERLAY).init(config.statusOverlayConfig.code);
+            if (!result.isSuccess()) {
+                result.getDiagnostics().forEach(diagnostic -> logger.error(
+                        "Status Overlay script initialization failed at {}:{}: {}",
+                        diagnostic.range.getLine1(),
+                        diagnostic.range.getColumn1(),
+                        diagnostic.message));
             }
+        } catch (Throwable e) {
+            logger.error("Status Overlay script initialization failed", e);
         }
 
-        if (config.gameTickScriptingConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileKeys(config.gameTickScriptingConfig.code);
-                GameTickScriptingController.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.EVENTS).init(config.eventsScriptingConfig.code);
+            if (!result.isSuccess()) {
+                result.getDiagnostics().forEach(diagnostic -> logger.error(
+                        "Events Scripting initialization failed at {}:{}: {}",
+                        diagnostic.range.getLine1(),
+                        diagnostic.range.getColumn1(),
+                        diagnostic.message));
             }
+        } catch (Throwable e) {
+            logger.error("Events Scripting initialization failed", e);
         }
 
-        if (config.scriptedBlockPlacerConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileBlockPlacer(config.scriptedBlockPlacerConfig.code);
-                ScriptedBlockPlacerController.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_AUTOMATION).init(config.blockAutomationConfig.code);
+            if (!result.isSuccess()) {
+                result.getDiagnostics().forEach(diagnostic -> logger.error(
+                        "Block Automation script initialization failed at {}:{}: {}",
+                        diagnostic.range.getLine1(),
+                        diagnostic.range.getColumn1(),
+                        diagnostic.message));
             }
+        } catch (Throwable e) {
+            logger.error("Block Automation script initialization failed", e);
         }
 
-        if (config.autoDisconnectConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileAutoDisconnect(config.autoDisconnectConfig.code);
-                AutoDisconnect.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.VILLAGER_ROLLER).init(config.villagerRollerConfig.code);
+            if (!result.isSuccess()) {
+                result.getDiagnostics().forEach(diagnostic -> logger.error(
+                        "Villager Roller script initialization failed at {}:{}: {}",
+                        diagnostic.range.getLine1(),
+                        diagnostic.range.getColumn1(),
+                        diagnostic.message));
             }
+        } catch (Throwable e) {
+            logger.error("Villager Roller script initialization failed", e);
+        }
+    }
+
+    static void migrateConfigTree(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
         }
 
-        if (config.villagerRollerConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
-                VillagerRoller.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                e.printStackTrace();
+        JsonObject root = element.getAsJsonObject();
+        if (root.has("scriptsConfig") && !root.has("keyBindingScriptsConfig")) {
+            root.add("keyBindingScriptsConfig", root.remove("scriptsConfig"));
+        }
+        if (root.has("scriptedBlockPlacerConfig") && !root.has("blockAutomationConfig")) {
+            root.add("blockAutomationConfig", root.remove("scriptedBlockPlacerConfig"));
+        }
+        if (root.has("autoAttackConfig") && root.get("autoAttackConfig").isJsonObject()) {
+            JsonObject autoAttack = root.getAsJsonObject("autoAttackConfig");
+            if (autoAttack.has("extraTicks") && !autoAttack.has("extraTicksMin") && !autoAttack.has("extraTicksMax")) {
+                long rounded = Math.round(autoAttack.get("extraTicks").getAsDouble());
+                int ticks = (int) Math.max(-10, Math.min(10, rounded));
+                autoAttack.addProperty("extraTicksMin", ticks);
+                autoAttack.addProperty("extraTicksMax", ticks);
+            }
+            autoAttack.remove("extraTicks");
+        }
+        migrateBlockEspConfigFields(root);
+        migrateEntityEspConfigFields(root);
+        root.remove("gameTickScriptingConfig");
+        root.remove("autoDisconnectConfig");
+    }
+
+    private static void migrateBlockEspConfigFields(JsonObject root) {
+        if (!root.has("blocks") || !root.get("blocks").isJsonObject()) {
+            return;
+        }
+
+        JsonObject blocks = root.getAsJsonObject("blocks");
+        if (!blocks.has("configs") || !blocks.get("configs").isJsonArray()) {
+            return;
+        }
+
+        for (JsonElement element : blocks.getAsJsonArray("configs")) {
+            if (!element.isJsonObject()) {
+                continue;
+            }
+
+            JsonObject config = element.getAsJsonObject();
+            if (config.has("block") && !config.has("blocks")) {
+                JsonArray array = new JsonArray();
+                array.add(config.get("block"));
+                config.add("blocks", array);
+            }
+            config.remove("block");
+
+            renameField(config, "drawOutline", "drawBoundingBox");
+            renameField(config, "outlineColor", "boundingBoxColor");
+            renameField(config, "outlineMaxDistance", "boundingBoxMaxDistance");
+
+            if (!config.has("tracerWidth")) {
+                config.addProperty("tracerWidth", 1);
+            }
+            if (!config.has("boundingBoxWidth")) {
+                config.addProperty("boundingBoxWidth", 1);
+            }
+            if (!config.has("drawOverlay")) {
+                config.addProperty("drawOverlay", false);
+            }
+            if (!config.has("overlayColor")) {
+                config.addProperty("overlayColor", new Color(0x80FFFFFF, true).getRGB());
             }
         }
+    }
+
+    private static void migrateEntityEspConfigFields(JsonObject root) {
+        if (!root.has("entities") || !root.get("entities").isJsonObject()) {
+            return;
+        }
+
+        JsonObject entities = root.getAsJsonObject("entities");
+        if (!entities.has("configs") || !entities.get("configs").isJsonArray()) {
+            return;
+        }
+
+        for (JsonElement element : entities.getAsJsonArray("configs")) {
+            if (!element.isJsonObject()) {
+                continue;
+            }
+
+            JsonObject config = element.getAsJsonObject();
+            boolean legacy = config.has("glow") || config.has("glowColor") || config.has("glowMaxDistance");
+            if (legacy) {
+                renameField(config, "drawOutline", "drawBoundingBox");
+                renameField(config, "outlineColor", "boundingBoxColor");
+                renameField(config, "outlineMaxDistance", "boundingBoxMaxDistance");
+
+                renameField(config, "glow", "drawOutline");
+                renameField(config, "glowColor", "outlineColor");
+                renameField(config, "glowMaxDistance", "outlineMaxDistance");
+            }
+
+            if (!config.has("tracerWidth")) {
+                config.addProperty("tracerWidth", 1);
+            }
+            if (!config.has("boundingBoxWidth")) {
+                config.addProperty("boundingBoxWidth", 1);
+            }
+            if (!config.has("outlineMethod")) {
+                config.addProperty("outlineMethod", 0);
+            }
+            if (!config.has("drawOverlay")) {
+                config.addProperty("drawOverlay", false);
+            }
+            if (!config.has("overlayColor")) {
+                config.addProperty("overlayColor", new Color(0x80FFFFFF, true).getRGB());
+            }
+            if (!config.has("useRawNames")) {
+                config.addProperty("useRawNames", false);
+            }
+        }
+    }
+
+    private static void renameField(JsonObject object, String oldName, String newName) {
+        if (object.has(oldName) && !object.has(newName)) {
+            object.add(newName, object.get(oldName));
+        }
+        object.remove(oldName);
     }
 }

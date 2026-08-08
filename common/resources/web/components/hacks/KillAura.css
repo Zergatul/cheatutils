@@ -1,0 +1,16 @@
+div.kill-aura table.bordered {
+    font-family: var(--font2);
+    border-collapse: collapse;
+}
+
+div.kill-aura table.bordered {
+    border: 0.1em solid var(--color1);
+}
+
+
+div.kill-aura table.bordered td {
+    border-top: 0.1em solid var(--color1);
+    border-bottom: 0.1em solid var(--color1);
+    vertical-align: middle;
+    padding: 0.2em 0.5em;
+}

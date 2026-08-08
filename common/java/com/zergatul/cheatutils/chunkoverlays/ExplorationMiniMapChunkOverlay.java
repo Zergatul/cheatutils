@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
@@ -23,9 +24,9 @@ import java.util.Map;
 
 public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
-    private static final ResourceLocation PlayerPosTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-player.png");
-    private static final ResourceLocation CenterPosTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-center.png");
-    private static final ResourceLocation MarkerTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-marker.png");
+    private static final ResourceLocation PlayerPosTexture = new ResourceLocation(Constants.MOD_ID, "textures/mini-map-player.png");
+    private static final ResourceLocation CenterPosTexture = new ResourceLocation(Constants.MOD_ID, "textures/mini-map-center.png");
+    private static final ResourceLocation MarkerTexture = new ResourceLocation(Constants.MOD_ID, "textures/mini-map-marker.png");
 
     private final Map<Dimension, List<Marker>> markers = new HashMap<>();
 
@@ -101,24 +102,21 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         ChunkPos chunkPos = chunk.getPos();
         SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
 
-        addToRenderQueue(new RenderThreadQueueItem(() -> {
-            if (!segments.containsKey(segmentPos)) {
-                segments.put(segmentPos, new Segment(segmentPos, segmentSize));
-            }
-        }, () -> {
-            Segment segment = segments.get(segmentPos);
-            int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-            int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+        if (!segments.containsKey(segmentPos)) {
+            segments.put(segmentPos, new Segment(segmentPos, segmentSize));
+        }
 
-            Integer scanFromY = getConfig().scanFromY;
-            for (int dx = 0; dx < 16; dx++) {
-                for (int dz = 0; dz < 16; dz++) {
-                    drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
-                }
-            }
+        Segment segment = segments.get(segmentPos);
+        int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
+        int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
 
-            addToRenderQueue(new RenderThreadQueueItem(segment::onChange));
-        }));
+        Integer scanFromY = getConfig().scanFromY;
+        for (int dx = 0; dx < 16; dx++) {
+            for (int dz = 0; dz < 16; dz++) {
+                drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
+            }
+        }
+        segment.onChange();
 
         return true;
     }
@@ -154,11 +152,6 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                 }
             }
         }
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "ExplorationMiniMapScanThread";
     }
 
     private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk, Integer scanFromY) {

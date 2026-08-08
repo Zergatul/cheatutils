@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ServerPluginsConfig implements ValidatableConfig {
+public class ServerPluginsConfig implements Sanitizable {
 
     public int waitTicks;
     public boolean autoPrint;
@@ -12,7 +12,7 @@ public class ServerPluginsConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         waitTicks = MathUtils.clamp(waitTicks, 0, 60 * 20);
     }
 }

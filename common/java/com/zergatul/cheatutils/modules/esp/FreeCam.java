@@ -215,6 +215,15 @@ public class FreeCam implements Module {
         }
     }
 
+    public boolean isCameraDetached(boolean value) {
+        FreeCamConfig config = getConfig();
+        if (active && config.renderHands && !cameraLock && !eyeLock) {
+            return false;
+        } else {
+            return value;
+        }
+    }
+
     private void onRenderTickStart() {
         if (!active) {
             return;

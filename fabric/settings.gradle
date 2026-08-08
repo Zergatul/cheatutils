@@ -7,4 +7,6 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+
+    includeBuild('../common/build')
 }

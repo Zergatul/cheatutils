@@ -1,0 +1,44 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Once enabled minecraft ignores time and weather change packets from server.
+        Allows you to manually set time or weather on client.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                Override
+            </legend>
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="field-description">Set day time (0..24000):</span>
+                        </td>
+                        <td>
+                            <input type="text" class="w5" v-model="dayTime">
+                        </td>
+                        <td>
+                            <button class="w8" @click="setDayTime()">Set</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="field-description">Set rain level (0..1, 0 - no rain):</span>
+                        </td>
+                        <td>
+                            <input type="text" class="w5" v-model="rainLevel">
+                        </td>
+                        <td>
+                            <button class="w8" @click="setRainLevel()">Set</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+</div>

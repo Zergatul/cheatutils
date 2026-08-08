@@ -1,0 +1,3 @@
+Script that runs every frame and collects text for the Status Overlay.
+Use the overlay API to add strings and control their position and color.
+Only readonly and overlay APIs are available.

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class BoatHackConfig implements ValidatableConfig {
+public class BoatHackConfig implements Sanitizable, ModuleStateProvider {
     public boolean overrideFriction;
     public float friction;
     //public boolean disableInertia;
@@ -18,9 +18,14 @@ public class BoatHackConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         friction = Math.min(Math.max(0.01f, friction), 0.99f);
         horizontalFlySpeed = MathUtils.clamp(horizontalFlySpeed, 0, 100);
         verticalFlySpeed = MathUtils.clamp(verticalFlySpeed, 0, 100);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return overrideFriction || fly;
     }
 }

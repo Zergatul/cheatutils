@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class FlyHackConfig extends ModuleConfig implements ValidatableConfig {
+public class FlyHackConfig extends ModuleConfig implements Sanitizable {
 
     public boolean overrideFlyingSpeed;
     public float flyingSpeed;
@@ -15,7 +15,7 @@ public class FlyHackConfig extends ModuleConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         flyingSpeed = MathUtils.clamp(flyingSpeed, 0.001f, 10f);
     }
 }

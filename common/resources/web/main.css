@@ -1,0 +1,116 @@
+div.main {
+    flex-grow: 1;
+    position: relative;
+}
+
+div.modules {
+    display: grid;
+    gap: 1em;
+    grid-template-columns: repeat(6, minmax(8em, 12em));
+    justify-content: center;
+    margin: 0.5em;
+}
+
+div.module-group {
+    background-color: var(--color3);
+    border-radius: 2em;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+    padding: 1em clamp(0.5em, 1vw, 1em);
+    flex-direction: column;
+    justify-content: start;
+    gap: 0.15em;
+}
+
+div.module-group-header {
+    color: var(--color8);
+    font-size: 1.5em;
+    text-align: center;
+}
+
+div.module-group > button {
+    background-color: var(--color4);
+    border-width: 0;
+    border-radius: 0.5em;
+    color: var(--color1);
+    font-family: var(--font);
+    font-size: 1em;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+div.module-group > button.local-link {
+    color: #4070BF;
+}
+
+div.module-group > button.external-link {
+    color: #74571C;
+}
+
+div.module-group > button.dangerous {
+    color: #951600;
+}
+
+div.module-group > button.active {
+    color: var(--color7);
+}
+
+div.module-group > button:hover {
+    background-color: var(--color6);
+}
+
+div.module-group > button.faded {
+    opacity: 0.2;
+}
+
+@media (max-width: 73rem) {
+    div.modules {
+        grid-template-columns: repeat(3, minmax(8em, 12em));
+    }
+}
+
+@media (max-width: 37rem) {
+    div.modules {
+        grid-template-columns: repeat(2, minmax(8em, 12em));
+    }
+}
+
+@media (max-width: 25rem) {
+    div.modules {
+        grid-template-columns: minmax(8em, 12em);
+    }
+}
+
+div.information {
+    color: #404040;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    text-align: right;
+    font-size: 0.7em;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: -0.03em;
+    margin: 0.5em;
+}
+
+/* Accessibility additions that do not change the 26.2 visual layout. */
+.visually-hidden {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+div.module-group > button:focus-visible,
+div.main-header a:focus-visible {
+    outline: 0.15em solid var(--color2);
+    outline-offset: 0.1em;
+}

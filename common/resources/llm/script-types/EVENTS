@@ -1,0 +1,3 @@
+Runs once and attaches callbacks through the events API.
+Saving the script detaches all callbacks registered by its previous version before registering the new ones.
+This version exposes onHandleKeys, onTickEnd, and onMenuTickEnd.

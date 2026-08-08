@@ -3,9 +3,10 @@ package com.zergatul.cheatutils.mixins.common;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.configs.PerformanceConfig;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
+import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -33,19 +34,16 @@ public abstract class MixinMinecraft {
     @Shadow
     public abstract boolean isWindowActive();
 
-    @Shadow
-    protected abstract void continueAttack(boolean p_91387_);
-
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
         if (player == null) {
             return;
         }
-        for (EntityTracerConfig config : ConfigStore.instance.getConfig().entities.configs) {
-            if (config.enabled && config.isValidEntity(entity) && config.glow && entity.distanceToSqr(player) < config.getGlowMaxDistanceSqr()) {
+        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
+            if (config.useMinecraftOutline() && config.isValidEntity(entity) && entity.distanceToSqr(player) < config.getOutlineMaxDistanceSqr()) {
                 info.setReturnValue(true);
                 info.cancel();
                 return;
@@ -55,7 +53,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "close()V")
     private void onClose(CallbackInfo info) {
-        ConfigStore.instance.onClose();
+        Events.Close.trigger();
     }
 
     @Inject(at = @At("HEAD"), method = "handleKeybinds()V")
@@ -91,6 +89,11 @@ public abstract class MixinMinecraft {
     @Inject(at = @At("TAIL"), method = "tick()V")
     private void onAfterTick(CallbackInfo info) {
         Events.ClientTickEnd.trigger();
+    }
+
+    @Inject(at = @At("TAIL"), method = "runTick(Z)V")
+    private void onMainLoopFrameEnd(boolean tick, CallbackInfo info) {
+        Events.MainLoopFrameEnd.trigger();
     }
 
     @Inject(

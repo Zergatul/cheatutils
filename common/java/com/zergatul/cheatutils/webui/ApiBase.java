@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.webui;
 import com.google.gson.Gson;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import org.apache.http.HttpException;
-import org.apache.http.MethodNotSupportedException;
 
 public abstract class ApiBase {
 
@@ -11,23 +10,31 @@ public abstract class ApiBase {
 
     public abstract String getRoute();
 
+    public boolean requiresJsonContentType() {
+        return false;
+    }
+
     public String get() throws HttpException {
-        throw new MethodNotSupportedException("Method not supported");
+        throw methodNotAllowed();
     }
 
     public String get(String id) throws HttpException {
-        throw new MethodNotSupportedException("Method not supported");
+        throw methodNotAllowed();
     }
 
     public String put(String id, String body) throws HttpException {
-        throw new MethodNotSupportedException("Method not supported");
+        throw methodNotAllowed();
     }
 
     public String post(String body) throws HttpException {
-        throw new MethodNotSupportedException("Method not supported");
+        throw methodNotAllowed();
     }
 
     public String delete(String id) throws HttpException {
-        throw new MethodNotSupportedException("Method not supported");
+        throw methodNotAllowed();
+    }
+
+    private ApiException methodNotAllowed() {
+        return new ApiException("Method not allowed", HttpResponseCodes.METHOD_NOT_ALLOWED);
     }
 }

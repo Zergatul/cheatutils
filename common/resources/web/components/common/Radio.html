@@ -1,0 +1,4 @@
+<div class="radio">
+    <input type="radio" :name="name" :id="id" :value="value" :checked="isChecked" @change="onChange">
+    <label :for="id"><slot></slot></label>
+</div>

@@ -7,7 +7,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.apache.http.HttpException;
 
 import java.io.IOException;
-import java.util.Base64;
 
 public class SchematicaUploadApi extends ApiBase {
 
@@ -17,9 +16,15 @@ public class SchematicaUploadApi extends ApiBase {
     }
 
     @Override
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
     public String post(String body) throws HttpException {
-        Request request = gson.fromJson(body, Request.class);
-        byte[] data = Base64.getDecoder().decode(request.file);
+        Request request = WebHelper.parseJson(gson, body, Request.class);
+        byte[] data = WebHelper.decodeBase64(request.file, "file");
+        WebHelper.requireNonBlankField(request.name, "name");
         SchemaFile schema;
         try {
             schema = SchemaFormatFactory.parse(data, request.name);

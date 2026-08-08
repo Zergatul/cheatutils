@@ -1,0 +1,34 @@
+<div class="main">
+    <div class="modules">
+        <div class="module-group">
+            <div class="module-group-header">Automation</div>
+            <module-button v-for="module in automation" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+        </div>
+        <div class="module-group">
+            <div class="module-group-header">ESP</div>
+            <module-button v-for="module in esp" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+        </div>
+        <div class="module-group">
+            <div class="module-group-header">Hacks</div>
+            <module-button v-for="module in hacks" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+        </div>
+        <div class="module-group">
+            <div class="module-group-header">Visuals</div>
+            <module-button v-for="module in visuals" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+        </div>
+        <div class="module-group">
+            <div class="module-group-header">Scripting</div>
+            <module-button v-for="module in scripting" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+        </div>
+        <div class="module-group">
+            <div class="module-group-header">Utility</div>
+            <module-button v-for="module in utility" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
+        </div>
+    </div>
+    <div class="information">
+        <div>{{ generalInfo.gameVersion }}</div>
+        <div>{{ generalInfo.modLoaderVersion }}</div>
+        <div>{{ generalInfo.modCount }}</div>
+        <div>{{ generalInfo.modVersion }}</div>
+    </div>
+</div>

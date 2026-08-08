@@ -1,14 +1,12 @@
 package com.zergatul.cheatutils.webui;
 
-import org.apache.http.HttpException;
-
-public class NotFoundHttpException extends HttpException {
+public class NotFoundHttpException extends ApiException {
 
     public NotFoundHttpException() {
-        super();
+        this("Not found");
     }
 
     public NotFoundHttpException(String message) {
-        super(message);
+        super(message, HttpResponseCodes.NOT_FOUND);
     }
 }

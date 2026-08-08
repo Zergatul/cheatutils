@@ -1,0 +1,53 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Auto Attack makes it so that holding the attack button autoswings the sword, similar to the combat snapshots.
+        Each swing is done right after the attack cooldown is done and thus will always do max possible damage.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.limitRange" @change="update()">Limit Range</switch-checkbox>
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Max Range:</span>
+                <input type="text" class="w3" v-model="config.maxRange" @change="update()">
+            </div>
+            <div class="section-description margin-vertical">
+                Don't auto attack if target is further than specified distance. May help with some anticheats.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Extra Delay
+            </legend>
+            <table>
+                <tr>
+                    <td>
+                        <span class="field-description">Extra Ticks Min:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.extraTicksMin" @change="update()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="field-description">Extra Ticks Max:</span>
+                    </td>
+                    <td>
+                        <input type="number" class="w3" v-model="config.extraTicksMax" @change="update()">
+                    </td>
+                </tr>
+            </table>
+            <div class="section-description margin-vertical">
+                Wait additional random ticks amount in [min..max] range once cooldown passed.
+                Values can be negative, in this case module will attack before cooldown.
+            </div>
+        </fieldset>
+    </div>
+</div>

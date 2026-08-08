@@ -3,18 +3,18 @@ package com.zergatul.cheatutils.modules.esp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.datafixers.util.Pair;
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LightLevelConfig;
 import com.zergatul.cheatutils.controllers.ChunkController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.Dimension;
-import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,24 +32,17 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class LightLevel implements Module {
 
     public static final LightLevel instance = new LightLevel();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Logger logger = LogManager.getLogger(LightLevel.class);
     private final ResourceLocation[] textures = new ResourceLocation[16];
-    private final Object loopWaitEvent = new Object();
-    private final Thread eventLoop;
-    private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
     private final HashMap<ChunkPos, HashSet<BlockPos>> chunks = new HashMap<>();
     private final List<BlockPos> listForRendering = new ArrayList<>();
     private boolean active = false;
@@ -70,38 +63,16 @@ public class LightLevel implements Module {
 
     private LightLevel() {
         for (int i = 0; i < 16; i++) {
-            textures[i] = new ResourceLocation(ModMain.MODID, "textures/light-level-" + i + ".png");
+            textures[i] = new ResourceLocation(Constants.MOD_ID, "textures/light-level-" + i + ".png");
         }
 
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC));
 
         Events.RenderWorldLast.add(this::render);
-        Events.ScannerChunkLoaded.add(this::onChunkLoaded);
-        Events.ScannerChunkUnloaded.add(this::onChunkUnLoaded);
-        Events.ScannerBlockUpdated.add(this::onBlockChanged);
-
-        eventLoop = new Thread(() -> {
-            try {
-                while (true) {
-                    synchronized (loopWaitEvent) {
-                        loopWaitEvent.wait();
-                    }
-                    while (queue.size() > 0) {
-                        Runnable process = queue.remove();
-                        process.run();
-                        Thread.yield();
-                    }
-                }
-            }
-            catch (InterruptedException e) {
-                // do nothing
-            }
-            catch (Throwable e) {
-                logger.error("LightLevel scan thread crash.", e);
-            }
-        }, "LightLevelScanThread");
-
-        eventLoop.start();
+        Events.SmartChunkLoaded.add(this::onChunkLoaded);
+        Events.SmartChunkUnloaded.add(this::onChunkUnLoaded);
+        Events.BlockUpdated.add(this::onBlockChanged);
+        Events.Close.add(this::close);
     }
 
     public void onChanged() {
@@ -112,8 +83,6 @@ public class LightLevel implements Module {
                 for (Pair<Dimension, LevelChunk> pair : ChunkController.instance.getLoadedChunks()) {
                     onChunkLoaded(pair.getSecond());
                 }
-            } else {
-                queue.clear();
             }
         }
     }
@@ -239,36 +208,31 @@ public class LightLevel implements Module {
         if (!active) {
             return;
         }
-        queue.add(() -> {
-            Dimension dimension = ((LevelChunkMixinInterface) chunk).getDimension();
-            ChunkPos chunkPos = chunk.getPos();
-            HashSet<BlockPos> set;
-            synchronized (chunks) {
-                set = chunks.get(chunkPos);
-                if (set == null) {
-                    set = new HashSet<>();
-                    chunks.put(chunkPos, set);
-                }
+        Dimension dimension = Dimension.get((ClientLevel) chunk.getLevel());
+        ChunkPos chunkPos = chunk.getPos();
+        HashSet<BlockPos> set;
+        synchronized (chunks) {
+            set = chunks.get(chunkPos);
+            if (set == null) {
+                set = new HashSet<>();
+                chunks.put(chunkPos, set);
             }
-            int xc = chunk.getPos().x << 4;
-            int zc = chunk.getPos().z << 4;
-            synchronized (set) {
-                set.clear();
-                for (int x = 0; x < 16; x++) {
-                    for (int z = 0; z < 16; z++) {
-                        int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
-                        for (int y = dimension.getMinY(); y <= height; y++) {
-                            int xb = xc | x;
-                            int zb = zc | z;
-                            BlockPos pos = new BlockPos(xb, y, zb);
-                            checkBlock(chunk, pos, set);
-                        }
+        }
+        int xc = chunk.getPos().x << 4;
+        int zc = chunk.getPos().z << 4;
+        synchronized (set) {
+            set.clear();
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
+                    for (int y = dimension.getMinY(); y <= height; y++) {
+                        int xb = xc | x;
+                        int zb = zc | z;
+                        BlockPos pos = new BlockPos(xb, y, zb);
+                        checkBlock(chunk, pos, set);
                     }
                 }
             }
-        });
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
         }
     }
 
@@ -276,13 +240,8 @@ public class LightLevel implements Module {
         if (!active) {
             return;
         }
-        queue.add(() -> {
-            synchronized (chunks) {
-                chunks.remove(chunk.getPos());
-            }
-        });
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
+        synchronized (chunks) {
+            chunks.remove(chunk.getPos());
         }
     }
 
@@ -290,32 +249,27 @@ public class LightLevel implements Module {
         if (!active) {
             return;
         }
-        queue.add(() -> {
-            LevelChunk chunk = event.chunk();
-            HashSet<BlockPos> set;
-            synchronized (chunks) {
-                set = chunks.get(chunk.getPos());
-            }
-            if (set == null) {
-                return;
-            }
-            synchronized (set) {
-                BlockPos pos = event.pos();
-                BlockPos above = pos.above();
-                BlockPos below = pos.below();
-                BlockPos below2 = below.below();
-                set.remove(pos);
-                set.remove(above);
-                set.remove(below);
-                set.remove(below2);
-                checkBlock(chunk, pos, set);
-                checkBlock(chunk, above, set);
-                checkBlock(chunk, below, set);
-                checkBlock(chunk, below2, set);
-            }
-        });
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
+        LevelChunk chunk = event.chunk();
+        HashSet<BlockPos> set;
+        synchronized (chunks) {
+            set = chunks.get(chunk.getPos());
+        }
+        if (set == null) {
+            return;
+        }
+        synchronized (set) {
+            BlockPos pos = event.pos();
+            BlockPos above = pos.above();
+            BlockPos below = pos.below();
+            BlockPos below2 = below.below();
+            set.remove(pos);
+            set.remove(above);
+            set.remove(below);
+            set.remove(below2);
+            checkBlock(chunk, pos, set);
+            checkBlock(chunk, above, set);
+            checkBlock(chunk, below, set);
+            checkBlock(chunk, below2, set);
         }
     }
 
@@ -360,5 +314,17 @@ public class LightLevel implements Module {
         }
 
         return state.isSolid() && state.isCollisionShapeFullBlock(mc.level, pos);
+    }
+
+    private void close() {
+        active = false;
+        synchronized (chunks) {
+            chunks.clear();
+        }
+        listForRendering.clear();
+        if (vertexBuffer != null) {
+            vertexBuffer.close();
+            vertexBuffer = null;
+        }
     }
 }

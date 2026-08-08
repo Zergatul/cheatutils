@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.mixins.common;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.entities.FakePlayer;
+import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -48,18 +48,6 @@ public abstract class MixinLevelRenderer {
         }
     }
 
-
-
-    @Inject(
-            method = "renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderType;clearRenderState()V")
-    )
-    private void onRenderChunkLayer(RenderType type, PoseStack poseStack, double p_172996_, double p_172997_, double p_172998_, Matrix4f projectionMatrix, CallbackInfo info) {
-        if (type == RenderType.solid()) {
-            Events.RenderSolidLayer.trigger(new RenderWorldLayerEvent(poseStack, projectionMatrix, Minecraft.getInstance().gameRenderer.getMainCamera()));
-        }
-    }
-
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V", ordinal = 0),
             method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V")
@@ -92,6 +80,33 @@ public abstract class MixinLevelRenderer {
                 this.renderEntity(fake, x, y, z, partialTicks, matrices, source);
             }
         }
+    }
+
+    @Inject(
+            method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+            at = @At("RETURN"))
+    private void onRenderLevelEnd(
+            PoseStack matrices,
+            float partialTicks,
+            long limitTime,
+            boolean renderBlockOutline,
+            Camera camera,
+            GameRenderer gameRenderer,
+            LightTexture lightmapTextureManager,
+            Matrix4f projectionMatrix,
+            CallbackInfo info
+    ) {
+        Events.RenderWorldLastRaw.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
+    }
+
+    @Inject(at = @At("HEAD"), method = "renderEntity")
+    private void onBeforeRenderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo info) {
+        MixinLevelRendererHelper.currentEntity = entity;
+    }
+
+    @Inject(at = @At("TAIL"), method = "renderEntity")
+    private void onAfterRenderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo info) {
+        MixinLevelRendererHelper.currentEntity = null;
     }
 
     @Inject(at = @At("HEAD"), method = "renderSnowAndRain", cancellable = true)

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.forge;
 
-import com.zergatul.cheatutils.ModMain;
+import com.zergatul.cheatutils.Constants;
 import net.minecraftforge.network.HandshakeMessages;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,6 +18,6 @@ public class MixinC2SModListReply {
 
     @Inject(at = @At("TAIL"), method = "<init>()V", remap = false)
     public void onConstructor(CallbackInfo info) {
-        mods.remove(ModMain.MODID);
+        mods.remove(Constants.MOD_ID);
     }
 }

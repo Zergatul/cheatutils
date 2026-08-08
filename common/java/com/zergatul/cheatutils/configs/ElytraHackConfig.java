@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ElytraHackConfig extends ModuleConfig implements ValidatableConfig {
+public class ElytraHackConfig extends ModuleConfig implements Sanitizable {
 
     public static final String VANILLA_FLY = "VanillaFly";
     public static final String CREATIVE_FLY = "CreativeFly";
@@ -25,7 +25,7 @@ public class ElytraHackConfig extends ModuleConfig implements ValidatableConfig 
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         maxSpeed = MathUtils.clamp(maxSpeed, 1, 1000);
 
         vanillaFlyVerticalAcceleration = MathUtils.clamp(vanillaFlyVerticalAcceleration, 0, 50);

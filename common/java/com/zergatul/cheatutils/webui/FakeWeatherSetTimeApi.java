@@ -11,13 +11,16 @@ public class FakeWeatherSetTimeApi extends ApiBase {
     }
 
     @Override
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
     public String post(String body) throws HttpException {
-        Request request = gson.fromJson(body, Request.class);
-        FakeWeather.instance.setTime(request.value);
+        Request request = WebHelper.parseJson(gson, body, Request.class);
+        FakeWeather.instance.setTime(WebHelper.requireField(request.value, "value"));
         return "{ \"ok\": true }";
     }
 
-    public class Request {
-        public int value;
-    }
+    public record Request(Integer value) {}
 }

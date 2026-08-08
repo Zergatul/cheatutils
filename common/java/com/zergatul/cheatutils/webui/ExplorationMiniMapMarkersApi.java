@@ -19,33 +19,37 @@ public class ExplorationMiniMapMarkersApi extends ApiBase {
 
     @Override
     public String post(String body) throws HttpException {
-        ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).addMarker();
+        ClientThreadDispatcher.run(() ->
+                ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).addMarker());
         return "true";
     }
 
     @Override
     public String put(String id, String body) throws HttpException {
-        if (Objects.equals(id, "import")) {
-            Type listType = new TypeToken<ArrayList<Point>>(){}.getType();
-            List<Point> points = gson.fromJson(body, listType);
-            points.forEach(p -> {
-                if (Double.isNaN(p.x)) {
-                    return;
-                }
-                if (Double.isNaN(p.z)) {
-                    return;
-                }
-                ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).addMarker(p.x, p.z);
-            });
-            return "{ \"ok\": true }";
-        } else {
-            return "{}";
+        if (!Objects.equals(id, "import")) {
+            throw new ApiException("Unsupported marker operation: " + id, HttpResponseCodes.BAD_REQUEST);
         }
+
+        Type listType = new TypeToken<ArrayList<Point>>(){}.getType();
+        List<Point> points = WebHelper.parseJson(gson, body, listType);
+        ClientThreadDispatcher.run(() -> {
+            ExplorationMiniMapChunkOverlay overlay = ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class);
+            points.forEach(p -> {
+                if (p != null && Double.isFinite(p.x) && Double.isFinite(p.z)) {
+                    overlay.addMarker(p.x, p.z);
+                }
+            });
+        });
+        return "{ \"ok\": true }";
     }
 
     @Override
     public String delete(String id) throws HttpException {
-        ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).clearMarkers();
+        if (!Objects.equals(id, "all")) {
+            throw new ApiException("Unsupported marker operation: " + id, HttpResponseCodes.BAD_REQUEST);
+        }
+        ClientThreadDispatcher.run(() ->
+                ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).clearMarkers());
         return "true";
     }
 
