@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ScriptsConfig {
+public class ScriptsConfig implements ModuleStateProvider {
     public List<ScriptEntry> scripts = Collections.synchronizedList(new ArrayList<>());
+
+    @Override
+    public boolean isEnabled() {
+        return scripts != null && !scripts.isEmpty();
+    }
 
     public static class ScriptEntry {
         public String name;

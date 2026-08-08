@@ -30,6 +30,7 @@ public class ApiHandler implements HttpHandler {
 
     public ApiHandler() {
         apis.add(new UserApi());
+        apis.add(new ModulesStatusApi());
         apis.add(new BlocksConfigApi());
         apis.add(new BlockInfoApi());
         apis.add(new EntityInfoApi());

@@ -102,10 +102,6 @@ public class ConfigStore {
         store.requestWrite();
     }
 
-    public void onClose() {
-        ConfigWriterQueue.instance.onClose();
-    }
-
     // only this method should update this.config
     private void setConfig(Config config) {
         this.config = config;

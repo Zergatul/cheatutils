@@ -8,6 +8,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 public class Events {
+    public static final SimpleEventHandler Close = new SimpleEventHandler();
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler BeforeHandleKeyBindings = new SimpleEventHandler();
     public static final SimpleEventHandler AfterHandleKeyBindings = new SimpleEventHandler();

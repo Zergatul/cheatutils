@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class MovementHackConfig implements Sanitizable {
+public class MovementHackConfig implements Sanitizable, ModuleStateProvider {
     public boolean disableSlowdownOnUseItem;
     public boolean scaleInputVector;
     public double inputVectorFactor;
@@ -21,5 +21,10 @@ public class MovementHackConfig implements Sanitizable {
     public void sanitize() {
         inputVectorFactor = MathUtils.clamp(inputVectorFactor, 0.01, 1000);
         jumpHeightFactor = MathUtils.clamp(jumpHeightFactor, 0.01, 1000);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return disableSlowdownOnUseItem || scaleInputVector || disableCrouchingSlowdown || antiKnockback || antiPush || scaleJumpHeight || disableSlimePhysics;
     }
 }

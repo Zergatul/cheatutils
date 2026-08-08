@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 
 import java.time.format.DateTimeFormatter;
 
-public class ChatUtilitiesConfig implements Sanitizable {
+public class ChatUtilitiesConfig implements Sanitizable, ModuleStateProvider {
 
     public boolean dontCloseChatOnEnter;
     public boolean overrideMessageLimit;
@@ -40,5 +40,10 @@ public class ChatUtilitiesConfig implements Sanitizable {
         if (getFormatter() == null) {
             showTime = false;
         }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return dontCloseChatOnEnter || overrideMessageLimit || showTime;
     }
 }

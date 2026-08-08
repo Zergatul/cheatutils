@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.Constants;
+import com.zergatul.cheatutils.common.Events;
 
 import java.io.File;
 import java.util.Comparator;
@@ -21,6 +22,8 @@ public class ConfigWriterQueue {
     private ConfigWriterQueue() {
         thread = new Thread(this::threadFunc, Constants.MOD_ID + " config writer");
         thread.start();
+
+        Events.Close.add(this::onClose);
     }
 
     public void clear() {
@@ -53,7 +56,7 @@ public class ConfigWriterQueue {
         }
     }
 
-    public void onClose() {
+    private void onClose() {
         thread.interrupt();
     }
 

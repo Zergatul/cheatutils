@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import java.util.Objects;
 
-public class BlocksConfig implements Sanitizable {
+public class BlocksConfig implements ModuleStateProvider, Sanitizable {
 
     public ImmutableList<BlockTracerConfig> configs = new ImmutableList<>();
 
@@ -25,6 +25,11 @@ public class BlocksConfig implements Sanitizable {
     public void remove(BlockTracerConfig config) {
         configs = configs.remove(config);
         BlockFinderController.instance.removeConfig(config);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return configs.stream().anyMatch(c -> c.enabled);
     }
 
     @Override

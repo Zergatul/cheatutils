@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.configs;
 
-public class GameTickScriptingConfig {
-    public boolean enabled;
+public class GameTickScriptingConfig extends ModuleConfig {
     public String code;
 }

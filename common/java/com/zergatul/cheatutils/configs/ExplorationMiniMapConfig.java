@@ -2,9 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ExplorationMiniMapConfig implements Sanitizable {
-
-    public boolean enabled;
+public class ExplorationMiniMapConfig extends ModuleConfig implements Sanitizable {
     public Integer scanFromY;
 
     @Override

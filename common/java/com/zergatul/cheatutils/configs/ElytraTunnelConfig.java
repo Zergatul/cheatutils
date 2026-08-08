@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-public class ElytraTunnelConfig {
-    public boolean enabled;
+public class ElytraTunnelConfig extends ModuleConfig {
     public double limit;
 
     public ElytraTunnelConfig() {
