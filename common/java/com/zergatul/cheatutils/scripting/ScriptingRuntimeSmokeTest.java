@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.scripting.workspace.ScriptDocument;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSlot;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
@@ -36,9 +37,45 @@ public class ScriptingRuntimeSmokeTest {
         future.join();
 
         verifyInitialApiCompatibility();
+        verifyExecutionLifecycle();
         verifyWorkspace();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
+    }
+
+    private static void verifyExecutionLifecycle() {
+        ScriptExecutionManager manager = ScriptExecutionManager.instance;
+        ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, "execution-smoke");
+        int[] starts = new int[1];
+        AsyncRunnable script = () -> {
+            starts[0]++;
+            return new CompletableFuture<>();
+        };
+
+        CompletableFuture<?> first = manager.execute(ref, script);
+        CompletableFuture<?> second = manager.execute(ref, script);
+        if (first != second || starts[0] != 1 || !manager.isRunning(ref)) {
+            throw new IllegalStateException("Concurrent execution of one async script was not suppressed.");
+        }
+
+        manager.cancel(ref);
+        if (!first.isCancelled() || manager.isRunning(ref)) {
+            throw new IllegalStateException("Tracked async script was not cancelled.");
+        }
+
+        manager.execute(ref, () -> CompletableFuture.completedFuture(null));
+        if (manager.getActiveCount() != 0) {
+            throw new IllegalStateException("Completed async script remained tracked.");
+        }
+
+        CompletableFuture<?> pending1 = new CompletableFuture<>();
+        CompletableFuture<?> pending2 = new CompletableFuture<>();
+        manager.track(ref, pending1);
+        manager.track(new ScriptRef(ScriptType.KEYBINDING, "execution-smoke-2"), pending2);
+        manager.cancelAll();
+        if (!pending1.isCancelled() || !pending2.isCancelled() || manager.getActiveCount() != 0) {
+            throw new IllegalStateException("Global async script cancellation failed.");
+        }
     }
 
     private static void verifyInitialApiCompatibility() {
@@ -86,11 +123,20 @@ public class ScriptingRuntimeSmokeTest {
         ScriptDocument overlayDocument = overlay.getInstance(null);
         requireCode(overlayDocument, validCode);
 
+        CompletableFuture<?> overlayExecution = new CompletableFuture<>();
+        ScriptExecutionManager.instance.track(overlayDocument.ref, overlayExecution);
         ScriptSaveResult invalidOverlay = overlay.save(invalidCode);
         requireFailure(invalidOverlay);
         requireCode(overlayDocument, validCode);
+        if (overlayExecution.isCancelled()) {
+            throw new IllegalStateException("Failed save cancelled the last valid script execution.");
+        }
         if (!invalidCode.equals(overlayDocument.lastAttemptCode) || overlayDocument.lastAttemptDiagnostics == null) {
             throw new IllegalStateException("Failed workspace save did not preserve its diagnostics.");
+        }
+        requireSuccess(overlay.save(validCode + "\n"));
+        if (!overlayExecution.isCancelled()) {
+            throw new IllegalStateException("Valid script replacement did not cancel its active execution.");
         }
         requireSuccess(overlay.save((String) null));
 
@@ -100,7 +146,12 @@ public class ScriptingRuntimeSmokeTest {
         requireCode(keyBindingDocument, validCode);
         requireFailure(keyBindings.save("smoke", invalidCode));
         requireCode(keyBindingDocument, validCode);
+        CompletableFuture<?> keyBindingExecution = new CompletableFuture<>();
+        ScriptExecutionManager.instance.track(keyBindingDocument.ref, keyBindingExecution);
         keyBindings.remove("smoke");
+        if (!keyBindingExecution.isCancelled()) {
+            throw new IllegalStateException("Script removal did not cancel its active execution.");
+        }
     }
 
     private static void requireSuccess(ScriptSaveResult result) {

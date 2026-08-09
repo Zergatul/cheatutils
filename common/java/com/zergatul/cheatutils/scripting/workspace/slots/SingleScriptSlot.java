@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptCompileResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptDocument;
@@ -50,6 +51,7 @@ public abstract class SingleScriptSlot extends ScriptSlot {
         instance.code = code;
         CompilationResult result = compileScript(code);
         if (result.getProgram() != null) {
+            ScriptExecutionManager.instance.cancel(instance.ref);
             onProgramChanged(result.getProgram());
             return ScriptSaveResult.success();
         }
@@ -68,6 +70,7 @@ public abstract class SingleScriptSlot extends ScriptSlot {
         requireNoIdentifier(identifier);
         if (code == null || code.isEmpty()) {
             instance.code = null;
+            ScriptExecutionManager.instance.cancel(instance.ref);
             onCodeChanged(null);
             onProgramChanged(null);
             return ScriptSaveResult.success();
@@ -80,6 +83,7 @@ public abstract class SingleScriptSlot extends ScriptSlot {
 
         if (result.getProgram() != null) {
             instance.code = code;
+            ScriptExecutionManager.instance.cancel(instance.ref);
             onCodeChanged(code);
             onProgramChanged(result.getProgram());
             return ScriptSaveResult.success();

@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
 import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.modules.visuals.*;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,6 +17,7 @@ public class Modules {
     private static final Logger LOGGER = LogManager.getLogger(Modules.class);
 
     public static void register() {
+        register(ScriptExecutionManager.instance);
         register(KeyBindings.instance);
         register(ChunkController.instance);
         register(NetworkPacketsController.instance);

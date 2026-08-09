@@ -14,6 +14,7 @@ import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.world.level.block.state.BlockState;
@@ -73,6 +74,7 @@ public class ConfigStore {
             }
         }
 
+        ScriptExecutionManager.instance.cancelAll();
         currentFile = file;
         setConfig(newConfig);
         onConfigLoaded();
