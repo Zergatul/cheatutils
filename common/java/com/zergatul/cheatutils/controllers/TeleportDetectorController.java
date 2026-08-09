@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -24,7 +25,7 @@ public class TeleportDetectorController {
             } else {
                 if (mc.level.dimension() != dimension) {
                     ChunkController.instance.clear();
-                    BlockFinderController.instance.clear();
+                    BlockFinder.instance.clear();
                     dimension = mc.level.dimension();
                     Events.DimensionChange.trigger();
                 }

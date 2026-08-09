@@ -1,8 +1,9 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BlockTracerConfig;
+import com.zergatul.cheatutils.controllers.ChunkController;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
 import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
@@ -20,20 +21,20 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class BlockFinderController {
+public class BlockFinder {
 
-    public static final BlockFinderController instance = new BlockFinderController();
+    public static final BlockFinder instance = new BlockFinder();
 
     // all modification to blocks are done in eventLoop thread
     public final Map<Block, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
 
-    private final Logger logger = LogManager.getLogger(BlockFinderController.class);
+    private final Logger logger = LogManager.getLogger(BlockFinder.class);
     private final Object loopWaitEvent = new Object();
     private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
     private final ThreadLoadCounter counter = new ThreadLoadCounter();
     private Thread eventLoop;
 
-    private BlockFinderController() {
+    private BlockFinder() {
         Events.ScannerChunkLoaded.add(this::scanChunk);
         Events.ScannerChunkUnloaded.add(this::unloadChunk);
         Events.ScannerBlockUpdated.add(this::handleBlockUpdate);

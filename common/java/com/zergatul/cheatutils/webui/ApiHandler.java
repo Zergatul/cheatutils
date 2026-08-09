@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.*;
+import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
@@ -622,11 +623,11 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().entityTitleConfig = config;
 
                 if (oldConfig.fontSize != config.fontSize || oldConfig.antiAliasing != config.antiAliasing) {
-                    EntityTitleController.instance.onFontChange(config);
+                    EntityTitle.instance.onFontChange(config);
                 }
 
                 if (oldConfig.enchFontSize != config.enchFontSize || oldConfig.enchAntiAliasing != config.enchAntiAliasing) {
-                    EntityTitleController.instance.onEnchantmentFontChange(config);
+                    EntityTitle.instance.onEnchantmentFontChange(config);
                 }
             }
         });

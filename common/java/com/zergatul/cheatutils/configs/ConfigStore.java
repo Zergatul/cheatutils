@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.AutoDisconnect;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
+import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
@@ -122,8 +123,8 @@ public class ConfigStore {
 
         LightLevel.instance.onChanged();
 
-        EntityTitleController.instance.onFontChange(config.entityTitleConfig);
-        EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
+        EntityTitle.instance.onFontChange(config.entityTitleConfig);
+        EntityTitle.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkers.instance.onFontChange(config.worldMarkersConfig);
 
         if (config.scriptsConfig.scripts.size() == 0) {

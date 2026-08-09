@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
+import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Minecraft;
 
@@ -24,9 +25,9 @@ public class DebugScreenController {
         list.add("Zergatul Cheat Utils");
         list.add("Loaded chunks: " + ChunkController.instance.getLoadedChunksCount());
         list.add(String.format("BlockFinder scan thread: queue size=%s; load=%s; state=%s;",
-                    BlockFinderController.instance.getScanningQueueCount(),
-                    format.format(BlockFinderController.instance.getScanningThreadLoadPercent()) + "%",
-                    BlockFinderController.instance.getThreadState()));
+                    BlockFinder.instance.getScanningQueueCount(),
+                    format.format(BlockFinder.instance.getScanningThreadLoadPercent()) + "%",
+                    BlockFinder.instance.getThreadState()));
 
         ExplorationMiniMapChunkOverlay miniMapChunkOverlay = ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class);
         list.add(String.format("ExplMiniMap scan thread: queue size=%s; state=%s;",

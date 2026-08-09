@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.esp;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -46,9 +46,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class EntityTitleController {
+public class EntityTitle {
 
-    public static final EntityTitleController instance = new EntityTitleController();
+    public static final EntityTitle instance = new EntityTitle();
 
     private final Minecraft mc = Minecraft.getInstance();
 
@@ -75,7 +75,7 @@ public class EntityTitleController {
     private GlyphFontRenderer fontRenderer;
     private GlyphFontRenderer enchFontRenderer;
 
-    private EntityTitleController() {
+    private EntityTitle() {
         Events.RenderWorldLast.add(this::onRenderWorld, 20);
         Events.PreRenderGui.add(this::onRenderGui);
     }

@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.controllers.BlockFinderController;
+import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.Objects;
@@ -11,20 +11,20 @@ public class BlocksConfig implements ModuleStateProvider, Sanitizable {
     public ImmutableList<BlockTracerConfig> configs = new ImmutableList<>();
 
     public void apply() {
-        BlockFinderController.instance.removeAllConfigs();
+        BlockFinder.instance.removeAllConfigs();
         for (BlockTracerConfig config: configs) {
-            BlockFinderController.instance.addConfig(config);
+            BlockFinder.instance.addConfig(config);
         }
     }
 
     public void add(BlockTracerConfig config) {
         configs = configs.add(config);
-        BlockFinderController.instance.addConfig(config);
+        BlockFinder.instance.addConfig(config);
     }
 
     public void remove(BlockTracerConfig config) {
         configs = configs.remove(config);
-        BlockFinderController.instance.removeConfig(config);
+        BlockFinder.instance.removeConfig(config);
     }
 
     @Override

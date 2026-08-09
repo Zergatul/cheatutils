@@ -19,6 +19,7 @@ public class Modules {
         register(NetworkPacketsController.instance);
         register(TeleportDetectorController.instance);
         register(SpeedCounterController.instance);
+        register(BlockFinder.instance);
 
         register(AutoTotem.instance);
         register(KillAura.instance);
@@ -29,14 +30,14 @@ public class Modules {
         register(LockInputsController.instance);
         register(AutoCraft.instance);
         register(WorldScannerController.instance);
-        register(BlockEspController.instance);
-        register(EntityEspController.instance);
+        register(BlockEsp.instance);
+        register(EntityEsp.instance);
         register(ProjectilePath.instance);
         register(EndCityChunks.instance);
         register(GameTickScriptingController.instance);
         register(AutoBucket.instance);
         register(WorldDownloadController.instance);
-        register(EntityTitleController.instance);
+        register(EntityTitle.instance);
         register(ContainerButtonsController.instance);
         register(TeleportHack.instance);
         register(WorldMarkers.instance);
