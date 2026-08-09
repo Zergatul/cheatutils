@@ -1,9 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
-import org.apache.http.HttpException;
-
-public class InternalServerErrorException extends HttpException {
+public class InternalServerErrorException extends ApiException {
     public InternalServerErrorException(final String message) {
-        super(message);
+        super(message, HttpResponseCodes.INTERNAL_SERVER_ERROR);
     }
 }

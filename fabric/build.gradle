@@ -104,6 +104,14 @@ tasks.register("scriptingSmokeTest", JavaExec) {
 	mainClass = "com.zergatul.cheatutils.scripting.ScriptingRuntimeSmokeTest"
 }
 
+tasks.register("httpApiSmokeTest", JavaExec) {
+	group = "verification"
+	description = "Exercises HTTP API routing, status codes, validation, and response handling."
+	dependsOn classes
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = "com.zergatul.cheatutils.webui.HttpApiSmokeTest"
+}
+
 tasks.build.doLast {
 	def devJar = file(jar.archiveFile)
 	// assuming loom set path to \fabric\build\devlibs\cheatutils-{version}-dev.jar

@@ -12,14 +12,14 @@ import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Minecraft;
-import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +28,9 @@ import java.util.Optional;
 
 public class ApiHandler implements HttpHandler {
 
+    private static final int MAX_REQUEST_BODY_SIZE = 64 * 1024 * 1024;
+
+    private final Logger logger = LogManager.getLogger(ApiHandler.class);
     private final List<ApiBase> apis = new ArrayList<>();
 
     public ApiHandler() {
@@ -819,151 +822,120 @@ public class ApiHandler implements HttpHandler {
         });
     }
 
+    ApiHandler(List<ApiBase> apis) {
+        this.apis.addAll(List.copyOf(apis));
+    }
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String[] parts = exchange.getRequestURI().getRawPath().split("/");
-        for (int i = 0; i < parts.length; i++) {
-            parts[i] = URLDecoder.decode(parts[i], Charset.defaultCharset());
+        try {
+            RequestPath path = parsePath(exchange);
+            ApiBase api;
+            synchronized (apis) {
+                Optional<ApiBase> optional = apis.stream().filter(a -> a.getRoute().equals(path.route())).findFirst();
+                if (optional.isEmpty()) {
+                    throw new NotFoundHttpException("API handler not found");
+                }
+                api = optional.get();
+            }
+
+            switch (exchange.getRequestMethod()) {
+                case "GET" -> processGet(path, api, exchange);
+                case "POST" -> processPost(path, api, exchange);
+                case "PUT" -> processPut(path, api, exchange);
+                case "DELETE" -> processDelete(path, api, exchange);
+                default -> throw new ApiException("Method not allowed", HttpResponseCodes.METHOD_NOT_ALLOWED);
+            }
+        } catch (ApiException e) {
+            WebHelper.sendException(exchange, e.getCode(), e);
+        } catch (MethodNotSupportedException e) {
+            WebHelper.sendException(exchange, HttpResponseCodes.BAD_REQUEST, e);
+        } catch (HttpException e) {
+            WebHelper.sendException(exchange, HttpResponseCodes.BAD_REQUEST, e);
+        } catch (Throwable e) {
+            logger.error("Unhandled HTTP API error.", e);
+            WebHelper.sendException(exchange, HttpResponseCodes.INTERNAL_SERVER_ERROR, e);
+        }
+    }
+
+    private void processGet(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
+        String response = path.id() == null ? api.get() : api.get(path.id());
+        WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
+    }
+
+    private void processPost(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
+        requireNoId(path, "POST");
+        String response = api.post(readBody(exchange));
+        WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
+    }
+
+    private void processPut(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
+        String id = requireId(path, "PUT");
+        String response = api.put(id, readBody(exchange));
+        WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
+    }
+
+    private void processDelete(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
+        String response = api.delete(requireId(path, "DELETE"));
+        WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
+    }
+
+    private RequestPath parsePath(HttpExchange exchange) throws ApiException {
+        String rawPath = exchange.getRequestURI().getRawPath();
+        if (!rawPath.startsWith("/api/")) {
+            throw new NotFoundHttpException("API handler not found");
         }
 
-        Optional<ApiBase> api;
-        synchronized (apis) {
-            api = apis.stream().filter(a -> a.getRoute().equals(parts[2])).findFirst();
-        }
-
-        if (!api.isPresent()) {
-            exchange.sendResponseHeaders(404, 0);
-            exchange.close();
-            return;
+        String remaining = rawPath.substring("/api/".length());
+        int separator = remaining.indexOf('/');
+        String rawRoute = separator < 0 ? remaining : remaining.substring(0, separator);
+        String rawId = separator < 0 ? null : remaining.substring(separator + 1);
+        if (rawRoute.isEmpty() || rawId != null && (rawId.isEmpty() || rawId.indexOf('/') >= 0)) {
+            throw new NotFoundHttpException("API handler not found");
         }
 
         try {
-            switch (exchange.getRequestMethod()) {
-                case "GET":
-                    processGet(parts, api.get(), exchange);
-                    break;
-                case "POST":
-                    processPost(api.get(), exchange);
-                    break;
-                case "PUT":
-                    processPut(parts, api.get(), exchange);
-                    break;
-                case "DELETE":
-                    processDelete(parts, api.get(), exchange);
-                    break;
+            String route = URLDecoder.decode(rawRoute, StandardCharsets.UTF_8);
+            String id = rawId == null ? null : URLDecoder.decode(rawId, StandardCharsets.UTF_8);
+            return new RequestPath(route, id);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException("Invalid URL encoding", HttpResponseCodes.BAD_REQUEST);
+        }
+    }
+
+    private String readBody(HttpExchange exchange) throws IOException, ApiException {
+        String contentLength = exchange.getRequestHeaders().getFirst("Content-Length");
+        if (contentLength != null) {
+            try {
+                if (Long.parseLong(contentLength) > MAX_REQUEST_BODY_SIZE) {
+                    throw new ApiException("Request body is too large", HttpResponseCodes.PAYLOAD_TOO_LARGE);
+                }
+            } catch (NumberFormatException e) {
+                throw new ApiException("Invalid Content-Length header", HttpResponseCodes.BAD_REQUEST);
             }
         }
-        catch (MethodNotSupportedException e) {
-            exchange.sendResponseHeaders(404, 0);
-            exchange.close();
-        }
-        catch (NotFoundHttpException e) {
-            byte[] data = e.getMessage().getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(404, 0);
-            OutputStream stream = exchange.getResponseBody();
-            stream.write(data);
-            stream.close();
-            exchange.close();
-        }
-        catch (HttpException e) {
-            sendException(exchange, 503, e);
-        }
-        catch (Throwable e) {
-            sendException(exchange, 500, e);
+
+        try (InputStream stream = exchange.getRequestBody()) {
+            byte[] bytes = stream.readNBytes(MAX_REQUEST_BODY_SIZE + 1);
+            if (bytes.length > MAX_REQUEST_BODY_SIZE) {
+                throw new ApiException("Request body is too large", HttpResponseCodes.PAYLOAD_TOO_LARGE);
+            }
+            return new String(bytes, StandardCharsets.UTF_8);
         }
     }
 
-    private void processGet(String[] parts, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
-        String response;
-        if (parts.length == 3) {
-            response = api.get();
-        } else {
-            response = api.get(parts[3]);
+    private static String requireId(RequestPath path, String method) throws ApiException {
+        if (path.id() == null) {
+            throw new ApiException(method + " requires id", HttpResponseCodes.BAD_REQUEST);
         }
-        byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        HttpHelper.setJsonContentType(exchange);
-        exchange.sendResponseHeaders(200, data.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(data);
-        stream.close();
-        exchange.close();
+        return path.id();
     }
 
-    private void processPost(ApiBase api, HttpExchange exchange) throws HttpException, IOException {
-
-        String body = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
-        String response = api.post(body);
-
-        byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        HttpHelper.setJsonContentType(exchange);
-        exchange.sendResponseHeaders(200, data.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(data);
-        stream.close();
-        exchange.close();
-    }
-
-    private void processPut(String[] parts, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
-
-        if (parts.length < 4) {
-            throw new MethodNotSupportedException("PUT requires id");
+    private static void requireNoId(RequestPath path, String method) throws ApiException {
+        if (path.id() != null) {
+            throw new ApiException(method + " does not accept id", HttpResponseCodes.BAD_REQUEST);
         }
-
-        String body = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
-        api.put(parts[3], body);
-
-        byte[] data = "{}".getBytes(StandardCharsets.UTF_8);
-        HttpHelper.setJsonContentType(exchange);
-        exchange.sendResponseHeaders(200, data.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(data);
-        stream.close();
-        exchange.close();
-
     }
 
-    private void processDelete(String[] parts, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
-
-        if (parts.length < 4) {
-            throw new MethodNotSupportedException("DELETE requires id");
-        }
-
-        String response = api.delete(parts[3]);
-        byte[] data = response.getBytes(StandardCharsets.UTF_8);
-        HttpHelper.setJsonContentType(exchange);
-        exchange.sendResponseHeaders(200, data.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(data);
-        stream.close();
-        exchange.close();
-
-    }
-
-    private void sendMessage(HttpExchange exchange, int code, String message) throws IOException {
-        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
-        exchange.sendResponseHeaders(code, bytes.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(bytes);
-        stream.close();
-        exchange.close();
-    }
-
-    private void sendException(HttpExchange exchange, int code, Throwable throwable) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        builder.append(throwable.getMessage()).append("\n");
-        builder.append("**********").append("\n");
-
-        for (StackTraceElement element : throwable.getStackTrace())
-            builder.append("\tat ").append(element).append("\n");
-
-        // inner exceptions?
-
-        byte[] bytes = builder.toString().getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/plain");
-        exchange.sendResponseHeaders(code, bytes.length);
-        OutputStream stream = exchange.getResponseBody();
-        stream.write(bytes);
-        stream.close();
-        exchange.close();
-    }
+    private record RequestPath(String route, String id) {}
 }
