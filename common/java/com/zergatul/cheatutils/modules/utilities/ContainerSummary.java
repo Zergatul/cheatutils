@@ -1,7 +1,8 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.utilities;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.ItemUtils;
@@ -20,11 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ContainerSummaryController {
+public class ContainerSummary implements Module {
 
-    public static final ContainerSummaryController instance = new ContainerSummaryController();
+    public static final ContainerSummary instance = new ContainerSummary();
 
-    private ContainerSummaryController() {
+    private ContainerSummary() {
 
     }
 

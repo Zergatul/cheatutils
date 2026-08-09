@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.configs.ScriptsConfig;
 import com.zergatul.cheatutils.scripting.api.Root;
@@ -86,7 +87,7 @@ public class ScriptController {
         for (int i = 0; i < KeyBindingsConfig.KeysCount; i++) {
             if (bindings[i] != null && bindings[i].equals(oldName)) {
                 bindingIndex = i;
-                KeyBindingsController.instance.assign(-1, oldName);
+                KeyBindings.instance.assign(-1, oldName);
                 break;
             }
         }
@@ -106,7 +107,7 @@ public class ScriptController {
             }
             script.compiled = handleKeybindingsCompiler.compile(code);
             if (bindingIndex >= 0) {
-                KeyBindingsController.instance.assign(bindingIndex, newName);
+                KeyBindings.instance.assign(bindingIndex, newName);
             }
         }
     }
@@ -128,7 +129,7 @@ public class ScriptController {
     }
 
     public void remove(String name) {
-        KeyBindingsController.instance.assign(-1, name);
+        KeyBindings.instance.assign(-1, name);
         scripts.removeIf(s -> s.name.equals(name));
         ConfigStore.instance.getConfig().scriptsConfig.scripts.removeIf(s -> s.name.equals(name));
     }

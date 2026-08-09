@@ -1,23 +1,25 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.common.IKeyBindingRegistry;
+import com.zergatul.cheatutils.controllers.ScriptController;
+import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
-public class KeyBindingsController {
+public class KeyBindings implements Module {
 
-    public static final KeyBindingsController instance = new KeyBindingsController();
+    public static final KeyBindings instance = new KeyBindings();
 
     public final KeyMapping[] keys;
 
     private final Minecraft mc = Minecraft.getInstance();
     private final Runnable[] actions = new Runnable[KeyBindingsConfig.KeysCount];
 
-    private KeyBindingsController() {
+    private KeyBindings() {
         keys = new KeyMapping[KeyBindingsConfig.KeysCount];
         for (int i = 0; i < keys.length; i++) {
             keys[i] = new KeyMapping("key.zergatul.cheatutils.reserved" + i, InputConstants.UNKNOWN.getValue(), "category.zergatul.cheatutils");

@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
+import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.modules.visuals.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +15,7 @@ public class Modules {
     private static final Logger LOGGER = LogManager.getLogger(Modules.class);
 
     public static void register() {
-        register(KeyBindingsController.instance);
+        register(KeyBindings.instance);
         register(ChunkController.instance);
         register(NetworkPacketsController.instance);
         register(TeleportDetectorController.instance);
@@ -27,7 +28,7 @@ public class Modules {
         register(NoFall.instance);
         register(Scaffold.instance);
 
-        register(LockInputsController.instance);
+        register(LockInputs.instance);
         register(AutoCraft.instance);
         register(WorldScannerController.instance);
         register(BlockEsp.instance);
@@ -65,6 +66,7 @@ public class Modules {
         register(AutoHotbar.instance);
         register(AreaMine.instance);
         register(ServerPlugins.instance);
+        register(ContainerSummary.instance);
     }
 
     private static void register(Module module) {

@@ -8,7 +8,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
 import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
 import com.zergatul.cheatutils.controllers.ContainerButtonsController;
-import com.zergatul.cheatutils.controllers.ContainerSummaryController;
+import com.zergatul.cheatutils.modules.utilities.ContainerSummary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -130,19 +130,19 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             return;
         }
 
-        List<ContainerSummaryController.ItemDrawable> list = ContainerSummaryController.instance.groupItems(items);
+        List<ContainerSummary.ItemDrawable> list = ContainerSummary.instance.groupItems(items);
 
         RenderSystem.enableDepthTest();
 
         boolean group = !Screen.hasAltDown();
 
         list.forEach(d -> d.initDraw(this.font, group));
-        List<ContainerSummaryController.ItemsColumn> columns = ContainerSummaryController.instance.split(list);
-        columns.forEach(ContainerSummaryController.ItemsColumn::calculateWidth);
+        List<ContainerSummary.ItemsColumn> columns = ContainerSummary.instance.split(list);
+        columns.forEach(ContainerSummary.ItemsColumn::calculateWidth);
 
         int cursor = this.leftPos + this.imageWidth + 2;
         ItemRenderer renderer = Minecraft.getInstance().getItemRenderer();
-        for (ContainerSummaryController.ItemsColumn column: columns) {
+        for (ContainerSummary.ItemsColumn column: columns) {
             cursor += column.draw(graphics, this.font, renderer, this.minecraft.player, cursor, this.topPos);
         }
     }

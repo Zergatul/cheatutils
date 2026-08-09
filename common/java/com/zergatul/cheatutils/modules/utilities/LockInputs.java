@@ -1,20 +1,20 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LockInputsConfig;
 import net.minecraft.client.Minecraft;
 
-public class LockInputsController {
+public class LockInputs {
 
-    public static final LockInputsController instance = new LockInputsController();
+    public static final LockInputs instance = new LockInputs();
 
     private final Minecraft mc = Minecraft.getInstance();
     private boolean lastHoldForward;
     private boolean lastHoldAttack;
     private boolean lastHoldUse;
 
-    private LockInputsController() {
+    private LockInputs() {
         Events.RenderTickStart.add(this::onClientTickStart);
     }
 

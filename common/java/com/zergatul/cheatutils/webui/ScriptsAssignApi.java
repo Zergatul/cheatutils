@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.KeyBindingsController;
+import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import org.apache.http.HttpException;
 
 public class ScriptsAssignApi extends ApiBase {
@@ -14,7 +14,7 @@ public class ScriptsAssignApi extends ApiBase {
     @Override
     public String put(String id, String body) throws HttpException {
         int index = gson.fromJson(body, int.class);
-        KeyBindingsController.instance.assign(index, id);
+        KeyBindings.instance.assign(index, id);
         ConfigStore.instance.requestWrite();
         return "true";
     }

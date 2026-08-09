@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.modules.automation.AutoDisconnect;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
+import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
@@ -131,8 +132,8 @@ public class ConfigStore {
             final String toggleEspName = "Toggle ESP";
             try {
                 ScriptController.instance.add(toggleEspName, "main.toggleEsp();", false);
-                KeyBindingsController.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
-                KeyBindingsController.instance.assign(0, toggleEspName);
+                KeyBindings.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
+                KeyBindings.instance.assign(0, toggleEspName);
             } catch (ParseException | ScriptCompileException e) {
                 logger.error("Toggle ESP script initialization failed", e);
             }
@@ -140,8 +141,8 @@ public class ConfigStore {
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
                 ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
-                KeyBindingsController.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
-                KeyBindingsController.instance.assign(1, toggleFreeCamName);
+                KeyBindings.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
+                KeyBindings.instance.assign(1, toggleFreeCamName);
             } catch (ParseException | ScriptCompileException e) {
                 logger.error("Toggle FreeCam script initialization failed", e);
             }
@@ -159,7 +160,7 @@ public class ConfigStore {
             String[] bindings = config.keyBindingsConfig.bindings;
             for (int i = 0; i < KeyBindingsConfig.KeysCount; i++) {
                 if (bindings[i] != null) {
-                    KeyBindingsController.instance.assign(i, bindings[i]);
+                    KeyBindings.instance.assign(i, bindings[i]);
                 }
             }
         }
