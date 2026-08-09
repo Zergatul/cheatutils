@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.visuals;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.common.events.ContainerRenderLabelsEvent;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.AbstractContainerScreenAccessor;
+import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.ItemRenderHelper;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
@@ -21,10 +22,9 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 
-// TODO: optimize
-public class ShulkerTooltipController {
+public class ShulkerTooltip implements Module {
 
-    public static ShulkerTooltipController instance = new ShulkerTooltipController();
+    public static ShulkerTooltip instance = new ShulkerTooltip();
 
     private static final ResourceLocation CONTAINER_TEXTURE = new ResourceLocation("textures/gui/container/shulker_box.png");
     private static final int ImageWidth = 176;
@@ -37,7 +37,7 @@ public class ShulkerTooltipController {
     private Matrix4f lockedPose;
     private int lockedX, lockedY;
 
-    private ShulkerTooltipController() {
+    private ShulkerTooltip() {
         Events.PreRenderTooltip.add(this::onPreRenderTooltip);
         Events.ContainerRenderLabels.add(this::onContainerRenderLabels);
     }

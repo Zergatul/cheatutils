@@ -55,7 +55,7 @@ public class Modules {
         register(AdvancedTooltips.instance);
         register(AutoDisconnect.instance);
         register(Zoom.instance);
-        register(ShulkerTooltipController.instance);
+        register(ShulkerTooltip.instance);
         register(ArmorOverlay.instance);
         register(Fog.instance);
         register(AutoAttack.instance);
