@@ -12,6 +12,8 @@ public class Events {
     public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler BeforeHandleKeyBindings = new SimpleEventHandler();
     public static final SimpleEventHandler AfterHandleKeyBindings = new SimpleEventHandler();
+    public static final SimpleEventHandler BeforeSendPlayerPos = new SimpleEventHandler();
+    public static final SimpleEventHandler AfterSendPlayerPos = new SimpleEventHandler();
     public static final ParameterizedEventHandler<Connection> ClientPlayerLoggingIn = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientPlayerLoggingOut = new SimpleEventHandler();
     public static final SimpleEventHandler ChunkLoaded = new SimpleEventHandler();

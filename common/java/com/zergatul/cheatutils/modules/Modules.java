@@ -21,6 +21,7 @@ public class Modules {
         register(TeleportDetectorController.instance);
         register(SpeedCounterController.instance);
         register(BlockFinder.instance);
+        register(FakeRotation.instance);
 
         register(AutoTotem.instance);
         register(KillAura.instance);
@@ -67,6 +68,7 @@ public class Modules {
         register(AreaMine.instance);
         register(ServerPlugins.instance);
         register(ContainerSummary.instance);
+        register(Schematica.instance);
     }
 
     private static void register(Module module) {

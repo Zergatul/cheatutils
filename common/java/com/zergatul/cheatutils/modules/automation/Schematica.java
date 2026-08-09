@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.automation;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
+import com.zergatul.cheatutils.controllers.ChunkController;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.schematics.PlacingConverter;
 import com.zergatul.cheatutils.schematics.PlacingSettings;
@@ -39,16 +40,16 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class SchematicaController {
+public class Schematica {
 
-    public static final SchematicaController instance = new SchematicaController();
+    public static final Schematica instance = new Schematica();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();
     private final RandomSource random = new JavaRandom(0);
     private final SlotSelector slotSelector = new SlotSelector();
 
-    private SchematicaController() {
+    private Schematica() {
         Events.ScannerChunkLoaded.add(this::onChunkLoaded);
         Events.ScannerBlockUpdated.add(this::onBlockUpdated);
         Events.ClientTickEnd.add(this::onClientTickEnd);

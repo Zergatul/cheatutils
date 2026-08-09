@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.authlib.GameProfile;
+import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.*;
-import com.zergatul.cheatutils.controllers.PlayerMotionController;
 import com.zergatul.cheatutils.helpers.MixinLocalPlayerHelper;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -28,12 +28,12 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Inject(at = @At("HEAD"), method = "sendPosition()V")
     private void onBeforeSendPosition(CallbackInfo info) {
-        PlayerMotionController.instance.triggerOnBeforeSendPosition();
+        Events.BeforeSendPlayerPos.trigger();
     }
 
     @Inject(at = @At("TAIL"), method = "sendPosition()V")
     private void onAfterSendPosition(CallbackInfo info) {
-        PlayerMotionController.instance.triggerOnAfterSendPosition();
+        Events.AfterSendPlayerPos.trigger();
     }
 
     @Inject(at = @At("HEAD"), method = "aiStep()V")

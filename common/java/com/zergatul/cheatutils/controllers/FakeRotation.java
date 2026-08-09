@@ -1,22 +1,23 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 
-public class FakeRotationController {
+public class FakeRotation {
 
-    public static final FakeRotationController instance = new FakeRotationController();
+    public static final FakeRotation instance = new FakeRotation();
 
     private final Minecraft mc = Minecraft.getInstance();
     private boolean fake;
     private float serverXRot, serverYRot;
     private float clientXRot, clientYRot;
 
-    private FakeRotationController() {
-        PlayerMotionController.instance.addOnBeforeSendPosition(this::onBeforeSendPosition);
-        PlayerMotionController.instance.addOnAfterSendPosition(this::onAfterSendPosition);
+    private FakeRotation() {
+        Events.BeforeSendPlayerPos.add(this::onBeforeSendPosition);
+        Events.AfterSendPlayerPos.add(this::onAfterSendPosition);
     }
 
     public void setServerRotation(Vec3 pos) {
