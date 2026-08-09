@@ -39,7 +39,7 @@ public class Modules {
         register(EntityTitleController.instance);
         register(ContainerButtonsController.instance);
         register(TeleportHack.instance);
-        register(WorldMarkersController.instance);
+        register(WorldMarkers.instance);
         register(TpsCounterController.instance);
         register(ScriptedBlockPlacerController.instance);
 

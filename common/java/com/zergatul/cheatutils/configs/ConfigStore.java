@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
 import net.minecraft.world.level.block.state.BlockState;
@@ -123,7 +124,7 @@ public class ConfigStore {
 
         EntityTitleController.instance.onFontChange(config.entityTitleConfig);
         EntityTitleController.instance.onEnchantmentFontChange(config.entityTitleConfig);
-        WorldMarkersController.instance.onFontChange(config.worldMarkersConfig);
+        WorldMarkers.instance.onFontChange(config.worldMarkersConfig);
 
         if (config.scriptsConfig.scripts.size() == 0) {
             final String toggleEspName = "Toggle ESP";
