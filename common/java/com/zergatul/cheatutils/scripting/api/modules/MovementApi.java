@@ -5,8 +5,6 @@ import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
 
-import java.util.Locale;
-
 public class MovementApi {
 
     public boolean isSpeedMultiplierEnabled() {
@@ -14,9 +12,8 @@ public class MovementApi {
         return config.scaleInputVector;
     }
 
-    public String getSpeedMultiplierFactor() {
-        var config = getConfig();
-        return String.format(Locale.ROOT, "%.3f", config.inputVectorFactor);
+    public double getSpeedMultiplierFactor() {
+        return getConfig().inputVectorFactor;
     }
 
     @ApiVisibility(ApiType.UPDATE)
@@ -46,9 +43,8 @@ public class MovementApi {
         ConfigStore.instance.requestWrite();
     }
 
-    public String getJumpFactor() {
-        var config = getConfig();
-        return String.format(Locale.ROOT, "%.3f", config.jumpHeightFactor);
+    public double getJumpFactor() {
+        return getConfig().jumpHeightFactor;
     }
 
     @ApiVisibility(ApiType.UPDATE)

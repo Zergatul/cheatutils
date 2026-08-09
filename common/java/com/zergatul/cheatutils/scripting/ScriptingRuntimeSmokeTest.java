@@ -35,9 +35,37 @@ public class ScriptingRuntimeSmokeTest {
         CompletableFuture<?> future = Objects.requireNonNull(asynchronous.run());
         future.join();
 
+        verifyInitialApiCompatibility();
         verifyWorkspace();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
+    }
+
+    private static void verifyInitialApiCompatibility() {
+        requireCompilationSuccess(ScriptType.KEYBINDING, """
+                float speedFactor = movement.getSpeedMultiplierFactor();
+                float jumpFactor = movement.getJumpFactor();
+                boolean jumpDown = keys.jump.isDown();
+                variables.setFloat("movement-factor-sum", speedFactor + jumpFactor);
+                """);
+        requireCompilationSuccess(ScriptType.OVERLAY, """
+                main.setOverlayHorizontalPosition("left");
+                main.addText(convert.toString(tps.get(), 1));
+                """);
+        requireCompilationSuccess(ScriptType.BLOCK_AUTOMATION, """
+                if (currentBlock.getY() >= 0) {
+                    blockPlacer.setBlockId(currentBlock.getId());
+                }
+                """);
+        requireCompilationSuccess(ScriptType.VILLAGER_ROLLER, """
+                if (villagerRoller.isBestPrice()) {
+                    main.systemMessage(villagerRoller.getEnchantmentName());
+                }
+                """);
+
+        requireCompilationFailure(ScriptType.OVERLAY, "main.chat(\"not-visible\");");
+        requireCompilationFailure(ScriptType.BLOCK_AUTOMATION, "main.chat(\"not-visible\");");
+        requireCompilationFailure(ScriptType.VILLAGER_ROLLER, "main.chat(\"not-visible\");");
     }
 
     private static void verifyWorkspace() {
@@ -90,6 +118,20 @@ public class ScriptingRuntimeSmokeTest {
     private static void requireCode(ScriptDocument document, String code) {
         if (!code.equals(document.code)) {
             throw new IllegalStateException("Workspace replaced the last valid source unexpectedly.");
+        }
+    }
+
+    private static void requireCompilationSuccess(ScriptType type, String code) {
+        CompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(type, code);
+        if (result.getProgram() == null) {
+            throw new IllegalStateException(type + " API compatibility compilation failed: " + result.getDiagnostics());
+        }
+    }
+
+    private static void requireCompilationFailure(ScriptType type, String code) {
+        CompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(type, code);
+        if (result.getProgram() != null || result.getDiagnostics() == null || result.getDiagnostics().isEmpty()) {
+            throw new IllegalStateException(type + " API visibility check unexpectedly compiled.");
         }
     }
 
