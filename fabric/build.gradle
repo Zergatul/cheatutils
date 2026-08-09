@@ -96,6 +96,14 @@ tasks.withType(JavaCompile).configureEach {
 	it.options.compilerArgs.add("-parameters")
 }
 
+tasks.register("scriptingSmokeTest", JavaExec) {
+	group = "verification"
+	description = "Compiles and executes synchronous and asynchronous scripts on the Fabric runtime classpath."
+	dependsOn classes
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = "com.zergatul.cheatutils.scripting.ScriptingRuntimeSmokeTest"
+}
+
 tasks.build.doLast {
 	def devJar = file(jar.archiveFile)
 	// assuming loom set path to \fabric\build\devlibs\cheatutils-{version}-dev.jar
