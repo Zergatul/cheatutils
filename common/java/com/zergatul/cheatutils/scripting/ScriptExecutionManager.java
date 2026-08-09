@@ -17,10 +17,6 @@ public class ScriptExecutionManager {
 
     private final Map<ScriptRef, CompletableFuture<?>> executions = new HashMap<>();
 
-    // The Java 17 language backport still needs cooperative cancellation propagation across await
-    // transitions. Until then, cancelling here reliably marks the returned execution future and
-    // provides the lifecycle boundary that migrated runtime callers will use.
-
     private ScriptExecutionManager() {
         Events.ClientPlayerLoggingOut.add(this::cancelAll, LIFECYCLE_PRIORITY);
         Events.WorldUnload.add(this::cancelAll, LIFECYCLE_PRIORITY);
