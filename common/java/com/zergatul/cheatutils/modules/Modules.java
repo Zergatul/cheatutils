@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.modules;
 
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
@@ -44,7 +45,7 @@ public class Modules {
         register(TeleportHack.instance);
         register(WorldMarkers.instance);
         register(TpsCounterController.instance);
-        register(ScriptedBlockPlacerController.instance);
+        register(BlockAutomation.instance);
 
         // register(FakeLag.instance);
         register(FlyHack.instance);
@@ -69,6 +70,7 @@ public class Modules {
         register(ServerPlugins.instance);
         register(ContainerSummary.instance);
         register(Schematica.instance);
+        register(ClientTickEndExecutor.instance);
     }
 
     private static void register(Module module) {

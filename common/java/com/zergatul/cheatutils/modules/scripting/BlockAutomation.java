@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.controllers;
+package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -26,25 +26,35 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class ScriptedBlockPlacerController {
+public class BlockAutomation {
 
-    public static final ScriptedBlockPlacerController instance = new ScriptedBlockPlacerController();
+    public static final BlockAutomation instance = new BlockAutomation();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
     private Runnable script;
+    private BlockPos currentBlockPos;
+    private BlockState currentBlockState;
     private String blockId;
     private BlockPlacingMethod method;
     private BlockUtils.PlaceBlockPlan debugPlan;
     private volatile boolean debugStep;
 
-    private ScriptedBlockPlacerController() {
+    private BlockAutomation() {
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.RenderWorldLast.add(this::onRenderWorldLast);
     }
 
     public void setScript(Runnable script) {
         this.script = script;
+    }
+
+    public BlockPos getCurrentBlockPos() {
+        return currentBlockPos;
+    }
+
+    public BlockState getCurrentBlockState() {
+        return currentBlockState;
     }
 
     public void setBlock(String blockId, BlockPlacingMethod method) {
@@ -78,9 +88,11 @@ public class ScriptedBlockPlacerController {
             }
 
             blockId = null;
-            CurrentBlockController.instance.set(pos, state);
+            currentBlockPos = pos;
+            currentBlockState = state;
             script.run();
-            CurrentBlockController.instance.clear();
+            currentBlockPos = null;
+            currentBlockState = null;
 
             if (blockId == null) {
                 continue;

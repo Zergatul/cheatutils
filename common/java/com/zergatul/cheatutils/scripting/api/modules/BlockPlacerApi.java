@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
-import com.zergatul.cheatutils.controllers.ScriptedBlockPlacerController;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.ApiVisibility;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
@@ -8,17 +8,17 @@ import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 public class BlockPlacerApi {
 
     public void placeOne() {
-        ScriptedBlockPlacerController.instance.placeOne();
+        BlockAutomation.instance.placeOne();
     }
 
     @ApiVisibility(ApiType.BLOCK_PLACER)
     public void setBlockId(String blockId) {
-        ScriptedBlockPlacerController.instance.setBlock(blockId, BlockPlacingMethod.ANY);
+        BlockAutomation.instance.setBlock(blockId, BlockPlacingMethod.ANY);
     }
 
     @ApiVisibility(ApiType.BLOCK_PLACER)
     public void setBlockId(String blockId, String method) {
-        ScriptedBlockPlacerController.instance.setBlock(blockId, parseMethod(method));
+        BlockAutomation.instance.setBlock(blockId, parseMethod(method));
     }
 
     private BlockPlacingMethod parseMethod(String value) {

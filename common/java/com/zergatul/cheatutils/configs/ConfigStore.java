@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
+import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
@@ -186,7 +187,7 @@ public class ConfigStore {
         if (config.scriptedBlockPlacerConfig.code != null) {
             try {
                 Runnable script = ScriptController.instance.compileBlockPlacer(config.scriptedBlockPlacerConfig.code);
-                ScriptedBlockPlacerController.instance.setScript(script);
+                BlockAutomation.instance.setScript(script);
             } catch (ParseException | ScriptCompileException e) {
                 logger.error("Scripted Block Placer script initialization failed", e);
             }

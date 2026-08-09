@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ClientTickController;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
@@ -19,7 +19,7 @@ public class FakeWeather implements Module {
     }
 
     public void setTime(int value) {
-        ClientTickController.instance.run(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (mc.level == null) {
                 return;
             }
@@ -28,7 +28,7 @@ public class FakeWeather implements Module {
     }
 
     public void setRain(float value) {
-        ClientTickController.instance.run(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             if (mc.level == null) {
                 return;
             }
