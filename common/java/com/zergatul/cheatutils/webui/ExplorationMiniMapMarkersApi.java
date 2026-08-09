@@ -19,7 +19,8 @@ public class ExplorationMiniMapMarkersApi extends ApiBase {
 
     @Override
     public String post(String body) throws HttpException {
-        ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).addMarker();
+        ClientThreadDispatcher.run(() ->
+                ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).addMarker());
         return "true";
     }
 
@@ -28,14 +29,13 @@ public class ExplorationMiniMapMarkersApi extends ApiBase {
         if (Objects.equals(id, "import")) {
             Type listType = new TypeToken<ArrayList<Point>>(){}.getType();
             List<Point> points = gson.fromJson(body, listType);
-            points.forEach(p -> {
-                if (Double.isNaN(p.x)) {
-                    return;
-                }
-                if (Double.isNaN(p.z)) {
-                    return;
-                }
-                ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).addMarker(p.x, p.z);
+            ClientThreadDispatcher.run(() -> {
+                ExplorationMiniMapChunkOverlay overlay = ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class);
+                points.forEach(p -> {
+                    if (!Double.isNaN(p.x) && !Double.isNaN(p.z)) {
+                        overlay.addMarker(p.x, p.z);
+                    }
+                });
             });
             return "{ \"ok\": true }";
         } else {
@@ -45,7 +45,8 @@ public class ExplorationMiniMapMarkersApi extends ApiBase {
 
     @Override
     public String delete(String id) throws HttpException {
-        ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).clearMarkers();
+        ClientThreadDispatcher.run(() ->
+                ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).clearMarkers());
         return "true";
     }
 

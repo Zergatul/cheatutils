@@ -12,7 +12,7 @@ public class BlockEspRestartApi extends ApiBase {
 
     @Override
     public String post(String body) throws HttpException {
-        BlockFinder.instance.restart();
+        ClientThreadDispatcher.run(BlockFinder.instance::restart);
         return "{}";
     }
 }

@@ -13,12 +13,14 @@ public class VillagerRollerStatusApi extends ApiBase {
     @Override
     public String post(String body) throws HttpException {
         Request request = gson.fromJson(body, Request.class);
-        if (request.start) {
-            VillagerRoller.instance.start();
-        }
-        if (request.stop) {
-            VillagerRoller.instance.stop();
-        }
+        ClientThreadDispatcher.run(() -> {
+            if (request.start) {
+                VillagerRoller.instance.start();
+            }
+            if (request.stop) {
+                VillagerRoller.instance.stop();
+            }
+        });
         return "{}";
     }
 

@@ -8,6 +8,8 @@ public class HttpResponseCodes {
     public static final int METHOD_NOT_ALLOWED = 405;
     public static final int PAYLOAD_TOO_LARGE = 413;
     public static final int INTERNAL_SERVER_ERROR = 500;
+    public static final int SERVICE_UNAVAILABLE = 503;
+    public static final int GATEWAY_TIMEOUT = 504;
 
     private HttpResponseCodes() {}
 }

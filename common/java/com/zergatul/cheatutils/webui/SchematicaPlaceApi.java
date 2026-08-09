@@ -29,13 +29,13 @@ public class SchematicaPlaceApi extends ApiBase {
             throw new HttpException(e.getMessage());
         }
 
-        Schematica.instance.place(schema, request.placing);
+        ClientThreadDispatcher.run(() -> Schematica.instance.place(schema, request.placing));
         return "{}";
     }
 
     @Override
     public String delete(String id) throws HttpException {
-        Schematica.instance.clear();
+        ClientThreadDispatcher.run(Schematica.instance::clear);
         return "{}";
     }
 

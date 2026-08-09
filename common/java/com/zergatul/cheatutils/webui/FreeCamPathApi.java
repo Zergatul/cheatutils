@@ -12,7 +12,7 @@ public class FreeCamPathApi extends ApiBase {
 
     @Override
     public String get() throws HttpException {
-        return gson.toJson(FreeCam.instance.getPath().get());
+        return ClientThreadDispatcher.call(() -> gson.toJson(FreeCam.instance.getPath().get()));
     }
 
     @Override
@@ -22,13 +22,13 @@ public class FreeCamPathApi extends ApiBase {
             return "{}";
         }
 
-        FreeCam.instance.getPath().add(time);
+        ClientThreadDispatcher.run(() -> FreeCam.instance.getPath().add(time));
         return "{ \"ok\": true }";
     }
 
     @Override
     public String delete(String id) throws HttpException {
-        FreeCam.instance.getPath().clear();
+        ClientThreadDispatcher.run(() -> FreeCam.instance.getPath().clear());
         return "{ \"ok\": true }";
     }
 }

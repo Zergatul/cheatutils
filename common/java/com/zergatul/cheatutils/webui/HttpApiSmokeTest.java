@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,6 +24,8 @@ public class HttpApiSmokeTest {
     private HttpApiSmokeTest() {}
 
     public static void main(String[] args) throws Exception {
+        verifyClientThreadDispatcher();
+
         ExecutorService executor = Executors.newFixedThreadPool(2);
         HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
         server.createContext("/api/", new ApiHandler(List.of(new SmokeApi())));
@@ -94,6 +97,60 @@ public class HttpApiSmokeTest {
         }
         if (!response.body().contains(message) || !response.body().contains("\tat ")) {
             throw new IllegalStateException("Error response does not contain the message and stack trace: " + response.body());
+        }
+    }
+
+    private static void verifyClientThreadDispatcher() throws Exception {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        CountDownLatch release = new CountDownLatch(1);
+        try {
+            Thread testThread = Thread.currentThread();
+            Thread directThread = ClientThreadDispatcher.call(executor, true, Thread::currentThread, 1_000);
+            if (directThread != testThread) {
+                throw new IllegalStateException("Client-thread dispatcher did not execute an already-on-thread task directly.");
+            }
+
+            Thread dispatchedThread = ClientThreadDispatcher.call(executor, false, Thread::currentThread, 1_000);
+            if (dispatchedThread == testThread) {
+                throw new IllegalStateException("Client-thread dispatcher did not use the supplied executor.");
+            }
+
+            try {
+                ClientThreadDispatcher.call(executor, false, () -> {
+                    throw new IllegalStateException("Dispatcher failure");
+                }, 1_000);
+                throw new IllegalStateException("Client-thread dispatcher swallowed a task exception.");
+            } catch (IllegalStateException e) {
+                if (!"Dispatcher failure".equals(e.getMessage())) {
+                    throw e;
+                }
+            }
+
+            ExecutorService rejectedExecutor = Executors.newSingleThreadExecutor();
+            rejectedExecutor.shutdownNow();
+            try {
+                ClientThreadDispatcher.call(rejectedExecutor, false, () -> null, 1_000);
+                throw new IllegalStateException("Client-thread dispatcher accepted work after shutdown.");
+            } catch (ApiException e) {
+                if (e.getCode() != HttpResponseCodes.SERVICE_UNAVAILABLE) {
+                    throw e;
+                }
+            }
+
+            try {
+                ClientThreadDispatcher.call(executor, false, () -> {
+                    release.await();
+                    return null;
+                }, 10);
+                throw new IllegalStateException("Client-thread dispatcher did not time out.");
+            } catch (ApiException e) {
+                if (e.getCode() != HttpResponseCodes.GATEWAY_TIMEOUT) {
+                    throw e;
+                }
+            }
+        } finally {
+            release.countDown();
+            executor.shutdownNow();
         }
     }
 
