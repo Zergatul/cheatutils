@@ -39,14 +39,20 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         super(level, profile);
     }
 
-    @Inject(at = @At("HEAD"), method = "sendPosition()V")
+    @Inject(
+            method = "sendChanges",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z"))
     private void onBeforeSendPosition(CallbackInfo info) {
         Events.BeforeSendPlayerPos.trigger();
     }
 
     @ExecuteAfterIfElseCondition(
-            method = "tick",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z"))
+            method = "sendChanges",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z"))
     private void onAfterSendPosition() {
         Events.AfterSendPlayerPos.trigger();
     }

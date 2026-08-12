@@ -67,8 +67,8 @@ public abstract class MixinGameRenderer {
     }
 
     @ModifyExpressionValue(
-            method = "renderLevel",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z", ordinal = 1))
+            method = "render3dHud",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
     private boolean onModifyIsFirstPerson3dCrosshair(boolean isFirstPerson) {
         // maybe need priority=2000 like in another call site
         return FreeCam.instance.onRenderCrosshairIsFirstPerson(isFirstPerson);
