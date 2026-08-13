@@ -1,9 +1,12 @@
 package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpServer;
+import com.zergatul.cheatutils.common.ModLoaderBridge;
+import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.monaco.Integration;
 import com.zergatul.cheatutils.scripting.monaco.MonacoJson;
+import net.minecraft.SharedConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,12 +30,19 @@ public class HttpApiSmokeTest {
     private HttpApiSmokeTest() {}
 
     public static void main(String[] args) throws Exception {
+        SharedConstants.tryDetectVersion();
+        ModLoaderBridgeInstance.init(new SmokeModLoaderBridge());
         verifyClientThreadDispatcher();
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
         HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
         new Integration().attach(server, "/api/code/");
-        server.createContext("/api/", new ApiHandler(List.of(new SmokeApi())));
+        server.createContext("/api/", new ApiHandler(List.of(
+                new SmokeApi(),
+                new GeneralInformationApi(),
+                new ScriptTypesApi(),
+                new ScriptWorkspaceApi(),
+                new ScriptCompileApi())));
         server.setExecutor(executor);
         server.start();
 
@@ -41,6 +51,7 @@ public class HttpApiSmokeTest {
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
 
             verifyCodeApi(client, baseUri.resolve("code/"));
+            verifyWorkspaceApi(client, baseUri);
 
             HttpResponse<String> get = send(client, baseUri.resolve("smoke"), "GET", null);
             require(get, HttpResponseCodes.OK, "{\"ok\":true}");
@@ -208,6 +219,47 @@ public class HttpApiSmokeTest {
                 "Method not allowed");
     }
 
+    private static void verifyWorkspaceApi(HttpClient client, URI baseUri) throws Exception {
+        requireContains(send(client, baseUri.resolve("general-information"), "GET", null),
+                HttpResponseCodes.OK,
+                "Fabric: smoke-loader");
+        requireContains(send(client, baseUri.resolve("script-types"), "GET", null),
+                HttpResponseCodes.OK,
+                "\"type\": \"KEYBINDING\"");
+        requireContains(send(client, baseUri.resolve("script-types"), "GET", null),
+                HttpResponseCodes.OK,
+                "\"multiple\": true");
+        requireContains(send(client, baseUri.resolve("script-workspace/OVERLAY"), "GET", null),
+                HttpResponseCodes.OK,
+                "\"type\":\"OVERLAY\"");
+
+        String valid = "{\"type\":\"OVERLAY\",\"code\":\"main.addText(\\\"ok\\\");\"}";
+        requireContains(send(client, baseUri.resolve("script-compile"), "POST", valid),
+                HttpResponseCodes.OK,
+                "\"ok\":true");
+        String invalid = "{\"type\":\"OVERLAY\",\"code\":\"int value = ;\"}";
+        requireContains(send(client, baseUri.resolve("script-compile"), "POST", invalid),
+                HttpResponseCodes.OK,
+                "\"ok\":false");
+        requireContains(send(client, baseUri.resolve("script-compile"), "POST", invalid),
+                HttpResponseCodes.OK,
+                "\"range\"");
+
+        requireError(send(
+                        client,
+                        baseUri.resolve("script-compile"),
+                        "POST",
+                        "{\"type\":\"UNKNOWN\",\"code\":\"\"}"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Unsupported script type");
+        requireError(send(client, baseUri.resolve("script-compile"), "POST", valid, false),
+                HttpResponseCodes.BAD_REQUEST,
+                "Content-Type must be application/json");
+        requireError(send(client, baseUri.resolve("script-workspace/UNKNOWN"), "GET", null),
+                HttpResponseCodes.BAD_REQUEST,
+                "Unsupported script type");
+    }
+
     private static void verifyClientThreadDispatcher() throws Exception {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         CountDownLatch release = new CountDownLatch(1);
@@ -282,6 +334,29 @@ public class HttpApiSmokeTest {
         @Override
         public String put(String id, String body) {
             return "{\"id\":" + gson.toJson(id) + ",\"body\":" + gson.toJson(body) + "}";
+        }
+    }
+
+    private static class SmokeModLoaderBridge implements ModLoaderBridge {
+
+        @Override
+        public String getModLoaderName() {
+            return "Fabric";
+        }
+
+        @Override
+        public String getModLoaderVersion() {
+            return "smoke-loader";
+        }
+
+        @Override
+        public String getModVersion() {
+            return "smoke-mod";
+        }
+
+        @Override
+        public int getModCount() {
+            return 1;
         }
     }
 }

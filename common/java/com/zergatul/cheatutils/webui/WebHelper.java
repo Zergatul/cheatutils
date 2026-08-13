@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -8,6 +10,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class WebHelper {
 
@@ -45,6 +48,25 @@ public class WebHelper {
                 throw new ApiException("Request body is too large", HttpResponseCodes.PAYLOAD_TOO_LARGE);
             }
             return new String(bytes, StandardCharsets.UTF_8);
+        }
+    }
+
+    public static void requireJsonContentType(HttpExchange exchange) throws ApiException {
+        String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
+        if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("application/json")) {
+            throw new ApiException("Content-Type must be application/json", HttpResponseCodes.BAD_REQUEST);
+        }
+    }
+
+    public static <T> T parseJson(Gson gson, String body, Class<T> type) throws ApiException {
+        try {
+            T result = gson.fromJson(body, type);
+            if (result == null) {
+                throw new ApiException("JSON body is required", HttpResponseCodes.BAD_REQUEST);
+            }
+            return result;
+        } catch (JsonParseException e) {
+            throw new ApiException("Invalid JSON body", HttpResponseCodes.BAD_REQUEST, e);
         }
     }
 

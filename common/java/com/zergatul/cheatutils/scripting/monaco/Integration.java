@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.monaco;
 
-import com.google.gson.JsonParseException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
@@ -37,7 +36,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,7 +88,7 @@ public class Integration {
             }
 
             requireMethod(exchange, "POST");
-            requireJsonContentType(exchange);
+            WebHelper.requireJsonContentType(exchange);
             switch (endpoint) {
                 case "tokenize" -> tokenize(exchange);
                 case "color-strings" -> colorStrings(exchange);
@@ -201,28 +199,12 @@ public class Integration {
     }
 
     private static <T> T readJson(HttpExchange exchange, Class<T> type) throws IOException, ApiException {
-        String body = WebHelper.readBody(exchange);
-        try {
-            T result = MonacoJson.GSON.fromJson(body, type);
-            if (result == null) {
-                throw badRequest("JSON body is required");
-            }
-            return result;
-        } catch (JsonParseException e) {
-            throw new ApiException("Invalid JSON body", HttpResponseCodes.BAD_REQUEST, e);
-        }
+        return WebHelper.parseJson(MonacoJson.GSON, WebHelper.readBody(exchange), type);
     }
 
     private static void requireMethod(HttpExchange exchange, String method) throws ApiException {
         if (!exchange.getRequestMethod().equals(method)) {
             throw new ApiException("Method not allowed", HttpResponseCodes.METHOD_NOT_ALLOWED);
-        }
-    }
-
-    private static void requireJsonContentType(HttpExchange exchange) throws ApiException {
-        String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
-        if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("application/json")) {
-            throw badRequest("Content-Type must be application/json");
         }
     }
 

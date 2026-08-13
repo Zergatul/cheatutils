@@ -33,6 +33,10 @@ public class ApiHandler implements HttpHandler {
     public ApiHandler() {
         apis.add(new UserApi());
         apis.add(new ModulesStatusApi());
+        apis.add(new GeneralInformationApi());
+        apis.add(new ScriptTypesApi());
+        apis.add(new ScriptWorkspaceApi());
+        apis.add(new ScriptCompileApi());
         apis.add(new BlocksConfigApi());
         apis.add(new BlockInfoApi());
         apis.add(new EntityInfoApi());
@@ -862,12 +866,18 @@ public class ApiHandler implements HttpHandler {
 
     private void processPost(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
         requireNoId(path, "POST");
+        if (api.requiresJsonContentType()) {
+            WebHelper.requireJsonContentType(exchange);
+        }
         String response = api.post(WebHelper.readBody(exchange));
         WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
     }
 
     private void processPut(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
         String id = requireId(path, "PUT");
+        if (api.requiresJsonContentType()) {
+            WebHelper.requireJsonContentType(exchange);
+        }
         String response = api.put(id, WebHelper.readBody(exchange));
         WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
     }

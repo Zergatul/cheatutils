@@ -10,6 +10,10 @@ public abstract class ApiBase {
 
     public abstract String getRoute();
 
+    public boolean requiresJsonContentType() {
+        return false;
+    }
+
     public String get() throws HttpException {
         throw methodNotAllowed();
     }
