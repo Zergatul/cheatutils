@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.scripting.monaco.Integration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,6 +56,7 @@ public class ConfigHttpServer {
             return;
         }
 
+        new Integration().attach(server, "/api/code/");
         server.createContext("/api/", new ApiHandler());
         server.createContext("/assets/", new AssetsHandler());
         server.createContext("/", new StaticFilesHandler());

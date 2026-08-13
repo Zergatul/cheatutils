@@ -18,7 +18,6 @@ import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -27,8 +26,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class ApiHandler implements HttpHandler {
-
-    private static final int MAX_REQUEST_BODY_SIZE = 64 * 1024 * 1024;
 
     private final Logger logger = LogManager.getLogger(ApiHandler.class);
     private final List<ApiBase> apis = new ArrayList<>();
@@ -865,13 +862,13 @@ public class ApiHandler implements HttpHandler {
 
     private void processPost(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
         requireNoId(path, "POST");
-        String response = api.post(readBody(exchange));
+        String response = api.post(WebHelper.readBody(exchange));
         WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
     }
 
     private void processPut(RequestPath path, ApiBase api, HttpExchange exchange) throws HttpException, IOException {
         String id = requireId(path, "PUT");
-        String response = api.put(id, readBody(exchange));
+        String response = api.put(id, WebHelper.readBody(exchange));
         WebHelper.sendJson(exchange, HttpResponseCodes.OK, response);
     }
 
@@ -900,27 +897,6 @@ public class ApiHandler implements HttpHandler {
             return new RequestPath(route, id);
         } catch (IllegalArgumentException e) {
             throw new ApiException("Invalid URL encoding", HttpResponseCodes.BAD_REQUEST);
-        }
-    }
-
-    private String readBody(HttpExchange exchange) throws IOException, ApiException {
-        String contentLength = exchange.getRequestHeaders().getFirst("Content-Length");
-        if (contentLength != null) {
-            try {
-                if (Long.parseLong(contentLength) > MAX_REQUEST_BODY_SIZE) {
-                    throw new ApiException("Request body is too large", HttpResponseCodes.PAYLOAD_TOO_LARGE);
-                }
-            } catch (NumberFormatException e) {
-                throw new ApiException("Invalid Content-Length header", HttpResponseCodes.BAD_REQUEST);
-            }
-        }
-
-        try (InputStream stream = exchange.getRequestBody()) {
-            byte[] bytes = stream.readNBytes(MAX_REQUEST_BODY_SIZE + 1);
-            if (bytes.length > MAX_REQUEST_BODY_SIZE) {
-                throw new ApiException("Request body is too large", HttpResponseCodes.PAYLOAD_TOO_LARGE);
-            }
-            return new String(bytes, StandardCharsets.UTF_8);
         }
     }
 

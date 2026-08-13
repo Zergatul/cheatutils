@@ -3,12 +3,15 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
 public class WebHelper {
+
+    public static final int MAX_REQUEST_BODY_SIZE = 64 * 1024 * 1024;
 
     private WebHelper() {}
 
@@ -18,6 +21,31 @@ public class WebHelper {
             throwable.printStackTrace(printWriter);
         }
         sendText(exchange, code, writer.toString());
+    }
+
+    public static String readBody(HttpExchange exchange) throws IOException, ApiException {
+        String contentLength = exchange.getRequestHeaders().getFirst("Content-Length");
+        if (contentLength != null) {
+            try {
+                long length = Long.parseLong(contentLength);
+                if (length < 0) {
+                    throw new ApiException("Invalid Content-Length header", HttpResponseCodes.BAD_REQUEST);
+                }
+                if (length > MAX_REQUEST_BODY_SIZE) {
+                    throw new ApiException("Request body is too large", HttpResponseCodes.PAYLOAD_TOO_LARGE);
+                }
+            } catch (NumberFormatException e) {
+                throw new ApiException("Invalid Content-Length header", HttpResponseCodes.BAD_REQUEST, e);
+            }
+        }
+
+        try (InputStream stream = exchange.getRequestBody()) {
+            byte[] bytes = stream.readNBytes(MAX_REQUEST_BODY_SIZE + 1);
+            if (bytes.length > MAX_REQUEST_BODY_SIZE) {
+                throw new ApiException("Request body is too large", HttpResponseCodes.PAYLOAD_TOO_LARGE);
+            }
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
     }
 
     public static void sendJson(HttpExchange exchange, int code, String response) throws IOException {

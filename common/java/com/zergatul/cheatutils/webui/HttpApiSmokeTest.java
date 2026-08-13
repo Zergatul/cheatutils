@@ -1,6 +1,9 @@
 package com.zergatul.cheatutils.webui;
 
 import com.sun.net.httpserver.HttpServer;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.monaco.Integration;
+import com.zergatul.cheatutils.scripting.monaco.MonacoJson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,6 +31,7 @@ public class HttpApiSmokeTest {
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
         HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        new Integration().attach(server, "/api/code/");
         server.createContext("/api/", new ApiHandler(List.of(new SmokeApi())));
         server.setExecutor(executor);
         server.start();
@@ -35,6 +39,8 @@ public class HttpApiSmokeTest {
         try {
             URI baseUri = URI.create("http://localhost:" + server.getAddress().getPort() + "/api/");
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+
+            verifyCodeApi(client, baseUri.resolve("code/"));
 
             HttpResponse<String> get = send(client, baseUri.resolve("smoke"), "GET", null);
             require(get, HttpResponseCodes.OK, "{\"ok\":true}");
@@ -72,14 +78,26 @@ public class HttpApiSmokeTest {
     }
 
     private static HttpResponse<String> send(HttpClient client, URI uri, String method, String body) throws Exception {
+        return send(client, uri, method, body, true);
+    }
+
+    private static HttpResponse<String> send(
+            HttpClient client,
+            URI uri,
+            String method,
+            String body,
+            boolean jsonContentType
+    ) throws Exception {
         HttpRequest.BodyPublisher publisher = body == null
                 ? HttpRequest.BodyPublishers.noBody()
                 : HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8);
-        HttpRequest request = HttpRequest.newBuilder(uri)
+        HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                 .timeout(Duration.ofSeconds(5))
-                .method(method, publisher)
-                .build();
-        return client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                .method(method, publisher);
+        if (body != null && jsonContentType) {
+            builder.header("Content-Type", "application/json; charset=UTF-8");
+        }
+        return client.send(builder.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     }
 
     private static void require(HttpResponse<String> response, int status, String body) {
@@ -98,6 +116,96 @@ public class HttpApiSmokeTest {
         if (!response.body().contains(message) || !response.body().contains("\tat ")) {
             throw new IllegalStateException("Error response does not contain the message and stack trace: " + response.body());
         }
+    }
+
+    private static void requireContains(HttpResponse<String> response, int status, String text) {
+        if (response.statusCode() != status) {
+            throw new IllegalStateException("Expected HTTP " + status + " but received " + response.statusCode() + ".");
+        }
+        if (!response.body().contains(text)) {
+            throw new IllegalStateException("HTTP response does not contain '" + text + "': " + response.body());
+        }
+    }
+
+    private static void verifyCodeApi(HttpClient client, URI baseUri) throws Exception {
+        requireContains(send(client, baseUri.resolve("token-types"), "GET", null),
+                HttpResponseCodes.OK,
+                "KEYWORD");
+        requireContains(send(client, baseUri.resolve("token-modifiers"), "GET", null),
+                HttpResponseCodes.OK,
+                "PREDEFINED_TYPE");
+
+        for (ScriptType type : ScriptType.values()) {
+            require(send(
+                            client,
+                            baseUri.resolve("diagnostics"),
+                            "POST",
+                            MonacoJson.toJson(new Integration.CodeRequest("", type.name()))),
+                    HttpResponseCodes.OK,
+                    "[]");
+        }
+
+        String validCode = "int value = 1;";
+        requireContains(send(
+                        client,
+                        baseUri.resolve("tokenize"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.CodeRequest(validCode, "OVERLAY"))),
+                HttpResponseCodes.OK,
+                "\"type\"");
+        requireContains(send(
+                        client,
+                        baseUri.resolve("diagnostics"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.CodeRequest("int value = ;", "OVERLAY"))),
+                HttpResponseCodes.OK,
+                "\"message\"");
+        requireContains(send(
+                        client,
+                        baseUri.resolve("completion"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.PositionRequest("main.", "OVERLAY", 1, 6))),
+                HttpResponseCodes.OK,
+                "addText");
+        requireContains(send(
+                        client,
+                        baseUri.resolve("hover"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.PositionRequest("main.addText(\"x\");", "OVERLAY", 1, 6))),
+                HttpResponseCodes.OK,
+                "addText");
+        requireContains(send(
+                        client,
+                        baseUri.resolve("definition"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.PositionRequest(
+                                "int value = 1;\nvalue = 2;",
+                                "OVERLAY",
+                                2,
+                                1))),
+                HttpResponseCodes.OK,
+                "\"line1\":1");
+        requireContains(send(
+                        client,
+                        baseUri.resolve("color-strings"),
+                        "POST",
+                        MonacoJson.toJson("string color = \"#ff0000\";")),
+                HttpResponseCodes.OK,
+                "\"red\":1.0");
+
+        requireError(send(
+                        client,
+                        baseUri.resolve("diagnostics"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.CodeRequest(validCode, "UNKNOWN"))),
+                HttpResponseCodes.BAD_REQUEST,
+                "Unsupported script type");
+        requireError(send(client, baseUri.resolve("diagnostics"), "POST", "{}", false),
+                HttpResponseCodes.BAD_REQUEST,
+                "Content-Type must be application/json");
+        requireError(send(client, baseUri.resolve("diagnostics"), "GET", null),
+                HttpResponseCodes.METHOD_NOT_ALLOWED,
+                "Method not allowed");
     }
 
     private static void verifyClientThreadDispatcher() throws Exception {
