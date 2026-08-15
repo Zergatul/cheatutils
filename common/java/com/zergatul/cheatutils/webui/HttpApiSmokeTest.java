@@ -42,7 +42,9 @@ public class HttpApiSmokeTest {
                 new GeneralInformationApi(),
                 new ScriptTypesApi(),
                 new ScriptWorkspaceApi(),
-                new ScriptCompileApi())));
+                new ScriptCompileApi(),
+                new ScriptsDocsApi(),
+                new SmokeConfigApi())));
         server.setExecutor(executor);
         server.start();
 
@@ -258,6 +260,32 @@ public class HttpApiSmokeTest {
         requireError(send(client, baseUri.resolve("script-workspace/UNKNOWN"), "GET", null),
                 HttpResponseCodes.BAD_REQUEST,
                 "Unsupported script type");
+
+        for (ScriptType type : ScriptType.values()) {
+            HttpResponse<String> docs = send(client, baseUri.resolve("scripts-doc/" + type.name()), "GET", null);
+            requireContains(docs, HttpResponseCodes.OK, "**********");
+        }
+        requireContains(send(client, baseUri.resolve("scripts-doc/KEYBINDING"), "GET", null),
+                HttpResponseCodes.OK,
+                "Future");
+        for (String legacyType : List.of("overlay", "handle-keybindings", "block-placer", "auto-disconnect", "villager-roller")) {
+            requireContains(send(client, baseUri.resolve("scripts-doc/" + legacyType), "GET", null),
+                    HttpResponseCodes.OK,
+                    "main.");
+        }
+        requireError(send(client, baseUri.resolve("scripts-doc/UNKNOWN"), "GET", null),
+                HttpResponseCodes.BAD_REQUEST,
+                "Unsupported script type");
+
+        requireContains(send(client, baseUri.resolve("smoke-config"), "GET", null),
+                HttpResponseCodes.OK,
+                "\"value\": 1");
+        requireError(send(client, baseUri.resolve("smoke-config"), "POST", "{}", false),
+                HttpResponseCodes.BAD_REQUEST,
+                "Content-Type must be application/json");
+        requireError(send(client, baseUri.resolve("smoke-config"), "POST", "{"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Invalid JSON body");
     }
 
     private static void verifyClientThreadDispatcher() throws Exception {
@@ -335,6 +363,29 @@ public class HttpApiSmokeTest {
         public String put(String id, String body) {
             return "{\"id\":" + gson.toJson(id) + ",\"body\":" + gson.toJson(body) + "}";
         }
+    }
+
+    private static class SmokeConfigApi extends SimpleConfigApi<SmokeConfig> {
+
+        private SmokeConfig config = new SmokeConfig();
+
+        private SmokeConfigApi() {
+            super("smoke-config", SmokeConfig.class);
+        }
+
+        @Override
+        protected SmokeConfig getConfig() {
+            return config;
+        }
+
+        @Override
+        protected void setConfig(SmokeConfig config) {
+            this.config = config;
+        }
+    }
+
+    private static class SmokeConfig {
+        public int value = 1;
     }
 
     private static class SmokeModLoaderBridge implements ModLoaderBridge {

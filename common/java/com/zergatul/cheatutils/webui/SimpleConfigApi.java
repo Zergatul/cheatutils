@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import org.apache.http.MethodNotSupportedException;
-
 public abstract class SimpleConfigApi<T> extends ApiBase {
 
     private final String route;
@@ -19,16 +17,19 @@ public abstract class SimpleConfigApi<T> extends ApiBase {
     }
 
     @Override
-    public String get() throws MethodNotSupportedException {
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
+    public String get() {
         return gson.toJson(getConfig());
     }
 
     @Override
-    public String post(String body) throws MethodNotSupportedException {
-        T config = gson.fromJson(body, clazz);
-        if (config != null) {
-            ConfigStore.replaceFromApi(config, this::setConfig);
-        }
+    public String post(String body) throws ApiException {
+        T config = WebHelper.parseJson(gson, body, clazz);
+        ConfigStore.replaceFromApi(config, this::setConfig);
         return get();
     }
 

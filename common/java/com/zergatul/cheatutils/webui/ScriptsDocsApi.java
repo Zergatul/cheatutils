@@ -1,17 +1,22 @@
 package com.zergatul.cheatutils.webui;
 
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
+import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.scripting.api.Root;
 import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
+import com.zergatul.scripting.InterfaceHelper;
+import com.zergatul.scripting.compiler.CompilationParameters;
+import com.zergatul.scripting.type.CustomType;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.http.HttpException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public class ScriptsDocsApi extends ApiBase {
@@ -22,12 +27,22 @@ public class ScriptsDocsApi extends ApiBase {
     }
 
     @Override
-    public String get(String id) throws HttpException {
-        ApiType[] types = VisibilityCheck.getTypes(id);
-        if (types == null) {
-            return null;
+    public String get(String id) throws ApiException {
+        try {
+            ScriptType type = ScriptType.valueOf(id);
+            CompilationParameters parameters = ScriptCompilerRegistry.INSTANCE.getParameters(type);
+            List<String> refs = new ArrayList<>();
+            refs.add(formatFuncMethod(InterfaceHelper.getFuncInterfaceMethod(parameters.getFunctionalInterface())));
+            refs.add("**********");
+            refs.addAll(generateRootRefs(type.getApis()));
+            return gson.toJson(refs);
+        } catch (IllegalArgumentException ignored) {
+            ApiType[] types = VisibilityCheck.getTypes(id);
+            if (types == null) {
+                throw new ApiException("Unsupported script type: " + id, HttpResponseCodes.BAD_REQUEST);
+            }
+            return gson.toJson(generateRootRefs(types));
         }
-        return gson.toJson(generateRootRefs(types));
     }
 
     private List<String> generateRootRefs(ApiType[] types) {
@@ -108,8 +123,36 @@ public class ScriptsDocsApi extends ApiBase {
             return formatClass(clazz.getComponentType()) + "[]";
         }
 
-        String name = clazz == String.class ? "string" : (clazz == double.class ? "float" : clazz.getName());
-        return "<span class=\"class\">" + name + "</span>";
+        String name;
+        boolean shouldWrap = true;
+        if (clazz == void.class) {
+            name = "void";
+        } else if (clazz == String.class) {
+            name = "string";
+        } else if (clazz == double.class) {
+            name = "float";
+        } else if (clazz == CompletableFuture.class) {
+            name = "Future";
+        } else if (InterfaceHelper.isFuncInterface(clazz)) {
+            name = "Lambda<" + formatFuncMethod(InterfaceHelper.getFuncInterfaceMethod(clazz)) + ">";
+            shouldWrap = false;
+        } else if (clazz.isAnnotationPresent(CustomType.class)) {
+            name = clazz.getAnnotation(CustomType.class).name();
+        } else if (clazz.getName().startsWith("com.zergatul.cheatutils.scripting.api.modules.")) {
+            name = clazz.getSimpleName();
+        } else {
+            name = clazz.getName();
+        }
+
+        return shouldWrap ? "<span class=\"class\">" + name + "</span>" : name;
+    }
+
+    private String formatFuncMethod(Method method) {
+        final String space = "&nbsp;";
+        String parameters = String.join("," + space, Arrays.stream(method.getParameters())
+                .map(parameter -> formatClass(parameter.getType()) + space + parameter.getName())
+                .toList());
+        return "(" + parameters + ")" + space + "=>" + space + formatClass(method.getReturnType());
     }
 
     private String formatComment(String text) {

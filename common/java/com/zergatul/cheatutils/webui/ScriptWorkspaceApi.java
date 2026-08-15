@@ -31,11 +31,7 @@ public class ScriptWorkspaceApi extends ApiBase {
     }
 
     private static ScriptType parseType(String value) throws ApiException {
-        try {
-            return ScriptType.valueOf(value);
-        } catch (IllegalArgumentException e) {
-            throw new ApiException("Unsupported script type: " + value, HttpResponseCodes.BAD_REQUEST, e);
-        }
+        return WebHelper.parseEnum(ScriptType.class, value, "script type");
     }
 
     private static Response map(ScriptDocument document) {

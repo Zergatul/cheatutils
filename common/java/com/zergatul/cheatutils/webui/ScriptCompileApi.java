@@ -27,12 +27,7 @@ public class ScriptCompileApi extends ApiBase {
             throw new ApiException("Code is required", HttpResponseCodes.BAD_REQUEST);
         }
 
-        ScriptType type;
-        try {
-            type = ScriptType.valueOf(request.type);
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new ApiException("Unsupported script type: " + request.type, HttpResponseCodes.BAD_REQUEST, e);
-        }
+        ScriptType type = WebHelper.parseEnum(ScriptType.class, request.type, "script type");
 
         ScriptCompileResult result = ScriptWorkspace.INSTANCE.get(type).compile(request.code);
         return MonacoJson.toJson(new Response(result.isSuccess(), result.getDiagnostics()));

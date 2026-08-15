@@ -70,6 +70,14 @@ public class WebHelper {
         }
     }
 
+    public static <T extends Enum<T>> T parseEnum(Class<T> type, String value, String description) throws ApiException {
+        try {
+            return Enum.valueOf(type, value);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new ApiException("Unsupported " + description + ": " + value, HttpResponseCodes.BAD_REQUEST, e);
+        }
+    }
+
     public static void sendJson(HttpExchange exchange, int code, String response) throws IOException {
         HttpHelper.setJsonContentType(exchange);
         send(exchange, code, response == null ? "null" : response);
