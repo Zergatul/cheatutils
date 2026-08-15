@@ -12,16 +12,23 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 public class HttpApiSmokeTest {
 
@@ -34,6 +41,13 @@ public class HttpApiSmokeTest {
         ModLoaderBridgeInstance.init(new SmokeModLoaderBridge());
         verifyClientThreadDispatcher();
 
+        Path webRoot = Files.createTempDirectory("cheatutils-http-web-");
+        Files.writeString(webRoot.resolve("index.html"), "smoke-index", StandardCharsets.UTF_8);
+        Files.createDirectories(webRoot.resolve("styles"));
+        Files.writeString(webRoot.resolve("styles/test.css"), "smoke-style", StandardCharsets.UTF_8);
+        String previousWebDirectory = System.getProperty(StaticFilesHandler.WEB_DIRECTORY_PROPERTY);
+        System.setProperty(StaticFilesHandler.WEB_DIRECTORY_PROPERTY, webRoot.toString());
+
         ExecutorService executor = Executors.newFixedThreadPool(2);
         HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
         new Integration().attach(server, "/api/code/");
@@ -45,15 +59,20 @@ public class HttpApiSmokeTest {
                 new ScriptCompileApi(),
                 new ScriptsDocsApi(),
                 new SmokeConfigApi())));
+        server.createContext("/", new StaticFilesHandler());
         server.setExecutor(executor);
         server.start();
+        InetSocketAddress serverAddress = server.getAddress();
 
         try {
-            URI baseUri = URI.create("http://localhost:" + server.getAddress().getPort() + "/api/");
+            URI siteUri = URI.create("http://localhost:" + serverAddress.getPort() + "/");
+            URI baseUri = siteUri.resolve("api/");
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
 
+            verifyStaticFiles(client, siteUri);
             verifyCodeApi(client, baseUri.resolve("code/"));
             verifyWorkspaceApi(client, baseUri);
+            verifyConcurrentRequests(client, baseUri);
 
             HttpResponse<String> get = send(client, baseUri.resolve("smoke"), "GET", null);
             require(get, HttpResponseCodes.OK, "{\"ok\":true}");
@@ -87,6 +106,69 @@ public class HttpApiSmokeTest {
         } finally {
             server.stop(0);
             executor.shutdownNow();
+            try {
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("HTTP executor did not terminate.");
+                }
+                try (ServerSocket socket = new ServerSocket()) {
+                    socket.setReuseAddress(true);
+                    socket.bind(serverAddress);
+                }
+            } finally {
+                if (previousWebDirectory == null) {
+                    System.clearProperty(StaticFilesHandler.WEB_DIRECTORY_PROPERTY);
+                } else {
+                    System.setProperty(StaticFilesHandler.WEB_DIRECTORY_PROPERTY, previousWebDirectory);
+                }
+                deleteTree(webRoot);
+            }
+        }
+    }
+
+    private static void verifyStaticFiles(HttpClient client, URI siteUri) throws Exception {
+        HttpResponse<String> index = send(client, siteUri, "GET", null);
+        require(index, HttpResponseCodes.OK, "smoke-index");
+        if (!index.headers().firstValue("Content-Type").orElse("").startsWith("text/html")) {
+            throw new IllegalStateException("Static index response does not have an HTML content type.");
+        }
+        if (!"nosniff".equals(index.headers().firstValue("X-Content-Type-Options").orElse(null))) {
+            throw new IllegalStateException("Static response is missing nosniff protection.");
+        }
+
+        require(send(client, siteUri.resolve("styles/test.css"), "GET", null),
+                HttpResponseCodes.OK,
+                "smoke-style");
+        requireContains(send(client, siteUri.resolve("missing.js"), "GET", null),
+                HttpResponseCodes.NOT_FOUND,
+                "File not found");
+        requireError(send(client, URI.create(siteUri + "%2e%2e/secret.txt"), "GET", null),
+                HttpResponseCodes.BAD_REQUEST,
+                "Invalid static file path");
+        requireError(send(client, siteUri, "POST", ""),
+                HttpResponseCodes.METHOD_NOT_ALLOWED,
+                "Method not allowed");
+    }
+
+    private static void verifyConcurrentRequests(HttpClient client, URI baseUri) throws Exception {
+        List<CompletableFuture<HttpResponse<String>>> requests = IntStream.range(0, 16)
+                .mapToObj(index -> client.sendAsync(
+                        HttpRequest.newBuilder(baseUri.resolve("smoke"))
+                                .timeout(Duration.ofSeconds(5))
+                                .GET()
+                                .build(),
+                        HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)))
+                .toList();
+        CompletableFuture.allOf(requests.toArray(CompletableFuture[]::new)).get(10, TimeUnit.SECONDS);
+        for (CompletableFuture<HttpResponse<String>> request : requests) {
+            require(request.get(), HttpResponseCodes.OK, "{\"ok\":true}");
+        }
+    }
+
+    private static void deleteTree(Path root) throws Exception {
+        try (var paths = Files.walk(root)) {
+            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
+                Files.deleteIfExists(path);
+            }
         }
     }
 
