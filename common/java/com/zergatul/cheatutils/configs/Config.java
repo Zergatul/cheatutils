@@ -67,6 +67,7 @@ public class Config implements Sanitizable {
     public AreaMineConfig areaMineConfig = new AreaMineConfig();
     public ServerPluginsConfig serverPluginsConfig = new ServerPluginsConfig();
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
+    public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
 
     public Config() {
         esp = true;

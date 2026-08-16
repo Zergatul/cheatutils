@@ -113,6 +113,35 @@ div.module-group > button + button {
     margin-left: 0;
 }
 
+/* Keep the temporary legacy stylesheet from changing newly ported 26.2 pages. */
+div.module-main.modern-page {
+    padding-top: 1em;
+}
+
+div.module-main.modern-page div.description {
+    font-family: var(--font2);
+    font-size: 0.8em;
+    margin-bottom: 1em;
+    max-width: 60em;
+}
+
+div.module-main.modern-page a,
+div.module-main.modern-page a:visited {
+    color: var(--color1);
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: underline;
+}
+
+div.module-main.modern-page button {
+    font-weight: 400;
+    height: auto;
+}
+
+div.module-main.modern-page button + button {
+    margin-left: 0;
+}
+
 /* Accessibility additions that do not change the 26.2 visual layout. */
 .visually-hidden {
     clip: rect(0 0 0 0);

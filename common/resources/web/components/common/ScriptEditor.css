@@ -1,0 +1,51 @@
+div.script-editor {
+    display: flex;
+    flex-basis: 28em;
+    flex-direction: column;
+    flex-grow: 1;
+    font-size: initial;
+    min-height: 0;
+    overflow-y: visible;
+    position: relative;
+}
+
+div.script-editor.fullscreen {
+    background-color: black;
+    flex-basis: auto;
+    inset: 0;
+    position: fixed;
+    z-index: 2000;
+}
+
+div.script-editor div.script-editor-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+}
+
+div.script-editor button.fullscreen-toggle {
+    align-items: center;
+    bottom: 0.75em;
+    display: flex;
+    height: 2em;
+    justify-content: center;
+    opacity: 0.4;
+    padding: 0;
+    position: absolute;
+    right: 1.5em;
+    width: 2em;
+    z-index: 5;
+}
+
+div.script-editor button.fullscreen-toggle:hover,
+div.script-editor button.fullscreen-toggle:focus-visible {
+    opacity: 1;
+}
+
+body.script-editor-fullscreen {
+    overflow: hidden;
+}
+
+div.script-editor div.suggest-widget > div.message {
+    font-size: 0.9em;
+}

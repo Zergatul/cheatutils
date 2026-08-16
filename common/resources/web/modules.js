@@ -13,7 +13,7 @@ const modules = {
 const module = params => {
     modules.all.push(params);
 
-    params.componentRef = getComponent(params.legacyComponent);
+    params.componentRef = getComponent(params.legacyComponent || `${params.group}/${params.component}`);
     if (!params.hidden) {
         modules[params.group][params.component] = params;
     }
@@ -560,6 +560,13 @@ module({
     legacyComponent: 'TpsConfig',
     path: 'tps',
     tags: ['tps', 'tick', 'rate']
+});
+module({
+    group: 'scripting',
+    name: 'Editor Config',
+    component: 'MonacoEditorConfig',
+    path: 'editor-config',
+    tags: ['script', 'editor', 'config', 'monaco']
 });
 
 // Utility Modules ==========================

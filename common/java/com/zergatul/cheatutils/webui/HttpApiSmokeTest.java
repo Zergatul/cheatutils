@@ -45,6 +45,7 @@ public class HttpApiSmokeTest {
         Files.writeString(webRoot.resolve("index.html"), "smoke-index", StandardCharsets.UTF_8);
         Files.createDirectories(webRoot.resolve("styles"));
         Files.writeString(webRoot.resolve("styles/test.css"), "smoke-style", StandardCharsets.UTF_8);
+        Files.write(webRoot.resolve("test.ttf"), new byte[] { 0, 1, 2, 3 });
         String previousWebDirectory = System.getProperty(StaticFilesHandler.WEB_DIRECTORY_PROPERTY);
         System.setProperty(StaticFilesHandler.WEB_DIRECTORY_PROPERTY, webRoot.toString());
 
@@ -139,6 +140,10 @@ public class HttpApiSmokeTest {
         require(send(client, siteUri.resolve("styles/test.css"), "GET", null),
                 HttpResponseCodes.OK,
                 "smoke-style");
+        HttpResponse<String> font = send(client, siteUri.resolve("test.ttf"), "GET", null);
+        if (!font.headers().firstValue("Content-Type").orElse("").startsWith("font/ttf")) {
+            throw new IllegalStateException("Static font response does not have a TTF content type.");
+        }
         requireContains(send(client, siteUri.resolve("missing.js"), "GET", null),
                 HttpResponseCodes.NOT_FOUND,
                 "File not found");

@@ -19,13 +19,14 @@ export async function getText(url) {
     return await response.text();
 }
 
-export async function post(url, body) {
+export async function post(url, body, signal) {
     let response = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json; charset=UTF-8'
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal
     });
     await throwIfFailed(response);
     return await response.json();

@@ -34,7 +34,14 @@
                     @keydown="onFilterKeyDown($event)">
             </div>
         </div>
-        <component :is="view" @back="backToMain()"></component>
+        <component
+            :is="view"
+            :class="{
+                'legacy-page': module && module.legacyComponent,
+                'modern-page': module && !module.legacyComponent
+            }"
+            @back="backToMain()">
+        </component>
     </div>
 
     <script type="module" src="app.js"></script>
