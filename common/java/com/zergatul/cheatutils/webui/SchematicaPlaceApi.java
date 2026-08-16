@@ -8,7 +8,6 @@ import com.zergatul.cheatutils.schematics.SchemaFormatFactory;
 import org.apache.http.HttpException;
 
 import java.io.IOException;
-import java.util.Base64;
 
 public class SchematicaPlaceApi extends ApiBase {
 
@@ -18,9 +17,16 @@ public class SchematicaPlaceApi extends ApiBase {
     }
 
     @Override
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
     public String post(String body) throws HttpException {
-        Request request = gson.fromJson(body, Request.class);
-        byte[] data = Base64.getDecoder().decode(request.file);
+        Request request = WebHelper.parseJson(gson, body, Request.class);
+        byte[] data = WebHelper.decodeBase64(request.file, "file");
+        WebHelper.requireNonBlankField(request.name, "name");
+        WebHelper.requireField(request.placing, "placing");
         SchemaFile schema;
         try {
             schema = SchemaFormatFactory.parse(data, request.name);

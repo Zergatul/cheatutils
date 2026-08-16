@@ -11,13 +11,18 @@ public class FakeWeatherSetRainApi extends ApiBase {
     }
 
     @Override
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
     public String post(String body) throws HttpException {
-        Request request = gson.fromJson(body, Request.class);
-        FakeWeather.instance.setRain(request.value);
+        Request request = WebHelper.parseJson(gson, body, Request.class);
+        float value = WebHelper.requireField(request.value, "value");
+        WebHelper.requireFinite(value, "value");
+        FakeWeather.instance.setRain(value);
         return "{ \"ok\": true }";
     }
 
-    public class Request {
-        public float value;
-    }
+    public record Request(Float value) {}
 }

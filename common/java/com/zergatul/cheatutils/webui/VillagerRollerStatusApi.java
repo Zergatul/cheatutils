@@ -11,18 +11,28 @@ public class VillagerRollerStatusApi extends ApiBase {
     }
 
     @Override
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
     public String post(String body) throws HttpException {
-        Request request = gson.fromJson(body, Request.class);
+        Request request = WebHelper.parseJson(gson, body, Request.class);
+        boolean start = Boolean.TRUE.equals(request.start);
+        boolean stop = Boolean.TRUE.equals(request.stop);
+        if (start == stop) {
+            throw new ApiException("Exactly one of start or stop must be true", HttpResponseCodes.BAD_REQUEST);
+        }
         ClientThreadDispatcher.run(() -> {
-            if (request.start) {
+            if (start) {
                 VillagerRoller.instance.start();
             }
-            if (request.stop) {
+            if (stop) {
                 VillagerRoller.instance.stop();
             }
         });
         return "{}";
     }
 
-    public record Request(boolean start, boolean stop) {}
+    public record Request(Boolean start, Boolean stop) {}
 }

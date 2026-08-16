@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTracerConfig;
 import com.zergatul.cheatutils.wrappers.ClassRemapper;
+import org.apache.http.HttpException;
 import org.apache.http.MethodNotSupportedException;
 
 public class EntitiesConfigApi extends ApiBase {
@@ -10,6 +11,11 @@ public class EntitiesConfigApi extends ApiBase {
     @Override
     public String getRoute() {
         return "entities";
+    }
+
+    @Override
+    public boolean requiresJsonContentType() {
+        return true;
     }
 
     @Override
@@ -21,8 +27,9 @@ public class EntitiesConfigApi extends ApiBase {
     }
 
     @Override
-    public synchronized String post(String body) throws MethodNotSupportedException {
-        EntityTracerConfig jsonConfig = gson.fromJson(body, EntityTracerConfig.class);
+    public synchronized String post(String body) throws HttpException {
+        EntityTracerConfig jsonConfig = WebHelper.parseJson(gson, body, EntityTracerConfig.class);
+        WebHelper.requireField(jsonConfig.clazz, "clazz");
 
         EntityTracerConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
                 .filter(c -> c.clazz == jsonConfig.clazz)
@@ -40,8 +47,9 @@ public class EntitiesConfigApi extends ApiBase {
     }
 
     @Override
-    public synchronized String put(String className, String body) throws MethodNotSupportedException {
-        EntityTracerConfig jsonConfig = gson.fromJson(body, EntityTracerConfig.class);
+    public synchronized String put(String className, String body) throws HttpException {
+        EntityTracerConfig jsonConfig = WebHelper.parseJson(gson, body, EntityTracerConfig.class);
+        WebHelper.requireField(jsonConfig.clazz, "clazz");
         String obfClassName = ClassRemapper.toObf(className);
         if (!obfClassName.equals(jsonConfig.clazz.getName())) {
             throw new MethodNotSupportedException("Entity class name don't match.");
@@ -67,9 +75,12 @@ public class EntitiesConfigApi extends ApiBase {
                 .filter(c -> c.clazz.getName().equals(obfClassName))
                 .findFirst()
                 .orElse(null);
+        if (config == null) {
+            throw new MethodNotSupportedException("Cannot find entity config.");
+        }
 
         ConfigStore.updateFromApi(c -> c.entities, entities -> entities.remove(config));
 
-        return "{ ok: true }";
+        return "{\"ok\":true}";
     }
 }

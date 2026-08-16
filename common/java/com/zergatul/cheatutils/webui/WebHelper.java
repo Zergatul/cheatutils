@@ -9,7 +9,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Locale;
 
 public class WebHelper {
@@ -59,6 +61,10 @@ public class WebHelper {
     }
 
     public static <T> T parseJson(Gson gson, String body, Class<T> type) throws ApiException {
+        return parseJson(gson, body, (Type) type);
+    }
+
+    public static <T> T parseJson(Gson gson, String body, Type type) throws ApiException {
         try {
             T result = gson.fromJson(body, type);
             if (result == null) {
@@ -67,6 +73,37 @@ public class WebHelper {
             return result;
         } catch (JsonParseException e) {
             throw new ApiException("Invalid JSON body", HttpResponseCodes.BAD_REQUEST, e);
+        }
+    }
+
+    public static <T> T requireField(T value, String field) throws ApiException {
+        if (value == null) {
+            throw new ApiException("Field is required: " + field, HttpResponseCodes.BAD_REQUEST);
+        }
+        return value;
+    }
+
+    public static String requireNonBlankField(String value, String field) throws ApiException {
+        requireField(value, field);
+        if (value.isBlank()) {
+            throw new ApiException("Field cannot be blank: " + field, HttpResponseCodes.BAD_REQUEST);
+        }
+        return value;
+    }
+
+    public static double requireFinite(double value, String field) throws ApiException {
+        if (!Double.isFinite(value)) {
+            throw new ApiException("Field must be finite: " + field, HttpResponseCodes.BAD_REQUEST);
+        }
+        return value;
+    }
+
+    public static byte[] decodeBase64(String value, String field) throws ApiException {
+        requireField(value, field);
+        try {
+            return Base64.getDecoder().decode(value);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException("Field is not valid Base64: " + field, HttpResponseCodes.BAD_REQUEST, e);
         }
     }
 

@@ -17,10 +17,8 @@ public class FreeCamPathApi extends ApiBase {
 
     @Override
     public String post(String body) throws HttpException {
-        Double time = gson.fromJson(body, Double.class);
-        if (time == null) {
-            return "{}";
-        }
+        double time = WebHelper.parseJson(gson, body, Double.class);
+        WebHelper.requireFinite(time, "time");
 
         ClientThreadDispatcher.run(() -> FreeCam.instance.getPath().add(time));
         return "{ \"ok\": true }";

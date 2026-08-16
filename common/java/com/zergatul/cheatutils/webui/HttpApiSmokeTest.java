@@ -58,7 +58,8 @@ public class HttpApiSmokeTest {
                 new ScriptWorkspaceApi(),
                 new ScriptCompileApi(),
                 new ScriptsDocsApi(),
-                new SmokeConfigApi())));
+                new SmokeConfigApi(),
+                new SmokeValidationApi())));
         server.createContext("/", new StaticFilesHandler());
         server.setExecutor(executor);
         server.start();
@@ -368,6 +369,37 @@ public class HttpApiSmokeTest {
         requireError(send(client, baseUri.resolve("smoke-config"), "POST", "{"),
                 HttpResponseCodes.BAD_REQUEST,
                 "Invalid JSON body");
+
+        require(send(client,
+                        baseUri.resolve("smoke-validation"),
+                        "POST",
+                        "{\"name\":\"test\",\"value\":1,\"data\":\"b2s=\"}"),
+                HttpResponseCodes.OK,
+                "{\"bytes\":2}");
+        requireError(send(client,
+                        baseUri.resolve("smoke-validation"),
+                        "POST",
+                        "{\"value\":1,\"data\":\"b2s=\"}"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Field is required: name");
+        requireError(send(client,
+                        baseUri.resolve("smoke-validation"),
+                        "POST",
+                        "{\"name\":\" \",\"value\":1,\"data\":\"b2s=\"}"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Field cannot be blank: name");
+        requireError(send(client,
+                        baseUri.resolve("smoke-validation"),
+                        "POST",
+                        "{\"name\":\"test\",\"value\":1e309,\"data\":\"b2s=\"}"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Field must be finite: value");
+        requireError(send(client,
+                        baseUri.resolve("smoke-validation"),
+                        "POST",
+                        "{\"name\":\"test\",\"value\":1,\"data\":\"!\"}"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Field is not valid Base64: data");
     }
 
     private static void verifyClientThreadDispatcher() throws Exception {
@@ -469,6 +501,30 @@ public class HttpApiSmokeTest {
     private static class SmokeConfig {
         public int value = 1;
     }
+
+    private static class SmokeValidationApi extends ApiBase {
+
+        @Override
+        public String getRoute() {
+            return "smoke-validation";
+        }
+
+        @Override
+        public boolean requiresJsonContentType() {
+            return true;
+        }
+
+        @Override
+        public String post(String body) throws ApiException {
+            SmokeValidationRequest request = WebHelper.parseJson(gson, body, SmokeValidationRequest.class);
+            WebHelper.requireNonBlankField(request.name, "name");
+            WebHelper.requireFinite(WebHelper.requireField(request.value, "value"), "value");
+            byte[] bytes = WebHelper.decodeBase64(request.data, "data");
+            return "{\"bytes\":" + bytes.length + "}";
+        }
+    }
+
+    private record SmokeValidationRequest(String name, Double value, String data) {}
 
     private static class SmokeModLoaderBridge implements ModLoaderBridge {
 

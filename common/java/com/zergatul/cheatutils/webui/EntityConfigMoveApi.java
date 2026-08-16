@@ -13,16 +13,20 @@ public class EntityConfigMoveApi extends ApiBase {
     }
 
     @Override
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
     public String post(String body) throws HttpException {
-        Request request = gson.fromJson(body, Request.class);
-        if (request.clazz == null) {
-            return gson.toJson(new Response(false, "Class is null"));
-        }
+        Request request = WebHelper.parseJson(gson, body, Request.class);
+        WebHelper.requireField(request.clazz, "clazz");
+        WebHelper.requireField(request.direction, "direction");
 
         boolean up = request.direction.equals("up");
         boolean down = request.direction.equals("down");
         if (!up && !down) {
-            return gson.toJson(new Response(false, "Invalid direction"));
+            throw new ApiException("Invalid direction: " + request.direction, HttpResponseCodes.BAD_REQUEST);
         }
 
         ImmutableList<EntityTracerConfig> list = ConfigStore.instance.getConfig().entities.configs;
