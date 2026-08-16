@@ -528,8 +528,6 @@ module({
     group: 'scripting',
     name: 'Block Automation',
     component: 'BlockAutomation',
-    legacyComponent: 'ScriptedBlockPlacerConfig',
-    statusKey: 'ScriptedBlockPlacer',
     path: 'block-automation',
     oldPaths: ['scripted-block-placer'],
     tags: ['scripted', 'block', 'placer', 'automation']

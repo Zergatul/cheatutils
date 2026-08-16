@@ -10,7 +10,6 @@ import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
-import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
@@ -193,13 +192,17 @@ public class ConfigStore {
             }
         }
 
-        if (config.scriptedBlockPlacerConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileBlockPlacer(config.scriptedBlockPlacerConfig.code);
-                BlockAutomation.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                logger.error("Scripted Block Placer script initialization failed", e);
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_AUTOMATION).init(config.blockAutomationConfig.code);
+            if (!result.isSuccess()) {
+                result.getDiagnostics().forEach(diagnostic -> logger.error(
+                        "Block Automation script initialization failed at {}:{}: {}",
+                        diagnostic.range.getLine1(),
+                        diagnostic.range.getColumn1(),
+                        diagnostic.message));
             }
+        } catch (Throwable e) {
+            logger.error("Block Automation script initialization failed", e);
         }
 
         if (config.autoDisconnectConfig.code != null) {
@@ -229,6 +232,9 @@ public class ConfigStore {
         JsonObject root = element.getAsJsonObject();
         if (root.has("scriptsConfig") && !root.has("keyBindingScriptsConfig")) {
             root.add("keyBindingScriptsConfig", root.remove("scriptsConfig"));
+        }
+        if (root.has("scriptedBlockPlacerConfig") && !root.has("blockAutomationConfig")) {
+            root.add("blockAutomationConfig", root.remove("scriptedBlockPlacerConfig"));
         }
     }
 }

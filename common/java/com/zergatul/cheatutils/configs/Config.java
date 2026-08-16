@@ -53,7 +53,7 @@ public class Config implements Sanitizable {
     public PerformanceConfig performanceConfig = new PerformanceConfig();
     public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
     public CoordinateLeakProtectionConfig coordinateLeakProtectionConfig = new CoordinateLeakProtectionConfig();
-    public ScriptedBlockPlacerConfig scriptedBlockPlacerConfig = new ScriptedBlockPlacerConfig();
+    public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
     public BobHurtConfig bobHurtConfig = new BobHurtConfig();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
     public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
@@ -95,6 +95,7 @@ public class Config implements Sanitizable {
         worldMarkersConfig.sanitize();
         autoAttackConfig.sanitize();
         projectilePathConfig.sanitize();
+        blockAutomationConfig.sanitize();
         chatUtilitiesConfig.sanitize();
         areaMineConfig.sanitize();
         hitboxSizeConfig.sanitize();

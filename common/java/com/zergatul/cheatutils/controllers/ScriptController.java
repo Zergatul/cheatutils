@@ -13,9 +13,6 @@ public class ScriptController {
     private final ScriptingLanguageCompiler handleKeybindingsCompiler = new ScriptingLanguageCompiler(
             Root.class,
             VisibilityCheck.getTypes("handle-keybindings"));
-    private final ScriptingLanguageCompiler blockPlacerCompiler = new ScriptingLanguageCompiler(
-            Root.class,
-            VisibilityCheck.getTypes("block-placer"));
     private final ScriptingLanguageCompiler autoDisconnectCompiler = new ScriptingLanguageCompiler(
             Root.class,
             VisibilityCheck.getTypes("auto-disconnect"));
@@ -28,10 +25,6 @@ public class ScriptController {
 
     public Runnable compileKeys(String code) throws ParseException, ScriptCompileException {
         return handleKeybindingsCompiler.compile(code);
-    }
-
-    public Runnable compileBlockPlacer(String code) throws ParseException, ScriptCompileException {
-        return blockPlacerCompiler.compile(code);
     }
 
     public Runnable compileAutoDisconnect(String code) throws ParseException, ScriptCompileException {

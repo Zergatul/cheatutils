@@ -48,6 +48,11 @@ public class ConfigMigrationSmokeTest {
         verifyStatusOverlaySource("int value = ;");
     }
 
+    public static void verifyBlockAutomation() {
+        verifyBlockAutomationSource("blockPlacer.setBlockId(\"minecraft:stone\");");
+        verifyBlockAutomationSource("int value = ;");
+    }
+
     private static void verifyStatusOverlaySource(String code) {
         JsonElement tree = JsonParser.parseString("""
                 {
@@ -64,6 +69,39 @@ public class ConfigMigrationSmokeTest {
 
         if (!config.statusOverlayConfig.enabled || !code.equals(config.statusOverlayConfig.code)) {
             throw new IllegalStateException("Status Overlay config or source changed during config-tree loading.");
+        }
+    }
+
+    private static void verifyBlockAutomationSource(String code) {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "scriptedBlockPlacerConfig": {
+                    "enabled": true,
+                    "code": %s,
+                    "debugMode": true,
+                    "maxRange": 7.5,
+                    "autoSelectSlots": [ 2, 4 ],
+                    "attachToAir": true,
+                    "useShift": true
+                  }
+                }
+                """.formatted(ConfigStore.instance.gson.toJson(code)));
+
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+        config.sanitize();
+
+        if (tree.getAsJsonObject().has("scriptedBlockPlacerConfig") ||
+                !tree.getAsJsonObject().has("blockAutomationConfig")) {
+            throw new IllegalStateException("Old Scripted Block Placer config field was not migrated.");
+        }
+
+        BlockAutomationConfig block = config.blockAutomationConfig;
+        if (!block.enabled || !code.equals(block.code) || !block.debugMode ||
+                block.maxRange != 7.5 || !block.attachToAir || !block.useShift ||
+                block.autoSelectSlots.length != 2 ||
+                block.autoSelectSlots[0] != 2 || block.autoSelectSlots[1] != 4) {
+            throw new IllegalStateException("Block Automation settings or source changed during migration.");
         }
     }
 }

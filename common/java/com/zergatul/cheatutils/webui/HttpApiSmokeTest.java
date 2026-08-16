@@ -62,6 +62,7 @@ public class HttpApiSmokeTest {
                 new KeyBindingScriptsApi(),
                 new ScriptsAssignApi(),
                 new StatusOverlayCodeApi(),
+                new BlockAutomationCodeApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
         server.createContext("/", new StaticFilesHandler());
@@ -389,18 +390,11 @@ public class HttpApiSmokeTest {
         requireError(send(client, baseUri.resolve("scripts"), "GET", null),
                 HttpResponseCodes.NOT_FOUND,
                 "API handler not found");
-        requireError(send(client, baseUri.resolve("status-overlay-code"), "POST", "\"code\"", false),
-                HttpResponseCodes.BAD_REQUEST,
-                "Content-Type must be application/json");
-        requireError(send(client, baseUri.resolve("status-overlay-code"), "POST", "{"),
-                HttpResponseCodes.BAD_REQUEST,
-                "Invalid JSON body");
-        requireError(send(client, baseUri.resolve("status-overlay-code"), "POST", "null"),
-                HttpResponseCodes.BAD_REQUEST,
-                "JSON body is required");
-        requireError(send(client, baseUri.resolve("status-overlay-code"), "GET", null),
-                HttpResponseCodes.METHOD_NOT_ALLOWED,
-                "Method not allowed");
+        verifyCodeSaveEndpointValidation(client, baseUri.resolve("status-overlay-code"));
+        verifyCodeSaveEndpointValidation(client, baseUri.resolve("block-automation-code"));
+        requireError(send(client, baseUri.resolve("scripted-block-placer-code"), "POST", "\"code\""),
+                HttpResponseCodes.NOT_FOUND,
+                "API handler not found");
 
         requireContains(send(client, baseUri.resolve("smoke-config"), "GET", null),
                 HttpResponseCodes.OK,
@@ -442,6 +436,21 @@ public class HttpApiSmokeTest {
                         "{\"name\":\"test\",\"value\":1,\"data\":\"!\"}"),
                 HttpResponseCodes.BAD_REQUEST,
                 "Field is not valid Base64: data");
+    }
+
+    private static void verifyCodeSaveEndpointValidation(HttpClient client, URI uri) throws Exception {
+        requireError(send(client, uri, "POST", "\"code\"", false),
+                HttpResponseCodes.BAD_REQUEST,
+                "Content-Type must be application/json");
+        requireError(send(client, uri, "POST", "{"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Invalid JSON body");
+        requireError(send(client, uri, "POST", "null"),
+                HttpResponseCodes.BAD_REQUEST,
+                "JSON body is required");
+        requireError(send(client, uri, "GET", null),
+                HttpResponseCodes.METHOD_NOT_ALLOWED,
+                "Method not allowed");
     }
 
     private static void verifyClientThreadDispatcher() throws Exception {

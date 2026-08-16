@@ -59,7 +59,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new FreeCamPathApi());
         apis.add(new DimensionApi());
         apis.add(new CoordinatesApi());
-        apis.add(new ScriptedBlockPlacerCodeApi());
+        apis.add(new BlockAutomationCodeApi());
         apis.add(new AutoDisconnectCodeApi());
         apis.add(new GenerateEntityMappingApi());
         apis.add(new FakeWeatherSetTimeApi());
@@ -660,15 +660,15 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("scripted-block-placer", ScriptedBlockPlacerConfig.class) {
+        apis.add(new SimpleConfigApi<>("block-automation", BlockAutomationConfig.class) {
             @Override
-            protected ScriptedBlockPlacerConfig getConfig() {
-                return ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+            protected BlockAutomationConfig getConfig() {
+                return ConfigStore.instance.getConfig().blockAutomationConfig;
             }
 
             @Override
-            protected void setConfig(ScriptedBlockPlacerConfig config) {
-                ScriptedBlockPlacerConfig current = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+            protected void setConfig(BlockAutomationConfig config) {
+                BlockAutomationConfig current = ConfigStore.instance.getConfig().blockAutomationConfig;
                 config.copyTo(current);
             }
         });

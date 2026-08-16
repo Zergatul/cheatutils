@@ -50,6 +50,7 @@ public class ScriptingRuntimeSmokeTest {
         verifyWorkspace();
         ConfigMigrationSmokeTest.verifyKeyBindingScripts();
         ConfigMigrationSmokeTest.verifyStatusOverlay();
+        ConfigMigrationSmokeTest.verifyBlockAutomation();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }
@@ -163,6 +164,26 @@ public class ScriptingRuntimeSmokeTest {
                 throw new IllegalStateException("Status Overlay runtime failure did not retain source line 2.", e);
             }
         }
+
+        Runnable blockAutomationScript = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.BLOCK_AUTOMATION, """
+                int zero = 0;
+                int value = 1 / zero;
+                """));
+        try {
+            blockAutomationScript.run();
+            throw new IllegalStateException("Expected Block Automation runtime failure.");
+        } catch (ArithmeticException e) {
+            found = false;
+            for (StackTraceElement element : e.getStackTrace()) {
+                if ("<BlockAutomationScript>".equals(element.getFileName()) && element.getLineNumber() == 2) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new IllegalStateException("Block Automation runtime failure did not retain source line 2.", e);
+            }
+        }
     }
 
     private static void verifyWorkspace() {
@@ -218,6 +239,36 @@ public class ScriptingRuntimeSmokeTest {
         ConfigStore.instance.getConfig().statusOverlayConfig.code = validCode;
         requireSuccess(overlay.init(validCode));
         requireCode(overlayDocument, validCode);
+
+        ScriptSlot blockAutomation = workspace.get(ScriptType.BLOCK_AUTOMATION);
+        requireSuccess(blockAutomation.save(validCode));
+        ScriptDocument blockDocument = blockAutomation.getInstance(null);
+        requireCode(blockDocument, validCode);
+        if (!validCode.equals(ConfigStore.instance.getConfig().blockAutomationConfig.code)) {
+            throw new IllegalStateException("Valid Block Automation source was not stored in config.");
+        }
+
+        ScriptSaveResult invalidBlock = blockAutomation.save(invalidCode);
+        requireFailure(invalidBlock);
+        requireCode(blockDocument, validCode);
+        if (!invalidCode.equals(blockDocument.lastAttemptCode) || blockDocument.lastAttemptDiagnostics == null) {
+            throw new IllegalStateException("Failed Block Automation save did not preserve its diagnostics.");
+        }
+
+        requireSuccess(blockAutomation.save((String) null));
+        if (ConfigStore.instance.getConfig().blockAutomationConfig.code != null || blockDocument.code != null) {
+            throw new IllegalStateException("Cleared Block Automation source remained in config or workspace.");
+        }
+
+        ConfigStore.instance.getConfig().blockAutomationConfig.code = invalidCode;
+        requireFailure(blockAutomation.init(invalidCode));
+        requireCode(blockDocument, invalidCode);
+        if (!invalidCode.equals(ConfigStore.instance.getConfig().blockAutomationConfig.code)) {
+            throw new IllegalStateException("Invalid Block Automation source was not preserved during reload.");
+        }
+        ConfigStore.instance.getConfig().blockAutomationConfig.code = validCode;
+        requireSuccess(blockAutomation.init(validCode));
+        requireCode(blockDocument, validCode);
 
         MultiScriptSlot keyBindings = (MultiScriptSlot) workspace.get(ScriptType.KEYBINDING);
         requireSuccess(keyBindings.save("smoke", validCode));

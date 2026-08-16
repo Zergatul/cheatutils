@@ -2,15 +2,15 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.scripting.ScriptType;
 
-public class StatusOverlayCodeApi extends CodeApiBase {
+public class BlockAutomationCodeApi extends CodeApiBase {
 
     @Override
     public String getRoute() {
-        return "status-overlay-code";
+        return "block-automation-code";
     }
 
     @Override
     protected ScriptType getScriptType() {
-        return ScriptType.OVERLAY;
+        return ScriptType.BLOCK_AUTOMATION;
     }
 }

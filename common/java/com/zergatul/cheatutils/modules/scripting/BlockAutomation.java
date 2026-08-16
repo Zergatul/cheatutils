@@ -8,8 +8,8 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.configs.BlockAutomationConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ScriptedBlockPlacerConfig;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.render.Primitives;
@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class BlockAutomation {
 
@@ -32,7 +33,7 @@ public class BlockAutomation {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
-    private Runnable script;
+    private @Nullable Runnable script;
     private BlockPos currentBlockPos;
     private BlockState currentBlockState;
     private String blockId;
@@ -45,7 +46,7 @@ public class BlockAutomation {
         Events.RenderWorldLast.add(this::onRenderWorldLast);
     }
 
-    public void setScript(Runnable script) {
+    public void setScript(@Nullable Runnable script) {
         this.script = script;
     }
 
@@ -67,7 +68,7 @@ public class BlockAutomation {
     }
 
     private void onClientTickEnd() {
-        ScriptedBlockPlacerConfig config = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
         if (!config.enabled) {
             return;
         }
@@ -124,7 +125,7 @@ public class BlockAutomation {
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {
-        ScriptedBlockPlacerConfig config = ConfigStore.instance.getConfig().scriptedBlockPlacerConfig;
+        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
         if (config.enabled && config.debugMode && debugPlan != null) {
             // draw neighbour block
             LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
