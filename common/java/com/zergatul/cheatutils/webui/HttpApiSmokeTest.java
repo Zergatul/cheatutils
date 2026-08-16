@@ -301,6 +301,17 @@ public class HttpApiSmokeTest {
                 "Runs at the end of each client tick");
         requireContains(send(
                         client,
+                        baseUri.resolve("hover"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.PositionRequest(
+                                "player.disconnect(\"\", \"Low HP\");",
+                                "EVENTS",
+                                1,
+                                9))),
+                HttpResponseCodes.OK,
+                "Allowed disconnect types");
+        requireContains(send(
+                        client,
                         baseUri.resolve("definition"),
                         "POST",
                         MonacoJson.toJson(new Integration.PositionRequest(
@@ -383,11 +394,14 @@ public class HttpApiSmokeTest {
         requireContains(send(client, baseUri.resolve("scripts-doc/EVENTS"), "GET", null),
                 HttpResponseCodes.OK,
                 "onTickEnd");
-        for (String legacyType : List.of("overlay", "handle-keybindings", "block-placer", "auto-disconnect", "villager-roller")) {
+        for (String legacyType : List.of("overlay", "handle-keybindings", "block-placer", "villager-roller")) {
             requireContains(send(client, baseUri.resolve("scripts-doc/" + legacyType), "GET", null),
                     HttpResponseCodes.OK,
                     "main.");
         }
+        requireError(send(client, baseUri.resolve("scripts-doc/auto-disconnect"), "GET", null),
+                HttpResponseCodes.BAD_REQUEST,
+                "Unsupported script type");
         requireError(send(client, baseUri.resolve("scripts-doc/UNKNOWN"), "GET", null),
                 HttpResponseCodes.BAD_REQUEST,
                 "Unsupported script type");
@@ -417,6 +431,12 @@ public class HttpApiSmokeTest {
         verifyCodeSaveEndpointValidation(client, baseUri.resolve("block-automation-code"));
         verifyCodeSaveEndpointValidation(client, baseUri.resolve("villager-roller-code"));
         verifyCodeSaveEndpointValidation(client, baseUri.resolve("events-scripting-code"));
+        requireError(send(client, baseUri.resolve("auto-disconnect-code"), "POST", "\"code\""),
+                HttpResponseCodes.NOT_FOUND,
+                "API handler not found");
+        requireError(send(client, baseUri.resolve("auto-disconnect"), "GET", null),
+                HttpResponseCodes.NOT_FOUND,
+                "API handler not found");
         requireError(send(client, baseUri.resolve("scripted-block-placer-code"), "POST", "\"code\""),
                 HttpResponseCodes.NOT_FOUND,
                 "API handler not found");

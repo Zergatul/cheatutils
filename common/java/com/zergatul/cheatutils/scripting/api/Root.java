@@ -8,7 +8,6 @@ public class Root {
     public static MainApi main = new MainApi();
 
     // automation
-    public static AutoDisconnectApi autoDisconnect = new AutoDisconnectApi();
     public static AutoDropApi autoDrop = new AutoDropApi();
     public static AutoEatApi autoEat = new AutoEatApi();
     public static ContainerButtonsApi containerButtons = new ContainerButtonsApi();

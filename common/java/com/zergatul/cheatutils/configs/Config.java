@@ -10,7 +10,6 @@ public class Config implements Sanitizable {
     public LightLevelConfig lightLevelConfig = new LightLevelConfig();
     public KillAuraConfig killAuraConfig = new KillAuraConfig();
     public BoatHackConfig boatHackConfig = new BoatHackConfig();
-    public AutoDisconnectConfig autoDisconnectConfig = new AutoDisconnectConfig();
     public ShulkerTooltipConfig shulkerTooltipConfig = new ShulkerTooltipConfig();
     public ProjectilePathConfig projectilePathConfig = new ProjectilePathConfig();
     public ElytraHackConfig elytraHackConfig = new ElytraHackConfig();

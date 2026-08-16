@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 
@@ -122,8 +123,11 @@ public class PlayerApi {
         mc.player.setYRot(rotation.yRot());
     }
 
-    @HelpText("types: \"self-attack\", \"invalid-chars\", anything else - normal disconnect.")
-    @ApiVisibility(ApiType.DISCONNECT)
+    @MethodDescription("""
+            Allowed disconnect types: "self-attack", "invalid-chars". Anything else (for example "") - normal disconnect.
+            """)
+    @HelpText("Allowed types: \"self-attack\", \"invalid-chars\"; anything else performs a normal disconnect.")
+    @ApiVisibility(ApiType.ACTION)
     public void disconnect(String type) {
         switch (type) {
             case "self-attack" -> DisconnectController.instance.selfAttack(null);
@@ -132,8 +136,12 @@ public class PlayerApi {
         }
     }
 
-    @HelpText("message to be displayed on the disconnect screen")
-    @ApiVisibility(ApiType.DISCONNECT)
+    @MethodDescription("""
+            Allowed disconnect types: "self-attack", "invalid-chars". Anything else (for example "") - normal disconnect.
+            You can specify a custom message to be displayed on the disconnect screen.
+            """)
+    @HelpText("The second argument is displayed on the disconnect screen.")
+    @ApiVisibility(ApiType.ACTION)
     public void disconnect(String type, String message) {
         switch (type) {
             case "self-attack" -> DisconnectController.instance.selfAttack(message);

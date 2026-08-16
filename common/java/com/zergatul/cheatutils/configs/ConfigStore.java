@@ -5,7 +5,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.modules.automation.AutoDisconnect;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
@@ -13,8 +12,6 @@ import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
-import com.zergatul.cheatutils.scripting.generated.ParseException;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import net.minecraft.world.level.block.state.BlockState;
@@ -208,15 +205,6 @@ public class ConfigStore {
             logger.error("Block Automation script initialization failed", e);
         }
 
-        if (config.autoDisconnectConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileAutoDisconnect(config.autoDisconnectConfig.code);
-                AutoDisconnect.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                logger.error("Auto Disconnect script initialization failed", e);
-            }
-        }
-
         try {
             ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.VILLAGER_ROLLER).init(config.villagerRollerConfig.code);
             if (!result.isSuccess()) {
@@ -244,5 +232,6 @@ public class ConfigStore {
             root.add("blockAutomationConfig", root.remove("scriptedBlockPlacerConfig"));
         }
         root.remove("gameTickScriptingConfig");
+        root.remove("autoDisconnectConfig");
     }
 }

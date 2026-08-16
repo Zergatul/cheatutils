@@ -14,8 +14,6 @@ public enum ApiType {
 
     BLOCK_PLACER,
 
-    DISCONNECT,
-
     VILLAGER_ROLLER,
 
     LOGGING,

@@ -25,7 +25,6 @@ module({
     group: 'automation',
     name: 'Auto Disconnect',
     component: 'AutoDisconnect',
-    legacyComponent: 'AutoDisconnectConfig',
     path: 'auto-disconnect',
     tags: ['auto', 'disconnect']
 });

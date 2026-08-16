@@ -56,6 +56,7 @@ public class ScriptingRuntimeSmokeTest {
         ConfigMigrationSmokeTest.verifyBlockAutomation();
         ConfigMigrationSmokeTest.verifyVillagerRoller();
         ConfigMigrationSmokeTest.verifyEventsScripting();
+        ConfigMigrationSmokeTest.verifyAutoDisconnectRemoved();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }
@@ -134,11 +135,21 @@ public class ScriptingRuntimeSmokeTest {
                 });
                 events.onMenuTickEnd(() => {});
                 """);
+        requireCompilationSuccess(ScriptType.EVENTS, """
+                events.onTickEnd(() => {
+                    if (player.getHealth() < 10) {
+                        player.disconnect("", "Low HP");
+                    }
+                });
+                """);
+        requireCompilationSuccess(ScriptType.KEYBINDING, "player.disconnect(\"self-attack\");");
 
         requireCompilationFailure(ScriptType.OVERLAY, "main.chat(\"not-visible\");");
         requireCompilationFailure(ScriptType.BLOCK_AUTOMATION, "main.chat(\"not-visible\");");
         requireCompilationFailure(ScriptType.VILLAGER_ROLLER, "main.chat(\"not-visible\");");
         requireCompilationFailure(ScriptType.OVERLAY, "events.onTickEnd(() => {});");
+        requireCompilationFailure(ScriptType.OVERLAY, "player.disconnect(\"\");");
+        requireCompilationFailure(ScriptType.EVENTS, "autoDisconnect.toggle();");
     }
 
     private static void verifyRuntimeLineNumbers() {

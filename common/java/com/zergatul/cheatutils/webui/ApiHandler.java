@@ -60,7 +60,6 @@ public class ApiHandler implements HttpHandler {
         apis.add(new DimensionApi());
         apis.add(new CoordinatesApi());
         apis.add(new BlockAutomationCodeApi());
-        apis.add(new AutoDisconnectCodeApi());
         apis.add(new GenerateEntityMappingApi());
         apis.add(new FakeWeatherSetTimeApi());
         apis.add(new FakeWeatherSetRainApi());
@@ -100,19 +99,6 @@ public class ApiHandler implements HttpHandler {
             @Override
             protected void setConfig(ArmorOverlayConfig config) {
                 ConfigStore.instance.getConfig().armorOverlayConfig = config;
-            }
-        });
-
-        apis.add(new SimpleConfigApi<>("auto-disconnect", AutoDisconnectConfig.class) {
-            @Override
-            protected AutoDisconnectConfig getConfig() {
-                return ConfigStore.instance.getConfig().autoDisconnectConfig;
-            }
-
-            @Override
-            protected void setConfig(AutoDisconnectConfig config) {
-                AutoDisconnectConfig current = ConfigStore.instance.getConfig().autoDisconnectConfig;
-                config.copyTo(current);
             }
         });
 

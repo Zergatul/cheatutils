@@ -65,6 +65,11 @@ public class ConfigMigrationSmokeTest {
         verifyEventsScriptingSource("int value = ;");
     }
 
+    public static void verifyAutoDisconnectRemoved() {
+        verifyAutoDisconnectSourceDiscarded("player.disconnect(\"\", \"old\");");
+        verifyAutoDisconnectSourceDiscarded("int value = ;");
+    }
+
     private static void verifyStatusOverlaySource(String code) {
         JsonElement tree = JsonParser.parseString("""
                 {
@@ -171,6 +176,24 @@ public class ConfigMigrationSmokeTest {
 
         if (!config.eventsScriptingConfig.enabled || !code.equals(config.eventsScriptingConfig.code)) {
             throw new IllegalStateException("Events Scripting config or source changed during config-tree loading.");
+        }
+    }
+
+    private static void verifyAutoDisconnectSourceDiscarded(String code) {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "autoDisconnectConfig": {
+                    "enabled": true,
+                    "code": %s
+                  }
+                }
+                """.formatted(ConfigStore.instance.gson.toJson(code)));
+
+        ConfigStore.migrateConfigTree(tree);
+        ConfigStore.instance.gson.fromJson(tree, Config.class);
+
+        if (tree.getAsJsonObject().has("autoDisconnectConfig")) {
+            throw new IllegalStateException("Old Auto Disconnect config or source was not discarded.");
         }
     }
 }

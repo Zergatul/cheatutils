@@ -59,7 +59,6 @@ public class Modules {
         register(LightLevel.instance);
         register(ElytraFly.instance);
         register(AdvancedTooltips.instance);
-        register(AutoDisconnect.instance);
         register(Zoom.instance);
         register(ShulkerTooltip.instance);
         register(ArmorOverlay.instance);
