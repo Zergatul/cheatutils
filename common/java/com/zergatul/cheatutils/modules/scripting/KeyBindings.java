@@ -19,8 +19,6 @@ import com.zergatul.scripting.DiagnosticMessage;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
@@ -30,16 +28,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class KeyBindings implements Module {
 
     public static final KeyBindings instance = new KeyBindings();
 
-    private final Logger logger = LogManager.getLogger(KeyBindings.class);
+    private static final int RUNTIME_FAILURE_PRIORITY = Integer.MAX_VALUE;
+
     private final Minecraft mc = Minecraft.getInstance();
     private final KeyMapping[] keys;
     private final Map<String, AsyncRunnable> scripts = new HashMap<>();
     private final AsyncRunnable[] actions = new AsyncRunnable[KeyBindingsConfig.KeysCount];
+    private final AtomicReference<RuntimeException> runtimeFailure = new AtomicReference<>();
 
     private KeyBindings() {
         keys = new KeyMapping[KeyBindingsConfig.KeysCount];
@@ -49,6 +50,7 @@ public class KeyBindings implements Module {
 
         Events.RegisterKeyBindings.add(this::onRegisterKeyBindings);
         Events.AfterHandleKeyBindings.add(this::onHandleKeyBindings);
+        Events.ClientTickEnd.add(this::onClientTickEnd, RUNTIME_FAILURE_PRIORITY);
     }
 
     public KeyMapping getKeyMappingByIndex(int index) {
@@ -221,9 +223,12 @@ public class KeyBindings implements Module {
                     if (!ScriptExecutionManager.instance.isRunning(ref)) {
                         try {
                             ScriptExecutionManager.instance.execute(ref, action)
-                                    .whenComplete((result, throwable) -> logRuntimeFailure(ref, throwable));
+                                    .whenComplete((result, throwable) -> crashOnRuntimeFailure(ref, throwable));
                         } catch (Throwable e) {
-                            logger.error("Key binding script '{}' failed.", ref.identifier(), e);
+                            RuntimeException crash = createRuntimeFailure(ref, e);
+                            if (crash != null) {
+                                throw crash;
+                            }
                         }
                     }
                 }
@@ -242,14 +247,29 @@ public class KeyBindings implements Module {
         return Objects.requireNonNull(name);
     }
 
-    private void logRuntimeFailure(ScriptRef ref, @Nullable Throwable throwable) {
+    private void crashOnRuntimeFailure(ScriptRef ref, @Nullable Throwable throwable) {
+        RuntimeException crash = createRuntimeFailure(ref, throwable);
+        if (crash != null) {
+            runtimeFailure.compareAndSet(null, crash);
+        }
+    }
+
+    private void onClientTickEnd() {
+        RuntimeException crash = runtimeFailure.getAndSet(null);
+        if (crash != null) {
+            throw crash;
+        }
+    }
+
+    private @Nullable RuntimeException createRuntimeFailure(ScriptRef ref, @Nullable Throwable throwable) {
         Throwable failure = throwable;
         while (failure instanceof CompletionException && failure.getCause() != null) {
             failure = failure.getCause();
         }
-        if (failure != null && !(failure instanceof CancellationException)) {
-            logger.error("Key binding script '{}' failed.", ref.identifier(), failure);
+        if (failure == null || failure instanceof CancellationException) {
+            return null;
         }
+        return new RuntimeException("Key binding script '" + ref.identifier() + "' failed.", failure);
     }
 
     private KeyBindingScriptSlot slot() {
