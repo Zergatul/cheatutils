@@ -40,7 +40,14 @@ public enum ScriptType {
                     .setApis(ApiType.VILLAGER_ROLLER, ApiType.LOGGING)
                     .setInterface(Runnable.class)
                     .setScriptClassName("VillagerRollerScript")
-                    .setModuleName("Villager Roller"));
+                    .setModuleName("Villager Roller")),
+
+    EVENTS(
+            new Builder()
+                    .setApis(ApiType.ACTION, ApiType.UPDATE, ApiType.EVENTS)
+                    .setInterface(Runnable.class)
+                    .setScriptClassName("EventsScripting")
+                    .setModuleName("Events Scripting"));
 
     private final ApiType[] apis;
     private final Class<?> functionalInterface;

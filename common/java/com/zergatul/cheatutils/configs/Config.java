@@ -47,7 +47,7 @@ public class Config implements Sanitizable {
     public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();
     public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
     public ReachConfig reachConfig = new ReachConfig();
-    public GameTickScriptingConfig gameTickScriptingConfig = new GameTickScriptingConfig();
+    public EventsScriptingConfig eventsScriptingConfig = new EventsScriptingConfig();
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();

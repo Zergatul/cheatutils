@@ -51,7 +51,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new StatusOverlayCodeApi());
         apis.add(new ClassNameApi());
         apis.add(new BlockEspRestartApi());
-        apis.add(new GameTickScriptingCodeApi());
+        apis.add(new EventsScriptingCodeApi());
         apis.add(new SchematicaUploadApi());
         apis.add(new SchematicaPlaceApi());
         apis.add(new WorldDownloadApi());
@@ -567,15 +567,15 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("game-tick-scripting", GameTickScriptingConfig.class) {
+        apis.add(new SimpleConfigApi<>("events-scripting", EventsScriptingConfig.class) {
             @Override
-            protected GameTickScriptingConfig getConfig() {
-                return ConfigStore.instance.getConfig().gameTickScriptingConfig;
+            protected EventsScriptingConfig getConfig() {
+                return ConfigStore.instance.getConfig().eventsScriptingConfig;
             }
 
             @Override
-            protected void setConfig(GameTickScriptingConfig config) {
-                ConfigStore.instance.getConfig().gameTickScriptingConfig.enabled = config.enabled;
+            protected void setConfig(EventsScriptingConfig config) {
+                ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = config.enabled;
             }
         });
 

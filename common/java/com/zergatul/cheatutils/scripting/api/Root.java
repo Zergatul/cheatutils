@@ -48,6 +48,7 @@ public class Root {
 
     // scripting
     public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
+    public static EventsApi events = new EventsApi();
 
     // utility
     public static LockInputsApi lockInputs = new LockInputsApi();

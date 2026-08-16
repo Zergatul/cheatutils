@@ -518,11 +518,10 @@ module({
 });
 module({
     group: 'scripting',
-    name: 'Game Tick Scripting',
-    component: 'GameTickScripting',
-    legacyComponent: 'GameTickScriptingConfig',
-    path: 'game-tick-scripting',
-    tags: ['game', 'tick', 'scripting']
+    name: 'Events Scripting',
+    component: 'EventsScripting',
+    path: 'events-scripting',
+    tags: ['events', 'tick', 'scripting']
 });
 module({
     group: 'scripting',

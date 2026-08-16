@@ -4,6 +4,8 @@ import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigMigrationSmokeTest;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.scripting.workspace.ScriptDocument;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
@@ -48,10 +50,12 @@ public class ScriptingRuntimeSmokeTest {
         verifyRuntimeLineNumbers();
         verifyExecutionLifecycle();
         verifyWorkspace();
+        verifyEventsModule();
         ConfigMigrationSmokeTest.verifyKeyBindingScripts();
         ConfigMigrationSmokeTest.verifyStatusOverlay();
         ConfigMigrationSmokeTest.verifyBlockAutomation();
         ConfigMigrationSmokeTest.verifyVillagerRoller();
+        ConfigMigrationSmokeTest.verifyEventsScripting();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }
@@ -115,10 +119,26 @@ public class ScriptingRuntimeSmokeTest {
                     main.systemMessage(villagerRoller.getEnchantmentName());
                 }
                 """);
+        requireCompilationSuccess(ScriptType.EVENTS, """
+                events.onHandleKeys(() => {
+                    if (input.isKeyDown("C")) {
+                        zoom.start(10, 0.2);
+                    } else {
+                        zoom.stop();
+                    }
+                });
+                events.onTickEnd(() => {
+                    if (blink.isEnabled() && blink.getDistance() > 10) {
+                        blink.disable();
+                    }
+                });
+                events.onMenuTickEnd(() => {});
+                """);
 
         requireCompilationFailure(ScriptType.OVERLAY, "main.chat(\"not-visible\");");
         requireCompilationFailure(ScriptType.BLOCK_AUTOMATION, "main.chat(\"not-visible\");");
         requireCompilationFailure(ScriptType.VILLAGER_ROLLER, "main.chat(\"not-visible\");");
+        requireCompilationFailure(ScriptType.OVERLAY, "events.onTickEnd(() => {});");
     }
 
     private static void verifyRuntimeLineNumbers() {
@@ -205,6 +225,26 @@ public class ScriptingRuntimeSmokeTest {
                 throw new IllegalStateException("Villager Roller runtime failure did not retain source line 2.", e);
             }
         }
+
+        Runnable eventsScript = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.EVENTS, """
+                int zero = 0;
+                int value = 1 / zero;
+                """));
+        try {
+            eventsScript.run();
+            throw new IllegalStateException("Expected Events Scripting runtime failure.");
+        } catch (ArithmeticException e) {
+            found = false;
+            for (StackTraceElement element : e.getStackTrace()) {
+                if ("<EventsScripting>".equals(element.getFileName()) && element.getLineNumber() == 2) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new IllegalStateException("Events Scripting runtime failure did not retain source line 2.", e);
+            }
+        }
     }
 
     private static void verifyWorkspace() {
@@ -213,7 +253,8 @@ public class ScriptingRuntimeSmokeTest {
                 ScriptType.KEYBINDING,
                 ScriptType.OVERLAY,
                 ScriptType.BLOCK_AUTOMATION,
-                ScriptType.VILLAGER_ROLLER))) {
+                ScriptType.VILLAGER_ROLLER,
+                ScriptType.EVENTS))) {
             throw new IllegalStateException("Unexpected initial scripting workspace types.");
         }
 
@@ -321,6 +362,37 @@ public class ScriptingRuntimeSmokeTest {
         requireSuccess(villagerRoller.init(validCode));
         requireCode(villagerDocument, validCode);
 
+        ScriptSlot events = workspace.get(ScriptType.EVENTS);
+        String validEventsCode = "int eventsValue = 1;";
+        requireSuccess(events.save(validEventsCode));
+        ScriptDocument eventsDocument = events.getInstance(null);
+        requireCode(eventsDocument, validEventsCode);
+        if (!validEventsCode.equals(ConfigStore.instance.getConfig().eventsScriptingConfig.code)) {
+            throw new IllegalStateException("Valid Events Scripting source was not stored in config.");
+        }
+
+        ScriptSaveResult invalidEvents = events.save(invalidCode);
+        requireFailure(invalidEvents);
+        requireCode(eventsDocument, validEventsCode);
+        if (!invalidCode.equals(eventsDocument.lastAttemptCode) || eventsDocument.lastAttemptDiagnostics == null) {
+            throw new IllegalStateException("Failed Events Scripting save did not preserve its diagnostics.");
+        }
+
+        requireSuccess(events.save((String) null));
+        if (ConfigStore.instance.getConfig().eventsScriptingConfig.code != null || eventsDocument.code != null) {
+            throw new IllegalStateException("Cleared Events Scripting source remained in config or workspace.");
+        }
+
+        ConfigStore.instance.getConfig().eventsScriptingConfig.code = invalidCode;
+        requireFailure(events.init(invalidCode));
+        requireCode(eventsDocument, invalidCode);
+        if (!invalidCode.equals(ConfigStore.instance.getConfig().eventsScriptingConfig.code)) {
+            throw new IllegalStateException("Invalid Events Scripting source was not preserved during reload.");
+        }
+        ConfigStore.instance.getConfig().eventsScriptingConfig.code = validEventsCode;
+        requireSuccess(events.init(validEventsCode));
+        requireCode(eventsDocument, validEventsCode);
+
         MultiScriptSlot keyBindings = (MultiScriptSlot) workspace.get(ScriptType.KEYBINDING);
         requireSuccess(keyBindings.save("smoke", validCode));
         ScriptDocument keyBindingDocument = keyBindings.getInstance("smoke");
@@ -383,6 +455,63 @@ public class ScriptingRuntimeSmokeTest {
         module.remove("renamed");
         if (config.keyBindingsConfig.bindings[3] != null || module.exists("renamed")) {
             throw new IllegalStateException("Removed key-binding script remained assigned.");
+        }
+    }
+
+    private static void verifyEventsModule() {
+        EventsScripting module = EventsScripting.instance;
+        module.clear();
+        Events.ClientTickEnd.trigger();
+
+        ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = true;
+        int[] counter = new int[1];
+        Runnable registration = () -> module.addOnMenuTickEnd(() -> counter[0]++);
+
+        module.setScript(registration);
+        Events.ClientTickEnd.trigger();
+        requireEventsCounter(counter[0], 1);
+
+        module.setScript(registration);
+        Events.ClientTickEnd.trigger();
+        requireEventsCounter(counter[0], 2);
+        Events.ClientTickEnd.trigger();
+        requireEventsCounter(counter[0], 3);
+
+        module.clear();
+        Events.ClientTickEnd.trigger();
+        requireEventsCounter(counter[0], 3);
+
+        Runnable failingCallback = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.EVENTS, """
+                int zero = 0;
+                int value = 1 / zero;
+                """));
+        module.setScript(() -> module.addOnMenuTickEnd(failingCallback));
+        try {
+            Events.ClientTickEnd.trigger();
+            throw new IllegalStateException("Expected Events Scripting callback failure.");
+        } catch (ArithmeticException e) {
+            boolean found = false;
+            for (StackTraceElement element : e.getStackTrace()) {
+                if ("<EventsScripting>".equals(element.getFileName()) && element.getLineNumber() == 2) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new IllegalStateException("Events Scripting callback failure did not retain source line 2.", e);
+            }
+        }
+
+        module.clear();
+        Events.ClientTickEnd.trigger();
+        ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = false;
+    }
+
+    private static void requireEventsCounter(int actual, int expected) {
+        if (actual != expected) {
+            throw new IllegalStateException(
+                    "Events Scripting callback was registered an unexpected number of times. Expected " +
+                            expected + ", actual " + actual + ".");
         }
     }
 

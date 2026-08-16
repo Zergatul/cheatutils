@@ -18,5 +18,7 @@ public enum ApiType {
 
     VILLAGER_ROLLER,
 
-    LOGGING
+    LOGGING,
+
+    EVENTS
 }

@@ -64,6 +64,7 @@ public class HttpApiSmokeTest {
                 new StatusOverlayCodeApi(),
                 new BlockAutomationCodeApi(),
                 new VillagerRollerCodeApi(),
+                new EventsScriptingCodeApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
         server.createContext("/", new StaticFilesHandler());
@@ -282,6 +283,24 @@ public class HttpApiSmokeTest {
                 "addText");
         requireContains(send(
                         client,
+                        baseUri.resolve("completion"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.PositionRequest("events.", "EVENTS", 1, 8))),
+                HttpResponseCodes.OK,
+                "onTickEnd");
+        requireContains(send(
+                        client,
+                        baseUri.resolve("hover"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.PositionRequest(
+                                "events.onTickEnd(() => {});",
+                                "EVENTS",
+                                1,
+                                9))),
+                HttpResponseCodes.OK,
+                "Runs at the end of each client tick");
+        requireContains(send(
+                        client,
                         baseUri.resolve("definition"),
                         "POST",
                         MonacoJson.toJson(new Integration.PositionRequest(
@@ -361,6 +380,9 @@ public class HttpApiSmokeTest {
         requireContains(send(client, baseUri.resolve("scripts-doc/KEYBINDING"), "GET", null),
                 HttpResponseCodes.OK,
                 "Future");
+        requireContains(send(client, baseUri.resolve("scripts-doc/EVENTS"), "GET", null),
+                HttpResponseCodes.OK,
+                "onTickEnd");
         for (String legacyType : List.of("overlay", "handle-keybindings", "block-placer", "auto-disconnect", "villager-roller")) {
             requireContains(send(client, baseUri.resolve("scripts-doc/" + legacyType), "GET", null),
                     HttpResponseCodes.OK,
@@ -394,6 +416,7 @@ public class HttpApiSmokeTest {
         verifyCodeSaveEndpointValidation(client, baseUri.resolve("status-overlay-code"));
         verifyCodeSaveEndpointValidation(client, baseUri.resolve("block-automation-code"));
         verifyCodeSaveEndpointValidation(client, baseUri.resolve("villager-roller-code"));
+        verifyCodeSaveEndpointValidation(client, baseUri.resolve("events-scripting-code"));
         requireError(send(client, baseUri.resolve("scripted-block-placer-code"), "POST", "\"code\""),
                 HttpResponseCodes.NOT_FOUND,
                 "API handler not found");

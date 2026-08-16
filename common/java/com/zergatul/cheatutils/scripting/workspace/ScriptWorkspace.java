@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.workspace;
 
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.slots.BlockAutomationScriptSlot;
+import com.zergatul.cheatutils.scripting.workspace.slots.EventsScriptingScriptSlot;
 import com.zergatul.cheatutils.scripting.workspace.slots.KeyBindingScriptSlot;
 import com.zergatul.cheatutils.scripting.workspace.slots.StatusOverlayScriptSlot;
 import com.zergatul.cheatutils.scripting.workspace.slots.VillagerRollerScriptSlot;
@@ -23,6 +24,7 @@ public class ScriptWorkspace {
         slots.put(ScriptType.OVERLAY, new StatusOverlayScriptSlot());
         slots.put(ScriptType.BLOCK_AUTOMATION, new BlockAutomationScriptSlot());
         slots.put(ScriptType.VILLAGER_ROLLER, new VillagerRollerScriptSlot());
+        slots.put(ScriptType.EVENTS, new EventsScriptingScriptSlot());
     }
 
     public ScriptSlot get(ScriptType type) {

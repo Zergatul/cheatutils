@@ -39,7 +39,7 @@ public class Modules {
         register(EntityEsp.instance);
         register(ProjectilePath.instance);
         register(EndCityChunks.instance);
-        register(GameTickScriptingController.instance);
+        register(EventsScripting.instance);
         register(AutoBucket.instance);
         register(WorldDownloadController.instance);
         register(EntityTitle.instance);

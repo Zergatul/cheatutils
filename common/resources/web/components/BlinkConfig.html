@@ -41,13 +41,15 @@
                 </pre>
             </div>
             <div class="description">
-                Example 3. Add this to <b>Game Tick Scripting</b> to automatically disable blink if distance > 10 blocks, or captured packets > 50.
+                Example 3. Add this to <b>Events Scripting</b> to automatically disable blink if distance > 10 blocks, or captured packets > 50.
                 <pre>
+events.onTickEnd(() => {
     if (blink.isEnabled()) {
         if (blink.getDistance() > 10 || blink.getPackets() > 50) {
             blink.disable();
         }
     }
+});
                 </pre>
             </div>
         </div>

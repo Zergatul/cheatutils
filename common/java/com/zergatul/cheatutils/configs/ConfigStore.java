@@ -182,13 +182,17 @@ public class ConfigStore {
             logger.error("Status Overlay script initialization failed", e);
         }
 
-        if (config.gameTickScriptingConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileKeys(config.gameTickScriptingConfig.code);
-                GameTickScriptingController.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                logger.error("Game Tick script initialization failed", e);
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.EVENTS).init(config.eventsScriptingConfig.code);
+            if (!result.isSuccess()) {
+                result.getDiagnostics().forEach(diagnostic -> logger.error(
+                        "Events Scripting initialization failed at {}:{}: {}",
+                        diagnostic.range.getLine1(),
+                        diagnostic.range.getColumn1(),
+                        diagnostic.message));
             }
+        } catch (Throwable e) {
+            logger.error("Events Scripting initialization failed", e);
         }
 
         try {
@@ -239,5 +243,6 @@ public class ConfigStore {
         if (root.has("scriptedBlockPlacerConfig") && !root.has("blockAutomationConfig")) {
             root.add("blockAutomationConfig", root.remove("scriptedBlockPlacerConfig"));
         }
+        root.remove("gameTickScriptingConfig");
     }
 }

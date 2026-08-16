@@ -58,6 +58,13 @@ public class ConfigMigrationSmokeTest {
         verifyVillagerRollerSource("int value = ;");
     }
 
+    public static void verifyEventsScripting() {
+        verifyOldGameTickSourceDiscarded("int value = 1;");
+        verifyOldGameTickSourceDiscarded("int value = ;");
+        verifyEventsScriptingSource("events.onTickEnd(() => {});");
+        verifyEventsScriptingSource("int value = ;");
+    }
+
     private static void verifyStatusOverlaySource(String code) {
         JsonElement tree = JsonParser.parseString("""
                 {
@@ -125,6 +132,45 @@ public class ConfigMigrationSmokeTest {
 
         if (!code.equals(config.villagerRollerConfig.code)) {
             throw new IllegalStateException("Villager Roller source changed during config-tree loading.");
+        }
+    }
+
+    private static void verifyOldGameTickSourceDiscarded(String code) {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "gameTickScriptingConfig": {
+                    "enabled": true,
+                    "code": %s
+                  }
+                }
+                """.formatted(ConfigStore.instance.gson.toJson(code)));
+
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+
+        if (tree.getAsJsonObject().has("gameTickScriptingConfig")) {
+            throw new IllegalStateException("Old Game Tick Scripting config was not discarded.");
+        }
+        if (config.eventsScriptingConfig.enabled || config.eventsScriptingConfig.code != null) {
+            throw new IllegalStateException("Old Game Tick source was unexpectedly migrated to Events Scripting.");
+        }
+    }
+
+    private static void verifyEventsScriptingSource(String code) {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "eventsScriptingConfig": {
+                    "enabled": true,
+                    "code": %s
+                  }
+                }
+                """.formatted(ConfigStore.instance.gson.toJson(code)));
+
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+
+        if (!config.eventsScriptingConfig.enabled || !code.equals(config.eventsScriptingConfig.code)) {
+            throw new IllegalStateException("Events Scripting config or source changed during config-tree loading.");
         }
     }
 }
