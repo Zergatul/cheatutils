@@ -98,6 +98,21 @@ div.information {
     margin: 0.5em;
 }
 
+/* Prevent temporary legacy page styles from leaking into the 26.2 shell. */
+div.main-header div.title a {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+div.module-group > button {
+    font-weight: 400;
+    height: auto;
+}
+
+div.module-group > button + button {
+    margin-left: 0;
+}
+
 /* Accessibility additions that do not change the 26.2 visual layout. */
 .visually-hidden {
     clip: rect(0 0 0 0);
