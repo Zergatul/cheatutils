@@ -6,7 +6,6 @@ import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.AutoDisconnect;
-import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
@@ -214,13 +213,17 @@ public class ConfigStore {
             }
         }
 
-        if (config.villagerRollerConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileVillagerRoller(config.villagerRollerConfig.code);
-                VillagerRoller.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                logger.error("Villager Roller script initialization failed", e);
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.VILLAGER_ROLLER).init(config.villagerRollerConfig.code);
+            if (!result.isSuccess()) {
+                result.getDiagnostics().forEach(diagnostic -> logger.error(
+                        "Villager Roller script initialization failed at {}:{}: {}",
+                        diagnostic.range.getLine1(),
+                        diagnostic.range.getColumn1(),
+                        diagnostic.message));
             }
+        } catch (Throwable e) {
+            logger.error("Villager Roller script initialization failed", e);
         }
     }
 

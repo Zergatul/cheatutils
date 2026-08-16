@@ -63,6 +63,7 @@ public class HttpApiSmokeTest {
                 new ScriptsAssignApi(),
                 new StatusOverlayCodeApi(),
                 new BlockAutomationCodeApi(),
+                new VillagerRollerCodeApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
         server.createContext("/", new StaticFilesHandler());
@@ -392,6 +393,7 @@ public class HttpApiSmokeTest {
                 "API handler not found");
         verifyCodeSaveEndpointValidation(client, baseUri.resolve("status-overlay-code"));
         verifyCodeSaveEndpointValidation(client, baseUri.resolve("block-automation-code"));
+        verifyCodeSaveEndpointValidation(client, baseUri.resolve("villager-roller-code"));
         requireError(send(client, baseUri.resolve("scripted-block-placer-code"), "POST", "\"code\""),
                 HttpResponseCodes.NOT_FOUND,
                 "API handler not found");

@@ -53,6 +53,11 @@ public class ConfigMigrationSmokeTest {
         verifyBlockAutomationSource("int value = ;");
     }
 
+    public static void verifyVillagerRoller() {
+        verifyVillagerRollerSource("if (villagerRoller.isBestPrice()) { villagerRoller.stop(); }");
+        verifyVillagerRollerSource("int value = ;");
+    }
+
     private static void verifyStatusOverlaySource(String code) {
         JsonElement tree = JsonParser.parseString("""
                 {
@@ -102,6 +107,24 @@ public class ConfigMigrationSmokeTest {
                 block.autoSelectSlots.length != 2 ||
                 block.autoSelectSlots[0] != 2 || block.autoSelectSlots[1] != 4) {
             throw new IllegalStateException("Block Automation settings or source changed during migration.");
+        }
+    }
+
+    private static void verifyVillagerRollerSource(String code) {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "villagerRollerConfig": {
+                    "code": %s
+                  }
+                }
+                """.formatted(ConfigStore.instance.gson.toJson(code)));
+
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+        config.sanitize();
+
+        if (!code.equals(config.villagerRollerConfig.code)) {
+            throw new IllegalStateException("Villager Roller source changed during config-tree loading.");
         }
     }
 }

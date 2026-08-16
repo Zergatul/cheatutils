@@ -51,6 +51,7 @@ public class ScriptingRuntimeSmokeTest {
         ConfigMigrationSmokeTest.verifyKeyBindingScripts();
         ConfigMigrationSmokeTest.verifyStatusOverlay();
         ConfigMigrationSmokeTest.verifyBlockAutomation();
+        ConfigMigrationSmokeTest.verifyVillagerRoller();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }
@@ -184,6 +185,26 @@ public class ScriptingRuntimeSmokeTest {
                 throw new IllegalStateException("Block Automation runtime failure did not retain source line 2.", e);
             }
         }
+
+        Runnable villagerRollerScript = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.VILLAGER_ROLLER, """
+                int zero = 0;
+                int value = 1 / zero;
+                """));
+        try {
+            villagerRollerScript.run();
+            throw new IllegalStateException("Expected Villager Roller runtime failure.");
+        } catch (ArithmeticException e) {
+            found = false;
+            for (StackTraceElement element : e.getStackTrace()) {
+                if ("<VillagerRollerScript>".equals(element.getFileName()) && element.getLineNumber() == 2) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new IllegalStateException("Villager Roller runtime failure did not retain source line 2.", e);
+            }
+        }
     }
 
     private static void verifyWorkspace() {
@@ -269,6 +290,36 @@ public class ScriptingRuntimeSmokeTest {
         ConfigStore.instance.getConfig().blockAutomationConfig.code = validCode;
         requireSuccess(blockAutomation.init(validCode));
         requireCode(blockDocument, validCode);
+
+        ScriptSlot villagerRoller = workspace.get(ScriptType.VILLAGER_ROLLER);
+        requireSuccess(villagerRoller.save(validCode));
+        ScriptDocument villagerDocument = villagerRoller.getInstance(null);
+        requireCode(villagerDocument, validCode);
+        if (!validCode.equals(ConfigStore.instance.getConfig().villagerRollerConfig.code)) {
+            throw new IllegalStateException("Valid Villager Roller source was not stored in config.");
+        }
+
+        ScriptSaveResult invalidVillager = villagerRoller.save(invalidCode);
+        requireFailure(invalidVillager);
+        requireCode(villagerDocument, validCode);
+        if (!invalidCode.equals(villagerDocument.lastAttemptCode) || villagerDocument.lastAttemptDiagnostics == null) {
+            throw new IllegalStateException("Failed Villager Roller save did not preserve its diagnostics.");
+        }
+
+        requireSuccess(villagerRoller.save((String) null));
+        if (ConfigStore.instance.getConfig().villagerRollerConfig.code != null || villagerDocument.code != null) {
+            throw new IllegalStateException("Cleared Villager Roller source remained in config or workspace.");
+        }
+
+        ConfigStore.instance.getConfig().villagerRollerConfig.code = invalidCode;
+        requireFailure(villagerRoller.init(invalidCode));
+        requireCode(villagerDocument, invalidCode);
+        if (!invalidCode.equals(ConfigStore.instance.getConfig().villagerRollerConfig.code)) {
+            throw new IllegalStateException("Invalid Villager Roller source was not preserved during reload.");
+        }
+        ConfigStore.instance.getConfig().villagerRollerConfig.code = validCode;
+        requireSuccess(villagerRoller.init(validCode));
+        requireCode(villagerDocument, validCode);
 
         MultiScriptSlot keyBindings = (MultiScriptSlot) workspace.get(ScriptType.KEYBINDING);
         requireSuccess(keyBindings.save("smoke", validCode));

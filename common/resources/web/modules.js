@@ -544,7 +544,6 @@ module({
     group: 'scripting',
     name: 'Villager Roller',
     component: 'VillagerRoller',
-    legacyComponent: 'VillagerRollerConfig',
     path: 'villager-roller',
     tags: ['villager', 'roller']
 });
