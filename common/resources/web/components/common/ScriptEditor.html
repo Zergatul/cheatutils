@@ -1,10 +1,12 @@
 <div class="script-editor" :class="{ fullscreen: isFullscreen }">
     <div class="script-editor-content" ref="editor"></div>
     <button
+        ref="fullscreenToggle"
         type="button"
         class="fullscreen-toggle"
         :title="isFullscreen ? 'Exit full screen' : 'Full screen'"
         :aria-label="isFullscreen ? 'Exit full screen' : 'Full screen'"
+        :aria-pressed="isFullscreen"
         @click="toggleFullscreen()">
         <span class="codicon" :class="isFullscreen ? 'codicon-screen-normal' : 'codicon-screen-full'"></span>
     </button>

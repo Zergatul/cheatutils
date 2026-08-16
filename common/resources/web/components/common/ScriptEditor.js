@@ -413,6 +413,7 @@ export function createComponent(template) {
         },
         async mounted() {
             this.isDisposed = false;
+            window.addEventListener('keydown', this.onWindowKeyDown);
             await languageSettingsConstructor;
 
             let settings = await http.get('/api/monaco-editor-settings');
@@ -463,6 +464,7 @@ export function createComponent(template) {
         },
         unmounted() {
             this.isDisposed = true;
+            window.removeEventListener('keydown', this.onWindowKeyDown);
             document.body.classList.remove('script-editor-fullscreen');
             const entry = modelSettings.find(settings => settings.editor == this.editor);
             if (entry) {
@@ -478,6 +480,14 @@ export function createComponent(template) {
                 this.isFullscreen = !this.isFullscreen;
                 document.body.classList.toggle('script-editor-fullscreen', this.isFullscreen);
                 this.$nextTick(() => this.editor.focus());
+            },
+            onWindowKeyDown(event) {
+                if (event.key == 'Escape' && this.isFullscreen) {
+                    event.preventDefault();
+                    this.isFullscreen = false;
+                    document.body.classList.remove('script-editor-fullscreen');
+                    this.$nextTick(() => this.$refs.fullscreenToggle.focus());
+                }
             }
         },
         watch: {
