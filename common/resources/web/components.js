@@ -10,7 +10,8 @@ const components = {
         }
     },
     ScriptEditor: getComponent('common/ScriptEditor'),
-    CodeBlock: getComponent('common/CodeBlock')
+    CodeBlock: getComponent('common/CodeBlock'),
+    SwitchCheckbox: getComponent('common/SwitchCheckbox')
 };
 
 export { components }

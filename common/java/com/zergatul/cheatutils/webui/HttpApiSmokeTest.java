@@ -61,6 +61,7 @@ public class HttpApiSmokeTest {
                 new ScriptsDocsApi(),
                 new KeyBindingScriptsApi(),
                 new ScriptsAssignApi(),
+                new StatusOverlayCodeApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
         server.createContext("/", new StaticFilesHandler());
@@ -388,6 +389,18 @@ public class HttpApiSmokeTest {
         requireError(send(client, baseUri.resolve("scripts"), "GET", null),
                 HttpResponseCodes.NOT_FOUND,
                 "API handler not found");
+        requireError(send(client, baseUri.resolve("status-overlay-code"), "POST", "\"code\"", false),
+                HttpResponseCodes.BAD_REQUEST,
+                "Content-Type must be application/json");
+        requireError(send(client, baseUri.resolve("status-overlay-code"), "POST", "{"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Invalid JSON body");
+        requireError(send(client, baseUri.resolve("status-overlay-code"), "POST", "null"),
+                HttpResponseCodes.BAD_REQUEST,
+                "JSON body is required");
+        requireError(send(client, baseUri.resolve("status-overlay-code"), "GET", null),
+                HttpResponseCodes.METHOD_NOT_ALLOWED,
+                "Method not allowed");
 
         requireContains(send(client, baseUri.resolve("smoke-config"), "GET", null),
                 HttpResponseCodes.OK,

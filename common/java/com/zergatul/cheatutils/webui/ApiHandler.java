@@ -48,7 +48,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
         apis.add(new ItemInfoApi());
-        apis.add(new StatusOverlayApi());
+        apis.add(new StatusOverlayCodeApi());
         apis.add(new ClassNameApi());
         apis.add(new BlockEspRestartApi());
         apis.add(new GameTickScriptingCodeApi());

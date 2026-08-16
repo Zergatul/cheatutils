@@ -49,6 +49,7 @@ public class ScriptingRuntimeSmokeTest {
         verifyExecutionLifecycle();
         verifyWorkspace();
         ConfigMigrationSmokeTest.verifyKeyBindingScripts();
+        ConfigMigrationSmokeTest.verifyStatusOverlay();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }
@@ -119,14 +120,14 @@ public class ScriptingRuntimeSmokeTest {
     }
 
     private static void verifyRuntimeLineNumbers() {
-        AsyncRunnable script = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, """
+        AsyncRunnable keyBindingScript = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, """
                 int zero = 0;
                 int value = 1 / zero;
                 """));
 
         Throwable failure;
         try {
-            script.run().join();
+            keyBindingScript.run().join();
             throw new IllegalStateException("Expected key-binding runtime failure.");
         } catch (CompletionException e) {
             failure = e.getCause();
@@ -141,6 +142,26 @@ public class ScriptingRuntimeSmokeTest {
         }
         if (!found) {
             throw new IllegalStateException("Key-binding runtime failure did not retain source line 2.", failure);
+        }
+
+        Runnable overlayScript = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.OVERLAY, """
+                int zero = 0;
+                int value = 1 / zero;
+                """));
+        try {
+            overlayScript.run();
+            throw new IllegalStateException("Expected Status Overlay runtime failure.");
+        } catch (ArithmeticException e) {
+            found = false;
+            for (StackTraceElement element : e.getStackTrace()) {
+                if ("<StatusOverlayScript>".equals(element.getFileName()) && element.getLineNumber() == 2) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new IllegalStateException("Status Overlay runtime failure did not retain source line 2.", e);
+            }
         }
     }
 
@@ -161,6 +182,9 @@ public class ScriptingRuntimeSmokeTest {
         requireSuccess(overlay.save(validCode));
         ScriptDocument overlayDocument = overlay.getInstance(null);
         requireCode(overlayDocument, validCode);
+        if (!validCode.equals(ConfigStore.instance.getConfig().statusOverlayConfig.code)) {
+            throw new IllegalStateException("Valid Status Overlay source was not stored in config.");
+        }
 
         CompletableFuture<?> overlayExecution = new CompletableFuture<>();
         ScriptExecutionManager.instance.track(overlayDocument.ref, overlayExecution);
@@ -178,6 +202,22 @@ public class ScriptingRuntimeSmokeTest {
             throw new IllegalStateException("Valid script replacement did not cancel its active execution.");
         }
         requireSuccess(overlay.save((String) null));
+        if (ConfigStore.instance.getConfig().statusOverlayConfig.code != null || overlayDocument.code != null) {
+            throw new IllegalStateException("Cleared Status Overlay source remained in config or workspace.");
+        }
+
+        ConfigStore.instance.getConfig().statusOverlayConfig.code = invalidCode;
+        requireFailure(overlay.init(invalidCode));
+        requireCode(overlayDocument, invalidCode);
+        if (!invalidCode.equals(ConfigStore.instance.getConfig().statusOverlayConfig.code)) {
+            throw new IllegalStateException("Invalid Status Overlay source was not preserved during reload.");
+        }
+        if (overlayDocument.lastAttemptCode != null || overlayDocument.lastAttemptDiagnostics != null) {
+            throw new IllegalStateException("Config reload was recorded as an interactive save attempt.");
+        }
+        ConfigStore.instance.getConfig().statusOverlayConfig.code = validCode;
+        requireSuccess(overlay.init(validCode));
+        requireCode(overlayDocument, validCode);
 
         MultiScriptSlot keyBindings = (MultiScriptSlot) workspace.get(ScriptType.KEYBINDING);
         requireSuccess(keyBindings.save("smoke", validCode));

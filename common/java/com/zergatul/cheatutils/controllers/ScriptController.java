@@ -13,9 +13,6 @@ public class ScriptController {
     private final ScriptingLanguageCompiler handleKeybindingsCompiler = new ScriptingLanguageCompiler(
             Root.class,
             VisibilityCheck.getTypes("handle-keybindings"));
-    private final ScriptingLanguageCompiler overlayCompiler = new ScriptingLanguageCompiler(
-            Root.class,
-            VisibilityCheck.getTypes("overlay"));
     private final ScriptingLanguageCompiler blockPlacerCompiler = new ScriptingLanguageCompiler(
             Root.class,
             VisibilityCheck.getTypes("block-placer"));
@@ -27,10 +24,6 @@ public class ScriptController {
             VisibilityCheck.getTypes("villager-roller"));
     private ScriptController() {
 
-    }
-
-    public Runnable compileOverlay(String code) throws ParseException, ScriptCompileException {
-        return overlayCompiler.compile(code);
     }
 
     public Runnable compileKeys(String code) throws ParseException, ScriptCompileException {

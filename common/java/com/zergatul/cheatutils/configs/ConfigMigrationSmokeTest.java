@@ -42,4 +42,28 @@ public class ConfigMigrationSmokeTest {
             throw new IllegalStateException("Key-binding assignments changed during migration.");
         }
     }
+
+    public static void verifyStatusOverlay() {
+        verifyStatusOverlaySource("main.addText(\"valid\");");
+        verifyStatusOverlaySource("int value = ;");
+    }
+
+    private static void verifyStatusOverlaySource(String code) {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "statusOverlayConfig": {
+                    "enabled": true,
+                    "code": %s
+                  }
+                }
+                """.formatted(ConfigStore.instance.gson.toJson(code)));
+
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+        config.sanitize();
+
+        if (!config.statusOverlayConfig.enabled || !code.equals(config.statusOverlayConfig.code)) {
+            throw new IllegalStateException("Status Overlay config or source changed during config-tree loading.");
+        }
+    }
 }

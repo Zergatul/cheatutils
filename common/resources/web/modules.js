@@ -513,7 +513,6 @@ module({
     group: 'scripting',
     name: 'Status Overlay',
     component: 'StatusOverlay',
-    legacyComponent: 'StatusOverlayConfig',
     path: 'status-overlay',
     tags: ['status', 'overlay', 'f3']
 });

@@ -11,6 +11,9 @@ import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.MutableComponent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
@@ -22,7 +25,9 @@ public class StatusOverlay implements Module {
     private static final int TranslateZ = 200;
 
     private static final Minecraft mc = Minecraft.getInstance();
-    private Runnable script;
+    private static final Logger logger = LogManager.getLogger(StatusOverlay.class);
+
+    private @Nullable Runnable script;
     private Map<Align, List<MutableComponent>> texts = new HashMap<>();
     private List<FreeText> freeTexts = new ArrayList<>();
     private HorizontalAlign hAlign;
@@ -36,7 +41,7 @@ public class StatusOverlay implements Module {
         Events.PostRenderGui.add(this::render);
     }
 
-    public void setScript(Runnable script) {
+    public void setScript(@Nullable Runnable script) {
         this.script = script;
     }
 
@@ -74,7 +79,16 @@ public class StatusOverlay implements Module {
 
         hAlign = HorizontalAlign.RIGHT;
         vAlign = VerticalAlign.BOTTOM;
-        script.run();
+        Runnable currentScript = script;
+        try {
+            currentScript.run();
+        } catch (Throwable e) {
+            if (script == currentScript) {
+                script = null;
+            }
+            logger.error("Status Overlay script failed and was stopped. Save the script again after fixing it.", e);
+            return;
+        }
 
         PoseStack poseStack = event.getGuiGraphics().pose();
         poseStack.pushPose();

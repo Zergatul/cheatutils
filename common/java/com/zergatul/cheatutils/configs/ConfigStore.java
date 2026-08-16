@@ -11,12 +11,14 @@ import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
-import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
+import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.compiler.ScriptCompileException;
 import com.zergatul.cheatutils.scripting.generated.ParseException;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -169,13 +171,17 @@ public class ConfigStore {
             }
         }
 
-        if (config.statusOverlayConfig.code != null) {
-            try {
-                Runnable script = ScriptController.instance.compileOverlay(config.statusOverlayConfig.code);
-                StatusOverlay.instance.setScript(script);
-            } catch (ParseException | ScriptCompileException e) {
-                logger.error("Status Overlay script initialization failed", e);
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.OVERLAY).init(config.statusOverlayConfig.code);
+            if (!result.isSuccess()) {
+                result.getDiagnostics().forEach(diagnostic -> logger.error(
+                        "Status Overlay script initialization failed at {}:{}: {}",
+                        diagnostic.range.getLine1(),
+                        diagnostic.range.getColumn1(),
+                        diagnostic.message));
             }
+        } catch (Throwable e) {
+            logger.error("Status Overlay script initialization failed", e);
         }
 
         if (config.gameTickScriptingConfig.code != null) {

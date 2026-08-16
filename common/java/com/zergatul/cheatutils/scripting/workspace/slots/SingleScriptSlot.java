@@ -44,17 +44,23 @@ public abstract class SingleScriptSlot extends ScriptSlot {
     @Override
     public ScriptSaveResult init(@Nullable String identifier, @Nullable String code) {
         requireNoIdentifier(identifier);
+        instance.code = code == null || code.isEmpty() ? null : code;
+        instance.lastAttemptAt = null;
+        instance.lastAttemptCode = null;
+        instance.lastAttemptDiagnostics = null;
+        ScriptExecutionManager.instance.cancel(instance.ref);
+
         if (code == null || code.isEmpty()) {
+            onProgramChanged(null);
             return ScriptSaveResult.success();
         }
 
-        instance.code = code;
         CompilationResult result = compileScript(code);
         if (result.getProgram() != null) {
-            ScriptExecutionManager.instance.cancel(instance.ref);
             onProgramChanged(result.getProgram());
             return ScriptSaveResult.success();
         }
+        onProgramChanged(null);
         return ScriptSaveResult.fail(Objects.requireNonNull(result.getDiagnostics()));
     }
 
