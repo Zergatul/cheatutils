@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.scripting.api.modules.*;
 
 public class Root {
 
+    public static EspApi esp = new EspApi();
     public static MainApi main = new MainApi();
 
     // automation

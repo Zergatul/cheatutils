@@ -1,0 +1,43 @@
+<div class="module-main key-bindings" v-if="list">
+    <div class="description">
+        Write scripts and bind them to ingame keybindings.
+    </div>
+
+    <div class="module-sections">
+        <template v-if="mode == 'list'">
+            <div>
+                <button class="w8" @click="add()">Add...</button>
+            </div>
+            <div class="scripts-list">
+                <table>
+                    <tr v-for="script in list" :key="script.name">
+                        <td><button class="w4" @click="edit(script.name)">Edit</button></td>
+                        <td><button class="w4" @click="remove(script.name)">Remove</button></td>
+                        <td>
+                            <select v-model="script.key" @change="assign(script)">
+                                <option value="-1">&lt;Assign to key bind...&gt;</option>
+                                <option v-for="index in 30" :key="index - 1" :value="index - 1">Key {{ index - 1 }}</option>
+                            </select>
+                        </td>
+                        <td class="script-name-cell">{{ script.name }}</td>
+                    </tr>
+                </table>
+            </div>
+        </template>
+        <template v-if="mode == 'add' || mode == 'edit'">
+            <div class="actions">
+                <button class="w8" @click="mode = 'list'">Back</button>
+                <button class="w8" @click="save()">Save</button>
+                <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
+            </div>
+            <div class="flex-row">
+                <span>Name:</span>
+                <input type="text" v-model="script.name">
+            </div>
+            <script-editor v-model="script.code" :type="'KEYBINDING'" v-show="!showRefs"></script-editor>
+            <ul class="refs" v-show="showRefs">
+                <li v-for="item in refs" v-html="item"></li>
+            </ul>
+        </template>
+    </div>
+</div>

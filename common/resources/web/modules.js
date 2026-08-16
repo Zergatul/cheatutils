@@ -505,8 +505,6 @@ module({
     group: 'scripting',
     name: 'Key Bindings',
     component: 'KeyBindingScripts',
-    legacyComponent: 'ScriptsConfig',
-    statusKey: 'Scripts',
     path: 'key-bindings',
     oldPaths: ['scripts'],
     tags: ['key', 'bindings', 'scripting']

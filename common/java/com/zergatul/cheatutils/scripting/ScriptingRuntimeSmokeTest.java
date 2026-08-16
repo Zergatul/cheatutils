@@ -1,5 +1,10 @@
 package com.zergatul.cheatutils.scripting;
 
+import com.zergatul.cheatutils.configs.Config;
+import com.zergatul.cheatutils.configs.ConfigMigrationSmokeTest;
+import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.KeyBindingsConfig;
+import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.scripting.workspace.ScriptDocument;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
@@ -13,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Objects;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class ScriptingRuntimeSmokeTest {
 
@@ -22,6 +28,8 @@ public class ScriptingRuntimeSmokeTest {
 
     public static void main(String[] args) {
         run();
+        verifyKeyBindingModule();
+        LOGGER.info("Key Binding Scripts mutation smoke test passed.");
     }
 
     public static void run() {
@@ -37,8 +45,10 @@ public class ScriptingRuntimeSmokeTest {
         future.join();
 
         verifyInitialApiCompatibility();
+        verifyRuntimeLineNumbers();
         verifyExecutionLifecycle();
         verifyWorkspace();
+        ConfigMigrationSmokeTest.verifyKeyBindingScripts();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }
@@ -79,6 +89,9 @@ public class ScriptingRuntimeSmokeTest {
     }
 
     private static void verifyInitialApiCompatibility() {
+        requireCompilationSuccess(ScriptType.KEYBINDING, "esp.toggle();");
+        requireCompilationFailure(ScriptType.KEYBINDING, "main.toggleEsp();");
+
         requireCompilationSuccess(ScriptType.KEYBINDING, """
                 float speedFactor = movement.getSpeedMultiplierFactor();
                 float jumpFactor = movement.getJumpFactor();
@@ -103,6 +116,32 @@ public class ScriptingRuntimeSmokeTest {
         requireCompilationFailure(ScriptType.OVERLAY, "main.chat(\"not-visible\");");
         requireCompilationFailure(ScriptType.BLOCK_AUTOMATION, "main.chat(\"not-visible\");");
         requireCompilationFailure(ScriptType.VILLAGER_ROLLER, "main.chat(\"not-visible\");");
+    }
+
+    private static void verifyRuntimeLineNumbers() {
+        AsyncRunnable script = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, """
+                int zero = 0;
+                int value = 1 / zero;
+                """));
+
+        Throwable failure;
+        try {
+            script.run().join();
+            throw new IllegalStateException("Expected key-binding runtime failure.");
+        } catch (CompletionException e) {
+            failure = e.getCause();
+        }
+
+        boolean found = false;
+        for (StackTraceElement element : failure.getStackTrace()) {
+            if ("<KeyBindingScript>".equals(element.getFileName()) && element.getLineNumber() == 2) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            throw new IllegalStateException("Key-binding runtime failure did not retain source line 2.", failure);
+        }
     }
 
     private static void verifyWorkspace() {
@@ -151,6 +190,57 @@ public class ScriptingRuntimeSmokeTest {
         keyBindings.remove("smoke");
         if (!keyBindingExecution.isCancelled()) {
             throw new IllegalStateException("Script removal did not cancel its active execution.");
+        }
+    }
+
+    private static void verifyKeyBindingModule() {
+        KeyBindings module = KeyBindings.instance;
+        Config config = ConfigStore.instance.getConfig();
+        config.keyBindingScriptsConfig.scripts.clear();
+        config.keyBindingsConfig.bindings = new String[KeyBindingsConfig.KeysCount];
+        module.clear();
+
+        String originalCode = "esp.toggle();";
+        if (!module.add("smoke", originalCode, false).isEmpty()) {
+            throw new IllegalStateException("Valid key-binding script could not be added.");
+        }
+        module.assign(3, "smoke");
+        if (!"smoke".equals(config.keyBindingsConfig.bindings[3])) {
+            throw new IllegalStateException("Key-binding script assignment was not stored.");
+        }
+
+        String invalidCode = "int value = ;";
+        if (module.add("rejected", invalidCode, false).isEmpty() || module.exists("rejected")) {
+            throw new IllegalStateException("Invalid new key-binding script was stored.");
+        }
+        if (module.add("preserved-invalid", invalidCode, true).isEmpty() || !module.exists("preserved-invalid")) {
+            throw new IllegalStateException("Invalid migrated key-binding script was not preserved.");
+        }
+        module.assign(4, "preserved-invalid");
+        if (!"preserved-invalid".equals(config.keyBindingsConfig.bindings[4])) {
+            throw new IllegalStateException("Invalid migrated key-binding script lost its assignment.");
+        }
+
+        String updatedCode = "freeCam.toggle();";
+        if (!module.update("smoke", "renamed", updatedCode).isEmpty()) {
+            throw new IllegalStateException("Valid key-binding script update failed.");
+        }
+        if (!"renamed".equals(config.keyBindingsConfig.bindings[3]) || module.exists("smoke") || !module.exists("renamed")) {
+            throw new IllegalStateException("Key-binding script rename did not preserve its assignment.");
+        }
+
+        if (module.update("renamed", "renamed", invalidCode).isEmpty()) {
+            throw new IllegalStateException("Invalid key-binding script update unexpectedly succeeded.");
+        }
+        KeyBindings.Script renamed = Objects.requireNonNull(module.get("renamed"));
+        ScriptDocument document = ScriptWorkspace.INSTANCE.get(ScriptType.KEYBINDING).getInstance("renamed");
+        if (!updatedCode.equals(renamed.code) || !invalidCode.equals(document.lastAttemptCode)) {
+            throw new IllegalStateException("Failed key-binding save replaced the last valid source or lost diagnostics.");
+        }
+
+        module.remove("renamed");
+        if (config.keyBindingsConfig.bindings[3] != null || module.exists("renamed")) {
+            throw new IllegalStateException("Removed key-binding script remained assigned.");
         }
     }
 

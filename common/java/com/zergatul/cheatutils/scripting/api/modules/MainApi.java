@@ -40,15 +40,6 @@ public class MainApi {
 
     private final Minecraft mc = Minecraft.getInstance();
 
-    public boolean isEspEnabled() {
-        return ConfigStore.instance.getConfig().esp;
-    }
-
-    public void toggleEsp() {
-        ConfigStore.instance.getConfig().esp = !ConfigStore.instance.getConfig().esp;
-        ConfigStore.instance.requestWrite();
-    }
-
     @ApiVisibility(ApiType.ACTION)
     public void chat(String text) {
         LocalPlayer player = Minecraft.getInstance().player;

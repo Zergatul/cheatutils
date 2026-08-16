@@ -681,7 +681,7 @@ ul.item-list > li {
     gap: 12px;
 }
 
-div.script-editor {
+div.ace-script-editor {
     width: 1000px;
     height: 600px;
 }

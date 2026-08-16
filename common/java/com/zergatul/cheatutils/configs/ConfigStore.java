@@ -64,6 +64,7 @@ public class ConfigStore {
             Config readCfg = null;
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 JsonElement element = JsonParser.parseReader(reader);
+                migrateConfigTree(element);
                 readCfg = gson.fromJson(element, Config.class);
             } catch (Exception e) {
                 logger.error("Cannot read config", e);
@@ -131,31 +132,31 @@ public class ConfigStore {
         EntityTitle.instance.onEnchantmentFontChange(config.entityTitleConfig);
         WorldMarkers.instance.onFontChange(config.worldMarkersConfig);
 
-        if (config.scriptsConfig.scripts.size() == 0) {
+        KeyBindings.instance.clear();
+        if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                ScriptController.instance.add(toggleEspName, "main.toggleEsp();", false);
-                KeyBindings.instance.keys[0].setKey(InputConstants.getKey("key.keyboard.backslash"));
+                KeyBindings.instance.add(toggleEspName, "esp.toggle();", false);
                 KeyBindings.instance.assign(0, toggleEspName);
-            } catch (ParseException | ScriptCompileException e) {
+            } catch (Throwable e) {
                 logger.error("Toggle ESP script initialization failed", e);
             }
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                ScriptController.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
-                KeyBindings.instance.keys[1].setKey(InputConstants.getKey("key.keyboard.f6"));
+                KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
+                KeyBindings.instance.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
                 KeyBindings.instance.assign(1, toggleFreeCamName);
-            } catch (ParseException | ScriptCompileException e) {
+            } catch (Throwable e) {
                 logger.error("Toggle FreeCam script initialization failed", e);
             }
         } else {
-            ArrayList<ScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.scriptsConfig.scripts);
-            config.scriptsConfig.scripts.clear();
+            ArrayList<KeyBindingScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.keyBindingScriptsConfig.scripts);
+            config.keyBindingScriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    ScriptController.instance.add(s.name, s.code, true);
-                } catch (ParseException | ScriptCompileException e) {
+                    KeyBindings.instance.add(s.name, s.code, true);
+                } catch (Throwable e) {
                     logger.error("Key binding script '{}' initialization failed", s.name, e);
                 }
             });
@@ -211,6 +212,17 @@ public class ConfigStore {
             } catch (ParseException | ScriptCompileException e) {
                 logger.error("Villager Roller script initialization failed", e);
             }
+        }
+    }
+
+    static void migrateConfigTree(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject root = element.getAsJsonObject();
+        if (root.has("scriptsConfig") && !root.has("keyBindingScriptsConfig")) {
+            root.add("keyBindingScriptsConfig", root.remove("scriptsConfig"));
         }
     }
 }

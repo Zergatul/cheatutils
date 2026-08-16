@@ -5,10 +5,8 @@ import com.zergatul.cheatutils.common.ModLoaderBridge;
 import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
-import com.zergatul.cheatutils.scripting.ScriptingRuntimeSmokeTest;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.cheatutils.wrappers.FabricEvents;
-import com.zergatul.cheatutils.wrappers.ModEnvironment;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.loader.api.FabricLoader;
@@ -28,10 +26,6 @@ public class ModMain implements ClientModInitializer {
         Profiles.instance.init();
         ConfigHttpServer.instance.start();
         Modules.register();
-        if (!ModEnvironment.isProduction) {
-            ScriptingRuntimeSmokeTest.run();
-        }
-
         Events.RegisterKeyBindings.trigger(KeyBindingHelper::registerKeyBinding);
     }
 

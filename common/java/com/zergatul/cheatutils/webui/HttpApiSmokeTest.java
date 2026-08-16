@@ -59,6 +59,8 @@ public class HttpApiSmokeTest {
                 new ScriptWorkspaceApi(),
                 new ScriptCompileApi(),
                 new ScriptsDocsApi(),
+                new KeyBindingScriptsApi(),
+                new ScriptsAssignApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
         server.createContext("/", new StaticFilesHandler());
@@ -364,6 +366,28 @@ public class HttpApiSmokeTest {
         requireError(send(client, baseUri.resolve("scripts-doc/UNKNOWN"), "GET", null),
                 HttpResponseCodes.BAD_REQUEST,
                 "Unsupported script type");
+
+        require(send(client, baseUri.resolve("keybinding-scripts"), "GET", null),
+                HttpResponseCodes.OK,
+                "[]");
+        require(send(client, baseUri.resolve("keybinding-scripts/missing"), "GET", null),
+                HttpResponseCodes.OK,
+                "null");
+        requireError(send(client, baseUri.resolve("keybinding-scripts"), "POST", "{}", false),
+                HttpResponseCodes.BAD_REQUEST,
+                "Content-Type must be application/json");
+        requireError(send(client, baseUri.resolve("keybinding-scripts"), "POST", "{"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Invalid JSON body");
+        requireError(send(client, baseUri.resolve("keybinding-scripts"), "POST", "{}"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Field is required: name");
+        requireError(send(client, baseUri.resolve("keybinding-scripts-assign/test"), "PUT", "30"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Key binding index must be between -1 and 29");
+        requireError(send(client, baseUri.resolve("scripts"), "GET", null),
+                HttpResponseCodes.NOT_FOUND,
+                "API handler not found");
 
         requireContains(send(client, baseUri.resolve("smoke-config"), "GET", null),
                 HttpResponseCodes.OK,

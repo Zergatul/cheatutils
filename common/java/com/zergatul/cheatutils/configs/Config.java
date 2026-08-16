@@ -29,7 +29,7 @@ public class Config implements Sanitizable {
     public AdvancedTooltipsConfig advancedTooltipsConfig = new AdvancedTooltipsConfig();
     public FogConfig fogConfig = new FogConfig();
     public InstantDisconnectConfig instantDisconnectConfig = new InstantDisconnectConfig();
-    public ScriptsConfig scriptsConfig = new ScriptsConfig();
+    public KeyBindingScriptsConfig keyBindingScriptsConfig = new KeyBindingScriptsConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
     public WorldMarkersConfig worldMarkersConfig = new WorldMarkersConfig();
     public UserNameConfig userNameConfig = new UserNameConfig();
