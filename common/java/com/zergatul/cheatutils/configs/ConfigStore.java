@@ -3,9 +3,7 @@ package com.zergatul.cheatutils.configs;
 import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.adapters.*;
-import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
@@ -16,6 +14,7 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -236,7 +235,7 @@ public class ConfigStore {
 
                 if (blockConfig.code != null) {
                     try {
-                        String identifier = Registries.BLOCKS.getKey(blockConfig.blocks.stream().findFirst().orElseThrow()).toString();
+                        String identifier = BuiltInRegistries.BLOCK.getKey(blockConfig.blocks.stream().findFirst().orElseThrow()).toString();
                         ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP).init(identifier, blockConfig.code);
                         if (!result.isSuccess()) {
                             result.getDiagnostics().forEach(m -> logger.error("Block ESP for {}: {}", blockConfig.blocks.stream().findFirst().get().getName(), m.message));

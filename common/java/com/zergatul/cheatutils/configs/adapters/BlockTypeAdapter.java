@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.configs.adapters;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.zergatul.cheatutils.common.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
@@ -16,7 +16,7 @@ public class BlockTypeAdapter extends TypeAdapter<Block> {
         if (block == null) {
             out.nullValue();
         } else {
-            out.value(Registries.BLOCKS.getKey(block).toString());
+            out.value(BuiltInRegistries.BLOCK.getKey(block).toString());
         }
     }
 
@@ -26,7 +26,7 @@ public class BlockTypeAdapter extends TypeAdapter<Block> {
         if (value == null) {
             return null;
         } else {
-            return Registries.BLOCKS.getValue(Identifier.parse(value));
+            return BuiltInRegistries.BLOCK.getValue(Identifier.parse(value));
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.common.ModLoaderBridge;
-import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.cheatutils.common.LoaderBridge;
+import com.zergatul.cheatutils.common.LoaderEnvironment;
 import net.minecraft.SharedConstants;
 
 public class GeneralInformationApi extends ApiBase {
@@ -14,11 +14,11 @@ public class GeneralInformationApi extends ApiBase {
 
     @Override
     public String get() throws Throwable {
-        ModLoaderBridge bridge = ModLoaderBridgeInstance.get();
+        LoaderEnvironment environment = LoaderBridge.INSTANCE.getEnvironment();
         String gameVersion = "Minecraft: " + SharedConstants.getCurrentVersion().name();
-        String modLoaderVersion = bridge.getModLoaderName() + ": " + bridge.getModLoaderVersion();
-        String modVersion = Constants.MOD_ID + ": " + bridge.getModVersion();
-        String modCount = "Mods: " + bridge.getModCount();
+        String modLoaderVersion = environment.getLoaderName() + ": " + environment.getLoaderVersion();
+        String modVersion = Constants.MOD_ID + ": " + environment.getModVersion();
+        String modCount = "Mods: " + environment.getModCount();
         Response response = new Response(gameVersion, modLoaderVersion, modVersion, modCount);
         return gson.toJson(response);
     }

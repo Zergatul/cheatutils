@@ -8,6 +8,8 @@
   },
   "mixinPriority": 500,
   "client": [
+    "fabric.MixinLoaderBridge",
+
     "fabric.schematica.MixinSectionCompiler",
     "fabric.MixinCamera",
     "fabric.MixinGuiGraphicsExtractor",

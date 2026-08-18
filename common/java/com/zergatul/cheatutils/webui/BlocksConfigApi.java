@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.BlocksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -9,6 +8,7 @@ import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
@@ -78,7 +78,7 @@ public class BlocksConfigApi extends ApiBase {
     @Override
     public synchronized String delete(String id) throws ApiException {
         Identifier loc = Identifier.parse(id);
-        Block block = Registries.BLOCKS.getValue(loc);
+        Block block = BuiltInRegistries.BLOCK.getValue(loc);
         if (block == null) {
             throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);
         }
@@ -88,7 +88,7 @@ public class BlocksConfigApi extends ApiBase {
         if (config != null) {
             MultiScriptSlot slot = (MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP);
             config.blocks.stream()
-                    .map(b -> Registries.BLOCKS.getKey(b).toString())
+                    .map(b -> BuiltInRegistries.BLOCK.getKey(b).toString())
                     .forEach(slot::remove);
             blocksConfig.remove(config);
         } else {
@@ -111,10 +111,11 @@ public class BlocksConfigApi extends ApiBase {
         public String post(String body) throws ApiException {
             String id = gson.fromJson(body, String.class);
             Identifier loc = Identifier.parse(id);
-            Block block = Registries.BLOCKS.getValue(loc);
-            if (block == null) {
+            if (loc.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
                 throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);
             }
+
+            Block block = BuiltInRegistries.BLOCK.getValue(loc);
 
             BlocksConfig blocksConfig = ConfigStore.instance.getConfig().blocks;
             if (blocksConfig.find(block) != null) {

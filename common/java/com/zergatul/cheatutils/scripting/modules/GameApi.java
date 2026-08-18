@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.extensions.LivingEntityExtension;
 import com.zergatul.cheatutils.mixins.common.accessors.ColorParticleOptionAccessor;
@@ -29,6 +29,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
@@ -270,8 +271,7 @@ public class GameApi {
                 Gets entity count by Minecraft id in render distance
                 """)
         public int getCountById(String id) {
-            Identifier location = Identifier.parse(id);
-            EntityType<?> type = Registries.ENTITY_TYPES.getValue(location);
+            EntityType<?> type = RegistryExtensions.safeParse(BuiltInRegistries.ENTITY_TYPE, id);
             if (type == null) {
                 return Integer.MIN_VALUE;
             }
@@ -299,7 +299,7 @@ public class GameApi {
                 return Integer.MIN_VALUE;
             }
 
-            EntityType<?> type = Registries.ENTITY_TYPES.getValue(Identifier.parse(id));
+            EntityType<?> type = RegistryExtensions.safeParse(BuiltInRegistries.ENTITY_TYPE, id);
             if (type == null) {
                 return Integer.MIN_VALUE;
             }
@@ -409,7 +409,7 @@ public class GameApi {
         public String getType(int entityId) {
             return getStringValue(entityId, entity -> {
                 EntityType<?> type = entity.getType();
-                return Registries.ENTITY_TYPES.getKey(type).toString();
+                return BuiltInRegistries.ENTITY_TYPE.getKey(type).toString();
             });
         }
 
@@ -540,8 +540,12 @@ public class GameApi {
                 assert mc.level != null;
 
                 if (entity instanceof LivingEntityExtension living) {
-                    Identifier location = Identifier.parse(effectId);
-                    MobEffect effect = Registries.MOB_EFFECTS.getValue(location);
+                    Identifier location = Identifier.tryParse(effectId);
+                    if (location == null) {
+                        return false;
+                    }
+
+                    MobEffect effect = BuiltInRegistries.MOB_EFFECT.getValue(location);
                     if (effect == null) {
                         return false;
                     }
@@ -676,7 +680,7 @@ public class GameApi {
             if (mc.level == null) {
                 return false;
             }
-            EntityType<?> type = Registries.ENTITY_TYPES.safeParse(id);
+            EntityType<?> type = RegistryExtensions.safeParse(BuiltInRegistries.ENTITY_TYPE, id);
             if (type == null) {
                 return false;
             }
@@ -706,7 +710,7 @@ public class GameApi {
                 return new int[0];
             }
 
-            EntityType<?> type = Registries.ENTITY_TYPES.getValue(Identifier.parse(id));
+            EntityType<?> type = RegistryExtensions.safeParse(BuiltInRegistries.ENTITY_TYPE, id);
             if (type == null) {
                 return new int[0];
             }
@@ -902,7 +906,7 @@ public class GameApi {
             }
 
             Block block = mc.level.getBlockState(new BlockPos(x, y, z)).getBlock();
-            return Registries.BLOCKS.getKey(block).toString();
+            return BuiltInRegistries.BLOCK.getKey(block).toString();
         }
 
         @MethodDescription("""

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ItemStackPredicate;
@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
@@ -135,7 +135,7 @@ public class InventoryApi {
             return false;
         }
 
-        Item item = Registries.ITEMS.safeParse(itemId);
+        Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item == null) {
             return false;
         }
@@ -264,7 +264,7 @@ public class InventoryApi {
             return 0;
         }
 
-        Item item = Registries.ITEMS.getValue(Identifier.parse(itemId));
+        Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item == null) {
             return -1;
         }
@@ -316,7 +316,7 @@ public class InventoryApi {
             return -1;
         }
 
-        Item item = Registries.ITEMS.getValue(Identifier.parse(itemId));
+        Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item == null) {
             return -1;
         }
@@ -345,7 +345,7 @@ public class InventoryApi {
             return false;
         }
 
-        Item item = Registries.ITEMS.getValue(Identifier.parse(itemId));
+        Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item == null) {
             return false;
         }

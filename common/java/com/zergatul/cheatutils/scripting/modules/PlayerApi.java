@@ -18,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.resources.Identifier;
@@ -584,7 +585,7 @@ public class PlayerApi {
             if (result.getType() == HitResult.Type.BLOCK) {
                 BlockPos blockPos = ((BlockHitResult) result).getBlockPos();
                 BlockState blockState = mc.level.getBlockState(blockPos);
-                return com.zergatul.cheatutils.common.Registries.BLOCKS.getKey(blockState.getBlock()).toString();
+                return BuiltInRegistries.BLOCK.getKey(blockState.getBlock()).toString();
             } else {
                 return "";
             }

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.configs.BlockAutomationConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.scripting.ItemStackPredicate;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.scripting.MethodDescription;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
@@ -29,7 +30,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useItem(String itemId) {
-        Item item = Registries.ITEMS.safeParse(itemId);
+        Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item != null) {
             BlockAutomation.instance.useItem(stack -> stack.is(item), BlockPlacingMethod.ANY);
         }
@@ -54,7 +55,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useItem(String itemId, String method) {
-        Item item = Registries.ITEMS.safeParse(itemId);
+        Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item != null) {
             BlockAutomation.instance.useItem(stack -> stack.is(item), BlockPlacingMethod.parse(method));
         }
@@ -117,7 +118,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock(String itemId) {
-        Item item = Registries.ITEMS.safeParse(itemId);
+        Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item != null) {
             BlockAutomation.instance.breakBlock(stack -> stack.is(item));
         }
@@ -128,7 +129,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock(String itemId, String enchantmentId) {
-        Item item = Registries.ITEMS.safeParse(itemId);
+        Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item != null) {
             Identifier enchantment = Identifier.tryParse(enchantmentId);
             if (enchantment != null) {

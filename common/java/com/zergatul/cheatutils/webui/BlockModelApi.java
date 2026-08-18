@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
-import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.LoaderBridge;
+import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseFeatureSubmitsAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.TranslucentFeatureRenderPhaseAccessor;
@@ -28,6 +28,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,14 +48,15 @@ public class BlockModelApi extends ApiBase {
 
     @Override
     public String get(String id) throws ApiException, ExecutionException, InterruptedException {
-        Identifier loc = Identifier.parse(id);
+        Block block = RegistryExtensions.safeParse(BuiltInRegistries.BLOCK, id);
+        if (block == null) {
+            throw new ApiException("Cannot find block by id.", HttpResponseCodes.NOT_FOUND);
+        }
+
         // we need to run this in the main thread
         // because we call submission.model().setupAnim(..), and this mutates Model state
         // that can be used for rendering real stuff at the same time
-        List<Quad> quads = Minecraft.getInstance().submit(() -> {
-            Block block = Registries.BLOCKS.getValue(loc);
-            return getFromBlockModel(block);
-        }).get();
+        List<Quad> quads = Minecraft.getInstance().submit(() -> getFromBlockModel(block)).get();
         return gson.toJson(quads);
     }
 
@@ -131,7 +133,7 @@ public class BlockModelApi extends ApiBase {
         } else if (submission instanceof ModelFeatureRenderer.Submit<?> model) {
             extractQuads(model, output);
         } else {
-            ModLoaderBridgeInstance.get().extractQuads(submission, output);
+            LoaderBridge.INSTANCE.getRenderingWorkarounds().extractQuads(submission, output);
         }
     }
 

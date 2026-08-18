@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.configs.adapters;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.zergatul.cheatutils.common.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 
@@ -16,7 +16,7 @@ public class EntityTypeTypeAdapter extends TypeAdapter<EntityType<?>> {
         if (type == null) {
             out.nullValue();
         } else {
-            out.value(Registries.ENTITY_TYPES.getKey(type).toString());
+            out.value(BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
         }
     }
 
@@ -26,7 +26,7 @@ public class EntityTypeTypeAdapter extends TypeAdapter<EntityType<?>> {
         if (value == null) {
             return null;
         } else {
-            return Registries.ENTITY_TYPES.getValue(Identifier.parse(value));
+            return BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(value));
         }
     }
 }
