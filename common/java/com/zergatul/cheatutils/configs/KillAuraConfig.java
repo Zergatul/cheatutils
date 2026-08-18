@@ -107,8 +107,8 @@ public class KillAuraConfig extends ModuleConfig implements Sanitizable {
                         ENEMIES,
                         "Includes Monsters, Slimes, Magma Cubes, Hoglin. Excludes Neutral Mobs (Enderman, Zombified Piglin). Endermen can be targeted only in creepy state.",
                         entity -> {
-                            if (entity instanceof EnderMan) {
-                                return ((EnderMan) entity).isCreepy();
+                            if (entity instanceof Enderman) {
+                                return ((Enderman) entity).isCreepy();
                             }
                             return entity instanceof Enemy && !(entity instanceof NeutralMob);
                         })),
@@ -116,8 +116,8 @@ public class KillAuraConfig extends ModuleConfig implements Sanitizable {
                         ENEMIES_WO_PIGLINS,
                         "Same as Enemies, but without Piglins (Piglin Brute is still valid target).",
                         entity -> {
-                            if (entity instanceof EnderMan) {
-                                return ((EnderMan) entity).isCreepy();
+                            if (entity instanceof Enderman) {
+                                return ((Enderman) entity).isCreepy();
                             }
                             if (entity instanceof PiglinBrute) {
                                 return true;
