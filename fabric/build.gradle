@@ -18,6 +18,14 @@ repositories {
 
 loom {
     accessWidenerPath = file("src/main/resources/cheatutils.classtweaker")
+
+    runs {
+        configureEach {
+            systemProperties.put("mixin.debug.countInjections", "true")
+            systemProperties.put("mixin.debug.verbose", "true")
+            systemProperties.put("cheatutils.strictMixins", "true")
+        }
+    }
 }
 
 dependencies {

@@ -3,10 +3,7 @@
   "minVersion": "0.8.7",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_25",
-  "plugin": "com.zergatul.mixin.MixinPlugin",
-  "injectors": {
-    "defaultRequire": 0
-  },
+  "plugin": "com.zergatul.cheatutils.common.MixinPlugin",
   "mixinPriority": 500,
   "client": [
     "common.accessors.AbstractRecipeBookScreenAccessor",

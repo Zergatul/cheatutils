@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.fabric;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.MixinPlugin;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
@@ -9,6 +10,7 @@ import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 public class ModMain implements ClientModInitializer {
 
@@ -23,6 +25,10 @@ public class ModMain implements ClientModInitializer {
         Modules.register();
         Events.RegisterKeyBindings.trigger(KeyMappingHelper::registerKeyMapping);
         DebugScreenExtensions.register();
+
+        if (MixinPlugin.isStrictMixinsEnabled()) {
+            MixinEnvironment.getCurrentEnvironment().audit();
+        }
     }
 
     private void setupFabricEvents() {
