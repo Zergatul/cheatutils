@@ -409,7 +409,6 @@ module({
     group: 'visuals',
     name: 'Death Coordinates',
     component: 'DeathCoordinates',
-    legacyComponent: 'DeathCoordinatesConfig',
     path: 'death-coordinates',
     tags: ['death', 'coordinates']
 });
@@ -417,9 +416,7 @@ module({
     group: 'visuals',
     name: 'No Fog',
     component: 'Fog',
-    legacyComponent: 'FogConfig',
     path: 'no-fog',
-    oldPaths: ['fog'],
     tags: ['fog']
 });
 module({
@@ -434,7 +431,6 @@ module({
     group: 'visuals',
     name: 'Status Effects',
     component: 'StatusEffects',
-    legacyComponent: 'StatusEffectsConfig',
     path: 'status-effects',
     tags: ['status', 'effects']
 });
@@ -568,7 +564,6 @@ module({
     group: 'utility',
     name: 'User Name',
     component: 'UserName',
-    legacyComponent: 'UserNameConfig',
     path: 'user-name',
     tags: ['user', 'name']
 });
