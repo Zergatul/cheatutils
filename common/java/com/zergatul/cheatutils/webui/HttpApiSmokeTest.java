@@ -283,6 +283,13 @@ public class HttpApiSmokeTest {
                 "addText");
         requireContains(send(
                         client,
+                        baseUri.resolve("hover"),
+                        "POST",
+                        MonacoJson.toJson(new Integration.PositionRequest("tps.get();", "OVERLAY", 1, 5))),
+                HttpResponseCodes.OK,
+                "Estimates server TPS from the last 20 time updates");
+        requireContains(send(
+                        client,
                         baseUri.resolve("completion"),
                         "POST",
                         MonacoJson.toJson(new Integration.PositionRequest("events.", "EVENTS", 1, 8))),

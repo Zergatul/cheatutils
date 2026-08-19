@@ -108,7 +108,9 @@ public class ScriptingRuntimeSmokeTest {
                 """);
         requireCompilationSuccess(ScriptType.OVERLAY, """
                 main.setOverlayHorizontalPosition("left");
-                main.addText(convert.toString(tps.get(), 1));
+                main.addText("TPS: " + tps.get().toStandardString(1));
+                float tpsVal = tps.get();
+                main.addText("#CDC1FF", "TPS:", "#00FF21", tpsVal.toStandardString(2));
                 """);
         requireCompilationSuccess(ScriptType.BLOCK_AUTOMATION, """
                 if (currentBlock.getY() >= 0) {

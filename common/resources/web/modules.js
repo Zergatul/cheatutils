@@ -534,7 +534,6 @@ module({
     group: 'scripting',
     name: 'Exec',
     component: 'Exec',
-    legacyComponent: 'ExecConfig',
     path: 'exec',
     tags: ['exec']
 });
@@ -549,7 +548,6 @@ module({
     group: 'scripting',
     name: 'TPS',
     component: 'Tps',
-    legacyComponent: 'TpsConfig',
     path: 'tps',
     tags: ['tps', 'tick', 'rate']
 });
