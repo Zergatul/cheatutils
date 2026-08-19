@@ -79,7 +79,11 @@ public class ConfigStore {
     }
 
     public void requestWrite() {
-        ConfigWriterQueue.instance.queue(this.currentFile, WRITE_FILE_DELAY, getWriteToFileTask());
+        File file = currentFile;
+        if (file == null) {
+            return;
+        }
+        ConfigWriterQueue.instance.queue(file, WRITE_FILE_DELAY, getWriteToFileTask());
     }
 
     public Runnable getWriteToFileTask() {

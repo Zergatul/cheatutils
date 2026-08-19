@@ -371,7 +371,6 @@ module({
     group: 'visuals',
     name: 'Full Bright',
     component: 'FullBright',
-    legacyComponent: 'FullBrightConfig',
     path: 'full-bright',
     tags: ['full', 'bright', 'night', 'vision']
 });
@@ -379,7 +378,6 @@ module({
     group: 'visuals',
     name: 'Armor Overlay',
     component: 'ArmorOverlay',
-    legacyComponent: 'ArmorOverlayConfig',
     path: 'armor-overlay',
     tags: ['armor', 'overlay']
 });
@@ -395,7 +393,6 @@ module({
     group: 'visuals',
     name: 'Advanced Tooltips',
     component: 'AdvancedTooltips',
-    legacyComponent: 'AdvancedTooltipsConfig',
     path: 'adv-tooltips',
     oldPaths: ['advanced-tooltips'],
     tags: ['advanced', 'tooltips']
@@ -477,7 +474,6 @@ module({
     group: 'visuals',
     name: 'Hurt Bobbing',
     component: 'BobHurt',
-    legacyComponent: 'BobHurtConfig',
     path: 'bob-hurt',
     tags: ['nohurtcam', 'bobhurt']
 });
@@ -561,6 +557,13 @@ module({
 
 // Utility Modules ==========================
 
+module({
+    group: 'utility',
+    name: 'Core Config',
+    component: 'Core',
+    path: 'core',
+    tags: ['core', 'port', 'advanced', 'scripting']
+});
 module({
     group: 'utility',
     name: 'User Name',

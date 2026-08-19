@@ -47,6 +47,7 @@ public class ScriptingRuntimeSmokeTest {
         future.join();
 
         verifyInitialApiCompatibility();
+        verifyAdvancedScriptingToggle();
         verifyRuntimeLineNumbers();
         verifyExecutionLifecycle();
         verifyWorkspace();
@@ -57,6 +58,7 @@ public class ScriptingRuntimeSmokeTest {
         ConfigMigrationSmokeTest.verifyVillagerRoller();
         ConfigMigrationSmokeTest.verifyEventsScripting();
         ConfigMigrationSmokeTest.verifyAutoDisconnectRemoved();
+        ConfigMigrationSmokeTest.verifyCoreConfig();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }
@@ -152,6 +154,20 @@ public class ScriptingRuntimeSmokeTest {
         requireCompilationFailure(ScriptType.OVERLAY, "events.onTickEnd(() => {});");
         requireCompilationFailure(ScriptType.OVERLAY, "player.disconnect(\"\");");
         requireCompilationFailure(ScriptType.EVENTS, "autoDisconnect.toggle();");
+    }
+
+    private static void verifyAdvancedScriptingToggle() {
+        boolean previous = ConfigStore.instance.getConfig().coreConfig.advancedScripting;
+        String javaInterop = "typealias JString = Java<java.lang.String>;";
+        try {
+            ConfigStore.instance.getConfig().coreConfig.advancedScripting = false;
+            requireCompilationFailure(ScriptType.KEYBINDING, javaInterop);
+
+            ConfigStore.instance.getConfig().coreConfig.advancedScripting = true;
+            requireCompilationSuccess(ScriptType.KEYBINDING, javaInterop);
+        } finally {
+            ConfigStore.instance.getConfig().coreConfig.advancedScripting = previous;
+        }
     }
 
     private static void verifyRuntimeLineNumbers() {

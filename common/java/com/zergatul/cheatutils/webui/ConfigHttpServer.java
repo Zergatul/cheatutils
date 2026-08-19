@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.monaco.Integration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +24,7 @@ public class ConfigHttpServer {
 
     private final Logger logger = LogManager.getLogger(ConfigHttpServer.class);
     private final ExecutorService executor;
+    private int basePort = 5005;
     private HttpServer server;
     private boolean closed;
 
@@ -31,21 +33,45 @@ public class ConfigHttpServer {
         Events.Close.add(this::close);
     }
 
+    public synchronized void onConfigUpdated() {
+        if (closed) {
+            return;
+        }
+
+        int port = ConfigStore.instance.getConfig().coreConfig.port;
+        if (basePort == port) {
+            return;
+        }
+
+        basePort = port;
+        if (server != null) {
+            server.stop(1);
+            server = null;
+            start();
+        }
+    }
+
     public synchronized void start() {
         if (closed || server != null) {
             return;
         }
 
+        basePort = ConfigStore.instance.getConfig().coreConfig.port;
+
         int port = 0;
-        for (int i = 5005; i < 5100; i++) {
-            if (isAvailable(i)) {
-                port = i;
+        for (int i = 0; i < 100; i++) {
+            int candidate = basePort + i;
+            if (candidate > 65535) {
+                break;
+            }
+            if (isAvailable(candidate)) {
+                port = candidate;
                 break;
             }
         }
 
         if (port == 0) {
-            logger.error("Cannot find a free port for the HTTP server.");
+            logger.error("Cannot find a free port for the HTTP server. BasePort={}", basePort);
             return;
         }
 

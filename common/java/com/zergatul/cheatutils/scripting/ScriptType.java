@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting;
 
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.Root;
 import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
@@ -84,12 +85,12 @@ public enum ScriptType {
 
                     @Override
                     public boolean isJavaTypeUsageAllowed() {
-                        return false;
+                        return ConfigStore.instance.getConfig().coreConfig.advancedScripting;
                     }
 
                     @Override
                     public String getJavaTypeUsageError() {
-                        return "Java<...> types are not permitted.";
+                        return "Java<...> types are not permitted. Enable Advanced Scripting to use Java interop.";
                     }
 
                     @Override

@@ -65,6 +65,7 @@ public class HttpApiSmokeTest {
                 new BlockAutomationCodeApi(),
                 new VillagerRollerCodeApi(),
                 new EventsScriptingCodeApi(),
+                new CoreConfigApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
         server.createContext("/", new StaticFilesHandler());
@@ -80,6 +81,7 @@ public class HttpApiSmokeTest {
             verifyStaticFiles(client, siteUri);
             verifyCodeApi(client, baseUri.resolve("code/"));
             verifyWorkspaceApi(client, baseUri);
+            verifyCoreApi(client, baseUri);
             verifyConcurrentRequests(client, baseUri);
 
             HttpResponse<String> get = send(client, baseUri.resolve("smoke"), "GET", null);
@@ -174,6 +176,28 @@ public class HttpApiSmokeTest {
         for (CompletableFuture<HttpResponse<String>> request : requests) {
             require(request.get(), HttpResponseCodes.OK, "{\"ok\":true}");
         }
+    }
+
+    private static void verifyCoreApi(HttpClient client, URI baseUri) throws Exception {
+        HttpResponse<String> defaults = send(client, baseUri.resolve("core"), "GET", null);
+        requireContains(defaults, HttpResponseCodes.OK, "\"port\": 5005");
+        requireContains(defaults, HttpResponseCodes.OK, "\"advancedScripting\": false");
+
+        HttpResponse<String> sanitized = send(
+                client,
+                baseUri.resolve("core"),
+                "POST",
+                "{\"port\":0,\"advancedScripting\":true}");
+        requireContains(sanitized, HttpResponseCodes.OK, "\"port\": 1");
+        requireContains(sanitized, HttpResponseCodes.OK, "\"advancedScripting\": true");
+
+        HttpResponse<String> restored = send(
+                client,
+                baseUri.resolve("core"),
+                "POST",
+                "{\"port\":5005,\"advancedScripting\":false}");
+        requireContains(restored, HttpResponseCodes.OK, "\"port\": 5005");
+        requireContains(restored, HttpResponseCodes.OK, "\"advancedScripting\": false");
     }
 
     private static void deleteTree(Path root) throws Exception {

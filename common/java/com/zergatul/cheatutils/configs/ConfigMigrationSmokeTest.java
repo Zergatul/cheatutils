@@ -70,6 +70,39 @@ public class ConfigMigrationSmokeTest {
         verifyAutoDisconnectSourceDiscarded("int value = ;");
     }
 
+    public static void verifyCoreConfig() {
+        Config defaults = ConfigStore.instance.gson.fromJson("{}", Config.class);
+        defaults.sanitize();
+        if (defaults.coreConfig.port != 5005 || defaults.coreConfig.advancedScripting) {
+            throw new IllegalStateException("Core config defaults changed unexpectedly.");
+        }
+
+        Config minimum = ConfigStore.instance.gson.fromJson("""
+                {
+                  "coreConfig": {
+                    "port": 0,
+                    "advancedScripting": true
+                  }
+                }
+                """, Config.class);
+        minimum.sanitize();
+        if (minimum.coreConfig.port != 1 || !minimum.coreConfig.advancedScripting) {
+            throw new IllegalStateException("Core config minimum port sanitation failed.");
+        }
+
+        Config maximum = ConfigStore.instance.gson.fromJson("""
+                {
+                  "coreConfig": {
+                    "port": 70000
+                  }
+                }
+                """, Config.class);
+        maximum.sanitize();
+        if (maximum.coreConfig.port != 65535) {
+            throw new IllegalStateException("Core config maximum port sanitation failed.");
+        }
+    }
+
     private static void verifyStatusOverlaySource(String code) {
         JsonElement tree = JsonParser.parseString("""
                 {
