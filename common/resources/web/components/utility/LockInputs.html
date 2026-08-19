@@ -1,0 +1,25 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Emulate holding keys or lock mouse input.
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.mouseInputDisabled" @change="update()">Disable Mouse Rotation Input</switch-checkbox>
+            </legend>
+            <div class="description">
+                Disables mouse input to rotate your character. Can be useful for farming/building in background when you need to periodically check minecraft window.
+            </div>
+        </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
+                Hold key
+            </legend>
+            <switch-checkbox v-model="config.holdForward" @change="update()">Hold Forward</switch-checkbox>
+            <switch-checkbox v-model="config.holdAttack" @change="update()">Hold Attack</switch-checkbox>
+            <switch-checkbox v-model="config.holdUse" @change="update()">Hold Use</switch-checkbox>
+        </fieldset>
+    </div>
+</div>

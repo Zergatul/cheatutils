@@ -571,7 +571,6 @@ module({
     group: 'utility',
     name: 'Container Summary',
     component: 'ContainerSummary',
-    legacyComponent: 'ContainerSummaryConfig',
     path: 'container-summary',
     tags: ['container', 'summary']
 });
@@ -579,16 +578,13 @@ module({
     group: 'utility',
     name: 'Chat',
     component: 'ChatUtilities',
-    legacyComponent: 'ChatUtilitiesConfig',
     path: 'chat',
-    oldPaths: ['chat-utilities'],
     tags: ['chat']
 });
 module({
     group: 'utility',
     name: 'Lock Inputs',
     component: 'LockInputs',
-    legacyComponent: 'LockInputsConfig',
     path: 'lock-inputs',
     tags: ['lock', 'inputs']
 });
