@@ -57,7 +57,6 @@ public class Config implements Sanitizable {
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
     public NoWeatherConfig noWeatherConfig = new NoWeatherConfig();
     public FakeWeatherConfig fakeWeatherConfig = new FakeWeatherConfig();
-    public AutoAimConfig autoAimConfig = new AutoAimConfig();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
     public ExecConfig execConfig = new ExecConfig();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
