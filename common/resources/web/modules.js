@@ -54,7 +54,6 @@ module({
     group: 'automation',
     name: 'Auto Drop',
     component: 'AutoDrop',
-    legacyComponent: 'AutoDropConfig',
     path: 'auto-drop',
     tags: ['auto', 'drop', 'inventory']
 });
@@ -62,7 +61,6 @@ module({
     group: 'automation',
     name: 'Container Buttons',
     component: 'ContainerButtons',
-    legacyComponent: 'ContainerButtonsConfig',
     path: 'container-buttons',
     tags: ['container', 'buttons']
 });
@@ -84,7 +82,6 @@ module({
     group: 'automation',
     name: 'Auto Craft',
     component: 'AutoCraft',
-    legacyComponent: 'AutoCraftConfig',
     path: 'auto-craft',
     tags: ['auto', 'craft']
 });

@@ -9,6 +9,7 @@ const components = {
             args.components[name] = components[name];
         }
     },
+    ItemList: getComponent('common/ItemList'),
     Radio: getComponent('common/Radio'),
     ScriptEditor: getComponent('common/ScriptEditor'),
     CodeBlock: getComponent('common/CodeBlock'),

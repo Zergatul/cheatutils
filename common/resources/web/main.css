@@ -134,6 +134,10 @@ div.module-main.modern-page legend {
     font-weight: inherit;
 }
 
+div.module-main.modern-page fieldset {
+    width: auto;
+}
+
 div.module-main.modern-page div.section-description {
     color: var(--color1);
     font-family: var(--font2);
