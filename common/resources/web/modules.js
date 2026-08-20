@@ -40,7 +40,6 @@ module({
     group: 'automation',
     name: 'Auto Fish',
     component: 'AutoFish',
-    legacyComponent: 'AutoFishConfig',
     path: 'auto-fish',
     tags: ['auto', 'fish', 'fishing']
 });
@@ -48,7 +47,6 @@ module({
     group: 'automation',
     name: 'Auto Totem',
     component: 'AutoTotem',
-    legacyComponent: 'AutoTotemConfig',
     path: 'auto-totem',
     tags: ['auto', 'totem']
 });
