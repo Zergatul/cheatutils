@@ -235,6 +235,16 @@ public class ConfigStore {
         if (root.has("scriptedBlockPlacerConfig") && !root.has("blockAutomationConfig")) {
             root.add("blockAutomationConfig", root.remove("scriptedBlockPlacerConfig"));
         }
+        if (root.has("autoAttackConfig") && root.get("autoAttackConfig").isJsonObject()) {
+            JsonObject autoAttack = root.getAsJsonObject("autoAttackConfig");
+            if (autoAttack.has("extraTicks") && !autoAttack.has("extraTicksMin") && !autoAttack.has("extraTicksMax")) {
+                long rounded = Math.round(autoAttack.get("extraTicks").getAsDouble());
+                int ticks = (int) Math.max(-10, Math.min(10, rounded));
+                autoAttack.addProperty("extraTicksMin", ticks);
+                autoAttack.addProperty("extraTicksMax", ticks);
+            }
+            autoAttack.remove("extraTicks");
+        }
         root.remove("gameTickScriptingConfig");
         root.remove("autoDisconnectConfig");
     }

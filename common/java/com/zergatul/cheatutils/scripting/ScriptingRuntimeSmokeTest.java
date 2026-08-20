@@ -59,6 +59,7 @@ public class ScriptingRuntimeSmokeTest {
         ConfigMigrationSmokeTest.verifyEventsScripting();
         ConfigMigrationSmokeTest.verifyAutoDisconnectRemoved();
         ConfigMigrationSmokeTest.verifyCoreConfig();
+        ConfigMigrationSmokeTest.verifyAutoAttack();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }

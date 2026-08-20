@@ -103,6 +103,44 @@ public class ConfigMigrationSmokeTest {
         }
     }
 
+    public static void verifyAutoAttack() {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "autoAttackConfig": {
+                    "enabled": true,
+                    "extraTicks": 3.6
+                  }
+                }
+                """);
+
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+        config.sanitize();
+
+        JsonElement migrated = tree.getAsJsonObject().getAsJsonObject("autoAttackConfig").get("extraTicks");
+        if (migrated != null || !config.autoAttackConfig.enabled ||
+                config.autoAttackConfig.extraTicksMin != 4 || config.autoAttackConfig.extraTicksMax != 4 ||
+                config.autoAttackConfig.maxRange != 2.5) {
+            throw new IllegalStateException("Old Auto Attack delay was not migrated to the maintained config shape.");
+        }
+
+        Config sanitized = ConfigStore.instance.gson.fromJson("""
+                {
+                  "autoAttackConfig": {
+                    "limitRange": true,
+                    "maxRange": 20,
+                    "extraTicksMin": -20,
+                    "extraTicksMax": 20
+                  }
+                }
+                """, Config.class);
+        sanitized.sanitize();
+        if (!sanitized.autoAttackConfig.limitRange || sanitized.autoAttackConfig.maxRange != 10 ||
+                sanitized.autoAttackConfig.extraTicksMin != -10 || sanitized.autoAttackConfig.extraTicksMax != 10) {
+            throw new IllegalStateException("Maintained Auto Attack config sanitation failed.");
+        }
+    }
+
     private static void verifyStatusOverlaySource(String code) {
         JsonElement tree = JsonParser.parseString("""
                 {

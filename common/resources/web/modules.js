@@ -89,7 +89,6 @@ module({
     group: 'automation',
     name: 'Auto Attack',
     component: 'AutoAttack',
-    legacyComponent: 'AutoAttackConfig',
     path: 'auto-attack',
     tags: ['auto', 'attack']
 });
