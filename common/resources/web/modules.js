@@ -70,7 +70,6 @@ module({
     group: 'automation',
     name: 'Auto Eat',
     component: 'AutoEat',
-    legacyComponent: 'AutoEatConfig',
     path: 'auto-eat',
     tags: ['auto', 'eat']
 });
@@ -78,7 +77,6 @@ module({
     group: 'automation',
     name: 'Anti Respawn Reset',
     component: 'AntiRespawnReset',
-    legacyComponent: 'AntiRespawnResetConfig',
     path: 'anti-respawn-reset',
     tags: ['anti', 'respawn', 'bed', 'anchor']
 });
@@ -110,7 +108,6 @@ module({
     group: 'automation',
     name: 'Auto Hotbar',
     component: 'AutoHotbar',
-    legacyComponent: 'AutoHotbarConfig',
     path: 'auto-hotbar',
     tags: ['auto', 'hotbar']
 });

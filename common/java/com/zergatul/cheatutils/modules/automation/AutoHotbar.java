@@ -16,7 +16,7 @@ public class AutoHotbar implements Module {
     public static final AutoHotbar instance = new AutoHotbar();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private ItemStack[] lastTickHotbar = new ItemStack[9];
+    private final ItemStack[] lastTickHotbar = new ItemStack[9];
     private ItemStack lastTickOffhand;
 
     private AutoHotbar() {
@@ -36,6 +36,10 @@ public class AutoHotbar implements Module {
             return;
         }
 
+        if (mc.player.isUsingItem()) {
+            return;
+        }
+
         Inventory inventory = mc.player.getInventory();
         for (int hbSlot = 0; hbSlot < 9; hbSlot++) {
             if (config.shouldRefill(hbSlot) && !lastTickHotbar[hbSlot].isEmpty()) {
@@ -49,7 +53,7 @@ public class AutoHotbar implements Module {
         }
 
         if (config.refillSlotOffhand && !lastTickOffhand.isEmpty()) {
-            if (shouldRefill(lastTickOffhand, inventory.offhand.get(0))) {
+            if (shouldRefill(lastTickOffhand, mc.player.getOffhandItem())) {
                 int slot = findSameItem(inventory, lastTickOffhand);
                 if (slot > 0) {
                     InventoryUtils.addItemStack(new InventorySlot(slot), new InventorySlot(EquipmentSlot.OFFHAND));
@@ -60,7 +64,7 @@ public class AutoHotbar implements Module {
         for (int i = 0; i < 9; i++) {
             lastTickHotbar[i] = inventory.getItem(i).copy();
         }
-        lastTickOffhand = inventory.offhand.get(0).copy();
+        lastTickOffhand = mc.player.getOffhandItem().copy();
     }
 
     private void clear() {
