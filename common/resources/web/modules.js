@@ -423,7 +423,6 @@ module({
     group: 'visuals',
     name: 'Chunks',
     component: 'Chunks',
-    legacyComponent: 'ChunksConfig',
     path: 'chunks',
     tags: ['chunks', 'distance']
 });
@@ -454,7 +453,6 @@ module({
     group: 'visuals',
     name: 'Performance',
     component: 'Performance',
-    legacyComponent: 'PerformanceConfig',
     path: 'performance',
     tags: ['performance']
 });

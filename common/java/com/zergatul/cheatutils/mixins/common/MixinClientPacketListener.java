@@ -63,8 +63,12 @@ public abstract class MixinClientPacketListener {
             argsOnly = true,
             ordinal = 0)
     private ClientboundSetChunkCacheRadiusPacket onModifySetChunkCacheRadiusPacket(ClientboundSetChunkCacheRadiusPacket packet) {
-        Minecraft mc = Minecraft.getInstance();
-        return new ClientboundSetChunkCacheRadiusPacket(mc.options.renderDistance().get());
+        if (ConfigStore.instance.getConfig().chunksConfig.ignoreServerViewDistance) {
+            Minecraft mc = Minecraft.getInstance();
+            return new ClientboundSetChunkCacheRadiusPacket(mc.options.renderDistance().get());
+        } else {
+            return packet;
+        }
     }
 
     @ModifyArg(
