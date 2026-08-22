@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.modules.automation.AimAssist;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.scripting.*;
 import com.zergatul.cheatutils.scripting.events.*;
@@ -7,6 +8,8 @@ import com.zergatul.scripting.MethodDescription;
 
 @SuppressWarnings("unused")
 public class EventsApi {
+
+    public final ModuleEventsApi modules = new ModuleEventsApi();
 
     @MethodDescription("""
             Triggers every tick, unless you interact with some UI, like chat or crafting table.
@@ -148,5 +151,26 @@ public class EventsApi {
     @ApiVisibility(ApiType.EVENTS)
     public void onServerToClientPacket(PacketEventConsumer consumer) {
         EventsScripting.instance.addOnServerToClientPacket(consumer);
+    }
+
+    public static class ModuleEventsApi {
+        public final AimAssistEventsApi aimAssist = new AimAssistEventsApi();
+    }
+
+    public static class AimAssistEventsApi {
+
+        @MethodDescription("""
+                Triggers when Aim Assist module searches for the target.
+                You can filter for specific entity type, class or other attributes.
+                Use game.entities API to work with supplied entity id.
+                Return true to allow the entity as a target candidate.
+                Return false to reject it. Multiple filters are combined with AND.
+                Example:
+                events.modules.aimAssist.addTargetFilter(entityId => game.entities.getType(entityId) == "minecraft:cow");
+                """)
+        @ApiVisibility(ApiType.EVENTS)
+        public void addTargetFilter(AimAssist.TargetPredicate predicate) {
+            EventsScripting.instance.addAimAssistTargetPredicate(predicate);
+        }
     }
 }
