@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.concurrent.TickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.automation.AimAssist;
 import com.zergatul.cheatutils.scripting.events.*;
 import com.zergatul.cheatutils.scripting.modules.PacketEvent;
 import com.zergatul.cheatutils.scripting.modules.PlayerMessageSendingEvent;
@@ -15,6 +16,7 @@ import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.server.IntegratedServer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -36,6 +38,8 @@ public class EventsScripting implements Module {
     private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new ArrayList<>();
     private final List<PacketEventConsumer> onC2SPacket = new ArrayList<>();
     private final List<PacketEventConsumer> onS2CPacket = new ArrayList<>();
+
+    private final List<AimAssist.TargetPredicate> aimAssistTargetPredicates = new ArrayList<>();
 
     private final Consumer<NetworkPacketsController.ClientPacketArgs> onClientPacketHandler = this::onClientPacket;
     private final Consumer<NetworkPacketsController.ServerPacketArgs> onServerPacketHandler = this::onServerPacket;
@@ -146,6 +150,19 @@ public class EventsScripting implements Module {
         clear();
         if (runnable != null) {
             TickEndExecutor.instance.execute(runnable);
+
+            TickEndExecutor.instance.execute(() -> {
+                if (aimAssistTargetPredicates.isEmpty()) {
+                    return;
+                }
+
+                if (aimAssistTargetPredicates.size() == 1) {
+                    AimAssist.instance.setTargetPredicate(aimAssistTargetPredicates.getFirst());
+                } else {
+                    List<AimAssist.TargetPredicate> predicates = Collections.unmodifiableList(aimAssistTargetPredicates);
+                    AimAssist.instance.setTargetPredicate(entityId -> predicates.stream().allMatch(p -> p.test(entityId)));
+                }
+            });
         }
     }
 
@@ -164,6 +181,9 @@ public class EventsScripting implements Module {
             onPlayerInfoUpdate.clear();
             onC2SPacket.clear();
             onS2CPacket.clear();
+
+            AimAssist.instance.clearTargetPredicate();
+            aimAssistTargetPredicates.clear();
 
             NetworkPacketsController.instance.removeClientPacketHandler(onClientPacketHandler);
             NetworkPacketsController.instance.removeServerPacketHandler(onServerPacketHandler);
@@ -222,6 +242,10 @@ public class EventsScripting implements Module {
     public void addOnServerToClientPacket(PacketEventConsumer consumer) {
         onS2CPacket.add(consumer);
         NetworkPacketsController.instance.addServerPacketHandlerIfAbsent(onServerPacketHandler);
+    }
+
+    public void addAimAssistTargetPredicate(AimAssist.TargetPredicate predicate) {
+        aimAssistTargetPredicates.add(predicate);
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {

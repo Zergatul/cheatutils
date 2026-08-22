@@ -17,31 +17,43 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+@NullMarked
 public class AimAssist implements Module {
 
     public static final AimAssist instance = new AimAssist();
 
     private final Minecraft mc = Minecraft.getInstance();
 
+    private @Nullable TargetPredicate script;
     private boolean isTargetLockEnabled;
-    private Entity bowAssistTarget;
-    private Entity targetLockEntity;
+    private @Nullable Entity bowAssistTarget;
+    private @Nullable Entity targetLockEntity;
 
     private AimAssist() {
         Events.ClientTickEnd.add(this::onTickEnd);
         Events.PlayerReleaseUsingItem.add(this::onPlayerReleaseUsingItem);
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
+    }
+
+    public void clearTargetPredicate() {
+        this.script = null;
+    }
+
+    public void setTargetPredicate(TargetPredicate script) {
+        this.script = script;
     }
 
     public boolean isTargetLockEnabled() {
@@ -56,7 +68,7 @@ public class AimAssist implements Module {
         isTargetLockEnabled = false;
     }
 
-    public Entity getBowAssistTarget() {
+    public @Nullable Entity getBowAssistTarget() {
         return bowAssistTarget;
     }
 
@@ -153,7 +165,7 @@ public class AimAssist implements Module {
         }
     }
 
-    private Entity findTarget(Rotation playerRot) {
+    private @Nullable Entity findTarget(Rotation playerRot) {
         assert mc.level != null && mc.player != null;
 
         Entity target = null;
@@ -162,7 +174,9 @@ public class AimAssist implements Module {
             if (entity == mc.player) {
                 continue;
             }
-            if (entity instanceof LivingEntity) {
+
+            boolean matches = script == null ? entity instanceof Player : script.test(entity.getId());
+            if (matches) {
                 Vec3 center = getEntityCenter(entity);
                 Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), center);
                 double deltaAngleSqr = playerRot.distanceSqrTo(rotation);
@@ -284,6 +298,11 @@ public class AimAssist implements Module {
         }
 
         return new Vec3(entity.getX() - entity.xo, entity.getY() - entity.yo, entity.getZ() - entity.zo);
+    }
+
+    @FunctionalInterface
+    public interface TargetPredicate {
+        boolean test(int entityId);
     }
 
     private static class Path {

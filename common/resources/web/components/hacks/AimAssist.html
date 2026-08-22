@@ -9,7 +9,7 @@
                 <switch-checkbox v-model="config.bowAssist" @change="update()">Bow Assist</switch-checkbox>
             </legend>
             <div class="section-description">
-                Once you start using bow, module searches for the closest to your crosshair living entity,
+                Once you start using bow, module searches for the closest entity to your crosshair,
                 and if it is possible to reach it with arrow and current bow power,
                 then module sets its target as current entity.
                 If you release bow you will rotate to the proper rotation on the server and shoot the arrow.
@@ -66,6 +66,32 @@
                 <div>
                     <radio name="aim-assist-mode" :value="'AIM_ASSIST_HEAD'" v-model="config.aimAssistMode" @change="update()">Target Top</radio>
                 </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Target Selection</legend>
+            <div class="section-description">
+                By default Aim Assist targets only players. If you want to customize targets, use <b>Events Scripting</b> module.
+                <br>
+                Example script to target all living entities:
+                <CodeBlock :code='`
+                    events.modules.aimAssist.addTargetFilter(id => {
+                        return game.entities.isInstanceOf(id, "net.minecraft.world.entity.LivingEntity");
+                    });
+                `' />
+                Example script to exclude one particular player:
+                <CodeBlock :code='`
+                    events.modules.aimAssist.addTargetFilter(id => {
+                        if (game.entities.getType(id) != "minecraft:player") {
+                            return false;
+                        }
+                        if (game.entities.getName(id) == "MyImaginaryFriend") {
+                            return false;
+                        }
+                        return true;
+                    });
+                `' />
             </div>
         </fieldset>
     </div>
