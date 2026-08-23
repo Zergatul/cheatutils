@@ -32,7 +32,6 @@ module({
     group: 'automation',
     name: 'Auto Bucket',
     component: 'AutoBucket',
-    legacyComponent: 'AutoBucketConfig',
     path: 'auto-bucket',
     tags: ['auto', 'bucket', 'mlg', 'nofall', 'no', 'fall']
 });

@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 public class AutoBucketConfig extends ModuleConfig implements Sanitizable {
     public double speedThreshold;
     public boolean useWaterBucket;
+    public boolean usePowderSnowBucket;
     public boolean useSlimeBlock;
     public boolean useCobweb;
     public boolean useHoneyBlock;

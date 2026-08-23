@@ -141,6 +141,42 @@ public class ConfigMigrationSmokeTest {
         }
     }
 
+    public static void verifyAutoBucket() {
+        Config oldConfig = ConfigStore.instance.gson.fromJson("""
+                {
+                  "autoBucketConfig": {
+                    "enabled": true,
+                    "useWaterBucket": true,
+                    "useHoneyBlock": true,
+                    "speedThreshold": 15,
+                    "reachDistance": 4.5
+                  }
+                }
+                """, Config.class);
+        oldConfig.sanitize();
+        if (!oldConfig.autoBucketConfig.enabled || !oldConfig.autoBucketConfig.useWaterBucket ||
+                !oldConfig.autoBucketConfig.useHoneyBlock || oldConfig.autoBucketConfig.usePowderSnowBucket ||
+                oldConfig.autoBucketConfig.speedThreshold != 15 || oldConfig.autoBucketConfig.reachDistance != 4.5) {
+            throw new IllegalStateException("Old Auto Bucket config was not preserved after adding powder snow support.");
+        }
+
+        Config sanitized = ConfigStore.instance.gson.fromJson("""
+                {
+                  "autoBucketConfig": {
+                    "usePowderSnowBucket": true,
+                    "speedThreshold": 0,
+                    "reachDistance": 100,
+                    "hotbarSlot": 20
+                  }
+                }
+                """, Config.class);
+        sanitized.sanitize();
+        if (!sanitized.autoBucketConfig.usePowderSnowBucket || sanitized.autoBucketConfig.speedThreshold != 0.1 ||
+                sanitized.autoBucketConfig.reachDistance != 20 || sanitized.autoBucketConfig.hotbarSlot != 8) {
+            throw new IllegalStateException("Maintained Auto Bucket config sanitation failed.");
+        }
+    }
+
     private static void verifyStatusOverlaySource(String code) {
         JsonElement tree = JsonParser.parseString("""
                 {
