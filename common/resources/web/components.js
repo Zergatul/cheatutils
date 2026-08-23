@@ -9,6 +9,8 @@ const components = {
             args.components[name] = components[name];
         }
     },
+    ColorBox: getComponent('common/ColorBox'),
+    ColorPicker: getComponent('common/ColorPicker'),
     ItemList: getComponent('common/ItemList'),
     Radio: getComponent('common/Radio'),
     ScriptEditor: getComponent('common/ScriptEditor'),

@@ -176,7 +176,6 @@ module({
     group: 'esp',
     name: 'Entity Titles',
     component: 'EntityTitle',
-    legacyComponent: 'EntityTitleConfig',
     path: 'entity-titles',
     oldPaths: ['entity-title'],
     tags: ['entity', 'title', 'health']
@@ -360,7 +359,6 @@ module({
     group: 'visuals',
     name: 'Exploration Mini Map',
     component: 'ExplorationMiniMap',
-    legacyComponent: 'ExplorationMiniMapConfig',
     path: 'exploration-mini-map',
     tags: ['exploration', 'minimap']
 });
@@ -418,7 +416,6 @@ module({
     group: 'visuals',
     name: 'World Markers',
     component: 'WorldMarkers',
-    legacyComponent: 'WorldMarkersConfig',
     path: 'world-markers',
     tags: ['world', 'markers']
 });
