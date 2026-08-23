@@ -131,7 +131,6 @@ module({
     group: 'esp',
     name: 'Projectile Path',
     component: 'ProjectilePath',
-    legacyComponent: 'ProjectilePathConfig',
     path: 'projectile-path',
     tags: ['projectile', 'path', 'ender', 'pearl']
 });
@@ -139,7 +138,6 @@ module({
     group: 'esp',
     name: 'Light Level',
     component: 'LightLevel',
-    legacyComponent: 'LightLevelConfig',
     path: 'light-level',
     tags: ['light', 'level', 'mob', 'spawn']
 });
@@ -147,7 +145,6 @@ module({
     group: 'esp',
     name: 'End City Chunks',
     component: 'EndCityChunks',
-    legacyComponent: 'EndCityChunksConfig',
     path: 'end-city-chunks',
     tags: ['end', 'city', 'cities', 'chunks']
 });
@@ -155,7 +152,6 @@ module({
     group: 'esp',
     name: 'Entity Owner',
     component: 'EntityOwner',
-    legacyComponent: 'EntityOwnerConfig',
     path: 'entity-owner',
     tags: ['entity', 'owner']
 });
