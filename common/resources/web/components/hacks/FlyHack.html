@@ -1,0 +1,35 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Sometimes if you turn off fly hack close to surface (1-2 blocks) you can take a lot of fall damage and die (even with No Fall enabled).
+        Workaround: before turning off fly hack, fly upwards (even 0.5 seconds can be enough).
+        If you move upwards server resets internal fall distance value and sets it to zero.
+        If you move downwards for a long time server accumulates fall distance, and that's why you take fall damage.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.overrideFlyingSpeed" @change="update()">Override max speed</switch-checkbox>
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Flying speed (default 0.05):</span>
+                <input type="text" class="w4" v-model="config.flyingSpeed" @change="update()">
+            </div>
+        </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
+                OnGround flag
+            </legend>
+            <radio name="on-ground" :value="false" v-model="config.onGroundFlag" @change="update()">OnGround = false</radio>
+            <radio name="on-ground" :value="true" v-model="config.onGroundFlag" @change="update()">OnGround = true</radio>
+            <div class="section-description">
+                While flying this module overrides onGround flag in MovePlayerPacket. Both options works fine in vanilla. For Fast Break hack, Disable Fly Penalty option you need to set OnGround = true.
+            </div>
+        </fieldset>
+    </div>
+</div>

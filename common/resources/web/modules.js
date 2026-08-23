@@ -214,7 +214,6 @@ module({
     group: 'hacks',
     name: 'Auto Criticals',
     component: 'AutoCriticals',
-    legacyComponent: 'AutoCriticalsConfig',
     path: 'auto-criticals',
     tags: ['auto', 'criticals']
 });
@@ -222,9 +221,7 @@ module({
     group: 'hacks',
     name: 'Fly',
     component: 'FlyHack',
-    legacyComponent: 'FlyHackConfig',
     path: 'fly',
-    oldPaths: ['fly-hack'],
     tags: ['fly', 'hack']
 });
 module({
@@ -238,9 +235,7 @@ module({
     group: 'hacks',
     name: 'Movement',
     component: 'MovementHack',
-    legacyComponent: 'MovementHackConfig',
     path: 'movement',
-    oldPaths: ['movement-hack'],
     tags: ['movement', 'hack']
 });
 module({
@@ -261,7 +256,6 @@ module({
     group: 'hacks',
     name: 'Fast Break',
     component: 'FastBreak',
-    legacyComponent: 'FastBreakConfig',
     path: 'fast-break',
     tags: ['fast', 'break']
 });
@@ -301,9 +295,7 @@ module({
     group: 'hacks',
     name: 'Boat',
     component: 'BoatHack',
-    legacyComponent: 'BoatHackConfig',
     path: 'boat',
-    oldPaths: ['boat-hack'],
     tags: ['boat', 'hack', 'fly']
 });
 module({
@@ -331,7 +323,6 @@ module({
     group: 'hacks',
     name: 'Hitbox Size',
     component: 'HitboxSize',
-    legacyComponent: 'HitboxSizeConfig',
     path: 'hitbox-size',
     tags: ['hitbox', 'size']
 });

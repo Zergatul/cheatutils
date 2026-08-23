@@ -1,0 +1,17 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Tricks server to think every your attack is critical.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+        <div class="description">
+            Some servers may think you are lagging if you try to use auto criticals when you are not standing on the ground. In this case server tries to rollback you to another position causing problems. Use below setting in this case.
+        </div>
+        <div>
+            <switch-checkbox v-model="config.onlyOnGround" @change="update()">Only on ground</switch-checkbox>
+        </div>
+    </div>
+</div>

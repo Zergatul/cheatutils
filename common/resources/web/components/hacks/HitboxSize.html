@@ -1,0 +1,48 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Allows you to extend entities hitboxes.<br>
+        Extended hitboxes are applied only during calculation of target entity and while rendering hitboxes in debug (F3+B).
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                Width
+            </legend>
+            <div class="flex-column">
+                <div class="flex-row">
+                    <radio name="width-mode" value="PERCENT" v-model="config.widthMode" @change="update()"></radio>
+                    <input type="text" class="w4" v-model="config.widthPercent" @change="update()">
+                    <span>Percents</span>
+                </div>
+                <div class="flex-row">
+                    <radio name="width-mode" value="ABSOLUTE" v-model="config.widthMode" @change="update()"></radio>
+                    <input type="text" class="w4" v-model="config.widthAbsolute" @change="update()">
+                    <span>Absolute (in blocks)</span>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Height
+            </legend>
+            <div class="flex-column">
+                <div class="flex-row">
+                    <radio name="height-mode" value="PERCENT" v-model="config.heightMode" @change="update()"></radio>
+                    <input type="text" class="w4" v-model="config.heightPercent" @change="update()">
+                    <span>Percents</span>
+                </div>
+                <div class="flex-row">
+                    <radio name="height-mode" value="ABSOLUTE" v-model="config.heightMode" @change="update()"></radio>
+                    <input type="text" class="w4" v-model="config.heightAbsolute" @change="update()">
+                    <span>Absolute (in blocks)</span>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>
