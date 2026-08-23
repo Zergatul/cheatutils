@@ -159,16 +159,13 @@ module({
     group: 'esp',
     name: 'Free Cam',
     component: 'FreeCam',
-    legacyComponent: 'FreeCamConfig',
     path: 'freecam',
-    oldPaths: ['free-cam'],
     tags: ['freecam', 'camera']
 });
 module({
     group: 'esp',
     name: 'New Chunks',
     component: 'NewChunks',
-    legacyComponent: 'NewChunksConfig',
     path: 'new-chunks',
     tags: ['new', 'chunks']
 });
