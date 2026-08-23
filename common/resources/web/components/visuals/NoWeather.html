@@ -1,0 +1,11 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Prevents rain/snow rendering
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+    </div>
+</div>

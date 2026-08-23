@@ -4,19 +4,15 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ChunkController;
-import com.zergatul.cheatutils.helpers.MixinClientPacketListenerHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheRadiusPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -69,21 +65,6 @@ public abstract class MixinClientPacketListener {
         } else {
             return packet;
         }
-    }
-
-    @ModifyArg(
-            method = "handleDisconnect(Lnet/minecraft/network/protocol/game/ClientboundDisconnectPacket;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;disconnect(Lnet/minecraft/network/chat/Component;)V"),
-            index = 0)
-    private Component onDisconnect(Component component) {
-        if (MixinClientPacketListenerHelper.appendDisconnectMessage == null) {
-            return component;
-        }
-
-        MutableComponent replacement = MutableComponent.create(component.getContents());
-        String message = MixinClientPacketListenerHelper.appendDisconnectMessage;
-        MixinClientPacketListenerHelper.appendDisconnectMessage = null;
-        return replacement.append("\n").append(message);
     }
 
     @Inject(

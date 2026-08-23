@@ -391,7 +391,6 @@ module({
     group: 'visuals',
     name: 'Particles',
     component: 'Particles',
-    legacyComponent: 'ParticlesConfig',
     path: 'particles',
     tags: ['particles']
 });
@@ -427,7 +426,6 @@ module({
     group: 'visuals',
     name: 'No Weather',
     component: 'NoWeather',
-    legacyComponent: 'NoWeatherConfig',
     path: 'no-weather',
     tags: ['no', 'weather']
 });
@@ -435,7 +433,6 @@ module({
     group: 'visuals',
     name: 'Fake Weather',
     component: 'FakeWeather',
-    legacyComponent: 'FakeWeatherConfig',
     path: 'fake-weather',
     tags: ['fake', 'weather']
 });
@@ -544,27 +541,6 @@ module({
     component: 'WorldDownload',
     path: 'world-download',
     tags: ['world', 'download']
-});
-
-// Previously hidden routes ==========================
-
-module({
-    group: 'utility',
-    name: 'Coordinate Leak Protection',
-    component: 'CoordinateLeakProtection',
-    legacyComponent: 'CoordinateLeakProtectionConfig',
-    path: 'coordinate-leak-protection',
-    tags: ['coordinate', 'leak'],
-    hidden: true
-});
-module({
-    group: 'utility',
-    name: 'Instant Disconnect',
-    component: 'InstantDisconnect',
-    legacyComponent: 'InstantDisconnectConfig',
-    path: 'instant-disconnect',
-    tags: ['instant', 'disconnect'],
-    hidden: true
 });
 
 export { modules }

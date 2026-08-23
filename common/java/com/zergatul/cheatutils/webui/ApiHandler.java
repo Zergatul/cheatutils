@@ -635,18 +635,6 @@ public class ApiHandler implements HttpHandler {
             }
         });
 
-        apis.add(new SimpleConfigApi<>("coordinate-leak-protection", CoordinateLeakProtectionConfig.class) {
-            @Override
-            protected CoordinateLeakProtectionConfig getConfig() {
-                return ConfigStore.instance.getConfig().coordinateLeakProtectionConfig;
-            }
-
-            @Override
-            protected void setConfig(CoordinateLeakProtectionConfig config) {
-                ConfigStore.instance.getConfig().coordinateLeakProtectionConfig = config;
-            }
-        });
-
         apis.add(new SimpleConfigApi<>("block-automation", BlockAutomationConfig.class) {
             @Override
             protected BlockAutomationConfig getConfig() {

@@ -27,7 +27,6 @@ public class Config implements Sanitizable {
     public ScaffoldConfig scaffoldConfig = new ScaffoldConfig();
     public AdvancedTooltipsConfig advancedTooltipsConfig = new AdvancedTooltipsConfig();
     public FogConfig fogConfig = new FogConfig();
-    public InstantDisconnectConfig instantDisconnectConfig = new InstantDisconnectConfig();
     public KeyBindingScriptsConfig keyBindingScriptsConfig = new KeyBindingScriptsConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
     public WorldMarkersConfig worldMarkersConfig = new WorldMarkersConfig();
@@ -51,7 +50,6 @@ public class Config implements Sanitizable {
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();
     public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
-    public CoordinateLeakProtectionConfig coordinateLeakProtectionConfig = new CoordinateLeakProtectionConfig();
     public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
     public BobHurtConfig bobHurtConfig = new BobHurtConfig();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
