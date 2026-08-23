@@ -135,13 +135,33 @@ div.module-main.modern-page legend {
 }
 
 div.module-main.modern-page fieldset {
+    border-color: var(--color1);
+    border-radius: 0.5em;
+    border-style: solid;
+    border-width: 0.2em;
     width: auto;
+}
+
+div.module-main.modern-page span.field-description {
+    display: inline-block;
+    font-family: var(--font2);
+    font-size: 0.8em;
+    margin-right: 0;
+    white-space: nowrap;
 }
 
 div.module-main.modern-page div.section-description {
     color: var(--color1);
     font-family: var(--font2);
     font-size: 0.8em;
+}
+
+div.module-main.modern-page div.input-description {
+    color: inherit;
+    display: inline-block;
+    font-family: var(--font2);
+    font-size: 0.8em;
+    padding-left: 0;
 }
 
 div.module-main.modern-page a,

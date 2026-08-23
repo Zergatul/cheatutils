@@ -200,18 +200,14 @@ module({
     group: 'hacks',
     name: 'Elytra Fly',
     component: 'ElytraHack',
-    legacyComponent: 'ElytraHackConfig',
     path: 'elytra-fly',
-    oldPaths: ['elytra-hack'],
     tags: ['elytra', 'hack', 'fly']
 });
 module({
     group: 'hacks',
     name: 'Pig',
     component: 'PigHack',
-    legacyComponent: 'PigHackConfig',
     path: 'pig',
-    oldPaths: ['pig-hack'],
     tags: ['pig', 'hack']
 });
 module({
@@ -235,7 +231,6 @@ module({
     group: 'hacks',
     name: 'Elytra Tunnel',
     component: 'ElytraTunnel',
-    legacyComponent: 'ElytraTunnelConfig',
     path: 'elytra-tunnel',
     tags: ['elytra', 'tunnel']
 });
@@ -252,7 +247,6 @@ module({
     group: 'hacks',
     name: 'Scaffold',
     component: 'Scaffold',
-    legacyComponent: 'ScaffoldConfig',
     path: 'scaffold',
     tags: ['scaffold']
 });
@@ -260,7 +254,6 @@ module({
     group: 'hacks',
     name: 'No Fall',
     component: 'NoFall',
-    legacyComponent: 'NoFallConfig',
     path: 'no-fall',
     tags: ['nofall', 'no', 'fall']
 });
@@ -276,7 +269,6 @@ module({
     group: 'hacks',
     name: 'Reach',
     component: 'Reach',
-    legacyComponent: 'ReachConfig',
     path: 'reach',
     tags: ['reach']
 });
@@ -318,7 +310,6 @@ module({
     group: 'hacks',
     name: 'Inv Move',
     component: 'InvMove',
-    legacyComponent: 'InvMoveConfig',
     path: 'inv-move',
     tags: ['inventory', 'move', 'keys']
 });
@@ -326,7 +317,6 @@ module({
     group: 'hacks',
     name: 'Area Mine',
     component: 'AreaMine',
-    legacyComponent: 'AreaMineConfig',
     path: 'area-mine',
     tags: ['area', 'mine']
 });
@@ -334,7 +324,6 @@ module({
     group: 'hacks',
     name: 'Server Plugins',
     component: 'ServerPlugins',
-    legacyComponent: 'ServerPluginsConfig',
     path: 'server-plugins',
     tags: ['server', 'plugins']
 });

@@ -1,0 +1,16 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Allows you to fly in nether highways without stucking in holes in ceiling.<br>
+        For example, if ceiling is Y=123, you should enter slightly lower value, for example about 122.8. This module emulates collissions on the client, thus doesn't allow you to reach higher Y.
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+        <div class="flex-row">
+            <span>Limit Y:</span>
+            <input type="text" class="w4" v-model="config.limit" @change="update()">
+        </div>
+    </div>
+</div>
