@@ -192,7 +192,6 @@ module({
     group: 'hacks',
     name: 'Kill Aura',
     component: 'KillAura',
-    legacyComponent: 'KillAuraConfig',
     path: 'kill-aura',
     tags: ['kill', 'aura', 'auto', 'attack']
 });
