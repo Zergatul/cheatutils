@@ -1,0 +1,35 @@
+<div class="module-main">
+    <div class="description">
+        Use Keybindings to assign keys.<br>
+        Module can trick the server think you are lagging.
+        Second parameter for teleport methods called "repeats" sends your current position packet to server "repeats" times.
+        Vanilla server will reject more than 5 packets sent during single server tick.<br>
+        More packets you send - farther you can teleport.
+        I would not set this more than 5 since any basic anticheat will mark you suspicious, but you are free to set it up to 100.
+        Lowest accepted value = 0.
+    </div>
+
+    <div class="module-sections">
+        <div class="description">
+            Example 1: <b>teleport.toCrosshair(20, 5);</b> - module will attempt to teleport you not more than 20 block away.
+            It uses your crosshair as the direction for teleport.
+            If your crosshair intersects block, module tries to place you at this position (just like ender pearl).
+            If your bounding box collides with blocks in the destination, module tries to find acceptable position for player with no collision (by moving through the line of sight).
+            If this destination position is closer than 1 block, there will be no teleport.
+            You cannot use Free Cam to target something different.
+            Method returns boolean indicating if there was teleport attempt.
+        </div>
+        <div class="description">
+            Example 2: <b>teleport.vertical(-50, 5);</b> - module will attempt to teleport you -50 blocks on Y axis.
+            In other words - 50 blocks below. Use positive value to teleport upwards.
+            If you collide with blocks in the destination position, it will search for empty space just like in the example above.
+            Servers are more forgiving for vertical teleports allowing you to go through any blocks for a long distance.
+        </div>
+        <div class="description">
+            Example 3: <b>teleport.vertical(-1, -50, true, 5);</b> - module tries to find appropriate position with some block below your feet.
+            It starts from 1 block below and goes down to 50 blocks below.
+            In other words module tries to find empty space with block belows in range -1..-50.
+            You can swap -1 and -50 and module with try to find destination point from -50 and go back to -1.
+        </div>
+    </div>
+</div>

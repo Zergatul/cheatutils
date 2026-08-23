@@ -270,16 +270,13 @@ module({
     group: 'hacks',
     name: 'Teleport',
     component: 'TeleportHack',
-    legacyComponent: 'TeleportHackConfig',
     path: 'teleport',
-    oldPaths: ['teleport-hack'],
     tags: ['teleport', 'hack']
 });
 module({
     group: 'hacks',
     name: 'Fake Lag',
     component: 'FakeLag',
-    legacyComponent: 'FakeLagConfig',
     path: 'fake-lag',
     tags: ['fake', 'lag']
 });
@@ -287,7 +284,6 @@ module({
     group: 'hacks',
     name: 'Blink',
     component: 'Blink',
-    legacyComponent: 'BlinkConfig',
     path: 'blink',
     tags: ['blink']
 });
@@ -330,7 +326,6 @@ module({
     group: 'hacks',
     name: 'Bedrock Breaker',
     component: 'BedrockBreaker',
-    legacyComponent: 'BedrockBreakerConfig',
     path: 'bedrock-breaker',
     tags: ['bedrock', 'breaker']
 });
