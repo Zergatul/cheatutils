@@ -41,7 +41,7 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
         hotbarSwitchMode = HOTBAR_SWITCH_SILENT;
         pauseOnItemUse = true;
         pauseOnMining = true;
-        targets = new EntityType[] {EntityTypes.PLAYER };
+        targets = new EntityType[] { EntityTypes.PLAYER };
 
         autoRotate = false;
 
@@ -57,6 +57,30 @@ public class CrystalAuraConfig extends ModuleConfig implements Sanitizable {
         breakDelay = 1;
         fastBreak = true;
         crystalAge = 0;
+    }
+
+    public static CrystalAuraConfig copyOf(CrystalAuraConfig config) {
+        CrystalAuraConfig copy = new CrystalAuraConfig();
+        copy.enabled = config.enabled;
+        copy.minTargetDamage = config.minTargetDamage;
+        copy.maxSelfDamage = config.maxSelfDamage;
+        copy.hotbarSwitchMode = config.hotbarSwitchMode;
+        copy.pauseOnItemUse = config.pauseOnItemUse;
+        copy.pauseOnMining = config.pauseOnMining;
+        copy.targets = config.targets;
+        copy.autoRotate = config.autoRotate;
+        copy.autoPlace = config.autoPlace;
+        copy.placeRange = config.placeRange;
+        copy.placeDelay = config.placeDelay;
+        copy.autoPlaceSupport = config.autoPlaceSupport;
+        copy.airPlace = config.airPlace;
+        copy.placeSupportDelay = config.placeSupportDelay;
+        copy.autoBreak = config.autoBreak;
+        copy.breakRange = config.breakRange;
+        copy.breakDelay = config.breakDelay;
+        copy.fastBreak = config.fastBreak;
+        copy.crystalAge = config.crystalAge;
+        return copy;
     }
 
     @Override

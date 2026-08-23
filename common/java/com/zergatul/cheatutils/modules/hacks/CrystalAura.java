@@ -42,11 +42,12 @@ public class CrystalAura implements Module {
     private final List<EndCrystal> spawnedCrystals = new ArrayList<>();
     private final Int2IntMap recentlyAttackedCrystals = new Int2IntArrayMap();
     private final CrystalAuraDamageCalculator calculator = new FastCrystalAuraDamageCalculator();
-    private CrystalAuraConfig config; // we snapshot config, so it doesn't get update mid-process
+    private CrystalAuraConfig config; // we snapshot config, so it doesn't get updated mid-process
     private int placeCountdown;
     private int breakCountdown;
     private Runnable afterPositionSentAction;
     private CompletableFuture<Boolean> supportPlacingProcess;
+    private volatile boolean shouldResetState;
 
     private CrystalAura() {
         Events.BeforeProcessQueuedPackets.add(this::onBeforeProcessQueuedPackets);
@@ -59,17 +60,12 @@ public class CrystalAura implements Module {
     }
 
     public void onEnableStateChanged() {
-        targets.clear();
-        spawnedCrystals.clear();
-        recentlyAttackedCrystals.clear();
-        placeCountdown = 0;
-        breakCountdown = 0;
-        afterPositionSentAction = null;
-        supportPlacingProcess = null;
+        shouldResetState = true;
     }
 
     private void onBeforeProcessQueuedPackets() {
-        config = ConfigStore.instance.getConfig().crystalAuraConfig;
+        resetStateIfRequired();
+        config = snapshotConfig();
 
         if (mc.level == null || mc.player == null) {
             return;
@@ -144,7 +140,8 @@ public class CrystalAura implements Module {
     }
 
     private void onTickStart() {
-        config = ConfigStore.instance.getConfig().crystalAuraConfig;
+        resetStateIfRequired();
+        config = snapshotConfig();
         if (!config.enabled) {
             return;
         }
@@ -195,7 +192,9 @@ public class CrystalAura implements Module {
     }
 
     private void onTickEnd() {
-        calculator.end();
+        if (config.enabled) {
+            calculator.end();
+        }
     }
 
     private void findTargets() {
@@ -447,5 +446,23 @@ public class CrystalAura implements Module {
 
     private boolean isHotbarSilentSwitch() {
         return CrystalAuraConfig.HOTBAR_SWITCH_SILENT.equals(config.hotbarSwitchMode);
+    }
+
+    private void resetStateIfRequired() {
+        if (shouldResetState) {
+            targets.clear();
+            spawnedCrystals.clear();
+            recentlyAttackedCrystals.clear();
+            placeCountdown = 0;
+            breakCountdown = 0;
+            afterPositionSentAction = null;
+            supportPlacingProcess = null;
+
+            shouldResetState = false;
+        }
+    }
+
+    private CrystalAuraConfig snapshotConfig() {
+        return CrystalAuraConfig.copyOf(ConfigStore.instance.getConfig().crystalAuraConfig);
     }
 }
