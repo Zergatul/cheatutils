@@ -66,6 +66,7 @@ public class HttpApiSmokeTest {
                 new VillagerRollerCodeApi(),
                 new EventsScriptingCodeApi(),
                 new CoreConfigApi(),
+                new WorldDownloadApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
         server.createContext("/", new StaticFilesHandler());
@@ -82,6 +83,7 @@ public class HttpApiSmokeTest {
             verifyCodeApi(client, baseUri.resolve("code/"));
             verifyWorkspaceApi(client, baseUri);
             verifyCoreApi(client, baseUri);
+            verifyWorldDownloadApi(client, baseUri);
             verifyConcurrentRequests(client, baseUri);
 
             HttpResponse<String> get = send(client, baseUri.resolve("smoke"), "GET", null);
@@ -198,6 +200,19 @@ public class HttpApiSmokeTest {
                 "{\"port\":5005,\"advancedScripting\":false}");
         requireContains(restored, HttpResponseCodes.OK, "\"port\": 5005");
         requireContains(restored, HttpResponseCodes.OK, "\"advancedScripting\": false");
+    }
+
+    private static void verifyWorldDownloadApi(HttpClient client, URI baseUri) throws Exception {
+        URI uri = baseUri.resolve("world-download");
+        requireError(send(client, uri, "POST", "\"invalid\""),
+                HttpResponseCodes.BAD_REQUEST,
+                "Invalid body");
+        requireError(send(client, uri, "POST", "{"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Invalid JSON body");
+        requireError(send(client, uri, "POST", "\"invalid\"", false),
+                HttpResponseCodes.BAD_REQUEST,
+                "Content-Type must be application/json");
     }
 
     private static void deleteTree(Path root) throws Exception {

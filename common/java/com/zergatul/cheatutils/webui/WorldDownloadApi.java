@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.controllers.WorldDownloadController;
 import org.apache.http.HttpException;
-import org.apache.http.MethodNotSupportedException;
 
 public class WorldDownloadApi extends ApiBase {
 
@@ -12,29 +11,35 @@ public class WorldDownloadApi extends ApiBase {
     }
 
     @Override
+    public boolean requiresJsonContentType() {
+        return true;
+    }
+
+    @Override
     public String get() throws HttpException {
         return gson.toJson(new Status());
     }
 
     @Override
     public String post(String body) throws HttpException {
-        if (body.startsWith("start:")) {
+        String command = WebHelper.parseJson(gson, body, String.class);
+
+        if (command.startsWith("start:")) {
             try {
-                WorldDownloadController.instance.start(body.substring(6));
+                WorldDownloadController.instance.start(command.substring(6));
                 return get();
             }
             catch (Throwable e) {
-                e.printStackTrace();
-                throw new InternalServerErrorException(e.getMessage());
+                throw new ApiException(e.getMessage(), HttpResponseCodes.INTERNAL_SERVER_ERROR, e);
             }
         }
 
-        if (body.equals("stop")) {
+        if (command.equals("stop")) {
             WorldDownloadController.instance.stop();
             return get();
         }
 
-        throw new MethodNotSupportedException("Invalid body");
+        throw new ApiException("Invalid body", HttpResponseCodes.BAD_REQUEST);
     }
 
     public static class Status {

@@ -345,7 +345,6 @@ module({
     group: 'visuals',
     name: 'Shulker Tooltip',
     component: 'ShulkerTooltip',
-    legacyComponent: 'ShulkerTooltipConfig',
     path: 'shulker-tooltip',
     tags: ['shulker', 'tooltip']
 });
@@ -405,7 +404,6 @@ module({
     group: 'visuals',
     name: 'Zoom',
     component: 'Zoom',
-    legacyComponent: 'ZoomConfig',
     path: 'zoom',
     tags: ['zoom']
 });
@@ -550,7 +548,6 @@ module({
     group: 'utility',
     name: 'World Download',
     component: 'WorldDownload',
-    legacyComponent: 'WorldDownloadConfig',
     path: 'world-download',
     tags: ['world', 'download']
 });
