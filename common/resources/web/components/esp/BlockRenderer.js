@@ -48,7 +48,7 @@ class BlockRenderingCanvas {
         this.canvas.width = INTERNAL_CANVAS_SIZE;
         this.canvas.height = INTERNAL_CANVAS_SIZE;
 
-        const gl = this.canvas.getContext('webgl');
+        const gl = this.canvas.getContext('webgl', { antialias: false });
         if (!gl) {
             throw new Error('WebGL is required for block previews.');
         }
@@ -164,7 +164,9 @@ class BlockRenderingCanvas {
     setupMatrix() {
         const distance = 5;
         const angle = performance.now() / 1000 % (2 * Math.PI);
-        lookAt(this.modelViewMatrix, [distance * Math.sin(angle), distance / 2, distance * Math.cos(angle)], [0, 0, 0], [0, 1, 0]);
+        const x = distance * Math.sin(angle) + 0.5;
+        const z = distance * Math.cos(angle) + 0.5;
+        lookAt(this.modelViewMatrix, [x, distance / 2 + 0.5, z], [0.5, 0.5, 0.5], [0, 1, 0]);
         multiply(this.modelViewProjectionMatrix, this.projectionMatrix, this.modelViewMatrix);
     }
 

@@ -214,6 +214,24 @@ div.module-main.modern-page ul.list-base > li {
     padding: 0.2em 0.4em;
 }
 
+div.module-main.modern-page input[type=checkbox].cb {
+    border: 1px solid var(--bc, var(--border));
+    border-radius: 0.4em;
+    height: 2em;
+    width: 2em;
+}
+
+div.module-main.modern-page input[type=checkbox].cb:after {
+    border: 0.2em solid var(--active-inner);
+    border-left: 0;
+    border-top: 0;
+    box-sizing: content-box;
+    height: 0.7em;
+    left: 0.65em;
+    top: 0.4em;
+    width: 0.4em;
+}
+
 /* Accessibility additions that do not change the 26.2 visual layout. */
 .visually-hidden {
     clip: rect(0 0 0 0);
