@@ -1,10 +1,12 @@
 package com.zergatul.cheatutils.common;
 
 import com.zergatul.cheatutils.common.events.*;
+import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 public class Events {
@@ -18,6 +20,12 @@ public class Events {
     public static final SimpleEventHandler ClientPlayerLoggingOut = new SimpleEventHandler();
     public static final SimpleEventHandler ChunkLoaded = new SimpleEventHandler();
     public static final SimpleEventHandler ChunkUnloaded = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<LevelChunk> RawChunkLoaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<LevelChunk> RawChunkUnloaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<BlockUpdateEvent> RawBlockUpdated = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<SnapshotChunk> SnapshotChunkLoaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<ChunkPos> SnapshotChunkUnloaded = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<BlockUpdateEvent> SnapshotBlockUpdated = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<LevelChunk> SmartChunkLoaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<LevelChunk> SmartChunkUnloaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockUpdateEvent> BlockUpdated = new ParameterizedEventHandler<>();
@@ -33,6 +41,7 @@ public class Events {
     public static final ParameterizedEventHandler<RenderGuiEvent> PostRenderGui = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<MouseScrollEvent> MouseScroll = new CancelableEventHandler<>();
     public static final SimpleEventHandler RenderTickStart = new SimpleEventHandler();
+    public static final SimpleEventHandler MainLoopFrameEnd = new SimpleEventHandler();
     public static final SimpleEventHandler WorldUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
     public static final ParameterizedEventHandler<GatherTooltipComponentsEvent> GatherTooltipComponents = new ParameterizedEventHandler<>();

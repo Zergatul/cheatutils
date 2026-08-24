@@ -93,6 +93,11 @@ public abstract class MixinMinecraft {
         Events.ClientTickEnd.trigger();
     }
 
+    @Inject(at = @At("TAIL"), method = "runTick(Z)V")
+    private void onMainLoopFrameEnd(boolean tick, CallbackInfo info) {
+        Events.MainLoopFrameEnd.trigger();
+    }
+
     @Inject(
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetData()V", shift = At.Shift.AFTER),
             method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V")

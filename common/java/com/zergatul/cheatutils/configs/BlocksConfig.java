@@ -28,10 +28,7 @@ public class BlocksConfig implements ModuleStateProvider, Sanitizable {
 
     public void apply() {
         refreshMap();
-        BlockFinder.instance.removeAllConfigs();
-        for (BlockEspConfig config: configs) {
-            BlockFinder.instance.addConfig(config);
-        }
+        BlockFinder.instance.applyConfigs(configs);
     }
 
     public BlockEspConfig find(Block block) {

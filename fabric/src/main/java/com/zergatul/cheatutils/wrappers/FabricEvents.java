@@ -12,9 +12,11 @@ public class FabricEvents {
             Events.RenderWorldLast.trigger(new RenderWorldLastEvent(context.matrixStack(), context.tickDelta(), context.projectionMatrix()));
         });
         ClientChunkEvents.CHUNK_LOAD.register((level, chunk) -> {
+            Events.RawChunkLoaded.trigger(chunk);
             Events.ChunkLoaded.trigger();
         });
         ClientChunkEvents.CHUNK_UNLOAD.register((level, chunk) -> {
+            Events.RawChunkUnloaded.trigger(chunk);
             Events.ChunkUnloaded.trigger();
         });
     }

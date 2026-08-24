@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules;
 
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
+import com.zergatul.cheatutils.concurrent.MainLoopEndExecutor;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.esp.*;
@@ -23,6 +24,8 @@ public class Modules {
         register(NetworkPacketsController.instance);
         register(TeleportDetectorController.instance);
         register(SpeedCounterController.instance);
+        register(MainLoopEndExecutor.instance);
+        register(BlockEventsProcessor.instance);
         register(BlockFinder.instance);
         register(FakeRotation.instance);
 

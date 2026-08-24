@@ -171,7 +171,9 @@ public class ChunkController {
     private synchronized void processBlockUpdatePacket(ClientboundBlockUpdatePacket packet) {
         LevelChunk chunk = getChunkByPos(packet.getPos());
         if (chunk != null) {
-            Events.BlockUpdated.trigger(new BlockUpdateEvent(chunk, packet.getPos(), packet.getBlockState()));
+            BlockUpdateEvent event = new BlockUpdateEvent(chunk, packet.getPos(), packet.getBlockState());
+            Events.RawBlockUpdated.trigger(event);
+            Events.BlockUpdated.trigger(event);
         }
     }
 
@@ -180,7 +182,9 @@ public class ChunkController {
             LevelChunk chunk = getChunkByPos(pos$mutable);
             if (chunk != null) {
                 BlockPos pos = new BlockPos(pos$mutable.getX(), pos$mutable.getY(), pos$mutable.getZ());
-                Events.BlockUpdated.trigger(new BlockUpdateEvent(chunk, pos, state));
+                BlockUpdateEvent event = new BlockUpdateEvent(chunk, pos, state);
+                Events.RawBlockUpdated.trigger(event);
+                Events.BlockUpdated.trigger(event);
             }
         });
     }

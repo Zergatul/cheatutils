@@ -1,239 +1,157 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.datafixers.util.Pair;
+import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.ChunkController;
-import com.zergatul.cheatutils.utils.Dimension;
-import com.zergatul.cheatutils.utils.ThreadLoadCounter;
-import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
-import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
+import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
+import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.Heightmap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BlockFinder {
 
     public static final BlockFinder instance = new BlockFinder();
 
-    // all modification to blocks are done in eventLoop thread
     public final Map<BlockEspConfig, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
 
-    private final Logger logger = LogManager.getLogger(BlockFinder.class);
-    private final Object loopWaitEvent = new Object();
-    private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
-    private final ThreadLoadCounter counter = new ThreadLoadCounter();
-    private Thread eventLoop;
-
     private BlockFinder() {
-        Events.ScannerChunkLoaded.add(this::scanChunk);
-        Events.ScannerChunkUnloaded.add(this::unloadChunk);
-        Events.ScannerBlockUpdated.add(this::handleBlockUpdate);
-
-        restartBackgroundThread(null);
-    }
-
-    public void restart() {
-        restartBackgroundThread(() -> {
-            clear();
-            for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
-                scanChunk(pair.getSecond());
-            }
-        });
-    }
-
-    private void restartBackgroundThread(Runnable beforeThreadStart) {
-        /* stop */
-        if (eventLoop != null) {
-            queue.clear();
-            synchronized (loopWaitEvent) {
-                loopWaitEvent.notify();
-            }
-            eventLoop.interrupt();
-        }
-
-        eventLoop = null;
-
-        /* start */
-
-        eventLoop = new Thread(() -> {
-            boolean first = true;
-            try {
-                while (true) {
-                    counter.startWait();
-                    if (first) {
-                        first = false;
-                    } else {
-                        synchronized (loopWaitEvent) {
-                            loopWaitEvent.wait();
-                        }
-                    }
-                    counter.startLoad();
-                    while (queue.size() > 0) {
-                        Runnable process = queue.remove();
-                        process.run();
-                        Thread.yield();
-                    }
-                }
-            }
-            catch (InterruptedException e) {
-                // do nothing
-            }
-            catch (Throwable e) {
-                logger.error("BlockFinder scan thread crash.", e);
-            }
-            finally {
-                counter.dispose();
-            }
-        }, "BlockFinderScanThread");
-
-        if (beforeThreadStart != null) {
-            beforeThreadStart.run();
-        }
-
-        eventLoop.start();
-    }
-
-    public void clear() {
-        addToQueue(() -> {
-            for (BlockEspConfig config: blocks.keySet()) {
-                blocks.put(config, ConcurrentHashMap.newKeySet());
-            }
-        });
+        Events.SnapshotChunkLoaded.add(this::onChunkLoaded);
+        Events.SnapshotChunkUnloaded.add(this::onChunkUnloaded);
+        Events.SnapshotBlockUpdated.add(this::onBlockUpdated);
     }
 
     public void addConfig(BlockEspConfig config) {
-        addToQueue(() -> {
+        BlockEventsProcessor.instance.getExecutor().execute(() -> {
             blocks.put(config, ConcurrentHashMap.newKeySet());
-            scan(config);
+            BlockEventsProcessor.instance.requestScan(config);
+        });
+    }
+
+    public void applyConfigs(ImmutableList<BlockEspConfig> configs) {
+        BlockEventsProcessor.instance.getExecutor().execute(() -> {
+            blocks.clear();
+            for (BlockEspConfig config : configs) {
+                blocks.put(config, ConcurrentHashMap.newKeySet());
+            }
+            BlockEventsProcessor.instance.requestFullScan();
         });
     }
 
     public void removeConfig(BlockEspConfig config) {
-        addToQueue(() -> blocks.remove(config));
+        blocks.remove(config);
     }
 
     public void removeAllConfigs() {
-        addToQueue(blocks::clear);
+        blocks.clear();
     }
 
-    public String getThreadState() {
-        Thread thread = eventLoop;
-        if (thread != null) {
-            return eventLoop.getState().toString();
-        } else {
-            return null;
+    public void clear() {
+        BlockEventsProcessor.instance.getExecutor().execute(this::clearPositions);
+    }
+
+    public void clearPositions() {
+        for (Set<BlockPos> set : blocks.values()) {
+            set.clear();
         }
     }
 
-    public double getScanningThreadLoadPercent() {
-        return 100d * counter.getLoad(1);
+    public void restart() {
+        rescan();
     }
 
-    public int getScanningQueueCount() {
-        return queue.size();
+    public void rescan() {
+        BlockEventsProcessor.instance.getExecutor().execute(() -> {
+            clearPositions();
+            BlockEventsProcessor.instance.requestFullScan();
+        });
     }
 
-    private void scanChunk(LevelChunk chunk) {
-        addToQueue(() -> {
-            LevelChunkMixinInterface mixinChunk = (LevelChunkMixinInterface) chunk;
-            int minY = mixinChunk.getDimension().getMinY();
-            int xc = chunk.getPos().x << 4;
-            int zc = chunk.getPos().z << 4;
-            var pos = new BlockPos.MutableBlockPos();
-            for (int x = 0; x < 16; x++) {
-                pos.setX(xc | x);
-                for (int z = 0; z < 16; z++) {
-                    pos.setZ(zc | z);
-                    int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
-                    for (int y = minY; y <= height; y++) {
-                        pos.setY(y);
-                        BlockState state = chunk.getBlockState(pos);
-                        checkBlock(state, pos);
-                    }
+    private void onChunkLoaded(SnapshotChunk chunk) {
+        Map<Block, BlockEspConfig> map = ConfigStore.instance.getConfig().blocks.getMap();
+        int minY = chunk.getMinY();
+        int chunkX = chunk.getPos().x << 4;
+        int chunkZ = chunk.getPos().z << 4;
+        for (int x = 0; x < 16; x++) {
+            int worldX = chunkX | x;
+            for (int z = 0; z < 16; z++) {
+                int worldZ = chunkZ | z;
+                int height = minY + chunk.getHeight(x, z);
+                for (int y = minY; y < height; y++) {
+                    checkBlock(worldX, y, worldZ, chunk.getBlockState(x, y, z), map);
                 }
             }
-        });
-    }
-
-    private void unloadChunk(LevelChunk chunk) {
-        addToQueue(() -> {
-            int cx = chunk.getPos().x;
-            int cz = chunk.getPos().z;
-            for (Set<BlockPos> set : blocks.values()) {
-                set.removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getZ() >> 4) == cz);
-            }
-        });
-    }
-
-    private void handleBlockUpdate(BlockUpdateEvent event) {
-        addToQueue(() -> {
-            for (Set<BlockPos> set: blocks.values()) {
-                set.remove(event.pos());
-            }
-            checkBlock(event.state(), event.pos());
-        });
-    }
-
-    private void scan(BlockEspConfig config) {
-        for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
-            scanChunkForConfig(pair.getFirst(), pair.getSecond(), config);
         }
     }
 
-    private void scanChunkForConfig(Dimension dimension, ChunkAccess chunk, BlockEspConfig config) {
+    private void onChunkUnloaded(ChunkPos pos) {
+        int chunkX = pos.x;
+        int chunkZ = pos.z;
+        for (Set<BlockPos> set : blocks.values()) {
+            set.removeIf(blockPos ->
+                    (blockPos.getX() >> 4) == chunkX && (blockPos.getZ() >> 4) == chunkZ);
+        }
+    }
+
+    private void onBlockUpdated(BlockUpdateEvent event) {
+        BlockPos pos = event.pos();
+        for (Set<BlockPos> set : blocks.values()) {
+            set.remove(pos);
+        }
+        checkBlock(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ(),
+                event.state(),
+                ConfigStore.instance.getConfig().blocks.getMap());
+    }
+
+    public void scanChunkForBlock(SnapshotChunk chunk, BlockEspConfig config) {
         Set<BlockPos> set = blocks.get(config);
         if (set == null) {
             return;
         }
-        int minY = dimension.getMinY();
-        int xc = chunk.getPos().x << 4;
-        int zc = chunk.getPos().z << 4;
-        var pos = new BlockPos.MutableBlockPos();
+
+        ImmutableList<Block> blockTypes = config.blocks;
+        int minY = chunk.getMinY();
+        int chunkX = chunk.getPos().x << 4;
+        int chunkZ = chunk.getPos().z << 4;
         for (int x = 0; x < 16; x++) {
-            pos.setX(xc | x);
+            int worldX = chunkX | x;
             for (int z = 0; z < 16; z++) {
-                pos.setZ(zc | z);
-                int height = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
-                for (int y = minY; y <= height; y++) {
-                    pos.setY(y);
-                    BlockState state = chunk.getBlockState(pos);
-                    if (config.blocks.contains(state.getBlock())) {
-                        set.add(pos.immutable());
+                int worldZ = chunkZ | z;
+                int height = minY + chunk.getHeight(x, z);
+                for (int y = minY; y < height; y++) {
+                    Block block = chunk.getBlockState(x, y, z).getBlock();
+                    for (int i = 0; i < blockTypes.size(); i++) {
+                        if (block == blockTypes.get(i)) {
+                            set.add(new BlockPos(worldX, y, worldZ));
+                            break;
+                        }
                     }
                 }
             }
         }
     }
 
-    private void checkBlock(BlockState state, BlockPos pos) {
+    private void checkBlock(int x, int y, int z, BlockState state, Map<Block, BlockEspConfig> map) {
         if (state.isAir()) {
             return;
         }
 
-        BlockEspConfig config = ConfigStore.instance.getConfig().blocks.find(state.getBlock());
+        BlockEspConfig config = map.get(state.getBlock());
         if (config != null) {
             Set<BlockPos> set = blocks.get(config);
             if (set != null) {
-                set.add(pos.immutable());
+                set.add(new BlockPos(x, y, z));
             }
-        }
-    }
-
-    private void addToQueue(Runnable runnable) {
-        queue.add(runnable);
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
         }
     }
 }
