@@ -2,15 +2,17 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.render.BlockOverlayRenderer;
 import com.zergatul.cheatutils.render.DebugLinesLineRenderer;
+import com.zergatul.cheatutils.render.InstancedCubeLineRenderer;
+import com.zergatul.cheatutils.render.InstancedTracerRenderer;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.ScreenSpaceLineRenderer;
 
 public class RenderUtilities {
 
     public static final RenderUtilities instance = new RenderUtilities();
 
     private final LineRenderer lineRenderer = new DebugLinesLineRenderer();
-    private final ScreenSpaceLineRenderer screenSpaceLineRenderer = new ScreenSpaceLineRenderer();
+    private final InstancedCubeLineRenderer instancedCubeLineRenderer = new InstancedCubeLineRenderer();
+    private final InstancedTracerRenderer instancedTracerRenderer = new InstancedTracerRenderer();
     private final BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();
 
     private RenderUtilities() {
@@ -21,8 +23,12 @@ public class RenderUtilities {
         return lineRenderer;
     }
 
-    public ScreenSpaceLineRenderer getScreenSpaceLineRenderer() {
-        return screenSpaceLineRenderer;
+    public InstancedCubeLineRenderer getInstancedCubeLineRenderer() {
+        return instancedCubeLineRenderer;
+    }
+
+    public InstancedTracerRenderer getInstancedTracerRenderer() {
+        return instancedTracerRenderer;
     }
 
     public BlockOverlayRenderer getBlockOverlayRenderer() {

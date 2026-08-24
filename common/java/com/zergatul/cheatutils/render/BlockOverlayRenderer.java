@@ -2,24 +2,19 @@ package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.utils.SharedVertexBuffer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 import java.awt.Color;
 
 public class BlockOverlayRenderer {
 
-    private final BufferBuilder worldBuffer = new BufferBuilder(4096);
-    private final BufferBuilder screenBuffer = new BufferBuilder(256);
+    private final InstancedBlockRenderer instancedRenderer = new InstancedBlockRenderer();
 
     private RenderWorldLastEvent event;
     private Vec3 view;
@@ -27,7 +22,10 @@ public class BlockOverlayRenderer {
     private int texture;
     private int width;
     private int height;
-    private int vertices;
+    private ShaderProgram compositeProgram;
+    private int compositeVao;
+    private int textureUniform;
+    private int colorUniform;
 
     public void begin(RenderWorldLastEvent event) {
         if (this.event != null) {
@@ -36,23 +34,14 @@ public class BlockOverlayRenderer {
 
         this.event = event;
         this.view = event.getCamera().getPosition();
-        this.vertices = 0;
-        worldBuffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
+        instancedRenderer.begin();
     }
 
-    public void cuboid(double x1, double y1, double z1, double x2, double y2, double z2) {
-        // bottom
-        quad(x2, y1, z2, x1, y1, z2, x1, y1, z1, x2, y1, z1);
-        // top
-        quad(x2, y2, z2, x2, y2, z1, x1, y2, z1, x1, y2, z2);
-        // west
-        quad(x1, y1, z1, x1, y1, z2, x1, y2, z2, x1, y2, z1);
-        // east
-        quad(x2, y1, z1, x2, y2, z1, x2, y2, z2, x2, y1, z2);
-        // north
-        quad(x2, y1, z1, x1, y1, z1, x1, y2, z1, x2, y2, z1);
-        // south
-        quad(x2, y1, z2, x2, y2, z2, x1, y2, z2, x1, y1, z2);
+    public void block(double x, double y, double z) {
+        instancedRenderer.block(
+                (float) (x - view.x),
+                (float) (y - view.y),
+                (float) (z - view.z));
     }
 
     public void end(Color color) {
@@ -60,8 +49,7 @@ public class BlockOverlayRenderer {
             throw new IllegalStateException("Renderer is not active");
         }
 
-        if (vertices == 0) {
-            worldBuffer.discard();
+        if (instancedRenderer.isEmpty()) {
             reset();
             return;
         }
@@ -73,26 +61,16 @@ public class BlockOverlayRenderer {
     }
 
     public void close() {
+        instancedRenderer.close();
+        if (compositeProgram != null) {
+            compositeProgram.close();
+            compositeProgram = null;
+        }
+        if (compositeVao != 0) {
+            GL30.glDeleteVertexArrays(compositeVao);
+            compositeVao = 0;
+        }
         deleteFramebuffer();
-    }
-
-    private void quad(
-            double x1, double y1, double z1,
-            double x2, double y2, double z2,
-            double x3, double y3, double z3,
-            double x4, double y4, double z4
-    ) {
-        vertex(x1, y1, z1);
-        vertex(x2, y2, z2);
-        vertex(x4, y4, z4);
-        vertex(x2, y2, z2);
-        vertex(x3, y3, z3);
-        vertex(x4, y4, z4);
-    }
-
-    private void vertex(double x, double y, double z) {
-        worldBuffer.vertex(x - view.x, y - view.y, z - view.z).endVertex();
-        vertices++;
     }
 
     private void drawMask() {
@@ -106,55 +84,52 @@ public class BlockOverlayRenderer {
         RenderSystem.disableCull();
         RenderSystem.setShaderColor(1, 1, 1, 1);
 
-        SharedVertexBuffer.instance.bind();
-        SharedVertexBuffer.instance.upload(worldBuffer.end());
-        SharedVertexBuffer.instance.drawWithShader(
-                event.getPoseMatrix(),
-                event.getProjectionMatrix(),
-                GameRenderer.getPositionShader());
-        VertexBuffer.unbind();
+        instancedRenderer.draw(event);
     }
 
     private void drawComposite(Color color) {
         Minecraft mc = Minecraft.getInstance();
         mc.getMainRenderTarget().bindWrite(false);
         GL30.glViewport(0, 0, width, height);
-
-        screenBuffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX);
-        screenVertex(-1, -1, 0, 0);
-        screenVertex(1, -1, 1, 0);
-        screenVertex(1, 1, 1, 1);
-        screenVertex(-1, -1, 0, 0);
-        screenVertex(1, 1, 1, 1);
-        screenVertex(-1, 1, 0, 1);
+        ensureCompositeProgram();
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableDepthTest();
         RenderSystem.disableCull();
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.setShaderColor(
+
+        GlStateManager._activeTexture(GL13.GL_TEXTURE0);
+        GlStateManager._bindTexture(texture);
+        GL20.glUseProgram(compositeProgram.getId());
+        GL20.glUniform1i(textureUniform, 0);
+        GL20.glUniform4f(
+                colorUniform,
                 color.getRed() / 255f,
                 color.getGreen() / 255f,
                 color.getBlue() / 255f,
                 color.getAlpha() / 255f);
+        GL30.glBindVertexArray(compositeVao);
+        GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
+        GL30.glBindVertexArray(0);
+        GL20.glUseProgram(0);
+        GlStateManager._bindTexture(0);
 
-        SharedVertexBuffer.instance.bind();
-        SharedVertexBuffer.instance.upload(screenBuffer.end());
-        SharedVertexBuffer.instance.drawWithShader(
-                new Matrix4f(),
-                new Matrix4f(),
-                GameRenderer.getPositionTexShader());
-        VertexBuffer.unbind();
-
-        RenderSystem.setShaderColor(1, 1, 1, 1);
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.enableDepthTest();
     }
 
-    private void screenVertex(float x, float y, float u, float v) {
-        screenBuffer.vertex(x, y, 0).uv(u, v).endVertex();
+    private void ensureCompositeProgram() {
+        if (compositeProgram != null) {
+            return;
+        }
+        String root = "assets/cheatutils/shaders/";
+        compositeProgram = new ShaderProgram(
+                root + "overlay-composite.vsh",
+                root + "overlay-composite.fsh");
+        textureUniform = compositeProgram.getUniform("BufferTexture");
+        colorUniform = compositeProgram.getUniform("OverlayColor");
+        compositeVao = GL30.glGenVertexArrays();
     }
 
     private void ensureFramebuffer() {
