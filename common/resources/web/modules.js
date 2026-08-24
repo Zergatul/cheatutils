@@ -113,7 +113,6 @@ module({
     group: 'esp',
     name: 'Block ESP',
     component: 'BlockESP',
-    legacyComponent: 'BlocksConfig',
     path: 'block-esp',
     oldPaths: ['blocks'],
     tags: ['blocks', 'esp', 'xray']
