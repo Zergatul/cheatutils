@@ -16,6 +16,7 @@ public class RenderWorldLastEvent {
     private final Matrix4f poseMatrix;
     private final float tickDelta;
     private final Matrix4f projectionMatrix;
+    private final Matrix4f mvpMatrix;
     private final Vec3 tracerCenter;
     private final Vec3 playerPos;
     private final Camera camera;
@@ -25,6 +26,7 @@ public class RenderWorldLastEvent {
         this.poseMatrix = new Matrix4f(matrixStack.last().pose());
         this.tickDelta = tickDelta;
         this.projectionMatrix = new Matrix4f(projectionMatrix);
+        this.mvpMatrix = new Matrix4f(projectionMatrix).mul(poseMatrix);
 
         Minecraft mc = Minecraft.getInstance();
         camera = mc.gameRenderer.getMainCamera();
@@ -86,6 +88,10 @@ public class RenderWorldLastEvent {
 
     public Matrix4f getProjectionMatrix() {
         return projectionMatrix;
+    }
+
+    public Matrix4f getMvpMatrix() {
+        return mvpMatrix;
     }
 
     public Vec3 getTracerCenter() {
