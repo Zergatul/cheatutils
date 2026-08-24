@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.configs.BlockTracerConfig;
+import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.ApiVisibility;
@@ -29,16 +29,13 @@ public class BlocksApi {
         ConfigStore.instance.requestWrite();
     }
 
-    private BlockTracerConfig getConfig(String blockId) {
+    private BlockEspConfig getConfig(String blockId) {
         ResourceLocation location = new ResourceLocation(blockId);
         Block block = Registries.BLOCKS.getValue(location);
         if (block == null) {
             return null;
         }
 
-        return ConfigStore.instance.getConfig().blocks.configs.stream()
-                .filter(c -> c.block == block)
-                .findFirst()
-                .orElse(null);
+        return ConfigStore.instance.getConfig().blocks.find(block);
     }
 }

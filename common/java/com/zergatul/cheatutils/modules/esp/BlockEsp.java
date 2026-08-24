@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.BlockTracerConfig;
+import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.TracerConfigBase;
+import com.zergatul.cheatutils.configs.EspConfigBase;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
@@ -38,18 +38,18 @@ public class BlockEsp {
         LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
         renderer.begin(event, false);
 
-        for (BlockTracerConfig config: ConfigStore.instance.getConfig().blocks.configs) {
+        for (BlockEspConfig config : ConfigStore.instance.getConfig().blocks.getBlockConfigs()) {
             if (!config.enabled) {
                 continue;
             }
 
-            Set<BlockPos> set = BlockFinder.instance.blocks.get(config.block);
+            Set<BlockPos> set = BlockFinder.instance.blocks.get(config);
             if (set == null) {
                 continue;
             }
 
             double tracerMaxDistanceSqr = config.getTracerMaxDistanceSqr();
-            double outlineMaxDistanceSqr = config.getOutlineMaxDistanceSqr();
+            double boundingBoxMaxDistanceSqr = config.getBoundingBoxMaxDistanceSqr();
 
             for (BlockPos pos: set) {
                 double dx = pos.getX() - playerX;
@@ -57,7 +57,7 @@ public class BlockEsp {
                 double dz = pos.getZ() - playerZ;
                 double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-                if (config.drawOutline && distanceSqr < outlineMaxDistanceSqr) {
+                if (config.drawBoundingBox && distanceSqr < boundingBoxMaxDistanceSqr) {
                     renderBlockBounding(renderer, pos, config);
                 }
 
@@ -74,7 +74,7 @@ public class BlockEsp {
         renderer.end();
     }
 
-    private void renderBlockBounding(LineRenderer renderer, BlockPos pos, BlockTracerConfig config) {
+    private void renderBlockBounding(LineRenderer renderer, BlockPos pos, BlockEspConfig config) {
         int x1 = pos.getX();
         int y1 = pos.getY();
         int z1 = pos.getZ();
@@ -82,14 +82,14 @@ public class BlockEsp {
         int y2 = y1 + 1;
         int z2 = z1 + 1;
 
-        float r = config.outlineColor.getRed() / 255f;
-        float g = config.outlineColor.getGreen() / 255f;
-        float b = config.outlineColor.getBlue() / 255f;
+        float r = config.boundingBoxColor.getRed() / 255f;
+        float g = config.boundingBoxColor.getGreen() / 255f;
+        float b = config.boundingBoxColor.getBlue() / 255f;
 
         renderer.cuboid(x1, y1, z1, x2, y2, z2, r, g, b, 1f);
     }
 
-    private void drawTracer(LineRenderer renderer, double tx, double ty, double tz, double x, double y, double z, TracerConfigBase config) {
+    private void drawTracer(LineRenderer renderer, double tx, double ty, double tz, double x, double y, double z, EspConfigBase config) {
         float r = config.tracerColor.getRed() / 255f;
         float g = config.tracerColor.getGreen() / 255f;
         float b = config.tracerColor.getBlue() / 255f;

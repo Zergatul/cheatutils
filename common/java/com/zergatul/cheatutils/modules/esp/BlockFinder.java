@@ -2,7 +2,8 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.BlockTracerConfig;
+import com.zergatul.cheatutils.configs.BlockEspConfig;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.ChunkController;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.ThreadLoadCounter;
@@ -26,7 +27,7 @@ public class BlockFinder {
     public static final BlockFinder instance = new BlockFinder();
 
     // all modification to blocks are done in eventLoop thread
-    public final Map<Block, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
+    public final Map<BlockEspConfig, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
 
     private final Logger logger = LogManager.getLogger(BlockFinder.class);
     private final Object loopWaitEvent = new Object();
@@ -105,21 +106,21 @@ public class BlockFinder {
 
     public void clear() {
         addToQueue(() -> {
-            for (Block block: blocks.keySet()) {
-                blocks.put(block, ConcurrentHashMap.newKeySet());
+            for (BlockEspConfig config: blocks.keySet()) {
+                blocks.put(config, ConcurrentHashMap.newKeySet());
             }
         });
     }
 
-    public void addConfig(BlockTracerConfig config) {
+    public void addConfig(BlockEspConfig config) {
         addToQueue(() -> {
-            blocks.put(config.block, ConcurrentHashMap.newKeySet());
-            scan(config.block);
+            blocks.put(config, ConcurrentHashMap.newKeySet());
+            scan(config);
         });
     }
 
-    public void removeConfig(BlockTracerConfig config) {
-        addToQueue(() -> blocks.remove(config.block));
+    public void removeConfig(BlockEspConfig config) {
+        addToQueue(() -> blocks.remove(config));
     }
 
     public void removeAllConfigs() {
@@ -169,7 +170,7 @@ public class BlockFinder {
         addToQueue(() -> {
             int cx = chunk.getPos().x;
             int cz = chunk.getPos().z;
-            for (Set<BlockPos> set: blocks.values()) {
+            for (Set<BlockPos> set : blocks.values()) {
                 set.removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getZ() >> 4) == cz);
             }
         });
@@ -184,14 +185,17 @@ public class BlockFinder {
         });
     }
 
-    private void scan(Block block) {
+    private void scan(BlockEspConfig config) {
         for (Pair<Dimension, LevelChunk> pair: ChunkController.instance.getLoadedChunks()) {
-            scanChunkForBlock(pair.getFirst(), pair.getSecond(), block);
+            scanChunkForConfig(pair.getFirst(), pair.getSecond(), config);
         }
     }
 
-    private void scanChunkForBlock(Dimension dimension, ChunkAccess chunk, Block block) {
-        Set<BlockPos> set = blocks.get(block);
+    private void scanChunkForConfig(Dimension dimension, ChunkAccess chunk, BlockEspConfig config) {
+        Set<BlockPos> set = blocks.get(config);
+        if (set == null) {
+            return;
+        }
         int minY = dimension.getMinY();
         int xc = chunk.getPos().x << 4;
         int zc = chunk.getPos().z << 4;
@@ -204,7 +208,7 @@ public class BlockFinder {
                 for (int y = minY; y <= height; y++) {
                     pos.setY(y);
                     BlockState state = chunk.getBlockState(pos);
-                    if (state.getBlock() == block) {
+                    if (config.blocks.contains(state.getBlock())) {
                         set.add(pos.immutable());
                     }
                 }
@@ -217,9 +221,12 @@ public class BlockFinder {
             return;
         }
 
-        Set<BlockPos> set = blocks.get(state.getBlock());
-        if (set != null) {
-            set.add(pos.immutable());
+        BlockEspConfig config = ConfigStore.instance.getConfig().blocks.find(state.getBlock());
+        if (config != null) {
+            Set<BlockPos> set = blocks.get(config);
+            if (set != null) {
+                set.add(pos.immutable());
+            }
         }
     }
 

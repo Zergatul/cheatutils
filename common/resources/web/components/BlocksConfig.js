@@ -52,7 +52,7 @@ function createComponent(template) {
             axios.get('/api/blocks').then(function (response) {
                 self.blocksConfigList = response.data;
                 self.blocksConfigMap = {};
-                self.blocksConfigList.forEach(c => self.blocksConfigMap[c.block] = c);
+                self.blocksConfigList.forEach(c => c.blocks.forEach(b => self.blocksConfigMap[b] = c));
                 self.$nextTick(function () {
                     onBlocksConfigRendered();
                 });
@@ -109,7 +109,7 @@ function createComponent(template) {
                 } else {
                     this.selectedConfig = null;
                     let self = this;
-                    axios.post('/api/blocks', { block: id }).then(function (response) {
+                    axios.post('/api/blocks-add', id).then(function (response) {
                         self.selectedConfig = response.data;
                         self.blocksConfigList.push(self.selectedConfig);
                         self.blocksConfigMap[id] = self.selectedConfig;
@@ -119,14 +119,13 @@ function createComponent(template) {
             remove() {
                 if (this.selectedConfig) {
                     var self = this;
-                    axios.delete('/api/blocks/' + encodeURIComponent(this.selectedConfig.block)).then(function (response) {
-                        let id = self.selectedConfig.block;
+                    axios.delete('/api/blocks/' + encodeURIComponent(this.selectedConfig.blocks[0])).then(function (response) {
                         let index = self.blocksConfigList.indexOf(self.selectedConfig);
                         if (index >= 0) {
                             self.blocksConfigList.splice(index, 1);
                         }
+                        self.selectedConfig.blocks.forEach(id => delete self.blocksConfigMap[id]);
                         self.selectedConfig = null;
-                        delete self.blocksConfigMap[id];
                         self.backToList();
                     });
                 }
@@ -134,11 +133,14 @@ function createComponent(template) {
             removeById(id) {
                 let self = this;
                 axios.delete('/api/blocks/' + encodeURIComponent(id)).then(function (response) {
-                    let index = self.blocksConfigList.findIndex(b => b.block == id);
+                    let config = self.blocksConfigMap[id];
+                    let index = self.blocksConfigList.indexOf(config);
                     if (index >= 0) {
                         self.blocksConfigList.splice(index, 1);
                     }
-                    delete self.blocksConfigMap[id];
+                    if (config) {
+                        config.blocks.forEach(block => delete self.blocksConfigMap[block]);
+                    }
                 });
             },
             restart() {
@@ -148,10 +150,10 @@ function createComponent(template) {
                 if (config.tracerMaxDistance == '') {
                     config.tracerMaxDistance = null;
                 }
-                if (config.outlineMaxDistance == '') {
-                    config.outlineMaxDistance = null;
+                if (config.boundingBoxMaxDistance == '') {
+                    config.boundingBoxMaxDistance = null;
                 }
-                axios.put('/api/blocks/' + encodeURIComponent(config.block), config);
+                axios.post('/api/blocks', config);
             }
         }
     };

@@ -2,6 +2,11 @@ package com.zergatul.cheatutils.configs;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.zergatul.cheatutils.common.Registries;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
+
+import java.awt.*;
 
 public class ConfigMigrationSmokeTest {
 
@@ -174,6 +179,98 @@ public class ConfigMigrationSmokeTest {
         if (!sanitized.autoBucketConfig.usePowderSnowBucket || sanitized.autoBucketConfig.speedThreshold != 0.1 ||
                 sanitized.autoBucketConfig.reachDistance != 20 || sanitized.autoBucketConfig.hotbarSlot != 8) {
             throw new IllegalStateException("Maintained Auto Bucket config sanitation failed.");
+        }
+    }
+
+    public static void verifyBlockEspGroups() {
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "blocks": {
+                    "configs": [
+                      {
+                        "block": "minecraft:stone",
+                        "enabled": true,
+                        "drawTracers": true,
+                        "tracerColor": -65536,
+                        "drawOutline": true,
+                        "outlineColor": -16711936,
+                        "maxDistance": 123,
+                        "tracerMaxDistance": 45,
+                        "outlineMaxDistance": 67
+                      },
+                      {
+                        "block": "minecraft:dirt",
+                        "enabled": false,
+                        "drawTracers": false,
+                        "tracerColor": -1,
+                        "drawOutline": false,
+                        "outlineColor": -1,
+                        "maxDistance": 80
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+        config.sanitize();
+
+        JsonElement firstTree = tree.getAsJsonObject()
+                .getAsJsonObject("blocks")
+                .getAsJsonArray("configs")
+                .get(0);
+        if (firstTree.getAsJsonObject().has("block") || firstTree.getAsJsonObject().has("drawOutline") ||
+                firstTree.getAsJsonObject().has("outlineColor") || firstTree.getAsJsonObject().has("outlineMaxDistance") ||
+                !firstTree.getAsJsonObject().has("blocks") || !firstTree.getAsJsonObject().has("drawBoundingBox") ||
+                !firstTree.getAsJsonObject().has("boundingBoxColor") || !firstTree.getAsJsonObject().has("boundingBoxMaxDistance")) {
+            throw new IllegalStateException("Old Block ESP fields were not migrated to the grouped config shape.");
+        }
+
+        if (config.blocks.getBlockConfigs().size() != 2) {
+            throw new IllegalStateException("Old Block ESP entries were not preserved as singleton groups.");
+        }
+
+        BlockEspConfig stone = config.blocks.getBlockConfigs().get(0);
+        if (stone.blocks.size() != 1 ||
+                !"minecraft:stone".equals(Registries.BLOCKS.getKey(stone.blocks.get(0)).toString()) ||
+                !stone.enabled || !stone.drawTracers || !stone.drawBoundingBox || stone.drawOverlay ||
+                stone.tracerWidth != 1 || stone.boundingBoxWidth != 1 ||
+                stone.tracerColor.getRGB() != Color.RED.getRGB() || stone.boundingBoxColor.getRGB() != Color.GREEN.getRGB() ||
+                stone.overlayColor.getRGB() != new Color(0x80FFFFFF, true).getRGB() ||
+                stone.maxDistance != 123 || stone.tracerMaxDistance != 45 || stone.boundingBoxMaxDistance != 67) {
+            throw new IllegalStateException("Old Block ESP appearance changed during grouped config migration.");
+        }
+
+        JsonElement savedTree = ConfigStore.instance.gson.toJsonTree(config.blocks);
+        JsonElement savedConfig = savedTree.getAsJsonObject().getAsJsonArray("configs").get(0);
+        if (savedConfig.getAsJsonObject().has("block") || savedConfig.getAsJsonObject().has("drawOutline") ||
+                savedConfig.getAsJsonObject().has("outlineColor") || savedConfig.getAsJsonObject().has("outlineMaxDistance") ||
+                !savedConfig.getAsJsonObject().has("blocks") || !savedConfig.getAsJsonObject().has("drawBoundingBox") ||
+                !savedConfig.getAsJsonObject().has("boundingBoxColor") || !savedConfig.getAsJsonObject().has("boundingBoxMaxDistance")) {
+            throw new IllegalStateException("Grouped Block ESP config was not saved using maintained field names.");
+        }
+
+        Config duplicates = ConfigStore.instance.gson.fromJson("""
+                {
+                  "blocks": {
+                    "configs": [
+                      { "blocks": [ "minecraft:stone" ], "maxDistance": 100 },
+                      { "blocks": [ "minecraft:stone", "minecraft:dirt" ], "maxDistance": 100 }
+                    ]
+                  }
+                }
+                """, Config.class);
+        duplicates.sanitize();
+        if (duplicates.blocks.getBlockConfigs().size() != 2 ||
+                duplicates.blocks.getBlockConfigs().get(0).blocks.size() != 1 ||
+                duplicates.blocks.getBlockConfigs().get(1).blocks.size() != 1 ||
+                !"minecraft:dirt".equals(Registries.BLOCKS.getKey(
+                        duplicates.blocks.getBlockConfigs().get(1).blocks.get(0)).toString())) {
+            throw new IllegalStateException("One-group-per-block sanitation is not deterministic.");
         }
     }
 

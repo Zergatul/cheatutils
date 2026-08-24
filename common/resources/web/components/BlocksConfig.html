@@ -6,11 +6,11 @@
             <button style="width: 200px;" @click="restart()">Restart</button>
         </div>
         <ul class="list-base blocks-list">
-            <li v-for="item in blocksConfigList" :key="item.block" v-bind="{ 'data-id': item.block }">
+            <li v-for="item in blocksConfigList" :key="item.blocks[0]" v-bind="{ 'data-id': item.blocks[0] }">
                 <div class="c1"></div>
                 <div class="c2">
-                    <div>{{ blocksMap[item.block].name }}</div>
-                    <div class="smaller">{{ item.block }}</div>
+                    <div>{{ blocksMap[item.blocks[0]].name }}</div>
+                    <div class="smaller">{{ item.blocks[0] }}</div>
                 </div>
                 <div class="c3">
                     <label class="switch-label">
@@ -32,17 +32,17 @@
                 <div class="c5">
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
-                            v-model="item.drawOutline"
+                            v-model="item.drawBoundingBox"
                             @change="update(item)">
-                        <color-box :color="item.outlineColor"></color-box>
-                        <span>Outline</span>
+                        <color-box :color="item.boundingBoxColor"></color-box>
+                        <span>Bounding Box</span>
                     </label>
                 </div>
                 <div class="c6">
-                    <button class="edit" @click="openEdit(item.block)">Edit</button>
+                    <button class="edit" @click="openEdit(item.blocks[0])">Edit</button>
                 </div>
                 <div class="c6">
-                    <button class="remove" @click="removeById(item.block)">Remove</button>
+                    <button class="remove" @click="removeById(item.blocks[0])">Remove</button>
                 </div>
             </li>
         </ul>
@@ -80,8 +80,8 @@
         </div>
         <div v-if="selectedConfig">
             <div class="edit-block-header">
-                <div>{{ blocksMap[selectedConfig.block].name }}</div>
-                <div class="smaller">{{ selectedConfig.block }}</div>
+                <div>{{ blocksMap[selectedConfig.blocks[0]].name }}</div>
+                <div class="smaller">{{ selectedConfig.blocks[0] }}</div>
             </div>
             <div class="edit-block-settings">
                 <label class="switch-label">
@@ -126,22 +126,22 @@
                 <legend>
                     <label class="switch-label">
                         <input type="checkbox" class="switch"
-                            v-model="selectedConfig.drawOutline"
+                            v-model="selectedConfig.drawBoundingBox"
                             @change="update(selectedConfig)">
-                        <span>Outline</span>
+                        <span>Bounding Box</span>
                     </label>
                 </legend>
                 <div style="display: flex;">
                     <div class="color-picker-container">
                         <color-picker
-                            v-model="selectedConfig.outlineColor"
+                            v-model="selectedConfig.boundingBoxColor"
                             @update:model-value="update(selectedConfig)">
                         </color-picker>
                     </div>
                     <div class="group-setting esp-additional">
                         <div>
                             <span class="field-description">Max Distance Override:</span>
-                            <input type="text" v-model="selectedConfig.outlineMaxDistance" @change="update(selectedConfig)">
+                            <input type="text" v-model="selectedConfig.boundingBoxMaxDistance" @change="update(selectedConfig)">
                         </div>
                         <div class="section-description">
                             Leave this empty to use Max Distance value specified at the top.

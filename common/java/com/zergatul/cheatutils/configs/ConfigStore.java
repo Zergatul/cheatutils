@@ -35,7 +35,6 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
-            .registerTypeAdapter(BlockTracerConfig.class, new BlockTracerConfigTypeAdapter())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
             .registerTypeAdapter(Class.class, new ClassTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
@@ -245,7 +244,57 @@ public class ConfigStore {
             }
             autoAttack.remove("extraTicks");
         }
+        migrateBlockEspConfigFields(root);
         root.remove("gameTickScriptingConfig");
         root.remove("autoDisconnectConfig");
+    }
+
+    private static void migrateBlockEspConfigFields(JsonObject root) {
+        if (!root.has("blocks") || !root.get("blocks").isJsonObject()) {
+            return;
+        }
+
+        JsonObject blocks = root.getAsJsonObject("blocks");
+        if (!blocks.has("configs") || !blocks.get("configs").isJsonArray()) {
+            return;
+        }
+
+        for (JsonElement element : blocks.getAsJsonArray("configs")) {
+            if (!element.isJsonObject()) {
+                continue;
+            }
+
+            JsonObject config = element.getAsJsonObject();
+            if (config.has("block") && !config.has("blocks")) {
+                JsonArray array = new JsonArray();
+                array.add(config.get("block"));
+                config.add("blocks", array);
+            }
+            config.remove("block");
+
+            renameField(config, "drawOutline", "drawBoundingBox");
+            renameField(config, "outlineColor", "boundingBoxColor");
+            renameField(config, "outlineMaxDistance", "boundingBoxMaxDistance");
+
+            if (!config.has("tracerWidth")) {
+                config.addProperty("tracerWidth", 1);
+            }
+            if (!config.has("boundingBoxWidth")) {
+                config.addProperty("boundingBoxWidth", 1);
+            }
+            if (!config.has("drawOverlay")) {
+                config.addProperty("drawOverlay", false);
+            }
+            if (!config.has("overlayColor")) {
+                config.addProperty("overlayColor", new Color(0x80FFFFFF, true).getRGB());
+            }
+        }
+    }
+
+    private static void renameField(JsonObject object, String oldName, String newName) {
+        if (object.has(oldName) && !object.has(newName)) {
+            object.add(newName, object.get(oldName));
+        }
+        object.remove(oldName);
     }
 }

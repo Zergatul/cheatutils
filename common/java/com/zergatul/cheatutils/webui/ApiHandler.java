@@ -38,6 +38,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptWorkspaceApi());
         apis.add(new ScriptCompileApi());
         apis.add(new BlocksConfigApi());
+        apis.add(new BlocksConfigApi.Add());
         apis.add(new BlockInfoApi());
         apis.add(new EntityInfoApi());
         apis.add(new EntitiesConfigApi());
