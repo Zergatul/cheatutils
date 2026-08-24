@@ -2,16 +2,17 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
-import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.render.InstancedCuboidLineRenderer;
+import com.zergatul.cheatutils.render.InstancedTracerRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class EntityEsp implements Module {
@@ -22,6 +23,7 @@ public class EntityEsp implements Module {
 
     private EntityEsp() {
         Events.RenderWorldLast.add(this::render);
+        Events.Close.add(this::close);
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -31,20 +33,21 @@ public class EntityEsp implements Module {
 
         float partialTicks = event.getTickDelta();
 
-        Vec3 view = event.getCamera().getPosition();
+        Vec3 cameraPos = event.getCamera().getPosition();
+        double cameraX = cameraPos.x;
+        double cameraY = cameraPos.y;
+        double cameraZ = cameraPos.z;
 
         Vec3 playerPos = event.getPlayerPos();
         double playerX = playerPos.x;
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        Vec3 tracerCenter = event.getTracerCenter();
-        double tracerX = tracerCenter.x;
-        double tracerY = tracerCenter.y;
-        double tracerZ = tracerCenter.z;
-
-        LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
-        renderer.begin(event, false);
+        RenderUtilities utilities = RenderUtilities.instance;
+        InstancedCuboidLineRenderer cuboidRenderer = utilities.getInstancedCuboidLineRenderer();
+        InstancedTracerRenderer tracerRenderer = utilities.getInstancedTracerRenderer();
+        cuboidRenderer.begin();
+        tracerRenderer.begin();
 
         ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
         for (Entity entity : mc.player.clientLevel.entitiesForRendering()) {
@@ -68,76 +71,41 @@ public class EntityEsp implements Module {
                     distanceSqr < c.getBoundingBoxMaxDistanceSqr()).findFirst().orElse(null);
 
             if (config != null) {
-                renderEntityBounding(renderer, partialTicks, entity, config);
+                Vec3 pos = entity.getPosition(partialTicks);
+                AABB box = entity.getDimensions(entity.getPose()).makeBoundingBox(pos);
+                cuboidRenderer.cuboid(
+                        (float) (box.minX - cameraX),
+                        (float) (box.minY - cameraY),
+                        (float) (box.minZ - cameraZ),
+                        (float) (box.maxX - cameraX),
+                        (float) (box.maxY - cameraY),
+                        (float) (box.maxZ - cameraZ),
+                        config.boundingBoxColor,
+                        (float) config.boundingBoxWidth);
             }
 
             config = list.stream().filter(c ->
                     c.enabled &&
-                            c.drawTracers &&
-                            c.clazz.isInstance(entity) &&
-                            distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
+                    c.drawTracers &&
+                    c.isValidEntity(entity) &&
+                    distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
             if (config != null) {
-                drawTracer(
-                        renderer,
-                        tracerX, tracerY, tracerZ,
-                        entity.getPosition(event.getTickDelta()),
-                        config);
+                Vec3 pos = entity.getPosition(partialTicks);
+                tracerRenderer.tracer(
+                        (float) (pos.x - cameraX),
+                        (float) (pos.y - cameraY),
+                        (float) (pos.z - cameraZ),
+                        config.tracerColor,
+                        (float) config.tracerWidth);
             }
         }
 
-        renderer.end();
+        tracerRenderer.end(event);
+        cuboidRenderer.end(event);
     }
 
-    private static void renderEntityBounding(LineRenderer renderer, float partialTicks, Entity entity, EntityEspConfig config) {
-        double rotationYaw = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot());
-        double sin = Math.sin(rotationYaw / 180 * Math.PI);
-        double cos = Math.cos(rotationYaw / 180 * Math.PI);
-        double width = entity.getBbWidth() / 2;
-        double height = entity.getBbHeight();
-
-        Vec3 pos = entity.getPosition(partialTicks);
-        double posX = pos.x;
-        double posY = pos.y;
-        double posZ = pos.z;
-
-        double p1x = posX + width * (cos - sin);
-        double p1z = posZ + width * (sin + cos);
-        double p2x = posX + width * (cos + sin);
-        double p2z = posZ + width * (sin - cos);
-        double p3x = posX + width * (-cos + sin);
-        double p3z = posZ - width * (sin + cos);
-        double p4x = posX - width * (cos + sin);
-        double p4z = posZ + width * (-sin + cos);
-
-        double posY1 = posY;
-        double posY2 = posY + height;
-
-        float r = config.boundingBoxColor.getRed() / 255f;
-        float g = config.boundingBoxColor.getGreen() / 255f;
-        float b = config.boundingBoxColor.getBlue() / 255f;
-
-        renderer.line(p1x, posY1, p1z, p2x, posY1, p2z, r, g, b, 1f);
-        renderer.line(p2x, posY1, p2z, p3x, posY1, p3z, r, g, b, 1f);
-        renderer.line(p3x, posY1, p3z, p4x, posY1, p4z, r, g, b, 1f);
-        renderer.line(p4x, posY1, p4z, p1x, posY1, p1z, r, g, b, 1f);
-
-        renderer.line(p1x, posY1, p1z, p1x, posY2, p1z, r, g, b, 1f);
-        renderer.line(p2x, posY1, p2z, p2x, posY2, p2z, r, g, b, 1f);
-        renderer.line(p3x, posY1, p3z, p3x, posY2, p3z, r, g, b, 1f);
-        renderer.line(p4x, posY1, p4z, p4x, posY2, p4z, r, g, b, 1f);
-
-        renderer.line(p1x, posY2, p1z, p2x, posY2, p2z, r, g, b, 1f);
-        renderer.line(p2x, posY2, p2z, p3x, posY2, p3z, r, g, b, 1f);
-        renderer.line(p3x, posY2, p3z, p4x, posY2, p4z, r, g, b, 1f);
-        renderer.line(p4x, posY2, p4z, p1x, posY2, p1z, r, g, b, 1f);
-    }
-
-    private static void drawTracer(LineRenderer renderer, double tx, double ty, double tz, Vec3 pos, EntityEspConfig config) {
-        float r = config.tracerColor.getRed() / 255f;
-        float g = config.tracerColor.getGreen() / 255f;
-        float b = config.tracerColor.getBlue() / 255f;
-
-        renderer.line(tx, ty, tz, pos.x, pos.y, pos.z, r, g, b, 1f);
+    private void close() {
+        RenderUtilities.instance.getInstancedCuboidLineRenderer().close();
     }
 }
