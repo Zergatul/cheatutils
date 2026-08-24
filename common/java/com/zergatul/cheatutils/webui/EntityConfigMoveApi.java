@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.configs.EntityEspConfig;
 import org.apache.http.HttpException;
 
 public class EntityConfigMoveApi extends ApiBase {
@@ -29,7 +29,7 @@ public class EntityConfigMoveApi extends ApiBase {
             throw new ApiException("Invalid direction: " + request.direction, HttpResponseCodes.BAD_REQUEST);
         }
 
-        ImmutableList<EntityTracerConfig> list = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
         int index = list.indexOf(c -> c.clazz == request.clazz);
         if (index < 0) {
             return gson.toJson(new Response(false, "Cannot find class in list"));
@@ -43,7 +43,7 @@ public class EntityConfigMoveApi extends ApiBase {
             return gson.toJson(new Response(true, "Cannot move down"));
         }
 
-        ImmutableList<EntityTracerConfig> updated = up ? list.swap(index, index - 1) : list.swap(index, index + 1);
+        ImmutableList<EntityEspConfig> updated = up ? list.swap(index, index - 1) : list.swap(index, index + 1);
         ConfigStore.updateFromApi(c -> c.entities, entities -> entities.configs = updated);
 
         return gson.toJson(new Response(true, null));

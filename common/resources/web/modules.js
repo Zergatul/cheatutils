@@ -121,7 +121,6 @@ module({
     group: 'esp',
     name: 'Entity ESP',
     component: 'EntityESP',
-    legacyComponent: 'EntitiesConfig',
     path: 'entity-esp',
     oldPaths: ['entities'],
     tags: ['entity', 'entities', 'esp']

@@ -274,6 +274,107 @@ public class ConfigMigrationSmokeTest {
         }
     }
 
+    public static void verifyEntityEsp() {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "entities": {
+                    "configs": [
+                      {
+                        "clazz": "java.lang.Object",
+                        "enabled": true,
+                        "drawTracers": true,
+                        "tracerColor": -65536,
+                        "drawOutline": true,
+                        "outlineColor": -16711936,
+                        "outlineMaxDistance": 67,
+                        "glow": true,
+                        "glowColor": -16776961,
+                        "glowMaxDistance": 89,
+                        "maxDistance": 123,
+                        "tracerMaxDistance": 45,
+                        "drawTitles": true,
+                        "showDefaultNames": true,
+                        "showHp": true,
+                        "showEquippedItems": true,
+                        "showOwner": true
+                      },
+                      {
+                        "clazz": "missing.mod.RemovedEntity",
+                        "maxDistance": 100
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        ConfigStore.migrateConfigTree(tree);
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+        config.sanitize();
+
+        JsonElement migrated = tree.getAsJsonObject()
+                .getAsJsonObject("entities")
+                .getAsJsonArray("configs")
+                .get(0);
+        if (migrated.getAsJsonObject().has("glow") || migrated.getAsJsonObject().has("glowColor") ||
+                migrated.getAsJsonObject().has("glowMaxDistance") ||
+                !migrated.getAsJsonObject().has("drawBoundingBox") ||
+                !migrated.getAsJsonObject().has("boundingBoxColor") ||
+                !migrated.getAsJsonObject().has("boundingBoxMaxDistance") ||
+                !migrated.getAsJsonObject().has("drawOutline") ||
+                !migrated.getAsJsonObject().has("outlineColor") ||
+                !migrated.getAsJsonObject().has("outlineMaxDistance")) {
+            throw new IllegalStateException("Old Entity ESP fields were not migrated to the maintained config shape.");
+        }
+
+        if (config.entities.configs.size() != 1) {
+            throw new IllegalStateException("Missing modded Entity ESP classes were not discarded safely.");
+        }
+
+        EntityEspConfig entity = config.entities.configs.get(0);
+        if (entity.clazz != Object.class ||
+                !entity.enabled || !entity.drawTracers || !entity.drawBoundingBox || !entity.drawOutline || entity.drawOverlay ||
+                entity.tracerWidth != 1 || entity.boundingBoxWidth != 1 || entity.outlineMethod != 0 || entity.useRawNames ||
+                entity.tracerColor.getRGB() != Color.RED.getRGB() ||
+                entity.boundingBoxColor.getRGB() != Color.GREEN.getRGB() ||
+                entity.outlineColor.getRGB() != Color.BLUE.getRGB() ||
+                entity.overlayColor.getRGB() != new Color(0x80FFFFFF, true).getRGB() ||
+                entity.maxDistance != 123 || entity.tracerMaxDistance != 45 ||
+                entity.boundingBoxMaxDistance != 67 || entity.outlineMaxDistance != 89 ||
+                !entity.drawTitles || !entity.showDefaultNames || !entity.showHp ||
+                !entity.showEquippedItems || !entity.showOwner) {
+            throw new IllegalStateException("Old Entity ESP behavior changed during config migration.");
+        }
+
+        JsonElement saved = ConfigStore.instance.gson.toJsonTree(entity);
+        if (saved.getAsJsonObject().has("glow") || saved.getAsJsonObject().has("glowColor") ||
+                saved.getAsJsonObject().has("glowMaxDistance") ||
+                !saved.getAsJsonObject().has("drawBoundingBox") ||
+                !saved.getAsJsonObject().has("drawOutline") ||
+                !saved.getAsJsonObject().has("drawOverlay") ||
+                !saved.getAsJsonObject().has("useRawNames")) {
+            throw new IllegalStateException("Entity ESP config was not saved using maintained field names.");
+        }
+
+        EntityEspConfig sanitized = ConfigStore.instance.gson.fromJson("""
+                {
+                  "clazz": "java.lang.Object",
+                  "tracerWidth": 0,
+                  "boundingBoxWidth": 101,
+                  "maxDistance": -1,
+                  "outlineMaxDistance": "NaN",
+                  "outlineMethod": 10
+                }
+                """, EntityEspConfig.class);
+        sanitized.sanitize();
+        if (sanitized.tracerWidth != 0.5 || sanitized.boundingBoxWidth != 100 ||
+                sanitized.maxDistance != 1000 || sanitized.outlineMaxDistance != null ||
+                sanitized.outlineMethod != 0 || sanitized.tracerColor == null ||
+                sanitized.boundingBoxColor == null || sanitized.outlineColor == null || sanitized.overlayColor == null) {
+            throw new IllegalStateException("Maintained Entity ESP config sanitation failed.");
+        }
+    }
+
     private static void verifyStatusOverlaySource(String code) {
         JsonElement tree = JsonParser.parseString("""
                 {

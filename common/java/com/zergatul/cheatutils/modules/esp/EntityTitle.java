@@ -11,7 +11,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTitleConfig;
-import com.zergatul.cheatutils.configs.EntityTracerConfig;
+import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.GlyphFontRenderer;
 import com.zergatul.cheatutils.font.TextBounds;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
@@ -108,7 +108,7 @@ public class EntityTitle {
             return;
         }
 
-        ImmutableList<EntityTracerConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
 
         Vec3 view = event.getCamera().getPosition();
         for (Entity entity : mc.level.entitiesForRendering()) {
@@ -124,7 +124,7 @@ public class EntityTitle {
             boolean showHp = false;
             boolean showEquippedItems = false;
             boolean showOwner = false;
-            for (EntityTracerConfig entityConfig : entityConfigs) {
+            for (EntityEspConfig entityConfig : entityConfigs) {
                 if (!entityConfig.enabled || !entityConfig.drawTitles) {
                     continue;
                 }

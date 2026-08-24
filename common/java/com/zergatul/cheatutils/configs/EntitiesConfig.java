@@ -6,13 +6,13 @@ import java.util.Objects;
 
 public class EntitiesConfig implements ModuleStateProvider, Sanitizable {
 
-    public ImmutableList<EntityTracerConfig> configs = new ImmutableList<>();
+    public ImmutableList<EntityEspConfig> configs = new ImmutableList<>();
 
-    public void add(EntityTracerConfig config) {
+    public void add(EntityEspConfig config) {
         configs = configs.add(config);
     }
 
-    public void remove(EntityTracerConfig config) {
+    public void remove(EntityEspConfig config) {
         configs = configs.remove(config);
     }
 
@@ -27,5 +27,6 @@ public class EntitiesConfig implements ModuleStateProvider, Sanitizable {
         configs = configs
                 .removeIf(Objects::isNull)
                 .removeIf(c -> c.clazz == null);
+        configs.forEach(EntityEspConfig::sanitize);
     }
 }

@@ -62,6 +62,7 @@ public class ScriptingRuntimeSmokeTest {
         ConfigMigrationSmokeTest.verifyAutoAttack();
         ConfigMigrationSmokeTest.verifyAutoBucket();
         ConfigMigrationSmokeTest.verifyBlockEspGroups();
+        ConfigMigrationSmokeTest.verifyEntityEsp();
 
         LOGGER.info("Modern scripting runtime smoke test passed for synchronous and asynchronous scripts.");
     }

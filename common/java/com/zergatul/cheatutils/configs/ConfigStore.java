@@ -36,7 +36,7 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
-            .registerTypeAdapter(Class.class, new ClassTypeAdapter())
+            .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
             .setPrettyPrinting()
@@ -245,6 +245,7 @@ public class ConfigStore {
             autoAttack.remove("extraTicks");
         }
         migrateBlockEspConfigFields(root);
+        migrateEntityEspConfigFields(root);
         root.remove("gameTickScriptingConfig");
         root.remove("autoDisconnectConfig");
     }
@@ -287,6 +288,54 @@ public class ConfigStore {
             }
             if (!config.has("overlayColor")) {
                 config.addProperty("overlayColor", new Color(0x80FFFFFF, true).getRGB());
+            }
+        }
+    }
+
+    private static void migrateEntityEspConfigFields(JsonObject root) {
+        if (!root.has("entities") || !root.get("entities").isJsonObject()) {
+            return;
+        }
+
+        JsonObject entities = root.getAsJsonObject("entities");
+        if (!entities.has("configs") || !entities.get("configs").isJsonArray()) {
+            return;
+        }
+
+        for (JsonElement element : entities.getAsJsonArray("configs")) {
+            if (!element.isJsonObject()) {
+                continue;
+            }
+
+            JsonObject config = element.getAsJsonObject();
+            boolean legacy = config.has("glow") || config.has("glowColor") || config.has("glowMaxDistance");
+            if (legacy) {
+                renameField(config, "drawOutline", "drawBoundingBox");
+                renameField(config, "outlineColor", "boundingBoxColor");
+                renameField(config, "outlineMaxDistance", "boundingBoxMaxDistance");
+
+                renameField(config, "glow", "drawOutline");
+                renameField(config, "glowColor", "outlineColor");
+                renameField(config, "glowMaxDistance", "outlineMaxDistance");
+            }
+
+            if (!config.has("tracerWidth")) {
+                config.addProperty("tracerWidth", 1);
+            }
+            if (!config.has("boundingBoxWidth")) {
+                config.addProperty("boundingBoxWidth", 1);
+            }
+            if (!config.has("outlineMethod")) {
+                config.addProperty("outlineMethod", 0);
+            }
+            if (!config.has("drawOverlay")) {
+                config.addProperty("drawOverlay", false);
+            }
+            if (!config.has("overlayColor")) {
+                config.addProperty("overlayColor", new Color(0x80FFFFFF, true).getRGB());
+            }
+            if (!config.has("useRawNames")) {
+                config.addProperty("useRawNames", false);
             }
         }
     }
