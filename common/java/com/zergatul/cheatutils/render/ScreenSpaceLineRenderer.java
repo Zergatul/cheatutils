@@ -28,7 +28,6 @@ public class ScreenSpaceLineRenderer {
     private Vec3 view;
     private int viewportWidth;
     private int viewportHeight;
-    private int vertices;
 
     public void begin(RenderWorldLastEvent event) {
         if (this.event != null) {
@@ -39,7 +38,6 @@ public class ScreenSpaceLineRenderer {
         this.view = event.getCamera().getPosition();
         this.viewportWidth = Minecraft.getInstance().getWindow().getWidth();
         this.viewportHeight = Minecraft.getInstance().getWindow().getHeight();
-        this.vertices = 0;
         buffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
     }
 
@@ -203,7 +201,6 @@ public class ScreenSpaceLineRenderer {
 
     private void vertex(Point point, float r, float g, float b, float a) {
         buffer.vertex(point.x, point.y, point.z).color(r, g, b, a).endVertex();
-        vertices++;
     }
 
     private void reset() {
