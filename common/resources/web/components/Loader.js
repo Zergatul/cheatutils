@@ -3,21 +3,6 @@ import * as http from '/http.js'
 
 const { defineAsyncComponent } = await FallbackLoader.vue();
 
-export function addComponent(args, name) {
-    if (!args.components) {
-        args.components = {};
-    }
-    args.components[name] = defineAsyncComponent(function () {
-        return new Promise(function (resolve, reject) {
-            http.getText(`/components/${name}.html`).then(response => {
-                import(`/components/${name}.js`).then(function (module) {
-                    resolve(module.createComponent(response));
-                }, reject);
-            }, reject);
-        });
-    });
-};
-
 export function getComponent(path) {
     return defineAsyncComponent(async () => {
         const html = await http.getText(`/components/${path}.html`);

@@ -13,7 +13,7 @@ const modules = {
 const module = params => {
     modules.all.push(params);
 
-    params.componentRef = getComponent(params.legacyComponent || `${params.group}/${params.component}`);
+    params.componentRef = getComponent(`${params.group}/${params.component}`);
     if (!params.hidden) {
         modules[params.group][params.component] = params;
     }
@@ -95,7 +95,6 @@ module({
     group: 'automation',
     name: 'Schematica',
     component: 'Schematica',
-    legacyComponent: 'SchematicaConfig',
     path: 'schematica',
     tags: ['schematica']
 });

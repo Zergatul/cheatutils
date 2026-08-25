@@ -69,11 +69,6 @@ const App = defineComponent({
             });
         };
 
-        const backToMain = () => {
-            window.location.hash = '#';
-            refreshTitle();
-        };
-
         const onEvent = event => {
             if (event.type == 'focus-filter') {
                 setTimeout(() => {
@@ -111,8 +106,7 @@ const App = defineComponent({
 
             isMain,
             onFilterKeyDown,
-            onFilterInput,
-            backToMain
+            onFilterInput
         };
     }
 });

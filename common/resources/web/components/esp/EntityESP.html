@@ -1,5 +1,5 @@
 <div class="module-main entity-esp">
-    <div class="module-sections">
+    <div class="module-sections" v-if="entitiesMap != null && entitiesConfigList != null && entitiesConfigMap != null">
         <template v-if="state == 'list'">
             <div class="actions">
                 <button class="action" @click="openAdd()" v-show="entitiesConfigList">Add Entity</button>

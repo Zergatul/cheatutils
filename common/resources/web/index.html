@@ -10,11 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=New+Amsterdam&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="app.css">
-    <link rel="stylesheet" type="text/css" href="legacy.css">
     <link rel="stylesheet" type="text/css" href="checkbox.css">
     <link rel="stylesheet" type="text/css" href="main.css">
-    <script src="axios.js"></script>
-    <script src="ace/ace.js"></script>
 </head>
 <body>
     <div id="vue-app">
@@ -34,14 +31,7 @@
                     @keydown="onFilterKeyDown($event)">
             </div>
         </div>
-        <component
-            :is="view"
-            :class="{
-                'legacy-page': module && module.legacyComponent,
-                'modern-page': module && !module.legacyComponent
-            }"
-            @back="backToMain()">
-        </component>
+        <component :is="view"></component>
     </div>
 
     <script type="module" src="app.js"></script>
