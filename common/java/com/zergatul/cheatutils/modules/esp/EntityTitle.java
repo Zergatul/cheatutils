@@ -13,6 +13,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityTitleConfig;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.font.GlyphFontRenderer;
+import com.zergatul.cheatutils.font.StylizedText;
+import com.zergatul.cheatutils.font.StylizedTextChunk;
 import com.zergatul.cheatutils.font.TextBounds;
 import com.zergatul.cheatutils.mixins.common.accessors.ProjectileAccessor;
 import com.zergatul.cheatutils.render.GlStates;
@@ -22,6 +24,7 @@ import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -72,6 +75,8 @@ public class EntityTitle {
             });
 
     private final List<EntityEntry> entities = new ArrayList<>();
+    private final ArrayList<StylizedTextChunk> textBuffer = new ArrayList<>();
+    private final StringBuilder textBuilder = new StringBuilder();
     private GlyphFontRenderer fontRenderer;
     private GlyphFontRenderer enchFontRenderer;
 
@@ -121,6 +126,7 @@ public class EntityTitle {
 
             boolean drawTitles = false;
             boolean showDefaultNames = false;
+            boolean useRawNames = false;
             boolean showHp = false;
             boolean showEquippedItems = false;
             boolean showOwner = false;
@@ -135,6 +141,7 @@ public class EntityTitle {
                 if (distanceSqr < entityConfig.maxDistance * entityConfig.maxDistance) {
                     drawTitles = true;
                     showDefaultNames |= entityConfig.showDefaultNames;
+                    useRawNames |= entityConfig.useRawNames;
                     showHp |= entityConfig.showHp;
                     showEquippedItems |= entityConfig.showEquippedItems;
                     showOwner |= entityConfig.showOwner;
@@ -148,6 +155,7 @@ public class EntityTitle {
                         pos,
                         distanceSqr,
                         showDefaultNames,
+                        useRawNames,
                         showHp,
                         showEquippedItems,
                         showOwner));
@@ -190,7 +198,7 @@ public class EntityTitle {
             double xc = v2.x / v2.w * scaledHalfWidth;
             double yc = -v2.y / v2.w * scaledHalfHeight;
 
-            String text = getEntityText(entry);
+            StylizedText text = getEntityText(entry);
             if (text != null) {
                 TextBounds bounds = fontRenderer.getTextSize(text);
                 double width = bounds.width() * invScale;
@@ -346,29 +354,65 @@ public class EntityTitle {
         poseStack.popPose();
     }
 
-    private String getEntityText(EntityEntry entry) {
-        String result;
+    private StylizedText getEntityText(EntityEntry entry) {
+        Component component;
         if (entry.showDefaultNames) {
-            result = entry.entity.getDisplayName().getString();
+            component = entry.entity.getDisplayName();
         } else {
-            result = entry.entity.hasCustomName() || entry.entity instanceof Player ? entry.entity.getDisplayName().getString() : "";
+            component = entry.entity.hasCustomName() || entry.entity instanceof Player ? entry.entity.getDisplayName() : null;
+        }
+
+        StylizedText result = null;
+        if (component != null) {
+            if (entry.useRawNames) {
+                String value = component.getString();
+                if (!value.isEmpty()) {
+                    result = StylizedText.of(value);
+                }
+            } else {
+                textBuffer.clear();
+                textBuilder.setLength(0);
+                ColorHolder last = new ColorHolder();
+                component.getVisualOrderText().accept((index, style, character) -> {
+                    int color = style.getColor() != null ? style.getColor().getValue() | 0xFF000000 : Color.WHITE.getRGB();
+                    if (last.color != color) {
+                        if (textBuilder.length() > 0) {
+                            textBuffer.add(new StylizedTextChunk(textBuilder.toString(), last.color));
+                            textBuilder.setLength(0);
+                        }
+                        last.color = color;
+                    }
+                    textBuilder.append((char)character);
+                    return true;
+                });
+                if (textBuilder.length() > 0) {
+                    textBuffer.add(new StylizedTextChunk(textBuilder.toString(), last.color));
+                }
+                if (!textBuffer.isEmpty()) {
+                    result = StylizedText.empty();
+                    result.chunks.addAll(textBuffer);
+                }
+            }
         }
 
         if (entry.showHp && entry.entity instanceof LivingEntity living) {
-            result += "♥" + (int)living.getHealth();
-        }
-        return result.length() == 0 ? null : result;
-        /*String tags = String.join(";", entity.getTags());
-        if (entity instanceof LivingEntity living) {
-            for (AttributeInstance attr: living.getAttributes().getSyncableAttributes()) {
-                tags += attr.getAttribute().getDescriptionId() + "=" + attr.getValue() + ";";
+            if (result == null) {
+                result = new StylizedText();
+                result.append("♥", 0xFFFF5555);
+            } else {
+                result.append(" ♥", 0xFFFF5555);
             }
-            tags += "!";
-            for (AttributeInstance attr: living.getAttributes().getDirtyAttributes()) {
-                tags += attr.getAttribute().getDescriptionId() + "=" + attr.getValue() + ";";
+
+            int hp = (int) living.getHealth();
+            result.append(Integer.toString(hp), Color.WHITE.getRGB());
+
+            int absorption = (int) living.getAbsorptionAmount();
+            if (absorption > 0) {
+                result.append("+" + absorption, Color.YELLOW.getRGB());
             }
         }
-        return tags;*/
+
+        return result == null || result.length() == 0 ? null : result;
     }
 
     private List<EnchantmentEntry> getEnchantments(ItemStack itemStack) {
@@ -409,9 +453,14 @@ public class EntityTitle {
             Vec3 position,
             double distanceSqr,
             boolean showDefaultNames,
+            boolean useRawNames,
             boolean showHp,
             boolean showEquippedItems,
             boolean showOwner) {}
+
+    private static class ColorHolder {
+        public int color;
+    }
 
     private static class EnchantmentEntry {
 
