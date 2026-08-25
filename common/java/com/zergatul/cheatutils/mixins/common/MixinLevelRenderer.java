@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.entities.FakePlayer;
+import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -92,6 +93,16 @@ public abstract class MixinLevelRenderer {
                 this.renderEntity(fake, x, y, z, partialTicks, matrices, source);
             }
         }
+    }
+
+    @Inject(at = @At("HEAD"), method = "renderEntity")
+    private void onBeforeRenderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo info) {
+        MixinLevelRendererHelper.currentEntity = entity;
+    }
+
+    @Inject(at = @At("TAIL"), method = "renderEntity")
+    private void onAfterRenderEntity(Entity entity, double x, double y, double z, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo info) {
+        MixinLevelRendererHelper.currentEntity = null;
     }
 
     @Inject(at = @At("HEAD"), method = "renderSnowAndRain", cancellable = true)

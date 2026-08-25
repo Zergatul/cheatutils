@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.render.BlockOverlayRenderer;
 import com.zergatul.cheatutils.render.DebugLinesLineRenderer;
+import com.zergatul.cheatutils.render.EntityMaskRenderer;
 import com.zergatul.cheatutils.render.InstancedCuboidLineRenderer;
 import com.zergatul.cheatutils.render.InstancedCubeLineRenderer;
 import com.zergatul.cheatutils.render.InstancedTracerRenderer;
@@ -16,6 +17,7 @@ public class RenderUtilities {
     private final InstancedCuboidLineRenderer instancedCuboidLineRenderer = new InstancedCuboidLineRenderer();
     private final InstancedTracerRenderer instancedTracerRenderer = new InstancedTracerRenderer();
     private final BlockOverlayRenderer blockOverlayRenderer = new BlockOverlayRenderer();
+    private final EntityMaskRenderer entityMaskRenderer = new EntityMaskRenderer();
 
     private RenderUtilities() {
 
@@ -39,5 +41,9 @@ public class RenderUtilities {
 
     public BlockOverlayRenderer getBlockOverlayRenderer() {
         return blockOverlayRenderer;
+    }
+
+    public EntityMaskRenderer getEntityMaskRenderer() {
+        return entityMaskRenderer;
     }
 }

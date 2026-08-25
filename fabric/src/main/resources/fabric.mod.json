@@ -22,6 +22,7 @@
       "com.zergatul.cheatutils.ModMain"
     ]
   },
+  "accessWidener": "cheatutils.classtweaker",
   "mixins": [
     "cheatutils.mixins.json"
   ],

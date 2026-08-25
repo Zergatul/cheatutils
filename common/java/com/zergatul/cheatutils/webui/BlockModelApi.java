@@ -4,11 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.render.RenderTypeTextureResolver;
 import com.zergatul.cheatutils.utils.JavaRandom;
 import com.zergatul.cheatutils.wrappers.BakedModelWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -21,13 +21,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class BlockModelApi extends ApiBase {
 
@@ -96,7 +93,7 @@ public class BlockModelApi extends ApiBase {
                 continue;
             }
 
-            ResourceLocation texture = getTexture(renderType);
+            ResourceLocation texture = RenderTypeTextureResolver.getTexture(renderType);
             if (texture == null) {
                 continue;
             }
@@ -120,71 +117,6 @@ public class BlockModelApi extends ApiBase {
         }
 
         return result;
-    }
-
-    private static ResourceLocation getTexture(RenderType renderType) {
-        try {
-            for (Field field : renderType.getClass().getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers())) {
-                    continue;
-                }
-
-                field.setAccessible(true);
-                Object candidate = field.get(renderType);
-                if (candidate == null || candidate.getClass().getEnclosingClass() != RenderType.class) {
-                    continue;
-                }
-                ResourceLocation location = getTextureFromCompositeState(candidate);
-                if (location != null) {
-                    return location;
-                }
-            }
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Cannot inspect item render type.", e);
-        }
-
-        return null;
-    }
-
-    private static ResourceLocation getTextureFromCompositeState(Object state) throws IllegalAccessException {
-        if (state == null) {
-            return null;
-        }
-
-        for (Field field : state.getClass().getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
-
-            field.setAccessible(true);
-            Object shard = field.get(state);
-            if (shard instanceof RenderStateShard) {
-                ResourceLocation location = getTextureFromShard(shard);
-                if (location != null) {
-                    return location;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private static ResourceLocation getTextureFromShard(Object shard) throws IllegalAccessException {
-        for (Class<?> type = shard.getClass(); type != null; type = type.getSuperclass()) {
-            for (Field field : type.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers()) || field.getType() != Optional.class) {
-                    continue;
-                }
-
-                field.setAccessible(true);
-                Optional<?> optional = (Optional<?>) field.get(shard);
-                if (optional.isPresent() && optional.get() instanceof ResourceLocation location) {
-                    return location;
-                }
-            }
-        }
-
-        return null;
     }
 
     private static class MemoryMultiBufferSource implements MultiBufferSource {
