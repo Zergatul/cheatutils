@@ -19,6 +19,7 @@ public class RenderBuffers implements AutoCloseable {
 
     public static final int BACKGROUNDS = -4;
     public static final int ITEMS = 0;
+    public static final int ITEM_BAR = 1;
     public static final int FONT_SHADOW = 2;
     public static final int FONT = 4;
 

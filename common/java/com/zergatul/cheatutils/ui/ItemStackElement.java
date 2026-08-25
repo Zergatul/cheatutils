@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.ui;
 
 import com.zergatul.cheatutils.render.CacheItemRenderer;
+import com.zergatul.cheatutils.render.Position2dColorRenderer;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.render.CustomizableVanillaFontRenderer;
 import com.zergatul.cheatutils.render.buffers.RenderBuffers;
@@ -61,7 +62,15 @@ public class ItemStackElement implements Element {
                 x + w, y, slot.u1(), slot.v0(),
                 -1);
 
-        // copied from GuiGraphics.renderItemCount
+        if (itemStack.isBarVisible()) {
+            int scale = context.getItemScale();
+            int left = x + 2 * scale;
+            int top = y + 13 * scale;
+            Position2dColorRenderer.BufferBuilder barBuffer = context.getBuffers().getColor2d(RenderBuffers.ITEM_BAR);
+            barBuffer.rect(left, top, 13 * scale, 2 * scale, 0xFF000000);
+            barBuffer.rect(left, top, itemStack.getBarWidth() * scale, scale, 0xFF000000 | itemStack.getBarColor());
+        }
+
         if (itemStack.getCount() != 1) {
             String amount = String.valueOf(itemStack.getCount());
             Font font = Minecraft.getInstance().font;
