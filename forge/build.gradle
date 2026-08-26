@@ -2,7 +2,6 @@ import java.nio.file.Paths
 
 buildscript {
     repositories {
-        // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
         maven { url = 'https://maven.minecraftforge.net' }
         maven { url = 'https://repo.spongepowered.org/maven' }
         mavenCentral()
@@ -12,8 +11,6 @@ buildscript {
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
-
-// https://github-wiki-see.page/m/SpongePowered/Mixin/wiki/Mixins-on-Minecraft-Forge
 
 plugins {
     id 'eclipse'
@@ -27,12 +24,11 @@ apply plugin: 'org.spongepowered.mixin'
 version = mod_version
 group = mod_group_id
 
-// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     copyIdeResources = true
     runs {
         client {
@@ -61,6 +57,7 @@ sourceSets {
     main {
         java {
             srcDir '../common/java'
+            srcDir '../java-scripting-language/src/main/java'
         }
         resources {
             srcDir '../common/resources'
@@ -102,6 +99,8 @@ dependencies {
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.3.6")) {
         jarJar.ranged(it, "[0.3.6,)")
     }
+
+    compileOnly("org.jspecify:jspecify:1.0.0")
 }
 
 mixin {

@@ -13,8 +13,6 @@ import net.fabricmc.loader.api.FabricLoader;
 
 public class ModMain implements ClientModInitializer {
 
-    public static final String MODID = "cheatutils";
-
     public ModMain() {
         ModLoaderBridgeInstance.init(new Bridge());
     }

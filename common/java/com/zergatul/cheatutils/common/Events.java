@@ -2,12 +2,15 @@ package com.zergatul.cheatutils.common;
 
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
+import com.zergatul.cheatutils.render.gl.GlStateTracker;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 
 public class Events {
     public static final SimpleEventHandler Close = new SimpleEventHandler();
@@ -35,6 +38,7 @@ public class Events {
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLayerEvent> RenderSolidLayer = new ParameterizedEventHandler<>();
+    public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLastRaw = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLast = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderGuiOverlayEvent> PreRenderGuiOverlay = new CancelableEventHandler<>();
     public static final ParameterizedEventHandler<RenderGuiEvent> PreRenderGui = new ParameterizedEventHandler<>();
@@ -54,4 +58,17 @@ public class Events {
     public static final ParameterizedEventHandler<Entity> EntityInteract = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockPos> BeforeInstaMine = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
+
+    static {
+        RenderWorldLastRaw.add(event -> {
+            GlStateTracker.save();
+            int program = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+            try {
+                RenderWorldLast.trigger(event);
+            } finally {
+                GL20.glUseProgram(program);
+                GlStateTracker.restore();
+            }
+        });
+    }
 }

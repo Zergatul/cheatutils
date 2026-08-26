@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.modules.esp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.datafixers.util.Pair;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -70,7 +71,7 @@ public class LightLevel implements Module {
 
     private LightLevel() {
         for (int i = 0; i < 16; i++) {
-            textures[i] = new ResourceLocation(ModMain.MODID, "textures/light-level-" + i + ".png");
+            textures[i] = new ResourceLocation(Constants.MOD_ID, "textures/light-level-" + i + ".png");
         }
 
         RenderSystem.recordRenderCall(() -> vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC));

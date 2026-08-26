@@ -30,6 +30,6 @@ public class MixinLevelRenderer {
             Matrix4f projectionMatrix,
             CallbackInfo info
     ) {
-        Events.RenderWorldLast.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
+        Events.RenderWorldLastRaw.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
     }
 }

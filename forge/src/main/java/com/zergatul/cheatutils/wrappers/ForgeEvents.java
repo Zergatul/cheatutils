@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
@@ -55,13 +56,15 @@ public class ForgeEvents {
     @SubscribeEvent
     public void onChunkLoad(ChunkEvent.Load event) {
         if (event.getLevel().isClientSide()) {
+            Events.RawChunkLoaded.trigger((LevelChunk) event.getChunk());
             Events.ChunkLoaded.trigger();
         }
     }
 
     @SubscribeEvent
-    public void onChunkLoad(ChunkEvent.Unload event) {
+    public void onChunkUnload(ChunkEvent.Unload event) {
         if (event.getLevel().isClientSide()) {
+            RawChunkUnloaded.trigger((LevelChunk) event.getChunk());
             ChunkUnloaded.trigger();
         }
     }

@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.ModMain;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
@@ -23,9 +24,9 @@ import java.util.Map;
 
 public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
-    private static final ResourceLocation PlayerPosTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-player.png");
-    private static final ResourceLocation CenterPosTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-center.png");
-    private static final ResourceLocation MarkerTexture = new ResourceLocation(ModMain.MODID, "textures/mini-map-marker.png");
+    private static final ResourceLocation PlayerPosTexture = new ResourceLocation(Constants.MOD_ID, "textures/mini-map-player.png");
+    private static final ResourceLocation CenterPosTexture = new ResourceLocation(Constants.MOD_ID, "textures/mini-map-center.png");
+    private static final ResourceLocation MarkerTexture = new ResourceLocation(Constants.MOD_ID, "textures/mini-map-marker.png");
 
     private final Map<Dimension, List<Marker>> markers = new HashMap<>();
 
