@@ -69,7 +69,6 @@
     "common.MixinUser",
 
     "forge.accessors.GuiGraphicsAccessor",
-    "forge.MixinAbstractContainerScreen",
     "forge.MixinC2SModListReply",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",

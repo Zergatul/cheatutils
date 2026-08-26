@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.mixins.forge;
 
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.ModMain;
 import net.minecraftforge.network.HandshakeMessages;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

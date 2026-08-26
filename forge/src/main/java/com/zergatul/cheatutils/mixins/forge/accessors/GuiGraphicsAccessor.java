@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(GuiGraphics.class)
 public interface GuiGraphicsAccessor {
 
-    @Accessor("tooltipStack")
+    @Accessor(value = "tooltipStack", remap = false)
     ItemStack getTooltipStack_CU();
 }
