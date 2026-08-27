@@ -73,7 +73,6 @@
     "forge.MixinC2SModListReply",
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
-    "forge.MixinLevelRenderer",
     "forge.MixinLightTexture",
     "forge.MixinLocalPlayer",
     "forge.MixinMultiPlayerGameMode"

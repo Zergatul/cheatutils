@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import com.zergatul.cheatutils.helpers.MixinLevelRendererHelper;
@@ -78,6 +80,23 @@ public abstract class MixinLevelRenderer {
                 this.renderEntity(fake, x, y, z, partialTicks, matrices, source);
             }
         }
+    }
+
+    @Inject(
+            method = "renderLevel(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+            at = @At("RETURN"))
+    private void onRenderLevelEnd(
+            PoseStack matrices,
+            float partialTicks,
+            long limitTime,
+            boolean renderBlockOutline,
+            Camera camera,
+            GameRenderer gameRenderer,
+            LightTexture lightmapTextureManager,
+            Matrix4f projectionMatrix,
+            CallbackInfo info
+    ) {
+        Events.RenderWorldLastRaw.trigger(new RenderWorldLastEvent(matrices, partialTicks, projectionMatrix));
     }
 
     @Inject(at = @At("HEAD"), method = "renderEntity")
