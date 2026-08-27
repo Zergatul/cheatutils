@@ -9,12 +9,16 @@ import net.minecraft.client.Minecraft;
 @SuppressWarnings("unused")
 public class SoundApi {
 
-    @MethodDescription("Only .ogg files are supported")
+    @MethodDescription("""
+            Only .ogg files are supported.
+            """)
     public boolean play(String filename) {
         return play(filename, 1);
     }
 
-    @MethodDescription("Only .ogg files are supported")
+    @MethodDescription("""
+            Only .ogg files are supported.
+            """)
     public boolean play(String filename, double volume) {
         ExternalFileSoundInstance instance = SoundLibrary.get(filename);
         if (instance == null) {
@@ -26,7 +30,9 @@ public class SoundApi {
         return true;
     }
 
-    @MethodDescription("When sound.play(...) returns false, you can get error text by calling this method")
+    @MethodDescription("""
+            When sound.play(...) returns false, you can get error text by calling this method
+            """)
     public String getLastError() {
         String error = SoundLibrary.getLastError();
         return error == null ? "" : error;

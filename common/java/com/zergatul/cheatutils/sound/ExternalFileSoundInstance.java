@@ -7,20 +7,23 @@ import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.valueproviders.ConstantFloat;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 
+@NullMarked
 public class ExternalFileSoundInstance implements SoundInstance {
 
-    private static int counter = 1;
-    private final String filename;
+    private static int COUNTER = 1;
+
     private final Identifier location;
     private final Sound sound;
+    private final WeighedSoundEvents weighted;
     private float volume = 1;
 
-    private ExternalFileSoundInstance(String filename) {
-        this.filename = filename;
-        this.location = Identifier.fromNamespaceAndPath("cheatutils", "dynamic/" + (counter++));
+    private ExternalFileSoundInstance() {
+        this.location = Identifier.fromNamespaceAndPath("cheatutils", "dynamic/" + (COUNTER++));
         this.sound = new Sound(
                 location,
                 ConstantFloat.of(1),
@@ -30,6 +33,7 @@ public class ExternalFileSoundInstance implements SoundInstance {
                 false,
                 false,
                 16);
+        this.weighted = new WeighedSoundEvents(location, null);
     }
 
     public static ExternalFileSoundInstance fromFile(String filename) {
@@ -38,11 +42,7 @@ public class ExternalFileSoundInstance implements SoundInstance {
             throw new IllegalStateException("File " + filename + " doesn't exist.");
         }
 
-        return new ExternalFileSoundInstance(filename);
-    }
-
-    public String getFilename() {
-        return filename;
+        return new ExternalFileSoundInstance();
     }
 
     public void setVolume(float value) {
@@ -55,13 +55,18 @@ public class ExternalFileSoundInstance implements SoundInstance {
     }
 
     @Override
-    public WeighedSoundEvents resolve(SoundManager manager) {
-        return new WeighedSoundEvents(location, null);
+    public @Nullable WeighedSoundEvents getOrResolve(SoundManager soundManager) {
+        return weighted;
     }
 
     @Override
     public Sound getSound() {
         return sound;
+    }
+
+    @Override
+    public @Nullable WeighedSoundEvents getSoundEvent() {
+        return null;
     }
 
     @Override
