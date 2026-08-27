@@ -77,6 +77,8 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
+
+	exclude("net/irisshaders/**")
 }
 
 // configure the maven publication

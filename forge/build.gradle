@@ -143,6 +143,8 @@ jar {
                 "MixinConfigs"            : "cheatutils.mixins.json"
         ])
     }
+
+    exclude("net/irisshaders/**")
 }
 
 jarJar {

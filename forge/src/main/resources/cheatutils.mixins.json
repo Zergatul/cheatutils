@@ -69,6 +69,8 @@
     "common.MixinSoundManager",
     "common.MixinUser",
 
+    "common.compatibility.iris.MixinOuterWrappedRenderType",
+
     "forge.accessors.GuiGraphicsAccessor",
     "forge.MixinC2SModListReply",
     "forge.MixinKeyboardHandler",

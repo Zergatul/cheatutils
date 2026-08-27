@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.render;
 
+import com.zergatul.cheatutils.compatibility.WrappedRenderType;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeRenderTypeAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.CompositeStateAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiTextureStateShardAccessor;
@@ -24,6 +25,11 @@ public class RenderTypeTextureResolver {
     }
 
     private static Optional<ResourceLocation> inspectTexture(RenderType renderType) {
+        // Iris compatibility
+        if (renderType instanceof WrappedRenderType wrapped) {
+            renderType = wrapped.unwrap();
+        }
+
         if (renderType instanceof CompositeRenderTypeAccessor compositeRenderType) {
             RenderType.CompositeState compositeState = compositeRenderType.getState_CU();
             CompositeStateAccessor compositeStateAccessor = (CompositeStateAccessor) (Object) compositeState;
