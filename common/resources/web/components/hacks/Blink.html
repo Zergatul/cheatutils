@@ -26,10 +26,10 @@
             Example 2. Add this to <b>Status Overlay</b> script to see blink status under crosshair.
             <CodeBlock :code='`
                 if (blink.isEnabled()) {
-                    main.setOverlayHorizontalPosition("center");
-                    main.setOverlayVerticalPosition("middle");
-                    main.addText("");
-                    main.addText("BLINK:" +
+                    overlay.center();
+                    overlay.middle();
+                    overlay.add("");
+                    overlay.add("BLINK:" +
                         " Packets=" + blink.getPackets() +
                         " Distance=" + blink.getDistance().toStandardString(1));
                 }

@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.scripting.api.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.SpeedCounterController;
-import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.ApiVisibility;
 import com.zergatul.cheatutils.scripting.api.HelpText;
@@ -89,108 +88,6 @@ public class MainApi {
         showMessage(constructMessage(color1, text1, color2, text2), true);
     }
 
-    @ApiVisibility(ApiType.ACTION)
-    public void openClosestChestBoat() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level != null && mc.player != null) {
-            Stream<ChestBoat> boats = StreamSupport
-                    .stream(mc.level.entitiesForRendering().spliterator(), false)
-                    .filter(e -> e instanceof ChestBoat)
-                    .map(e -> (ChestBoat) e);
-            double minDistance = Double.MAX_VALUE;
-            ChestBoat target = null;
-            for (ChestBoat boat: boats.toList()) {
-                double d2 = mc.player.distanceToSqr(boat);
-                if (d2 < minDistance) {
-                    minDistance = d2;
-                    target = boat;
-                }
-            }
-
-            if (target == null) {
-                return;
-            }
-
-            boolean oldShiftKeyDown = mc.player.input.shiftKeyDown;
-            mc.player.input.shiftKeyDown = true;
-            mc.gameMode.interactAt(mc.player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
-            mc.gameMode.interact(mc.player, target, InteractionHand.MAIN_HAND);
-            mc.player.swing(InteractionHand.MAIN_HAND);
-            mc.player.input.shiftKeyDown = oldShiftKeyDown;
-        }
-    }
-
-    @ApiVisibility(ApiType.ACTION)
-    public void openTradingWithClosestVillager() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level != null && mc.player != null) {
-            Villager villager = StreamSupport.stream(mc.level.entitiesForRendering().spliterator(), false)
-                    .filter(e -> Villager.class.isInstance(e))
-                    .map(e -> (Villager) e)
-                    .min(Comparator.comparingDouble(v -> mc.player.distanceToSqr(v)))
-                    .orElse(null);
-            if (villager == null) {
-                return;
-            }
-            interactWithEntity(mc, villager);
-        }
-    }
-
-    @ApiVisibility(ApiType.OVERLAY)
-    public void addText(String text) {
-        addText("#FFFFFF", text);
-    }
-
-    @ApiVisibility(ApiType.OVERLAY)
-    public void addText(String color, String text) {
-        Integer colorInt = ColorUtils.parseColor(color);
-        MutableComponent component = MutableComponent.create(new LiteralContents(text));
-        if (colorInt != null) {
-            component = component.withStyle(Style.EMPTY.withColor(colorInt));
-        }
-        StatusOverlay.instance.addText(component);
-    }
-
-    @ApiVisibility(ApiType.OVERLAY)
-    public void addText(String color1, String text1, String color2, String text2) {
-        Integer color1Int = ColorUtils.parseColor(color1);
-        Integer color2Int = ColorUtils.parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
-        if (color1Int != null) {
-            component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
-        }
-        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
-        if (color2Int != null) {
-            component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
-        }
-        StatusOverlay.instance.addText(component1.append(" ").append(component2));
-    }
-
-    @ApiVisibility(ApiType.OVERLAY)
-    public void addTextAtPosition(int x, int y, String color, String text) {
-        Integer colorInt = ColorUtils.parseColor(color);
-        MutableComponent component = MutableComponent.create(new LiteralContents(text));
-        if (colorInt != null) {
-            component = component.withStyle(Style.EMPTY.withColor(colorInt));
-        }
-        StatusOverlay.instance.addFreeText(x, y, component);
-    }
-
-    @ApiVisibility(ApiType.OVERLAY)
-    public void addTextAtPosition(int x, int y, String color1, String text1, String color2, String text2) {
-        Integer color1Int = ColorUtils.parseColor(color1);
-        Integer color2Int = ColorUtils.parseColor(color2);
-        MutableComponent component1 = MutableComponent.create(new LiteralContents(text1));
-        if (color1Int != null) {
-            component1 = component1.withStyle(Style.EMPTY.withColor(color1Int));
-        }
-        MutableComponent component2 = MutableComponent.create(new LiteralContents(text2));
-        if (color2Int != null) {
-            component2 = component2.withStyle(Style.EMPTY.withColor(color2Int));
-        }
-        StatusOverlay.instance.addFreeText(x, y, component1.append(" ").append(component2));
-    }
-
     public String getCoordinates() {
         return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
     }
@@ -213,32 +110,6 @@ public class MainApi {
 
     public boolean isDebugScreenEnabled() {
         return mc.options.renderDebug;
-    }
-
-    @HelpText("Allowed values: \"left\", \"center\", \"right\".")
-    @ApiVisibility(ApiType.OVERLAY)
-    public void setOverlayHorizontalPosition(String position) {
-        if (position != null) {
-            position = position.toLowerCase(Locale.ROOT);
-        }
-        switch (position) {
-            case "left" -> StatusOverlay.instance.setHorizontalAlign(StatusOverlay.HorizontalAlign.LEFT);
-            case "center" -> StatusOverlay.instance.setHorizontalAlign(StatusOverlay.HorizontalAlign.CENTER);
-            default -> StatusOverlay.instance.setHorizontalAlign(StatusOverlay.HorizontalAlign.RIGHT);
-        }
-    }
-
-    @HelpText("Allowed values: \"top\", \"middle\", \"bottom\".")
-    @ApiVisibility(ApiType.OVERLAY)
-    public void setOverlayVerticalPosition(String position) {
-        if (position != null) {
-            position = position.toLowerCase(Locale.ROOT);
-        }
-        switch (position) {
-            case "top" -> StatusOverlay.instance.setVerticalAlign(StatusOverlay.VerticalAlign.TOP);
-            case "middle" -> StatusOverlay.instance.setVerticalAlign(StatusOverlay.VerticalAlign.MIDDLE);
-            default -> StatusOverlay.instance.setVerticalAlign(StatusOverlay.VerticalAlign.BOTTOM);
-        }
     }
 
     public String getTargetBlockCoordinates() {
@@ -317,42 +188,6 @@ public class MainApi {
         return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getSpeed());
     }
 
-    /*public String getPlayerEntitySeed() {
-        var players =  Minecraft.getInstance().getSingleplayerServer().overworld().players();
-        if (players.size() > 0) {
-            var rnd = (LegacyRandomSource) players.get(0).getRandom();
-            var seed = (AtomicLong) ReflectionUtils.getDeclaredField(rnd, "seed");
-            return Long.toHexString(seed.get());
-        } else {
-            return "";
-        }
-    }
-
-    public String getEnchantmentSeed() {
-        var players =  Minecraft.getInstance().getSingleplayerServer().overworld().players();
-        if (players.size() > 0) {
-            var seed = players.get(0).getEnchantmentSeed();
-            return Integer.toHexString(seed);
-        } else {
-            return "";
-        }
-    }
-
-    public int getEnchantmentSeedInt() {
-        var players =  Minecraft.getInstance().getSingleplayerServer().overworld().players();
-        if (players.size() > 0) {
-            return players.get(0).getEnchantmentSeed();
-        } else {
-            return Integer.MIN_VALUE;
-        }
-    }*/
-
-    private void interactWithEntity(Minecraft mc, Entity entity) {
-        mc.gameMode.interactAt(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND);
-        mc.gameMode.interact(mc.player, entity, InteractionHand.MAIN_HAND);
-        mc.player.swing(InteractionHand.MAIN_HAND);
-    }
-
     private MutableComponent constructMessage(String text) {
         return MutableComponent.create(new LiteralContents(text));
     }
@@ -383,24 +218,4 @@ public class MainApi {
     private void showMessage(MutableComponent message, boolean overlay) {
         Minecraft.getInstance().getChatListener().handleSystemMessage(message, overlay);
     }
-
-    /*public String getSpeed2() {
-        Minecraft mc = Minecraft.getInstance();
-        IntegratedServer server = mc.getSingleplayerServer();
-        if (mc.level != null && server != null) {
-            ServerPlayer player = null;
-            for (Entity e : server.overworld().getEntities().getAll()) {
-                if (e instanceof ServerPlayer p) {
-                    player = p;
-                    break;
-                }
-            }
-            if (player == null) {
-                return "";
-            }
-            return "Client: " + Root.convert.toString(mc.player.getDeltaMovement().length(), 1) + " Server: " + Root.convert.toString(player.getDeltaMovement().length(), 1);
-        } else {
-            return "";
-        }
-    }*/
 }

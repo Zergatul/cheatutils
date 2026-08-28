@@ -310,16 +310,16 @@ public class HttpApiSmokeTest {
                         client,
                         baseUri.resolve("completion"),
                         "POST",
-                        MonacoJson.toJson(new Integration.PositionRequest("main.", "OVERLAY", 1, 6))),
+                        MonacoJson.toJson(new Integration.PositionRequest("overlay.", "OVERLAY", 1, 9))),
                 HttpResponseCodes.OK,
-                "addText");
+                "add");
         requireContains(send(
                         client,
                         baseUri.resolve("hover"),
                         "POST",
-                        MonacoJson.toJson(new Integration.PositionRequest("main.addText(\"x\");", "OVERLAY", 1, 6))),
+                        MonacoJson.toJson(new Integration.PositionRequest("overlay.add(\"x\");", "OVERLAY", 1, 10))),
                 HttpResponseCodes.OK,
-                "addText");
+                "Adds text to Status Overlay");
         requireContains(send(
                         client,
                         baseUri.resolve("hover"),
@@ -404,7 +404,7 @@ public class HttpApiSmokeTest {
                 HttpResponseCodes.OK,
                 "\"type\":\"OVERLAY\"");
 
-        String valid = "{\"type\":\"OVERLAY\",\"code\":\"main.addText(\\\"ok\\\");\"}";
+        String valid = "{\"type\":\"OVERLAY\",\"code\":\"overlay.add(\\\"ok\\\");\"}";
         requireContains(send(client, baseUri.resolve("script-compile"), "POST", valid),
                 HttpResponseCodes.OK,
                 "\"ok\":true");

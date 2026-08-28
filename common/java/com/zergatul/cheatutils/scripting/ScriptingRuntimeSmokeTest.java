@@ -113,10 +113,13 @@ public class ScriptingRuntimeSmokeTest {
                 variables.setFloat("movement-factor-sum", speedFactor + jumpFactor);
                 """);
         requireCompilationSuccess(ScriptType.OVERLAY, """
-                main.setOverlayHorizontalPosition("left");
-                main.addText("TPS: " + tps.get().toStandardString(1));
+                overlay.left();
+                overlay.top();
+                overlay.backgroundColor("#50505090");
+                overlay.add("TPS: " + tps.get().toStandardString(1));
                 float tpsVal = tps.get();
-                main.addText("#CDC1FF", "TPS:", "#00FF21", tpsVal.toStandardString(2));
+                overlay.add("#CDC1FF", "TPS:", "#00FF21", tpsVal.toStandardString(2));
+                overlay.addAtPosition(2, 2, "#FFFFFF", "Status");
                 """);
         requireCompilationSuccess(ScriptType.BLOCK_AUTOMATION, """
                 if (currentBlock.getY() >= 0) {

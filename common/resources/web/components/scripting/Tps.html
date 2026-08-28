@@ -9,7 +9,7 @@
         <div class="description">
             Example 1. Display TPS with 1 decimal:
             <CodeBlock :code='`
-                main.addText("TPS: " + tps.get().toStandardString(1));
+                overlay.add("TPS: " + tps.get().toStandardString(1));
             `' />
 
             <br>
@@ -24,7 +24,7 @@
                 } else {
                     tpsColor = "#FF006E";
                 }
-                main.addText("#CDC1FF", "TPS:", tpsColor, tpsVal.toStandardString(2));
+                overlay.add("#CDC1FF", "TPS:", tpsColor, tpsVal.toStandardString(2));
             `' />
         </div>
     </div>

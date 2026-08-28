@@ -49,7 +49,7 @@ public class ConfigMigrationSmokeTest {
     }
 
     public static void verifyStatusOverlay() {
-        verifyStatusOverlaySource("main.addText(\"valid\");");
+        verifyStatusOverlaySource("overlay.add(\"valid\");");
         verifyStatusOverlaySource("int value = ;");
     }
 

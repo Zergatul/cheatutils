@@ -46,6 +46,7 @@ public class Root {
     public static FullBrightApi fullBright = new FullBrightApi();
 
     // scripting
+    public static OverlayApi overlay = new OverlayApi();
     public static VillagerRollerApi villagerRoller = new VillagerRollerApi();
     public static EventsApi events = new EventsApi();
 
