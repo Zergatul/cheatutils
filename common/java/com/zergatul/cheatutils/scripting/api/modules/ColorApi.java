@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
-import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
+import com.zergatul.scripting.MethodDescription;
 
 import java.awt.*;
 
@@ -15,7 +15,7 @@ public class ColorApi {
         return String.format("#%02X%02X%02X", red, green, blue);
     }
 
-    @HelpText("value should be [0..1]")
+    @MethodDescription("value should be [0..1]")
     public String gradient(String color1, String color2, double value) {
         value = MathUtils.clamp(value, 0, 1);
         Color c1 = ColorUtils.parseColor2(color1);

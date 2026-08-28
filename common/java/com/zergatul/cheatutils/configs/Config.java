@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
 public class Config implements Sanitizable {
-    public boolean esp;
     public FullBrightConfig fullBrightConfig = new FullBrightConfig();
     public AutoFishConfig autoFishConfig = new AutoFishConfig();
     public ArmorOverlayConfig armorOverlayConfig = new ArmorOverlayConfig();
@@ -66,9 +65,7 @@ public class Config implements Sanitizable {
     public CoreConfig coreConfig = new CoreConfig();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
 
-    public Config() {
-        esp = true;
-    }
+    public Config() {}
 
     @Override
     public void sanitize() {

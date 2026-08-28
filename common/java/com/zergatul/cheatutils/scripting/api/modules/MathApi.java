@@ -1,10 +1,11 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
-import com.zergatul.cheatutils.scripting.api.HelpText;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.util.Mth;
 
 import java.util.Random;
 
+@SuppressWarnings("unused")
 public class MathApi {
 
     public final RadiansApi radians = new RadiansApi();
@@ -12,7 +13,7 @@ public class MathApi {
 
     private final Random random = new Random();
 
-    @HelpText("Random number in [0..1) range")
+    @MethodDescription("Random number in [0..1) range")
     public double random() {
         return random.nextDouble();
     }

@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ElytraTunnelConfig;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
+import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.helpers.MixinEntityHelper;
 import net.minecraft.client.player.LocalPlayer;
@@ -25,7 +26,7 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "getTeamColor()I", cancellable = true)
     private void onGetTeamColor(CallbackInfoReturnable<Integer> info) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
         var entity = (Entity) (Object) this;

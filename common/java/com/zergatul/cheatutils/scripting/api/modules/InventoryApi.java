@@ -3,10 +3,10 @@ package com.zergatul.cheatutils.scripting.api.modules;
 import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.ApiVisibility;
-import com.zergatul.cheatutils.scripting.api.HelpText;
 import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Function;
 
+@SuppressWarnings("unused")
 public class InventoryApi {
 
     private final static Minecraft mc = Minecraft.getInstance();
@@ -45,7 +46,7 @@ public class InventoryApi {
         return getItemBySlot(EquipmentSlot.OFFHAND);
     }
 
-    @HelpText("Returns ItemStack based on index. Index should be in range [0..36)")
+    @MethodDescription("Returns ItemStack based on index. Index should be in range [0..36)")
     public ItemStackWrapper getItem(int index) {
         if (mc.player == null || index < 0 || index >= 36) {
             return new ItemStackWrapper(ItemStack.EMPTY);
@@ -53,7 +54,7 @@ public class InventoryApi {
         return new ItemStackWrapper(mc.player.getInventory().getItem(index));
     }
 
-    @HelpText("Slot parameter should be in range [1..9]")
+    @MethodDescription("Slot parameter should be in range [1..9]")
     public ItemStackWrapper getHotbarItem(int slot) {
         return slot < 1 || slot > 9 ? new ItemStackWrapper(ItemStack.EMPTY) : getItem(slot - 1);
     }
@@ -66,25 +67,25 @@ public class InventoryApi {
         });
     }
 
-    @HelpText("Allows you to equip any item")
+    @MethodDescription("Allows you to equip any item")
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipHead(String itemId) {
         return equip(itemId, true, itemStack -> EquipmentSlot.HEAD);
     }
 
-    @HelpText("Allows you to equip any item")
+    @MethodDescription("Allows you to equip any item")
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipChest(String itemId) {
         return equip(itemId, true, itemStack -> EquipmentSlot.CHEST);
     }
 
-    @HelpText("Allows you to equip any item")
+    @MethodDescription("Allows you to equip any item")
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipLegs(String itemId) {
         return equip(itemId, true, itemStack -> EquipmentSlot.LEGS);
     }
 
-    @HelpText("Allows you to equip any item")
+    @MethodDescription("Allows you to equip any item")
     @ApiVisibility(ApiType.ACTION)
     public boolean swapEquipFeet(String itemId) {
         return equip(itemId, true, itemStack -> EquipmentSlot.FEET);

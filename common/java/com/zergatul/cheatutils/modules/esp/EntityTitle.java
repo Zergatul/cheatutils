@@ -109,7 +109,7 @@ public class EntityTitle {
             return;
         }
 
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 
@@ -170,7 +170,7 @@ public class EntityTitle {
             return;
         }
 
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 

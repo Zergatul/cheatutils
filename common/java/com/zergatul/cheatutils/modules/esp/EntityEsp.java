@@ -45,7 +45,7 @@ public class EntityEsp implements Module {
     }
 
     public MultiBufferSource modifyBufferSource(Entity entity, MultiBufferSource source) {
-        if (mc.player == null || !ConfigStore.instance.getConfig().esp) {
+        if (mc.player == null || !EspGlobal.enabled) {
             return source;
         }
 
@@ -79,7 +79,7 @@ public class EntityEsp implements Module {
     }
 
     private void render(RenderWorldLastEvent event) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             overlayVertices.clear();
             outlineVertices.clear();
             return;

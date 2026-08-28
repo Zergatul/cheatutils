@@ -1,13 +1,14 @@
 package com.zergatul.cheatutils.scripting.api.modules;
 
 import com.zergatul.cheatutils.common.Registries;
-import com.zergatul.cheatutils.scripting.api.HelpText;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
+@SuppressWarnings("unused")
 public class GameApi {
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -34,7 +35,7 @@ public class GameApi {
         return (int) mc.level.getGameTime();
     }
 
-    @HelpText("In ticks. Cycles from 0 to 24000.")
+    @MethodDescription("In ticks. Cycles from 0 to 24000.")
     public int getDayTime() {
         if (mc.level == null) {
             return 0;

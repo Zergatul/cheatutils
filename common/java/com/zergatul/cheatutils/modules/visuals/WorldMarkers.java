@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
 import com.zergatul.cheatutils.font.GlyphFontRenderer;
 import com.zergatul.cheatutils.font.TextBounds;
+import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.render.ColorRender;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.ColorUtils;
@@ -39,7 +40,7 @@ public class WorldMarkers {
     }
 
     private void onPreRenderGui(RenderGuiEvent event) {
-        if (!ConfigStore.instance.getConfig().esp) {
+        if (!EspGlobal.enabled) {
             return;
         }
 

@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.scripting.api.modules;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.mixins.common.accessors.InputConstantsKeyAccessor;
-import com.zergatul.cheatutils.scripting.api.HelpText;
+import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public class InputApi {
 
     private static final Minecraft mc = Minecraft.getInstance();
@@ -39,7 +40,7 @@ public class InputApi {
         return Screen.hasAltDown();
     }
 
-    @HelpText("Use exactly the same key names you see in Key Binds screen.")
+    @MethodDescription("Use exactly the same key names you see in Key Binds screen.")
     public boolean isKeyDown(String key) {
         if (!mc.isWindowActive()) {
             return false;
