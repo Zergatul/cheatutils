@@ -11,17 +11,31 @@ function getSettingsByModel(model) {
     return modelSettings.find(settings => settings.model == model);
 }
 
-function addStyleSheet(url) {
+function addStyleSheet(url, onSuccess, onError) {
     if (document.querySelector(`link[href="${url}"]`)) {
         return;
     }
     const link = document.createElement('link');
     link.href = url;
     link.rel = 'stylesheet';
+    if (onSuccess) {
+        link.addEventListener('load', onSuccess);
+    }
+    if (onError) {
+        link.addEventListener('error', onError);
+    }
     document.head.appendChild(link);
 }
 
-addStyleSheet('/local/codicon.min.css');
+addStyleSheet('https://cdn.jsdelivr.net/npm/vscode-codicons@0.0.17/dist/codicon.min.css', () => {
+    console.debug('Codicon has been loaded from CDN.');
+}, () => {
+    addStyleSheet('/local/codicon.min.css', () => {
+        console.debug('Codicon has been loaded from local server.');
+    }, () => {
+        console.error('Failed to load Codicon from local server.');
+    });
+});
 
 let dark = null;
 
@@ -413,7 +427,6 @@ export function createComponent(template) {
         },
         async mounted() {
             this.isDisposed = false;
-            window.addEventListener('keydown', this.onWindowKeyDown);
             await languageSettingsConstructor;
 
             let settings = await http.get('/api/monaco-editor-settings');
@@ -464,7 +477,6 @@ export function createComponent(template) {
         },
         unmounted() {
             this.isDisposed = true;
-            window.removeEventListener('keydown', this.onWindowKeyDown);
             document.body.classList.remove('script-editor-fullscreen');
             const entry = modelSettings.find(settings => settings.editor == this.editor);
             if (entry) {
@@ -480,14 +492,6 @@ export function createComponent(template) {
                 this.isFullscreen = !this.isFullscreen;
                 document.body.classList.toggle('script-editor-fullscreen', this.isFullscreen);
                 this.$nextTick(() => this.editor.focus());
-            },
-            onWindowKeyDown(event) {
-                if (event.key == 'Escape' && this.isFullscreen) {
-                    event.preventDefault();
-                    this.isFullscreen = false;
-                    document.body.classList.remove('script-editor-fullscreen');
-                    this.$nextTick(() => this.$refs.fullscreenToggle.focus());
-                }
             }
         },
         watch: {
