@@ -184,6 +184,12 @@ public class EntityTitle {
         List<Integer> enchantmentWidths = new ArrayList<>();
         List<Integer> enchantmentTextWidths = new ArrayList<>();
 
+        float[] shaderColor = RenderSystem.getShaderColor();
+        float shaderRed = shaderColor[0];
+        float shaderGreen = shaderColor[1];
+        float shaderBlue = shaderColor[2];
+        float shaderAlpha = shaderColor[3];
+
         PoseStack poseStack = event.getGuiGraphics().pose();
         poseStack.pushPose();
         poseStack.last().pose().translate((float)scaledHalfWidth, (float)scaledHalfHeight, 0);
@@ -352,6 +358,7 @@ public class EntityTitle {
         }
 
         poseStack.popPose();
+        RenderSystem.setShaderColor(shaderRed, shaderGreen, shaderBlue, shaderAlpha);
     }
 
     private StylizedText getEntityText(EntityEntry entry) {

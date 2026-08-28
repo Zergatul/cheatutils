@@ -9,8 +9,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
 
 public class Events {
     public static final SimpleEventHandler Close = new SimpleEventHandler();
@@ -62,11 +60,9 @@ public class Events {
     static {
         RenderWorldLastRaw.add(event -> {
             GlStateTracker.save();
-            int program = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
             try {
                 RenderWorldLast.trigger(event);
             } finally {
-                GL20.glUseProgram(program);
                 GlStateTracker.restore();
             }
         });
