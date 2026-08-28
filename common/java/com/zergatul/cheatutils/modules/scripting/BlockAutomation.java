@@ -12,7 +12,7 @@ import com.zergatul.cheatutils.configs.BlockAutomationConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.render.Primitives;
+import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
 import com.zergatul.cheatutils.utils.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.BlockUtils;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
@@ -33,9 +33,7 @@ public class BlockAutomation {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
-    private @Nullable Runnable script;
-    private BlockPos currentBlockPos;
-    private BlockState currentBlockState;
+    private @Nullable BlockPosConsumer script;
     private String blockId;
     private BlockPlacingMethod method;
     private BlockUtils.PlaceBlockPlan debugPlan;
@@ -46,19 +44,11 @@ public class BlockAutomation {
         Events.RenderWorldLast.add(this::onRenderWorldLast);
     }
 
-    public void setScript(@Nullable Runnable script) {
+    public void setScript(@Nullable BlockPosConsumer script) {
         this.script = script;
     }
 
-    public BlockPos getCurrentBlockPos() {
-        return currentBlockPos;
-    }
-
-    public BlockState getCurrentBlockState() {
-        return currentBlockState;
-    }
-
-    public void setBlock(String blockId, BlockPlacingMethod method) {
+    public void useItem(String blockId, BlockPlacingMethod method) {
         this.blockId = blockId;
         this.method = method;
     }
@@ -89,11 +79,7 @@ public class BlockAutomation {
             }
 
             blockId = null;
-            currentBlockPos = pos;
-            currentBlockState = state;
-            script.run();
-            currentBlockPos = null;
-            currentBlockState = null;
+            script.accept(pos.getX(), pos.getY(), pos.getZ());
 
             if (blockId == null) {
                 continue;

@@ -440,10 +440,16 @@ public class HttpApiSmokeTest {
         requireContains(send(client, baseUri.resolve("scripts-doc/EVENTS"), "GET", null),
                 HttpResponseCodes.OK,
                 "onTickEnd");
-        for (String legacyType : List.of("overlay", "handle-keybindings", "block-placer", "villager-roller")) {
-            requireContains(send(client, baseUri.resolve("scripts-doc/" + legacyType), "GET", null),
+        String[][] legacyTypes = {
+                { "overlay", "overlay." },
+                { "handle-keybindings", "esp." },
+                { "block-placer", "blockAutomation." },
+                { "villager-roller", "villagerRoller." }
+        };
+        for (String[] legacyType : legacyTypes) {
+            requireContains(send(client, baseUri.resolve("scripts-doc/" + legacyType[0]), "GET", null),
                     HttpResponseCodes.OK,
-                    "main.");
+                    legacyType[1]);
         }
         requireError(send(client, baseUri.resolve("scripts-doc/auto-disconnect"), "GET", null),
                 HttpResponseCodes.BAD_REQUEST,

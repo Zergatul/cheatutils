@@ -252,7 +252,7 @@ public class EnchantmentScreenController {
                 List<EnchantmentInstance> list = getEnchantmentList(mcRandom, seed, itemStack, 2, cost2);
                 for (var ei: list) {
                     var id = Registries.ENCHANTMENTS.getKey(ei.enchantment);
-                    Root.main.systemMessage(id.toString() + " - " + ei.level);
+                    Root.ui.systemMessage(id.toString() + " - " + ei.level);
                 }
                 return list.size();
             }

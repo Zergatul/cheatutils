@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.scripting.workspace.ScriptDocument;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSlot;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
@@ -122,14 +123,19 @@ public class ScriptingRuntimeSmokeTest {
                 overlay.addAtPosition(2, 2, "#FFFFFF", "Status");
                 """);
         requireCompilationSuccess(ScriptType.BLOCK_AUTOMATION, """
-                if (currentBlock.getY() >= 0) {
-                    blockPlacer.setBlockId(currentBlock.getId());
+                if (y >= 0 && game.blocks.getId(x, y, z) == "minecraft:air") {
+                    blockAutomation.useItem("minecraft:stone");
                 }
                 """);
         requireCompilationSuccess(ScriptType.VILLAGER_ROLLER, """
                 if (villagerRoller.isBestPrice()) {
-                    main.systemMessage(villagerRoller.getEnchantmentName());
+                    ui.systemMessage(villagerRoller.getEnchantmentName());
                 }
+                """);
+        requireCompilationSuccess(ScriptType.KEYBINDING, """
+                string itemId = inventory.getMainHand().item.id;
+                int durability = inventory.getMainHand().durability;
+                ui.systemMessage(itemId + " " + durability);
                 """);
         requireCompilationSuccess(ScriptType.EVENTS, """
                 events.onHandleKeys(() => {
@@ -155,9 +161,9 @@ public class ScriptingRuntimeSmokeTest {
                 """);
         requireCompilationSuccess(ScriptType.KEYBINDING, "player.disconnect(\"self-attack\");");
 
-        requireCompilationFailure(ScriptType.OVERLAY, "main.chat(\"not-visible\");");
-        requireCompilationFailure(ScriptType.BLOCK_AUTOMATION, "main.chat(\"not-visible\");");
-        requireCompilationFailure(ScriptType.VILLAGER_ROLLER, "main.chat(\"not-visible\");");
+        requireCompilationFailure(ScriptType.OVERLAY, "player.chat(\"not-visible\");");
+        requireCompilationFailure(ScriptType.BLOCK_AUTOMATION, "player.chat(\"not-visible\");");
+        requireCompilationFailure(ScriptType.VILLAGER_ROLLER, "player.chat(\"not-visible\");");
         requireCompilationFailure(ScriptType.OVERLAY, "events.onTickEnd(() => {});");
         requireCompilationFailure(ScriptType.OVERLAY, "player.disconnect(\"\");");
         requireCompilationFailure(ScriptType.EVENTS, "autoDisconnect.toggle();");
@@ -222,12 +228,12 @@ public class ScriptingRuntimeSmokeTest {
             }
         }
 
-        Runnable blockAutomationScript = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.BLOCK_AUTOMATION, """
+        BlockPosConsumer blockAutomationScript = getProgram(ScriptCompilerRegistry.INSTANCE.compile(ScriptType.BLOCK_AUTOMATION, """
                 int zero = 0;
                 int value = 1 / zero;
                 """));
         try {
-            blockAutomationScript.run();
+            blockAutomationScript.accept(0, 0, 0);
             throw new IllegalStateException("Expected Block Automation runtime failure.");
         } catch (ArithmeticException e) {
             found = false;

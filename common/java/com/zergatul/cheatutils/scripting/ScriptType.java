@@ -4,6 +4,9 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.api.ApiType;
 import com.zergatul.cheatutils.scripting.api.Root;
 import com.zergatul.cheatutils.scripting.api.VisibilityCheck;
+import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
+import com.zergatul.cheatutils.scripting.types.ItemStackWrapper;
+import com.zergatul.cheatutils.scripting.types.ItemWrapper;
 import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilationParametersBuilder;
 import com.zergatul.scripting.compiler.JavaInteropPolicy;
@@ -31,8 +34,8 @@ public enum ScriptType {
 
     BLOCK_AUTOMATION(
             new Builder()
-                    .setApis(ApiType.CURRENT_BLOCK, ApiType.BLOCK_PLACER)
-                    .setInterface(Runnable.class)
+                    .setApis(ApiType.BLOCK_AUTOMATION)
+                    .setInterface(BlockPosConsumer.class)
                     .setScriptClassName("BlockAutomationScript")
                     .setModuleName("Block Automation")),
 
@@ -100,6 +103,8 @@ public enum ScriptType {
                 })
                 .setMainClassName(scriptClassName)
                 .setSourceFile("<" + scriptClassName + ">")
+                .addCustomType(ItemWrapper.class)
+                .addCustomType(ItemStackWrapper.class)
                 .emitLineNumbers(true)
                 .emitVariableNames(true);
 

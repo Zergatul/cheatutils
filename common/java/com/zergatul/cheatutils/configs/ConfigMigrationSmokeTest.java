@@ -54,7 +54,7 @@ public class ConfigMigrationSmokeTest {
     }
 
     public static void verifyBlockAutomation() {
-        verifyBlockAutomationSource("blockPlacer.setBlockId(\"minecraft:stone\");");
+        verifyBlockAutomationSource("blockAutomation.useItem(\"minecraft:stone\");");
         verifyBlockAutomationSource("int value = ;");
     }
 
