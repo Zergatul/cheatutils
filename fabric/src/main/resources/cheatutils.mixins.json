@@ -68,6 +68,7 @@
     "common.MixinSoundManager",
     "common.MixinUser",
 
+    "common.compatibility.iris.MixinHandRenderer",
     "common.compatibility.iris.MixinOuterWrappedRenderType",
 
     "fabric.MixinAbstractContainerScreen",
