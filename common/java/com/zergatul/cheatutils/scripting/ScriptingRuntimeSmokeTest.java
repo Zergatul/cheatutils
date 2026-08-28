@@ -8,6 +8,8 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.LevelUnloadedException;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
+import com.zergatul.cheatutils.modules.scripting.Debugging;
+import com.zergatul.cheatutils.scripting.api.modules.DebugApi;
 import com.zergatul.cheatutils.scripting.api.modules.DelayApi;
 import com.zergatul.cheatutils.scripting.workspace.ScriptDocument;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
@@ -51,6 +53,7 @@ public class ScriptingRuntimeSmokeTest {
 
         verifyInitialApiCompatibility();
         verifyDelayApi();
+        verifyDebugApi();
         verifyAdvancedScriptingToggle();
         verifyRuntimeLineNumbers();
         verifyExecutionLifecycle();
@@ -111,6 +114,7 @@ public class ScriptingRuntimeSmokeTest {
         requireCompilationFailure(ScriptType.KEYBINDING, "main.toggleEsp();");
         requireCompilationSuccess(ScriptType.KEYBINDING, "await delay.ticks(2);");
         requireCompilationSuccess(ScriptType.KEYBINDING, "await delay.clientTicks(2);");
+        requireCompilationSuccess(ScriptType.KEYBINDING, "debug.write(\"smoke\");");
 
         requireCompilationSuccess(ScriptType.KEYBINDING, """
                 float speedFactor = movement.getSpeedMultiplierFactor();
@@ -176,8 +180,18 @@ public class ScriptingRuntimeSmokeTest {
 
     private static void verifyDelayApi() {
         DelayApi delay = new DelayApi();
+        ScriptExecutionManager manager = ScriptExecutionManager.instance;
+        ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, "client-ticks-lifecycle-smoke");
 
         CompletableFuture<Void> clientTicks = delay.clientTicks(2);
+        manager.track(ref, clientTicks);
+        Events.ClientPlayerLoggingOut.trigger();
+        Events.WorldUnload.trigger();
+        Events.DimensionChange.trigger();
+        if (clientTicks.isDone() || !manager.isRunning(ref)) {
+            throw new IllegalStateException("Tracked delay.clientTicks was cancelled by a world lifecycle event.");
+        }
+
         Events.ClientTickStart.trigger();
         Events.ClientTickEnd.trigger();
         if (clientTicks.isDone()) {
@@ -186,6 +200,9 @@ public class ScriptingRuntimeSmokeTest {
         Events.ClientTickStart.trigger();
         Events.ClientTickEnd.trigger();
         clientTicks.join();
+        if (manager.isRunning(ref)) {
+            throw new IllegalStateException("Completed delay.clientTicks remained tracked.");
+        }
 
         CompletableFuture<Void> inGameTicks = delay.ticks(2);
         Events.InGameTickStart.trigger();
@@ -206,6 +223,15 @@ public class ScriptingRuntimeSmokeTest {
             if (!(exception.getCause() instanceof LevelUnloadedException)) {
                 throw exception;
             }
+        }
+    }
+
+    private static void verifyDebugApi() {
+        DebugApi debug = new DebugApi();
+        debug.write("debug-smoke");
+        List<Debugging.Entry> entries = Debugging.instance.getEntries(0);
+        if (entries.isEmpty() || !"debug-smoke".equals(entries.get(entries.size() - 1).message())) {
+            throw new IllegalStateException("Debug API message was not stored.");
         }
     }
 

@@ -68,6 +68,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new VillagerRollerCodeApi());
         apis.add(new VillagerRollerStatusApi());
         apis.add(new CoreConfigApi());
+        apis.add(new DebuggingApi());
 
         apis.add(new SimpleConfigApi<>("full-bright", FullBrightConfig.class) {
             @Override

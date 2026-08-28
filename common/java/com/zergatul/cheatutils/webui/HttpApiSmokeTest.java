@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.common.ModLoaderBridge;
 import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.cheatutils.modules.scripting.Debugging;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.monaco.Integration;
 import com.zergatul.cheatutils.scripting.monaco.MonacoJson;
@@ -66,6 +67,7 @@ public class HttpApiSmokeTest {
                 new VillagerRollerCodeApi(),
                 new EventsScriptingCodeApi(),
                 new CoreConfigApi(),
+                new DebuggingApi(),
                 new WorldDownloadApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
@@ -83,6 +85,7 @@ public class HttpApiSmokeTest {
             verifyCodeApi(client, baseUri.resolve("code/"));
             verifyWorkspaceApi(client, baseUri);
             verifyCoreApi(client, baseUri);
+            verifyDebuggingApi(client, baseUri);
             verifyWorldDownloadApi(client, baseUri);
             verifyConcurrentRequests(client, baseUri);
 
@@ -213,6 +216,18 @@ public class HttpApiSmokeTest {
         requireError(send(client, uri, "POST", "\"invalid\"", false),
                 HttpResponseCodes.BAD_REQUEST,
                 "Content-Type must be application/json");
+    }
+
+    private static void verifyDebuggingApi(HttpClient client, URI baseUri) throws Exception {
+        Debugging.instance.addMessage("http-debug-smoke");
+
+        HttpResponse<String> response = send(client, baseUri.resolve("debugging/0"), "GET", null);
+        requireContains(response, HttpResponseCodes.OK, "\"lastId\": 1");
+        requireContains(response, HttpResponseCodes.OK, "\"message\": \"http-debug-smoke\"");
+
+        HttpResponse<String> empty = send(client, baseUri.resolve("debugging/1"), "GET", null);
+        requireContains(empty, HttpResponseCodes.OK, "\"lastId\": 1");
+        requireContains(empty, HttpResponseCodes.OK, "\"entries\": []");
     }
 
     private static void deleteTree(Path root) throws Exception {

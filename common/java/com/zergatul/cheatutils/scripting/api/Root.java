@@ -69,4 +69,5 @@ public class Root {
     public static WindowApi window = new WindowApi();
     public static FontApi font = new FontApi();
     public static DelayApi delay = new DelayApi();
+    public static DebugApi debug = new DebugApi();
 }

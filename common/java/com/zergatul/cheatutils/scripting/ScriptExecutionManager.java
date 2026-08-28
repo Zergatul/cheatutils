@@ -18,9 +18,6 @@ public class ScriptExecutionManager {
     private final Map<ScriptRef, CompletableFuture<?>> executions = new HashMap<>();
 
     private ScriptExecutionManager() {
-        Events.ClientPlayerLoggingOut.add(this::cancelAll, LIFECYCLE_PRIORITY);
-        Events.WorldUnload.add(this::cancelAll, LIFECYCLE_PRIORITY);
-        Events.DimensionChange.add(this::cancelAll, LIFECYCLE_PRIORITY);
         Events.Close.add(this::cancelAll, LIFECYCLE_PRIORITY);
     }
 

@@ -489,6 +489,13 @@ module({
 });
 module({
     group: 'scripting',
+    name: 'Debug',
+    component: 'Debugging',
+    path: 'debugging',
+    tags: ['script', 'debug']
+});
+module({
+    group: 'scripting',
     name: 'Editor Config',
     component: 'MonacoEditorConfig',
     path: 'editor-config',
