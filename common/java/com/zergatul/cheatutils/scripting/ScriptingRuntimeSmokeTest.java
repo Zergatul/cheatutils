@@ -5,8 +5,10 @@ import com.zergatul.cheatutils.configs.ConfigMigrationSmokeTest;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.LevelUnloadedException;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
+import com.zergatul.cheatutils.scripting.api.modules.DelayApi;
 import com.zergatul.cheatutils.scripting.workspace.ScriptDocument;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
@@ -48,6 +50,7 @@ public class ScriptingRuntimeSmokeTest {
         future.join();
 
         verifyInitialApiCompatibility();
+        verifyDelayApi();
         verifyAdvancedScriptingToggle();
         verifyRuntimeLineNumbers();
         verifyExecutionLifecycle();
@@ -106,6 +109,8 @@ public class ScriptingRuntimeSmokeTest {
     private static void verifyInitialApiCompatibility() {
         requireCompilationSuccess(ScriptType.KEYBINDING, "esp.toggle();");
         requireCompilationFailure(ScriptType.KEYBINDING, "main.toggleEsp();");
+        requireCompilationSuccess(ScriptType.KEYBINDING, "await delay.ticks(2);");
+        requireCompilationSuccess(ScriptType.KEYBINDING, "await delay.clientTicks(2);");
 
         requireCompilationSuccess(ScriptType.KEYBINDING, """
                 float speedFactor = movement.getSpeedMultiplierFactor();
@@ -167,6 +172,41 @@ public class ScriptingRuntimeSmokeTest {
         requireCompilationFailure(ScriptType.OVERLAY, "events.onTickEnd(() => {});");
         requireCompilationFailure(ScriptType.OVERLAY, "player.disconnect(\"\");");
         requireCompilationFailure(ScriptType.EVENTS, "autoDisconnect.toggle();");
+    }
+
+    private static void verifyDelayApi() {
+        DelayApi delay = new DelayApi();
+
+        CompletableFuture<Void> clientTicks = delay.clientTicks(2);
+        Events.ClientTickStart.trigger();
+        Events.ClientTickEnd.trigger();
+        if (clientTicks.isDone()) {
+            throw new IllegalStateException("delay.clientTicks completed too early.");
+        }
+        Events.ClientTickStart.trigger();
+        Events.ClientTickEnd.trigger();
+        clientTicks.join();
+
+        CompletableFuture<Void> inGameTicks = delay.ticks(2);
+        Events.InGameTickStart.trigger();
+        Events.InGameTickEnd.trigger();
+        if (inGameTicks.isDone()) {
+            throw new IllegalStateException("delay.ticks completed too early.");
+        }
+        Events.InGameTickStart.trigger();
+        Events.InGameTickEnd.trigger();
+        inGameTicks.join();
+
+        CompletableFuture<Void> cancelled = delay.ticks(2);
+        Events.WorldUnload.trigger();
+        try {
+            cancelled.join();
+            throw new IllegalStateException("delay.ticks continued after world unload.");
+        } catch (CompletionException exception) {
+            if (!(exception.getCause() instanceof LevelUnloadedException)) {
+                throw exception;
+            }
+        }
     }
 
     private static void verifyAdvancedScriptingToggle() {

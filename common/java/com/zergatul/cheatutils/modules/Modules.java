@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules;
 
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
+import com.zergatul.cheatutils.concurrent.InGameTickEndExecutor;
 import com.zergatul.cheatutils.concurrent.MainLoopEndExecutor;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.automation.*;
@@ -75,6 +76,7 @@ public class Modules {
         register(ContainerSummary.instance);
         register(Schematica.instance);
         register(ClientTickEndExecutor.instance);
+        register(InGameTickEndExecutor.instance);
     }
 
     private static void register(Module module) {

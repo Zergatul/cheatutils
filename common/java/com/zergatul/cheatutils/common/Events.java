@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.common;
 import com.zergatul.cheatutils.common.events.*;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
 import com.zergatul.cheatutils.render.gl.GlStateTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
@@ -34,7 +35,9 @@ public class Events {
     public static final ParameterizedEventHandler<LevelChunk> ScannerChunkUnloaded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockUpdateEvent> ScannerBlockUpdated = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
+    public static final SimpleEventHandler InGameTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
+    public static final SimpleEventHandler InGameTickEnd = new SimpleEventHandler();
     public static final ParameterizedEventHandler<RenderWorldLayerEvent> RenderSolidLayer = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLastRaw = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLast = new ParameterizedEventHandler<>();
@@ -58,6 +61,18 @@ public class Events {
     public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
 
     static {
+        ClientTickStart.add(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft != null && minecraft.level != null && minecraft.player != null) {
+                InGameTickStart.trigger();
+            }
+        });
+        ClientTickEnd.add(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft != null && minecraft.level != null && minecraft.player != null) {
+                InGameTickEnd.trigger();
+            }
+        });
         RenderWorldLastRaw.add(event -> {
             GlStateTracker.save();
             try {
