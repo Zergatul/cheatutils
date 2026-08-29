@@ -14,6 +14,7 @@ import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
+import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +22,8 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -77,6 +80,19 @@ public class ConfigStore {
         onConfigLoaded();
     }
 
+    public synchronized void switchFile(File file) {
+        currentFile = file;
+        requestWrite();
+    }
+
+    public synchronized void createNew(File file) {
+        ScriptExecutionManager.instance.cancelAll();
+        currentFile = file;
+        setConfig(new Config());
+        onConfigLoaded();
+        requestWrite();
+    }
+
     public void requestWrite() {
         File file = currentFile;
         if (file == null) {
@@ -127,6 +143,7 @@ public class ConfigStore {
         config.blocks.apply();
 
         LightLevel.instance.onChanged();
+        CompletableFuture.delayedExecutor(250, TimeUnit.MILLISECONDS).execute(ConfigHttpServer.instance::onConfigUpdated);
 
         EntityTitle.instance.onFontChange(config.entityTitleConfig);
         EntityTitle.instance.onEnchantmentFontChange(config.entityTitleConfig);

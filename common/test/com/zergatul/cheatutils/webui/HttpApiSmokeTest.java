@@ -70,6 +70,7 @@ public class HttpApiSmokeTest {
                 new CoreConfigApi(),
                 new DebuggingApi(),
                 new CommitsApi(),
+                new ProfilesApi(),
                 new WorldDownloadApi(),
                 new SmokeConfigApi(),
                 new SmokeValidationApi())));
@@ -91,6 +92,7 @@ public class HttpApiSmokeTest {
             verifyWorkspaceApi(client, baseUri);
             verifyCoreApi(client, baseUri);
             verifyDebuggingApi(client, baseUri);
+            verifyProfilesApi(client, baseUri);
             verifyWorldDownloadApi(client, baseUri);
             verifyConcurrentRequests(client, baseUri);
 
@@ -200,6 +202,22 @@ public class HttpApiSmokeTest {
         requireError(send(client, siteUri.resolve("llm/cheatutils-api.txt"), "POST", ""),
                 HttpResponseCodes.METHOD_NOT_ALLOWED,
                 "Method not allowed");
+    }
+
+    private static void verifyProfilesApi(HttpClient client, URI baseUri) throws Exception {
+        require(send(client, baseUri.resolve("profiles/current"), "GET", null), HttpResponseCodes.OK, "\"\"");
+        requireError(send(client, baseUri.resolve("profiles/unknown"), "GET", null),
+                HttpResponseCodes.BAD_REQUEST,
+                "Unsupported command");
+        requireError(send(client, baseUri.resolve("profiles"), "POST", "{}", false),
+                HttpResponseCodes.BAD_REQUEST,
+                "Content-Type must be application/json");
+        requireError(send(client, baseUri.resolve("profiles"), "POST", "{}"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Field is required: command");
+        requireError(send(client, baseUri.resolve("profiles"), "POST", "{\"command\":\"unknown\",\"name\":\"name\"}"),
+                HttpResponseCodes.BAD_REQUEST,
+                "Unsupported command");
     }
 
     private static void verifyConcurrentRequests(HttpClient client, URI baseUri) throws Exception {

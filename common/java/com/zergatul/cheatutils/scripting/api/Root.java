@@ -53,6 +53,7 @@ public class Root {
     // utility
     public static LockInputsApi lockInputs = new LockInputsApi();
     public static TpsApi tps = new TpsApi();
+    public static ProfilesApi profiles = new ProfilesApi();
 
     // others
     public static GameApi game = new GameApi();

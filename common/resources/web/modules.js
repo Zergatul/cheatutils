@@ -561,6 +561,13 @@ module({
 });
 module({
     group: 'utility',
+    name: 'Profiles',
+    component: 'Profiles',
+    path: 'profiles',
+    tags: ['profiles']
+});
+module({
+    group: 'utility',
     name: 'User Name',
     component: 'UserName',
     path: 'user-name',

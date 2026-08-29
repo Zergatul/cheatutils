@@ -117,6 +117,8 @@ public class ScriptingRuntimeSmokeTest {
         requireCompilationSuccess(ScriptType.KEYBINDING, "await delay.ticks(2);");
         requireCompilationSuccess(ScriptType.KEYBINDING, "await delay.clientTicks(2);");
         requireCompilationSuccess(ScriptType.KEYBINDING, "debug.write(\"smoke\");");
+        requireCompilationSuccess(ScriptType.KEYBINDING, "boolean changed = profiles.change(\"\");");
+        requireCompilationSuccess(ScriptType.OVERLAY, "string profile = profiles.getCurrent();");
 
         requireCompilationSuccess(ScriptType.KEYBINDING, """
                 float speedFactor = movement.getSpeedMultiplierFactor();
