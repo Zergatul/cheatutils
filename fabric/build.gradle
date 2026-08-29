@@ -51,6 +51,11 @@ sourceSets {
             srcDir '../common/resources'
         }
     }
+    test {
+        java {
+            srcDir '../common/test'
+        }
+    }
 }
 
 processResources {
@@ -103,19 +108,19 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 tasks.register("scriptingSmokeTest", JavaExec) {
-	group = "verification"
-	description = "Compiles and executes synchronous and asynchronous scripts on the Fabric runtime classpath."
-	dependsOn classes
-	classpath = sourceSets.main.runtimeClasspath
-	mainClass = "com.zergatul.cheatutils.scripting.ScriptingRuntimeSmokeTest"
+    group = "verification"
+    description = "Compiles and executes synchronous and asynchronous scripts on the Fabric runtime classpath."
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "com.zergatul.cheatutils.scripting.ScriptingRuntimeSmokeTest"
 }
 
 tasks.register("httpApiSmokeTest", JavaExec) {
-	group = "verification"
-	description = "Exercises HTTP API routing, status codes, validation, and response handling."
-	dependsOn classes
-	classpath = sourceSets.main.runtimeClasspath
-	mainClass = "com.zergatul.cheatutils.webui.HttpApiSmokeTest"
+    group = "verification"
+    description = "Exercises HTTP API routing, status codes, validation, and response handling."
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "com.zergatul.cheatutils.webui.HttpApiSmokeTest"
 }
 
 tasks.build.doLast {
