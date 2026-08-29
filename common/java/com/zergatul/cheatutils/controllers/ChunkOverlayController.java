@@ -9,12 +9,12 @@ import com.zergatul.cheatutils.chunkoverlays.WorldDownloadChunkOverlay;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.render.Primitives;
 import com.zergatul.cheatutils.utils.Dimension;
-import com.zergatul.cheatutils.interfaces.LevelChunkMixinInterface;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.MouseScrollEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
@@ -47,12 +47,12 @@ public class ChunkOverlayController {
         register(new NewChunksOverlay(SegmentSize, UpdateDelay));
         register(new WorldDownloadChunkOverlay(SegmentSize, UpdateDelay));
 
-        Events.ScannerChunkLoaded.add(this::onChunkLoaded);
-        Events.ScannerBlockUpdated.add(this::onBlockChanged);
-        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.SmartChunkLoaded.add(this::onChunkLoaded);
+        Events.BlockUpdated.add(this::onBlockChanged);
         Events.PostRenderGui.add(this::render);
         Events.PreRenderGuiOverlay.add(this::onPreRenderGameOverlay);
         Events.MouseScroll.add(this::onMouseScroll);
+        Events.Close.add(this::close);
     }
 
     @SuppressWarnings("unchecked")
@@ -188,26 +188,23 @@ public class ChunkOverlayController {
     }
 
     private void onChunkLoaded(LevelChunk chunk) {
-        Dimension dimension = ((LevelChunkMixinInterface) chunk).getDimension();
-        for (AbstractChunkOverlay overlay: overlays) {
-            overlay.onChunkLoaded(dimension, chunk);
+        for (AbstractChunkOverlay overlay : overlays) {
+            overlay.onChunkLoaded(chunk);
         }
     }
 
     private void onBlockChanged(BlockUpdateEvent event) {
-        Dimension dimension = ((LevelChunkMixinInterface) event.chunk()).getDimension();
-        for (AbstractChunkOverlay overlay: overlays) {
+        Dimension dimension = Dimension.get((ClientLevel) event.chunk().getLevel());
+        for (AbstractChunkOverlay overlay : overlays) {
             overlay.onBlockChanged(dimension, event.pos(), event.state());
-        }
-    }
-
-    private void onClientTickEnd() {
-        for (AbstractChunkOverlay overlay: overlays) {
-            overlay.onClientTickEnd();
         }
     }
 
     private boolean isSomeOverlayEnabled() {
         return overlays.stream().anyMatch(AbstractChunkOverlay::isEnabled);
+    }
+
+    private void close() {
+        overlays.forEach(AbstractChunkOverlay::close);
     }
 }

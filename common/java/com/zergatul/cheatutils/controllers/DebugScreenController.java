@@ -1,7 +1,5 @@
 package com.zergatul.cheatutils.controllers;
 
-import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
-import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.concurrent.ProfilerSingleThreadExecutor;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Minecraft;
@@ -31,16 +29,6 @@ public class DebugScreenController {
                 executor.getFailed(),
                 executor.getRejected(),
                 format.format(executor.getBusyPercentage()) + "%"));
-
-        ExplorationMiniMapChunkOverlay miniMapChunkOverlay = ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class);
-        list.add(String.format("ExplMiniMap scan thread: queue size=%s; state=%s;",
-                miniMapChunkOverlay.getScanningQueueCount(),
-                miniMapChunkOverlay.getThreadState()));
-
-        NewChunksOverlay newChunksOverlay = ChunkOverlayController.instance.ofType(NewChunksOverlay.class);
-        list.add(String.format("NewChunks scan thread: queue size=%s; state=%s;",
-                newChunksOverlay.getScanningQueueCount(),
-                newChunksOverlay.getThreadState()));
 
         FreeCam.instance.onRenderDebugScreenLeft(list);
     }

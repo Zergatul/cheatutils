@@ -50,8 +50,8 @@ public class Schematica {
     private final SlotSelector slotSelector = new SlotSelector();
 
     private Schematica() {
-        Events.ScannerChunkLoaded.add(this::onChunkLoaded);
-        Events.ScannerBlockUpdated.add(this::onBlockUpdated);
+        Events.SmartChunkLoaded.add(this::onChunkLoaded);
+        Events.BlockUpdated.add(this::onBlockUpdated);
         Events.ClientTickEnd.add(this::onClientTickEnd);
         Events.RenderSolidLayer.add(this::onRenderSolidLayer);
         Events.RenderWorldLast.add(this::onRender);

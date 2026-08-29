@@ -62,7 +62,6 @@ public class WorldDownloadController {
 
     public WorldDownloadController() {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
-        //ModApiWrapper.ScannerChunkLoaded.add(this::onChunkLoaded);
     }
 
     public boolean isActive() {

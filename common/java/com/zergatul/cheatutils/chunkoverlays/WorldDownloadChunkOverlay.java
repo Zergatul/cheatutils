@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.controllers.WorldDownloadController;
 import net.minecraft.core.BlockPos;
@@ -33,7 +34,7 @@ public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
     }
 
     public void notifyChunkSaved(Dimension dimension, int x, int z) {
-        addToRenderQueue(new RenderThreadQueueItem(() -> {
+        ClientTickEndExecutor.instance.execute(() -> {
             ChunkPos chunkPos = new ChunkPos(x, z);
             SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
             Map<SegmentPos, Segment> segments = getSegmentsMap(dimension);
@@ -58,12 +59,7 @@ public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
             }
 
             segment.onChange();
-        }));
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "WorldDownloadThread";
+        });
     }
 
     @Override

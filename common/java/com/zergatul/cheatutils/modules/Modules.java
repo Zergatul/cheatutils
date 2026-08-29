@@ -38,7 +38,6 @@ public class Modules {
 
         register(LockInputs.instance);
         register(AutoCraft.instance);
-        register(WorldScannerController.instance);
         register(BlockEsp.instance);
         register(EntityEsp.instance);
         register(ProjectilePath.instance);

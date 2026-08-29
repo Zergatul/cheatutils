@@ -102,24 +102,21 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         ChunkPos chunkPos = chunk.getPos();
         SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
 
-        addToRenderQueue(new RenderThreadQueueItem(() -> {
-            if (!segments.containsKey(segmentPos)) {
-                segments.put(segmentPos, new Segment(segmentPos, segmentSize));
-            }
-        }, () -> {
-            Segment segment = segments.get(segmentPos);
-            int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
-            int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
+        if (!segments.containsKey(segmentPos)) {
+            segments.put(segmentPos, new Segment(segmentPos, segmentSize));
+        }
 
-            Integer scanFromY = getConfig().scanFromY;
-            for (int dx = 0; dx < 16; dx++) {
-                for (int dz = 0; dz < 16; dz++) {
-                    drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
-                }
-            }
+        Segment segment = segments.get(segmentPos);
+        int xf = Math.floorMod(chunkPos.x, segmentSize) * 16;
+        int yf = Math.floorMod(chunkPos.z, segmentSize) * 16;
 
-            addToRenderQueue(new RenderThreadQueueItem(segment::onChange));
-        }));
+        Integer scanFromY = getConfig().scanFromY;
+        for (int dx = 0; dx < 16; dx++) {
+            for (int dz = 0; dz < 16; dz++) {
+                drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
+            }
+        }
+        segment.onChange();
 
         return true;
     }
@@ -155,11 +152,6 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                 }
             }
         }
-    }
-
-    @Override
-    protected String getThreadName() {
-        return "ExplorationMiniMapScanThread";
     }
 
     private boolean drawPixel(Dimension dimension, int xf, int yf, int dx, int dz, Segment segment, LevelChunk chunk, Integer scanFromY) {

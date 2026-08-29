@@ -2,9 +2,11 @@ package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.controllers.ChunkController;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
@@ -13,7 +15,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class AbstractChunkOverlay {
 
@@ -22,64 +23,41 @@ public abstract class AbstractChunkOverlay {
     // don't update segment often than UpdateDelay ns
     private final long updateDelay;
     private final Map<Dimension, Map<SegmentPos, Segment>> dimensions = new ConcurrentHashMap<>();
-    private final Object loopWaitEvent = new Object();
-    private final Thread eventLoop;
-    private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
-    private final Queue<Runnable> endTickQueue = new ConcurrentLinkedQueue<>();
-    private final Queue<RenderThreadQueueItem> renderQueue = new ConcurrentLinkedQueue<>();
     private final Set<Segment> updatedSegments = new HashSet<>();
     private final List<Segment> textureUploaded = new ArrayList<>();
+    private volatile boolean closed;
 
     protected AbstractChunkOverlay(int segmentSize, long updateDelay) {
         this.segmentSize = segmentSize;
         this.updateDelay = updateDelay;
 
-        eventLoop = new Thread(this::eventLoopThreadFunc, getThreadName());
-        eventLoop.start();
     }
 
     public final void onEnabledChanged() {
-        if (isEnabled()) {
-            ChunkController.instance.getLoadedChunks().forEach(p -> onChunkLoaded(p.getFirst(), p.getSecond()));
-        } else {
-            queue.add(() -> {
-                renderQueue.clear();
-                endTickQueue.clear();
-                queue.clear();
-
-                for (Map<SegmentPos, Segment> segments: dimensions.values()) {
-                    for (Segment segment: segments.values()) {
-                        segment.close();
-                    }
-                    segments.clear();
-                }
-            });
-            synchronized (loopWaitEvent) {
-                loopWaitEvent.notify();
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (closed) {
+                return;
             }
-        }
+            if (isEnabled()) {
+                ChunkController.instance.getLoadedChunks().forEach(p -> onChunkLoaded(p.getSecond()));
+            } else {
+                closeSegments();
+            }
+        });
     }
 
-    public final void onChunkLoaded(Dimension dimension, LevelChunk chunk) {
-        if (!isEnabled()) {
+    public final void onChunkLoaded(LevelChunk chunk) {
+        if (closed || !isEnabled()) {
             return;
         }
 
+        Dimension dimension = Dimension.get((ClientLevel) chunk.getLevel());
         Map<SegmentPos, Segment> segments = getSegmentsMap(dimension);
-
-        queue.add(() -> {
-            if (!drawChunk(dimension, segments, chunk)) {
-                onChunkLoaded(dimension, chunk);
-            }
-        });
-
-        synchronized (loopWaitEvent) {
-            loopWaitEvent.notify();
-        }
+        drawChunk(dimension, segments, chunk);
     }
 
     public final void onBlockChanged(Dimension dimension, BlockPos pos, BlockState state) {
-        if (!isEnabled()) {
+        if (closed || !isEnabled()) {
             return;
         }
 
@@ -87,31 +65,13 @@ public abstract class AbstractChunkOverlay {
         var segmentPos = new SegmentPos(chunkPos, segmentSize);
         Map<SegmentPos, Segment> segments = dimensions.computeIfAbsent(dimension, d -> new HashMap<>());
         Segment segment = segments.get(segmentPos);
-        endTickQueue.add(() -> processBlockChange(dimension, chunkPos, segment, pos, state));
-    }
-
-    public final void onClientTickEnd() {
-        while (endTickQueue.size() > 0) {
-            endTickQueue.remove().run();
-        }
+        processBlockChange(dimension, chunkPos, segment, pos, state);
     }
 
     public final void onPreRender() {
-        boolean shouldNotify = renderQueue.size() > 0;
-        while (renderQueue.size() > 0) {
-            RenderThreadQueueItem item = renderQueue.remove();
-            item.runnable.run();
-            if (item.continuation != null) {
-                queue.add(item.continuation);
-            }
+        if (closed) {
+            return;
         }
-
-        if (shouldNotify) {
-            synchronized (loopWaitEvent) {
-                loopWaitEvent.notify();
-            }
-        }
-
         textureUploaded.clear();
         long now = System.nanoTime();
         for (Segment segment: updatedSegments) {
@@ -132,19 +92,6 @@ public abstract class AbstractChunkOverlay {
         return getSegmentsMap(dimension).values();
     }
 
-    public final int getScanningQueueCount() {
-        return queue.size();
-    }
-
-    public final String getThreadState() {
-        Thread thread = eventLoop;
-        if (thread != null) {
-            return eventLoop.getState().toString();
-        } else {
-            return null;
-        }
-    }
-
     public abstract int getTranslateZ();
 
     public abstract boolean isEnabled();
@@ -161,34 +108,25 @@ public abstract class AbstractChunkOverlay {
 
     protected abstract void processBlockChange(Dimension dimension, ChunkPos chunkPos, Segment segment, BlockPos pos, BlockState state);
 
-    protected final void addToRenderQueue(RenderThreadQueueItem item) {
-        renderQueue.add(item);
-    }
-
     protected final void addUpdatedSegment(Segment segment) {
         updatedSegments.add(segment);
     }
 
-    protected abstract String getThreadName();
+    public final void close() {
+        closed = true;
+        closeSegments();
+    }
 
-    private void eventLoopThreadFunc() {
-        try {
-            while (true) {
-                synchronized (loopWaitEvent) {
-                    loopWaitEvent.wait();
-                }
-                while (queue.size() > 0) {
-                    queue.remove().run();
-                    Thread.yield();
-                }
+    private void closeSegments() {
+        updatedSegments.clear();
+        textureUploaded.clear();
+        for (Map<SegmentPos, Segment> segments : dimensions.values()) {
+            for (Segment segment : segments.values()) {
+                segment.close();
             }
+            segments.clear();
         }
-        catch (InterruptedException e) {
-            // do nothing
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        dimensions.clear();
     }
 
     public static class Segment {
@@ -256,17 +194,4 @@ public abstract class AbstractChunkOverlay {
         }
     }
 
-    protected static class RenderThreadQueueItem {
-        public Runnable runnable;
-        public Runnable continuation;
-
-        public RenderThreadQueueItem(Runnable runnable) {
-            this.runnable = runnable;
-        }
-
-        public RenderThreadQueueItem(Runnable runnable, Runnable continuation) {
-            this.runnable = runnable;
-            this.continuation = continuation;
-        }
-    }
 }
