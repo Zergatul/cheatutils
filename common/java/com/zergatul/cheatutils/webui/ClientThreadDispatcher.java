@@ -6,6 +6,7 @@ import org.apache.http.HttpException;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -62,6 +63,8 @@ public class ClientThreadDispatcher {
         } catch (TimeoutException e) {
             future.cancel(false);
             throw new ApiException("Timed out waiting for the client thread", HttpResponseCodes.GATEWAY_TIMEOUT, e);
+        } catch (CancellationException e) {
+            throw new ApiException("Client thread stopped before processing the task", HttpResponseCodes.SERVICE_UNAVAILABLE, e);
         } catch (ExecutionException e) {
             return throwFailure(e.getCause());
         }

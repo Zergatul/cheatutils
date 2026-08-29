@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.LevelUnloadedException;
+import com.zergatul.cheatutils.concurrent.EventExecutorSmokeTest;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.Debugging;
@@ -36,6 +37,7 @@ public class ScriptingRuntimeSmokeTest {
     public static void main(String[] args) {
         run();
         verifyKeyBindingModule();
+        EventExecutorSmokeTest.run();
         LOGGER.info("Key Binding Scripts mutation smoke test passed.");
     }
 

@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.common.ModLoaderBridge;
 import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.cheatutils.concurrent.EventExecutor;
 import com.zergatul.cheatutils.modules.scripting.Debugging;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.monaco.Integration;
@@ -602,6 +603,28 @@ public class HttpApiSmokeTest {
                 }
             }
 
+            QueuedEventExecutor stoppedExecutor = new QueuedEventExecutor();
+            CompletableFuture<ApiException> stoppedCall = CompletableFuture.supplyAsync(() -> {
+                try {
+                    ClientThreadDispatcher.call(stoppedExecutor, false, () -> null, 1_000);
+                    throw new IllegalStateException("Client-thread dispatcher completed work that was never processed.");
+                }
+                catch (ApiException e) {
+                    return e;
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            if (!stoppedExecutor.awaitQueued(1, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Client-thread dispatcher did not queue the cancellation test task.");
+            }
+            stoppedExecutor.shutdownNow();
+            ApiException stoppedException = stoppedCall.get(1, TimeUnit.SECONDS);
+            if (stoppedException.getCode() != HttpResponseCodes.SERVICE_UNAVAILABLE) {
+                throw stoppedException;
+            }
+
             try {
                 ClientThreadDispatcher.call(executor, false, () -> {
                     release.await();
@@ -616,6 +639,25 @@ public class HttpApiSmokeTest {
         } finally {
             release.countDown();
             executor.shutdownNow();
+        }
+    }
+
+    private static class QueuedEventExecutor extends EventExecutor {
+
+        private final CountDownLatch queued = new CountDownLatch(1);
+
+        private QueuedEventExecutor() {
+            super(10);
+        }
+
+        @Override
+        public void execute(Runnable command) {
+            super.execute(command);
+            queued.countDown();
+        }
+
+        private boolean awaitQueued(long timeout, TimeUnit unit) throws InterruptedException {
+            return queued.await(timeout, unit);
         }
     }
 

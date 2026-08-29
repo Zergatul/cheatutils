@@ -2,9 +2,12 @@ package com.zergatul.cheatutils.concurrent;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public abstract class EventExecutor extends AbstractExecutorService {
@@ -17,15 +20,15 @@ public abstract class EventExecutor extends AbstractExecutorService {
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
         shutdown = true;
     }
 
     @NotNull
     @Override
-    public List<Runnable> shutdownNow() {
+    public synchronized List<Runnable> shutdownNow() {
         shutdown = true;
-        return List.copyOf(queue);
+        return drainQueue();
     }
 
     @Override
@@ -49,14 +52,19 @@ public abstract class EventExecutor extends AbstractExecutorService {
     }
 
     @Override
-    public void execute(@NotNull Runnable command) {
-        if (!shutdown) {
-            queue.add(command);
+    public synchronized void execute(@NotNull Runnable command) {
+        if (shutdown) {
+            throw new RejectedExecutionException("Executor is shut down.");
+        }
+        if (!queue.offer(command)) {
+            throw new RejectedExecutionException("Executor queue is full.");
         }
     }
 
     protected void clearQueue() {
-        queue.clear();
+        synchronized (this) {
+            drainQueue();
+        }
     }
 
     protected void processQueue() {
@@ -64,5 +72,16 @@ public abstract class EventExecutor extends AbstractExecutorService {
         while ((task = queue.poll()) != null) {
             task.run();
         }
+    }
+
+    private List<Runnable> drainQueue() {
+        List<Runnable> tasks = new ArrayList<>(queue.size());
+        queue.drainTo(tasks);
+        for (Runnable task : tasks) {
+            if (task instanceof Future<?> future) {
+                future.cancel(false);
+            }
+        }
+        return List.copyOf(tasks);
     }
 }

@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.Events;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.RejectedExecutionException;
 
 public class ClientTickEndExecutor extends EventExecutor {
 
@@ -12,21 +13,30 @@ public class ClientTickEndExecutor extends EventExecutor {
 
     private final List<PendingTask> tasks = new ArrayList<>();
 
-    private ClientTickEndExecutor() {
+    ClientTickEndExecutor() {
         super(100);
         Events.ClientTickStart.add(this::onTickStart);
         Events.ClientTickEnd.add(this::onTickEnd);
+        Events.Close.add(this::onClose);
     }
 
     public CompletableFuture<Void> waitTicks(int ticks) {
+        if (isShutdown()) {
+            throw new RejectedExecutionException("Executor is shut down.");
+        }
         CompletableFuture<Void> future = new CompletableFuture<>();
         tasks.add(new PendingTask(ticks, future));
         return future;
     }
 
     private void onTickStart() {
-        for (PendingTask task : tasks) {
-            task.ticks--;
+        for (int i = 0; i < tasks.size(); i++) {
+            PendingTask task = tasks.get(i);
+            if (task.future.isDone()) {
+                tasks.remove(i--);
+            } else {
+                task.ticks--;
+            }
         }
     }
 
@@ -35,12 +45,21 @@ public class ClientTickEndExecutor extends EventExecutor {
 
         for (int i = 0; i < tasks.size(); i++) {
             PendingTask task = tasks.get(i);
-            if (task.ticks <= 0) {
+            if (task.future.isDone()) {
+                tasks.remove(i--);
+            } else if (task.ticks <= 0) {
                 task.future.complete(null);
-                tasks.remove(i);
-                i--;
+                tasks.remove(i--);
             }
         }
+    }
+
+    void onClose() {
+        shutdownNow();
+        for (PendingTask task : tasks) {
+            task.future.cancel(false);
+        }
+        tasks.clear();
     }
 
     private static class PendingTask {
