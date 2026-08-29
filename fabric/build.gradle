@@ -3,7 +3,10 @@ import java.nio.file.Paths
 plugins {
 	id 'fabric-loom' version '1.8.12'
 	id 'maven-publish'
+	id 'cheatutils'
 }
+
+ext.mod_version = cheatutils.getModVersion()
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17

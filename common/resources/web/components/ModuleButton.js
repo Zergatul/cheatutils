@@ -20,18 +20,27 @@ export function createComponent(template) {
             }
         },
         setup(props) {
-            const active = computed(() => props.statuses[props.module.statusKey || props.module.component] === true);
             const classes = computed(() => {
                 return {
-                    'active': active.value,
+                    'local-link': !!props.module.localLink,
+                    'external-link': !!props.module.externalLink,
+                    'dangerous': !!props.module.dangerous,
+                    'active': props.statuses[props.module.statusKey || props.module.component] === true,
                     'faded': !props.filtered[props.module.component]
                 };
             });
 
-            const label = computed(() => active.value ? `${props.module.name}, enabled` : props.module.name);
+            const label = computed(() => props.statuses[props.module.statusKey || props.module.component] === true
+                ? `${props.module.name}, enabled`
+                : props.module.name);
 
             const onClick = () => {
-                window.location.hash = '#/' + props.module.path;
+                const module = props.module;
+                if (module.onClick) {
+                    module.onClick();
+                } else {
+                    window.location.hash = '#/' + module.path;
+                }
             };
 
             return {
@@ -41,4 +50,4 @@ export function createComponent(template) {
             }
         }
     };
-};
+}

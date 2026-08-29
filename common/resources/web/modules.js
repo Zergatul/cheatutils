@@ -1,3 +1,4 @@
+import * as http from '/http.js'
 import { getComponent } from '/components/Loader.js'
 
 const modules = {
@@ -501,6 +502,53 @@ module({
     path: 'editor-config',
     tags: ['script', 'editor', 'config', 'monaco']
 });
+module({
+    group: 'scripting',
+    name: 'LLM Guide.md',
+    component: 'LLM-Guide',
+    tags: ['llm', 'guide', 'docs', 'documentation'],
+    localLink: true,
+    onClick() {
+        window.open('/llm/cheatutils-llm-guide.md', '_blank');
+    }
+});
+module({
+    group: 'scripting',
+    name: 'LLM API.txt',
+    component: 'LLM-API',
+    tags: ['llm', 'api', 'docs', 'documentation'],
+    localLink: true,
+    onClick() {
+        window.open('/llm/cheatutils-api.txt', '_blank');
+    }
+});
+module({
+    group: 'scripting',
+    name: 'Language Docs',
+    component: 'LanguageDocs',
+    tags: ['scripting', 'language', 'docs', 'documentation'],
+    externalLink: true,
+    onClick() {
+        const fallback = 'https://github.com/Zergatul/java-scripting-language/blob/master/README.md';
+        http.get('/api/commits').then(commits => {
+            if (commits['java-scripting-language']) {
+                window.open(`https://github.com/Zergatul/java-scripting-language/blob/${commits['java-scripting-language']}/README.md`, '_blank');
+            } else {
+                window.open(fallback, '_blank');
+            }
+        }).catch(() => window.open(fallback, '_blank'));
+    }
+});
+module({
+    group: 'scripting',
+    name: 'Script Examples',
+    component: 'Script Examples',
+    tags: ['script', 'examples', 'docs', 'documentation'],
+    externalLink: true,
+    onClick() {
+        window.open('https://github.com/Zergatul/cheatutils-examples/tree/master/v3', '_blank');
+    }
+});
 
 // Utility Modules ==========================
 
@@ -545,6 +593,26 @@ module({
     component: 'WorldDownload',
     path: 'world-download',
     tags: ['world', 'download']
+});
+module({
+    group: 'utility',
+    name: 'Matrix Server',
+    component: 'MatrixServer',
+    tags: ['matrix', 'discord'],
+    externalLink: true,
+    onClick() {
+        window.open('https://matrix.to/#/#cheatutils:matrix.org', '_blank');
+    }
+});
+module({
+    group: 'utility',
+    name: 'YouTube Tutorials',
+    component: 'YouTubeTutorials',
+    tags: ['youtube', 'video', 'tutorial', 'guide', 'docs', 'documentation'],
+    externalLink: true,
+    onClick() {
+        window.open('https://www.youtube.com/playlist?list=PLG9SPA0O8HLSyHpxp-Y66ktVIAjQwWWk_', '_blank');
+    }
 });
 
 export { modules }

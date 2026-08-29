@@ -1,0 +1,4 @@
+Script used to place or break blocks, or use items on blocks.
+Every game tick the module calls this script for blocks in range.
+The current block coordinates are supplied through the x, y, and z parameters.
+Use blockAutomation methods to request an action at the current coordinates.

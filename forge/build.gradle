@@ -17,11 +17,14 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'cheatutils'
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = mod_version
+def modVersion = cheatutils.getModVersion()
+
+version = modVersion
 group = mod_group_id
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -116,7 +119,7 @@ def replaceProperties = [
         minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
         forge_version: forge_version, forge_version_range: forge_version_range,
         loader_version_range: loader_version_range,
-        mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+        mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: modVersion,
         mod_authors: mod_authors
 ]
 processResources {
@@ -168,7 +171,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.build.doLast {
     def jarFile = file(jar.archiveFile)
     def jarJarFile = file(jarFile.path.replace('.jar', '-all.jar'))
-    def finalFile = Paths.get(jarJarFile.parent, "$mod_id-$mod_version-forge-${minecraft_version}.jar").toFile()
+    def finalFile = Paths.get(jarJarFile.parent, "$mod_id-$modVersion-forge-${minecraft_version}.jar").toFile()
 
     jarFile.delete()
     if (finalFile.exists()) {
