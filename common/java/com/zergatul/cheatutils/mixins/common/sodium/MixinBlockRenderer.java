@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.common.sodium;
 
-import com.zergatul.cheatutils.schematics.SodiumSchematicaRendering;
+import com.zergatul.cheatutils.extensions.SodiumBlockRendererExtension;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
 import net.caffeinemc.mods.sodium.client.render.frapi.mesh.MutableQuadViewImpl;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,7 +10,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = BlockRenderer.class, remap = false)
-public abstract class MixinBlockRenderer {
+public abstract class MixinBlockRenderer implements SodiumBlockRendererExtension {
+
+    @Unique
+    private boolean isShaded_CU;
+
+    @Override
+    public void setShaded_CU(boolean shaded) {
+        this.isShaded_CU = shaded;
+    }
 
     @Inject(
             method = "processQuad",
@@ -20,7 +28,7 @@ public abstract class MixinBlockRenderer {
                     shift = At.Shift.AFTER),
             remap = false)
     private void onAfterColorizeQuad(MutableQuadViewImpl quad, CallbackInfo info) {
-        if (!SodiumSchematicaRendering.isShaded()) {
+        if (!isShaded_CU) {
             return;
         }
 

@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.mixins.common.sodium;
 
 import com.zergatul.cheatutils.extensions.SodiumBlockRenderCacheExtension;
+import com.zergatul.cheatutils.extensions.SodiumBlockRendererExtension;
 import com.zergatul.cheatutils.extensions.SodiumLevelSliceExtension;
-import com.zergatul.cheatutils.schematics.SodiumSchematicaRendering;
 import com.zergatul.mixin.LiteInject;
 import com.zergatul.mixin.LocalVariable;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.ChunkBuildContext;
@@ -65,45 +65,45 @@ public abstract class MixinChunkBuilderMeshingTask {
         int maxY = minY + 16;
         int maxZ = minZ + 16;
 
-        for (int y = minY; y < maxY; y++) {
-            if (cancellationToken.isCancelled()) {
-                return;
-            }
+        ((SodiumBlockRendererExtension) blockRenderer).setShaded_CU(sliceExtension.shadeSchematicaBlocks_CU());
+        try {
+            for (int y = minY; y < maxY; y++) {
+                if (cancellationToken.isCancelled()) {
+                    return;
+                }
 
-            for (int z = minZ; z < maxZ; z++) {
-                for (int x = minX; x < maxX; x++) {
-                    if (!slice.getBlockState(x, y, z).isAir()) {
-                        continue;
-                    }
+                for (int z = minZ; z < maxZ; z++) {
+                    for (int x = minX; x < maxX; x++) {
+                        if (!slice.getBlockState(x, y, z).isAir()) {
+                            continue;
+                        }
 
-                    BlockState state = sliceExtension.getSchematicaBlockState_CU(x, y, z);
-                    if (state.isAir()) {
-                        continue;
-                    }
+                        BlockState state = sliceExtension.getSchematicaBlockState_CU(x, y, z);
+                        if (state.isAir()) {
+                            continue;
+                        }
 
-                    blockPos.set(x, y, z);
-                    modelOffset.set(x & 15, y & 15, z & 15);
-                    sliceExtension.setSchematicaView_CU(true);
-                    try {
-                        if (state.getRenderShape() == RenderShape.MODEL) {
-                            BakedModel model = cache.getBlockModels().getBlockModel(state);
-                            SodiumSchematicaRendering.begin(sliceExtension.shadeSchematicaBlocks_CU());
-                            try {
+                        blockPos.set(x, y, z);
+                        modelOffset.set(x & 15, y & 15, z & 15);
+                        sliceExtension.setSchematicaView_CU(true);
+                        try {
+                            if (state.getRenderShape() == RenderShape.MODEL) {
+                                BakedModel model = cache.getBlockModels().getBlockModel(state);
                                 blockRenderer.renderModel(model, state, blockPos, modelOffset);
-                            } finally {
-                                SodiumSchematicaRendering.end();
                             }
-                        }
 
-                        FluidState fluidState = state.getFluidState();
-                        if (!fluidState.isEmpty()) {
-                            fluidRenderer.render(slice, state, fluidState, blockPos, modelOffset, collector, buildContext.buffers);
+                            FluidState fluidState = state.getFluidState();
+                            if (!fluidState.isEmpty()) {
+                                fluidRenderer.render(slice, state, fluidState, blockPos, modelOffset, collector, buildContext.buffers);
+                            }
+                        } finally {
+                            sliceExtension.setSchematicaView_CU(false);
                         }
-                    } finally {
-                        sliceExtension.setSchematicaView_CU(false);
                     }
                 }
             }
+        } finally {
+            ((SodiumBlockRendererExtension) blockRenderer).setShaded_CU(false);
         }
     }
 }
