@@ -36,11 +36,9 @@ public class PlacingConverter {
         this.transform = new Matrix3i(transform);
         this.offset = calcOffset(transform, width, height, length);
 
-        BlockPos.MutableBlockPos vec = new BlockPos.MutableBlockPos(width - 1, height - 1, length - 1);
-        convert(vec);
-        this.width = vec.getX() + 1;
-        this.height = vec.getY() + 1;
-        this.length = vec.getZ() + 1;
+        this.width = Math.abs(this.transform.m00) * width + Math.abs(this.transform.m10) * height + Math.abs(this.transform.m20) * length;
+        this.height = Math.abs(this.transform.m01) * width + Math.abs(this.transform.m11) * height + Math.abs(this.transform.m21) * length;
+        this.length = Math.abs(this.transform.m02) * width + Math.abs(this.transform.m12) * height + Math.abs(this.transform.m22) * length;
     }
 
     public void convert(BlockPos.MutableBlockPos vec) {
