@@ -18,7 +18,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@main
         with:
-          distribution: adopt
+          distribution: temurin
           java-version: 21
 
       - name: Build Annotation Processor
@@ -30,24 +30,18 @@ jobs:
 
       - name: Build Forge
         run: |
-          pushd ./forge
-          chmod +x ./gradlew
+          cd ./forge
           ./gradlew build
-          popd
 
       - name: Build Fabric
         run: |
-          pushd ./fabric
-          chmod +x ./gradlew
+          cd ./fabric
           ./gradlew build
-          popd
 
       - name: Build NeoForge
         run: |
-          pushd ./neoforge
-          chmod +x ./gradlew
+          cd ./neoforge
           ./gradlew build
-          popd
 
       - name: Upload Forge artifacts
         uses: actions/upload-artifact@main

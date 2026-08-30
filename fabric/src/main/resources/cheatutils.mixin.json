@@ -3,10 +3,7 @@
   "minVersion": "0.8",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_21",
-  "plugin": "com.zergatul.cheatutils.compatibility.FabricMixinPlugin",
-  "injectors": {
-    "defaultRequire": 0
-  },
+  "plugin": "com.zergatul.mixin.MixinPlugin",
   "mixinPriority": 500,
   "client": [
     "common.accessors.AbstractContainerScreenAccessor",
@@ -36,7 +33,7 @@
     "common.accessors.ScreenAccessor",
     "common.accessors.TextureStateShardAccessor",
     "common.accessors.WalkAnimationStateAccessor",
-
+    "common.schematica.MixinRenderChunkRegion",
     "common.MixinAbstractContainerMenu",
     "common.MixinAbstractContainerScreen",
     "common.MixinBlockBehaviourBlockStateBase",
@@ -63,7 +60,6 @@
     "common.MixinKeyBindingListKeyEntry",
     "common.MixinLevelChunk",
     "common.MixinLevelRenderer",
-    "common.MixinLevelRenderer2",
     "common.MixinLivingEntity",
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
@@ -89,9 +85,7 @@
     "fabric.MixinKeyboardHandler",
     "fabric.MixinMultiPlayerGameMode",
     "fabric.MixinScreen",
-
-    "fabric.compatibility.iris.MixinOuterWrappedRenderType",
-    "fabric.compatibility.sodium.MixinBlockModelApiMemoryVertexConsumer",
-    "fabric.compatibility.sodium.MixinEntityEspVertexConsumerWrapper"
+    "fabric.schematica.MixinRenderRegionCache",
+    "fabric.schematica.MixinSectionCompiler"
   ]
 }

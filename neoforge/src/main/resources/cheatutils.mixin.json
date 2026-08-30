@@ -5,9 +5,6 @@
   "refmap": "cheatutils.mixin-refmap.json",
   "compatibilityLevel": "JAVA_17",
   "plugin": "com.zergatul.mixin.MixinPlugin",
-  "injectors": {
-    "defaultRequire": 0
-  },
   "mixinPriority": 500,
   "client": [
     "common.accessors.AbstractContainerScreenAccessor",
@@ -37,7 +34,7 @@
     "common.accessors.ScreenAccessor",
     "common.accessors.TextureStateShardAccessor",
     "common.accessors.WalkAnimationStateAccessor",
-
+    "common.schematica.MixinRenderChunkRegion",
     "common.MixinAbstractContainerMenu",
     "common.MixinAbstractContainerScreen",
     "common.MixinBlockBehaviourBlockStateBase",
@@ -84,6 +81,8 @@
     "common.MixinUser",
 
     "neoforge.accessors.GuiGraphicsAccessor",
+    "neoforge.schematica.MixinRenderRegionCache",
+    "neoforge.schematica.MixinSectionCompiler",
     "neoforge.MixinCamera",
     "neoforge.MixinGui",
     "neoforge.MixinLightTexture",

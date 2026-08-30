@@ -151,6 +151,8 @@ tasks.withType(ProcessResources).configureEach {
 jar {
     exclude("com/zergatul/cheatutils/utils/mappings/*")
     exclude("com/zergatul/cheatutils/mixins/common/MixinCamera.class")
+    exclude("net/caffeinemc/**")
+    exclude("net/irisshaders/**")
 }
 
 tasks.withType(JavaCompile).configureEach {

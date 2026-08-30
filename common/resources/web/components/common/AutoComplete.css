@@ -1,0 +1,35 @@
+div.autocomplete {
+    box-sizing: border-box;
+    position: relative;
+    width: 100%;
+}
+
+div.autocomplete > input {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+div.autocomplete > ul {
+    background-color: white;
+    border: 1px solid #CCCCCC;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    z-index: 1000;
+    display: none;
+    max-height: 20em;
+    overflow-y: auto;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    right: 0;
+}
+
+div.autocomplete > ul > li {
+    cursor: pointer;
+    word-break: break-all;
+}
+
+div.autocomplete > ul > li:hover {
+    background-color: #F0F0F0;
+}

@@ -22,6 +22,8 @@ minecraft {
         client {
             workingDir = layout.projectDirectory.dir('run')
             args "-mixin.config=cheatutils.mixin.json"
+            args "-mixin.config=cheatutils.sodium.mixins.json"
+            args "-mixin.config=cheatutils.iris.mixins.json"
 
             // Recommended logging level for the console
             // You can set various levels here.
@@ -75,6 +77,8 @@ tasks.named('processResources', ProcessResources).configure {
 
 jar {
     exclude("com/zergatul/cheatutils/utils/mappings/*")
+    exclude("net/caffeinemc/**")
+    exclude("net/irisshaders/**")
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
@@ -89,7 +93,7 @@ tasks.named('jar', Jar).configure {
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
                 "Implementation-Vendor"   : mod_authors,
-                "MixinConfigs"            : "cheatutils.mixin.json"
+                "MixinConfigs"            : "cheatutils.mixin.json,cheatutils.sodium.mixins.json,cheatutils.iris.mixins.json"
         ])
     }
 }
