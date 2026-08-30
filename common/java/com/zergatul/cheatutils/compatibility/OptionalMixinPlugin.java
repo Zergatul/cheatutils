@@ -1,7 +1,9 @@
 package com.zergatul.cheatutils.compatibility;
 
+import com.zergatul.cheatutils.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Lazy;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -14,6 +16,7 @@ import java.util.Set;
 public abstract class OptionalMixinPlugin implements IMixinConfigPlugin {
 
     private final Logger logger = LogManager.getLogger(OptionalMixinPlugin.class);
+    private final Lazy<Boolean> isEnabled = Lazy.pure(this::isEnabled);
 
     @Override
     public void onLoad(String mixinPackage) {}
@@ -25,24 +28,13 @@ public abstract class OptionalMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        String detectionClassName = getDetectionClassName();
-        if (detectionClassName != null && !classExists(detectionClassName)) {
-            logger.info("Skipping {} mixin {}", getModName(), mixinClassName);
-            return false;
-        }
-
-        if (!classExists(targetClassName)) {
-            logger.info("Skipping {} mixin {}", getModName(), mixinClassName);
-            return false;
-        }
-
-        logger.info("Applying {} mixin {}", getModName(), mixinClassName);
-        return true;
+        return isEnabled.get();
     }
 
-    private boolean classExists(String className) {
+    private boolean isEnabled() {
         try {
-            MixinService.getService().getBytecodeProvider().getClassNode(className);
+            MixinService.getService().getBytecodeProvider().getClassNode(getDetectionClassName());
+            logger.info("{} detected, applying {} mixins", getModName(), Constants.MOD_ID);
             return true;
         } catch (ClassNotFoundException | IOException e) {
             return false;
