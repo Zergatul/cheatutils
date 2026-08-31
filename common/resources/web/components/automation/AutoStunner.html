@@ -8,5 +8,14 @@
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
         </div>
+
+
+        <div class="description">
+            The API for this module uses the name autoStunner internally, Example:
+            <CodeBlock :code='`
+                autoStunner.toggle();
+            `' />
+        </div>
     </div>
+
 </div>
