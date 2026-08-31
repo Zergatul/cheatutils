@@ -15,7 +15,8 @@ const components = {
     Radio: getComponent('common/Radio'),
     ScriptEditor: getComponent('common/ScriptEditor'),
     CodeBlock: getComponent('common/CodeBlock'),
-    SwitchCheckbox: getComponent('common/SwitchCheckbox')
+    SwitchCheckbox: getComponent('common/SwitchCheckbox'),
+    AutoComplete: getComponent('common/AutoComplete')
 };
 
 export { components }

@@ -70,6 +70,7 @@ public class ScriptingRuntimeSmokeTest {
         ConfigMigrationSmokeTest.verifyCoreConfig();
         ConfigMigrationSmokeTest.verifyAutoAttack();
         ConfigMigrationSmokeTest.verifyAutoBucket();
+        ConfigMigrationSmokeTest.verifySchematica();
         ConfigMigrationSmokeTest.verifyBlockEspGroups();
         ConfigMigrationSmokeTest.verifyEntityEsp();
 

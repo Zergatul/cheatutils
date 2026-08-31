@@ -1,31 +1,25 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.RenderWorldLayerEvent;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.controllers.ChunkController;
-import com.zergatul.cheatutils.render.Primitives;
-import com.zergatul.cheatutils.schematics.PlacingConverter;
-import com.zergatul.cheatutils.schematics.PlacingSettings;
-import com.zergatul.cheatutils.schematics.SchemaFile;
+import com.zergatul.cheatutils.modules.utilities.RenderUtilities;
+import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.schematics.*;
 import com.zergatul.cheatutils.utils.*;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.wrappers.BakedModelWrapper;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.FaceInfo;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -37,8 +31,10 @@ import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Schematica {
 
@@ -46,168 +42,416 @@ public class Schematica {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();
-    private final RandomSource random = new JavaRandom(0);
     private final SlotSelector slotSelector = new SlotSelector();
+    private volatile Long2ObjectMap<SectionInfo> lookup = new Long2ObjectOpenHashMap<>();
+    private double actionTickCounter;
 
     private Schematica() {
         Events.SmartChunkLoaded.add(this::onChunkLoaded);
-        Events.BlockUpdated.add(this::onBlockUpdated);
+        Events.RawBlockUpdated.add(this::onBlockUpdated);
         Events.ClientTickEnd.add(this::onClientTickEnd);
-        Events.RenderSolidLayer.add(this::onRenderSolidLayer);
         Events.RenderWorldLast.add(this::onRender);
     }
 
-    public synchronized void clear() {
-        entries.clear();
+    public boolean isEnabled() {
+        return getConfig().enabled;
     }
 
-    public synchronized void place(SchemaFile file, PlacingSettings placing) {
-        Entry entry = new Entry(file, placing);
-        entries.add(entry);
-        ChunkController.instance.getLoadedChunks().forEach(p -> entry.onChunkLoaded(p.getSecond()));
+    public boolean isBlockRenderingEnabled() {
+        SchematicaConfig config = getConfig();
+        return config.enabled && config.renderBlocks;
     }
 
-    private synchronized void onClientTickEnd() {
-        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
-        if (!config.enabled || !config.autoBuild) {
-            return;
+    public List<EntrySummary> getSummary() {
+        CompletableFuture<List<EntrySummary>> future = new CompletableFuture<>();
+        ClientTickEndExecutor.instance.execute(() -> {
+            future.complete(entries.stream().map(Entry::asSummary).toList());
+        });
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return null;
+        }
+    }
+
+    public BlockState getBlockState(BlockPos pos) {
+        return getBlockState(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public BlockState getBlockState(int x, int y, int z) {
+        if (mc.level == null || mc.level.isOutsideBuildHeight(y)) {
+            return Blocks.AIR.defaultBlockState();
         }
 
-        if (mc.level == null || mc.player == null) {
-            return;
+        long index = SectionPos.asLong(
+                SectionPos.blockToSectionCoord(x),
+                SectionPos.blockToSectionCoord(y),
+                SectionPos.blockToSectionCoord(z));
+        SectionInfo info = lookup.get(index);
+        if (info == null) {
+            return Blocks.AIR.defaultBlockState();
         }
 
-        Vec3 eyePos = mc.player.getEyePosition();
-        ItemStack itemInHand = mc.player.getMainHandItem();
+        return info.getBlockState(x, y, z);
+    }
 
-        Block blockInHand;
-        if (itemInHand.getItem() instanceof BlockItem blockItem) {
-            blockInHand = blockItem.getBlock();
-        } else {
-            blockInHand = null;
+    public SectionInfo getSectionInfo(SectionPos pos) {
+        return lookup.get(pos.asLong());
+    }
+
+    public boolean hasBlocksAtSection(int x, int y, int z) {
+        return hasBlocksAtSection(SectionPos.asLong(x, y, z));
+    }
+
+    public boolean hasBlocksAtSection(long index) {
+        return lookup.containsKey(index);
+    }
+
+    public SchematicaSectionCopy createSectionCopy(long index) {
+        SectionInfo info = lookup.get(index);
+        if (info == null) {
+            return SchematicaSectionCopy.EMPTY;
         }
 
-        BlockUtils.PlaceBlockPlan plan = null;
-        BlockState state = null;
-        for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
-            for (Entry entry : entries) {
-                state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
-                if (state.isAir()) {
-                    continue;
+        PalettedContainer<BlockState> states = new PalettedContainer<>(
+                Block.BLOCK_STATE_REGISTRY,
+                Blocks.AIR.defaultBlockState(),
+                PalettedContainer.Strategy.SECTION_STATES);
+        for (int x = 0; x < 16; x++) {
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++) {
+                    states.set(x, y, z, info.getBlockState(x, y, z));
                 }
+            }
+        }
 
-                plan = BlockUtils.getPlacingPlan(pos, config.attachToAir);
-                if (plan != null) {
-                    break;
+        return SchematicaSectionCopy.from(states);
+    }
+
+    public void onBlockRenderingStateChanged() {
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (mc.level != null) {
+                for (SectionInfo info : lookup.values()) {
+                    mc.levelRenderer.setSectionDirty(info.x, info.y, info.z);
+                }
+            }
+        });
+    }
+
+    public void place(SchemaFile file, String name, PlacingSettings placing) {
+        ClientTickEndExecutor.instance.execute(() -> {
+            final Entry entry = new Entry(file, name, placing);
+            entries.add(entry);
+
+            for (var pair : ChunkController.instance.getLoadedChunks()) {
+                entry.onChunkLoaded(pair.getSecond());
+            }
+
+            safeLookupUpdate(lookup -> {
+                for (Chunk chunk : entry.chunks.values()) {
+                    for (ChunkSection section : chunk.sections.values()) {
+                        if (section == null) {
+                            continue;
+                        }
+                        long index = SectionPos.asLong(section.getSectionX(), section.getSectionY(), section.getSectionZ());
+                        SectionInfo info = lookup.get(index);
+                        if (info == null) {
+                            info = SectionInfo.EMPTY;
+                        }
+                        lookup.put(index, info.add(entry, section));
+
+                        if (mc.level != null) {
+                            mc.levelRenderer.setSectionDirty(section.getSectionX(), section.getSectionY(), section.getSectionZ());
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    public void remove(int index) {
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (index < 0 || index >= entries.size()) {
+                return;
+            }
+
+            safeLookupUpdate(lookup -> {
+                Entry entry = entries.remove(index);
+                for (Chunk chunk : entry.chunks.values()) {
+                    for (ChunkSection section : chunk.sections.values()) {
+                        if (section == null) {
+                            continue;
+                        }
+
+                        if (mc.level != null) {
+                            mc.levelRenderer.setSectionDirty(
+                                    section.getSectionX(),
+                                    section.getSectionY(),
+                                    section.getSectionZ());
+                        }
+
+                        long sectionIndex = section.asLongIndex();
+                        SectionInfo info = lookup.get(sectionIndex);
+                        if (info == null) {
+                            continue; // should not happen...
+                        }
+
+                        info = info.remove(entry, section);
+                        if (info == SectionInfo.EMPTY) {
+                            lookup.remove(sectionIndex);
+                        } else {
+                            lookup.put(sectionIndex, info);
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    public void clear() {
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (mc.level != null) {
+                for (SectionInfo info : lookup.values()) {
+                    mc.levelRenderer.setSectionDirty(info.x, info.y, info.z);
                 }
             }
 
-            if (plan != null) {
-                break;
-            }
-        }
-
-        if (plan == null) {
-            return;
-        }
-
-        int slot = slotSelector.selectBlock(config, state.getBlock());
-        if (slot >= 0)  {
-            mc.player.getInventory().selected = slot;
-            blockInHand = state.getBlock();
-        }
-        if (blockInHand == state.getBlock()) {
-            BlockUtils.applyPlacingPlan(plan, config.useShift);
-        }
+            lookup = new Long2ObjectOpenHashMap<>();
+            entries.clear();
+        });
     }
 
-    private synchronized void onRenderSolidLayer(RenderWorldLayerEvent event) {
-        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
-        if (!config.enabled) {
-            return;
-        }
+    public void rescan(int index) {
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (index < 0 || index >= entries.size()) {
+                return;
+            }
 
+            if (mc.level == null) {
+                return;
+            }
+
+            Entry entry = entries.get(index);
+            for (Chunk chunk : entry.chunks.values()) {
+                for (ChunkSection section : chunk.sections.values()) {
+                    if (section == null) {
+                        continue;
+                    }
+
+                    // last parameter - return empty chunk, not null
+                    section.onChunkLoaded(entry, mc.level.getChunkSource().getChunk(section.getSectionX(), section.getSectionZ(), true));
+                    mc.levelRenderer.setSectionDirty(
+                            section.getSectionX(),
+                            section.getSectionY(),
+                            section.getSectionZ());
+                }
+            }
+        });
+    }
+
+    public void move(int index, int x, int y, int z) {
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (index < 0 || index >= entries.size()) {
+                return;
+            }
+
+            safeLookupUpdate(lookup -> {
+                Entry oldEntry = entries.get(index);
+                for (Chunk chunk : oldEntry.chunks.values()) {
+                    for (ChunkSection section : chunk.sections.values()) {
+                        if (section == null) {
+                            continue;
+                        }
+
+                        if (mc.level != null) {
+                            mc.levelRenderer.setSectionDirty(
+                                    section.getSectionX(),
+                                    section.getSectionY(),
+                                    section.getSectionZ());
+                        }
+
+                        long sectionIndex = section.asLongIndex();
+                        SectionInfo info = lookup.get(sectionIndex);
+                        if (info == null) {
+                            continue; // should not happen...
+                        }
+
+                        info = info.remove(oldEntry, section);
+                        if (info == SectionInfo.EMPTY) {
+                            lookup.remove(sectionIndex);
+                        } else {
+                            lookup.put(sectionIndex, info);
+                        }
+                    }
+                }
+
+                Entry newEntry = oldEntry.moveTo(x, y, z);
+                entries.set(index, newEntry);
+
+                for (Chunk chunk : newEntry.chunks.values()) {
+                    for (ChunkSection section : chunk.sections.values()) {
+                        if (section == null) {
+                            continue;
+                        }
+
+                        long chunkIndex = SectionPos.asLong(section.getSectionX(), section.getSectionY(), section.getSectionZ());
+                        SectionInfo info = lookup.get(chunkIndex);
+                        if (info == null) {
+                            info = SectionInfo.EMPTY;
+                        }
+                        lookup.put(chunkIndex, info.add(newEntry, section));
+
+                        // last parameter - return empty chunk, not null
+                        if (mc.level != null) {
+                            section.onChunkLoaded(newEntry, mc.level.getChunkSource().getChunk(section.getSectionX(), section.getSectionZ(), true));
+                            mc.levelRenderer.setSectionDirty(
+                                    section.getSectionX(),
+                                    section.getSectionY(),
+                                    section.getSectionZ());
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    public DownloadInfo download(String format, int x1, int y1, int z1, int x2, int y2, int z2) {
         if (mc.level == null) {
-            return;
+            return DownloadInfo.of("You have to join Minecraft world");
         }
 
-        Vec3 view = event.getCamera().getPosition();
+        Function<SchematicaOutputData, DownloadInfo> create;
+        switch (format) {
+            case "litematic" -> create = LitematicaOutputFile::create;
+            case "schem-v1" -> create = SpongeSchematicaVersion1OutputFile::create;
+            default -> {
+                return DownloadInfo.of(String.format("Format '%s' is not supported", format));
+            }
+        }
 
-        if (config.showMissingBlockGhosts) {
-            /*RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(true);
-            RenderSystem.enableCull();
-            RenderSystem.enableBlend();*/
-            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 1f);
-
-            Map<BlockPos, BlockState> ghosts = new HashMap<>();
-            for (Entry entry : entries) {
-                entry.forEachMissingState(view, config.missingBlockGhostsMaxDistance, ghosts::put);
+        CompletableFuture<DownloadInfo> future = new CompletableFuture<>();
+        ClientTickEndExecutor.instance.execute(() -> {
+            ClientChunkCache source = mc.level.getChunkSource();
+            int chunkX1 = SectionPos.blockToSectionCoord(x1);
+            int chunkX2 = SectionPos.blockToSectionCoord(x2);
+            int chunkZ1 = SectionPos.blockToSectionCoord(z1);
+            int chunkZ2 = SectionPos.blockToSectionCoord(z2);
+            for (int chunkX = chunkX1; chunkX <= chunkX2; chunkX++) {
+                for (int chunkZ = chunkZ1; chunkZ <= chunkZ2; chunkZ++) {
+                    if (!source.hasChunk(chunkX, chunkZ)) {
+                        future.complete(DownloadInfo.of(String.format("Chunk [%d; %d] is not loaded", chunkX, chunkZ)));
+                        return;
+                    }
+                }
             }
 
-            BlockPos.MutableBlockPos neighPos = new BlockPos.MutableBlockPos();
-            for (var mapEntry : ghosts.entrySet()) {
-                BlockPos pos = mapEntry.getKey();
-                BlockState state = mapEntry.getValue();
-                BakedModel model = mc.getBlockRenderer().getBlockModel(state);
-                for (var direction : Direction.values()) {
-                    neighPos.setX(pos.getX() + direction.getStepX());
-                    neighPos.setY(pos.getY() + direction.getStepY());
-                    neighPos.setZ(pos.getZ() + direction.getStepZ());
-                    if (!ghosts.containsKey(neighPos)) {
-                        List<BakedQuad> quads = BakedModelWrapper.getQuads(model, direction, random);
-                        if (quads.size() > 0) {
-                            BakedQuad quad = quads.get(0);
-                            TextureAtlasSprite sprite = quad.getSprite();
-                            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-                            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-                            RenderSystem.setShaderTexture(0, sprite.atlasLocation());
+            List<BlockState> palette = new ArrayList<>();
+            palette.add(Blocks.AIR.defaultBlockState());
+            Map<BlockState, Integer> lookup = new HashMap<>();
+            lookup.put(Blocks.AIR.defaultBlockState(), 0);
 
-                            FaceInfo face = FaceInfo.fromFacing(direction);
-                            FaceInfo.VertexInfo info;
-
-                            info = face.getVertexInfo(0);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU0(), sprite.getV0()).endVertex();
-
-                            info = face.getVertexInfo(1);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU0(), sprite.getV1()).endVertex();
-
-                            info = face.getVertexInfo(2);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU1(), sprite.getV1()).endVertex();
-
-                            info = face.getVertexInfo(3);
-                            bufferBuilder.vertex(
-                                            (info.xFace == FaceInfo.Constants.MIN_X ? pos.getX() : pos.getX() + 1) - view.x,
-                                            (info.yFace == FaceInfo.Constants.MIN_Y ? pos.getY() : pos.getY() + 1) - view.y,
-                                            (info.zFace == FaceInfo.Constants.MIN_Z ? pos.getZ() : pos.getZ() + 1) - view.z)
-                                    .uv(sprite.getU1(), sprite.getV0()).endVertex();
-
-                            SharedVertexBuffer.instance.bind();
-                            SharedVertexBuffer.instance.upload(bufferBuilder.end());
-                            SharedVertexBuffer.instance.drawWithShader(event.getMatrixStack().last().pose(), event.getProjectionMatrix(), GameRenderer.getPositionTexShader());
-                            VertexBuffer.unbind();
+            int width = x2 - x1 + 1;
+            int height = y2 - y1 + 1;
+            int length = z2 - z1 + 1;
+            int[] blocks = new int[width * height * length];
+            int i = 0;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            for (int y = y1; y <= y2; y++) {
+                pos.setY(y);
+                for (int z = z1; z <= z2; z++) {
+                    pos.setZ(z);
+                    for (int x = x1; x <= x2; x++) {
+                        pos.setX(x);
+                        BlockState state = mc.level.getBlockState(pos);
+                        Integer index = lookup.get(state);
+                        if (index == null) {
+                            int newIndex = palette.size();
+                            palette.add(state);
+                            lookup.put(state, newIndex);
+                            blocks[i++] = newIndex;
+                        } else {
+                            blocks[i++] = index;
                         }
                     }
                 }
             }
 
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            SchematicaOutputData data = new SchematicaOutputData(width, height, length, palette, blocks);
+            future.complete(create.apply(data.optimized()));
+        });
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return DownloadInfo.of("Interrupted");
         }
     }
 
-    private synchronized void onRender(RenderWorldLastEvent event) {
+    private void onClientTickEnd() {
+        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
+        if (!config.enabled || !config.autoBuild) {
+            resetState();
+            return;
+        }
+
+        if (mc.level == null || mc.player == null) {
+            resetState();
+            return;
+        }
+
+        actionTickCounter += 1 / config.placementRate;
+        if (actionTickCounter >= 1) {
+            actionTickCounter -= 1;
+
+            Vec3 eyePos = mc.player.getEyePosition();
+            ItemStack itemInHand = mc.player.getMainHandItem();
+
+            Block blockInHand;
+            if (itemInHand.getItem() instanceof BlockItem blockItem) {
+                blockInHand = blockItem.getBlock();
+            } else {
+                blockInHand = null;
+            }
+
+            BlockUtils.PlaceBlockPlan plan = null;
+            BlockState state = null;
+            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
+                for (Entry entry : entries) {
+                    state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
+                    if (state.isAir()) {
+                        continue;
+                    }
+
+                    plan = BlockUtils.getPlacingPlan(pos, config.attachToAir);
+                    if (plan != null) {
+                        break;
+                    }
+                }
+
+                if (plan != null) {
+                    break;
+                }
+            }
+
+            if (plan == null) {
+                actionTickCounter = 0;
+                return;
+            }
+
+            int slot = slotSelector.selectBlock(config, state.getBlock());
+            if (slot >= 0) {
+                mc.player.getInventory().selected = slot;
+                blockInHand = state.getBlock();
+            }
+            if (blockInHand == state.getBlock()) {
+                BlockUtils.applyPlacingPlan(plan, config.useShift);
+            } else {
+                actionTickCounter = 0;
+            }
+        }
+    }
+
+    private void onRender(RenderWorldLastEvent event) {
         SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
         if (!config.enabled) {
             return;
@@ -218,6 +462,10 @@ public class Schematica {
         }
 
         Vec3 view = event.getCamera().getPosition();
+
+        if (config.create.enabled) {
+            renderCreateBoundaries(event, view, config.create);
+        }
 
         if (config.showMissingBlockTracers) {
             Vec3 tracerCenter = event.getTracerCenter();
@@ -225,40 +473,38 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+            renderer.begin(event, false);
 
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
-                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
+                    renderer.line(
+                            tracerX, tracerY, tracerZ,
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            0.2f, 1.0f, 0.2f, 0.8f);
                 });
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            renderer.end();
         }
 
         if (config.showMissingBlockCubes) {
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(0.2f, 1.0f, 0.2f, 0.8f);
+            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+            renderer.begin(event, false);
 
             for (Entry entry : entries) {
                 entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
-                    double x1 = pos.getX() + 0.25 - view.x;
-                    double y1 = pos.getY() + 0.25 - view.y;
-                    double z1 = pos.getZ() + 0.25 - view.z;
+                    double x1 = pos.getX() + 0.25;
+                    double y1 = pos.getY() + 0.25;
+                    double z1 = pos.getZ() + 0.25;
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(x1, y1, z1, x2, y2, z2, 0.2f, 1.0f, 0.2f, 0.8f);
                 });
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            renderer.end();
         }
 
         if (config.showWrongBlockTracers) {
@@ -267,63 +513,90 @@ public class Schematica {
             double tracerY = tracerCenter.y;
             double tracerZ = tracerCenter.z;
 
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
+            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+            renderer.begin(event, false);
 
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
-                    bufferBuilder.vertex(tracerX - view.x, tracerY - view.y, tracerZ - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
-                    bufferBuilder.vertex(pos.getX() + 0.5 - view.x, pos.getY() + 0.5 - view.y, pos.getZ() + 0.5 - view.z)
-                            .color(1f, 1f, 1f, 1f).endVertex();
+                    renderer.line(
+                            tracerX, tracerY, tracerZ,
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            1.0f, 0.5f, 0.5f, 0.6f);
                 });
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            renderer.end();
         }
 
         if (config.showWrongBlockCubes) {
-            BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-            RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 0.6f);
+            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+            renderer.begin(event, false);
 
             for (Entry entry : entries) {
                 entry.forEachWrong(view, config.wrongBlockCubesMaxDistance, pos -> {
-                    double x1 = pos.getX() + 0.25 - view.x;
-                    double y1 = pos.getY() + 0.25 - view.y;
-                    double z1 = pos.getZ() + 0.25 - view.z;
+                    double x1 = pos.getX() + 0.25;
+                    double y1 = pos.getY() + 0.25;
+                    double z1 = pos.getZ() + 0.25;
                     double x2 = x1 + 0.5;
                     double y2 = y1 + 0.5;
                     double z2 = z1 + 0.5;
-                    Primitives.drawCube(bufferBuilder, x1, y1, z1, x2, y2, z2);
+                    renderer.cuboid(x1, y1, z1, x2, y2, z2, 1.0f, 0.5f, 0.5f, 0.6f);
                 });
             }
 
-            Primitives.renderLines(bufferBuilder, event.getMatrixStack().last().pose(), event.getProjectionMatrix());
+            renderer.end();
         }
-
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
-    private synchronized void onChunkLoaded(LevelChunk chunk) {
+    private void renderCreateBoundaries(RenderWorldLastEvent event, Vec3 view, SchematicaConfig.Create create) {
+        final double gap = 0.0625;
+
+        LineRenderer lineRenderer = RenderUtilities.instance.getLineRenderer();
+        lineRenderer.begin(event, true);
+        lineRenderer.cuboid(
+                create.getX1() - gap, create.getY1() - gap, create.getZ1() - gap,
+                create.getX2() + gap, create.getY2() + gap, create.getZ2() + gap,
+                1f, 1f, 1f, 1f);
+        lineRenderer.end();
+    }
+
+    private void onChunkLoaded(LevelChunk chunk) {
         for (Entry entry : entries) {
             entry.onChunkLoaded(chunk);
         }
     }
 
-    private synchronized void onBlockUpdated(BlockUpdateEvent event) {
+    private void onBlockUpdated(BlockUpdateEvent event) {
         for (Entry entry : entries) {
             entry.onBlockUpdated(event);
         }
     }
 
+    private void safeLookupUpdate(Consumer<Long2ObjectMap<SectionInfo>> consumer) {
+        assert RenderSystem.isOnRenderThread();
+
+        final Long2ObjectMap<SectionInfo> copy = new Long2ObjectOpenHashMap<>(lookup);
+        consumer.accept(copy);
+        lookup = copy;
+    }
+
+    private void resetState() {
+        actionTickCounter = 0;
+    }
+
+    private SchematicaConfig getConfig() {
+        return ConfigStore.instance.getConfig().schematicaConfig;
+    }
+
     private static class Entry {
 
+        private final String name;
         public final int x1, x2, y1, y2, z1, z2;
         public final Map<Long, Chunk> chunks;
 
-        public Entry(SchemaFile file, PlacingSettings placing) {
+        public Entry(SchemaFile file, String name, PlacingSettings placing) {
+            this.name = name;
+
             PlacingConverter converter = new PlacingConverter(placing, file.getWidth(), file.getHeight(), file.getLength());
 
             x1 = placing.x;
@@ -334,26 +607,35 @@ public class Schematica {
             z2 = z1 + converter.getLength();
 
             chunks = new HashMap<>();
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int x = 0; x < file.getWidth(); x++) {
                 for (int y = 0; y < file.getHeight(); y++) {
                     for (int z = 0; z < file.getLength(); z++) {
                         BlockState state = file.getBlockState(x, y, z);
                         if (!state.isAir()) {
-                            PlacingConverter.Vec3iMutable vec = converter.convert(x, y, z);
-                            int wx = x1 + vec.x;
-                            int wy = y1 + vec.y;
-                            int wz = z1 + vec.z;
+                            pos.set(x, y, z);
+                            converter.convert(pos);
+                            int wx = x1 + pos.getX();
+                            int wy = y1 + pos.getY();
+                            int wz = z1 + pos.getZ();
                             long chunkIndex = blockToChunkIndex(wx, wz);
-                            Chunk chunk = chunks.get(chunkIndex);
-                            if (chunk == null) {
-                                chunk = new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0);
-                                chunks.put(chunkIndex, chunk);
-                            }
+                            Chunk chunk = chunks.computeIfAbsent(chunkIndex, k -> new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0));
                             chunk.setBlockState(wx & 0x0F, wy, wz & 0x0F, state);
                         }
                     }
                 }
             }
+        }
+
+        private Entry(String name, int x1, int x2, int y1, int y2, int z1, int z2, Map<Long, Chunk> chunks) {
+            this.name = name;
+            this.x1 = x1;
+            this.x2 = x2;
+            this.y1 = y1;
+            this.y2 = y2;
+            this.z1 = z1;
+            this.z2 = z2;
+            this.chunks = chunks;
         }
 
         public void forEachMissing(Vec3 view, double distance, Consumer<BlockPos> consumer) {
@@ -364,7 +646,7 @@ public class Schematica {
                     continue;
                 }
 
-                for (ChunkSection section : chunk.sections) {
+                for (ChunkSection section : chunk.sections.values()) {
                     if (section == null) {
                         continue;
                     }
@@ -381,31 +663,6 @@ public class Schematica {
             }
         }
 
-        public void forEachMissingState(Vec3 view, double distance, BiConsumer<BlockPos, BlockState> consumer) {
-            double chunkDistance2 = (distance + 23) * (distance + 23);
-            double distance2 = distance * distance;
-            for (Chunk chunk : chunks.values()) {
-                if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
-                    continue;
-                }
-
-                for (ChunkSection section : chunk.sections) {
-                    if (section == null) {
-                        continue;
-                    }
-                    if (section.getDistanceSqrTo(view) > chunkDistance2) {
-                        continue;
-                    }
-
-                    for (BlockPos pos : section.missing) {
-                        if (pos.distToCenterSqr(view) < distance2) {
-                            consumer.accept(pos, section.getBlockState(pos.getX() & 0x0F, pos.getY() & 0x0F, pos.getZ() & 0x0F));
-                        }
-                    }
-                }
-            }
-        }
-
         public void forEachWrong(Vec3 view, double distance, Consumer<BlockPos> consumer) {
             double chunkDistance2 = (distance + 23) * (distance + 23);
             double distance2 = distance * distance;
@@ -414,7 +671,7 @@ public class Schematica {
                     continue;
                 }
 
-                for (ChunkSection section : chunk.sections) {
+                for (ChunkSection section : chunk.sections.values()) {
                     if (section == null) {
                         continue;
                     }
@@ -431,26 +688,6 @@ public class Schematica {
             }
         }
 
-        public void forEachSection(Vec3 view, double distance, Consumer<ChunkSection> consumer) {
-            double chunkDistance2 = (distance + 23) * (distance + 23);
-            for (Chunk chunk : chunks.values()) {
-                if (chunk.getDistanceSqrTo(view) > chunkDistance2) {
-                    continue;
-                }
-
-                for (ChunkSection section : chunk.sections) {
-                    if (section == null) {
-                        continue;
-                    }
-                    if (section.getDistanceSqrTo(view) > chunkDistance2) {
-                        continue;
-                    }
-
-                    consumer.accept(section);
-                }
-            }
-        }
-
         public BlockState getBlockState(int x, int y, int z) {
             long chunkIndex = blockToChunkIndex(x, z);
             Chunk chunk = chunks.get(chunkIndex);
@@ -461,7 +698,7 @@ public class Schematica {
             }
         }
 
-        public void onChunkLoaded( LevelChunk levelChunk) {
+        public void onChunkLoaded(LevelChunk levelChunk) {
             long chunkIndex = chunkToChunkIndex(levelChunk);
             Chunk chunk = chunks.get(chunkIndex);
             if (chunk != null) {
@@ -477,6 +714,22 @@ public class Schematica {
             }
         }
 
+        public Entry moveTo(int x, int y, int z) {
+            int dx = x - x1;
+            int dy = y - y1;
+            int dz = z - z1;
+            return new Entry(
+                    name,
+                    x1 + dx, x2 + dx,
+                    y1 + dy, y2 + dy,
+                    z1 + dz, z2 + dz,
+                    copyChunks(dx, dy, dz));
+        }
+
+        public EntrySummary asSummary() {
+            return new EntrySummary(name, x1, y1, z1);
+        }
+
         private long blockToChunkIndex(int x, int z) {
             x = SectionPos.blockToSectionCoord(x);
             z = SectionPos.blockToSectionCoord(z);
@@ -486,31 +739,46 @@ public class Schematica {
         private long chunkToChunkIndex(LevelChunk chunk) {
             return ChunkPos.asLong(chunk.getPos().x, chunk.getPos().z);
         }
+
+        private Map<Long, Chunk> copyChunks(int dx, int dy, int dz) {
+            Map<Long, Chunk> newChunks = new HashMap<>();
+            for (int x = x1; x < x2; x++) {
+                for (int y = y1; y < y2; y++) {
+                    for (int z = z1; z < z2; z++) {
+                        BlockState state = getBlockState(x, y, z);
+                        if (!state.isAir()) {
+                            int wx = x + dx;
+                            int wy = y + dy;
+                            int wz = z + dz;
+                            long chunkIndex = blockToChunkIndex(wx, wz);
+                            Chunk chunk = newChunks.computeIfAbsent(chunkIndex, k -> new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0));
+                            chunk.setBlockState(wx & 0x0F, wy, wz & 0x0F, state);
+                        }
+                    }
+                }
+            }
+            return newChunks;
+        }
     }
 
     private static class Chunk {
 
-        private static final int MIN_Y = -64;
-        private static final int MAX_Y = 320;
-        private static final int MIN_SECTION_Y = MIN_Y >> 4;
-        private static final int MAX_SECTION_Y = MAX_Y >> 4;
-
         private final int minX;
         private final int minZ;
-        public final ChunkSection[] sections;
+        public final Int2ObjectMap<ChunkSection> sections;
 
         public Chunk(int x, int z) {
             minX = x;
             minZ = z;
-            sections = new ChunkSection[MAX_SECTION_Y - MIN_SECTION_Y];
+            sections = new Int2ObjectOpenHashMap<>();
         }
 
         public BlockState getBlockState(int x, int y, int z) {
-            int sectionIndex = (y - MIN_Y) >> 4;
-            if (sectionIndex >= sections.length) {
-                return Blocks.AIR.defaultBlockState();
-            }
-            ChunkSection section = sections[sectionIndex];
+            assert 0 <= x && x < 16;
+            assert 0 <= z && z < 16;
+
+            int sectionIndex = SectionPos.blockToSectionCoord(y);
+            ChunkSection section = sections.get(sectionIndex);
             if (section == null) {
                 return Blocks.AIR.defaultBlockState();
             } else {
@@ -525,30 +793,33 @@ public class Schematica {
         }
 
         public void onChunkLoaded(Entry entry, LevelChunk chunk) {
-            for (int i = 0; i < sections.length; i++) {
-                if (sections[i] != null) {
-                    sections[i].onChunkLoaded(entry, chunk);
-                }
+            assert chunk.getPos().getMinBlockX() == minX;
+            assert chunk.getPos().getMinBlockZ() == minZ;
+
+            for (ChunkSection section : sections.values()) {
+                section.onChunkLoaded(entry, chunk);
             }
         }
 
         public void onBlockUpdated(BlockUpdateEvent event) {
-            if (event.pos().getY() >= 320) { // light update?
-                return;
-            }
-            int sectionIndex = (event.pos().getY() - MIN_Y) >> 4;
-            ChunkSection section = sections[sectionIndex];
+            int sectionIndex = SectionPos.blockToSectionCoord(event.pos().getY());
+            ChunkSection section = sections.get(sectionIndex);
             if (section != null) {
                 section.onBlockUpdated(event);
             }
         }
 
         public void setBlockState(int x, int y, int z, BlockState state) {
-            int sectionIndex = (y - MIN_Y) >> 4;
-            if (sections[sectionIndex] == null) {
-                sections[sectionIndex] = new ChunkSection(minX, MIN_Y + (sectionIndex << 4), minZ);
+            assert 0 <= x && x < 16;
+            assert 0 <= z && z < 16;
+
+            int sectionIndex = SectionPos.blockToSectionCoord(y);
+            ChunkSection section = sections.get(sectionIndex);
+            if (section == null) {
+                section = new ChunkSection(minX, SectionPos.sectionToBlockCoord(sectionIndex), minZ);
+                sections.put(sectionIndex, section);
             }
-            sections[sectionIndex].setBlockState(x, y & 0x0F, z, state);
+            section.setBlockState(x, y & 0x0F, z, state);
         }
     }
 
@@ -565,7 +836,26 @@ public class Schematica {
             minX = x;
             minY = y;
             minZ = z;
-            states = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
+            states = new PalettedContainer<>(
+                    Block.BLOCK_STATE_REGISTRY,
+                    Blocks.AIR.defaultBlockState(),
+                    PalettedContainer.Strategy.SECTION_STATES);
+        }
+
+        public int getSectionX() {
+            return SectionPos.blockToSectionCoord(minX);
+        }
+
+        public int getSectionY() {
+            return SectionPos.blockToSectionCoord(minY);
+        }
+
+        public int getSectionZ() {
+            return SectionPos.blockToSectionCoord(minZ);
+        }
+
+        public long asLongIndex() {
+            return SectionPos.asLong(getSectionX(), getSectionY(), getSectionZ());
         }
 
         public BlockState getBlockState(int x, int y, int z) {
@@ -652,27 +942,152 @@ public class Schematica {
                 return !chunkState.isAir() && chunkState != finalState;
             }
         }
+    }
 
-        private boolean contains(BlockPos pos) {
-            if (pos.getX() < minX) {
-                return false;
+    public static class SectionInfo {
+
+        public static final SectionInfo EMPTY = new SectionInfo();
+
+        private final int x, y, z;
+        private final List<Entry> entries;
+        private final List<ChunkSection> sections;
+        private final Entry entry;
+        private final ChunkSection section;
+
+        private SectionInfo() {
+            this.x = this.y = this.z = 0;
+            this.entries = null;
+            this.sections = null;
+            this.entry = null;
+            this.section = null;
+        }
+
+        private SectionInfo(Entry entry, ChunkSection section) {
+            this.x = section.getSectionX();
+            this.y = section.getSectionY();
+            this.z = section.getSectionZ();
+            this.entries = null;
+            this.sections = null;
+            this.entry = entry;
+            this.section = section;
+        }
+
+        private SectionInfo(int x, int y, int z, List<Entry> entries, List<ChunkSection> sections) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.entries = entries;
+            this.sections = sections;
+            this.entry = null;
+            this.section = null;
+        }
+
+        private SectionInfo(int x, int y, int z, Entry entry1, ChunkSection section1, Entry entry2, ChunkSection section2) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.entries = List.of(entry1, entry2);
+            this.sections = List.of(section1, section2);
+            this.entry = null;
+            this.section = null;
+        }
+
+        private SectionInfo(int x, int y, int z, List<Entry> entries, List<ChunkSection> sections, Entry entry, ChunkSection section) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.entries = new ArrayList<>(entries.size() + 1);
+            this.entries.addAll(entries);
+            this.entries.add(entry);
+            this.sections = new ArrayList<>(sections.size() + 1);
+            this.sections.addAll(sections);
+            this.sections.add(section);
+            this.entry = null;
+            this.section = null;
+        }
+
+        private SectionInfo add(Entry entry, ChunkSection section) {
+            if (this.entry == null && this.entries == null) {
+                return new SectionInfo(entry, section);
             }
-            if (pos.getX() >= minX + 16) {
-                return false;
+            if (this.entry != null) {
+                return new SectionInfo(this.x, this.y, this.z, this.entry, this.section, entry, section);
             }
-            if (pos.getY() < minY) {
-                return false;
+            return new SectionInfo(this.x, this.y, this.z, this.entries, this.sections, entry, section);
+        }
+
+        private SectionInfo remove(Entry entry, ChunkSection section) {
+            if (this.entry != null) {
+                if (this.entry != entry || this.section != section) {
+                    throw new IllegalStateException("Attempt to remove non-existing section.");
+                }
+                return EMPTY;
             }
-            if (pos.getY() >= minY + 16) {
-                return false;
+            if (this.entries != null) {
+                int index = this.entries.indexOf(entry);
+                if (index < 0) {
+                    throw new IllegalStateException("Attempt to remove non-existing section.");
+                }
+                if (this.sections.get(index) != section) {
+                    throw new IllegalStateException("Entry/ChunkSection mismatch.");
+                }
+                List<Entry> entries = removeAtIndex(this.entries, index);
+                List<ChunkSection> sections = removeAtIndex(this.sections, index);
+                if (entries.size() == 1) {
+                    return new SectionInfo(entries.get(0), sections.get(0));
+                } else {
+                    return new SectionInfo(x, y, z, entries, sections);
+                }
             }
-            if (pos.getZ() < minZ) {
-                return false;
+            throw new IllegalStateException();
+        }
+
+        public boolean contains(BlockPos pos) {
+            return SectionPos.asLong(pos) == SectionPos.asLong(x, y, z);
+        }
+
+        public BlockState getBlockState(BlockPos pos) {
+            return getBlockState(pos.getX(), pos.getY(), pos.getZ());
+        }
+
+        public BlockState getBlockState(int x, int y, int z) {
+            x &= 0xF;
+            y &= 0xF;
+            z &= 0xF;
+
+            if (section != null) {
+                return section.getBlockState(x, y, z);
             }
-            if (pos.getZ() >= minZ + 16) {
-                return false;
+            for (ChunkSection section : sections) {
+                BlockState state = section.getBlockState(x, y, z);
+                if (!state.isAir()) {
+                    return state;
+                }
             }
-            return true;
+            return Blocks.AIR.defaultBlockState();
+        }
+
+        private static <T> List<T> removeAtIndex(List<T> list, int index) {
+            List<T> result = new ArrayList<>(list.size() - 1);
+            for (int i = 0; i < list.size(); i++) {
+                if (i != index) {
+                    result.add(list.get(i));
+                }
+            }
+            return result;
+        }
+    }
+
+    public record EntrySummary(String name, int x, int y, int z) {}
+
+    public record DownloadInfo(byte[] data, String error) {
+
+        public static DownloadInfo of(byte[] data) {
+            return new DownloadInfo(data, null);
+        }
+
+        public static DownloadInfo of(String error) {
+            return new DownloadInfo(null, error);
         }
     }
 }

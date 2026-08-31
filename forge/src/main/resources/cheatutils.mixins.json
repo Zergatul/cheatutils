@@ -4,6 +4,7 @@
   "package": "com.zergatul.cheatutils.mixins",
   "refmap": "cheatutils.mixins-refmap.json",
   "compatibilityLevel": "JAVA_17",
+  "plugin": "com.zergatul.mixin.MixinPlugin",
   "mixinPriority": 500,
   "client": [
     "common.accessors.AbstractContainerScreenAccessor",
@@ -29,6 +30,9 @@
     "common.accessors.TextureStateShardAccessor",
     "common.accessors.WalkAnimationStateAccessor",
 
+    "common.schematica.MixinRenderChunkRegion",
+    "common.schematica.MixinRenderRegionCache",
+
     "common.MixinAbstractContainerScreen",
     "common.MixinBlockBehaviourBlockStateBase",
     "common.MixinBoat",
@@ -50,7 +54,6 @@
     "common.MixinGuiGraphics",
     "common.MixinKeyBindingListKeyEntry",
     "common.MixinLevelRenderer",
-    "common.MixinLevelRenderer2",
     "common.MixinLivingEntity",
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
@@ -77,6 +80,7 @@
     "forge.MixinKeyMapping",
     "forge.MixinLightTexture",
     "forge.MixinLocalPlayer",
-    "forge.MixinMultiPlayerGameMode"
+    "forge.MixinMultiPlayerGameMode",
+    "forge.schematica.MixinChunkRenderDispatcherRebuildTask"
   ]
 }

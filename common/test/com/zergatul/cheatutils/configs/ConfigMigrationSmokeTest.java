@@ -182,6 +182,38 @@ public class ConfigMigrationSmokeTest {
         }
     }
 
+    public static void verifySchematica() {
+        JsonElement tree = JsonParser.parseString("""
+                {
+                  "schematicaConfig": {
+                    "enabled": true,
+                    "showMissingBlockGhosts": false,
+                    "missingBlockGhostsMaxDistance": 42,
+                    "autoBuild": true,
+                    "maxRange": 8
+                  }
+                }
+                """);
+
+        ConfigStore.migrateConfigTree(tree);
+        Config config = ConfigStore.instance.gson.fromJson(tree, Config.class);
+        config.sanitize();
+
+        JsonElement migrated = tree.getAsJsonObject().getAsJsonObject("schematicaConfig");
+        if (migrated.getAsJsonObject().has("showMissingBlockGhosts") ||
+                migrated.getAsJsonObject().has("missingBlockGhostsMaxDistance") ||
+                !migrated.getAsJsonObject().has("renderBlocks")) {
+            throw new IllegalStateException("Old Schematica ghost rendering fields were not migrated.");
+        }
+
+        SchematicaConfig schematica = config.schematicaConfig;
+        if (!schematica.enabled || schematica.renderBlocks || !schematica.shadeBlocks ||
+                !schematica.autoBuild || schematica.maxRange != 8 || schematica.placementRate != 1 ||
+                schematica.create == null) {
+            throw new IllegalStateException("Old Schematica behavior changed during config migration.");
+        }
+    }
+
     public static void verifyBlockEspGroups() {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();

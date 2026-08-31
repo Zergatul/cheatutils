@@ -20,7 +20,10 @@
     "client": ["com.zergatul.cheatutils.ModMain"]
   },
   "accessWidener": "cheatutils.classtweaker",
-  "mixins": ["cheatutils.mixins.json"],
+  "mixins": [
+    "cheatutils.mixins.json",
+    "cheatutils.sodium.mixins.json"
+  ],
 
   "depends": {
     "fabricloader": ">=0.15.0",

@@ -5,9 +5,8 @@ import com.zergatul.cheatutils.schematics.InvalidFormatException;
 import com.zergatul.cheatutils.schematics.PlacingSettings;
 import com.zergatul.cheatutils.schematics.SchemaFile;
 import com.zergatul.cheatutils.schematics.SchemaFormatFactory;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.http.HttpException;
-
-import java.io.IOException;
 
 public class SchematicaPlaceApi extends ApiBase {
 
@@ -26,24 +25,30 @@ public class SchematicaPlaceApi extends ApiBase {
         Request request = WebHelper.parseJson(gson, body, Request.class);
         byte[] data = WebHelper.decodeBase64(request.file, "file");
         WebHelper.requireNonBlankField(request.name, "name");
-        WebHelper.requireField(request.placing, "placing");
+        PlacingSettings placing = WebHelper.requireField(request.placing, "placing");
+        if (placing.transforms == null) {
+            placing.transforms = new String[0];
+        }
         SchemaFile schema;
         try {
             schema = SchemaFormatFactory.parse(data, request.name);
-        }
-        catch (IOException | InvalidFormatException e) {
+        } catch (InvalidFormatException e) {
             throw new HttpException(e.getMessage());
         }
 
-        ClientThreadDispatcher.run(() -> Schematica.instance.place(schema, request.placing));
+        for (PaletteEntry entry : request.palette == null ? new PaletteEntry[0] : request.palette) {
+            if (entry == null || entry.state == null) {
+                continue;
+            }
+            if (0 < entry.id && entry.id < schema.getPalette().length) {
+                schema.getPalette()[entry.id] = entry.state;
+            }
+        }
+
+        Schematica.instance.place(schema, request.name, placing);
         return "{}";
     }
 
-    @Override
-    public String delete(String id) throws HttpException {
-        ClientThreadDispatcher.run(Schematica.instance::clear);
-        return "{}";
-    }
-
-    public record Request(String file, String name, PlacingSettings placing) {}
+    public record Request(String file, String name, PlacingSettings placing, PaletteEntry[] palette) {}
+    public record PaletteEntry(int id, BlockState state) {}
 }

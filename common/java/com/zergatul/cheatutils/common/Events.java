@@ -35,7 +35,6 @@ public class Events {
     public static final SimpleEventHandler InGameTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler ClientTickEnd = new SimpleEventHandler();
     public static final SimpleEventHandler InGameTickEnd = new SimpleEventHandler();
-    public static final ParameterizedEventHandler<RenderWorldLayerEvent> RenderSolidLayer = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLastRaw = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderWorldLastEvent> RenderWorldLast = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PreRenderGuiOverlayEvent> PreRenderGuiOverlay = new CancelableEventHandler<>();

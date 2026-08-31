@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EntityEspConfig;
@@ -8,6 +7,7 @@ import com.zergatul.cheatutils.configs.PerformanceConfig;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
+import com.zergatul.mixin.WrapMethodInsideIfCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -119,15 +119,11 @@ public abstract class MixinMinecraft {
         }
     }
 
-    @WrapWithCondition(
+    @WrapMethodInsideIfCondition(
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
-    private boolean onShouldContinueAttack(Minecraft instance, boolean down) {
-        if (VillagerRoller.instance.isBreakingBlock()) {
-            return false;
-        }
-
-        return true;
+    private static boolean onShouldContinueAttack(Minecraft instance, boolean down) {
+        return !VillagerRoller.instance.isBreakingBlock();
     }
 
     @Redirect(

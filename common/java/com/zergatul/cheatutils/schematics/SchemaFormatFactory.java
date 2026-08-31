@@ -1,15 +1,20 @@
 package com.zergatul.cheatutils.schematics;
 
-import java.io.IOException;
 import java.util.Locale;
 
 public class SchemaFormatFactory {
-    public static SchemaFile parse(byte[] data, String filename) throws IOException, InvalidFormatException {
+
+    public static SchemaFile parse(byte[] data, String filename) throws InvalidFormatException {
         filename = filename.toLowerCase(Locale.ROOT);
-        String extension = filename.substring(filename.lastIndexOf('.'));
+        int index = filename.lastIndexOf('.');
+        if (index < 0) {
+            throw new InvalidFormatException("Unexpected file extension.");
+        }
+        String extension = filename.substring(index);
         return switch (extension) {
-            case ".schematic" -> new SchematicFile(data);
-            case ".litematic" -> new LitematicFile(data);
+            case ".schematic" -> SchematicaFile.parse(data);
+            case ".schem" -> SpongeSchematicaFile.parse(data);
+            case ".litematic" -> LitematicaFile.parse(data);
             default -> throw new InvalidFormatException("Unexpected file extension.");
         };
     }

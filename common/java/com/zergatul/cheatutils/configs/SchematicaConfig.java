@@ -4,8 +4,8 @@ import com.zergatul.cheatutils.utils.MathUtils;
 
 public class SchematicaConfig extends BlockPlacerConfig implements Sanitizable {
 
-    public boolean showMissingBlockGhosts;
-    public double missingBlockGhostsMaxDistance;
+    public boolean renderBlocks;
+    public boolean shadeBlocks;
     public boolean showMissingBlockTracers;
     public double missingBlockTracersMaxDistance;
     public boolean showMissingBlockCubes;
@@ -17,12 +17,14 @@ public class SchematicaConfig extends BlockPlacerConfig implements Sanitizable {
     public boolean replaceableAsAir;
     public boolean airAlwaysValid;
     public boolean autoBuild;
+    public double placementRate;
+    public Create create;
 
     public SchematicaConfig() {
         super();
 
-        showMissingBlockGhosts = true;
-        missingBlockGhostsMaxDistance = 10;
+        renderBlocks = true;
+        shadeBlocks = true;
 
         showMissingBlockTracers = false;
         missingBlockTracersMaxDistance = 30;
@@ -35,15 +37,48 @@ public class SchematicaConfig extends BlockPlacerConfig implements Sanitizable {
 
         showWrongBlockCubes = false;
         wrongBlockCubesMaxDistance = 10;
+
+        placementRate = 1;
+        create = new Create();
     }
 
     @Override
     public void sanitize() {
-        missingBlockGhostsMaxDistance = MathUtils.clamp(missingBlockGhostsMaxDistance, 1, 1000);
         missingBlockTracersMaxDistance = MathUtils.clamp(missingBlockTracersMaxDistance, 1, 1000);
         missingBlockCubesMaxDistance = MathUtils.clamp(missingBlockCubesMaxDistance, 1, 1000);
         wrongBlockTracersMaxDistance = MathUtils.clamp(wrongBlockTracersMaxDistance, 1, 1000);
         wrongBlockCubesMaxDistance = MathUtils.clamp(wrongBlockCubesMaxDistance, 1, 1000);
+        placementRate = MathUtils.clamp(placementRate, 1, 100);
         super.sanitize();
+    }
+
+    public static class Create {
+
+        public int x1, y1, z1, x2, y2, z2;
+        public boolean enabled;
+
+        public int getX1() {
+            return Math.min(x1, x2);
+        }
+
+        public int getX2() {
+            return Math.max(x1, x2) + 1;
+        }
+
+        public int getY1() {
+            return Math.min(y1, y2);
+        }
+
+        public int getY2() {
+            return Math.max(y1, y2) + 1;
+        }
+
+        public int getZ1() {
+            return Math.min(z1, z2);
+        }
+
+        public int getZ2() {
+            return Math.max(z1, z2) + 1;
+        }
     }
 }

@@ -263,6 +263,7 @@ public class ConfigStore {
         }
         migrateBlockEspConfigFields(root);
         migrateEntityEspConfigFields(root);
+        migrateSchematicaConfigFields(root);
         root.remove("gameTickScriptingConfig");
         root.remove("autoDisconnectConfig");
     }
@@ -355,6 +356,16 @@ public class ConfigStore {
                 config.addProperty("useRawNames", false);
             }
         }
+    }
+
+    private static void migrateSchematicaConfigFields(JsonObject root) {
+        if (!root.has("schematicaConfig") || !root.get("schematicaConfig").isJsonObject()) {
+            return;
+        }
+
+        JsonObject config = root.getAsJsonObject("schematicaConfig");
+        renameField(config, "showMissingBlockGhosts", "renderBlocks");
+        config.remove("missingBlockGhostsMaxDistance");
     }
 
     private static void renameField(JsonObject object, String oldName, String newName) {
