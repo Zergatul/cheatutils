@@ -2,10 +2,16 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.ui.CustomToast;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+
+import java.time.Duration;
 
 import static com.zergatul.cheatutils.utils.ComponentUtils.constructMessage;
 
@@ -62,6 +68,26 @@ public class UIApi {
     @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
     public void overlayMessage(String[] parameters) {
         showMessage(constructMessage(parameters), true);
+    }
+
+    @MethodDescription("""
+            Shows custom toast message at the top right corner of the screen.
+            Returns false when toast cannot be added because it will occupy too much space.
+            """)
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
+    public boolean toastMessage(int seconds, String title, String message) {
+        if (seconds <= 0) {
+            return false;
+        }
+
+        CustomToast toast = new CustomToast(Duration.ofSeconds(seconds), Component.literal(title), Component.literal(message));
+        // ToastManager.SLOT_COUNT = 5
+        if (toast.occcupiedSlotCount() > 5) {
+            return false;
+        }
+
+        mc.gui.toastManager().addToast(toast);
+        return true;
     }
 
     @MethodDescription("""
