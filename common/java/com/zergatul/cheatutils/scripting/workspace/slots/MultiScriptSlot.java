@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.*;
 import com.zergatul.scripting.analysis.AnalysisResult;
@@ -58,7 +59,9 @@ public abstract class MultiScriptSlot extends ScriptSlot {
     }
 
     public void remove(String identifier) {
-        if (instances.remove(identifier) != null) {
+        ScriptDocument instance = instances.remove(identifier);
+        if (instance != null) {
+            ScriptExecutionManager.instance.cancel(instance.ref);
             applyScript(identifier, null);
         }
     }
@@ -81,6 +84,7 @@ public abstract class MultiScriptSlot extends ScriptSlot {
 
         CompilationResult compilationResult = compileScript(code);
         if (compilationResult.getProgram() != null) {
+            ScriptExecutionManager.instance.cancel(instance.ref);
             applyScript(identifier, compilationResult.getProgram());
             return ScriptSaveResult.success();
         } else {
@@ -106,6 +110,7 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         if (code == null || code.isEmpty()) {
             if (instance != null) {
                 instance.code = null;
+                ScriptExecutionManager.instance.cancel(instance.ref);
             }
 
             updateConfigCode(identifier, null);
@@ -129,6 +134,7 @@ public abstract class MultiScriptSlot extends ScriptSlot {
 
         if (compilationResult.getProgram() != null) {
             instance.code = code;
+            ScriptExecutionManager.instance.cancel(instance.ref);
             updateConfigCode(identifier, code);
             ConfigStore.instance.requestWrite();
 

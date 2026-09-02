@@ -9,6 +9,8 @@ import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
 import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.modules.visuals.*;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
+import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,6 +19,9 @@ public class Modules {
     private static final Logger LOGGER = LogManager.getLogger(Modules.class);
 
     public static void register() {
+
+        register(ScriptExecutionManager.instance);
+        register(ScriptRuntimeFailureHandler.instance);
 
         //Order dependent modules -> legacy method, use Event.event.add(function, priority) for new modules, use the priority value instead
         //==========================

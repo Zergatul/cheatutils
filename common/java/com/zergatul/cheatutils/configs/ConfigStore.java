@@ -11,6 +11,7 @@ import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
@@ -81,6 +82,7 @@ public class ConfigStore {
             }
         }
 
+        ScriptExecutionManager.instance.cancelAll();
         currentFile = file;
         setConfig(newConfig);
         onConfigLoaded();
@@ -92,6 +94,7 @@ public class ConfigStore {
     }
 
     public synchronized void createNew(File file) {
+        ScriptExecutionManager.instance.cancelAll();
         currentFile = file;
         setConfig(new Config());
         onConfigLoaded();
