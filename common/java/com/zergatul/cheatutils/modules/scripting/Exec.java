@@ -5,6 +5,8 @@ import com.zergatul.cheatutils.common.events.SendChatEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
+import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.scripting.DiagnosticMessage;
@@ -12,6 +14,8 @@ import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+
+import java.util.Objects;
 
 public class Exec implements Module {
 
@@ -26,25 +30,32 @@ public class Exec implements Module {
             return;
         }
 
-        if (event.getMessage().startsWith(".")) {
-            try {
-                String code = event.getMessage().substring(1);
-                CompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
-                if (result.getProgram() != null) {
-                    result.<AsyncRunnable>getProgram().run();
-                    systemMessage("OK", 0xFF80FF80);
-                } else {
-                    for (DiagnosticMessage message : result.getDiagnostics()) {
-                        systemMessage(message.message, 0xFFFF8080);
-                    }
-                }
-            }
-            catch (Throwable e) {
-                systemMessage(e.getMessage(), 0xFFFF8080);
-            }
-
-            event.cancel();
+        if (!event.getMessage().startsWith(".")) {
+            return;
         }
+
+        event.cancel();
+
+        String code = event.getMessage().substring(1);
+        CompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
+        if (result.getProgram() == null) {
+            for (DiagnosticMessage message : Objects.requireNonNull(result.getDiagnostics())) {
+                systemMessage(message.message, 0xFFFF8080);
+            }
+            return;
+        }
+
+        try {
+            ScriptExecutionManager.instance.execute(result.<AsyncRunnable>getProgram())
+                    .whenComplete((value, throwable) -> ScriptRuntimeFailureHandler.instance.report(
+                            "Exec script failed.",
+                            throwable));
+        } catch (Throwable e) {
+            ScriptRuntimeFailureHandler.instance.throwIfFailure("Exec script failed.", e);
+            return;
+        }
+
+        systemMessage("OK", 0xFF80FF80);
     }
 
     private void systemMessage(String message, int color) {

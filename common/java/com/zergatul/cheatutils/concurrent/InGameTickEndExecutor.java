@@ -5,30 +5,40 @@ import com.zergatul.cheatutils.common.Events;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.RejectedExecutionException;
 
-// callers should not use this executor when no level is loaded
+// Callers should not use this executor when no level is loaded.
 public class InGameTickEndExecutor extends EventExecutor {
 
     public static final InGameTickEndExecutor instance = new InGameTickEndExecutor();
 
     private final List<PendingTask> tasks = new ArrayList<>();
 
-    private InGameTickEndExecutor() {
+    InGameTickEndExecutor() {
         super(100);
         Events.InGameTickStart.add(this::onTickStart);
         Events.InGameTickEnd.add(this::onTickEnd);
         Events.LevelUnload.add(this::onLevelUnload);
+        Events.Close.add(this::onClose);
     }
 
     public CompletableFuture<Void> waitTicks(int ticks) {
+        if (isShutdown()) {
+            throw new RejectedExecutionException("Executor is shut down.");
+        }
         CompletableFuture<Void> future = new CompletableFuture<>();
         tasks.add(new PendingTask(ticks, future));
         return future;
     }
 
     private void onTickStart() {
-        for (PendingTask task : tasks) {
-            task.ticks--;
+        for (int i = 0; i < tasks.size(); i++) {
+            PendingTask task = tasks.get(i);
+            if (task.future.isDone()) {
+                tasks.remove(i--);
+            } else {
+                task.ticks--;
+            }
         }
     }
 
@@ -37,18 +47,27 @@ public class InGameTickEndExecutor extends EventExecutor {
 
         for (int i = 0; i < tasks.size(); i++) {
             PendingTask task = tasks.get(i);
-            if (task.ticks <= 0) {
+            if (task.future.isDone()) {
+                tasks.remove(i--);
+            } else if (task.ticks <= 0) {
                 task.future.complete(null);
-                tasks.remove(i);
-                i--;
+                tasks.remove(i--);
             }
         }
     }
 
-    private void onLevelUnload() {
+    void onLevelUnload() {
         clearQueue();
         for (PendingTask task : tasks) {
             task.future.completeExceptionally(new LevelUnloadedException());
+        }
+        tasks.clear();
+    }
+
+    void onClose() {
+        shutdownNow();
+        for (PendingTask task : tasks) {
+            task.future.cancel(false);
         }
         tasks.clear();
     }

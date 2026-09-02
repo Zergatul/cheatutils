@@ -9,8 +9,11 @@ import com.zergatul.cheatutils.configs.KeyBindingScriptsConfig;
 import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
+import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
+import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.KeyBindingScriptSlot;
@@ -23,7 +26,6 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 @NullMarked
 public class KeyBindings implements Module {
@@ -34,7 +36,6 @@ public class KeyBindings implements Module {
     private final KeyMapping[] keys;
     private final Map<String, AsyncRunnable> scripts;
     private final Optional<AsyncRunnable>[] actions;
-    private final Optional<CompletableFuture<?>>[] futures;
 
     private KeyBindings() {
         this.scripts = new HashMap<>();
@@ -46,7 +47,6 @@ public class KeyBindings implements Module {
         }
 
         this.actions = createOptionalArray(KeyBindingsConfig.KeysCount);
-        this.futures = createOptionalArray(KeyBindingsConfig.KeysCount);
         clear();
 
         Events.RegisterKeyBindings.add(this::onRegisterKeyBindings);
@@ -60,7 +60,6 @@ public class KeyBindings implements Module {
     public void clear() {
         scripts.clear();
         Arrays.setAll(actions, _ -> Optional.empty());
-        Arrays.setAll(futures, _ -> Optional.empty());
         slot().clear();
     }
 
@@ -176,7 +175,6 @@ public class KeyBindings implements Module {
             String binding = bindings[i];
             if (binding != null && binding.equals(name)) {
                 actions[i] = Optional.empty();
-                futures[i] = Optional.empty();
                 bindings[i] = null;
             }
         }
@@ -185,11 +183,9 @@ public class KeyBindings implements Module {
             AsyncRunnable compiled = scripts.get(name);
             if (compiled == null) {
                 actions[index] = Optional.empty();
-                futures[index] = Optional.empty();
                 bindings[index] = null;
             } else {
                 actions[index] = Optional.of(compiled);
-                futures[index] = Optional.empty();
                 bindings[index] = name;
             }
         }
@@ -224,7 +220,6 @@ public class KeyBindings implements Module {
             String binding = bindings[i];
             if (binding != null && binding.equals(name)) {
                 actions[i] = script == null ? Optional.empty() : Optional.of(script);
-                futures[i] = Optional.empty();
             }
         }
     }
@@ -239,9 +234,19 @@ public class KeyBindings implements Module {
             Optional<AsyncRunnable> action = actions[i];
             while (key.consumeClick()) {
                 if (action.isPresent()) {
-                    Optional<CompletableFuture<?>> future = futures[i];
-                    if (future.isEmpty() || future.get().isDone()) {
-                        futures[i] = Optional.of(action.get().run());
+                    @Nullable String name = ConfigStore.instance.getConfig().keyBindingsConfig.bindings[i];
+                    ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, Objects.requireNonNull(name));
+                    try {
+                        ScriptExecutionManager.instance.execute(
+                                ref,
+                                action.get(),
+                                throwable -> ScriptRuntimeFailureHandler.instance.report(
+                                        "Key binding script '" + ref.identifier() + "' failed.",
+                                        throwable));
+                    } catch (Throwable e) {
+                        ScriptRuntimeFailureHandler.instance.throwIfFailure(
+                                "Key binding script '" + ref.identifier() + "' failed.",
+                                e);
                     }
                 }
             }
