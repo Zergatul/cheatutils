@@ -69,7 +69,12 @@ Rules:
 - Put logic inside event callbacks
 - Avoid heavy work in high-frequency events (ticks, packets)
 
-Use case: reacting to chat, players, packets, ticks.
+Use case: reacting to chat, players, packets, ticks, or filtering module target candidates.
+
+Kill Aura target filters are registered with `events.modules.killAura.addTargetFilter(id => ...)`.
+Return true to allow a candidate or false to reject it. Multiple filters combine with AND.
+Configured priorities, range, and angle checks still apply. Keep predicates fast and synchronous.
+Filters are inactive while Events Scripting is disabled.
 
 ### Block ESP
 - Runs every frame for every ESP-highlighted block
@@ -88,16 +93,6 @@ Rules:
 - No actions
 - No movement or interaction
 - Only visual decisions
-
-### Kill Aura / Hitbox Size
-- Pure predicate scripts
-- Must return true or false
-- Called frequently by the engine
-
-Rules:
-- Must be fast
-- No side effects
-- No async logic
 
 ## 3. Async / await rules
 Where `await` is allowed:

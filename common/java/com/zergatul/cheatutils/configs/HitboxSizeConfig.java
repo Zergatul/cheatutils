@@ -17,9 +17,6 @@ public class HitboxSizeConfig extends ModuleConfig implements Sanitizable {
     public double heightPercent;
     public double heightAbsolute;
 
-    public boolean scriptEnabled;
-    public String code;
-
     public HitboxSizeConfig() {
         widthMode = MODE_PERCENT;
         widthPercent = 25;

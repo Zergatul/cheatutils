@@ -24,8 +24,6 @@ public class ScriptWorkspace {
         slots.put(ScriptType.EVENTS, new EventsScriptingScriptSlot());
         slots.put(ScriptType.BLOCK_ESP, new BlockEspScriptSlot());
         slots.put(ScriptType.ENTITY_ESP, new EntityEspScriptSlot());
-        slots.put(ScriptType.KILL_AURA, new KillAuraScriptSlot());
-        slots.put(ScriptType.HITBOX_SIZE, new HitboxSizeScriptSlot());
     }
 
     public ScriptSlot get(ScriptType type) {

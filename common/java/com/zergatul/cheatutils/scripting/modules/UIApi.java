@@ -6,8 +6,6 @@ import com.zergatul.cheatutils.ui.CustomToast;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
-import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
