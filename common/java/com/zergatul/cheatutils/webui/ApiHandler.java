@@ -72,8 +72,6 @@ public class ApiHandler implements HttpHandler {
         apis.add(new EntityEspCodeApi());
         apis.add(new ProfilesApi());
         apis.add(new DebuggingApi());
-        apis.add(new KillAuraCodeApi());
-        apis.add(new HitboxSizeCodeApi());
         apis.add(new FontsApi());
         apis.add(new ResetConfigApi());
         apis.add(new GeneralInformationApi());

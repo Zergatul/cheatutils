@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.AimAssist;
+import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.scripting.events.*;
 import com.zergatul.cheatutils.scripting.modules.PacketEvent;
 import com.zergatul.cheatutils.scripting.modules.PlayerMessageSendingEvent;
@@ -40,6 +41,7 @@ public class EventsScripting implements Module {
     private final List<PacketEventConsumer> onS2CPacket = new ArrayList<>();
 
     private final List<AimAssist.TargetPredicate> aimAssistTargetPredicates = new ArrayList<>();
+    private final List<KillAura.TargetPredicate> killAuraTargetPredicates = new ArrayList<>();
 
     private final Consumer<NetworkPacketsController.ClientPacketArgs> onClientPacketHandler = this::onClientPacket;
     private final Consumer<NetworkPacketsController.ServerPacketArgs> onServerPacketHandler = this::onServerPacket;
@@ -165,6 +167,22 @@ public class EventsScripting implements Module {
                     AimAssist.instance.setTargetPredicate(entityId -> predicates.stream().allMatch(p -> p.test(entityId)));
                 }
             });
+
+            ClientTickEndExecutor.instance.execute(() -> {
+                if (killAuraTargetPredicates.size() == 1) {
+                    KillAura.instance.setTargetPredicate(killAuraTargetPredicates.getFirst());
+                } else if (!killAuraTargetPredicates.isEmpty()) {
+                    List<KillAura.TargetPredicate> predicates = List.copyOf(killAuraTargetPredicates);
+                    KillAura.instance.setTargetPredicate(entityId -> {
+                        for (KillAura.TargetPredicate predicate : predicates) {
+                            if (!predicate.test(entityId)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                }
+            });
         }
     }
 
@@ -186,6 +204,9 @@ public class EventsScripting implements Module {
 
             AimAssist.instance.clearTargetPredicate();
             aimAssistTargetPredicates.clear();
+
+            KillAura.instance.clearTargetPredicate();
+            killAuraTargetPredicates.clear();
 
             NetworkPacketsController.instance.removeClientPacketHandler(onClientPacketHandler);
             NetworkPacketsController.instance.removeServerPacketHandler(onServerPacketHandler);
@@ -248,6 +269,10 @@ public class EventsScripting implements Module {
 
     public void addAimAssistTargetPredicate(AimAssist.TargetPredicate predicate) {
         aimAssistTargetPredicates.add(predicate);
+    }
+
+    public void addKillAuraTargetPredicate(KillAura.TargetPredicate predicate) {
+        killAuraTargetPredicates.add(predicate);
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {

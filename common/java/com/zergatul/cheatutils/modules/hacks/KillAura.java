@@ -6,7 +6,6 @@ import com.zergatul.cheatutils.configs.KillAuraConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.scripting.KillAuraFunction;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -32,7 +31,7 @@ public class KillAura implements Module {
     private long lastAttackTick;
     private Entity target;
     private final List<Entity> targets = new ArrayList<>();
-    private KillAuraFunction script;
+    private TargetPredicate targetPredicate;
 
     private KillAura() {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
@@ -46,8 +45,12 @@ public class KillAura implements Module {
         lastAttackTick = 0;
     }
 
-    public void setScript(KillAuraFunction script) {
-        this.script = script;
+    public void clearTargetPredicate() {
+        targetPredicate = null;
+    }
+
+    public void setTargetPredicate(TargetPredicate predicate) {
+        targetPredicate = predicate;
     }
 
     private void onClientTickStart() {
@@ -120,10 +123,11 @@ public class KillAura implements Module {
                 }
             }
 
-            if (config.scriptEnabled) {
-                if (script != null && !script.shouldAttack(entity.getId())) {
-                    continue;
-                }
+            if (targetPredicate != null &&
+                    ConfigStore.instance.getConfig().eventsScriptingConfig.enabled &&
+                    !targetPredicate.test(entity.getId())
+            ) {
+                continue;
             }
 
             if (config.attackAll) {
@@ -228,5 +232,10 @@ public class KillAura implements Module {
     // copied from Player.canInteractWithEntity(AABB p_329456_, double p_332906_)
     private double getEntityInteractionDistance2(LocalPlayer player, Entity entity) {
         return entity.getBoundingBox().distanceToSqr(player.getEyePosition());
+    }
+
+    @FunctionalInterface
+    public interface TargetPredicate {
+        boolean test(int entityId);
     }
 }

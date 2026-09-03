@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
+import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
@@ -219,6 +220,7 @@ public class ConfigStore {
             }
         }
 
+        EventsScripting.instance.clear();
         if (config.eventsScriptingConfig.code != null) {
             try {
                 ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.EVENTS).init(config.eventsScriptingConfig.code);
@@ -268,28 +270,6 @@ public class ConfigStore {
                         logger.error("EntityESP script for {} initialization failed", entityConfig.clazz.getName(), e);
                     }
                 }
-            }
-        }
-
-        if (config.killAuraConfig.code != null) {
-            try {
-                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.KILL_AURA).init(config.killAuraConfig.code);
-                if (!result.isSuccess()) {
-                    result.getDiagnostics().forEach(m -> logger.error("Kill Aura: {}", m.message));
-                }
-            } catch (Throwable e) {
-                logger.error("KillAura script initialization failed", e);
-            }
-        }
-
-        if (config.hitboxSizeConfig.code != null) {
-            try {
-                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.HITBOX_SIZE).init(config.hitboxSizeConfig.code);
-                if (!result.isSuccess()) {
-                    result.getDiagnostics().forEach(m -> logger.error("Hitbox Size: {}", m.message));
-                }
-            } catch (Throwable e) {
-                logger.error("HitboxSize script initialization failed", e);
             }
         }
     }

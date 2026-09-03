@@ -32,8 +32,6 @@ public class KillAuraConfig extends ModuleConfig implements Sanitizable {
     public boolean attackAll;
     public boolean autoRotate;
     public boolean doNotAttackOnItemUse;
-    public boolean scriptEnabled;
-    public String code;
 
     public KillAuraConfig() {
         overrideAttackRange = true;
@@ -62,7 +60,6 @@ public class KillAuraConfig extends ModuleConfig implements Sanitizable {
         other.attackAll = attackAll;
         other.autoRotate = autoRotate;
         other.doNotAttackOnItemUse = doNotAttackOnItemUse;
-        other.scriptEnabled = scriptEnabled;
     }
 
     public void sanitize() {

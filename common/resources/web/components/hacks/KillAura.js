@@ -1,5 +1,4 @@
 import * as http from '/http.js'
-import { handleCodeSave } from '/components/MonacoEditor.js'
 import { components } from '../../components.js'
 import { withCss } from '/components/Loader.js'
 
@@ -9,21 +8,17 @@ export function createComponent(template) {
         created() {
             http.get('/api/kill-aura').then(response => {
                 this.config = response;
-                this.code = response.code;
             });
             this.loadPriorityList();
         },
         data() {
             return {
-                code: '',
                 config: null,
                 search: null,
                 state: 'list',
                 priorityList: null,
                 priorityListFiltered: null,
-                newCustomEntry: null,
-                refs: null,
-                showRefs: false
+                newCustomEntry: null
             };
         },
         methods: {
@@ -102,23 +97,6 @@ export function createComponent(template) {
                 this.config.priorities.splice(index, 1);
                 this.update();
             },
-            saveCode() {
-                handleCodeSave('/api/kill-aura-code', this.code);
-            },
-            showApiRef() {
-                if (this.showRefs) {
-                    this.showRefs = false;
-                } else {
-                    if (this.refs) {
-                        this.showRefs = true;
-                    } else {
-                        http.get('/api/scripts-doc/KILL_AURA').then(response => {
-                            this.showRefs = true;
-                            this.refs = response;
-                        });
-                    }
-                }
-            },
             swapPriorities(index1, index2) {
                 let item = this.config.priorities[index1];
                 this.config.priorities[index1] = this.config.priorities[index2];
@@ -139,7 +117,6 @@ export function createComponent(template) {
     };
     components.add(args, 'Radio');
     components.add(args, 'SwitchCheckbox');
-    components.add(args, 'ScriptEditor');
     components.add(args, 'CodeBlock');
     return withCss(import.meta.url, args);
 }

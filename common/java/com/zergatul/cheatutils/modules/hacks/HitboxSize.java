@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.HitboxSizeConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.scripting.HitboxSizeFunction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -14,15 +13,11 @@ public class HitboxSize implements Module {
 
     public static final HitboxSize instance = new HitboxSize();
 
-    private HitboxSizeFunction script;
-
-    private HitboxSize() {
-
-    }
+    private HitboxSize() {}
 
     public AABB get(Entity entity) {
         HitboxSizeConfig config = ConfigStore.instance.getConfig().hitboxSizeConfig;
-        if (config.enabled && (!config.scriptEnabled || script == null || script.shouldApply(entity.getId()))) {
+        if (config.enabled) {
             Vec3 pos = entity.position();
             double width = entity.getBbWidth();
             double height = entity.getBbHeight();
@@ -35,10 +30,6 @@ public class HitboxSize implements Module {
         } else {
             return entity.getBoundingBox();
         }
-    }
-
-    public void setScript(HitboxSizeFunction script) {
-        this.script = script;
     }
 
     private double apply(double value, String mode, double percent, double absolute) {

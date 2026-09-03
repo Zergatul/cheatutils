@@ -206,29 +206,22 @@
             </template>
         </fieldset>
 
-        <fieldset class="flex-column">
-            <legend>
-                <switch-checkbox v-model="config.scriptEnabled" @change="update()">Custom Script</switch-checkbox>
-            </legend>
-            <template v-if="config.scriptEnabled">
-                <div class="section-description">
-                    Write script to decide if Kill Aura should target specific entity.<br>
-                    Use <b>id</b> variable to see id of the current entity.<br>
-                    Return <b>true</b> if it is ok to target current entity, return <b>false</b> if it is not.<br>
-                    Example:
-                    <CodeBlock :code='`
+        <fieldset>
+            <legend>Target Filtering</legend>
+            <div class="section-description">
+                Use the <b>Events Scripting</b> module to add custom target filters.
+                Add this example to the main script body, save it, and enable Events Scripting:
+                <CodeBlock :code='`
+                    events.modules.killAura.addTargetFilter(id => {
                         return game.entities.getName(id) != "your_friend";
-                    `'/>
-                </div>
-                <div class="actions">
-                    <button class="w8" @click="saveCode()">Save</button>
-                    <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
-                </div>
-                <script-editor v-model="code" :type="'KILL_AURA'" v-show="!showRefs"></script-editor>
-                <ul class="refs" v-show="showRefs">
-                    <li v-for="item in refs" v-html="item"></li>
-                </ul>
-            </template>
+                    });
+                `' />
+                Return <b>true</b> to allow a target candidate, or <b>false</b> to reject it.<br>
+                Targets must still pass the priorities, range, and angle checks configured above.
+                Multiple filters are combined with AND: every filter must allow the target.<br>
+                Keep callbacks fast and synchronous. Filters are inactive when Events Scripting is disabled.
+                Without filters, Kill Aura uses its normal targeting rules.
+            </div>
         </fieldset>
     </div>
 </div>

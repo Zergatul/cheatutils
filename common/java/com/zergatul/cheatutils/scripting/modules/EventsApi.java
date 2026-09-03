@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.modules.automation.AimAssist;
+import com.zergatul.cheatutils.modules.hacks.KillAura;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.scripting.*;
 import com.zergatul.cheatutils.scripting.events.*;
@@ -155,6 +156,25 @@ public class EventsApi {
 
     public static class ModuleEventsApi {
         public final AimAssistEventsApi aimAssist = new AimAssistEventsApi();
+        public final KillAuraEventsApi killAura = new KillAuraEventsApi();
+    }
+
+    public static class KillAuraEventsApi {
+
+        @MethodDescription("""
+                Filters target candidates when Kill Aura searches for a target.
+                The entity must still pass Kill Aura's configured priorities, range and angle checks.
+                Use game.entities API to work with the supplied entity id.
+                Return true to allow the candidate, or false to reject it.
+                Filters are active only while Events Scripting is enabled.
+                Register filters in the main script body. Keep callbacks fast and synchronous.
+                Example:
+                events.modules.killAura.addTargetFilter(id => game.entities.getName(id) != "your_friend");
+                """)
+        @ApiVisibility(ApiType.EVENTS)
+        public void addTargetFilter(KillAura.TargetPredicate predicate) {
+            EventsScripting.instance.addKillAuraTargetPredicate(predicate);
+        }
     }
 
     public static class AimAssistEventsApi {

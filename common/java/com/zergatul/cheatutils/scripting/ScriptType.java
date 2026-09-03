@@ -78,18 +78,6 @@ public enum ScriptType {
                     .setScriptClassName("EntityEspScript")
                     .setModuleName("Entity ESP")),
 
-    KILL_AURA(
-            new Builder()
-                    .setInterface(KillAuraFunction.class)
-                    .setScriptClassName("KillAuraScript")
-                    .setModuleName("Kill Aura")),
-
-    HITBOX_SIZE(
-            new Builder()
-                    .setInterface(HitboxSizeFunction.class)
-                    .setScriptClassName("HitboxSizeScript")
-                    .setModuleName("Hitbox Size")),
-
     EXPR_EVAL(
             new Builder()
                     .setApis(ApiType.ACTION, ApiType.UPDATE)

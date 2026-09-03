@@ -33,11 +33,9 @@ Each script type has its own signature, frequency, variables, return value, and 
 - `OVERLAY`: frame-based text display.
 - `BLOCK_AUTOMATION`: tick-based logic called once per candidate block.
 - `VILLAGER_ROLLER`: trade filtering for Villager Roller.
-- `EVENTS`: one-time event handler registration.
+- `EVENTS`: one-time event handler and module target-filter registration.
 - `BLOCK_ESP`: per-block ESP visual decisions.
 - `ENTITY_ESP`: per-entity ESP visual decisions.
-- `KILL_AURA`: target predicate for Kill Aura.
-- `HITBOX_SIZE`: target predicate for Hitbox Size.
 
 Read the script-type documentation resource before writing code for a specific type.
 
