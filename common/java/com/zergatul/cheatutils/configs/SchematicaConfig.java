@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class SchematicaConfig extends BlockPlacerConfig implements ValidatableConfig {
+public class SchematicaConfig extends BlockPlacerConfig implements Sanitizable {
 
     public boolean renderBlocks;
     public boolean shadeBlocks;
@@ -43,13 +43,13 @@ public class SchematicaConfig extends BlockPlacerConfig implements ValidatableCo
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         missingBlockTracersMaxDistance = MathUtils.clamp(missingBlockTracersMaxDistance, 1, 1000);
         missingBlockCubesMaxDistance = MathUtils.clamp(missingBlockCubesMaxDistance, 1, 1000);
         wrongBlockTracersMaxDistance = MathUtils.clamp(wrongBlockTracersMaxDistance, 1, 1000);
         wrongBlockCubesMaxDistance = MathUtils.clamp(wrongBlockCubesMaxDistance, 1, 1000);
         placementRate = MathUtils.clamp(placementRate, 1, 100);
-        super.validate();
+        super.sanitize();
     }
 
     public static class Create {

@@ -3,6 +3,8 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ElytraHackConfig;
 
+import java.util.function.Consumer;
+
 @SuppressWarnings("unused")
 public class ElytraHackApi extends ModuleApi<ElytraHackConfig> {
 
@@ -19,24 +21,19 @@ public class ElytraHackApi extends ModuleApi<ElytraHackConfig> {
     }
 
     public void setMaxSpeed(double speed) {
-        var config = getConfig();
-        getConfig().maxSpeed = speed;
-        config.validate();
-        ConfigStore.instance.requestWrite();
+        update(config -> config.maxSpeed = speed);
     }
 
     public void setVerticalAcceleration(double acceleration) {
-        var config = getConfig();
-        getConfig().vanillaFlyVerticalAcceleration = acceleration;
-        config.validate();
-        ConfigStore.instance.requestWrite();
+        update(config -> config.vanillaFlyVerticalAcceleration = acceleration);
     }
 
     public void setHorizontalAcceleration(double acceleration) {
-        var config = getConfig();
-        getConfig().vanillaFlyHorizontalAcceleration = acceleration;
-        config.validate();
-        ConfigStore.instance.requestWrite();
+        update(config -> config.vanillaFlyHorizontalAcceleration = acceleration);
+    }
+
+    private void update(Consumer<ElytraHackConfig> update) {
+        ConfigStore.updateFromApi(config -> config.elytraHackConfig, update);
     }
 
     @Override

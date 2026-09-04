@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class PerformanceConfig implements ValidatableConfig, ModuleStateProvider {
+public class PerformanceConfig implements Sanitizable, ModuleStateProvider {
 
     public boolean limitBackgroundWindowFps;
     public int backgroundWindowFps;
@@ -12,7 +12,7 @@ public class PerformanceConfig implements ValidatableConfig, ModuleStateProvider
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         backgroundWindowFps = MathUtils.clamp(backgroundWindowFps, 1, 120);
     }
 

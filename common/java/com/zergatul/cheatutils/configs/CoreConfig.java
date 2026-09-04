@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class CoreConfig implements ValidatableConfig {
+public class CoreConfig implements Sanitizable {
 
     public int port;
 
@@ -11,7 +11,7 @@ public class CoreConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         port = MathUtils.clamp(port, 1, 65535);
     }
 }

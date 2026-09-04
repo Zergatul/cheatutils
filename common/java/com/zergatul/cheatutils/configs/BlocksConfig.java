@@ -4,11 +4,12 @@ import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.GsonSkip;
 import com.zergatul.cheatutils.modules.esp.BlockFinder;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class BlocksConfig implements ModuleStateProvider {
+public class BlocksConfig implements ModuleStateProvider, Sanitizable {
 
     private ImmutableList<BlockEspConfig> configs = new ImmutableList<>();
 
@@ -77,5 +78,13 @@ public class BlocksConfig implements ModuleStateProvider {
             }
         }
         return map;
+    }
+
+    @Override
+    public void sanitize() {
+        for (BlockEspConfig config : configs) {
+            config.blocks = config.blocks.removeIf(block -> block == null || block == Blocks.AIR);
+        }
+        configs = configs.removeIf(config -> config.blocks.isEmpty());
     }
 }

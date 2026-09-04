@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.utils.MathUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BlockPlacerConfig extends ModuleConfig implements ValidatableConfig {
+public abstract class BlockPlacerConfig extends ModuleConfig implements Sanitizable {
 
     public double maxRange;
     public int[] autoSelectSlots;
@@ -29,12 +29,12 @@ public abstract class BlockPlacerConfig extends ModuleConfig implements Validata
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         maxRange = MathUtils.clamp(maxRange, 1, 10);
-        validateAutoSelectSlots();
+        sanitizeAutoSelectSlots();
     }
 
-    private void validateAutoSelectSlots() {
+    private void sanitizeAutoSelectSlots() {
         if (autoSelectSlots == null) {
             autoSelectSlots = new int[0];
         } else {

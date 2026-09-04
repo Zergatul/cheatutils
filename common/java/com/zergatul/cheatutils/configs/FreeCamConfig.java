@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class FreeCamConfig implements ValidatableConfig {
+public class FreeCamConfig implements Sanitizable {
     public double acceleration;
     public double maxSpeed;
     public double slowdownFactor;
@@ -18,7 +18,7 @@ public class FreeCamConfig implements ValidatableConfig {
     }
 
     @Override
-    public void validate() {
+    public void sanitize() {
         acceleration = MathUtils.clamp(acceleration, 5, 500);
         maxSpeed = MathUtils.clamp(maxSpeed, 5, 500);
         slowdownFactor = MathUtils.clamp(slowdownFactor, 1e-9, 0.5);

@@ -5,6 +5,8 @@ import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
 
+import java.util.function.Consumer;
+
 public class MovementApi {
 
     public boolean isSpeedMultiplierEnabled() {
@@ -19,17 +21,12 @@ public class MovementApi {
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleSpeedMultiplier() {
-        var config = getConfig();
-        config.scaleInputVector = !config.scaleInputVector;
-        ConfigStore.instance.requestWrite();
+        update(config -> config.scaleInputVector = !config.scaleInputVector);
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void setSpeedMultiplierFactor(double value) {
-        var config = getConfig();
-        config.inputVectorFactor = value;
-        config.validate();
-        ConfigStore.instance.requestWrite();
+        update(config -> config.inputVectorFactor = value);
     }
 
     public boolean isOverrideJumpHeightEnabled() {
@@ -51,10 +48,11 @@ public class MovementApi {
 
     @ApiVisibility(ApiType.UPDATE)
     public void setJumpFactor(double value) {
-        var config = getConfig();
-        config.jumpHeightFactor = value;
-        config.validate();
-        ConfigStore.instance.requestWrite();
+        update(config -> config.jumpHeightFactor = value);
+    }
+
+    private void update(Consumer<MovementHackConfig> update) {
+        ConfigStore.updateFromApi(config -> config.movementHackConfig, update);
     }
 
     private MovementHackConfig getConfig() {

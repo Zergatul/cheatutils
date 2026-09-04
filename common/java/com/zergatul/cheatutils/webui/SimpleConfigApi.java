@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ValidatableConfig;
+import com.zergatul.cheatutils.configs.Sanitizable;
 import org.apache.http.MethodNotSupportedException;
 
 public abstract class SimpleConfigApi<T> extends ApiBase {
@@ -28,8 +28,8 @@ public abstract class SimpleConfigApi<T> extends ApiBase {
     public String post(String body) throws MethodNotSupportedException {
         T config = gson.fromJson(body, clazz);
         if (config != null) {
-            if (config instanceof ValidatableConfig validatableConfig) {
-                validatableConfig.validate();
+            if (config instanceof Sanitizable sanitizable) {
+                sanitizable.sanitize();
             }
             setConfig(config);
             ConfigStore.instance.requestWrite();

@@ -67,6 +67,10 @@ public class ImmutableList<E> implements Iterable<E> {
         return (E) array[index];
     }
 
+    public boolean isEmpty() {
+        return array.length == 0;
+    }
+
     @SuppressWarnings("unchecked")
     public int indexOf(Predicate<E> predicate) {
         for (int i = 0; i < array.length; i++) {
