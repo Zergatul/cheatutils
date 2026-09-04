@@ -16,8 +16,8 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
-    accessTransformer = 'META-INF/accesstransformer.cfg'
-    //reobf = false
+    accessTransformer.setFrom(file('src/main/resources/META-INF/accesstransformer.cfg'))
+
     runs {
         client {
             workingDir = layout.projectDirectory.dir('run')
@@ -54,7 +54,17 @@ sourceSets {
             srcDir '../common/resources'
         }
     }
+
+    compatStubs {
+        java {
+            srcDir '../common/compat-stubs/java'
+        }
+
+        compileClasspath = configurations.compileClasspath
+    }
 }
+
+sourceSets.main.compileClasspath += sourceSets.compatStubs.output
 
 dependencies {
     implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
@@ -77,8 +87,6 @@ tasks.named('processResources', ProcessResources).configure {
 
 jar {
     exclude("com/zergatul/cheatutils/utils/mappings/*")
-    exclude("net/caffeinemc/**")
-    exclude("net/irisshaders/**")
 }
 
 // Example for how to get properties into the manifest for reading at runtime.

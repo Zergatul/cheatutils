@@ -87,7 +87,17 @@ sourceSets {
             srcDir '../common/resources'
         }
     }
+
+    compatStubs {
+        java {
+            srcDir '../common/compat-stubs/java'
+        }
+
+        compileClasspath = configurations.compileClasspath
+    }
 }
+
+sourceSets.main.compileClasspath += sourceSets.compatStubs.output
 
 // Sets up a dependency configuration called 'localRuntime'.
 // This configuration should be used instead of 'runtimeOnly' to declare
@@ -151,8 +161,6 @@ tasks.withType(ProcessResources).configureEach {
 jar {
     exclude("com/zergatul/cheatutils/utils/mappings/*")
     exclude("com/zergatul/cheatutils/mixins/common/MixinCamera.class")
-    exclude("net/caffeinemc/**")
-    exclude("net/irisshaders/**")
 }
 
 tasks.withType(JavaCompile).configureEach {
