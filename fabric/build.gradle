@@ -21,6 +21,7 @@ loom {
 
     runs {
         configureEach {
+            // use runClient gradle task to verify mixins in dev environment
             systemProperties.put("mixin.debug.countInjections", "true")
             systemProperties.put("mixin.debug.verbose", "true")
             systemProperties.put("cheatutils.strictMixins", "true")
