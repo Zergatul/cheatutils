@@ -21,7 +21,7 @@ java {
 }
 
 minecraft {
-    accessTransformer = 'META-INF/forge_at.cfg'
+    accessTransformer.setFrom(file('src/main/resources/META-INF/forge_at.cfg'))
     runs {
         client {
             workingDir = layout.projectDirectory.dir('run')
@@ -61,7 +61,17 @@ sourceSets {
             srcDir generatedMixinsConfigDir
         }
     }
+
+    compatStubs {
+        java {
+            srcDir '../common/compat-stubs/java'
+        }
+
+        compileClasspath = configurations.compileClasspath
+    }
 }
+
+sourceSets.main.compileClasspath += sourceSets.compatStubs.output
 
 dependencies {
     implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
@@ -88,8 +98,6 @@ tasks.named('jar', Jar) {
     archiveFileName = "$mod_id-$modVersion-forge-${minecraft_version}.jar"
 
     includeEmptyDirs = false
-    exclude("net/caffeinemc/**")
-    exclude("net/irisshaders/**")
 
     manifest {
         attributes([
