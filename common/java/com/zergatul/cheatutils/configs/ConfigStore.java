@@ -18,6 +18,7 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import com.zergatul.scripting.DiagnosticMessage;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -218,7 +219,7 @@ public class ConfigStore {
 
                 if (blockConfig.code != null) {
                     try {
-                        String identifier = Registries.BLOCKS.getKey(blockConfig.blocks.stream().findFirst().orElseThrow()).toString();
+                        String identifier = BuiltInRegistries.BLOCK.getKey(blockConfig.blocks.stream().findFirst().orElseThrow()).toString();
                         initializeScript(ScriptType.BLOCK_ESP, identifier, blockConfig.code);
                     } catch (Throwable e) {
                         ScriptRuntimeFailureHandler.instance.reportInitializationFailure(new ScriptRef(ScriptType.BLOCK_ESP), e);
