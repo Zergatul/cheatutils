@@ -4,16 +4,17 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import org.apache.logging.log4j.LogManager;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 public class NetworkPacketsController {
 
     public static final NetworkPacketsController instance = new NetworkPacketsController();
 
-    private final List<Consumer<ServerPacketArgs>> serverPacketHandlers = new ArrayList<>();
-    private final List<Consumer<ClientPacketArgs>> clientPacketHandlers = new ArrayList<>();
+    // Script crash cleanup can detach handlers while the network thread is dispatching a packet.
+    private final List<Consumer<ServerPacketArgs>> serverPacketHandlers = new CopyOnWriteArrayList<>();
+    private final List<Consumer<ClientPacketArgs>> clientPacketHandlers = new CopyOnWriteArrayList<>();
     private volatile Connection connection;
     private volatile boolean handlersStopped;
 
@@ -98,7 +99,6 @@ public class NetworkPacketsController {
             ServerPacketArgs args = new ServerPacketArgs();
             args.packet = packet;
 
-            // do we need synchronized here???
             for (Consumer<ServerPacketArgs> handler : serverPacketHandlers) {
                 handler.accept(args);
                 if (args.skip) {
@@ -115,7 +115,6 @@ public class NetworkPacketsController {
             ClientPacketArgs args = new ClientPacketArgs();
             args.packet = packet;
 
-            // do we need synchronized here???
             for (Consumer<ClientPacketArgs> handler : clientPacketHandlers) {
                 handler.accept(args);
                 if (args.skip) {

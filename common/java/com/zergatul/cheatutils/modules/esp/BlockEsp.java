@@ -3,12 +3,16 @@ package com.zergatul.cheatutils.modules.esp;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
+import com.zergatul.cheatutils.scripting.ScriptActivation;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import net.minecraft.core.BlockPos;
@@ -29,7 +33,7 @@ public class BlockEsp {
     private final List<BlockPos> bbList = new ArrayList<>();
     private final List<BlockPos> tracerList = new ArrayList<>();
     private final List<BlockPos> overlayList = new ArrayList<>();
-    private final Map<BlockEspConfig, BlockEspConsumer> scripts = new IdentityHashMap<>();
+    private final Map<BlockEspConfig, ScriptActivation<BlockEspConsumer>> scripts = new IdentityHashMap<>();
     private boolean enabled = true;
 
     private BlockEsp() {
@@ -61,16 +65,22 @@ public class BlockEsp {
         // Have to run from the main thread, since BlockEsp module doesn't snapshot scripts
         // and if update happens mid-frame it can cause NullReference exception.
         ClientTickEndExecutor.instance.execute(() -> {
-            if (script == null) {
-                scripts.remove(config);
-            } else {
-                scripts.put(config, script);
+            ScriptActivation<BlockEspConsumer> previous = scripts.remove(config);
+            if (previous != null) {
+                previous.deactivate();
+            }
+            if (script != null) {
+                String identifier = Registries.BLOCKS.getKey(config.blocks.stream().findFirst().orElseThrow()).toString();
+                scripts.put(config, new ScriptActivation<>(new ScriptRef(ScriptType.BLOCK_ESP, identifier), script));
             }
         });
     }
 
     public void clearScripts() {
-        ClientTickEndExecutor.instance.execute(scripts::clear);
+        ClientTickEndExecutor.instance.execute(() -> {
+            scripts.values().forEach(ScriptActivation::deactivate);
+            scripts.clear();
+        });
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -121,8 +131,8 @@ public class BlockEsp {
             tracerList.clear();
             overlayList.clear();
 
-            BlockEspConsumer script = scripts.get(config);
-            if (config.scriptEnabled && script != null) {
+            ScriptActivation<BlockEspConsumer> script = scripts.get(config);
+            if (config.scriptEnabled && script != null && script.isActive()) {
                 BlockScriptResult result = new BlockScriptResult();
                 BlockEspEvent blockEspEvent = new BlockEspEvent(result);
                 for (BlockPos pos : set) {
@@ -136,7 +146,13 @@ public class BlockEsp {
                     }
 
                     result.reset();
-                    script.accept(new BlockPosWrapper(pos), blockEspEvent);
+                    if (!script.run("block rendering", () -> script.program.accept(new BlockPosWrapper(pos), blockEspEvent))) {
+                        // Discard partial scripted output; normal configured visuals resume next frame.
+                        bbList.clear();
+                        tracerList.clear();
+                        overlayList.clear();
+                        break;
+                    }
 
                     if (distanceSqr < boundingBoxMaxDistanceSqr && result.shouldDrawOutline(config.drawBoundingBox)) {
                         bbList.add(pos);

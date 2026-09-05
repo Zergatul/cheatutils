@@ -3,6 +3,8 @@ package com.zergatul.cheatutils.scripting.modules;
 import com.zergatul.cheatutils.concurrent.InGameTickEndExecutor;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
+import com.zergatul.cheatutils.scripting.ScriptActivation;
+import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.scripting.MethodDescription;
 
 public class DelayedApi {
@@ -17,6 +19,13 @@ public class DelayedApi {
             return;
         }
 
-        InGameTickEndExecutor.instance.waitTicks(ticks).thenRun(action);
+        ScriptActivation<?> owner = ScriptActivation.findOwner(action);
+        InGameTickEndExecutor.instance.waitTicks(ticks).thenRun(() -> {
+            if (owner == null) {
+                action.run();
+            } else {
+                owner.run("delayed callback", action);
+            }
+        }).whenComplete((_, throwable) -> ScriptRuntimeFailureHandler.instance.report("Delayed script callback failed.", throwable));
     }
 }

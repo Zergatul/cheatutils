@@ -10,7 +10,7 @@ import com.zergatul.cheatutils.configs.KeyBindingsConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
-import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
+import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
@@ -34,7 +34,7 @@ public class KeyBindings implements Module {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final KeyMapping[] keys;
-    private final Map<String, AsyncRunnable> scripts;
+    private final Map<String, ScriptActivation<AsyncRunnable>> scripts;
     private final Optional<AsyncRunnable>[] actions;
 
     private KeyBindings() {
@@ -58,6 +58,7 @@ public class KeyBindings implements Module {
     }
 
     public void clear() {
+        scripts.values().forEach(ScriptActivation::deactivate);
         scripts.clear();
         Arrays.setAll(actions, _ -> Optional.empty());
         slot().clear();
@@ -66,7 +67,7 @@ public class KeyBindings implements Module {
     public List<Script> list() {
         return ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts
                 .stream()
-                .map(entry -> new Script(entry.name, entry.code, scripts.get(entry.name)))
+                .map(entry -> new Script(entry.name, entry.code, getAction(entry.name)))
                 .toList();
     }
 
@@ -75,7 +76,7 @@ public class KeyBindings implements Module {
                 .stream()
                 .filter(entry -> entry.name.equals(name))
                 .findFirst()
-                .map(entry -> new Script(entry.name, entry.code, scripts.get(entry.name)))
+                .map(entry -> new Script(entry.name, entry.code, getAction(entry.name)))
                 .orElse(null);
     }
 
@@ -152,7 +153,6 @@ public class KeyBindings implements Module {
             }
         }
 
-        scripts.remove(oldName);
         slot().remove(oldName);
         ScriptSaveResult result = slot().init(newName, code);
         if (!result.isSuccess()) {
@@ -164,7 +164,6 @@ public class KeyBindings implements Module {
 
     public void remove(String name) {
         assign(-1, name);
-        scripts.remove(name);
         slot().remove(name);
         ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.removeIf(entry -> entry.name.equals(name));
     }
@@ -180,7 +179,7 @@ public class KeyBindings implements Module {
         }
 
         if (0 <= index && index < KeyBindingsConfig.KeysCount) {
-            AsyncRunnable compiled = scripts.get(name);
+            AsyncRunnable compiled = getAction(name);
             if (compiled == null) {
                 actions[index] = Optional.empty();
                 bindings[index] = null;
@@ -192,13 +191,20 @@ public class KeyBindings implements Module {
     }
 
     public void setScript(String name, @Nullable AsyncRunnable script) {
-        if (script == null) {
-            scripts.remove(name);
-        } else {
-            scripts.put(name, script);
+        ScriptActivation<AsyncRunnable> previous = scripts.remove(name);
+        if (previous != null) {
+            previous.deactivate();
+        }
+        if (script != null) {
+            scripts.put(name, new ScriptActivation<>(new ScriptRef(ScriptType.KEYBINDING, name), script));
         }
 
         refreshAssignments(name);
+    }
+
+    private @Nullable AsyncRunnable getAction(String name) {
+        ScriptActivation<AsyncRunnable> activation = scripts.get(name);
+        return activation == null ? null : () -> activation.execute(activation.program);
     }
 
     private void validateNewScript(@Nullable String name, @Nullable String code) {
@@ -214,7 +220,7 @@ public class KeyBindings implements Module {
     }
 
     private void refreshAssignments(String name) {
-        AsyncRunnable script = scripts.get(name);
+        AsyncRunnable script = getAction(name);
         @Nullable String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
         for (int i = 0; i < bindings.length; i++) {
             String binding = bindings[i];
@@ -236,18 +242,7 @@ public class KeyBindings implements Module {
                 if (action.isPresent()) {
                     @Nullable String name = ConfigStore.instance.getConfig().keyBindingsConfig.bindings[i];
                     ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, Objects.requireNonNull(name));
-                    try {
-                        ScriptExecutionManager.instance.execute(
-                                ref,
-                                action.get(),
-                                throwable -> ScriptRuntimeFailureHandler.instance.report(
-                                        "Key binding script '" + ref.identifier() + "' failed.",
-                                        throwable));
-                    } catch (Throwable e) {
-                        ScriptRuntimeFailureHandler.instance.throwIfFailure(
-                                "Key binding script '" + ref.identifier() + "' failed.",
-                                e);
-                    }
+                    ScriptExecutionManager.instance.execute(ref, action.get());
                 }
             }
         }

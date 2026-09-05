@@ -7,6 +7,9 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.VillagerRollerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.scripting.ScriptActivation;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.utils.EntityInteraction;
 import com.zergatul.cheatutils.utils.EntityInteractionPlan;
 import com.zergatul.cheatutils.utils.EntityInteractionResult;
@@ -58,7 +61,7 @@ public class VillagerRoller implements Module {
     private int maxLevel;
     private int minPrice;
     private int maxPrice;
-    private Runnable script;
+    private volatile ScriptActivation<Runnable> script;
 
     private VillagerRoller() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
@@ -73,6 +76,10 @@ public class VillagerRoller implements Module {
     }
 
     public void start() {
+        if (script != null && !script.isActive()) {
+            stopReason = "Script failed; save it to re-enable";
+            return;
+        }
         if (!active) {
             active = true;
             state = State.SETUP_WAITING_FOR_LECTERN_PLACE;
@@ -110,7 +117,11 @@ public class VillagerRoller implements Module {
     }
 
     public void setScript(Runnable script) {
-        this.script = script;
+        ScriptActivation<Runnable> previous = this.script;
+        if (previous != null) {
+            previous.deactivate();
+        }
+        this.script = script == null ? null : new ScriptActivation<>(new ScriptRef(ScriptType.VILLAGER_ROLLER), script);
     }
 
     public boolean isBreakingBlock() {
@@ -326,9 +337,12 @@ public class VillagerRoller implements Module {
                     this.minPrice = Math.min(this.minPrice, 64);
                     this.maxPrice = Math.min(this.maxPrice, 64);
 
-                    Runnable script = this.script;
+                    ScriptActivation<Runnable> script = this.script;
                     if (script != null) {
-                        script.run();
+                        if (!script.run("trade evaluation", script.program)) {
+                            stop("Script execution stopped");
+                            return;
+                        }
                     }
 
                     if (!active) {
