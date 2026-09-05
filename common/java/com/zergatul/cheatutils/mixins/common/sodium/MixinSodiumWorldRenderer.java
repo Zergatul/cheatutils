@@ -14,11 +14,11 @@ public abstract class MixinSodiumWorldRenderer {
             at = @At("HEAD"),
             argsOnly = true,
             ordinal = 0)
-    private boolean onOverrideIsSpectator(boolean spectator) {
+    private boolean onOverrideUseOcclusionCulling(boolean useOcclusionCulling) {
         if (FreeCam.instance.isActive()) {
-            return true;
+            return false;
         } else {
-            return spectator;
+            return useOcclusionCulling;
         }
     }
 }
