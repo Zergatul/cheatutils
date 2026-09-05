@@ -13,6 +13,9 @@ import com.zergatul.cheatutils.configs.StatusOverlayConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.RenderTargets;
+import com.zergatul.cheatutils.scripting.ScriptActivation;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.ui.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -36,7 +39,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
     private static final Minecraft mc = Minecraft.getInstance();
     private final Map<Align, List<AlignedText>> texts = new HashMap<>();
     private final List<FreeText> freeTexts = new ArrayList<>();
-    private Runnable script;
+    private volatile ScriptActivation<Runnable> script;
     private HorizontalAlign hAlign;
     private VerticalAlign vAlign;
     private int backgroundColor;
@@ -63,7 +66,11 @@ public class StatusOverlay implements Module, FontBackendHolder {
     }
 
     public void setScript(Runnable script) {
-        this.script = script;
+        ScriptActivation<Runnable> previous = this.script;
+        if (previous != null) {
+            previous.deactivate();
+        }
+        this.script = script == null ? null : new ScriptActivation<>(new ScriptRef(ScriptType.OVERLAY), script);
     }
 
     public void addText(StylizedText message) {
@@ -100,7 +107,8 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
 
         StatusOverlayConfig config = ConfigStore.instance.getConfig().statusOverlayConfig;
-        if (!config.enabled || script == null) {
+        ScriptActivation<Runnable> script = this.script;
+        if (!config.enabled || script == null || !script.isActive()) {
             return;
         }
 
@@ -130,7 +138,11 @@ public class StatusOverlay implements Module, FontBackendHolder {
         hAlign = HorizontalAlign.RIGHT;
         vAlign = VerticalAlign.BOTTOM;
         backgroundColor = DEFAULT_BACKGROUND;
-        script.run();
+        if (!script.run("overlay rendering", script.program)) {
+            texts.values().forEach(List::clear);
+            freeTexts.clear();
+            return;
+        }
 
         if (texts.values().stream().allMatch(List::isEmpty) && freeTexts.isEmpty()) {
             return;

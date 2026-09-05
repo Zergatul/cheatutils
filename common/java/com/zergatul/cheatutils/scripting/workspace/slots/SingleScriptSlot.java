@@ -42,16 +42,17 @@ public abstract class SingleScriptSlot extends ScriptSlot {
             throw new IllegalStateException();
         }
 
+        // initial code loaded from config may contain errors
+        instance.code = code;
+        ScriptExecutionManager.instance.cancel(instance.ref);
+        applyScript(null);
+
         if (code == null || code.isEmpty()) {
             return ScriptSaveResult.success();
         }
 
-        // initial code loaded from config may contain errors
-        instance.code = code;
-
         CompilationResult compilationResult = compileScript(code);
         if (compilationResult.getProgram() != null) {
-            ScriptExecutionManager.instance.cancel(instance.ref);
             applyScript(compilationResult.getProgram());
             return ScriptSaveResult.success();
         } else {

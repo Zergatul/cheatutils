@@ -46,11 +46,13 @@ public class KillAura implements Module {
     }
 
     public void clearTargetPredicate() {
-        targetPredicate = null;
+        setTargetPredicate(null);
     }
 
     public void setTargetPredicate(TargetPredicate predicate) {
         targetPredicate = predicate;
+        target = null;
+        targets.clear();
     }
 
     private void onClientTickStart() {
@@ -123,11 +125,12 @@ public class KillAura implements Module {
                 }
             }
 
-            if (targetPredicate != null &&
-                    ConfigStore.instance.getConfig().eventsScriptingConfig.enabled &&
-                    !targetPredicate.test(entity.getId())
-            ) {
-                continue;
+            TargetPredicate predicate = targetPredicate;
+            if (predicate != null && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
+                boolean matches = predicate.test(entity.getId());
+                // Failure replaces the predicate and clears pending attacks; abort this selection pass too.
+                if (targetPredicate != predicate) return;
+                if (!matches) continue;
             }
 
             if (config.attackAll) {

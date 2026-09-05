@@ -8,23 +8,27 @@ import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.controllers.*;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.esp.LightLevel;
-import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
+import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
+import com.zergatul.scripting.DiagnosticMessage;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -153,29 +157,44 @@ public class ConfigStore {
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                KeyBindings.instance.add(toggleEspName, "esp.toggle();", false);
+                List<DiagnosticMessage> diagnostics = KeyBindings.instance.add(toggleEspName, "esp.toggle();", false);
+                if (!diagnostics.isEmpty()) {
+                    ScriptRuntimeFailureHandler.instance.reportCompilationFailure(
+                            new ScriptRef(ScriptType.KEYBINDING, toggleEspName), diagnostics);
+                }
                 //KeyBindings.instance.getKeyMappingByIndex(0).setKey(InputConstants.getKey("key.keyboard.backslash"));
                 KeyBindings.instance.assign(0, toggleEspName);
             } catch (Throwable e) {
-                logger.error("Toggle ESP script initialization failed", e);
+                ScriptRuntimeFailureHandler.instance.reportInitializationFailure(
+                        new ScriptRef(ScriptType.KEYBINDING, toggleEspName), e);
             }
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
+                List<DiagnosticMessage> diagnostics = KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
+                if (!diagnostics.isEmpty()) {
+                    ScriptRuntimeFailureHandler.instance.reportCompilationFailure(
+                            new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), diagnostics);
+                }
                 KeyBindings.instance.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
                 KeyBindings.instance.assign(1, toggleFreeCamName);
             } catch (Throwable e) {
-                logger.error("Toggle FreeCam script initialization failed", e);
+                ScriptRuntimeFailureHandler.instance.reportInitializationFailure(
+                        new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), e);
             }
         } else {
             ArrayList<KeyBindingScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.keyBindingScriptsConfig.scripts);
             config.keyBindingScriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    KeyBindings.instance.add(s.name, s.code, true);
+                    List<DiagnosticMessage> diagnostics = KeyBindings.instance.add(s.name, s.code, true);
+                    if (!diagnostics.isEmpty()) {
+                        ScriptRuntimeFailureHandler.instance.reportCompilationFailure(
+                                new ScriptRef(ScriptType.KEYBINDING, s.name), diagnostics);
+                    }
                 } catch (Throwable e) {
-                    logger.error("KeyBinding script '{}' initialization failed", s.name, e);
+                    ScriptRuntimeFailureHandler.instance.reportInitializationFailure(
+                            new ScriptRef(ScriptType.KEYBINDING, s.name), e);
                 }
             });
 
@@ -187,50 +206,10 @@ public class ConfigStore {
             }
         }
 
-        if (config.statusOverlayConfig.code != null) {
-            try {
-                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.OVERLAY).init(config.statusOverlayConfig.code);
-                if (!result.isSuccess()) {
-                    result.getDiagnostics().forEach(m -> logger.error("Status Overlay: {}", m.message));
-                }
-            } catch (Throwable e) {
-                logger.error("StatusOverlay script initialization failed", e);
-            }
-        }
-
-        if (config.blockAutomationConfig.code != null) {
-            try {
-                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_AUTOMATION).init(config.blockAutomationConfig.code);
-                if (!result.isSuccess()) {
-                    result.getDiagnostics().forEach(m -> logger.error("Block Automation: {}", m.message));
-                }
-            } catch (Throwable e) {
-                logger.error("BlockAutomation script initialization failed", e);
-            }
-        }
-
-        if (config.villagerRollerConfig.code != null) {
-            try {
-                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.VILLAGER_ROLLER).init(config.villagerRollerConfig.code);
-                if (!result.isSuccess()) {
-                    result.getDiagnostics().forEach(m -> logger.error("Villager Roller: {}", m.message));
-                }
-            } catch (Throwable e) {
-                logger.error("VillagerRoller script initialization failed", e);
-            }
-        }
-
-        EventsScripting.instance.clear();
-        if (config.eventsScriptingConfig.code != null) {
-            try {
-                ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.EVENTS).init(config.eventsScriptingConfig.code);
-                if (!result.isSuccess()) {
-                    result.getDiagnostics().forEach(m -> logger.error("Events Scripting: {}", m.message));
-                }
-            } catch (Throwable e) {
-                logger.error("EventScripting script initialization failed", e);
-            }
-        }
+        initializeScript(ScriptType.OVERLAY, null, config.statusOverlayConfig.code);
+        initializeScript(ScriptType.BLOCK_AUTOMATION, null, config.blockAutomationConfig.code);
+        initializeScript(ScriptType.VILLAGER_ROLLER, null, config.villagerRollerConfig.code);
+        initializeScript(ScriptType.EVENTS, null, config.eventsScriptingConfig.code);
 
         ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP)).clear();
         if (config.blocks != null && config.blocks.getBlockConfigs() != null) {
@@ -242,12 +221,9 @@ public class ConfigStore {
                 if (blockConfig.code != null) {
                     try {
                         String identifier = Registries.BLOCKS.getKey(blockConfig.blocks.stream().findFirst().orElseThrow()).toString();
-                        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP).init(identifier, blockConfig.code);
-                        if (!result.isSuccess()) {
-                            result.getDiagnostics().forEach(m -> logger.error("Block ESP for {}: {}", blockConfig.blocks.stream().findFirst().get().getName(), m.message));
-                        }
+                        initializeScript(ScriptType.BLOCK_ESP, identifier, blockConfig.code);
                     } catch (Throwable e) {
-                        logger.error("BlockESP script for '{}' initialization failed", blockConfig.blocks.stream().findFirst().get().getName(), e);
+                        ScriptRuntimeFailureHandler.instance.reportInitializationFailure(new ScriptRef(ScriptType.BLOCK_ESP), e);
                     }
                 }
             }
@@ -262,15 +238,24 @@ public class ConfigStore {
 
                 if (entityConfig.code != null) {
                     try {
-                        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP).init(entityConfig.clazz.getName(), entityConfig.code);
-                        if (!result.isSuccess()) {
-                            result.getDiagnostics().forEach(m -> logger.error("Entity ESP for {}: {}", entityConfig.clazz.getName(), m.message));
-                        }
+                        initializeScript(ScriptType.ENTITY_ESP, entityConfig.clazz.getName(), entityConfig.code);
                     } catch (Throwable e) {
-                        logger.error("EntityESP script for {} initialization failed", entityConfig.clazz.getName(), e);
+                        ScriptRuntimeFailureHandler.instance.reportInitializationFailure(new ScriptRef(ScriptType.ENTITY_ESP), e);
                     }
                 }
             }
+        }
+    }
+
+    private void initializeScript(ScriptType type, @Nullable String identifier, @Nullable String code) {
+        ScriptRef ref = new ScriptRef(type, identifier);
+        try {
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(type).init(identifier, code);
+            if (!result.isSuccess()) {
+                ScriptRuntimeFailureHandler.instance.reportCompilationFailure(ref, result.getDiagnostics());
+            }
+        } catch (Throwable e) {
+            ScriptRuntimeFailureHandler.instance.reportInitializationFailure(ref, e);
         }
     }
 

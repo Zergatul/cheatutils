@@ -19,21 +19,26 @@ Use `EVENTS` scripts to attach event handlers that react to game events, chat, p
 - Existing module help often provides snippets that users can paste at the end of the Events Scripting script.
 - Avoid accidentally pasting the same handler block twice unless duplicate behavior is intended.
 
-## Kill Aura target filters
+## Module target filters
 
-Register filters in the main script body:
+Register Aim Assist and Kill Aura filters in the main script body:
 
 ```java
+events.modules.aimAssist.addTargetFilter(id => {
+    return game.entities.getType(id) == "minecraft:player";
+});
+
 events.modules.killAura.addTargetFilter(id => {
     return game.entities.getName(id) != "your_friend";
 });
 ```
 
 - Return true to allow the candidate or false to reject it.
-- Targets must still pass Kill Aura's configured priorities, range, and angle checks.
-- Multiple filters combine with AND and stop at the first rejection.
-- Filters are inactive while Events Scripting is disabled; without filters, normal targeting applies.
+- Targets must still pass the module's normal priority, range, angle, and validity checks.
+- Multiple filters for the same module combine with AND and stop at the first rejection.
+- Turning Events Scripting off makes its filters inactive; without filters, normal targeting applies.
 - Saving or clearing the Events script removes the previous filters.
+- If any Events callback or filter throws, the entire Events script is disabled. Modules for which it registered target filters fail closed and reject every candidate until the script is successfully saved again.
 - Keep predicates fast and synchronous, and avoid side effects during target selection.
 
 ## Advanced hooks
@@ -44,6 +49,7 @@ Some packet-level hooks are Advanced APIs. Use them only when Advanced Scripting
 
 - Chat reactions.
 - Player join or visibility notifications.
+- Target filtering for Aim Assist and Kill Aura.
 - Tick-based key handling.
 - Key handling snippets for modules such as Zoom and Aim Assist.
 - Tick-end safety checks for modules such as Blink.

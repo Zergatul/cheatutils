@@ -133,10 +133,11 @@ These APIs are considered dangerous, and this was done prevent unexpirienced use
 `OsApi` allows to start processes, `HttpApi` allows to send HTTP requests to external parties.
 Using Java Interop also requires "Advanced Scripting" for obvious reasons.
 
-## 5. Error model (important!)
+## 5. Error model
 Exceptions:
-- Any uncaught exception crashes the game
-- There is currently no try/catch support
+- Any uncaught exception in a script disables that script and shows a notification inside the game and on the Web UI
+- Full exception details are available from the Web UI or Minecraft logs
+- A failed configured script is re-enabled after it is successfully compiled and saved
 - Scripts are assumed to be written by advanced users
 
 Because of this:

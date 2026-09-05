@@ -5,10 +5,12 @@ import com.zergatul.cheatutils.common.events.SendChatEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
+import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.scripting.DiagnosticMessage;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.client.Minecraft;
@@ -46,12 +48,10 @@ public class Exec implements Module {
         }
 
         try {
-            ScriptExecutionManager.instance.execute(result.<AsyncRunnable>getProgram())
-                    .whenComplete((value, throwable) -> ScriptRuntimeFailureHandler.instance.report(
-                            "Exec script failed.",
-                            throwable));
+            ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(new ScriptRef(ScriptType.EXEC_CODE), result.getProgram());
+            ScriptExecutionManager.instance.execute(() -> activation.execute(activation.program));
         } catch (Throwable e) {
-            ScriptRuntimeFailureHandler.instance.throwIfFailure("Exec script failed.", e);
+            ScriptRuntimeFailureHandler.instance.reportSynchronous("Exec script failed.", e);
             return;
         }
 

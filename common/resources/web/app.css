@@ -24,17 +24,21 @@ div#vue-app {
     flex-direction: column;
 }
 
+[v-cloak] {
+    display: none !important;
+}
+
 div.main-header {
     background-color: var(--color1);
     display: flex;
     gap: 0.5em;
     min-height: 4em;
+    position: relative;
 }
 
 div.main-header > div {
     align-items: center;
     display: flex;
-    flex: 1;
     min-width: 0;
 }
 
@@ -50,7 +54,199 @@ div.main-header > div.title {
 div.main-header > div.search {
     flex: 1 1 20em;
     justify-content: right;
+}
+
+div.main-header > div.notifications {
+    display: flex;
+    flex: 0 0 auto;
+    margin-left: auto;
     padding-right: 1.5em;
+    position: relative;
+}
+
+button.bell {
+    align-items: center;
+    background: none;
+    border: 0;
+    color: var(--color2);
+    cursor: pointer;
+    display: flex;
+    font-family: var(--font);
+    font-size: 1.5em;
+    padding: 0.25em 0;
+    position: relative;
+}
+
+button.bell:hover,
+button.bell:focus-visible {
+    filter: brightness(1.1);
+}
+
+button.bell:focus-visible {
+    outline: 0.1em solid var(--color5);
+    outline-offset: 0.15em;
+}
+
+button.bell > span.notifications-count {
+    background-color: var(--color4);
+    border-radius: 0.25em;
+    color: var(--color1);
+    font-size: 0.5em;
+    padding: 0 0.25em;
+    position: absolute;
+    right: -0.8em;
+    bottom: 0;
+}
+
+div.notifications-panel {
+    background-color: var(--color4);
+    border: 0.15em solid var(--color1);
+    border-radius: 0.6em;
+    box-shadow: 0 0.35em 1em #00000066;
+    box-sizing: border-box;
+    color: var(--color1);
+    max-height: calc(100vh - 6em);
+    overflow: hidden;
+    position: absolute;
+    right: 1.5em;
+    top: calc(100% + 0.35em);
+    width: min(24em, calc(100vw - 2em));
+    z-index: 10;
+}
+
+div.notifications-header {
+    align-items: center;
+    background-color: var(--color3);
+    color: var(--color2);
+    display: flex;
+    font-size: 1.25em;
+    justify-content: space-between;
+    padding: 0.35em 0.6em;
+}
+
+div.notifications-header > button {
+    background: none;
+    border: 0;
+    color: var(--color2);
+    cursor: pointer;
+    font-family: var(--font2);
+    font-size: 1em;
+    line-height: 1;
+    padding: 0.1em 0.25em;
+}
+
+div.notifications-list {
+    max-height: calc(100vh - 9em);
+    overflow-y: auto;
+}
+
+button.notification {
+    background-color: var(--color2);
+    border: 0;
+    border-bottom: 0.1em solid var(--color6);
+    color: var(--color1);
+    cursor: pointer;
+    display: block;
+    font-family: var(--font);
+    font-size: 1em;
+    padding: 0.55em 0.7em;
+    text-align: left;
+    width: 100%;
+}
+
+button.notification:hover,
+button.notification:focus-visible {
+    background-color: #E9EDDE;
+}
+
+button.notification:focus-visible {
+    outline: 0.12em solid var(--color7);
+    outline-offset: -0.12em;
+}
+
+button.notification:last-of-type {
+    border-bottom: 0;
+}
+
+div.notification-title {
+    font-size: 1.05em;
+}
+
+div.notification-message {
+    font-family: var(--font2);
+    font-size: 0.68em;
+    line-height: 1.35;
+    margin-top: 0.15em;
+    overflow-wrap: anywhere;
+}
+
+div.notification-time {
+    color: #526052;
+    font-family: var(--font2);
+    font-size: 0.58em;
+    margin-top: 0.35em;
+}
+
+div.notifications-empty {
+    background-color: var(--color2);
+    font-family: var(--font2);
+    font-size: 0.7em;
+    padding: 1em;
+    text-align: center;
+}
+
+dialog.notification-dialog {
+    background-color: var(--color2);
+    border: 0.2em solid var(--color1);
+    border-radius: 0.6em;
+    box-shadow: 0 0.5em 1.5em #00000099;
+    box-sizing: border-box;
+    color: var(--color1);
+    max-height: calc(100vh - 2em);
+    padding: 0;
+    width: min(46em, calc(100vw - 2em));
+}
+
+dialog.notification-dialog::backdrop {
+    background-color: #00000088;
+}
+
+div.notification-dialog-header {
+    align-items: center;
+    background-color: var(--color3);
+    color: var(--color2);
+    display: flex;
+    font-size: 1.3em;
+    justify-content: space-between;
+    padding: 0.35em 0.6em;
+}
+
+div.notification-dialog-header > button {
+    background: none;
+    border: 0;
+    color: var(--color2);
+    cursor: pointer;
+    font-family: var(--font2);
+    font-size: 1em;
+    line-height: 1;
+}
+
+div.notification-dialog-message {
+    font-family: var(--font2);
+    font-size: 0.72em;
+    padding: 1em 1em 0;
+}
+
+dialog.notification-dialog > pre {
+    background-color: #E9EDDE;
+    border: 0.1em solid var(--color6);
+    box-sizing: border-box;
+    font-family: monospace;
+    font-size: 0.58em;
+    margin: 1em;
+    max-height: calc(100vh - 11em);
+    overflow: auto;
+    padding: 0.75em;
 }
 
 div.main-header div.title a,
@@ -74,13 +270,13 @@ div.main-header > div.search > input {
 
 @media (max-width: 36rem) {
     div.main-header {
-        flex-direction: column;
+        display: grid;
         gap: 0.5em;
+        grid-template-columns: minmax(0, 1fr) auto;
         min-height: 0;
         padding: 0.75em 1em 1em;
     }
 
-    div.main-header > div.title,
     div.main-header > div.search {
         flex: 0 0 auto;
         width: 100%;
@@ -88,11 +284,28 @@ div.main-header > div.search > input {
 
     div.main-header > div.title {
         font-size: 1.75em;
+        grid-column: 1;
+        grid-row: 1;
         padding-left: 0;
     }
 
     div.main-header > div.search {
+        grid-column: 1 / -1;
+        grid-row: 2;
         padding-right: 0;
+    }
+
+    div.main-header > div.notifications {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        padding-right: 0;
+        position: static;
+    }
+
+    div.notifications-panel {
+        right: 1em;
+        top: calc(100% + 0.35em);
     }
 
     div.main-header > div.search > input {

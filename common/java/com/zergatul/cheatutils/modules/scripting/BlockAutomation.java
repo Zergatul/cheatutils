@@ -11,6 +11,9 @@ import com.zergatul.cheatutils.configs.BlockAutomationConfig;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
+import com.zergatul.cheatutils.scripting.ScriptActivation;
+import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.SlotSelector;
@@ -30,7 +33,7 @@ public class BlockAutomation {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
-    private BlockPosConsumer script;
+    private volatile ScriptActivation<BlockPosConsumer> script;
     private Predicate<ItemStack> useItemPredicate;
     private InteractionHand hand;
     private BlockPlacingMethod method;
@@ -49,12 +52,17 @@ public class BlockAutomation {
     }
 
     public void setScript(BlockPosConsumer script) {
-        this.script = script;
+        ScriptActivation<BlockPosConsumer> previous = this.script;
+        if (previous != null) {
+            previous.deactivate();
+        }
+        this.script = script == null ? null : new ScriptActivation<>(new ScriptRef(ScriptType.BLOCK_AUTOMATION), script);
     }
 
     public void useItem(Predicate<ItemStack> predicate, BlockPlacingMethod method) {
         this.hand = null;
-        this.useItemPredicate = predicate;
+        ScriptActivation<BlockPosConsumer> activation = script;
+        this.useItemPredicate = stack -> activation != null && activation.test("item selection", () -> predicate.test(stack));
         this.method = method;
     }
 
@@ -66,7 +74,8 @@ public class BlockAutomation {
 
     public void breakBlock(Predicate<ItemStack> predicate) {
         this.breakCurrentBlock = true;
-        this.breakItemPredicate = predicate;
+        ScriptActivation<BlockPosConsumer> activation = script;
+        this.breakItemPredicate = stack -> activation != null && activation.test("breaking tool selection", () -> predicate.test(stack));
         this.breakWithAutoTool = false;
     }
 
@@ -85,7 +94,8 @@ public class BlockAutomation {
         if (!config.enabled) {
             return false;
         }
-        if (script == null) {
+        ScriptActivation<BlockPosConsumer> script = this.script;
+        if (script == null || !script.isActive()) {
             return false;
         }
 
@@ -93,6 +103,7 @@ public class BlockAutomation {
     }
 
     private void onAfterPlayerAiStep() {
+        ScriptActivation<BlockPosConsumer> script = this.script;
         BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
         // Block Automation code stops breaking lectern after first tick for Villager Roller
         if (!config.enabled || VillagerRoller.instance.isActive()) {
@@ -105,8 +116,8 @@ public class BlockAutomation {
             return;
         }
 
-        if (script == null) {
-            resetState();
+        if (script == null || !script.isActive()) {
+            stopScriptExecution();
             return;
         }
 
@@ -137,7 +148,10 @@ public class BlockAutomation {
                 breakCurrentBlock = false;
                 breakItemPredicate = null;
                 breakWithAutoTool = false;
-                script.accept(pos.getX(), pos.getY(), pos.getZ());
+                if (!script.run("block evaluation", () -> script.program.accept(pos.getX(), pos.getY(), pos.getZ()))) {
+                    stopScriptExecution();
+                    return;
+                }
 
                 if (breakCurrentBlock && !mc.level.isEmptyBlock(pos)) {
                     boolean proceed;
@@ -146,6 +160,10 @@ public class BlockAutomation {
                         proceed = true;
                     } else {
                         proceed = selectItemForBlockBreak(config);
+                        if (!script.isActive()) {
+                            stopScriptExecution();
+                            return;
+                        }
                     }
 
                     if (proceed) {
@@ -170,6 +188,10 @@ public class BlockAutomation {
                     }
                 } else if (useItemPredicate != null) {
                     int slot = slotSelector.selectItem(config, useItemPredicate);
+                    if (!script.isActive()) {
+                        stopScriptExecution();
+                        return;
+                    }
                     if (slot < 0) {
                         continue;
                     }
@@ -244,6 +266,18 @@ public class BlockAutomation {
         } else {
             return false;
         }
+    }
+
+    private void stopScriptExecution() {
+        if (applyFuture != null) {
+            applyFuture.cancel(false);
+        }
+        resetState();
+        useItemPredicate = null;
+        breakItemPredicate = null;
+        breakCurrentBlock = false;
+        breakWithAutoTool = false;
+        hand = null;
     }
 
     private void resetState() {

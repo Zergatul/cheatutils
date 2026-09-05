@@ -49,11 +49,13 @@ public class AimAssist implements Module {
     }
 
     public void clearTargetPredicate() {
-        this.script = null;
+        setTargetPredicate(null);
     }
 
-    public void setTargetPredicate(TargetPredicate script) {
+    public void setTargetPredicate(@Nullable TargetPredicate script) {
         this.script = script;
+        bowAssistTarget = null;
+        targetLockEntity = null;
     }
 
     public boolean isTargetLockEnabled() {
@@ -175,7 +177,10 @@ public class AimAssist implements Module {
                 continue;
             }
 
-            boolean matches = script == null ? entity instanceof Player : script.test(entity.getId());
+            TargetPredicate predicate = script;
+            boolean matches = predicate == null ? entity instanceof Player : predicate.test(entity.getId());
+            // A failed Events script replaces its filters. Discard candidates collected before the failure.
+            if (script != predicate) return null;
             if (matches) {
                 Vec3 center = getEntityCenter(entity);
                 Rotation rotation = RotationUtils.getRotation(mc.player.getEyePosition(), center);
