@@ -79,7 +79,17 @@ sourceSets {
             srcDir '../common/resources'
         }
     }
+
+    compatStubs {
+        java {
+            srcDir '../common/compat-stubs/java'
+        }
+
+        compileClasspath = configurations.compileClasspath
+    }
 }
+
+sourceSets.main.compileClasspath += sourceSets.compatStubs.output
 
 // Sets up a dependency configuration called 'localRuntime'.
 // This configuration should be used instead of 'runtimeOnly' to declare
@@ -151,9 +161,6 @@ tasks.withType(JavaCompile).configureEach {
 tasks.named('jar', Jar) {
     archiveFileName = "cheatutils-$mod_version-neoforge-${minecraft_version}.jar"
     includeEmptyDirs = false
-
-    exclude("net/caffeinemc/**")
-    exclude('net/irisshaders/**')
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.

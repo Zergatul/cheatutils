@@ -49,7 +49,17 @@ sourceSets {
             srcDir '../common/resources'
         }
     }
+
+    compatStubs {
+        java {
+            srcDir '../common/compat-stubs/java'
+        }
+
+        compileClasspath = configurations.compileClasspath
+    }
 }
+
+sourceSets.main.compileClasspath += sourceSets.compatStubs.output
 
 processResources {
     inputs.property "version", project.version
@@ -85,6 +95,4 @@ tasks.named('jar', Jar) {
     }
 
     includeEmptyDirs = false
-    exclude("net/caffeinemc/**")
-    exclude("net/irisshaders/**")
 }
