@@ -1,0 +1,13 @@
+{
+    "required": true,
+    "minVersion": "0.8.5",
+    "compatibilityLevel": "JAVA_8",
+    "package": "com.zergatul.cheatutils.mixins.common",
+    "refmap": "cheatutils.refmap.json",
+    "client": [
+        "MixinMinecraft"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

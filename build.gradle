@@ -1,0 +1,102 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:5.1.77'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'idea'
+
+group = mod_group
+version = mod_version
+archivesBaseName = mod_id
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(8)
+}
+
+minecraft {
+    mappings channel: mappings_channel, version: mappings_version
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            arg '-torg.spongepowered.asm.launch.MixinTweaker'
+            mods {
+                cheatutils {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+repositories {
+    maven { url = 'https://repo.spongepowered.org/maven' }
+    mavenCentral()
+}
+
+configurations {
+    embed {
+        transitive = false
+    }
+    implementation.extendsFrom(embed)
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    embed 'org.spongepowered:mixin:0.8.5'
+}
+
+mixin {
+    add sourceSets.main, 'cheatutils.refmap.json'
+    config 'cheatutils.mixins.json'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.add('-parameters')
+}
+
+processResources {
+    def properties = [mod_id: mod_id, mod_name: mod_name, mod_version: mod_version,
+                      minecraft_version: minecraft_version, mod_description: mod_description]
+    inputs.properties properties
+    filesMatching('mcmod.info') {
+        expand properties
+    }
+}
+
+jar {
+    archiveFileName = "${mod_id}-${mod_version}-forge-${minecraft_version}.jar"
+    includeEmptyDirs = false
+    from({ configurations.embed.collect { zipTree(it) } }) {
+        exclude 'META-INF/MANIFEST.MF', 'META-INF/maven/**'
+        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+        // Forge 1.12 scans classes with ASM 5. These Java 9+ classes are
+        // for ModLauncher; this version of Minecraft uses LaunchWrapper.
+        exclude 'module-info.class', 'META-INF/versions/**'
+        exclude 'org/spongepowered/asm/launch/MixinLaunchPlugin.class'
+        exclude 'org/spongepowered/asm/launch/MixinTransformationService.class'
+        exclude 'org/spongepowered/asm/launch/platform/container/ContainerHandleModLauncherEx*.class'
+    }
+    manifest {
+        attributes 'ForceLoadAsMod': 'true',
+                   'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+                   'TweakOrder': '0'
+    }
+    finalizedBy 'reobfJar'
+}
+
+idea.module {
+    downloadSources = true
+    downloadJavadoc = true
+}
