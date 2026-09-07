@@ -1,0 +1,78 @@
+.color-picker {
+    display: flex;
+    border-width: 0.15em;
+    border-style: solid;
+    border-radius: 0.3em;
+    border-color: var(--color1);
+    padding: 0.4em;
+}
+
+.color-picker > div.c2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font2);
+    font-size: 0.8em;
+    margin-left: 1em;
+    gap: 0.5em;
+}
+
+.color-picker > div.c2 > div.c3 {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+}
+
+.color-picker div.slider {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.color-picker div.slider > div {
+    text-align: center;
+    width: 12px;
+}
+
+.color-picker div.slider input[type=range] {
+    width: 120px;
+}
+
+.color-picker div.slider input[type=number] {
+    box-sizing: border-box;
+    width: 3.5em;
+    text-align: right;
+}
+
+.color-picker .color-picker-box {
+    box-sizing: border-box;
+    border: 2px solid black;
+    display: flex;
+    height: 32px;
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.color-picker .color-picker-box div {
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.color-picker div.c4 {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.color-picker input[type=text] {
+    width: 80px;
+}

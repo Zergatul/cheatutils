@@ -1,0 +1,32 @@
+{
+  "required": false,
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_8",
+  "plugin": "com.zergatul.mixin.MixinPlugin",
+  "package": "com.zergatul.cheatutils.mixins",
+  "refmap": "cheatutils.refmap.json",
+  "client": [
+    "accessors.BitArrayAccessor",
+    "accessors.BlockStateContainerAccessor",
+    "accessors.ChunkAccessor",
+    "accessors.ChunkProviderClientAccessor",
+    "accessors.ModelBoxAccessor",
+    "accessors.RenderAccessor",
+    "MixinAbstractClientPlayer",
+    "MixinEntity",
+    "MixinEntityLivingBase",
+    "MixinEntityPlayerSP",
+    "MixinEntityRenderer",
+    "MixinGuiInGame",
+    "MixinGuiKeybindingListKeyEntry",
+    "MixinGuiToastToastInstance",
+    "MixinItemRenderer",
+    "MixinMinecraft",
+    "MixinRender",
+    "MixinRenderGlobal",
+    "MixinRenderManager",
+    "MixinRenderPlayer",
+    "MixinViewFrustum",
+    "MixinWorldClient"
+  ]
+}
