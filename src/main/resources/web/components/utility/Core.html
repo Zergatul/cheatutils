@@ -1,0 +1,20 @@
+<div class="module-main">
+    <div class="description" v-if="error" role="alert">{{ error }}</div>
+    <div class="module-sections" v-if="config">
+        <fieldset :disabled="saving">
+            <legend>HTTP Server Default Port</legend>
+            <div>
+                <input type="number" min="1" max="65535" step="1" aria-label="HTTP server default port"
+                    v-model.number="config.port" @change="update()">
+            </div>
+            <div class="section-description">Default value: 5005</div>
+            <div class="section-description" v-if="saved" role="status">
+                Saved.
+                <template v-if="portChanged">
+                    The server address has changed. Check the Minecraft log for the new address;
+                    an occupied port causes the server to use a higher port.
+                </template>
+            </div>
+        </fieldset>
+    </div>
+</div>

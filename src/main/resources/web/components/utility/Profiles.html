@@ -1,0 +1,37 @@
+<div class="module-main">
+    <div class="description" v-if="error" role="alert">{{ error }}</div>
+    <div class="description">
+        Create profiles with different settings and switch between them.</div>
+
+    <fieldset class="module-sections" v-if="loaded" :disabled="busy">
+        <div class="flex-row">
+            <select class="w12" v-model="selectedProfile" @change="change()">
+                <option value="">&lt;Default&gt;</option>
+                <option v-for="profile in profiles" :value="profile">{{ profile }}</option>
+            </select>
+            <button class="w12" v-if="selectedProfile != ''" @click="remove()">Delete</button>
+        </div>
+
+        <div class="flex-row">
+            <input type="text" class="w12" v-model="newProfile" @input="validate()">
+            <div class="input-description" v-if="!isValidName">
+                Should be non-empty, characters
+                <kbd>\</kbd>
+                <kbd>/</kbd>
+                <kbd>:</kbd>
+                <kbd>*</kbd>
+                <kbd>?</kbd>
+                <kbd>"</kbd>
+                <kbd>&lt;</kbd>
+                <kbd>&gt;</kbd>
+                <kbd>|</kbd>
+                are not allowed.
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="w12" :disabled="!isValidName" @click="createCopy()">Copy current into new profile</button>
+            <button class="w12" :disabled="!isValidName" @click="createNew()">Create blank new profile</button>
+        </div>
+    </fieldset>
+</div>

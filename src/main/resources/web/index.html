@@ -1,8 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>CheatUtils</title></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CheatUtils</title>
+    <link rel="icon" href="/images/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=New+Amsterdam&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/checkbox.css">
+    <link rel="stylesheet" href="/main.css">
+</head>
 <body>
-    <h1>CheatUtils</h1>
-    <p>HTTP server is running. The web UI will be added in batch 3.</p>
+    <div id="vue-app" v-cloak>
+        <div class="main-header">
+            <div class="title">
+                <a href="/#">cheatutils</a>
+                <template v-if="module">
+                    → <a :href="'/#/' + module.path">{{ module.name }}</a>
+                </template>
+            </div>
+            <div class="search" v-if="isMain()">
+                <input type="text" placeholder="Search modules..." v-model="search" ref="searchInput"
+                    @input="onFilterInput()" @keydown="onFilterKeyDown($event)">
+            </div>
+        </div>
+        <component :is="view"></component>
+    </div>
+    <script type="module" src="/app.js"></script>
 </body>
 </html>

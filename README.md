@@ -1,8 +1,8 @@
 # CheatUtils for Minecraft 1.12.2
 
 Forge-only Java 8 project. Includes initialization, configuration profiles, and
-the HTTP backend. The Vue UI, FreeCam, keybindings, and scripting follow in later
-batches.
+the HTTP backend, and the Vue web UI. FreeCam, keybindings, and scripting follow
+in later batches.
 
 ## Build
 
@@ -53,8 +53,9 @@ those development dependencies are not bundled wholesale into the release jar.
 ## Configuration and HTTP backend
 
 The server listens on `127.0.0.1`, starting at port `5005` and trying up to 99 higher
-ports if occupied. The log reports the actual address. The current index page is
-a placeholder for batch 3.
+ports if occupied. The log reports the actual address. The home page keeps all six
+module categories visible, including empty groups. Utility contains Core Config
+and Profiles; other modules will be registered as they are implemented.
 
 Configuration lives in the game's `config/` directory:
 
@@ -65,7 +66,8 @@ Configuration lives in the game's `config/` directory:
 A fresh installation uses the default profile. Saves are delayed by 15 seconds,
 capture a snapshot, and flush on normal shutdown. Invalid configuration is backed
 up before defaults are used. Profile creation/copying, switching, deletion, and
-reset are implemented in the backend; their UI and live verification are deferred.
+reset are implemented in the backend. The Profiles page exposes creation, copying,
+switching, and deletion. Live profile verification is deferred.
 Reset deletes profile files and disables saving until Minecraft restarts.
 
 Existing 26.2 route conventions are retained:
@@ -79,10 +81,20 @@ Existing 26.2 route conventions are retained:
 
 API operations run on the client thread. Port changes restart the listener after
 a short delay. `/local/` serves files under the game's `mods/` directory for the
-future CDN fallback loader. Packaged files are served from `web/`; set the Java
+CDN fallback loader. Packaged files are served from `web/`; set the Java
 system property `cheatutils.web.dir` to override that directory during UI work.
 
 `gradlew.bat build` includes Java 8 infrastructure checks for save coalescing,
 cancellation, shutdown flushing, independent file snapshots, invalid config
 recovery, static/local HTTP responses, and traversal rejection. These do not
 launch Minecraft. Batch 2 still needs live startup/shutdown and API verification.
+
+The UI uses the 26.2 Vue loader unchanged: Vue 3.2.33 loads from jsDelivr first,
+then `/local/vue.esm-browser.prod.js` if the CDN fails. To use the fallback, place
+that Vue distribution file in the game's `mods/` directory. Google fonts are
+optional; the browser uses system fonts when unavailable. Monaco's lazy loader
+is retained for the scripting editor batch.
+
+Browser fixture checks cover all six categories, navigation, search, Core Config
+saving, and narrow-screen layout with both CDN and local Vue loading. These checks
+use mock API responses; live Minecraft integration remains a separate checkpoint.
