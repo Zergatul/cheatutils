@@ -100,3 +100,18 @@ idea.module {
     downloadSources = true
     downloadJavadoc = true
 }
+
+tasks.register('verifyInfrastructure', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.zergatul.cheatutils.InfrastructureChecks'
+    workingDir = layout.buildDirectory.dir('infrastructure-checks').get().asFile
+    doFirst {
+        workingDir.mkdirs()
+    }
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+check.dependsOn verifyInfrastructure
