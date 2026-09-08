@@ -21,6 +21,8 @@ public class ApiHandler implements HttpHandler {
     public ApiHandler() {
         apis.add(new ProfilesApi());
         apis.add(new ResetConfigApi());
+        apis.add(new ScriptApi(false));
+        apis.add(new ScriptApi(true));
         apis.add(new FreeCamApi());
         apis.add(new SimpleConfigApi<FreeCamConfig>("free-cam", FreeCamConfig.class) {
             protected FreeCamConfig getConfig() {

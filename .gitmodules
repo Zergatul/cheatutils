@@ -1,0 +1,4 @@
+[submodule "java-scripting-language"]
+	path = java-scripting-language
+	url = https://github.com/Zergatul/java-scripting-language.git
+	branch = java-8

@@ -50,7 +50,17 @@ configurations {
     implementation.extendsFrom(embed)
 }
 
+sourceSets {
+    scriptingAnnotations {
+        java.srcDir 'src/scriptingAnnotations/java'
+    }
+    main {
+        java.srcDir 'java-scripting-language/src/main/java'
+    }
+}
+
 dependencies {
+    compileOnly files(sourceSets.scriptingAnnotations.output)
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     embed 'org.spongepowered:mixin:0.8.5'
@@ -76,6 +86,10 @@ processResources {
 }
 
 jar {
+    from('java-scripting-language/LICENSE') {
+        into 'META-INF/licenses'
+        rename { 'java-scripting-language.txt' }
+    }
     archiveFileName = "${mod_id}-${mod_version}-forge-${minecraft_version}.jar"
     includeEmptyDirs = false
     from({ configurations.embed.collect { zipTree(it) } }) {
@@ -115,3 +129,16 @@ tasks.register('verifyInfrastructure', JavaExec) {
 }
 
 check.dependsOn verifyInfrastructure
+
+tasks.register('verifyScripting', JavaExec) {
+    dependsOn 'testClasses', 'reobfJar'
+    // Run against the release jar, excluding all loose production classes.
+    classpath = sourceSets.test.output + files(tasks.jar.archiveFile) + configurations.runtimeClasspath
+    mainClass = 'com.zergatul.cheatutils.ScriptingChecks'
+    args tasks.jar.archiveFile.get().asFile.absolutePath
+    workingDir = layout.buildDirectory.dir('scripting-checks').get().asFile
+    doFirst { workingDir.mkdirs() }
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(8) }
+}
+
+check.dependsOn verifyScripting

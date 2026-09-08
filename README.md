@@ -1,15 +1,17 @@
 # CheatUtils for Minecraft 1.12.2
 
 Forge-only Java 8 project. Includes initialization, configuration profiles, and
-the HTTP backend, the Vue web UI, and FreeCam. Keybindings and scripting follow
-in later batches.
+the HTTP backend, the Vue web UI, FreeCam, and a minimal scripting backend.
+The script editor and saved keybindings follow in batch 6.
 
 ## Build
 
-Use a Java 8 JDK for Gradle and the game. In PowerShell, for example:
+Initialize the scripting submodule and install JDK 8. Gradle, all source
+compilation, and the game use Java 8. In PowerShell, for example:
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk1.8.0_491'
+git submodule update --init --recursive
 .\gradlew.bat build
 ```
 
@@ -29,6 +31,7 @@ Gradle JVM, and run:
 Run the generated `runClient` application configuration with JDK 8. Its working
 directory is `run/`. Alternatively, launch with `.\gradlew.bat runClient`.
 Generated IDE files and game data are ignored by Git.
+Reimport the Gradle project after initializing the submodule.
 
 Successful initialization logs both:
 
@@ -120,3 +123,51 @@ Batch 4 live checks:
 - Open screens and switch focus; verify the camera does not jump on return.
 - Disconnect/rejoin, change dimensions, respawn, and switch profiles while active.
 - Repeat with the packaged jar. Camera paths and lock/follow modes are not included.
+
+## Minimal scripting (batch 5)
+
+The `java-scripting-language` submodule tracks branch `java-8`, pinned by Git to
+commit `b21408ec8aab7e2c43951bb9e1f4455de385188e`. Updating the branch name alone
+does not update the pinned commit.
+
+Java 8 nullness annotation stubs in `src/scriptingAnnotations/java` replace the
+JSpecify dependency for compilation only. They are not included in the mod jar.
+
+The scripting sources compile directly as part of the main source set and use
+Forge's ASM 5.2. No separate ASM copy is bundled. The scripting engine's license
+is included in the jar.
+
+Available APIs:
+
+- `freeCam.toggle()`, `freeCam.enable()`, `freeCam.disable()`, `freeCam.isEnabled()`.
+- `ui.systemMessage("Hello");` displays a local chat message without sending it to
+  the server.
+
+Scripts are synchronous, one-shot programs on the client thread. This batch has
+no async scheduling, event scripts, Java interop, or execution time limit. The
+`advancedScripting` config flag does not enable additional APIs yet.
+
+Use the existing HTTP address from the log. `POST /api/script-compile` compiles
+without executing; `POST /api/script-exec` compiles and executes. Both accept
+`{"code":"..."}` and return `success`, `executed`, and `diagnostics`. Diagnostics
+include a message and source range. Runtime failures return `error` and are logged;
+they do not disable later executions. `executed` means execution was attempted.
+
+Live checks from PowerShell (adjust the port if needed):
+
+```powershell
+$scriptUrl = 'http://127.0.0.1:5005/api/script-exec'
+$body = @{ code = 'ui.systemMessage("Scripting works"); freeCam.toggle();' } | ConvertTo-Json
+Invoke-RestMethod -Uri $scriptUrl -Method Post -ContentType 'application/json' -Body $body
+```
+
+Join a world first to see the FreeCam change. Repeat to turn it off. Then try
+`freeCam.unknown();` for a compilation diagnostic, and
+`int zero = 0; int value = 1 / zero;` for a runtime failure, followed by a valid
+script to confirm recovery. Repeat with the release jar.
+
+`build` includes `verifyScripting`, which executes generated code from the
+reobfuscated jar on Java 8 with the older ASM present. It checks API compilation,
+diagnostics, failure recovery, absence of bundled ASM and annotation stubs, and
+class-file versions.
+Minecraft-side API execution still needs the live checks above.
