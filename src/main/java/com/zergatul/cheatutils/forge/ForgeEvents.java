@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.forge;
 
-import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.SimpleCancellableEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -9,20 +10,20 @@ public class ForgeEvents {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            FreeCam.instance.onClientTickStart();
+            Events.ClientTickStart.trigger();
         }
     }
 
     @SubscribeEvent
     public void onRenderTick(TickEvent.RenderTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            FreeCam.instance.onRenderTickStart(event.renderTickTime);
+            Events.RenderTickStart.trigger(event.renderTickTime);
         }
     }
 
     @SubscribeEvent
     public void onRenderHand(RenderHandEvent event) {
-        if (!FreeCam.instance.shouldRenderHands()) {
+        if (Events.RenderHand.trigger(new SimpleCancellableEvent())) {
             event.setCanceled(true);
         }
     }

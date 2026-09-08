@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.zergatul.cheatutils.common.Events;
+
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.renderer.EntityRenderer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +18,7 @@ public abstract class MixinEntityRenderer {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/renderer/EntityRenderer;renderWorld(FJ)V"))
     private void onBeforeUpdateCameraAndRender(float partialTicks, long nanoTime, CallbackInfo info) {
-        FreeCam.instance.onBeforeRenderWorld();
+        Events.BeforeRenderWorld.trigger();
     }
 
     @Inject(
@@ -26,17 +28,17 @@ public abstract class MixinEntityRenderer {
                     target = "Lnet/minecraft/client/renderer/EntityRenderer;renderWorld(FJ)V",
                     shift = At.Shift.AFTER))
     private void onAfterUpdateCameraAndRender(float partialTicks, long nanoTime, CallbackInfo info) {
-        FreeCam.instance.onAfterRenderWorld();
+        Events.AfterRenderWorld.trigger();
     }
 
     @Inject(at = @At("HEAD"), method = "getMouseOver(F)V")
     private void onBeforeGetMouseOver(float partialTicks, CallbackInfo info) {
-        FreeCam.instance.onBeforePick();
+        Events.OnBeforePick.trigger();
     }
 
     @Inject(at = @At("RETURN"), method = "getMouseOver(F)V")
     private void onAfterGetMouseOver(float partialTicks, CallbackInfo info) {
-        FreeCam.instance.onAfterPick();
+        Events.OnAfterPick.trigger();
     }
 
     @Inject(at = @At("HEAD"), method = "applyBobbing(F)V", cancellable = true)

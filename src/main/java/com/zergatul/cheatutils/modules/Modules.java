@@ -1,0 +1,14 @@
+package com.zergatul.cheatutils.modules;
+
+import com.zergatul.cheatutils.modules.esp.FreeCam;
+import org.apache.logging.log4j.LogManager;
+
+public class Modules {
+    public static void register() {
+        register(FreeCam.instance);
+    }
+
+    private static void register(Module module) {
+        LogManager.getLogger(Modules.class).debug("Registered module {}", module.getClass().getName());
+    }
+}

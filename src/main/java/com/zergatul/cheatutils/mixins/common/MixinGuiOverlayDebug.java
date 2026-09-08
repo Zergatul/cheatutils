@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.common.Events;
+
+
 import net.minecraft.client.gui.GuiOverlayDebug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,6 +16,6 @@ public abstract class MixinGuiOverlayDebug {
 
     @Inject(at = @At("RETURN"), method = "call()Ljava/util/List;")
     private void onGetLeft(CallbackInfoReturnable<List<String>> info) {
-        FreeCam.instance.onGetDebugInfoLeft(info.getReturnValue());
+        Events.DebugInfoLeft.trigger(info.getReturnValue());
     }
 }

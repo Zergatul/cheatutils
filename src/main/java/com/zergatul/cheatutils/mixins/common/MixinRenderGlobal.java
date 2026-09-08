@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.common.Events;
+
+
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.entity.Entity;
@@ -14,11 +16,11 @@ public abstract class MixinRenderGlobal {
 
     @Inject(at = @At("HEAD"), method = "renderEntities(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V")
     private void onBeforeRenderEntities(Entity p_renderEntities_1_, ICamera p_renderEntities_2_, float p_renderEntities_3_, CallbackInfo ci) {
-        FreeCam.instance.onBeforeRenderEntities();
+        Events.BeforeRenderEntities.trigger();
     }
 
     @Inject(at = @At("TAIL"), method = "renderEntities(Lnet/minecraft/entity/Entity;Lnet/minecraft/client/renderer/culling/ICamera;F)V")
     private void onAfterRenderEntities(Entity p_renderEntities_1_, ICamera p_renderEntities_2_, float p_renderEntities_3_, CallbackInfo ci) {
-        FreeCam.instance.onAfterRenderEntities();
+        Events.AfterRenderEntities.trigger();
     }
 }

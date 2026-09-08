@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.common.Events;
+
+
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,11 +15,11 @@ public abstract class MixinRenderManager {
 
     @Inject(at = @At("HEAD"), method = "renderEntityStatic(Lnet/minecraft/entity/Entity;FZ)V")
     private void onBeforeRenderEntitySimple(Entity entity, float partialTicks, boolean b, CallbackInfo info) {
-        FreeCam.instance.onBeforeRenderEntity(entity);
+        Events.BeforeRenderEntity.trigger(entity);
     }
 
     @Inject(at = @At("TAIL"), method = "renderEntityStatic(Lnet/minecraft/entity/Entity;FZ)V")
     private void onAfterRenderEntitySimple(Entity entity, float partialTicks, boolean b, CallbackInfo info) {
-        FreeCam.instance.onAfterRenderEntity(entity);
+        Events.AfterRenderEntity.trigger(entity);
     }
 }

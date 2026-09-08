@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.modules.esp.FreeCam;
+
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinMinecraft {
     @Inject(method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V", at = @At("HEAD"))
     private void onLoadWorld(WorldClient world, String message, CallbackInfo info) {
-        FreeCam.instance.onWorldUnload();
+        Events.LevelUnload.trigger();
     }
 
     @Inject(method = "shutdownMinecraftApplet", at = @At("HEAD"))

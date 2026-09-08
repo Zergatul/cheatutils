@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -16,7 +18,8 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "turn(FF)V", cancellable = true)
     private void onTurn(float yaw, float pitch, CallbackInfo info) {
-        if ((Object) this == Minecraft.getMinecraft().player && !FreeCam.instance.onMouseTurn(yaw, -pitch)) {
+        if ((Object) this == Minecraft.getMinecraft().player && Events.PlayerTurnByMouse.trigger(
+                new PlayerTurnByMouseEvent(Minecraft.getMinecraft().player, -pitch, yaw))) {
             info.cancel();
         }
     }

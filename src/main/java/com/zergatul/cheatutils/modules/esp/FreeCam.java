@@ -1,5 +1,8 @@
 package com.zergatul.cheatutils.modules.esp;
 
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
+import com.zergatul.cheatutils.common.events.SimpleCancellableEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -46,7 +49,28 @@ public class FreeCam implements Module {
     private boolean cameraRestoredForPicking;
 
     private FreeCam() {
+        Events.ClientTickStart.add(this::onClientTickStart);
+        Events.RenderTickStart.add(this::onRenderTickStart);
+        Events.LevelUnload.add(this::onWorldUnload);
+        Events.OnBeforePick.add(this::onBeforePick);
+        Events.OnAfterPick.add(this::onAfterPick);
+        Events.BeforeRenderWorld.add(this::onBeforeRenderWorld);
+        Events.AfterRenderWorld.add(this::onAfterRenderWorld);
+        Events.BeforeRenderEntities.add(this::onBeforeRenderEntities);
+        Events.AfterRenderEntities.add(this::onAfterRenderEntities);
+        Events.BeforeRenderEntity.add(this::onBeforeRenderEntity);
+        Events.AfterRenderEntity.add(this::onAfterRenderEntity);
+        Events.DebugInfoLeft.add(this::onGetDebugInfoLeft);
+        Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
+        Events.RenderHand.add(this::onRenderHand);
+        Events.ConfigLoaded.add(this::onConfigLoaded);
+        Events.Close.add(this::onClose, -1);
+    }
 
+    private void onConfigLoaded() { disable(); }
+    private void onClose() { disable(); }
+    private void onRenderHand(SimpleCancellableEvent event) {
+        if (!shouldRenderHands()) event.cancel();
     }
 
     public boolean isActive() {
@@ -85,15 +109,17 @@ public class FreeCam implements Module {
         }
     }
 
-    public boolean onMouseTurn(double yRot, double xRot) {
-        if (!active) return true;
+    private void onPlayerTurnByMouse(PlayerTurnByMouseEvent event) {
+        if (!active) return;
+        double xRot = event.getXRot();
+        double yRot = event.getYRot();
         this.xRot = MathHelper.clamp(this.xRot + (float) xRot * 0.15F, -90, 90);
         this.yRot += (float) yRot * 0.15F;
         calculateVectors();
-        return false;
+        event.cancel();
     }
 
-    public void onClientTickStart() {
+    private void onClientTickStart() {
         validatePlayer();
         if (active) {
             while (mc.gameSettings.keyBindTogglePerspective.isPressed()) {
@@ -113,7 +139,7 @@ public class FreeCam implements Module {
         return !active || getConfig().renderHands;
     }
 
-    public void onBeforePick() {
+    private void onBeforePick() {
         picking = true;
         cameraRestoredForPicking = false;
 
@@ -123,7 +149,7 @@ public class FreeCam implements Module {
         }
     }
 
-    public void onAfterPick() {
+    private void onAfterPick() {
         if (cameraRestoredForPicking && override != null) {
             moveCameraEntityToFreeCamPosition();
         }
@@ -156,7 +182,7 @@ public class FreeCam implements Module {
         return box.offset(dx, dy, dz);
     }
 
-    public void onRenderTickStart(float partialTicks) {
+    private void onRenderTickStart(float partialTicks) {
         validatePlayer();
         if (!active) {
             return;
@@ -204,11 +230,11 @@ public class FreeCam implements Module {
 
     }
 
-    public void onWorldUnload() {
+    private void onWorldUnload() {
         disable();
     }
 
-    public void onGetDebugInfoLeft(List<String> list) {
+    private void onGetDebugInfoLeft(List<String> list) {
         if (active) {
             list.add("");
             list.add("FreeCam");
@@ -225,7 +251,7 @@ public class FreeCam implements Module {
     private Entity override;
     private boolean entitiesRendering;
 
-    public void onBeforeRenderWorld() {
+    private void onBeforeRenderWorld() {
         onAfterRenderWorld();
 
         if (!active) {
@@ -244,7 +270,7 @@ public class FreeCam implements Module {
         override.noClip = true;
     }
 
-    public void onAfterRenderWorld() {
+    private void onAfterRenderWorld() {
         if (override == null) {
             return;
         }
@@ -254,26 +280,26 @@ public class FreeCam implements Module {
         override = null;
     }
 
-    public void onBeforeRenderEntity(Entity entity) {
+    private void onBeforeRenderEntity(Entity entity) {
         if (override == entity) {
             restoreCameraEntityPosition();
         }
     }
 
-    public void onAfterRenderEntity(Entity entity) {
+    private void onAfterRenderEntity(Entity entity) {
         if (override == entity) {
             moveCameraEntityToFreeCamPosition();
         }
     }
 
-    public void onBeforeRenderEntities() {
+    private void onBeforeRenderEntities() {
         entitiesRendering = true;
         if (override != null) {
             mc.gameSettings.thirdPersonView = 1;
         }
     }
 
-    public void onAfterRenderEntities() {
+    private void onAfterRenderEntities() {
         entitiesRendering = false;
         if (override != null) {
             mc.gameSettings.thirdPersonView = 0;

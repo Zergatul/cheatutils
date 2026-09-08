@@ -20,6 +20,7 @@ public class InfrastructureChecks {
         try {
             checkQueue(root);
             checkFreeCamConfig();
+            checkEvents();
             checkSnapshots(root);
             checkFiles(root);
             System.out.println("Infrastructure checks passed (queue, snapshots, config recovery, HTTP files).");
@@ -50,6 +51,23 @@ public class InfrastructureChecks {
         queue.close();
         queue.close();
         require(value.get() == 4, "Close must flush pending writes.");
+    }
+
+    private static void checkEvents() {
+        com.zergatul.cheatutils.common.events.ParameterizedEventHandler<String> event =
+                new com.zergatul.cheatutils.common.events.ParameterizedEventHandler<>();
+        StringBuilder calls = new StringBuilder();
+        event.add(value -> calls.append("second"), 1);
+        event.add(calls::append, -1);
+        event.add(value -> calls.append("third"), 1);
+        event.trigger("first");
+        require(calls.toString().equals("firstsecondthird"), "Events must preserve priority and registration order.");
+        com.zergatul.cheatutils.common.events.CancelableEventHandler<com.zergatul.cheatutils.common.events.SimpleCancellableEvent> cancelable =
+                new com.zergatul.cheatutils.common.events.CancelableEventHandler<>();
+        cancelable.add(value -> { throw new AssertionError("Cancelled event continued."); }, 1);
+        cancelable.add(com.zergatul.cheatutils.common.events.SimpleCancellableEvent::cancel, -1);
+        require(cancelable.trigger(new com.zergatul.cheatutils.common.events.SimpleCancellableEvent()),
+                "Cancellation must propagate to the publisher.");
     }
 
     private static void checkFreeCamConfig() {

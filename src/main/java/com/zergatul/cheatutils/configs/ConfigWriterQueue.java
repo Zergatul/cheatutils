@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.common.Events;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +21,12 @@ public class ConfigWriterQueue implements AutoCloseable {
     });
     private final Map<File, Entry> pending = new HashMap<>();
     private boolean closed;
+
+    public ConfigWriterQueue() {
+        Events.Close.add(this::onClose);
+    }
+
+    private void onClose() { close(); }
 
     public synchronized void queue(File file, long timeout, Runnable runnable) {
         if (closed) {
