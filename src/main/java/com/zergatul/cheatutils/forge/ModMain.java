@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.forge;
 
 import com.zergatul.cheatutils.Constants;
+import com.zergatul.cheatutils.common.Events;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import com.zergatul.cheatutils.modules.Modules;
 import net.minecraftforge.common.MinecraftForge;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
@@ -20,6 +22,7 @@ public final class ModMain {
     public void onPreInit(FMLPreInitializationEvent event) {
         LOGGER.info("CheatUtils {} initializing on Forge 1.12.2.", event.getModMetadata().version);
         Modules.register();
+        Events.RegisterKeyBindings.trigger(ClientRegistry::registerKeyBinding);
         MinecraftForge.EVENT_BUS.register(new ForgeEvents());
         Profiles.instance.init(event.getModConfigurationDirectory());
         ConfigHttpServer.instance.start(Minecraft.getMinecraft().gameDir);

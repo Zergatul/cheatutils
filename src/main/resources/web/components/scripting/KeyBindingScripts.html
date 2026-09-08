@@ -1,0 +1,39 @@
+<div class="module-main key-bindings">
+    <div class="description">
+        Write scripts and assign them to the 30 reserved keys in Minecraft Controls → CheatUtils.
+        Key 1 defaults to F6. Toggle ESP is a placeholder and currently does nothing.
+    </div>
+    <p v-if="error" role="alert">{{ error }}</p>
+    <div class="module-sections" v-if="list">
+        <template v-if="mode == 'list'">
+            <div><button class="w8" @click="add()" :disabled="busy">Add...</button></div>
+            <div class="scripts-list">
+                <table>
+                    <tr v-for="script in list" :key="script.name">
+                        <td><button class="w4" @click="edit(script)" :disabled="busy">Edit</button></td>
+                        <td><button class="w4" @click="remove(script)" :disabled="busy">Remove</button></td>
+                        <td>
+                            <select :value="script.key" @change="assign(script, $event)" :disabled="busy" aria-label="Assign script to key">
+                                <option :value="-1">&lt;Unassigned&gt;</option>
+                                <option v-for="index in 30" :value="index - 1">Key {{ index - 1 }}</option>
+                            </select>
+                        </td>
+                        <td class="script-name-cell">{{ script.name }}<div v-if="script.error" role="alert">{{ script.error }}</div></td>
+                    </tr>
+                </table>
+            </div>
+        </template>
+        <template v-else>
+            <div class="actions">
+                <button class="w8" @click="back()" :disabled="busy">Back</button>
+                <button class="w8" @click="save()" :disabled="busy">Save</button>
+                <button class="w8" @click="run()" :disabled="busy">Run once</button>
+            </div>
+            <label>Name: <input type="text" v-model="script.name" maxlength="100" :disabled="busy"></label>
+            <div>API: <code>freeCam.toggle()</code>, <code>freeCam.enable()</code>, <code>freeCam.disable()</code>,
+                <code>freeCam.isEnabled()</code>, <code>ui.systemMessage("Hello")</code>, <code>esp.toggle()</code> (no-op).</div>
+            <script-editor v-model="script.code" :type="'KEYBINDING'" :read-only="busy"></script-editor>
+            <pre v-if="message" role="status">{{ message }}</pre>
+        </template>
+    </div>
+</div>

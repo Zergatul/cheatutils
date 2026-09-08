@@ -60,11 +60,61 @@ public class ScriptingChecks {
                 "API must return compile diagnostics.");
         JsonObject executed = json(new ScriptApi(true).post("{\"code\":\"int value = 42;\"}"));
         require(executed.get("success").getAsBoolean() && executed.get("executed").getAsBoolean(), "API must execute valid code.");
+        verifySavedScripts();
         System.out.println("Packaged scripting checks passed: Java 8 execution, Forge ASM, diagnostics, API and failure recovery.");
     }
 
     private static JsonObject json(String text) {
         return new JsonParser().parse(text).getAsJsonObject();
+    }
+
+    private static void verifySavedScripts() throws Exception {
+        com.zergatul.cheatutils.modules.scripting.KeyBindings keys = com.zergatul.cheatutils.modules.scripting.KeyBindings.instance;
+        com.zergatul.cheatutils.configs.ConfigStore store = com.zergatul.cheatutils.configs.ConfigStore.instance;
+        java.nio.file.Path directory = java.nio.file.Files.createTempDirectory("cheatutils-scripts-");
+        java.io.File first = directory.resolve("first.json").toFile();
+        java.io.File second = directory.resolve("second.json").toFile();
+        store.read(first);
+        require(keys.list().size() == 2 && keys.get("Toggle ESP") != null, "Defaults must be installed for existing configs without scripting fields.");
+        keys.execute("Toggle ESP");
+        require(keys.getError("Toggle ESP") == null, "ESP placeholder must execute without effects or failure.");
+        com.zergatul.cheatutils.webui.KeyBindingScriptsApi api = new com.zergatul.cheatutils.webui.KeyBindingScriptsApi();
+        require(json(api.post("{\"name\":\"test\",\"code\":\"esp.toggle();\"}")).get("ok").getAsBoolean(), "Create API must save compiled code.");
+        keys.assign(4, "test");
+        require(!json(api.put("test", "{\"name\":\"renamed\",\"code\":\"esp.missing();\"}")).get("ok").getAsBoolean(), "Invalid save must return diagnostics.");
+        require(keys.get("test") != null && "test".equals(store.getConfig().keyBindingsConfig.bindings[4]), "Invalid rename must leave script and binding intact.");
+        require(json(api.put("test", "{\"name\":\"renamed\",\"code\":\"esp.toggle();\"}")).get("ok").getAsBoolean(), "Rename must succeed.");
+        require("renamed".equals(store.getConfig().keyBindingsConfig.bindings[4]), "Rename must preserve binding.");
+        keys.assign(4, "Toggle ESP");
+        require(json(api.get("renamed")).get("key").getAsInt() == -1, "Assignment must replace slot occupant.");
+        try {
+            keys.assign(30, "renamed");
+            throw new AssertionError("Out-of-range assignment accepted.");
+        } catch (IllegalArgumentException expected) { }
+        keys.assign(5, "renamed");
+        api.delete("renamed");
+        require(store.getConfig().keyBindingsConfig.bindings[5] == null, "Delete must clear assignment.");
+        keys.add("fails", "int zero = 0; int value = 1 / zero;");
+        keys.execute("fails");
+        require(keys.getError("fails") != null, "Runtime failure must disable the script.");
+        keys.update("fails", "fails", "esp.toggle();");
+        require(keys.getError("fails") == null, "Successful save must re-enable failed script.");
+        store.getWriteToFileTask().run();
+        store.createNew(second);
+        require(keys.get("fails") == null, "New profile must not retain old scripts.");
+        store.read(first);
+        require(keys.get("fails") != null && "Toggle ESP".equals(store.getConfig().keyBindingsConfig.bindings[4]), "Profile reload must restore saved scripts and assignments.");
+        keys.remove("Toggle ESP");
+        keys.remove("Toggle FreeCam");
+        keys.remove("fails");
+        store.getWriteToFileTask().run();
+        store.read(first);
+        require(keys.list().isEmpty(), "Explicitly empty script list must remain empty after reload.");
+        com.zergatul.cheatutils.configs.ConfigWriterQueue.instance.clear();
+        java.nio.file.Files.deleteIfExists(first.toPath());
+        java.nio.file.Files.deleteIfExists(second.toPath());
+        java.nio.file.Files.delete(directory);
+        System.out.println("Saved script checks passed: defaults, CRUD, assignments, recovery and profile reload.");
     }
 
     private static void verifyJar(String filename) throws Exception {

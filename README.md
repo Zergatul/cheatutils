@@ -1,8 +1,8 @@
 # CheatUtils for Minecraft 1.12.2
 
 Forge-only Java 8 project. Includes initialization, configuration profiles, and
-the HTTP backend, the Vue web UI, FreeCam, and a minimal scripting backend.
-The script editor and saved keybindings follow in batch 6.
+the HTTP backend, the Vue web UI, FreeCam, and saved keybinding scripts with a
+Monaco editor.
 
 ## Build
 
@@ -95,8 +95,9 @@ launch Minecraft. Batch 2 still needs live startup/shutdown and API verification
 The UI uses the 26.2 Vue loader unchanged: Vue 3.2.33 loads from jsDelivr first,
 then `/local/vue.esm-browser.prod.js` if the CDN fails. To use the fallback, place
 that Vue distribution file in the game's `mods/` directory. Google fonts are
-optional; the browser uses system fonts when unavailable. Monaco's lazy loader
-is retained for the scripting editor batch.
+optional; the browser uses system fonts when unavailable. Monaco loads lazily
+from jsDelivr with `/local/monaco-editor.js` as its fallback (place the compatible
+ES module bundle and any required assets in the game's `mods/` directory).
 
 Browser fixture checks cover all six categories, navigation, search, Core Config
 saving, and narrow-screen layout with both CDN and local Vue loading. These checks
@@ -106,7 +107,7 @@ use mock API responses; live Minecraft integration remains a separate checkpoint
 
 Open ESP → Free Cam in the web UI, join a world, and click Enable FreeCam. Return
 to the game to move the camera with WASD, jump, and sneak. Use the web button to
-disable it; the F6 binding will arrive with the keybindings/scripting batches.
+disable it, or use the default F6 binding.
 
 Settings retain the 26.2 names and `/api/free-cam` route. Runtime state is separate:
 `GET /api/free-cam-state` returns `active` and `available`; POST accepts the JSON
@@ -142,6 +143,7 @@ Available APIs:
 - `freeCam.toggle()`, `freeCam.enable()`, `freeCam.disable()`, `freeCam.isEnabled()`.
 - `ui.systemMessage("Hello");` displays a local chat message without sending it to
   the server.
+- `esp.toggle();` is a no-op placeholder for the default Toggle ESP script.
 
 Scripts are synchronous, one-shot programs on the client thread. This batch has
 no async scheduling, event scripts, Java interop, or execution time limit. The
@@ -171,3 +173,42 @@ reobfuscated jar on Java 8 with the older ASM present. It checks API compilation
 diagnostics, failure recovery, absence of bundled ASM and annotation stubs, and
 class-file versions.
 Minecraft-side API execution still needs the live checks above.
+
+## Keybinding scripts (batch 6)
+
+Open Scripting → Keybinding Scripts to create, edit, rename, remove, or assign
+scripts. The Monaco editor provides syntax highlighting, delayed compile
+diagnostics, fullscreen mode, and Run once without saving. Vue and Monaco retain
+their CDN-first loading and local-file fallbacks. Semantic completion and hover
+integration are not included yet.
+
+Minecraft Controls → CheatUtils contains Key 0 through Key 29. Physical key codes
+are saved by Minecraft in `options.txt`; script names, source, and assignments
+belong to the selected CheatUtils profile. New configurations include Toggle ESP
+on Key 0 (unbound) and Toggle FreeCam on Key 1 (F6). Existing Controls assignments
+are preserved. Removing all scripts leaves the list empty after a restart.
+
+Invalid saves leave the previous script and assignments intact. Invalid scripts
+loaded from a profile remain editable but inactive. A runtime failure disables
+only that keybinding script until it is successfully saved again or its profile
+is reloaded. Keys are drained while outside gameplay, in screens, or unfocused.
+
+`/api/keybinding-scripts` supports GET and POST; its encoded script-name suffix
+supports GET, PUT, and DELETE. POST/PUT accept `{"name":"...","code":"..."}` and
+return `ok` plus compile `diagnostics`. PUT to
+`/api/keybinding-scripts-assign/<encoded-name>` accepts an integer slot, or -1 to
+unassign. Each script has at most one slot; assigning an occupied slot replaces it.
+
+Build checks cover default scripts, failed saves, renames, assignment replacement,
+deletion, runtime recovery, and profile persistence. Browser fixture checks cover
+Monaco loading, editing, execution feedback, fullscreen mode, saving, and assignment
+replacement with mock API responses.
+
+Live review:
+
+- In a world, press F6 twice to enable/disable FreeCam; repeat from the release jar.
+- Create `ui.systemMessage("Key works");`, assign it a slot, and bind that slot in
+  Controls. Check that it runs in gameplay and not while typing in chat or menus.
+- Rename it and verify the assignment remains; remove it and verify the key is idle.
+- Check an invalid script in the editor, then test a runtime failure and save a fix.
+- Switch profiles and restart Minecraft to check script and physical-key persistence.

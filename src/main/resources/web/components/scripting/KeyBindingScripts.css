@@ -1,0 +1,34 @@
+div.scripts-list {
+    border: 0.2em solid var(--color1);
+    flex-grow: 1;
+    flex-basis: 15em;
+    overflow-y: auto;
+    font-family: var(--font2);
+}
+
+div.scripts-list > table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+div.scripts-list > table td {
+    border-bottom: 0.1em solid var(--color1);
+    padding: 0.3em 0.5em;
+}
+
+div.scripts-list td.script-name-cell {
+    width: 90%;
+}
+
+div.key-bindings {
+    width: min(72em, calc(100% - 4em));
+}
+
+div.key-bindings pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+div.key-bindings .scripts-list {
+    overflow-x: auto;
+}

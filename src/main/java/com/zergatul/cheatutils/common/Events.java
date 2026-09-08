@@ -5,6 +5,8 @@ import net.minecraft.entity.Entity;
 import java.util.List;
 
 public class Events {
+    public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
+    public static final SimpleEventHandler AfterHandleKeyBindings = new SimpleEventHandler();
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     public static final ParameterizedEventHandler<Float> RenderTickStart = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler LevelUnload = new SimpleEventHandler();

@@ -9,7 +9,7 @@ import com.zergatul.scripting.compiler.CompilationResult;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Backend entry points until the script editor and saved keybindings arrive. */
+/** Compile and run one-shot code from the web editor. */
 public class ScriptApi extends ApiBase {
     private final boolean execute;
 
@@ -59,7 +59,7 @@ public class ScriptApi extends ApiBase {
         String error;
     }
 
-    private static class Diagnostic {
+    static class Diagnostic {
         final String code, message;
         final int line, column, endLine, endColumn;
 

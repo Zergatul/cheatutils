@@ -25,6 +25,14 @@ module({
 });
 
 module({
+    group: 'scripting',
+    name: 'Keybinding Scripts',
+    component: 'KeyBindingScripts',
+    path: 'keybinding-scripts',
+    tags: ['scripts', 'keys', 'keybindings', 'editor']
+});
+
+module({
     group: 'utility',
     name: 'Core Config',
     component: 'Core',

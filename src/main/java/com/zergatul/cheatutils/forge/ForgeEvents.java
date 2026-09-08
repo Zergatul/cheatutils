@@ -11,6 +11,8 @@ public class ForgeEvents {
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             Events.ClientTickStart.trigger();
+        } else {
+            Events.AfterHandleKeyBindings.trigger();
         }
     }
 
