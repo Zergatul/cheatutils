@@ -5,7 +5,19 @@
     "package": "com.zergatul.cheatutils.mixins.common",
     "refmap": "cheatutils.refmap.json",
     "client": [
-        "MixinMinecraft"
+        "MixinMinecraft",
+        "MixinAbstractClientPlayer",
+        "MixinEntity",
+        "MixinEntityLivingBase",
+        "MixinEntityPlayerSP",
+        "MixinEntityRenderer",
+        "MixinGuiInGame",
+        "MixinGuiOverlayDebug",
+        "MixinItemRenderer",
+        "MixinRenderGlobal",
+        "MixinRenderManager",
+        "MixinRenderPlayer",
+        "MixinViewFrustum"
     ],
     "injectors": {
         "defaultRequire": 1

@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.CoreConfig;
+import com.zergatul.cheatutils.configs.FreeCamConfig;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
 
@@ -20,6 +21,16 @@ public class ApiHandler implements HttpHandler {
     public ApiHandler() {
         apis.add(new ProfilesApi());
         apis.add(new ResetConfigApi());
+        apis.add(new FreeCamApi());
+        apis.add(new SimpleConfigApi<FreeCamConfig>("free-cam", FreeCamConfig.class) {
+            protected FreeCamConfig getConfig() {
+                return ConfigStore.instance.getConfig().freeCamConfig;
+            }
+
+            protected void setConfig(FreeCamConfig config) {
+                ConfigStore.instance.getConfig().freeCamConfig = config;
+            }
+        });
         apis.add(new SimpleConfigApi<CoreConfig>("core", CoreConfig.class) {
             protected CoreConfig getConfig() {
                 return ConfigStore.instance.getConfig().coreConfig;

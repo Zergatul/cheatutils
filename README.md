@@ -1,7 +1,7 @@
 # CheatUtils for Minecraft 1.12.2
 
 Forge-only Java 8 project. Includes initialization, configuration profiles, and
-the HTTP backend, and the Vue web UI. FreeCam, keybindings, and scripting follow
+the HTTP backend, the Vue web UI, and FreeCam. Keybindings and scripting follow
 in later batches.
 
 ## Build
@@ -54,8 +54,8 @@ those development dependencies are not bundled wholesale into the release jar.
 
 The server listens on `127.0.0.1`, starting at port `5005` and trying up to 99 higher
 ports if occupied. The log reports the actual address. The home page keeps all six
-module categories visible, including empty groups. Utility contains Core Config
-and Profiles; other modules will be registered as they are implemented.
+module categories visible, including empty groups. ESP contains Free Cam; Utility
+contains Core Config and Profiles. Other modules will be registered as implemented.
 
 Configuration lives in the game's `config/` directory:
 
@@ -98,3 +98,25 @@ is retained for the scripting editor batch.
 Browser fixture checks cover all six categories, navigation, search, Core Config
 saving, and narrow-screen layout with both CDN and local Vue loading. These checks
 use mock API responses; live Minecraft integration remains a separate checkpoint.
+
+## FreeCam
+
+Open ESP → Free Cam in the web UI, join a world, and click Enable FreeCam. Return
+to the game to move the camera with WASD, jump, and sneak. Use the web button to
+disable it; the F6 binding will arrive with the keybindings/scripting batches.
+
+Settings retain the 26.2 names and `/api/free-cam` route. Runtime state is separate:
+`GET /api/free-cam-state` returns `active` and `available`; POST accepts the JSON
+string `"enable"`, `"disable"`, or `"toggle"`. Activation is never saved in a profile.
+Profile/world changes disable FreeCam. Camera motion pauses in screens or when
+the game loses focus. Remember Input State deliberately preserves the player's
+movement input captured at activation; leave it off to keep movement input idle.
+
+Batch 4 live checks:
+
+- Enable/disable from first and third person; verify camera/input restoration.
+- Fly through blocks, change speed/flight mode, and check mouse look and F3 coordinates.
+- Toggle targeting and hand rendering; check block/entity selection from the camera.
+- Open screens and switch focus; verify the camera does not jump on return.
+- Disconnect/rejoin, change dimensions, respawn, and switch profiles while active.
+- Repeat with the packaged jar. Camera paths and lock/follow modes are not included.

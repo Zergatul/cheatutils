@@ -17,6 +17,14 @@ const module = params => {
 };
 
 module({
+    group: 'esp',
+    name: 'Free Cam',
+    component: 'FreeCam',
+    path: 'freecam',
+    tags: ['freecam', 'camera']
+});
+
+module({
     group: 'utility',
     name: 'Core Config',
     component: 'Core',

@@ -1,0 +1,94 @@
+<div class="module-main">
+    <div class="description" v-if="error" role="alert">{{ error }}</div>
+    <div class="description">
+        You can move camera around and through blocks. Use the button below to toggle FreeCam, then return to Minecraft. Move with your movement keys, jump, and sneak.<br>
+    </div>
+
+    <div class="module-sections" v-if="config">
+        <div class="actions">
+            <button :disabled="busy || (!state.available && !state.active)" @click="toggle()">{{ state.active ? "Disable FreeCam" : "Enable FreeCam" }}</button>
+            <span v-if="!state.available">Join a world to enable FreeCam.</span>
+        </div>
+        <fieldset :disabled="busy">
+            <legend>
+                Camera Speed Settings
+            </legend>
+            <table class="inputs-table">
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="field-description">Acceleration:</span>
+                        </td>
+                        <td>
+                            <input type="text" class="w5" v-model.number="config.acceleration" @change="update()">
+                        </td>
+                        <td>
+                            <div class="input-description">How quickly you reach max speed. Blocks/sec^2</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="field-description">Max Speed:</span>
+                        </td>
+                        <td>
+                            <input type="text" class="w5" v-model.number="config.maxSpeed" @change="update()">
+                        </td>
+                        <td>
+                            <div class="input-description">Blocks/second</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="field-description">Slowdown Factor:</span>
+                        </td>
+                        <td>
+                            <input type="text" class="w5" v-model.number="config.slowdownFactor" @change="update()">
+                        </td>
+                        <td>
+                            <div class="input-description">How quickly you slowdown after releasing key, closer to zero = quicker, closer to one = slower.</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+
+        <fieldset :disabled="busy">
+            <legend>
+                <switch-checkbox v-model="config.renderHands" @change="update()">Render hands</switch-checkbox>
+            </legend>
+        </fieldset>
+
+        <fieldset :disabled="busy">
+            <legend>
+                <switch-checkbox v-model="config.target" @change="update()">FreeCam Targeting</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Use FreeCam position and rotation to target blocks/entities.
+            </div>
+        </fieldset>
+
+        <fieldset :disabled="busy">
+            <legend>
+                Flight Method
+            </legend>
+            <div>
+                <radio name="method" :value="false" v-model="config.spectatorFlight" @change="update()">Default</radio>
+            </div>
+            <div>
+                <radio name="method" :value="true" v-model="config.spectatorFlight" @change="update()">Creative</radio>
+            </div>
+        </fieldset>
+
+        <fieldset :disabled="busy">
+            <legend>
+                <switch-checkbox v-model="config.rememberInputState" @change="update()">Remember Input State</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Remembers state of WASD/Jump/Crouch keys when you activate FreeCam.
+                For example: you can hold Crouch while entering FreeCam, and character will stay in crouched state for entire FreeCam duration.
+            </div>
+        </fieldset>
+
+
+    </div>
+</div>

@@ -19,6 +19,7 @@ public class InfrastructureChecks {
         Path root = Files.createTempDirectory("cheatutils-checks-");
         try {
             checkQueue(root);
+            checkFreeCamConfig();
             checkSnapshots(root);
             checkFiles(root);
             System.out.println("Infrastructure checks passed (queue, snapshots, config recovery, HTTP files).");
@@ -49,6 +50,20 @@ public class InfrastructureChecks {
         queue.close();
         queue.close();
         require(value.get() == 4, "Close must flush pending writes.");
+    }
+
+    private static void checkFreeCamConfig() {
+        FreeCamConfig config = new FreeCamConfig();
+        config.acceleration = Double.NaN;
+        config.maxSpeed = Double.POSITIVE_INFINITY;
+        config.slowdownFactor = -1;
+        config.sanitize();
+        require(config.acceleration == 50 && config.maxSpeed == 50 && config.slowdownFactor == 1e-9,
+                "Invalid FreeCam settings must not poison camera coordinates.");
+        Config old = ConfigStore.instance.gson.fromJson("{}", Config.class);
+        old.sanitize();
+        require(old.freeCamConfig != null && old.freeCamConfig.target,
+                "Existing profiles must gain default FreeCam settings.");
     }
 
     private static void checkSnapshots(Path root) throws IOException {
