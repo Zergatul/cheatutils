@@ -26,6 +26,8 @@ import java.util.*;
 public class KeyBindings implements Module {
 
     public static final KeyBindings INSTANCE = new KeyBindings();
+    public static final String CATEGORY = "key.categories.cheatutils";
+    public static final String KEY_PREFIX = "key.cheatutils.reserved";
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private final KeyBinding[] keys;
@@ -38,10 +40,10 @@ public class KeyBindings implements Module {
         this.keys = new KeyBinding[KeyBindingsConfig.KEYS_COUNT];
         for (int i = 0; i < keys.length; i++) {
             this.keys[i] = new KeyBinding(
-                    "key.cheatutils.reserved" + i,
+                    KEY_PREFIX + i,
                     KeyConflictContext.IN_GAME,
                     Keyboard.KEY_NONE,
-                    "key.categories.cheatutils");
+                    CATEGORY);
         }
 
         this.actions = createOptionalArray(KeyBindingsConfig.KEYS_COUNT);
@@ -49,6 +51,10 @@ public class KeyBindings implements Module {
 
         Events.RegisterKeyBindings.add(this::onRegisterKeyBindings);
         Events.AfterHandleKeyBindings.add(this::onHandleKeyBindings);
+    }
+
+    public KeyBinding getKeyMappingByIndex(int index) {
+        return this.keys[index];
     }
 
     public void clear() {

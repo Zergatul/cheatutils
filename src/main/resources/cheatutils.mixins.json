@@ -12,6 +12,7 @@
       "MixinEntityPlayerSP",
       "MixinEntityRenderer",
       "MixinGuiInGame",
+      "MixinGuiKeybindingListKeyEntry",
       "MixinGuiOverlayDebug",
       "MixinItemRenderer",
       "MixinRenderGlobal",

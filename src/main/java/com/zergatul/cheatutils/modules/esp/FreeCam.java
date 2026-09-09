@@ -62,7 +62,6 @@ public class FreeCam implements Module {
         Events.DebugInfoLeft.add(this::onGetDebugInfoLeft);
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
         Events.RenderHand.add(this::onRenderHand);
-        Events.ConfigLoaded.add(this::disable);
         Events.Close.add(this::disable, -1);
     }
 
