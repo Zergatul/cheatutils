@@ -1,11 +1,17 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.scripting.ApiType;
+import com.zergatul.cheatutils.scripting.ApiVisibility;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TextComponentString;
 
+@SuppressWarnings("unused")
 public class UIApi {
-    /** Local output only; never sends a chat packet to the server. */
+
+    private final Minecraft mc = Minecraft.getMinecraft();
+
+    @ApiVisibility({ ApiType.ACTION, ApiType.LOGGING })
     public void systemMessage(String text) {
-        Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(text));
+        mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentString(text));
     }
 }

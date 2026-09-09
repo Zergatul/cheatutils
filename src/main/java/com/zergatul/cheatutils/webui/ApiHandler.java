@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.CoreConfig;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
+import com.zergatul.cheatutils.configs.MonacoEditorConfig;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
 
@@ -16,33 +17,50 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class ApiHandler implements HttpHandler {
+
     private final List<ApiBase> apis = new ArrayList<>();
 
     public ApiHandler() {
         apis.add(new ProfilesApi());
         apis.add(new ResetConfigApi());
-        apis.add(new ScriptApi(false));
-        apis.add(new ScriptApi(true));
         apis.add(new KeyBindingScriptsApi());
         apis.add(new ScriptsAssignApi());
-        apis.add(new FreeCamApi());
+        apis.add(new ScriptsDocsApi());
+
         apis.add(new SimpleConfigApi<FreeCamConfig>("free-cam", FreeCamConfig.class) {
+            @Override
             protected FreeCamConfig getConfig() {
                 return ConfigStore.instance.getConfig().freeCamConfig;
             }
 
+            @Override
             protected void setConfig(FreeCamConfig config) {
                 ConfigStore.instance.getConfig().freeCamConfig = config;
             }
         });
+
         apis.add(new SimpleConfigApi<CoreConfig>("core", CoreConfig.class) {
+            @Override
             protected CoreConfig getConfig() {
                 return ConfigStore.instance.getConfig().coreConfig;
             }
 
+            @Override
             protected void setConfig(CoreConfig config) {
                 ConfigStore.instance.getConfig().coreConfig = config;
                 ConfigHttpServer.instance.onConfigUpdated();
+            }
+        });
+
+        apis.add(new SimpleConfigApi<MonacoEditorConfig>("monaco-editor-settings", MonacoEditorConfig.class) {
+            @Override
+            protected MonacoEditorConfig getConfig() {
+                return ConfigStore.instance.getConfig().monacoEditor;
+            }
+
+            @Override
+            protected void setConfig(MonacoEditorConfig config) {
+                ConfigStore.instance.getConfig().monacoEditor = config;
             }
         });
     }
@@ -81,9 +99,7 @@ public class ApiHandler implements HttpHandler {
                             return api.delete(id);
                         default: throw new ApiException("Method not allowed", 405);
                     }
-                } catch (Exception e) {
-                    throw e;
-                } catch (Error e) {
+                } catch (Exception | Error e) {
                     throw e;
                 } catch (Throwable e) {
                     throw new RuntimeException(e);

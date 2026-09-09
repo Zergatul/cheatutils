@@ -1,11 +1,18 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.utils.MathUtils;
+
 public class CoreConfig implements Sanitizable {
-    public int port = 5005;
+
+    public int port;
     public boolean advancedScripting;
+
+    public CoreConfig() {
+        this.port = 5005;
+    }
 
     @Override
     public void sanitize() {
-        port = Math.max(1, Math.min(65535, port));
+        port = MathUtils.clamp(port, 1, 65535);
     }
 }

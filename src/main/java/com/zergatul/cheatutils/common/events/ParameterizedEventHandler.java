@@ -1,7 +1,5 @@
 package com.zergatul.cheatutils.common.events;
 
-
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,13 +41,17 @@ public class ParameterizedEventHandler<T> {
     }
 
     private static class Entry<T> implements Comparable<Entry<T>> {
-        final Consumer<T> handler;
-        final int priority1, priority2;
-        Entry(Consumer<T> handler, int priority1, int priority2) {
+
+        private final Consumer<T> handler;
+        private final int priority1;
+        private final int priority2;
+
+        private Entry(Consumer<T> handler, int priority1, int priority2) {
             this.handler = handler;
             this.priority1 = priority1;
             this.priority2 = priority2;
         }
+
         @Override
         public int compareTo(Entry<T> other) {
             int result = Integer.compare(priority1, other.priority1);

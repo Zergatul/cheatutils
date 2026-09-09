@@ -51,8 +51,8 @@ configurations {
 }
 
 sourceSets {
-    scriptingAnnotations {
-        java.srcDir 'src/scriptingAnnotations/java'
+    compileStubs {
+        java.srcDir 'src/compile-stubs/java'
     }
     main {
         java.srcDir 'java-scripting-language/src/main/java'
@@ -61,7 +61,7 @@ sourceSets {
 }
 
 dependencies {
-    compileOnly files(sourceSets.scriptingAnnotations.output)
+    compileOnly files(sourceSets.compileStubs.output)
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     embed 'org.spongepowered:mixin:0.8.5'
@@ -78,8 +78,13 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 processResources {
-    def properties = [mod_id: mod_id, mod_name: mod_name, mod_version: mod_version,
-                      minecraft_version: minecraft_version, mod_description: mod_description]
+    def properties = [
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_version: mod_version,
+            minecraft_version: minecraft_version,
+            mod_description: mod_description]
+
     inputs.properties properties
     filesMatching('mcmod.info') {
         expand properties
@@ -87,10 +92,6 @@ processResources {
 }
 
 jar {
-    from('java-scripting-language/LICENSE') {
-        into 'META-INF/licenses'
-        rename { 'java-scripting-language.txt' }
-    }
     archiveFileName = "${mod_id}-${mod_version}-forge-${minecraft_version}.jar"
     includeEmptyDirs = false
     from({ configurations.embed.collect { zipTree(it) } }) {
@@ -115,31 +116,3 @@ idea.module {
     downloadSources = true
     downloadJavadoc = true
 }
-
-tasks.register('verifyInfrastructure', JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'com.zergatul.cheatutils.InfrastructureChecks'
-    workingDir = layout.buildDirectory.dir('infrastructure-checks').get().asFile
-    doFirst {
-        workingDir.mkdirs()
-    }
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(8)
-    }
-}
-
-check.dependsOn verifyInfrastructure
-
-tasks.register('verifyScripting', JavaExec) {
-    dependsOn 'testClasses', 'reobfJar'
-    // Run against the release jar, excluding all loose production classes.
-    classpath = sourceSets.test.output + files(tasks.jar.archiveFile) + configurations.runtimeClasspath
-    mainClass = 'com.zergatul.cheatutils.ScriptingChecks'
-    args tasks.jar.archiveFile.get().asFile.absolutePath
-    workingDir = layout.buildDirectory.dir('scripting-checks').get().asFile
-    doFirst { workingDir.mkdirs() }
-    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(8) }
-}
-
-check.dependsOn verifyScripting

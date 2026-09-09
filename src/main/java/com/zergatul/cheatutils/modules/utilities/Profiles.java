@@ -14,10 +14,13 @@ import java.util.regex.Pattern;
 
 /** Called on the client thread, including all HTTP operations. */
 public class Profiles implements Module {
+
     public static final Profiles instance = new Profiles();
+
     private static final String PROFILE_CONFIG_FILE_NAME = "cheatutils-profile.json";
     private static final String DEFAULT_CONFIG_FILE_NAME = "cheatutils.json";
     private static final Pattern PATTERN = Pattern.compile("^cheatutils\\.(.+)\\.json$");
+
     private File directory;
     private String current = "";
     private boolean reset;
@@ -154,7 +157,7 @@ public class Profiles implements Module {
         ConfigWriterQueue.instance.flush(getProfileFile(name));
         String json = ConfigStore.instance.gson.toJson(new ProfileConfig(name));
         File file = getProfileConfigFile();
-        ConfigWriterQueue.instance.queue(file, ConfigStore.WRITE_FILE_DELAY, () -> ConfigStore.write(file, json));
+        ConfigWriterQueue.instance.queue(file, ConfigStore.WRITE_FILE_DELAY, () -> ConfigStore.instance.write(file, json));
     }
 
     private void flushCurrent() {
@@ -186,6 +189,7 @@ public class Profiles implements Module {
     }
 
     public static class ProfileConfig {
+
         public String name;
 
         public ProfileConfig(String name) {

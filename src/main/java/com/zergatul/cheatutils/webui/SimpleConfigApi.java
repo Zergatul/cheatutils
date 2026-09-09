@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.Sanitizable;
 
 public abstract class SimpleConfigApi<T> extends ApiBase {
+
     private final String route;
     private final Class<T> clazz;
 

@@ -1,21 +1,14 @@
 package com.zergatul.cheatutils.common.events;
 
-import net.minecraft.client.entity.EntityPlayerSP;
-
 public class PlayerTurnByMouseEvent implements CancelableEvent {
 
-    private final EntityPlayerSP player;
-    private final double xRot, yRot;
+    private final double xRot;
+    private final double yRot;
     private boolean canceled;
 
-    public PlayerTurnByMouseEvent(EntityPlayerSP player, double xRot, double yRot) {
-        this.player = player;
+    public PlayerTurnByMouseEvent(double xRot, double yRot) {
         this.xRot = xRot;
         this.yRot = yRot;
-    }
-
-    public EntityPlayerSP getPlayer() {
-        return player;
     }
 
     public double getXRot() {

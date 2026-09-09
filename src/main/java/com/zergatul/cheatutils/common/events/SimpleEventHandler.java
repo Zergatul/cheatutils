@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class SimpleEventHandler {
+
     private final List<Entry> entries = new ArrayList<>();
 
     public void add(Runnable handler) {

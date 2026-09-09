@@ -1,7 +1,11 @@
 <div class="script-editor" :class="{ fullscreen: isFullscreen }">
     <div class="script-editor-content" ref="editor"></div>
-    <p v-if="error" role="alert">{{ error }}</p>
-    <button type="button" class="fullscreen-toggle" @click="toggleFullscreen()"
+    <button
+        type="button"
+        class="fullscreen-toggle"
         :title="isFullscreen ? 'Exit full screen' : 'Full screen'"
-        :aria-label="isFullscreen ? 'Exit full screen' : 'Full screen'">⛶</button>
+        :aria-label="isFullscreen ? 'Exit full screen' : 'Full screen'"
+        @click="toggleFullscreen()">
+        <span class="codicon" :class="isFullscreen ? 'codicon-screen-normal' : 'codicon-screen-full'"></span>
+    </button>
 </div>

@@ -1,19 +1,30 @@
-<div class="module-main">
-    <div class="description" v-if="error" role="alert">{{ error }}</div>
-    <div class="module-sections" v-if="config">
-        <fieldset :disabled="saving">
-            <legend>HTTP Server Default Port</legend>
+<div class="module-main" v-if="config">
+    <div class="description">
+        
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                HTTP Server Default Port
+            </legend>
             <div>
-                <input type="number" min="1" max="65535" step="1" aria-label="HTTP server default port"
-                    v-model.number="config.port" @change="update()">
+                <input type="text" v-model="config.port" @change="update()">
             </div>
-            <div class="section-description">Default value: 5005</div>
-            <div class="section-description" v-if="saved" role="status">
-                Saved.
-                <template v-if="portChanged">
-                    The server address has changed. Check the Minecraft log for the new address;
-                    an occupied port causes the server to use a higher port.
-                </template>
+            <div class="section-description">
+                Default value: 5005
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.advancedScripting" @change="update()">Advanced Scripting</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Allows to use <b>http</b>, <b>os</b> APIs from scripting.
+                These methods are considered more dangereous, and if you don't understand what script is doing and just copy paste something from internet, it can potentially do as much as installing malware or stealing your data.
+                <br>
+                It also enables usage of Java Interop (Java&lt;...&gt; types).
             </div>
         </fieldset>
     </div>

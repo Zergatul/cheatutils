@@ -13,16 +13,16 @@ public class Vector3f {
     public float y;
     public float z;
 
-    public Vector3f(float p_i48098_1_, float p_i48098_2_, float p_i48098_3_) {
-        this.x = p_i48098_1_;
-        this.y = p_i48098_2_;
-        this.z = p_i48098_3_;
+    public Vector3f(float x, float y, float z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
-    public void set(float p_195905_1_, float p_195905_2_, float p_195905_3_) {
-        this.x = p_195905_1_;
-        this.y = p_195905_2_;
-        this.z = p_195905_3_;
+    public void set(float x, float y, float z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
     public Quaternion rotationDegrees(float p_229187_1_) {

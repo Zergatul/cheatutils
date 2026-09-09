@@ -1,15 +1,10 @@
-<div class="module-main">
-    <div class="description" v-if="error" role="alert">{{ error }}</div>
+<div class="module-main" v-if="config">
     <div class="description">
-        You can move camera around and through blocks. Use the button below to toggle FreeCam, then return to Minecraft. Move with your movement keys, jump, and sneak.<br>
+        You can move camera around and through blocks. Default key F6, but can be changed in options. You can open chests through walls or attack entities.<br>
     </div>
 
-    <div class="module-sections" v-if="config">
-        <div class="actions">
-            <button :disabled="busy || (!state.available && !state.active)" @click="toggle()">{{ state.active ? "Disable FreeCam" : "Enable FreeCam" }}</button>
-            <span v-if="!state.available">Join a world to enable FreeCam.</span>
-        </div>
-        <fieldset :disabled="busy">
+    <div class="module-sections">
+        <fieldset>
             <legend>
                 Camera Speed Settings
             </legend>
@@ -20,7 +15,7 @@
                             <span class="field-description">Acceleration:</span>
                         </td>
                         <td>
-                            <input type="text" class="w5" v-model.number="config.acceleration" @change="update()">
+                            <input type="text" class="w5" v-model="config.acceleration" @change="update()">
                         </td>
                         <td>
                             <div class="input-description">How quickly you reach max speed. Blocks/sec^2</div>
@@ -31,7 +26,7 @@
                             <span class="field-description">Max Speed:</span>
                         </td>
                         <td>
-                            <input type="text" class="w5" v-model.number="config.maxSpeed" @change="update()">
+                            <input type="text" class="w5" v-model="config.maxSpeed" @change="update()">
                         </td>
                         <td>
                             <div class="input-description">Blocks/second</div>
@@ -42,7 +37,7 @@
                             <span class="field-description">Slowdown Factor:</span>
                         </td>
                         <td>
-                            <input type="text" class="w5" v-model.number="config.slowdownFactor" @change="update()">
+                            <input type="text" class="w5" v-model="config.slowdownFactor" @change="update()">
                         </td>
                         <td>
                             <div class="input-description">How quickly you slowdown after releasing key, closer to zero = quicker, closer to one = slower.</div>
@@ -52,13 +47,13 @@
             </table>
         </fieldset>
 
-        <fieldset :disabled="busy">
+        <fieldset>
             <legend>
                 <switch-checkbox v-model="config.renderHands" @change="update()">Render hands</switch-checkbox>
             </legend>
         </fieldset>
 
-        <fieldset :disabled="busy">
+        <fieldset>
             <legend>
                 <switch-checkbox v-model="config.target" @change="update()">FreeCam Targeting</switch-checkbox>
             </legend>
@@ -67,7 +62,7 @@
             </div>
         </fieldset>
 
-        <fieldset :disabled="busy">
+        <fieldset>
             <legend>
                 Flight Method
             </legend>
@@ -79,7 +74,7 @@
             </div>
         </fieldset>
 
-        <fieldset :disabled="busy">
+        <fieldset>
             <legend>
                 <switch-checkbox v-model="config.rememberInputState" @change="update()">Remember Input State</switch-checkbox>
             </legend>
@@ -88,7 +83,5 @@
                 For example: you can hold Crouch while entering FreeCam, and character will stay in crouched state for entire FreeCam duration.
             </div>
         </fieldset>
-
-
     </div>
 </div>

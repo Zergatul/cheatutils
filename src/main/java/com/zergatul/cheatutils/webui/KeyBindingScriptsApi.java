@@ -1,56 +1,81 @@
 package com.zergatul.cheatutils.webui;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.KeyBindingScriptsConfig.ScriptEntry;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.scripting.DiagnosticMessage;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.*;
 
 public class KeyBindingScriptsApi extends ApiBase {
-    public String getRoute() { return "keybinding-scripts"; }
+
+    @Override
+    public String getRoute() {
+        return "keybinding-scripts";
+    }
+
+    @Override
     public String get() {
-        List<Script> list = new ArrayList<>();
-        for (ScriptEntry entry : KeyBindings.instance.list()) list.add(new Script(entry));
-        return gson.toJson(list);
+        String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
+        return gson.toJson(KeyBindings.INSTANCE.list().stream().map(s -> {
+            int index = ArrayUtils.indexOf(bindings, s.name);
+            return new Script(s.name, index);
+        }).toArray());
     }
-    public String get(String name) {
-        ScriptEntry entry = KeyBindings.instance.get(name);
-        if (entry == null) throw new IllegalArgumentException("Script does not exist.");
-        return gson.toJson(new Script(entry));
+
+    @Override
+    public String get(String id) {
+        KeyBindings.Script script = KeyBindings.INSTANCE.get(id);
+        if (script == null) {
+            return gson.toJson((Object) null);
+        } else {
+            return gson.toJson(new Script(script));
+        }
     }
+
+    @Override
+    public String put(String id, String body) {
+        Script script = gson.fromJson(body, Script.class);
+        List<DiagnosticMessage> messages = KeyBindings.INSTANCE.update(id, script.name, script.code);
+        if (!messages.isEmpty()) {
+            return gson.toJson(messages);
+        }
+        ConfigStore.instance.requestWrite();
+        return "{ \"ok\": true }";
+    }
+
+    @Override
     public String post(String body) {
-        ScriptEntry entry = parse(body);
-        return result(KeyBindings.instance.add(entry.name, entry.code));
+        Script script = gson.fromJson(body, Script.class);
+        List<DiagnosticMessage> messages = KeyBindings.INSTANCE.add(script.name, script.code, false);
+        if (!messages.isEmpty()) {
+            return gson.toJson(messages);
+        }
+        ConfigStore.instance.requestWrite();
+        return "{ \"ok\": true }";
     }
-    public String put(String name, String body) {
-        ScriptEntry entry = parse(body);
-        return result(KeyBindings.instance.update(name, entry.name, entry.code));
-    }
-    public String delete(String name) {
-        KeyBindings.instance.remove(name);
+
+    @Override
+    public String delete(String id) {
+        KeyBindings.INSTANCE.remove(id);
+        ConfigStore.instance.requestWrite();
         return "true";
     }
-    private ScriptEntry parse(String body) {
-        ScriptEntry entry = gson.fromJson(body, ScriptEntry.class);
-        if (entry == null) throw new IllegalArgumentException("Script is required.");
-        return entry;
-    }
-    private String result(List<DiagnosticMessage> messages) {
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("ok", messages.isEmpty());
-        List<ScriptApi.Diagnostic> diagnostics = new ArrayList<>();
-        for (DiagnosticMessage message : messages) diagnostics.add(new ScriptApi.Diagnostic(message));
-        response.put("diagnostics", diagnostics);
-        return gson.toJson(response);
-    }
-    private static class Script {
-        String name, code, error;
-        int key;
-        Script(ScriptEntry entry) {
-            name = entry.name;
-            code = entry.code;
-            error = KeyBindings.instance.getError(name);
-            key = Arrays.asList(ConfigStore.instance.getConfig().keyBindingsConfig.bindings).indexOf(name);
+
+    public static class Script {
+
+        public String name;
+        public String code;
+        public int key;
+
+        public Script(String name, int key) {
+            this.name = name;
+            this.key = key;
+        }
+
+        public Script(KeyBindings.Script script) {
+            name = script.name;
+            code = script.code;
         }
     }
 }

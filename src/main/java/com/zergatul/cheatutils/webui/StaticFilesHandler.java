@@ -8,9 +8,6 @@ import org.apache.commons.io.IOUtils;
 import java.io.*;
 
 public class StaticFilesHandler implements HttpHandler {
-    protected InputStream open(String path) throws IOException {
-        return ResourceHelper.get("web/" + (path.equals("/") ? "index.html" : path.substring(1)));
-    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -19,6 +16,7 @@ public class StaticFilesHandler implements HttpHandler {
                 exchange.sendResponseHeaders(405, -1);
                 return;
             }
+
             String path = exchange.getRequestURI().getPath();
             try (InputStream stream = open(path)) {
                 if (stream == null) {
@@ -40,5 +38,9 @@ public class StaticFilesHandler implements HttpHandler {
         } finally {
             exchange.close();
         }
+    }
+
+    protected InputStream open(String path) throws IOException {
+        return ResourceHelper.get("web/" + (path.equals("/") ? "index.html" : path.substring(1)));
     }
 }

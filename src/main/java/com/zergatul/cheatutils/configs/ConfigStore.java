@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.modules.utilities.Profiles;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,11 +17,13 @@ import java.util.function.Function;
 
 /** Configuration mutations and snapshot creation belong to the client thread. */
 public class ConfigStore {
+
     public static final ConfigStore instance = new ConfigStore();
     public static final long WRITE_FILE_DELAY = TimeUnit.SECONDS.toNanos(15);
-    private static final Logger LOGGER = LogManager.getLogger(ConfigStore.class);
 
     public final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    private final Logger logger = LogManager.getLogger(ConfigStore.class);
     private Config config = new Config();
     private File currentFile;
 
@@ -37,18 +40,13 @@ public class ConfigStore {
                     throw new JsonParseException("Expected a configuration object.");
                 }
             } catch (IOException | RuntimeException e) {
-                LOGGER.error("Cannot read config {}", file, e);
-                // Preserve the original before subsequent saves can replace it.
-                try {
-                    Files.copy(file.toPath(), new File(file + ".invalid-" + System.currentTimeMillis()).toPath());
-                } catch (IOException backupError) {
-                    throw new IllegalStateException("Cannot preserve invalid config " + file, backupError);
-                }
+                logger.error("Cannot read config {}", file, e);
                 next = new Config();
             }
         }
+
         currentFile = file;
-        config = next;
+        setConfig(next);
         onConfigLoaded();
     }
 
@@ -59,13 +57,13 @@ public class ConfigStore {
 
     public void createNew(File file) {
         currentFile = file;
-        config = new Config();
+        setConfig(new Config());
         onConfigLoaded();
         requestWrite();
     }
 
     public void requestWrite() {
-        if (currentFile != null && !com.zergatul.cheatutils.modules.utilities.Profiles.instance.isInResetState()) {
+        if (currentFile != null && !Profiles.instance.isInResetState()) {
             ConfigWriterQueue.instance.queue(currentFile, WRITE_FILE_DELAY, getWriteToFileTask());
         }
     }
@@ -76,7 +74,7 @@ public class ConfigStore {
         return () -> write(file, json);
     }
 
-    public static void write(File file, String json) {
+    public void write(File file, String json) {
         Path temporary = null;
         try {
             Path target = file.toPath().toAbsolutePath();
@@ -89,13 +87,13 @@ public class ConfigStore {
                 Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
-            LOGGER.error("Cannot write config {}", file, e);
+            logger.error("Cannot write config {}", file, e);
         } finally {
             if (temporary != null) {
                 try {
                     Files.deleteIfExists(temporary);
                 } catch (IOException e) {
-                    LOGGER.warn("Cannot remove temporary config {}", temporary, e);
+                    logger.warn("Cannot remove temporary config {}", temporary, e);
                 }
             }
         }
@@ -113,5 +111,11 @@ public class ConfigStore {
     private void onConfigLoaded() {
         config.sanitize();
         Events.ConfigLoaded.trigger();
+    }
+
+    // only this method should update this.config
+    private void setConfig(Config config) {
+        //config.blocks.refreshMap();
+        this.config = config;
     }
 }

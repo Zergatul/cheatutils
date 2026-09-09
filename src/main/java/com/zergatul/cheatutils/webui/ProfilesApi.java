@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 
 public class ProfilesApi extends ApiBase {
+
     @Override
     public String getRoute() {
         return "profiles";

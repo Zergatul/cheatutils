@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 
 import java.io.File;
@@ -12,37 +13,22 @@ import java.util.concurrent.TimeUnit;
 
 /** Serializes writes, flushes and cancellation so deleted profiles cannot reappear. */
 public class ConfigWriterQueue implements AutoCloseable {
+
     public static final ConfigWriterQueue instance = new ConfigWriterQueue();
 
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread thread = new Thread(r, "cheatutils config writer");
-        thread.setDaemon(true);
-        return thread;
-    });
-    private final Map<File, Entry> pending = new HashMap<>();
+    private final ScheduledExecutorService executor;
+    private final Map<File, Entry> pending;
     private boolean closed;
 
     public ConfigWriterQueue() {
-        Events.Close.add(this::onClose);
+        this.executor = Executors.newSingleThreadScheduledExecutor(ConfigWriterQueue::createExecutorThread);
+        this.pending = new HashMap<>();
+        Events.Close.add(this::close);
     }
 
-    private void onClose() { close(); }
-
-    public synchronized void queue(File file, long timeout, Runnable runnable) {
-        if (closed) {
-            return;
-        }
-        cancel(file);
-        Entry entry = new Entry(runnable);
-        pending.put(file, entry);
-        entry.future = executor.schedule(() -> save(file, entry), timeout, TimeUnit.NANOSECONDS);
-    }
-
-    private synchronized void save(File file, Entry entry) {
-        if (pending.get(file) == entry) {
-            pending.remove(file);
-            entry.runnable.run();
-        }
+    public synchronized void clear() {
+        pending.values().forEach(entry -> entry.future.cancel(false));
+        pending.clear();
     }
 
     public synchronized void flush(File file) {
@@ -53,16 +39,22 @@ public class ConfigWriterQueue implements AutoCloseable {
         }
     }
 
+    public synchronized void queue(File file, long timeout, Runnable runnable) {
+        if (closed) {
+            return;
+        }
+
+        cancel(file);
+        Entry entry = new Entry(runnable);
+        pending.put(file, entry);
+        entry.future = executor.schedule(() -> save(file, entry), timeout, TimeUnit.NANOSECONDS);
+    }
+
     public synchronized void cancel(File file) {
         Entry entry = pending.remove(file);
         if (entry != null) {
             entry.future.cancel(false);
         }
-    }
-
-    public synchronized void clear() {
-        pending.values().forEach(entry -> entry.future.cancel(false));
-        pending.clear();
     }
 
     @Override
@@ -77,11 +69,25 @@ public class ConfigWriterQueue implements AutoCloseable {
         executor.shutdown();
     }
 
-    private static class Entry {
-        final Runnable runnable;
-        ScheduledFuture<?> future;
+    private synchronized void save(File file, Entry entry) {
+        if (pending.get(file) == entry) {
+            pending.remove(file);
+            entry.runnable.run();
+        }
+    }
 
-        Entry(Runnable runnable) {
+    private static Thread createExecutorThread(Runnable runnable) {
+        Thread thread = new Thread(runnable, Constants.MOD_ID + " config writer");
+        thread.setDaemon(true);
+        return thread;
+    }
+
+    private static class Entry {
+
+        private final Runnable runnable;
+        private ScheduledFuture<?> future;
+
+        private Entry(Runnable runnable) {
             this.runnable = runnable;
         }
     }

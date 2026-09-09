@@ -5,9 +5,10 @@ import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import org.apache.logging.log4j.LogManager;
 
 public class Modules {
+
     public static void register() {
-        register(FreeCam.instance);
-        register(KeyBindings.instance);
+        register(FreeCam.INSTANCE);
+        register(KeyBindings.INSTANCE);
     }
 
     private static void register(Module module) {

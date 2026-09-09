@@ -1,21 +1,123 @@
 package com.zergatul.cheatutils.scripting;
 
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import org.apache.logging.log4j.LogManager;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /** Synchronous one-shot execution; callers execute on the Minecraft client thread. */
 public class ScriptExecutionManager {
-    public static final ScriptExecutionManager instance = new ScriptExecutionManager();
 
-    /** Returns the failure, or null on success. A failure does not affect later executions. */
-    public Throwable execute(ScriptType type, Runnable program) {
-        try {
-            program.run();
-            return null;
-        } catch (VirtualMachineError | ThreadDeath fatal) {
-            throw fatal;
-        } catch (Throwable failure) {
-            LogManager.getLogger(ScriptExecutionManager.class).error("{} script failed", type, failure);
-            return failure;
+    public static final ScriptExecutionManager INSTANCE = new ScriptExecutionManager();
+
+    private static final int LIFECYCLE_PRIORITY = -100;
+
+    private final Map<ScriptRef, CompletableFuture<?>> namedExecutions = new HashMap<>();
+    private final Set<CompletableFuture<?>> anonymousExecutions = new HashSet<>();
+
+    private ScriptExecutionManager() {
+        Events.Close.add(this::cancelAll, LIFECYCLE_PRIORITY);
+    }
+
+    public CompletableFuture<?> execute(ScriptRef ref, AsyncRunnable script) {
+        return execute(ref, script, null);
+    }
+
+    public CompletableFuture<?> execute(ScriptRef ref, AsyncRunnable script, Consumer<Throwable> onComplete) {
+        Objects.requireNonNull(ref);
+        Objects.requireNonNull(script);
+
+        CompletableFuture<?> future;
+        synchronized (this) {
+            CompletableFuture<?> current = namedExecutions.get(ref);
+            if (current != null && !current.isDone()) {
+                return current;
+            }
+
+            future = Objects.requireNonNull(script.run(), "Async script returned a null future.");
+            namedExecutions.put(ref, future);
         }
+
+        future.whenComplete((result, throwable) -> removeIfCurrent(ref, future));
+        if (onComplete != null) {
+            future.whenComplete((result, throwable) -> onComplete.accept(throwable));
+        }
+        return future;
+    }
+
+    public CompletableFuture<?> execute(AsyncRunnable script) {
+        Objects.requireNonNull(script);
+
+        CompletableFuture<?> future = Objects.requireNonNull(script.run(), "Async script returned a null future.");
+        track(future);
+        return future;
+    }
+
+    public void track(ScriptRef ref, CompletableFuture<?> future) {
+        Objects.requireNonNull(ref);
+        Objects.requireNonNull(future);
+
+        CompletableFuture<?> previous;
+        synchronized (this) {
+            previous = namedExecutions.put(ref, future);
+        }
+
+        future.whenComplete((result, throwable) -> removeIfCurrent(ref, future));
+
+        if (previous != null && previous != future) {
+            previous.cancel(false);
+        }
+    }
+
+    private void track(CompletableFuture<?> future) {
+        synchronized (this) {
+            anonymousExecutions.add(future);
+        }
+        future.whenComplete((result, throwable) -> removeAnonymous(future));
+    }
+
+    public void cancel(ScriptRef ref) {
+        Objects.requireNonNull(ref);
+
+        CompletableFuture<?> future;
+        synchronized (this) {
+            future = namedExecutions.remove(ref);
+        }
+        if (future != null) {
+            future.cancel(false);
+        }
+    }
+
+    public void cancelAll() {
+        Set<CompletableFuture<?>> futures;
+        synchronized (this) {
+            futures = new HashSet<>(namedExecutions.values());
+            futures.addAll(anonymousExecutions);
+            namedExecutions.clear();
+            anonymousExecutions.clear();
+        }
+        for (CompletableFuture<?> future : futures) {
+            future.cancel(false);
+        }
+    }
+
+    public synchronized boolean isRunning(ScriptRef ref) {
+        CompletableFuture<?> future = namedExecutions.get(Objects.requireNonNull(ref));
+        return future != null && !future.isDone();
+    }
+
+    private synchronized int getActiveCount() {
+        return namedExecutions.size() + anonymousExecutions.size();
+    }
+
+    private synchronized void removeIfCurrent(ScriptRef ref, CompletableFuture<?> future) {
+        namedExecutions.remove(ref, future);
+    }
+
+    private synchronized void removeAnonymous(CompletableFuture<?> future) {
+        anonymousExecutions.remove(future);
     }
 }

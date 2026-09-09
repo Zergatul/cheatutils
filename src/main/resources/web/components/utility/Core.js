@@ -1,41 +1,32 @@
 import * as http from '/http.js'
+import { components } from '/components.js'
 
 export function createComponent(template) {
-    return {
-        template,
+    const args = {
+        template: template,
         created() {
             http.get('/api/core').then(response => {
                 this.config = response;
-            }).catch(error => this.showError(error));
+            });
         },
         data() {
-            return { config: null, saving: false, error: '', saved: false, portChanged: false };
+            return {
+                config: null
+            };
         },
         methods: {
-            showError(error) {
-                this.error = error.response || error.message || String(error);
-            },
-            async update() {
-                this.error = '';
-                this.saved = false;
-                this.portChanged = false;
-                const port = Number(this.config.port);
-                if (!Number.isInteger(port) || port < 1 || port > 65535) {
-                    this.error = 'Enter a port from 1 to 65535.';
-                    return;
-                }
-                this.saving = true;
-                try {
-                    const previous = await http.get('/api/core');
-                    this.config = await http.post('/api/core', { ...this.config, port });
-                    this.saved = true;
-                    this.portChanged = previous.port != this.config.port;
-                } catch (error) {
-                    this.showError(error);
-                } finally {
-                    this.saving = false;
-                }
+            update() {
+                http.post('/api/core', this.config).then(response => {
+                    this.config = response;
+                    if (location.port != this.config.port) {
+                        setTimeout(() => {
+                            location.assign(location.protocol + '//' + location.hostname + ':' + this.config.port + '/');
+                        }, 500);
+                    }
+                });
             }
         }
     };
+    components.add(args, 'SwitchCheckbox');
+    return args;
 }

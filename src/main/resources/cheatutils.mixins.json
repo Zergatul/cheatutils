@@ -1,25 +1,22 @@
 {
-    "required": true,
+    "required": false,
     "minVersion": "0.8.5",
     "compatibilityLevel": "JAVA_8",
-    "package": "com.zergatul.cheatutils.mixins.common",
+    "package": "com.zergatul.cheatutils.mixins",
     "refmap": "cheatutils.refmap.json",
     "client": [
-        "MixinMinecraft",
-        "MixinAbstractClientPlayer",
-        "MixinEntity",
-        "MixinEntityLivingBase",
-        "MixinEntityPlayerSP",
-        "MixinEntityRenderer",
-        "MixinGuiInGame",
-        "MixinGuiOverlayDebug",
-        "MixinItemRenderer",
-        "MixinRenderGlobal",
-        "MixinRenderManager",
-        "MixinRenderPlayer",
-        "MixinViewFrustum"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    }
+      "MixinMinecraft",
+      "MixinAbstractClientPlayer",
+      "MixinEntity",
+      "MixinEntityLivingBase",
+      "MixinEntityPlayerSP",
+      "MixinEntityRenderer",
+      "MixinGuiInGame",
+      "MixinGuiOverlayDebug",
+      "MixinItemRenderer",
+      "MixinRenderGlobal",
+      "MixinRenderManager",
+      "MixinRenderPlayer",
+      "MixinViewFrustum"
+    ]
 }

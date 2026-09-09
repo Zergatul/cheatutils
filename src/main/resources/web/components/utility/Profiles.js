@@ -1,43 +1,89 @@
-import * as http from '/http.js'
-
 export function createComponent(template) {
-    return {
-        template,
-        created() { this.load().catch(error => this.showError(error)); },
+    const args = {
+        template: template,
+        created() {
+            this.load();
+        },
         data() {
-            return { loaded: false, profiles: [], selectedProfile: '', newProfile: '', isValidName: false, busy: false, error: '' };
+            return {
+                loaded: false,
+                profiles: null,
+                selectedProfile: null,
+                newProfile: '',
+                isValidName: false
+            };
         },
         methods: {
-            showError(error) { this.error = error.response || error.message || String(error); },
-            async perform(action) {
-                this.busy = true;
-                this.error = '';
-                try {
-                    await action();
-                    await this.load();
-                } catch (error) {
-                    this.showError(error);
-                } finally {
-                    this.busy = false;
-                }
+            change() {
+                fetch('/api/profiles', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        command: 'change',
+                        name: this.selectedProfile
+                    })
+                });
             },
-            change() { return this.perform(() => http.post('/api/profiles', { command: 'change', name: this.selectedProfile })); },
-            createCopy() { return this.perform(() => http.post('/api/profiles', { command: 'copy', name: this.newProfile })); },
-            createNew() { return this.perform(() => http.post('/api/profiles', { command: 'new', name: this.newProfile })); },
-            remove() { return this.perform(() => http.delete('/api/profiles/' + encodeURIComponent(this.selectedProfile))); },
-            async load() {
-                const [current, profiles] = await Promise.all([http.get('/api/profiles/current'), http.get('/api/profiles/list')]);
-                this.selectedProfile = current;
-                this.profiles = profiles;
-                this.loaded = true;
-                this.validate();
+            createCopy() {
+                fetch('/api/profiles', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        command: 'copy',
+                        name: this.newProfile
+                    })
+                }).then(() => {
+                    this.load();
+                });
+            },
+            createNew() {
+                fetch('/api/profiles', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        command: 'new',
+                        name: this.newProfile
+                    })
+                }).then(() => {
+                    this.load();
+                });
+            },
+            remove() {
+                fetch('/api/profiles/' + encodeURIComponent(this.selectedProfile), {
+                    method: 'DELETE'
+                }).then(() => {
+                    this.load();
+                });
+            },
+            load() {
+                fetch('/api/profiles/current').then(async response => {
+                    this.selectedProfile = await response.json();
+                    this.setLoaded();
+                });
+                fetch('/api/profiles/list').then(async response => {
+                    this.profiles = await response.json();
+                    this.setLoaded();
+                });
+            },
+            setLoaded() {
+                this.loaded = this.selectedProfile != null && this.profiles != null;
             },
             validate() {
-                const name = this.newProfile;
-                this.isValidName = name.trim().length > 0 && name.length <= 100 &&
-                    !/[\\/:*?"<>|\x00-\x1f]/.test(name) && !/[. ]$/.test(name) &&
-                    !this.profiles.some(profile => profile.toLowerCase() == name.toLowerCase());
+                if (this.newProfile.length == 0) {
+                    this.isValidName = false;
+                    return;
+                }
+
+                const invalidChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|'];
+                for (let ch1 of this.newProfile) {
+                    for (let ch2 of invalidChars) {
+                        if (ch1 == ch2) {
+                            this.isValidName = false;
+                            return;
+                        }
+                    }
+                }
+
+                this.isValidName = true;
             }
         }
     };
+    return args;
 }
