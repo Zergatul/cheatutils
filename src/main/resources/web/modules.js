@@ -26,7 +26,7 @@ module({
 
 module({
     group: 'scripting',
-    name: 'Keybinding Scripts',
+    name: 'Key Bindings',
     component: 'KeyBindingScripts',
     path: 'keybinding-scripts',
     tags: ['scripts', 'keys', 'keybindings', 'editor']

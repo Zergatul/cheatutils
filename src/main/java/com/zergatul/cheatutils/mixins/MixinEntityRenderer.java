@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mixins;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.renderer.EntityRenderer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +28,7 @@ public abstract class MixinEntityRenderer {
                     target = "Lnet/minecraft/client/renderer/EntityRenderer;renderWorld(FJ)V",
                     shift = At.Shift.AFTER))
     private void onAfterUpdateCameraAndRender(float partialTicks, long nanoTime, CallbackInfo info) {
-        Events.AfterRenderWorld.trigger();
+        Events.AfterRenderWorld.trigger(new RenderWorldLastEvent());
     }
 
     @Inject(at = @At("HEAD"), method = "getMouseOver(F)V")

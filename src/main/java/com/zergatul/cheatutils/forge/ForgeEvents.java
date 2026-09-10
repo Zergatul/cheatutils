@@ -9,16 +9,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 public class ForgeEvents {
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
-            Events.ClientTickStart.trigger();
-        } else {
-            Events.AfterHandleKeyBindings.trigger(); // TODO: move
-            Events.ClientTickEnd.trigger();
-        }
-    }
-
-    @SubscribeEvent
     public void onRenderTick(TickEvent.RenderTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             Events.RenderTickStart.trigger(event.renderTickTime);

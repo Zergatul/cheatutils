@@ -2,6 +2,8 @@ package com.zergatul.cheatutils.scripting.workspace;
 
 import com.zergatul.cheatutils.scripting.ScriptType;
 
+import java.util.Objects;
+
 public final class ScriptRef {
 
     private final ScriptType type;
@@ -22,5 +24,20 @@ public final class ScriptRef {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ScriptRef) {
+            ScriptRef other = (ScriptRef) obj;
+            return other.type.equals(this.type) && other.identifier.equals(this.identifier);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, identifier);
     }
 }

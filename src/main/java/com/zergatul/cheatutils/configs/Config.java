@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 public class Config implements Sanitizable {
 
+    public BlocksConfig blocks = new BlocksConfig();
     public CoreConfig coreConfig = new CoreConfig();
     public FreeCamConfig freeCamConfig = new FreeCamConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();

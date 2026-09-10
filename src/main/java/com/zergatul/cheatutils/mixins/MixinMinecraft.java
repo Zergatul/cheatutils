@@ -11,6 +11,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft {
 
+    @Inject(method = "runTick", at = @At("HEAD"))
+    private void onBeforeRunTick(CallbackInfo info) {
+        Events.ClientTickStart.trigger();
+    }
+
+    @Inject(method = "runTick", at = @At("TAIL"))
+    private void onAfterRunTick(CallbackInfo info) {
+        Events.ClientTickEnd.trigger();
+    }
+
+    @Inject(method = "runTickKeyboard", at = @At("TAIL"))
+    private void onAfterRunTickKeyboard(CallbackInfo info) {
+        Events.AfterHandleKeyBindings.trigger();
+    }
+
     @Inject(method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V", at = @At("HEAD"))
     private void onLoadWorld(WorldClient world, String message, CallbackInfo info) {
         Events.LevelUnload.trigger();

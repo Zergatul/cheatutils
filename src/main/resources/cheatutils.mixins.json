@@ -13,7 +13,6 @@
       "MixinEntityRenderer",
       "MixinGuiInGame",
       "MixinGuiKeybindingListKeyEntry",
-      "MixinGuiOverlayDebug",
       "MixinItemRenderer",
       "MixinRenderGlobal",
       "MixinRenderManager",

@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
+import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.common.events.SimpleCancellableEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
@@ -35,7 +36,6 @@ public class FreeCam implements Module {
     private int oldCameraType;
     private MovementInput playerInput;
     private MovementInput freecamInput;
-    private Entity viewEntity;
     private EntityPlayerSP inputPlayer;
     private double x, y, z;
     private float yRot, xRot;
@@ -48,7 +48,7 @@ public class FreeCam implements Module {
     private boolean cameraRestoredForPicking;
 
     private FreeCam() {
-        Events.ClientTickStart.add(this::onClientTickStart);
+        Events.InGameTickStart.add(this::onClientTickStart);
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.LevelUnload.add(this::onWorldUnload);
         Events.OnBeforePick.add(this::onBeforePick);
@@ -59,7 +59,6 @@ public class FreeCam implements Module {
         Events.AfterRenderEntities.add(this::onAfterRenderEntities);
         Events.BeforeRenderEntity.add(this::onBeforeRenderEntity);
         Events.AfterRenderEntity.add(this::onAfterRenderEntity);
-        Events.DebugInfoLeft.add(this::onGetDebugInfoLeft);
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
         Events.RenderHand.add(this::onRenderHand);
         Events.Close.add(this::disable, -1);
@@ -138,7 +137,6 @@ public class FreeCam implements Module {
             dontMoveFreeCamBefore = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(REMEMBER_STATE_DELAY_MS);
         }
 
-        viewEntity = entity;
         inputPlayer = mc.player;
         Vec3d pos = entity.getPositionEyes(1);
         x = pos.x;
@@ -167,12 +165,11 @@ public class FreeCam implements Module {
 
         active = false;
         mc.gameSettings.thirdPersonView = oldCameraType;
-        onAfterRenderWorld();
+        onAfterRenderWorld(new RenderWorldLastEvent());
         if (inputPlayer != null && inputPlayer.movementInput == freecamInput) {
             inputPlayer.movementInput = playerInput;
         }
         inputPlayer = null;
-        viewEntity = null;
         playerInput = null;
         freecamInput = null;
         picking = false;
@@ -223,7 +220,6 @@ public class FreeCam implements Module {
     }
 
     private void onClientTickStart() {
-        validatePlayer();
         if (active) {
             while (mc.gameSettings.keyBindTogglePerspective.isPressed()) {
                 // consume clicks
@@ -235,7 +231,6 @@ public class FreeCam implements Module {
     }
 
     private void onRenderTickStart(float partialTicks) {
-        validatePlayer();
         if (!active) {
             return;
         }
@@ -309,17 +304,6 @@ public class FreeCam implements Module {
         disable();
     }
 
-    private void onGetDebugInfoLeft(List<String> list) {
-        if (active) {
-            list.add("");
-            list.add("FreeCam");
-            list.add(String.format("XYZ: %.3f / %.5f / %.3f", x, y, z));
-            list.add(String.format("Facing: (%.1f / %.1f)",
-                    MathHelper.wrapDegrees(yRot),
-                    MathHelper.wrapDegrees(xRot)));
-        }
-    }
-
     private double px, py, pz, lastX, lastY, lastZ, llX, llY, llZ;
     private float eXRot, eYRot, lastXRot, lastYRot;
     private boolean pNoClip;
@@ -327,7 +311,7 @@ public class FreeCam implements Module {
     private boolean entitiesRendering;
 
     private void onBeforeRenderWorld() {
-        onAfterRenderWorld();
+        onAfterRenderWorld(new RenderWorldLastEvent());
 
         if (!active) {
             return;
@@ -345,7 +329,7 @@ public class FreeCam implements Module {
         override.noClip = true;
     }
 
-    private void onAfterRenderWorld() {
+    private void onAfterRenderWorld(RenderWorldLastEvent event) {
         if (override == null) {
             return;
         }
@@ -390,13 +374,6 @@ public class FreeCam implements Module {
             result.sneak = input.sneak;
         }
         return result;
-    }
-
-    private void validatePlayer() {
-        if (active && (mc.world == null || mc.player != inputPlayer || inputPlayer.isDead ||
-                inputPlayer.world != mc.world || mc.getRenderViewEntity() != viewEntity)) {
-            disable();
-        }
     }
 
     private void calculateVectors() {

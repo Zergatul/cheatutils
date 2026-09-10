@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.configs.adapters.BlockTypeAdapterFactory;
+import com.zergatul.cheatutils.configs.adapters.GsonSkipExcludeStrategy;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
@@ -29,7 +31,11 @@ public class ConfigStore {
     public static final ConfigStore instance = new ConfigStore();
     public static final long WRITE_FILE_DELAY = TimeUnit.SECONDS.toNanos(15);
 
-    public final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public final Gson gson = new GsonBuilder()
+            .setExclusionStrategies(new GsonSkipExcludeStrategy())
+            .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
+            .setPrettyPrinting()
+            .create();
 
     private final Logger logger = LogManager.getLogger(ConfigStore.class);
     private Config config = new Config();
