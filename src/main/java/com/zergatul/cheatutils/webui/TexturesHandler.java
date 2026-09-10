@@ -7,11 +7,15 @@ import com.zergatul.cheatutils.utils.ResourceLocationHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.ITextureObject;
+import net.minecraft.client.renderer.texture.SimpleTexture;
+import net.minecraft.client.renderer.texture.LayeredColorMaskTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.EnumDyeColor;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 
 public class TexturesHandler implements HttpHandler {
 
@@ -29,6 +33,19 @@ public class TexturesHandler implements HttpHandler {
             byte[] png = mc.addScheduledTask(() -> {
                 TextureManager textureManager = mc.getTextureManager();
                 ITextureObject texture = textureManager.getTexture(location);
+                if (texture == null && location.equals(SpecialBlockModels.BANNER_TEXTURE)) {
+                    // Use vanilla's mask compositor so the cloth is dyed but the wood is not.
+                    texture = new LayeredColorMaskTexture(new ResourceLocation("textures/entity/banner_base.png"),
+                            Collections.singletonList("textures/entity/banner/base.png"),
+                            Collections.singletonList(EnumDyeColor.BLACK));
+                    textureManager.loadTexture(location, texture);
+                    texture = textureManager.getTexture(location);
+                }
+                if (texture == null && location.getPath().endsWith(".png")) {
+                    if (textureManager.loadTexture(location, new SimpleTexture(location))) {
+                        texture = textureManager.getTexture(location);
+                    }
+                }
                 if (texture instanceof AbstractTexture) {
                     return TextureUtils.toPng((AbstractTexture) texture);
                 } else {

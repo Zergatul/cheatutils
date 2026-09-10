@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.pipeline.LightUtil;
@@ -16,6 +17,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntUnaryOperator;
 
 public class BlockModelApi extends ApiBase {
 
@@ -41,24 +43,50 @@ public class BlockModelApi extends ApiBase {
 
     private List<Quad> getBlockModel(Block block) {
         IBlockState state = block.getDefaultState();
-        IBakedModel model = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(state);
+        Minecraft mc = Minecraft.getMinecraft();
+        IBakedModel model = mc.getBlockRendererDispatcher().getModelForState(state);
+        IBakedModel missingModel = mc.getBlockRendererDispatcher().getBlockModelShapes().getModelManager().getMissingModel();
+        List<Quad> quads = getModelQuads(model, state,
+                index -> mc.getBlockColors().colorMultiplier(state, null, null, index));
 
-        List<Quad> quads = new ArrayList<>();
-        for (EnumFacing side : EnumFacing.values()) {
-            for (BakedQuad baked : model.getQuads(state, side, 0L)) {
-                quads.add(fromBakedQuad(state, baked));
+        if (model == missingModel || quads.isEmpty()) {
+            List<Quad> specialQuads = SpecialBlockModels.getQuads(block);
+            if (!specialQuads.isEmpty()) {
+                return specialQuads;
             }
-        }
-        for (BakedQuad baked : model.getQuads(state, null, 0L)) {
-            quads.add(fromBakedQuad(state, baked));
+            ItemStack stack = new ItemStack(block);
+            if (!stack.isEmpty()) {
+                IBakedModel itemModel = mc.getRenderItem().getItemModelWithOverrides(stack, null, null);
+                if (itemModel != null && itemModel != missingModel && !itemModel.isBuiltInRenderer()) {
+                    List<Quad> itemQuads = getModelQuads(itemModel, null,
+                            index -> mc.getItemColors().colorMultiplier(stack, index));
+                    if (!itemQuads.isEmpty()) {
+                        return itemQuads;
+                    }
+                }
+            }
         }
 
         return quads;
     }
 
-    private Quad fromBakedQuad(IBlockState state, BakedQuad quad) {
+    private List<Quad> getModelQuads(IBakedModel model, IBlockState state, IntUnaryOperator tintProvider) {
+        List<Quad> quads = new ArrayList<>();
+        for (EnumFacing side : EnumFacing.values()) {
+            for (BakedQuad baked : model.getQuads(state, side, 0L)) {
+                quads.add(fromBakedQuad(baked, tintProvider));
+            }
+        }
+        for (BakedQuad baked : model.getQuads(state, null, 0L)) {
+            quads.add(fromBakedQuad(baked, tintProvider));
+        }
+
+        return quads;
+    }
+
+    private Quad fromBakedQuad(BakedQuad quad, IntUnaryOperator tintProvider) {
         int tint = quad.hasTintIndex() ?
-                Minecraft.getMinecraft().getBlockColors().colorMultiplier(state, null, null, quad.getTintIndex()) :
+                tintProvider.applyAsInt(quad.getTintIndex()) :
                 0xFFFFFF;
         float r = ColorUtils.r(tint);
         float g = ColorUtils.g(tint);

@@ -9,6 +9,7 @@
       "accessors.BlockStateContainerAccessor",
       "accessors.ChunkAccessor",
       "accessors.ChunkProviderClientAccessor",
+      "accessors.ModelBoxAccessor",
       "MixinMinecraft",
       "MixinAbstractClientPlayer",
       "MixinEntity",
