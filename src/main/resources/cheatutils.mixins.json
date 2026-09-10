@@ -17,6 +17,7 @@
       "MixinEntityRenderer",
       "MixinGuiInGame",
       "MixinGuiKeybindingListKeyEntry",
+      "MixinGuiToastToastInstance",
       "MixinItemRenderer",
       "MixinRenderGlobal",
       "MixinRenderManager",

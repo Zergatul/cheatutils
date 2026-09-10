@@ -1,15 +1,36 @@
 package com.zergatul.cheatutils.mixins;
 
+import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.ui.CustomToast;
+import net.minecraft.client.gui.toasts.GuiToast;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.text.TextComponentString;
+import org.lwjgl.opengl.GLContext;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.time.Duration;
+
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft {
+
+    @Shadow
+    public abstract GuiToast getToastGui();
+
+    @Inject(method = "init", at = @At("RETURN"))
+    private void onInitialized(CallbackInfo info) {
+        if (!GLContext.getCapabilities().OpenGL33) {
+            this.getToastGui().add(new CustomToast(
+                    Duration.ofSeconds(5),
+                    new TextComponentString(Constants.MOD_NAME + " ESP requires OpenGL 3.3"),
+                    new TextComponentString("Continuing may crash a game")));
+        }
+    }
 
     @Inject(
             method = "run",
