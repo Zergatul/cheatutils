@@ -156,7 +156,7 @@ public class BlockEsp implements Module {
         double cameraY = cameraPos.y;
         double cameraZ = cameraPos.z;
 
-        BlockEspOverlayRenderer renderer = BlockEspOverlayRenderer.getInstance();
+        BlockEspOverlayRenderer renderer = BlockEspOverlayRenderer.INSTANCE;
         renderer.begin();
         for (BlockPos pos : overlayList) {
             renderer.cube(
