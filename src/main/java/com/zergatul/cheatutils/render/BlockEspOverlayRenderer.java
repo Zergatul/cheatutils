@@ -14,7 +14,7 @@ public class BlockEspOverlayRenderer {
 
     }
 
-    public void submitBlock(float x, float y, float z) {
+    public void cube(float x, float y, float z) {
 
     }
 

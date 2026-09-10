@@ -57,7 +57,7 @@ public class BlockEsp implements Module {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        TracerRenderer tracerRenderer = TracerRenderer.INSTANCE;
         tracerRenderer.begin();
         EspCubeLineRender cubeRenderer = EspCubeLineRender.INSTANCE;
         cubeRenderer.begin();
@@ -159,7 +159,7 @@ public class BlockEsp implements Module {
         BlockEspOverlayRenderer renderer = BlockEspOverlayRenderer.getInstance();
         renderer.begin();
         for (BlockPos pos : overlayList) {
-            renderer.submitBlock(
+            renderer.cube(
                     (float) (pos.getX() - cameraX),
                     (float) (pos.getY() - cameraY),
                     (float) (pos.getZ() - cameraZ));
