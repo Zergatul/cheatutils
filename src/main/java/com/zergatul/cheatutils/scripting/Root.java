@@ -1,9 +1,6 @@
 package com.zergatul.cheatutils.scripting;
 
-import com.zergatul.cheatutils.scripting.modules.DelayApi;
-import com.zergatul.cheatutils.scripting.modules.FreeCamApi;
-import com.zergatul.cheatutils.scripting.modules.EspApi;
-import com.zergatul.cheatutils.scripting.modules.UIApi;
+import com.zergatul.cheatutils.scripting.modules.*;
 
 @SuppressWarnings("unused")
 public class Root {
@@ -13,6 +10,7 @@ public class Root {
     // automation
 
     // esp
+    public static final BlocksApi blocks = new BlocksApi();
     public static final FreeCamApi freeCam = new FreeCamApi();
 
     // others

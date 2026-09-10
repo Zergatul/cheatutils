@@ -2,26 +2,24 @@ package com.zergatul.cheatutils.modules.esp.blocks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
+import com.zergatul.cheatutils.common.events.SnapshotChunk;
 import com.zergatul.cheatutils.concurrent.MainLoopEndExecutor;
 import com.zergatul.cheatutils.concurrent.ProfilerSingleThreadExecutor;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
-import com.zergatul.cheatutils.mixins.common.accessors.ClientChunkCacheAccessor;
-import com.zergatul.cheatutils.mixins.common.accessors.ClientChunkCacheStorageAccessor;
-import com.zergatul.cheatutils.modules.esp.BlockFinder;
+import com.zergatul.cheatutils.mixins.accessors.ChunkProviderClientAccessor;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Consumer;
 
 public class BlockEventsProcessor {
 
     public static final BlockEventsProcessor instance = new BlockEventsProcessor();
-
-    private static final AtomicReferenceArray<Chunk> EMPTY = new AtomicReferenceArray<>(0);
     private static final long CHUNK_COPY_BUDGET_NANOS = TimeUnit.MILLISECONDS.toNanos(1);
 
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -54,13 +52,12 @@ public class BlockEventsProcessor {
         return executor;
     }
 
-    // should be called from main thread only
-    public AtomicReferenceArray<Chunk> getRawChunks() {
+    // should be called from main thread only (actually not really for 1.12.2)
+    public Long2ObjectMap<Chunk> getRawChunks() {
         if (mc.world == null) {
-            return EMPTY;
+            return Long2ObjectMaps.emptyMap();
         } else {
-            ClientChunkCache.Storage storage = ((ClientChunkCacheAccessor) mc.level.getChunkSource()).getStorage_CU();
-            return ((ClientChunkCacheStorageAccessor) (Object) storage).getChunks_CU();
+            return ((ChunkProviderClientAccessor) mc.world.getChunkProvider()).getLoadedChunks_CU();
         }
     }
 
@@ -91,7 +88,7 @@ public class BlockEventsProcessor {
     }
 
     // main thread
-    private void onChunkLoaded(LevelChunk chunk) {
+    private void onChunkLoaded(Chunk chunk) {
         capturedChunks.put(chunk.getPos(), Boolean.FALSE);
 
         synchronized (collectionsLock) {
@@ -101,7 +98,7 @@ public class BlockEventsProcessor {
     }
 
     // main thread
-    private void onChunkUnloaded(LevelChunk chunk) {
+    private void onChunkUnloaded(Chunk chunk) {
         capturedChunks.remove(chunk.getPos());
 
         // no need to update queue, since task group for uploaded chunk will not do anything
@@ -112,14 +109,14 @@ public class BlockEventsProcessor {
     // main thread
     public void onBlockUpdated(final BlockUpdateEvent event) {
         synchronized (collectionsLock) {
-            ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(event.chunk().getPos());
+            ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(new ChunkPos(event.pos()));
             group.markBlockUpdated(event);
         }
     }
 
     // main thread
     private void onFrameEnd() {
-        if (mc.level == null || mc.player == null) {
+        if (mc.world == null || mc.player == null) {
             return;
         }
 
@@ -156,12 +153,9 @@ public class BlockEventsProcessor {
             entry.setValue(Boolean.FALSE);
         }
 
-        AtomicReferenceArray<LevelChunk> chunks = getRawChunks();
-        for (int i = 0; i < chunks.length(); i++) {
-            LevelChunk chunk = chunks.get(i);
-            if (chunk != null) {
-                capturedChunks.put(chunk.getPos(), Boolean.TRUE);
-            }
+        Long2ObjectMap<Chunk> chunks = getRawChunks();
+        for (Chunk chunk : chunks.values()) {
+            capturedChunks.put(chunk.getPos(), Boolean.TRUE);
         }
 
         Iterator<Map.Entry<ChunkPos, Boolean>> iterator = capturedChunks.entrySet().iterator();
@@ -183,7 +177,7 @@ public class BlockEventsProcessor {
 
         // sort chunks based on distance from the player
         synchronized (collectionsLock) {
-            this.queue.sort(mc.player.getBlockX(), mc.player.getBlockZ());
+            this.queue.sort(mc.player.chunkCoordX, mc.player.chunkCoordZ);
         }
 
         // New groups may be appended while this loop drains the queue.
@@ -215,11 +209,11 @@ public class BlockEventsProcessor {
 
     // main thread
     private void processTaskGroup(ChunkScanTaskGroup group) {
-        assert mc.level != null;
+        assert mc.world != null;
 
         // at this time group is no longer in our collections
         // thus it can't be modified from another threads
-        LevelChunk chunk = mc.level.getChunkSource().getChunkNow(group.pos.x(), group.pos.z());
+        Chunk chunk = mc.world.getChunkProvider().getLoadedChunk(group.pos.x, group.pos.z);
         if (chunk == null) {
             // chunk is unloaded
             return;
@@ -259,20 +253,11 @@ public class BlockEventsProcessor {
 
     // main thread
     private ChunkPos[] getLoadedChunksPosition() {
-        AtomicReferenceArray<LevelChunk> chunks = getRawChunks();
-        int count = 0;
-        for (int i = 0; i < chunks.length(); i++) {
-            if (chunks.get(i) != null) {
-                count++;
-            }
-        }
-
-        ChunkPos[] result = new ChunkPos[count];
-        for (int i = 0, j = 0; i < chunks.length(); i++) {
-            LevelChunk chunk = chunks.get(i);
-            if (chunk != null) {
-                result[j++] = chunk.getPos();
-            }
+        Long2ObjectMap<Chunk> chunks = getRawChunks();
+        ChunkPos[] result = new ChunkPos[chunks.size()];
+        int index = 0;
+        for (Chunk chunk : chunks.values()) {
+            result[index++] = chunk.getPos();
         }
         return result;
     }

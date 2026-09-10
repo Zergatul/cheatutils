@@ -91,6 +91,7 @@ public class ConfigHttpServer implements AutoCloseable {
 
         new MonacoIntegration().attach(server, "/api/code/");
         server.createContext("/api/", new ApiHandler());
+        server.createContext("/textures/", new TexturesHandler());
         server.createContext("/local/", new LocalFilesHandler());
         server.createContext("/", new StaticFilesHandler());
 

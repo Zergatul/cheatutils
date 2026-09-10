@@ -11,6 +11,9 @@ public class Config implements Sanitizable {
 
     @Override
     public void sanitize() {
+        if (blocks == null) {
+            blocks = new BlocksConfig();
+        }
         if (coreConfig == null) {
             coreConfig = new CoreConfig();
         }

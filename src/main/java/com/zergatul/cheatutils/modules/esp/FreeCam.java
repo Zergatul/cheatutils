@@ -165,7 +165,7 @@ public class FreeCam implements Module {
 
         active = false;
         mc.gameSettings.thirdPersonView = oldCameraType;
-        onAfterRenderWorld(new RenderWorldLastEvent());
+        resetNoClip();
         if (inputPlayer != null && inputPlayer.movementInput == freecamInput) {
             inputPlayer.movementInput = playerInput;
         }
@@ -311,7 +311,7 @@ public class FreeCam implements Module {
     private boolean entitiesRendering;
 
     private void onBeforeRenderWorld() {
-        onAfterRenderWorld(new RenderWorldLastEvent());
+        resetNoClip();
 
         if (!active) {
             return;
@@ -330,6 +330,10 @@ public class FreeCam implements Module {
     }
 
     private void onAfterRenderWorld(RenderWorldLastEvent event) {
+        resetNoClip();
+    }
+
+    private void resetNoClip() {
         if (override == null) {
             return;
         }

@@ -3,9 +3,12 @@ package com.zergatul.cheatutils.configs;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.adapters.BlockTypeAdapterFactory;
+import com.zergatul.cheatutils.configs.adapters.ColorTypeAdapter;
 import com.zergatul.cheatutils.configs.adapters.GsonSkipExcludeStrategy;
+import com.zergatul.cheatutils.configs.adapters.ImmutableListSerializer;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
@@ -16,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -34,6 +38,8 @@ public class ConfigStore {
     public final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
+            .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
+            .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .setPrettyPrinting()
             .create();
 
@@ -176,7 +182,7 @@ public class ConfigStore {
 
     // only this method should update this.config
     private void setConfig(Config config) {
-        //config.blocks.refreshMap();
+        config.blocks.refreshMap();
         this.config = config;
     }
 }

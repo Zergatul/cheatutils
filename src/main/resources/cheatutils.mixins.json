@@ -5,6 +5,8 @@
     "package": "com.zergatul.cheatutils.mixins",
     "refmap": "cheatutils.refmap.json",
     "client": [
+      "accessors.ChunkAccessor",
+      "accessors.ChunkProviderClientAccessor",
       "MixinMinecraft",
       "MixinAbstractClientPlayer",
       "MixinEntity",
@@ -17,6 +19,7 @@
       "MixinRenderGlobal",
       "MixinRenderManager",
       "MixinRenderPlayer",
-      "MixinViewFrustum"
+      "MixinViewFrustum",
+      "MixinWorldClient"
     ]
 }

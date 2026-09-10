@@ -11,6 +11,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft {
 
+    @Inject(
+            method = "run",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;runGameLoop()V", shift = At.Shift.AFTER))
+    private void onAfterRunGameCycle(CallbackInfo info) {
+        Events.MainLoopFrameEnd.trigger();
+    }
+
     @Inject(method = "runTick", at = @At("HEAD"))
     private void onBeforeRunTick(CallbackInfo info) {
         Events.ClientTickStart.trigger();

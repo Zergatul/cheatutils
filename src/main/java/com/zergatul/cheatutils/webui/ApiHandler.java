@@ -21,6 +21,11 @@ public class ApiHandler implements HttpHandler {
     private final List<ApiBase> apis = new ArrayList<>();
 
     public ApiHandler() {
+        apis.add(new BlocksConfigApi());
+        apis.add(new BlocksConfigApi.Add());
+        apis.add(new BlockModelApi());
+        apis.add(new RescanChunksApi());
+        apis.add(new BlockInfoApi());
         apis.add(new ProfilesApi());
         apis.add(new ResetConfigApi());
         apis.add(new KeyBindingScriptsApi());

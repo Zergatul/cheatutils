@@ -1,4 +1,29 @@
 package com.zergatul.cheatutils.common.events;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.Vec3d;
+import org.lwjgl.util.vector.Matrix4f;
+
 public class RenderWorldLastEvent {
+
+    private final Vec3d playerPos;
+    private final Vec3d cameraPos;
+
+    public RenderWorldLastEvent() {
+        Minecraft mc = Minecraft.getMinecraft();
+        this.playerPos = new Vec3d(mc.player.posX, mc.player.posY, mc.player.posZ);
+        this.cameraPos = Vec3d.ZERO;
+    }
+
+    public Vec3d getPlayerPos() {
+        return playerPos;
+    }
+
+    public Vec3d getCameraPos() {
+        return cameraPos;
+    }
+
+    public Matrix4f getMvp() {
+        return new Matrix4f();
+    }
 }

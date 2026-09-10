@@ -18,6 +18,13 @@ const module = params => {
 
 module({
     group: 'esp',
+    name: 'Block ESP',
+    component: 'BlockESP',
+    path: 'block-esp',
+    tags: ['blocks', 'esp', 'xray']
+});
+module({
+    group: 'esp',
     name: 'Free Cam',
     component: 'FreeCam',
     path: 'freecam',
