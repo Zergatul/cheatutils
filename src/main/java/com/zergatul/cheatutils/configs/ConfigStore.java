@@ -130,6 +130,7 @@ public class ConfigStore {
 
     private void onConfigLoaded() {
         config.sanitize();
+        config.blocks.apply();
         Events.ConfigLoaded.trigger();
 
         KeyBindings.INSTANCE.clear();

@@ -5,6 +5,8 @@
     "package": "com.zergatul.cheatutils.mixins",
     "refmap": "cheatutils.refmap.json",
     "client": [
+      "accessors.BitArrayAccessor",
+      "accessors.BlockStateContainerAccessor",
       "accessors.ChunkAccessor",
       "accessors.ChunkProviderClientAccessor",
       "MixinMinecraft",

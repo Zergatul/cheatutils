@@ -59,7 +59,7 @@ public class BlockEsp implements Module {
 
         TracerRenderer tracerRenderer = TracerRenderer.getInstance();
         tracerRenderer.begin();
-        EspCubeLineRender cubeRenderer = EspCubeLineRender.getInstance();
+        EspCubeLineRender cubeRenderer = EspCubeLineRender.INSTANCE;
         cubeRenderer.begin();
 
         for (BlockEspConfig config : configs) {

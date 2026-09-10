@@ -11,7 +11,7 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public void onChunkLoad(ChunkEvent.Load event) {
-        if (event.getWorld().isRemote) {
+        if (!event.getWorld().isRemote) {
             return;
         }
 
@@ -20,7 +20,7 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public void onChunkUnLoad(ChunkEvent.Unload event) {
-        if (event.getWorld().isRemote) {
+        if (!event.getWorld().isRemote) {
             return;
         }
 
