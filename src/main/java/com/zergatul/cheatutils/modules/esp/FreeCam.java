@@ -104,6 +104,26 @@ public class FreeCam implements Module {
         return override == player && !entitiesRendering;
     }
 
+    public void withRealEntityPosition(Entity entity, Runnable action) {
+        if (override != entity) {
+            action.run();
+            return;
+        }
+
+        boolean wasEntitiesRendering = entitiesRendering;
+        // Use the same body position and spectator behavior as the normal entity render pass.
+        restoreCameraEntityPosition();
+        entitiesRendering = true;
+        try {
+            action.run();
+        } finally {
+            entitiesRendering = wasEntitiesRendering;
+            if (override == entity && !wasEntitiesRendering) {
+                moveCameraEntityToFreeCamPosition();
+            }
+        }
+    }
+
     public double getViewFrustumEntityPosX(double viewEntityX) {
         return override != null ? px : viewEntityX;
     }

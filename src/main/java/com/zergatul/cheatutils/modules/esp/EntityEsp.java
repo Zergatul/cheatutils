@@ -7,11 +7,9 @@ import com.zergatul.cheatutils.configs.EntityEspConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import it.unimi.dsi.fastutil.floats.FloatList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
@@ -24,12 +22,14 @@ public class EntityEsp implements Module {
     private final Minecraft mc = Minecraft.getMinecraft();
     private final List<MatchedEntity> bbList = new ArrayList<>();
     private final List<MatchedEntity> tracerList = new ArrayList<>();
-    private final Map<EntityEspConfig, List<BufferedVerticesEntry>> overlayEntityStates = new IdentityHashMap<>();
-    private final Map<EntityEspConfig, List<BufferedVerticesEntry>> outlineEntityStates = new IdentityHashMap<>();
+    private final Map<EntityEspConfig, List<Entity>> overlayEntities = new IdentityHashMap<>();
+    private final Map<EntityEspConfig, List<Entity>> outlineEntities = new IdentityHashMap<>();
     private boolean enabled = true;
 
     private EntityEsp() {
         Events.AfterRenderWorld.add(this::onAfterRenderWorld);
+        Events.LevelUnload.add(this::clearFrame);
+        Events.Close.add(EntityMaskRenderer.INSTANCE::close);
     }
 
     public boolean isEnabled() {
@@ -40,78 +40,35 @@ public class EntityEsp implements Module {
         enabled = !enabled;
     }
 
-    public void captureEntityRenderState(Entity entity, BufferedVerticesEntry buffer) {
-        if (mc.player == null || !EspGlobal.enabled || !enabled) {
-            return;
-        }
-
-        boolean overlayFound = false;
-        boolean outlineFound = false;
-
-        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
-            if (!config.enabled) {
-                continue;
-            }
-
-            if (!config.isValidEntity(entity)) {
-                continue;
-            }
-
-            if (!overlayFound) {
-                overlayFound = config.drawOverlay && entity.getDistanceSq(mc.player) < config.getOverlayMaxDistanceSqr();
-                if (overlayFound) {
-                    List<BufferedVerticesEntry> buffers = overlayEntityStates.computeIfAbsent(config, unused -> new ArrayList<>());
-                    buffers.add(buffer);
-                    if (outlineFound) {
-                        break;
-                    }
-                }
-            }
-
-            if (!outlineFound) {
-                outlineFound = config.useModOutline() && entity.getDistanceSq(mc.player) < config.getOutlineMaxDistanceSqr();
-                if (outlineFound) {
-                    List<BufferedVerticesEntry> states = outlineEntityStates.computeIfAbsent(config, unused -> new ArrayList<>());
-                    states.add(buffer);
-                    if (overlayFound) {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
     public boolean shouldEntityHaveOutline(Entity entity) {
-        if (!enabled || !EspGlobal.enabled) {
-            return false;
-        }
-        if (mc.player == null) {
-            return false;
-        }
-        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
-            if (config.useMinecraftOutline() && config.isValidEntity(entity) && entity.getDistanceSq(mc.player) < config.getOutlineMaxDistanceSqr()) {
-                return true;
-            }
-        }
-        return false;
+        return findMinecraftOutlineConfig(entity) != null;
     }
 
     public Integer getOutlineColor(Entity entity) {
-        if (!EspGlobal.enabled) {
+        EntityEspConfig config = findMinecraftOutlineConfig(entity);
+        return config == null ? null : config.outlineColor.getRGB();
+    }
+
+    private EntityEspConfig findMinecraftOutlineConfig(Entity entity) {
+        if (!enabled || !EspGlobal.enabled || mc.player == null) {
             return null;
         }
+        double distanceSqr = entity.getDistanceSq(mc.player);
         for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
-            if (config.useMinecraftOutline() && config.isValidEntity(entity)) {
-                return config.outlineColor.getRGB();
+            if (config.useMinecraftOutline() && config.isValidEntity(entity) && distanceSqr < config.getOutlineMaxDistanceSqr()) {
+                return config;
             }
         }
         return null;
     }
 
     private void onAfterRenderWorld(RenderWorldLastEvent event) {
-        assert mc.world != null && mc.player != null;
+        if (EntityMaskRenderer.isRenderingMask()) {
+            return;
+        }
+        clearFrame();
 
-        if (!enabled || !EspGlobal.enabled) {
+        if (!enabled || !EspGlobal.enabled || mc.world == null || mc.player == null) {
             return;
         }
 
@@ -130,14 +87,7 @@ public class EntityEsp implements Module {
         TracerRenderer tracerRenderer = TracerRenderer.INSTANCE;
         tracerRenderer.begin();
 
-        bbList.clear();
-        tracerList.clear();
-
         for (Entity entity : mc.world.loadedEntityList) {
-            if (entity instanceof EntityPlayerSP) {
-                continue;
-            }
-
             if (!entity.isAddedToWorld()) {
                 continue;
             }
@@ -146,6 +96,24 @@ public class EntityEsp implements Module {
             double dy = entity.posY - playerY;
             double dz = entity.posZ - playerZ;
             double distanceSqr = dx * dx + dy * dy + dz * dz;
+
+            EntityEspConfig overlayConfig = list.stream().filter(c ->
+                    c.shouldDrawOverlay() && c.isValidEntity(entity) &&
+                    distanceSqr < c.getOverlayMaxDistanceSqr()).findFirst().orElse(null);
+            if (overlayConfig != null) {
+                overlayEntities.computeIfAbsent(overlayConfig, unused -> new ArrayList<>()).add(entity);
+            }
+
+            EntityEspConfig outlineConfig = list.stream().filter(c ->
+                    c.enabled && c.useModOutline() && c.isValidEntity(entity) &&
+                    distanceSqr < c.getOutlineMaxDistanceSqr()).findFirst().orElse(null);
+            if (outlineConfig != null) {
+                outlineEntities.computeIfAbsent(outlineConfig, unused -> new ArrayList<>()).add(entity);
+            }
+
+            if (entity instanceof EntityPlayerSP) {
+                continue;
+            }
 
             EntityEspConfig bbConfig = list.stream().filter(c ->
                     c.enabled &&
@@ -160,7 +128,7 @@ public class EntityEsp implements Module {
             EntityEspConfig tracerConfig = list.stream().filter(c ->
                     c.enabled &&
                     c.drawTracers &&
-                    c.clazz.isInstance(entity) &&
+                    c.isValidEntity(entity) &&
                     distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
             if (tracerConfig != null) {
@@ -175,11 +143,12 @@ public class EntityEsp implements Module {
         cuboidLineRenderer.end(event.getMvp());
         tracerRenderer.end(event.getMvp());
 
-        drawOverlays(list, event);
-        drawOutlines(list, event);
-
-        overlayEntityStates.clear();
-        outlineEntityStates.clear();
+        try {
+            drawMasks(overlayEntities, list, event, false);
+            drawMasks(outlineEntities, list, event, true);
+        } finally {
+            clearFrame();
+        }
     }
 
     private void renderLines(EspCuboidLineRenderer lineRenderer, TracerRenderer tracerRenderer, RenderWorldLastEvent event) {
@@ -220,80 +189,27 @@ public class EntityEsp implements Module {
         }
     }
 
-    private void drawOverlays(ImmutableList<EntityEspConfig> list, RenderWorldLastEvent event) {
-//        if (overlayEntityStates.isEmpty()) {
-//            return;
-//        }
-//
-//        Vec3d cameraPos = event.getCameraPos();
-//        double camX = cameraPos.x;
-//        double camY = cameraPos.y;
-//        double camZ = cameraPos.z;
-//
-//        PoseStack poseStack = new PoseStack();
-//        EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
-//        EntityEspOverlayRenderer renderer = EntityEspOverlayRenderer.getInstance();
-//        for (EntityEspConfig config : list) {
-//            List<EntityRenderState> states = overlayEntityStates.get(config);
-//            if (states == null || states.isEmpty()) {
-//                continue;
-//            }
-//
-//            renderer.begin();
-//            submitEntityMasks(states, event, renderDispatcher, poseStack, camX, camY, camZ);
-//            drawSubmittedMasks();
-//            renderer.end(config.overlayColor);
-//        }
+    private void drawMasks(
+            Map<EntityEspConfig, List<Entity>> groups,
+            ImmutableList<EntityEspConfig> configs,
+            RenderWorldLastEvent event,
+            boolean outline
+    ) {
+        for (EntityEspConfig config : configs) {
+            List<Entity> entities = groups.get(config);
+            if (entities != null && !entities.isEmpty()) {
+                EntityMaskRenderer.INSTANCE.render(
+                        entities, event, outline ? config.outlineColor : config.overlayColor, outline);
+            }
+        }
     }
 
-    private void drawOutlines(ImmutableList<EntityEspConfig> list, RenderWorldLastEvent event) {
-//        if (outlineEntityStates.isEmpty()) {
-//            return;
-//        }
-//
-//        Vec3 cameraPos = event.getCameraPos();
-//        double camX = cameraPos.x();
-//        double camY = cameraPos.y();
-//        double camZ = cameraPos.z();
-//
-//        PoseStack poseStack = new PoseStack();
-//        EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
-//        EntityEspOutlineRenderer renderer = EntityEspOutlineRenderer.getInstance();
-//        for (EntityEspConfig config : list) {
-//            List<EntityRenderState> states = outlineEntityStates.get(config);
-//            if (states == null || states.isEmpty()) {
-//                continue;
-//            }
-//
-//            renderer.begin();
-//            submitEntityMasks(states, event, renderDispatcher, poseStack, camX, camY, camZ);
-//            drawSubmittedMasks();
-//            renderer.end(config.outlineColor);
-//        }
+    private void clearFrame() {
+        bbList.clear();
+        tracerList.clear();
+        overlayEntities.clear();
+        outlineEntities.clear();
     }
-
-//    private void submitEntityMasks(
-//            List<EntityRenderState> states,
-//            RenderWorldLastEvent event,
-//            EntityRenderDispatcher renderDispatcher,
-//            PoseStack poseStack,
-//            double camX,
-//            double camY,
-//            double camZ
-//    ) {
-//        for (EntityRenderState state : states) {
-//            int outlineColor = state.outlineColor;
-//            state.outlineColor = -1;
-//            renderDispatcher.submit(state, event.getCameraRenderState(), state.x - camX, state.y - camY, state.z - camZ, poseStack, submitNodeStorage);
-//            state.outlineColor = outlineColor;
-//        }
-//    }
-//
-//    private void drawSubmittedMasks() {
-//        try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage)) {
-//            frame.executeOutline();
-//        }
-//    }
 
     private static final class MatchedEntity {
 
@@ -306,14 +222,4 @@ public class EntityEsp implements Module {
         }
     }
 
-    private final class BufferedVerticesEntry {
-
-        public final ResourceLocation texture;
-        public final FloatList vertices;
-
-        private BufferedVerticesEntry(ResourceLocation texture, FloatList vertices) {
-            this.texture = texture;
-            this.vertices = vertices;
-        }
-    }
 }

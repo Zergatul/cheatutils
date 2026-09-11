@@ -40,7 +40,7 @@ public abstract class MixinEntityRenderer {
         GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, matrixBuffer_CU);
         Matrix4f modelView = new Matrix4f();
         modelView.load(matrixBuffer_CU);
-        renderWorldLastEvent_CU = new RenderWorldLastEvent(partialTicks, Matrix4f.mul(projection, modelView, null));
+        renderWorldLastEvent_CU = new RenderWorldLastEvent(partialTicks, projection, modelView);
     }
 
     @Inject(
