@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.configs;
 public class Config implements Sanitizable {
 
     public BlocksConfig blocks = new BlocksConfig();
+    public EntitiesConfig entities = new EntitiesConfig();
     public CoreConfig coreConfig = new CoreConfig();
     public FreeCamConfig freeCamConfig = new FreeCamConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
@@ -13,6 +14,9 @@ public class Config implements Sanitizable {
     public void sanitize() {
         if (blocks == null) {
             blocks = new BlocksConfig();
+        }
+        if (entities == null) {
+            entities = new EntitiesConfig();
         }
         if (coreConfig == null) {
             coreConfig = new CoreConfig();
@@ -30,6 +34,8 @@ public class Config implements Sanitizable {
             monacoEditor = new MonacoEditorConfig();
         }
 
+        blocks.sanitize();
+        entities.sanitize();
         coreConfig.sanitize();
         freeCamConfig.sanitize();
         keyBindingsConfig.sanitize();

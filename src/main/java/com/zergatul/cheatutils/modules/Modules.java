@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules;
 
 import com.zergatul.cheatutils.modules.esp.BlockEsp;
+import com.zergatul.cheatutils.modules.esp.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.modules.esp.blocks.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
@@ -12,6 +13,7 @@ public class Modules {
         register(BlockEventsProcessor.instance);
 
         register(BlockEsp.INSTANCE);
+        register(EntityEsp.INSTANCE);
         register(FreeCam.INSTANCE);
         register(KeyBindings.INSTANCE);
     }

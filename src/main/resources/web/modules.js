@@ -25,6 +25,13 @@ module({
 });
 module({
     group: 'esp',
+    name: 'Entity ESP',
+    component: 'EntityESP',
+    path: 'entity-esp',
+    tags: ['entity', 'entities', 'esp']
+});
+module({
+    group: 'esp',
     name: 'Free Cam',
     component: 'FreeCam',
     path: 'freecam',

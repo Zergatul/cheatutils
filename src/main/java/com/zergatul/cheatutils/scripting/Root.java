@@ -11,6 +11,7 @@ public class Root {
 
     // esp
     public static final BlocksApi blocks = new BlocksApi();
+    public static final EntitiesApi entities = new EntitiesApi();
     public static final FreeCamApi freeCam = new FreeCamApi();
 
     // others

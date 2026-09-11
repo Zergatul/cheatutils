@@ -5,10 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.adapters.BlockTypeAdapterFactory;
-import com.zergatul.cheatutils.configs.adapters.ColorTypeAdapter;
-import com.zergatul.cheatutils.configs.adapters.GsonSkipExcludeStrategy;
-import com.zergatul.cheatutils.configs.adapters.ImmutableListSerializer;
+import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
@@ -38,6 +35,7 @@ public class ConfigStore {
     public final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
+            .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
             .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .setPrettyPrinting()

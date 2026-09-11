@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.mixins;
 
+import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
@@ -46,5 +48,12 @@ public abstract class MixinEntity {
     @Inject(at = @At("RETURN"), method = "getEntityBoundingBox()Lnet/minecraft/util/math/AxisAlignedBB;", cancellable = true)
     private void onGetEntityBoundingBox(CallbackInfoReturnable<AxisAlignedBB> info) {
         info.setReturnValue(FreeCam.INSTANCE.getTargetSearchBox((Entity) (Object) this, info.getReturnValue()));
+    }
+
+    @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
+    private void onIsGlowing(CallbackInfoReturnable<Boolean> info) {
+        if (EntityEsp.INSTANCE.shouldEntityHaveOutline((Entity) (Object) this)) {
+            info.setReturnValue(true);
+        }
     }
 }

@@ -7,11 +7,13 @@ import org.lwjgl.util.vector.Matrix4f;
 
 public class RenderWorldLastEvent {
 
+    private final float partialTicks;
     private final Vec3d playerPos;
     private final Vec3d cameraPos;
     private final Matrix4f mvp;
 
     public RenderWorldLastEvent(float partialTicks, Matrix4f mvp) {
+        this.partialTicks = partialTicks;
         Minecraft mc = Minecraft.getMinecraft();
         this.playerPos = new Vec3d(mc.player.posX, mc.player.posY, mc.player.posZ);
         Entity camera = mc.getRenderViewEntity();
@@ -21,6 +23,10 @@ public class RenderWorldLastEvent {
                 camera.lastTickPosY + (camera.posY - camera.lastTickPosY) * partialTicks,
                 camera.lastTickPosZ + (camera.posZ - camera.lastTickPosZ) * partialTicks);
         this.mvp = mvp;
+    }
+
+    public float getPartialTicks() {
+        return partialTicks;
     }
 
     public Vec3d getPlayerPos() {
