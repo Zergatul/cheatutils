@@ -41,7 +41,7 @@ public class Events {
     public static final ParameterizedEventHandler<RenderGuiEvent> PreRenderGui = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<RenderGuiEvent> PostRenderGui = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<MouseScrollEvent> MouseScroll = new CancelableEventHandler<>();
-    public static final SimpleEventHandler RenderTickStart = new SimpleEventHandler();
+    public static final ParameterizedEventHandler<RenderTickStartEvent> RenderTickStart = new ParameterizedEventHandler<>();
     public static final SimpleEventHandler MainLoopFrameEnd = new SimpleEventHandler();
     public static final SimpleEventHandler WorldUnload = new SimpleEventHandler();
     public static final SimpleEventHandler DimensionChange = new SimpleEventHandler();
@@ -55,6 +55,7 @@ public class Events {
     public static final ParameterizedEventHandler<Entity> EntityInteract = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<BlockPos> BeforeInstaMine = new ParameterizedEventHandler<>();
     public static final CancelableEventHandler<PlayerReleaseUsingItemEvent> PlayerReleaseUsingItem = new CancelableEventHandler<>();
+    public static final CancelableEventHandler<PlayerTurnByMouseEvent> PlayerTurnByMouse = new CancelableEventHandler<>();
 
     static {
         ClientTickStart.add(() -> {

@@ -1,0 +1,87 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        Different Aim Assist hacks.
+    </div>
+
+    <div class="module-sections">
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.bowAssist" @change="update()">Bow Assist</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Once you start using bow, module searches for the closest entity to your crosshair,
+                and if it is possible to reach it with arrow and current bow power,
+                then module sets its target as current entity.
+                If you release bow you will rotate to the proper rotation on the server and shoot the arrow.
+
+                <div v-if="config.bowAssist">
+                    <br>
+                    You can add below script to Status Overlay module to see what is current targeted entity:
+                    <CodeBlock :code='`
+                        if (aimAssist.hasBowAssistTarget()) {
+                            let id = aimAssist.getBowAssistEntityId();
+                            overlay.addAtPosition(
+                                window.getGuiWidth() / 2 + 16,
+                                window.getGuiHeight() / 2 + 16,
+                                "#FFFFFF",
+                                "Target: " + game.entities.getName(id));
+                        }
+                    `' />
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Target Lock
+            </legend>
+            <div class="section-description">
+                Allows you to lock your crosshair to specific entity and follow its movement.
+                Use <b>Event Scripting</b> module to automate enable/disable locking. Example:
+                <CodeBlock :code='`
+                    events.onHandleKeys(() => {
+                        if (input.isAltDown()) {
+                            aimAssist.enableTargetLock();
+                        } else {
+                            aimAssist.disableTargetLock();
+                        }
+                    });
+                `' />
+            </div>
+            <div style="padding-top: 0.5em;">
+                <div>
+                    <radio name="aim-assist-mode" :value="'AIM_ASSIST_CENTER'" v-model="config.aimAssistMode" @change="update()">Target Center</radio>
+                </div>
+                <div>
+                    <radio name="aim-assist-mode" :value="'AIM_ASSIST_HEAD'" v-model="config.aimAssistMode" @change="update()">Target Top</radio>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Target Selection</legend>
+            <div class="section-description">
+                By default Aim Assist targets only players. If you want to customize targets, use <b>Events Scripting</b> module.
+                <br>
+                Example script to target all living entities:
+                <CodeBlock :code='`
+                    events.modules.aimAssist.addTargetFilter(id => {
+                        return game.entities.isInstanceOf(id, "net.minecraft.world.entity.LivingEntity");
+                    });
+                `' />
+                Example script to exclude one particular player:
+                <CodeBlock :code='`
+                    events.modules.aimAssist.addTargetFilter(id => {
+                        if (game.entities.getType(id) != "minecraft:player") {
+                            return false;
+                        }
+                        if (game.entities.getName(id) == "MyImaginaryFriend") {
+                            return false;
+                        }
+                        return true;
+                    });
+                `' />
+            </div>
+        </fieldset>
+    </div>
+</div>

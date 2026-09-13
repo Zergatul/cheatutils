@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.api;
 
 import com.zergatul.cheatutils.scripting.api.modules.*;
 
+@SuppressWarnings("unused")
 public class Root {
 
     public static EspApi esp = new EspApi();
@@ -36,6 +37,7 @@ public class Root {
     public static ServerPluginsApi serverPlugins = new ServerPluginsApi();
     public static HitboxSizeApi hitboxSize = new HitboxSizeApi();
     public static BedrockBreakerApi bedrockBreaker = new BedrockBreakerApi();
+    public static AimAssistApi aimAssist = new AimAssistApi();
 
     // visuals
     public static ArmorOverlayApi armorOverlay = new ArmorOverlayApi();

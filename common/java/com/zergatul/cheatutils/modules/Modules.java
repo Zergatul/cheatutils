@@ -74,6 +74,8 @@ public class Modules {
         register(ServerPlugins.instance);
         register(ContainerSummary.instance);
         register(Schematica.instance);
+        register(AimAssist.instance);
+
         register(ClientTickEndExecutor.instance);
         register(InGameTickEndExecutor.instance);
     }

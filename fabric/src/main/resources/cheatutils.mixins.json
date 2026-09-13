@@ -57,7 +57,7 @@
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
     "common.MixinMouseHandler",
-    "common.MixinMouseHandlerFreeCam",
+    "common.MixinMouseHandlerTurnPlayer",
     "common.MixinMouseHandlerZoom",
     "common.MixinMultiPlayerGameMode",
     "common.MixinOptions",

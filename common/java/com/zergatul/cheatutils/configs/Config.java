@@ -64,6 +64,7 @@ public class Config implements Sanitizable {
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
     public CoreConfig coreConfig = new CoreConfig();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
+    public AimAssistConfig aimAssist = new AimAssistConfig();
 
     public Config() {}
 

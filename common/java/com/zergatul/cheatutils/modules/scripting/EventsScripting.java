@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.hacks.AimAssist;
 import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class EventsScripting implements Module {
     private final List<Runnable> onHandleKeys = new ArrayList<>();
     private final List<Runnable> onTickEnd = new ArrayList<>();
     private final List<Runnable> onMenuTickEnd = new ArrayList<>();
+    private final List<AimAssist.TargetPredicate> aimAssistTargetPredicates = new ArrayList<>();
 
     private EventsScripting() {
         Events.BeforeHandleKeyBindings.add(() -> {
@@ -48,7 +50,23 @@ public class EventsScripting implements Module {
     public void setScript(Runnable runnable) {
         clear();
         if (runnable != null) {
-            ClientTickEndExecutor.instance.execute(runnable);
+            ClientTickEndExecutor.instance.execute(() -> {
+                runnable.run();
+
+                if (aimAssistTargetPredicates.isEmpty()) {
+                    AimAssist.instance.clearTargetPredicate();
+                } else if (aimAssistTargetPredicates.size() == 1) {
+                    AimAssist.instance.setTargetPredicate(aimAssistTargetPredicates.get(0));
+                } else {
+                    List<AimAssist.TargetPredicate> predicates = List.copyOf(aimAssistTargetPredicates);
+                    AimAssist.instance.setTargetPredicate(entityId -> {
+                        for (AimAssist.TargetPredicate predicate : predicates) {
+                            if (!predicate.test(entityId)) return false;
+                        }
+                        return true;
+                    });
+                }
+            });
         }
     }
 
@@ -57,6 +75,7 @@ public class EventsScripting implements Module {
             onHandleKeys.clear();
             onTickEnd.clear();
             onMenuTickEnd.clear();
+            aimAssistTargetPredicates.clear();
         });
     }
 
@@ -70,6 +89,10 @@ public class EventsScripting implements Module {
 
     public void addOnMenuTickEnd(Runnable action) {
         onMenuTickEnd.add(action);
+    }
+
+    public void addAimAssistTargetPredicate(AimAssist.TargetPredicate predicate) {
+        aimAssistTargetPredicates.add(predicate);
     }
 
     private boolean canTrigger() {

@@ -318,6 +318,13 @@ module({
     path: 'bedrock-breaker',
     tags: ['bedrock', 'breaker']
 });
+module({
+    group: 'hacks',
+    name: 'Aim Assist',
+    component: 'AimAssist',
+    path: 'aim-assist',
+    tags: ['aim', 'bow', 'assist']
+});
 
 // Visuals Modules ==========================
 
