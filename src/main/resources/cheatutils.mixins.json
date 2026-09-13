@@ -14,6 +14,7 @@
     "accessors.RenderAccessor",
     "MixinAbstractClientPlayer",
     "MixinEntity",
+    "MixinEntityEntryBuilderConstructorFactory",
     "MixinEntityLivingBase",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",

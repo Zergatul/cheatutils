@@ -10,7 +10,9 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -18,6 +20,7 @@ public class EntityUtils {
 
     private static final Logger logger = LogManager.getLogger(EntityUtils.class);
 
+    private static final ThreadLocal<Boolean> isInProgress = new ThreadLocal<>();
     private static List<EntityInfo> classes;
     private static Map<String, EntityInfo> classMap;
 
@@ -35,11 +38,24 @@ public class EntityUtils {
         return classMap.get(name);
     }
 
+    public static boolean isInProgress() {
+        return Boolean.TRUE.equals(isInProgress.get());
+    }
+
     private static synchronized void loadEntityClasses() {
         if (classes != null) {
             return;
         }
 
+        isInProgress.set(true);
+        try {
+            loadEntityClassesInternal();
+        } finally {
+            isInProgress.set(false);
+        }
+    }
+
+    private static void loadEntityClassesInternal() {
         List<EntityInfo> finalClasses = new ArrayList<>();
         Set<EntityInfo> set = new HashSet<>();
 
@@ -70,12 +86,19 @@ public class EntityUtils {
                     Entity entity = et.newInstance(null);
                     entityClass = entity.getClass();
                 } catch (Throwable throwable) {
-                    Optional<Class<?>> optional = findEntityClassFromException(throwable);
+                    Throwable exception;
+                    if (throwable instanceof InvocationTargetException) {
+                        exception = ((InvocationTargetException) throwable).getTargetException();
+                    } else {
+                        exception = throwable;
+                    }
+
+                    Optional<Class<?>> optional = findEntityClassFromException(exception);
                     if (optional.isPresent()) {
                         entityClass = optional.get();
                     } else {
                         logger.warn("Cannot figure out entity class name from stacktrace for {}.", key);
-                        logger.warn("Exception", throwable);
+                        logger.warn("Exception", exception);
                         return null;
                     }
                 }
@@ -142,6 +165,9 @@ public class EntityUtils {
             throw new IllegalStateException("Cannot process stack trace.");
         }
 
+        List<Class<?>> ctorCandidates = new ArrayList<>();
+        List<Class<?>> methodCandidates = new ArrayList<>();
+
         while (index > 0) {
             index--;
             StackTraceElement element = elements[index];
@@ -155,31 +181,41 @@ public class EntityUtils {
                 continue;
             }
 
-            Class<?> returnType;
-            // for constructor, we simply use current class
             if (element.getMethodName().equals("<init>")) {
-                returnType = clazz;
+                // for constructor, we simply use current class
+                if (canBeValidEntityClass(clazz)) {
+                    ctorCandidates.add(clazz);
+                }
             } else {
                 // for methods, we have to check return value
-                List<Method> methods = Lists.from(
-                        Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getName().equals(element.getMethodName())));
-                if (methods.isEmpty()) {
-                    logger.warn("Cannot find method {} for class {}.", element.getMethodName(), element.getClassName());
-                    continue;
+                for (Method method : clazz.getDeclaredMethods()) {
+                    if (!method.getName().equals(element.getMethodName())) {
+                        continue;
+                    }
+                    if (canBeValidEntityClass(method.getReturnType())) {
+                        methodCandidates.add(method.getReturnType());
+                    }
                 }
-                if (methods.size() > 1) {
-                    logger.warn("More than one {} method exists for class {}.", element.getMethodName(), element.getClassName());
-                    continue;
-                }
-                returnType = methods.get(0).getReturnType();
-            }
-
-            if (Entity.class.isAssignableFrom(returnType)) {
-                return Optional.of(returnType);
             }
         }
 
+        if (!ctorCandidates.isEmpty()) {
+            return Optional.of(ctorCandidates.get(0));
+        }
+        if (!methodCandidates.isEmpty()) {
+            return Optional.of(methodCandidates.get(0));
+        }
         return Optional.empty();
+    }
+
+    private static boolean canBeValidEntityClass(Class<?> clazz) {
+        if (!Entity.class.isAssignableFrom(clazz)) {
+            return false;
+        }
+        if (Modifier.isAbstract(clazz.getModifiers())) {
+            return false;
+        }
+        return true;
     }
 
     private static void forEachInterface(Class<?> clazz, Consumer<Class<?>> consumer) {

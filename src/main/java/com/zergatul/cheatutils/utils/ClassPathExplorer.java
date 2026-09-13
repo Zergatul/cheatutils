@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.ModLoaderInfo;
 import com.zergatul.scripting.completion.ClassSuggestion;
 import com.zergatul.scripting.completion.ClassSuggestionType;
 import com.zergatul.scripting.completion.JavaInteropSuggestionProvider;
+import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
@@ -257,10 +258,8 @@ public class ClassPathExplorer implements JavaInteropSuggestionProvider {
     }
 
     private static String relativeToClassName(String path) {
-        return path
-                .substring(0, path.length() - 6)
-                .replace('\\', '.')
-                .replace('/', '.');
+        String classNamePath = path.substring(0, path.length() - 6).replace('\\', '.');
+        return FMLDeobfuscatingRemapper.INSTANCE.map(classNamePath).replace('/', '.');
     }
 
     private static class Visitor extends SimpleFileVisitor<Path> {
