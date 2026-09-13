@@ -189,7 +189,7 @@ public class ScriptRuntimeFailureHandler {
         String location = "";
         try {
             location = "Line " + diagnostic.range.getLine1() + ", column " + diagnostic.range.getColumn1() + ": ";
-        } catch (UnsupportedOperationException _) {
+        } catch (UnsupportedOperationException ignored) {
         }
         return "[" + diagnostic.code + "] " + location + diagnostic.message;
     }

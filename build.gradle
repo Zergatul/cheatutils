@@ -65,6 +65,7 @@ dependencies {
     compileOnly files(sourceSets.compileStubs.output)
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    annotationProcessor files('mixin-plugin/annotation-processor/build/libs/annotation-processor.jar')
     embed 'org.spongepowered:mixin:0.8.5'
 }
 
@@ -90,6 +91,19 @@ processResources {
     filesMatching('mcmod.info') {
         expand properties
     }
+}
+
+tasks.register('buildMixinAnnotationProcessor', GradleBuild) {
+    dir = file('mixin-plugin/annotation-processor')
+    setTasks(['jar'])
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn tasks.named('buildMixinAnnotationProcessor')
+    options.compilerArgs.addAll([
+            '-processor',
+            'com.zergatul.mixin.AnnotationProcessor,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets'
+    ])
 }
 
 jar {
