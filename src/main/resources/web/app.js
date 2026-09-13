@@ -1,4 +1,5 @@
 import * as FallbackLoader from '/fallback-loader.js'
+import * as http from '/http.js'
 import { getComponent } from '/components/Loader.js'
 import * as events from '/events-service.js'
 import { modules } from '/modules.js'
@@ -41,6 +42,9 @@ const App = defineComponent({
         onMounted(() => {
             events.subscribe(onEvent);
             window.addEventListener('hashchange', onHashChange);
+            http.getText('/api/user').then(response => {
+                document.title = response;
+            });
         });
         onUnmounted(() => {
             events.unsubscribe(onEvent);

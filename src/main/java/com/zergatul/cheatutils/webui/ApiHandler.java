@@ -33,6 +33,7 @@ public class ApiHandler implements HttpHandler {
         apis.add(new ScriptsDocsApi());
         apis.add(new ModulesStatusApi());
         apis.add(new GeneralInformationApi());
+        apis.add(new UserApi());
 
         apis.add(new SimpleConfigApi<FullBrightConfig>("full-bright", FullBrightConfig.class) {
             @Override
