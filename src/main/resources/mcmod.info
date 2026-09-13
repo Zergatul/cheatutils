@@ -5,6 +5,8 @@
         "description": "${mod_description}",
         "version": "${mod_version}",
         "mcversion": "${minecraft_version}",
-        "authorList": ["Zergatul"]
+        "authorList": ["Zergatul"],
+        "url": "https://www.curseforge.com/minecraft/mc-mods/cheatutils",
+        "logoFile": "web/images/favicon.png"
     }
 ]

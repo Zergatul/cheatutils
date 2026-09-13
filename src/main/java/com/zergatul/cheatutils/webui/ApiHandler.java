@@ -3,10 +3,7 @@ package com.zergatul.cheatutils.webui;
 import com.google.gson.JsonParseException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.CoreConfig;
-import com.zergatul.cheatutils.configs.FreeCamConfig;
-import com.zergatul.cheatutils.configs.MonacoEditorConfig;
+import com.zergatul.cheatutils.configs.*;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
 
@@ -34,6 +31,20 @@ public class ApiHandler implements HttpHandler {
         apis.add(new KeyBindingScriptsApi());
         apis.add(new ScriptsAssignApi());
         apis.add(new ScriptsDocsApi());
+        apis.add(new ModulesStatusApi());
+        apis.add(new GeneralInformationApi());
+
+        apis.add(new SimpleConfigApi<FullBrightConfig>("full-bright", FullBrightConfig.class) {
+            @Override
+            protected FullBrightConfig getConfig() {
+                return ConfigStore.instance.getConfig().fullBrightConfig;
+            }
+
+            @Override
+            protected void setConfig(FullBrightConfig config) {
+                ConfigStore.instance.getConfig().fullBrightConfig = config;
+            }
+        });
 
         apis.add(new SimpleConfigApi<FreeCamConfig>("free-cam", FreeCamConfig.class) {
             @Override

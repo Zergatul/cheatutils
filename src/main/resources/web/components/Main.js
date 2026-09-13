@@ -1,6 +1,6 @@
 import * as FallbackLoader from '/fallback-loader.js'
 import { modules } from '/modules.js'
-
+import * as http from '/http.js'
 import * as events from '/events-service.js'
 import { getComponent } from '/components/Loader.js'
 
@@ -22,7 +22,7 @@ export function createComponent(template) {
             const scripting = ref(modules.scripting);
             const utility = ref(modules.utility);
             const statuses = ref({});
-
+            const generalInfo = ref({});
             const filtered = ref({});
 
             const onFilter = value => {
@@ -59,6 +59,12 @@ export function createComponent(template) {
                 onFilter('');
                 events.subscribe(onEvent);
 
+                http.get('/api/modules-status').then(response => {
+                    statuses.value = response;
+                });
+                http.get('/api/general-information').then(response => {
+                    generalInfo.value = response;
+                });
                 events.trigger({
                     type: 'focus-filter'
                 });
@@ -74,6 +80,7 @@ export function createComponent(template) {
                 visuals,
                 scripting,
                 utility,
+                generalInfo,
                 statuses,
 
                 filtered,

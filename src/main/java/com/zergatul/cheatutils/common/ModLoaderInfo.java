@@ -1,5 +1,7 @@
 package com.zergatul.cheatutils.common;
 
+import com.zergatul.cheatutils.Constants;
+import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
@@ -9,6 +11,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,30 @@ public class ModLoaderInfo {
 
     public boolean isProduction() {
         return !FMLLaunchHandler.isDeobfuscatedEnvironment();
+    }
+
+    public String getMinecraftVersion() {
+        return ForgeVersion.mcVersion;
+    }
+
+    public String getModLoaderName() {
+        return "Forge";
+    }
+
+    public String getModLoaderVersion() {
+        return ForgeVersion.getVersion();
+    }
+
+    public String getModVersion() {
+        return Loader.instance().getActiveModList().stream()
+                .filter(mod -> mod.getModId().equals(Constants.MOD_ID))
+                .map(ModContainer::getVersion)
+                .findFirst()
+                .orElseThrow(NoSuchElementException::new);
+    }
+
+    public int getModCount() {
+        return Loader.instance().getActiveModList().size();
     }
 
     public List<String> getModsJars() {

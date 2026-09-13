@@ -39,10 +39,18 @@ module({
 });
 
 module({
+    group: 'visuals',
+    name: 'Full Bright',
+    component: 'FullBright',
+    path: 'full-bright',
+    tags: ['full', 'bright', 'night', 'vision']
+});
+
+module({
     group: 'scripting',
     name: 'Key Bindings',
-    component: 'KeyBindingScripts',
-    path: 'keybinding-scripts',
+    component: 'KeyBindings',
+    path: 'keybindings',
     tags: ['scripts', 'keys', 'keybindings', 'editor']
 });
 

@@ -56,6 +56,7 @@ sourceSets {
     }
     main {
         java.srcDir 'java-scripting-language/src/main/java'
+        java.srcDir 'mixin-plugin/common/java'
         output.resourcesDir = java.destinationDirectory.get().asFile
     }
 }
