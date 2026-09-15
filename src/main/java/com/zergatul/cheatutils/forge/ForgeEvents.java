@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.forge;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SimpleCancellableEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -32,6 +33,11 @@ public class ForgeEvents {
         if (event.phase == TickEvent.Phase.START) {
             Events.RenderTickStart.trigger(event.renderTickTime);
         }
+    }
+
+    @SubscribeEvent
+    public void onRenderWorldLast(RenderWorldLastEvent event) {
+        com.zergatul.cheatutils.common.events.RenderWorldLastEvent.captureEvent(event.getPartialTicks());
     }
 
     @SubscribeEvent
