@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.BedrockBreakerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
@@ -17,6 +16,7 @@ import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
@@ -48,7 +48,6 @@ public class BedrockBreaker implements Module {
     public static final BedrockBreaker instance = new BedrockBreaker();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Direction[] horizontal = new Direction[] { Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH };
     private final Queue<BlockPos> queue = new ArrayDeque<>();
     private BlockPos bedrockPos;
     private Direction pistonDirection;
@@ -342,11 +341,13 @@ public class BedrockBreaker implements Module {
         if (mc.level.getBlockState(bedrockPos).isAir() && !mc.level.getBlockState(pistonPos.relative(pistonDirection)).is(Blocks.MOVING_PISTON)) {
             BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
             if (config.replace) {
-                Item item = Registries.ITEMS.getValue(Identifier.parse(config.replaceBlockId));
-                if (item == null) {
+                Identifier id = Identifier.tryParse(config.replaceBlockId);
+                if (id == null || id.equals(BuiltInRegistries.ITEM.getDefaultKey())) {
                     reset(config.replaceBlockId + " is not valid block ID");
                     return;
                 }
+
+                Item item = BuiltInRegistries.ITEM.getValue(id);
 
                 int replaceBlockSlot = findItem(item);
                 if (replaceBlockSlot < 0) {

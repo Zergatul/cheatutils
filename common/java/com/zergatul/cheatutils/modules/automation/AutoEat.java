@@ -68,7 +68,7 @@ public class AutoEat {
         if (state == State.NONE || mc.player.getUseItem().isEmpty()) {
             InteractionResult result = mc.gameMode.useItem(mc.player, InteractionHand.OFF_HAND);
             if (result.consumesAction()) {
-                mc.gameRenderer.itemInHandRenderer.itemUsed(InteractionHand.OFF_HAND);
+                mc.player.itemUsed(InteractionHand.OFF_HAND);
                 state = State.EATING;
             }
         }

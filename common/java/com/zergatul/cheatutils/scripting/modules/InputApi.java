@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.mixins.common.accessors.InputConstantsKeyAccessor;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
+import org.lwjgl.sdl.SDLMouse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,11 +52,12 @@ public class InputApi {
         if (inputKey == null) {
             return false;
         }
-        if (inputKey.getType() == InputConstants.Type.KEYSYM) {
-            return InputConstants.isKeyDown(mc.getWindow(), inputKey.getValue());
+        if (inputKey.getType() == InputConstants.Type.KEYBOARD) {
+            return InputConstants.isKeyDown(inputKey.getValue());
         }
         if (inputKey.getType() == InputConstants.Type.MOUSE) {
-            return org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), inputKey.getValue()) == 1;
+            int buttonMask = 1 << (inputKey.getValue() - 1);
+            return (SDLMouse.SDL_GetMouseState(null, null) & buttonMask) != 0;
         }
 
         return false;

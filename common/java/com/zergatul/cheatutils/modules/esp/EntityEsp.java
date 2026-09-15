@@ -277,7 +277,9 @@ public class EntityEsp implements Module {
 
             renderer.begin();
             submitEntityMasks(states, event, renderDispatcher, poseStack, camX, camY, camZ);
-            drawSubmittedMasks();
+            try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage)) {
+                renderer.draw(frame);
+            }
             renderer.end(config.overlayColor);
         }
     }
@@ -303,7 +305,9 @@ public class EntityEsp implements Module {
 
             renderer.begin();
             submitEntityMasks(states, event, renderDispatcher, poseStack, camX, camY, camZ);
-            drawSubmittedMasks();
+            try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage)) {
+                renderer.draw(frame);
+            }
             renderer.end(config.outlineColor);
         }
     }
@@ -322,12 +326,6 @@ public class EntityEsp implements Module {
             state.outlineColor = -1;
             renderDispatcher.submit(state, event.getCameraRenderState(), state.x - camX, state.y - camY, state.z - camZ, poseStack, submitNodeStorage);
             state.outlineColor = outlineColor;
-        }
-    }
-
-    private void drawSubmittedMasks() {
-        try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage)) {
-            frame.executeOutline();
         }
     }
 

@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import com.zergatul.cheatutils.Constants;
 
 import java.nio.ByteBuffer;

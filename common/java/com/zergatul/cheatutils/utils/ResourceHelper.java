@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.cheatutils.common.LoaderBridge;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,7 +12,7 @@ public class ResourceHelper {
 
     public static InputStream get(String path) {
         if (path.startsWith("web/")) {
-            return ModLoaderBridgeInstance.get().isProduction() ? getProduction(path) : getDevelopment(path);
+            return LoaderBridge.INSTANCE.getEnvironment().isProduction() ? getProduction(path) : getDevelopment(path);
         } else {
             return loadFromResource(path);
         }
@@ -20,7 +20,7 @@ public class ResourceHelper {
 
     public static boolean has(String path) {
         if (path.startsWith("web/")) {
-            return ModLoaderBridgeInstance.get().isProduction() ? hasProduction(path) : hasDevelopment(path);
+            return LoaderBridge.INSTANCE.getEnvironment().isProduction() ? hasProduction(path) : hasDevelopment(path);
         } else {
             return hasResource(path);
         }

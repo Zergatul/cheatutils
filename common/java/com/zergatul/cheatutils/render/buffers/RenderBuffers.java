@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.render.buffers;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.render.Position2dColorRenderer;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;

@@ -7,14 +7,18 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FakePlayer extends RemotePlayer {
 
+    private static final AtomicInteger nextId = new AtomicInteger(-1);
     private static final List<FakePlayer> list = new ArrayList<>();
 
     private final ClientAvatarState state;
@@ -25,14 +29,18 @@ public class FakePlayer extends RemotePlayer {
     private final ItemStack chest;
     private final ItemStack head;
     private final ItemStack body;
+    private final LivingEntity.@Nullable SwingDescription currentSwing;
+    private final float swingAnimation;
 
     public FakePlayer(LocalPlayer player) {
         super((ClientLevel) player.level(), player.getGameProfile());
+        this.setId(nextId.getAndDecrement());
         list.add(this);
 
         this.state = new SnapshotClientAvatarState(player.avatarState());
 
-        this.attackAnim = this.oAttackAnim = player.attackAnim;
+        this.currentSwing = player.getCurrentSwing();
+        this.swingAnimation = player.getSwingAnimation(1);
         this.fallFlyTicks = player.getFallFlyingTicks();
         this.hurtDuration = player.hurtDuration;
         this.hurtTime = player.hurtTime;
@@ -40,8 +48,6 @@ public class FakePlayer extends RemotePlayer {
         //this.lastHurt = player.lasthurt
         ((LivingEntityAccessor) this).setSwimAmount_CU(((LivingEntityAccessor) player).getSwimAmount_CU());
         ((LivingEntityAccessor) this).setSwimAmount0_CU(((LivingEntityAccessor) player).getSwimAmount_CU());
-        this.swinging = player.swinging;
-        this.swingTime = player.swingTime;
         this.useItem = player.getUseItem().copy();
         this.xxa = player.xxa;
         this.yya = player.yya;
@@ -73,6 +79,21 @@ public class FakePlayer extends RemotePlayer {
     @Override
     public @NotNull ClientAvatarState avatarState() {
         return state;
+    }
+
+    @Override
+    public LivingEntity.@Nullable SwingDescription getCurrentSwing() {
+        return currentSwing;
+    }
+
+    @Override
+    public float getSwingAnimation(float partialTicks) {
+        return swingAnimation;
+    }
+
+    @Override
+    public boolean isSwinging() {
+        return currentSwing != null;
     }
 
     @Override

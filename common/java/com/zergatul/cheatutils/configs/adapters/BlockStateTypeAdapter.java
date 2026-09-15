@@ -4,8 +4,8 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.utils.BlockStateMapper;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
@@ -27,7 +27,7 @@ public class BlockStateTypeAdapter extends TypeAdapter<BlockState> {
             out.beginObject();
 
             out.name(BLOCK_PROPERTY);
-            out.value(Registries.BLOCKS.getKey(state.getBlock()).toString());
+            out.value(BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
 
             List<Property.Value<?>> values = state.getValues().toList();
             if (!values.isEmpty()) {

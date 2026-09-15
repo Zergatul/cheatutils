@@ -1,8 +1,7 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.common.Registries;
-
-import java.util.Objects;
+import com.zergatul.cheatutils.common.RegistryExtensions;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class ItemInfoApi extends ApiBase {
 
@@ -13,6 +12,6 @@ public class ItemInfoApi extends ApiBase {
 
     @Override
     public String get() {
-        return gson.toJson(Registries.ITEMS.getValues().stream().filter(Objects::nonNull).toArray());
+        return gson.toJson(RegistryExtensions.getValues(BuiltInRegistries.ITEM));
     }
 }

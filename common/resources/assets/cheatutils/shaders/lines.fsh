@@ -1,17 +1,18 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
 layout(std140) uniform Inputs {
     mat4 MVP;
     vec2 ViewportSize;
 };
 
-noperspective in float vAlongPx;
-noperspective in float vSidePx;
-noperspective in vec4 vColor;
-noperspective in float vLineLengthPx;
-noperspective in float vHalfWidthPx;
+layout(location = 0) noperspective in float vAlongPx;
+layout(location = 1) noperspective in float vSidePx;
+layout(location = 2) noperspective in vec4 vColor;
+layout(location = 3) noperspective in float vLineLengthPx;
+layout(location = 4) noperspective in float vHalfWidthPx;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 void main()
 {

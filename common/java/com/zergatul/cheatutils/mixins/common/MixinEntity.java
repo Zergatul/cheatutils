@@ -11,7 +11,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -19,9 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity {
-
-    @Shadow(aliases = "Lnet/minecraft/world/entity/Entity;calculateViewVector(FF)Lnet/minecraft/world/phys/Vec3;")
-    protected abstract Vec3 calculateViewVector(float xRot, float yRot);
 
     @Inject(at = @At("HEAD"), method = "getTeamColor()I", cancellable = true)
     private void onGetTeamColor(CallbackInfoReturnable<Integer> info) {
@@ -44,7 +40,7 @@ public abstract class MixinEntity {
     private void onGetViewVector(float partialTickTime, CallbackInfoReturnable<Vec3> info) {
         FreeCam freeCam = FreeCam.instance;
         if (freeCam.shouldOverrideCameraEntityPosition((Entity) (Object) this)) {
-            info.setReturnValue(this.calculateViewVector(freeCam.getXRot(), freeCam.getYRot()));
+            info.setReturnValue(Entity.calculateViewVector(freeCam.getXRot(), freeCam.getYRot()));
         }
     }
 

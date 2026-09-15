@@ -53,22 +53,22 @@ public class Scaffold implements Module {
             list.add(new BlockPos(Mth.floor(x), yb, Mth.floor(z)));
 
             if (config.distance > 0) {
-                BlockPos bp1 = new BlockPos(new BlockPos(Mth.floor(x + config.distance), yb, Mth.floor(z)));
+                BlockPos bp1 = new BlockPos(Mth.floor(x + config.distance), yb, Mth.floor(z));
                 if (!list.contains(bp1)) {
                     list.add(bp1);
                 }
 
-                BlockPos bp2 = new BlockPos(new BlockPos(Mth.floor(x - config.distance), yb, Mth.floor(z)));
+                BlockPos bp2 = new BlockPos(Mth.floor(x - config.distance), yb, Mth.floor(z));
                 if (!list.contains(bp2)) {
                     list.add(bp2);
                 }
 
-                BlockPos bp3 = new BlockPos(new BlockPos(Mth.floor(x), yb, Mth.floor(z - config.distance)));
+                BlockPos bp3 = new BlockPos(Mth.floor(x), yb, Mth.floor(z - config.distance));
                 if (!list.contains(bp3)) {
                     list.add(bp3);
                 }
 
-                BlockPos bp4 = new BlockPos(new BlockPos(Mth.floor(x), yb, Mth.floor(z + config.distance)));
+                BlockPos bp4 = new BlockPos(Mth.floor(x), yb, Mth.floor(z + config.distance));
                 if (!list.contains(bp4)) {
                     list.add(bp4);
                 }
@@ -131,8 +131,8 @@ public class Scaffold implements Module {
 
         InteractionResult result = mc.gameMode.useItemOn(mc.player, hand, hit);
         if (result.consumesAction()) {
-            if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                mc.player.swing(hand);
+            if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+                mc.player.swing(hand, mc.player.getItemInHand(hand).getInteractAnimation(), false);
             }
         }
 

@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.scripting.types;
 
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.Lazy;
 import com.zergatul.scripting.type.CustomType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
@@ -21,7 +21,7 @@ public class ItemWrapper {
 
     @Getter(name = "id")
     public String getId() {
-        return Registries.ITEMS.getKey(inner).toString();
+        return BuiltInRegistries.ITEM.getKey(inner).toString();
     }
 
     @Getter(name = "name")

@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.cheatutils.common.LoaderBridge;
 import com.zergatul.cheatutils.configs.PrivacyConfig;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.ChatFormatting;
@@ -11,6 +11,7 @@ import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -24,16 +25,16 @@ public class Privacy implements Module {
     private Privacy() {}
 
     public boolean shouldDisconnectOnTranslationExploit(PrivacyConfig config) {
-        return config.disconnectOnTranslationExploit && !ModLoaderBridgeInstance.get().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
+        return config.disconnectOnTranslationExploit && !LoaderBridge.INSTANCE.getEnvironment().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
     }
 
     public boolean shouldDisconnectOnMaliciousResourcePack(PrivacyConfig config) {
-        return config.disconnectOnMaliciousResourcePackBehavior && !ModLoaderBridgeInstance.get().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
+        return config.disconnectOnMaliciousResourcePackBehavior && !LoaderBridge.INSTANCE.getEnvironment().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
     }
 
     public Optional<Component> checkExploitable(SignText text) {
         for (int i = 0; i < SignText.LINES; i++) {
-            Optional<Component> result = checkExploitable(text.getMessage(i, false));
+            Optional<Component> result = checkExploitable(text.getMessages(false).get(i));
             if (result.isPresent()) {
                 return Optional.of(createDisconnectMessage(result.get()));
             }
@@ -47,8 +48,8 @@ public class Privacy implements Module {
             Consumer<KeybindContents> keybindConsumer
     ) {
         Set<String> checked = new HashSet<>();
-        forEachExploitable(sign.getBackText(), checked, translatableConsumer, keybindConsumer);
-        forEachExploitable(sign.getFrontText(), checked, translatableConsumer, keybindConsumer);
+        forEachExploitable(sign.getText(SignTextSlot.BACK), checked, translatableConsumer, keybindConsumer);
+        forEachExploitable(sign.getText(SignTextSlot.FRONT), checked, translatableConsumer, keybindConsumer);
     }
 
     public Component createDisconnectMessage(Component reason) {
@@ -105,7 +106,7 @@ public class Privacy implements Module {
             Consumer<KeybindContents> keybindConsumer
     ) {
         for (int i = 0; i < SignText.LINES; i++) {
-            forEachExploitable(text.getMessage(i, false), checked, translatableConsumer, keybindConsumer);
+            forEachExploitable(text.getMessages(false).get(i), checked, translatableConsumer, keybindConsumer);
         }
     }
 

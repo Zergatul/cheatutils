@@ -1,10 +1,11 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
 layout(std140) uniform Inputs {
     mat4 MVP;
 };
 
-in vec3 inOrigin;
+layout(location = 0) in vec3 inOrigin;
 
 const vec3 CORNERS[8] = vec3[](
     vec3(0.0, 0.0, 0.0),
@@ -27,6 +28,6 @@ const int INDICES[36] = int[](
 );
 
 void main() {
-    vec3 position = inOrigin + CORNERS[INDICES[gl_VertexID]];
+    vec3 position = inOrigin + CORNERS[INDICES[gl_VertexIndex]];
     gl_Position = MVP * vec4(position, 1.0);
 }

@@ -3,10 +3,7 @@
   "minVersion": "0.8.7",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_25",
-  "plugin": "com.zergatul.mixin.MixinPlugin",
-  "injectors": {
-    "defaultRequire": 0
-  },
+  "plugin": "com.zergatul.cheatutils.common.MixinPlugin",
   "mixinPriority": 500,
   "client": [
     "common.accessors.AbstractRecipeBookScreenAccessor",
@@ -63,6 +60,7 @@
     "common.MixinEntity",
     "common.MixinEntityHitboxDebugRenderer",
     "common.MixinEntityRenderer",
+    "common.MixinFirstPersonHandsAndItemsRenderer",
     "common.MixinFogRenderer",
     "common.MixinFramerateLimitTracker",
     "common.MixinGameRenderer",
@@ -71,7 +69,6 @@
     "common.MixinGuiGraphicsExtractor",
     "common.MixinHud",
     "common.MixinHudFreeCam",
-    "common.MixinItemInHandRenderer",
     "common.MixinItemStack",
     "common.MixinKeyBindingListKeyEntry",
     "common.MixinLevelChunk",
@@ -82,7 +79,7 @@
     "common.MixinLocalPlayer",
     "common.MixinMinecraft",
     "common.MixinMouseHandler",
-    "common.MixinMouseHandlerFreeCam",
+    "common.MixinMouseHandlerTurnPlayer",
     "common.MixinMouseHandlerZoom",
     "common.MixinMultiPlayerGameMode",
     "common.MixinOptions",

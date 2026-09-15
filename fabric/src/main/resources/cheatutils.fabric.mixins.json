@@ -3,11 +3,10 @@
   "minVersion": "0.8.7",
   "package": "com.zergatul.cheatutils.mixins",
   "compatibilityLevel": "JAVA_25",
-  "injectors": {
-    "defaultRequire": 0
-  },
   "mixinPriority": 500,
   "client": [
+    "fabric.MixinLoaderBridge",
+
     "fabric.schematica.MixinSectionCompiler",
     "fabric.MixinCamera",
     "fabric.MixinGuiGraphicsExtractor",

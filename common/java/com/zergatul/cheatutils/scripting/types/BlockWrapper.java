@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.scripting.types;
 
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.scripting.Getter;
 import com.zergatul.scripting.type.CustomType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 
 @SuppressWarnings("unused")
@@ -17,7 +17,7 @@ public class BlockWrapper {
 
     @Getter(name = "id")
     public String getId() {
-        return Registries.BLOCKS.getKey(block).toString();
+        return BuiltInRegistries.BLOCK.getKey(block).toString();
     }
 
     @Getter(name = "tags")

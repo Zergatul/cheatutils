@@ -220,7 +220,8 @@ public class ShulkerTooltip implements Module {
                         .collect(Util.toMutableList()),
                 mouseX, mouseY,
                 DefaultTooltipPositioner.INSTANCE,
-                slot.get(DataComponents.TOOLTIP_STYLE));
+                slot.get(DataComponents.TOOLTIP_STYLE),
+                true);
     }
 
     private void renderSlot(GuiGraphicsExtractor graphics, ItemStack itemStack, int x, int y) {

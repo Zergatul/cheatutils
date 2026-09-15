@@ -1,7 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
-import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.RegistryExtensions;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.level.block.Block;
@@ -18,7 +19,7 @@ public class BlockInfoApi extends ApiBase {
 
     @Override
     public String get() {
-        Collection<Block> blocks = Registries.BLOCKS.getValues();
+        Collection<Block> blocks = RegistryExtensions.getValues(BuiltInRegistries.BLOCK);
         Object[] result = blocks.stream().filter(b -> !b.equals(Blocks.AIR)).map(BlockInfo::new).toArray();
         return gson.toJson(result);
     }
@@ -29,7 +30,7 @@ public class BlockInfoApi extends ApiBase {
         public String name;
 
         public BlockInfo(Block block) {
-            id = Registries.BLOCKS.getKey(block).toString();
+            id = BuiltInRegistries.BLOCK.getKey(block).toString();
 
             MutableComponent text = block.getName();
             if (text.getContents() instanceof TranslatableContents) {

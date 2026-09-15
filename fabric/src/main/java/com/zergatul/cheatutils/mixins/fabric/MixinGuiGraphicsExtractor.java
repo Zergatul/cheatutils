@@ -24,7 +24,7 @@ public abstract class MixinGuiGraphicsExtractor {
 
     @Inject(
             at = @At("HEAD"),
-            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;)V",
+            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V",
             cancellable = true)
     private void onBeforeRenderTooltip(
             Font font,
@@ -32,6 +32,7 @@ public abstract class MixinGuiGraphicsExtractor {
             int xo, int yo,
             ClientTooltipPositioner positioner,
             @Nullable Identifier style,
+            boolean extraSpaceAfterFirstLine,
             CallbackInfo info
     ) {
         if (lines.isEmpty()) {
@@ -47,7 +48,7 @@ public abstract class MixinGuiGraphicsExtractor {
     }
 
     @ModifyMethodReturnValue(
-            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;)V",
+            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;positionTooltip(IIIIII)Lorg/joml/Vector2ic;"))
     private static Vector2ic onTooltipPositioned(Vector2ic position) {
         Events.TooltipPositioned.trigger(position);
@@ -56,13 +57,14 @@ public abstract class MixinGuiGraphicsExtractor {
 
     @Inject(
             at = @At("TAIL"),
-            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;)V")
+            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V")
     private void onAfterRenderTooltipInternal(
             Font font,
             List<ClientTooltipComponent> lines,
             int xo, int yo,
             ClientTooltipPositioner positioner,
             @Nullable Identifier style,
+            boolean extraSpaceAfterFirstLine,
             CallbackInfo info
     ) {
         if (lines.isEmpty()) {

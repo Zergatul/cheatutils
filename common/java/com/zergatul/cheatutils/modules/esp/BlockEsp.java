@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.modules.esp;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -16,6 +15,7 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.jspecify.annotations.Nullable;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -70,7 +70,7 @@ public class BlockEsp {
                 previous.deactivate();
             }
             if (script != null) {
-                String identifier = Registries.BLOCKS.getKey(config.blocks.stream().findFirst().orElseThrow()).toString();
+                String identifier = BuiltInRegistries.BLOCK.getKey(config.blocks.stream().findFirst().orElseThrow()).toString();
                 scripts.put(config, new ScriptActivation<>(new ScriptRef(ScriptType.BLOCK_ESP, identifier), script));
             }
         });

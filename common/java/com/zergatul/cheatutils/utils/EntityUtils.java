@@ -1,9 +1,10 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.mixins.common.accessors.EntityTypeAccessor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -56,12 +57,12 @@ public class EntityUtils {
         finalClasses.add(info3);
         set.add(info3);
 
-        Registries.ENTITY_TYPES.getValues().stream().map(et -> {
+        RegistryExtensions.getValues(BuiltInRegistries.ENTITY_TYPE).stream().map(et -> {
             if (et == EntityTypes.PLAYER) {
                 return null;
             }
 
-            String key = com.zergatul.cheatutils.common.Registries.ENTITY_TYPES.getKey(et).toString();
+            String key = BuiltInRegistries.ENTITY_TYPE.getKey(et).toString();
             EntityType.EntityFactory<?> factory = ((EntityTypeAccessor) et).getFactory_CU();
             Class<?> entityClass;
             try {
@@ -81,7 +82,7 @@ public class EntityUtils {
                     }
                 }
 
-                EntityInfo info = new EntityInfo(entityClass, Registries.ENTITY_TYPES.getKey(et).toString());
+                EntityInfo info = new EntityInfo(entityClass, BuiltInRegistries.ENTITY_TYPE.getKey(et).toString());
                 set.add(info);
                 return info;
             } catch (Throwable throwable) {

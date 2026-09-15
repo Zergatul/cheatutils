@@ -6,4 +6,9 @@ public class SodiumMixinPlugin extends OptionalMixinPlugin {
     protected String getModName() {
         return "Sodium";
     }
+
+    @Override
+    protected String getDetectionClassName() {
+        return "net.caffeinemc.mods.sodium.client.SodiumClientMod";
+    }
 }

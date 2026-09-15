@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.esp.BlockEsp;
@@ -11,7 +11,7 @@ import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 
 import java.awt.*;
@@ -42,7 +42,7 @@ public class BlocksApi {
     public String[] getEntries() {
         return ConfigStore.instance.getConfig().blocks.getBlockConfigs().stream()
                 .map(c -> c.blocks.stream().findFirst().orElseThrow())
-                .map(b -> Registries.BLOCKS.getKey(b).toString())
+                .map(b -> BuiltInRegistries.BLOCK.getKey(b).toString())
                 .toArray(String[]::new);
     }
 
@@ -134,8 +134,7 @@ public class BlocksApi {
             Returns blocks count which are tracked by Block ESP. If block is part of a group, returns count of entire group
             """)
     public int getCount(String blockId) {
-        Identifier location = Identifier.parse(blockId);
-        Block block = Registries.BLOCKS.getValue(location);
+        Block block = RegistryExtensions.safeParse(BuiltInRegistries.BLOCK, blockId);
         if (block == null) {
             return Integer.MIN_VALUE;
         }
@@ -215,8 +214,7 @@ public class BlocksApi {
     }
 
     private BlockEspConfig getConfig(String blockId) {
-        Identifier location = Identifier.parse(blockId);
-        Block block = Registries.BLOCKS.getValue(location);
+        Block block = RegistryExtensions.safeParse(BuiltInRegistries.BLOCK, blockId);
         if (block == null) {
             return null;
         }

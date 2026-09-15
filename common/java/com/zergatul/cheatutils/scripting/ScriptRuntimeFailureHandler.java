@@ -208,6 +208,7 @@ public class ScriptRuntimeFailureHandler {
         return failure;
     }
 
+    @SuppressWarnings("removal")
     static boolean isFatal(@Nullable Throwable failure) {
         return failure instanceof VirtualMachineError || failure instanceof ThreadDeath || failure instanceof LinkageError;
     }

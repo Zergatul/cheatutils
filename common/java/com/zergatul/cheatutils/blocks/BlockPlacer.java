@@ -254,8 +254,8 @@ public class BlockPlacer {
 
         InteractionResult result = mc.gameMode.useItemOn(mc.player, hand, hit);
         if (result.consumesAction()) {
-            if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                mc.player.swing(hand);
+            if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+                mc.player.swing(hand, mc.player.getItemInHand(hand).getInteractAnimation(), false);
             }
         }
 

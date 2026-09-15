@@ -1,16 +1,16 @@
 package com.zergatul.cheatutils.render;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
@@ -92,7 +92,7 @@ public class BlockEspOverlayRenderer {
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
                 Optional.of(GuiRenderer.CLEAR_COLOR))
         ) {
-            renderPass.setPipeline(drawPipeline);
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(drawPipeline));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, drawUbo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.draw(36, bufferBuilder.getBlockCount(), 0, 0);
@@ -113,8 +113,8 @@ public class BlockEspOverlayRenderer {
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty())
         ) {
-            renderPass.setPipeline(blitPipeline);
-            renderPass.bindTexture(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(blitPipeline));
+            renderPass.setUniform(BindGroupLayouts.TEXTURE0_NAME, renderTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, blitUbo);
             renderPass.draw(3, 1, 0, 0);
         }

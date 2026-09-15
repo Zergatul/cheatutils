@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.common.events.ContainerScreenRenderEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
@@ -14,6 +13,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.ResultContainer;
@@ -136,8 +136,8 @@ public class ContainerSummary implements Module {
             if (compare != 0) {
                 return compare;
             }
-            String id1 = Registries.ITEMS.getKey(i1.item).toString();
-            String id2 = Registries.ITEMS.getKey(i2.item).toString();
+            String id1 = BuiltInRegistries.ITEM.getKey(i1.item).toString();
+            String id2 = BuiltInRegistries.ITEM.getKey(i2.item).toString();
             return id1.compareTo(id2);
         }).collect(Collectors.toList());
     }

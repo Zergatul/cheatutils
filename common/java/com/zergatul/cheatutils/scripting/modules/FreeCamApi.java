@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.common.Registries;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
@@ -10,6 +9,7 @@ import com.zergatul.cheatutils.scripting.types.Position3d;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -86,7 +86,7 @@ public class FreeCamApi {
         if (hitResult.getType() == HitResult.Type.BLOCK) {
             BlockPos blockPos = ((BlockHitResult) hitResult).getBlockPos();
             BlockState blockState = mc.level.getBlockState(blockPos);
-            return Registries.BLOCKS.getKey(blockState.getBlock()).toString();
+            return BuiltInRegistries.BLOCK.getKey(blockState.getBlock()).toString();
         } else {
             return "";
         }

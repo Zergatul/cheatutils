@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.common.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
@@ -59,7 +59,7 @@ public class BlockStateMapper {
     }
 
     public static BlockState map(String id, Map<String, String> properties) {
-        Block block = Registries.BLOCKS.getValue(Identifier.parse(id));
+        Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(id));
 
         return block.getStateDefinition().getPossibleStates().stream().filter(state -> {
             return properties.entrySet().stream().allMatch(entry -> {
@@ -77,7 +77,7 @@ public class BlockStateMapper {
 
     public static CompoundTag serialize(BlockState state) {
         CompoundTag compound = new CompoundTag();
-        compound.putString("Name", Registries.BLOCKS.getKey(state.getBlock()).toString());
+        compound.putString("Name", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
         Map<String, String> properties = getPropertiesAsStrings(state);
         if (!properties.isEmpty()) {
             compound.put("Properties", getPropertiesAsCompound(properties));
@@ -86,7 +86,7 @@ public class BlockStateMapper {
     }
 
     public static String serializeAsString(BlockState state) {
-        StringBuilder builder = new StringBuilder(Registries.BLOCKS.getKey(state.getBlock()).toString());
+        StringBuilder builder = new StringBuilder(BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
         Map<String, String> properties = getPropertiesAsStrings(state);
         if (!properties.isEmpty()) {
             builder.append('[');

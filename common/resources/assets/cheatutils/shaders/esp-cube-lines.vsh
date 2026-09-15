@@ -1,19 +1,20 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
 layout(std140) uniform Inputs {
     mat4 MVP;
     vec2 ViewportSize;
 };
 
-in vec3 inOrigin;
-in vec4 inColor;
-in float inLineWidth;
+layout(location = 0) in vec3 inOrigin;
+layout(location = 1) in vec4 inColor;
+layout(location = 2) in float inLineWidth;
 
-noperspective out float vAlongPx;
-noperspective out float vSidePx;
-noperspective out vec4 vColor;
-noperspective out float vLineLengthPx;
-noperspective out float vHalfWidthPx;
+layout(location = 0) noperspective out float vAlongPx;
+layout(location = 1) noperspective out float vSidePx;
+layout(location = 2) noperspective out vec4 vColor;
+layout(location = 3) noperspective out float vLineLengthPx;
+layout(location = 4) noperspective out float vHalfWidthPx;
 
 const float T_VALUES[6] = float[](0.0, 0.0, 1.0, 0.0, 1.0, 1.0);
 const float SIDE_VALUES[6] = float[](-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
@@ -75,8 +76,8 @@ bool clipSegmentToClipBox(inout vec4 a, inout vec4 b) {
 }
 
 void main() {
-    int lineIndex = gl_VertexID / 6;
-    int vertexIndex = gl_VertexID % 6;
+    int lineIndex = gl_VertexIndex / 6;
+    int vertexIndex = gl_VertexIndex % 6;
 
     vec3 pointA = inOrigin + CORNERS[EDGE_START[lineIndex]];
     vec3 pointB = inOrigin + CORNERS[EDGE_END[lineIndex]];

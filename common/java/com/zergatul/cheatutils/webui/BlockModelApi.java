@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.webui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
-import com.zergatul.cheatutils.common.Registries;
+import com.zergatul.cheatutils.common.LoaderBridge;
+import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.SimpleFeatureRenderPhaseFeatureSubmitsAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.TranslucentFeatureRenderPhaseAccessor;
@@ -18,14 +18,17 @@ import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.feature.BlockModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.feature.phase.FeatureRenderPhase;
 import net.minecraft.client.renderer.feature.phase.SimpleFeatureRenderPhase;
 import net.minecraft.client.renderer.feature.phase.TranslucentFeatureRenderPhase;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.client.renderer.feature.submit.TranslucentSubmit;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,14 +48,15 @@ public class BlockModelApi extends ApiBase {
 
     @Override
     public String get(String id) throws ApiException, ExecutionException, InterruptedException {
-        Identifier loc = Identifier.parse(id);
+        Block block = RegistryExtensions.safeParse(BuiltInRegistries.BLOCK, id);
+        if (block == null) {
+            throw new ApiException("Cannot find block by id.", HttpResponseCodes.NOT_FOUND);
+        }
+
         // we need to run this in the main thread
         // because we call submission.model().setupAnim(..), and this mutates Model state
         // that can be used for rendering real stuff at the same time
-        List<Quad> quads = Minecraft.getInstance().submit(() -> {
-            Block block = Registries.BLOCKS.getValue(loc);
-            return getFromBlockModel(block);
-        }).get();
+        List<Quad> quads = Minecraft.getInstance().submit(() -> getFromBlockModel(block)).get();
         return gson.toJson(quads);
     }
 
@@ -91,6 +95,14 @@ public class BlockModelApi extends ApiBase {
         extractBlockModelQuads(submission.modelParts(), submission.tintLayers(), submission.tintColor(), output);
     }
 
+    private void extractQuads(FeatureRenderPhase<?> phase, List<Quad> output) {
+        if (phase instanceof SimpleFeatureRenderPhase simple) {
+            extractQuads(simple, output);
+        } else if (phase instanceof TranslucentFeatureRenderPhase translucent) {
+            extractQuads(translucent, output);
+        }
+    }
+
     private void extractQuads(SimpleFeatureRenderPhase phase, List<Quad> output) {
         for (SimpleFeatureRenderPhase.FeatureSubmits<SubmitNode> submits : ((SimpleFeatureRenderPhaseAccessor) phase).getSubmitsByFeature_CU()) {
             if (submits == null) {
@@ -121,7 +133,7 @@ public class BlockModelApi extends ApiBase {
         } else if (submission instanceof ModelFeatureRenderer.Submit<?> model) {
             extractQuads(model, output);
         } else {
-            ModLoaderBridgeInstance.get().extractQuads(submission, output);
+            LoaderBridge.INSTANCE.getRenderingWorkarounds().extractQuads(submission, output);
         }
     }
 
@@ -130,7 +142,8 @@ public class BlockModelApi extends ApiBase {
     }
 
     private <S> void extractQuads(RenderType renderType, ModelFeatureRenderer.Submit<S> submission, List<Quad> output) {
-        TextureAtlasSprite sprite = submission.sprite();
+        UvMapping uvMapping = submission.uvMapping();
+        TextureAtlasSprite sprite = uvMapping instanceof TextureAtlasSprite atlasSprite ? atlasSprite : null;
         String textureLocation;
         if (sprite != null) {
             textureLocation = sprite.atlasLocation().toString();
@@ -147,10 +160,10 @@ public class BlockModelApi extends ApiBase {
             for (ModelPart.Polygon polygon : cube.polygons) {
                 output.add(new Quad(
                         textureLocation,
-                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[0], submission.tintedColor()),
-                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[1], submission.tintedColor()),
-                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[2], submission.tintedColor()),
-                        new Vertex(submission.pose(), pose, sprite, polygon.vertices()[3], submission.tintedColor())));
+                        new Vertex(submission.pose(), pose, uvMapping, polygon.vertices()[0], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, uvMapping, polygon.vertices()[1], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, uvMapping, polygon.vertices()[2], submission.tintedColor()),
+                        new Vertex(submission.pose(), pose, uvMapping, polygon.vertices()[3], submission.tintedColor())));
             }
         });
     }
@@ -232,15 +245,15 @@ public class BlockModelApi extends ApiBase {
             this.v = v;
         }
 
-        public Vertex(PoseStack.Pose pose1, PoseStack.Pose pose2, @Nullable TextureAtlasSprite sprite, ModelPart.Vertex vertex, int color) {
+        public Vertex(PoseStack.Pose pose1, PoseStack.Pose pose2, @Nullable UvMapping uvMapping, ModelPart.Vertex vertex, int color) {
             Vector3f pos = pose1.pose().mul(pose2.pose(), new Matrix4f()).transformPosition(vertex.worldX(), vertex.worldY(), vertex.worldZ(), new Vector3f());
             this.x = pos.x() - 0.5f;
             this.y = pos.y() - 0.5f;
             this.z = pos.z() - 0.5f;
             setColor(color);
-            if (sprite != null) {
-                this.u = sprite.getU(vertex.u());
-                this.v = sprite.getV(vertex.v());
+            if (uvMapping != null) {
+                this.u = uvMapping.getU(vertex.u());
+                this.v = uvMapping.getV(vertex.v());
             } else {
                 this.u = vertex.u();
                 this.v = vertex.v();

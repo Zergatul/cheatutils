@@ -21,7 +21,7 @@ public class MockRegistryAccess implements RegistryAccess {
     private final RegistryAccess inner;
 
     public MockRegistryAccess() {
-        HolderLookup.Provider provider = VanillaRegistries.createLookup();
+        HolderLookup.Provider provider = VanillaRegistries.createWorldLookup();
         inner = new RegistryAccess.ImmutableRegistryAccess(List.of(
                 copyRegistry(provider, Registries.BIOME),
                 copyRegistry(provider, Registries.DAMAGE_TYPE),

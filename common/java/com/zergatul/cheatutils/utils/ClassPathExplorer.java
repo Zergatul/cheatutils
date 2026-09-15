@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
+import com.zergatul.cheatutils.common.LoaderBridge;
 import com.zergatul.scripting.completion.ClassSuggestion;
 import com.zergatul.scripting.completion.ClassSuggestionType;
 import com.zergatul.scripting.completion.JavaInteropSuggestionProvider;
@@ -95,7 +95,7 @@ public class ClassPathExplorer implements JavaInteropSuggestionProvider {
         for (String path : getClassPaths()) {
             getClassesByPath(path, output);
         }
-        for (String jar : ModLoaderBridgeInstance.get().getModsJars()) {
+        for (String jar : LoaderBridge.INSTANCE.getEnvironment().getModsJars()) {
             getClassesByPath(jar, output);
         }
 

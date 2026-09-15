@@ -45,8 +45,8 @@ public class EntityInteraction {
                         AfterSendPlayerPosExecutor.instance,
                         result -> {
                             if (mc.gameMode.interact(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND) instanceof InteractionResult.Success success) {
-                                if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                                    mc.player.swing(InteractionHand.MAIN_HAND);
+                                if (success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+                                    mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getInteractAnimation(), false);
                                 }
                                 return result;
                             } else {
