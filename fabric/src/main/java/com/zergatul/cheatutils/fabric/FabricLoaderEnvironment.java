@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FabricLoaderEnvironment implements LoaderEnvironment {
+public final class FabricLoaderEnvironment implements LoaderEnvironment {
 
     public static final LoaderEnvironment INSTANCE = new FabricLoaderEnvironment();
 

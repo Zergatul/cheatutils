@@ -12,7 +12,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
-public class ModMain implements ClientModInitializer {
+public final class ModMain implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {

@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.zergatul.cheatutils.common.LoaderBridge;
+import com.zergatul.cheatutils.common.LoaderInputsWorkarounds;
 import com.zergatul.cheatutils.mixins.common.accessors.InputConstantsKeyAccessor;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
@@ -18,13 +20,18 @@ public class InputApi {
     private final Map<String, InputConstants.Key> keyMap = new HashMap<>();
 
     public InputApi() {
+        LoaderInputsWorkarounds workarounds = LoaderBridge.INSTANCE.getInputsWorkarounds();
         for (InputConstants.Key key : InputConstantsKeyAccessor.getNameMap_CU().values()) {
-            StringBuilder sb = new StringBuilder();
-            key.getDisplayName().visit(cc -> {
-                sb.append(cc);
-                return Optional.empty();
-            });
-            keyMap.put(sb.toString(), key);
+            if (workarounds != null) {
+                keyMap.put(workarounds.getKeyText(key), key);
+            } else {
+                StringBuilder sb = new StringBuilder();
+                key.getDisplayName().visit(cc -> {
+                    sb.append(cc);
+                    return Optional.empty();
+                });
+                keyMap.put(sb.toString(), key);
+            }
         }
     }
 

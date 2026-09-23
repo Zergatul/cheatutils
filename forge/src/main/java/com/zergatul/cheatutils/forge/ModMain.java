@@ -3,9 +3,6 @@ package com.zergatul.cheatutils.forge;
 import com.mojang.datafixers.util.Either;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.ModLoaderBridge;
-import com.zergatul.cheatutils.common.ModLoaderBridgeInstance;
-import com.zergatul.cheatutils.common.WrappedRegistry;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
@@ -13,39 +10,23 @@ import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.utils.DebugScreenExtensions;
 import com.zergatul.cheatutils.webui.ConfigHttpServer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.versions.forge.ForgeVersion;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 
 @Mod(Constants.MOD_ID)
 public final class ModMain {
 
     public ModMain(final FMLJavaModLoadingContext context) {
-        ModLoaderBridgeInstance.init(new Bridge());
-
         BusGroup modBusGroup = context.getModBusGroup();
 
         FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::onCommonSetup);
@@ -91,89 +72,6 @@ public final class ModMain {
             if (event.getLevel().isClientSide()) {
                 Events.RawChunkUnloaded.trigger((LevelChunk) event.getChunk());
             }
-        }
-    }
-
-    private static class Bridge implements ModLoaderBridge {
-
-        @Override
-        public WrappedRegistry<Block> getBlockRegistry() {
-            return new ForgeWrappedRegistry<>(ForgeRegistries.BLOCKS);
-        }
-
-        @Override
-        public WrappedRegistry<Item> getItemRegistry() {
-            return new ForgeWrappedRegistry<>(ForgeRegistries.ITEMS);
-        }
-
-        @Override
-        public WrappedRegistry<EntityType<?>> getEntityTypeRegistry() {
-            return new ForgeWrappedRegistry<>(ForgeRegistries.ENTITY_TYPES);
-        }
-
-        @Override
-        public WrappedRegistry<MobEffect> getMobEffectRegistry() {
-            return new ForgeWrappedRegistry<>(ForgeRegistries.MOB_EFFECTS);
-        }
-
-        @Override
-        public boolean isProduction() {
-            return FMLEnvironment.production;
-        }
-
-        @Override
-        public String getModLoaderName() {
-            return "Forge";
-        }
-
-        @Override
-        public String getModLoaderVersion() {
-            return ForgeVersion.getVersion();
-        }
-
-        @Override
-        public String getModVersion() {
-            return ModList.getModFileById(Constants.MOD_ID).getMods().getFirst().getVersion().toString();
-        }
-
-        @Override
-        public int getModCount() {
-            return ModList.getMods().size();
-        }
-
-        @Override
-        public boolean hasMod(String modId) {
-            return ModList.getModFileById(modId) != null;
-        }
-
-        @Override
-        public List<String> getModsJars() {
-            return ModList.getModFiles().stream()
-                    .map(info -> info.getFile().getFilePath())
-                    .filter(path -> path.getFileSystem() == FileSystems.getDefault())
-                    .filter(Files::isRegularFile)
-                    .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar"))
-                    .map(path -> path.toAbsolutePath().normalize().toString())
-                    .distinct()
-                    .toList();
-        }
-    }
-
-    private record ForgeWrappedRegistry<T>(IForgeRegistry<T> registry) implements WrappedRegistry<T> {
-
-        @Override
-        public Identifier getKey(T value) {
-            return registry.getKey(value);
-        }
-
-        @Override
-        public T getValue(Identifier id) {
-            return registry.getValue(id);
-        }
-
-        @Override
-        public Collection<T> getValues() {
-            return registry.getValues();
         }
     }
 }

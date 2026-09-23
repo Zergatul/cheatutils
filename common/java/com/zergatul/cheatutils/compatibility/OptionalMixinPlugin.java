@@ -23,6 +23,29 @@ public abstract class OptionalMixinPlugin implements IMixinConfigPlugin {
         return isEnabled.get();
     }
 
+    // below overrides are still required for Forge/NeoForge
+    @Override
+    public void onLoad(String mixinPackage) {}
+
+    @Override
+    public String getRefMapperConfig() {
+        return null;
+    }
+
+    @Override
+    public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {}
+
+    @Override
+    public List<String> getMixins() {
+        return null;
+    }
+
+    @Override
+    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
+
+    @Override
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
+
     protected abstract String getModName();
     protected abstract String getDetectionClassName();
 

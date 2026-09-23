@@ -15,6 +15,7 @@
     "neoforge.MixinKeyboardHandler",
     "neoforge.MixinKeyMapping",
     "neoforge.MixinLevelExtractor",
+    "neoforge.MixinLoaderBridge",
     "neoforge.MixinMinecraft",
     "neoforge.MixinMultiPlayerGameMode"
   ]

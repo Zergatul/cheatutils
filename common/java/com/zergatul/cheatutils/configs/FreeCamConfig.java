@@ -15,6 +15,7 @@ public class FreeCamConfig implements Sanitizable {
         acceleration = 50;
         maxSpeed = 50;
         slowdownFactor = 0.01;
+        renderHands = true;
         target = true;
     }
 

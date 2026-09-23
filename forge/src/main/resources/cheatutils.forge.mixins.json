@@ -14,6 +14,7 @@
     "forge.MixinKeyboardHandler",
     "forge.MixinKeyMapping",
     "forge.MixinLevelExtractor",
+    "forge.MixinLoaderBridge",
     "forge.MixinMinecraft",
     "forge.MixinModVersions",
     "forge.MixinMultiPlayerGameMode"

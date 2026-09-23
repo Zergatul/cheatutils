@@ -1,4 +1,4 @@
-package com.zergatul.cheatutils.fabric;
+package com.zergatul.cheatutils.neoforge;
 
 import com.zergatul.cheatutils.common.LoaderBridge;
 import com.zergatul.cheatutils.common.LoaderEnvironment;
@@ -8,20 +8,20 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class FabricLoaderBridge implements LoaderBridge {
+public final class NeoForgeLoaderBridge implements LoaderBridge {
 
-    public static final LoaderBridge INSTANCE = new FabricLoaderBridge();
+    public static final LoaderBridge INSTANCE = new NeoForgeLoaderBridge();
 
-    private FabricLoaderBridge() {}
+    private NeoForgeLoaderBridge() {}
 
     @Override
     public LoaderEnvironment getEnvironment() {
-        return FabricLoaderEnvironment.INSTANCE;
+        return NeoForgeLoaderEnvironment.INSTANCE;
     }
 
     @Override
     public LoaderRenderingWorkarounds getRenderingWorkarounds() {
-        return FabricLoaderRenderingWorkarounds.INSTANCE;
+        return NeoForgeRenderingWorkarounds.INSTANCE;
     }
 
     @Override

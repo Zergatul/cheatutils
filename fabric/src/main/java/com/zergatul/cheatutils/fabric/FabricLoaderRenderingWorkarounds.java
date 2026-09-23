@@ -10,7 +10,7 @@ import org.joml.Vector3f;
 
 import java.util.List;
 
-public class FabricLoaderRenderingWorkarounds implements LoaderRenderingWorkarounds {
+public final class FabricLoaderRenderingWorkarounds implements LoaderRenderingWorkarounds {
 
     public static final LoaderRenderingWorkarounds INSTANCE = new FabricLoaderRenderingWorkarounds();
 
