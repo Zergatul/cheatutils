@@ -99,7 +99,7 @@ public class ApiGenHandler implements HttpHandler {
             buildType(lines, SType.fromJavaType(clazz));
         }
 
-        List<PropertyReference> apis = SType.fromJavaType(Root.class).getStaticProperties();
+        List<PropertyReference> apis = getStaticProperties(SType.fromJavaType(Root.class));
 
         lines.add("");
         lines.add("// --- Available APIs ---");
@@ -144,19 +144,19 @@ public class ApiGenHandler implements HttpHandler {
                         formatType(type),
                         baseClass != null && baseClass != Object.class ? " : " + formatType(SType.fromJavaType(type.getJavaClass().getSuperclass())) : ""));
 
-        for (PropertyReference property : type.getStaticProperties()) {
+        for (PropertyReference property : getStaticProperties(type)) {
             lines.add(String.format("\tstatic %s %s { %s%s }", property.getType(), property.getName(), property.canLoad() ? "get;" : "", property.canStore() ? "set;" : ""));
         }
-        for (MethodReference method : type.getStaticMethods()) {
+        for (MethodReference method : getStaticMethods(type)) {
             formatMethod(lines, "static ", method);
         }
         for (ConstructorReference constructor : type.getConstructors()) {
             lines.add(String.format("\tconstructor(%s);", formatParameters(constructor.getParameters())));
         }
-        for (PropertyReference property : type.getInstanceProperties()) {
+        for (PropertyReference property : getInstanceProperties(type)) {
             lines.add(String.format("\t%s %s { %s%s }", formatType(property.getType()), property.getName(), property.canLoad() ? "get;" : "", property.canStore() ? "set;" : ""));
         }
-        for (MethodReference method : type.getDeclaredInstanceMethods()) {
+        for (MethodReference method : getInstanceMethods(type)) {
             formatMethod(lines, "", method);
         }
         for (IndexOperation operation : type.getIndexOperations()) {
@@ -186,6 +186,42 @@ public class ApiGenHandler implements HttpHandler {
         }
 
         lines.add("}");
+    }
+
+    private static List<PropertyReference> getStaticProperties(SType type) {
+        return type
+                .getDeclaredProperties()
+                .stream()
+                .filter(p -> p.getVisibility() == Visibility.PUBLIC)
+                .filter(MemberReference::isStatic)
+                .toList();
+    }
+
+    private static List<MethodReference> getStaticMethods(SType type) {
+        return type
+                .getDeclaredMethods()
+                .stream()
+                .filter(m -> m.getVisibility() == Visibility.PUBLIC)
+                .filter(MemberReference::isStatic)
+                .toList();
+    }
+
+    private static List<PropertyReference> getInstanceProperties(SType type) {
+        return type
+                .getDeclaredProperties()
+                .stream()
+                .filter(p -> p.getVisibility() == Visibility.PUBLIC)
+                .filter(p -> !p.isStatic())
+                .toList();
+    }
+
+    private static List<MethodReference> getInstanceMethods(SType type) {
+        return type
+                .getDeclaredMethods()
+                .stream()
+                .filter(m -> m.getVisibility() == Visibility.PUBLIC)
+                .filter(m -> !m.isStatic())
+                .toList();
     }
 
     private void formatMethod(List<String> lines, String prefix, MethodReference method) {

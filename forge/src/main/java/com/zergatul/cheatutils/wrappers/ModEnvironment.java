@@ -5,6 +5,11 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.versions.forge.ForgeVersion;
 
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Locale;
+
 public class ModEnvironment {
 
     public static final boolean IS_PRODUCTION = FMLEnvironment.production;
@@ -23,5 +28,16 @@ public class ModEnvironment {
 
     public static int getModCount() {
         return ModList.get().size();
+    }
+
+    public static List<String> getModsJars() {
+        return ModList.get().getModFiles().stream()
+                .map(info -> info.getFile().getFilePath())
+                .filter(path -> path.getFileSystem() == FileSystems.getDefault())
+                .filter(Files::isRegularFile)
+                .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar"))
+                .map(path -> path.toAbsolutePath().normalize().toString())
+                .distinct()
+                .toList();
     }
 }
