@@ -10,4 +10,7 @@ public interface GuiGraphicsAccessor {
 
     @Accessor("guiRenderState")
     GuiRenderState getGuiRenderState_CU();
+
+    @Accessor("scissorStack")
+    GuiGraphics.ScissorStack getScissorStack_CU();
 }

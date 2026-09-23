@@ -21,6 +21,18 @@
 
         <fieldset>
             <legend>
+                Item Scale
+            </legend>
+            <div>
+                <input type="number" class="w4" min="0" max="50" v-model="config.itemScale" @change="update()">
+            </div>
+            <div class="section-description">
+                Set to 0 to use your current GUI scaling.
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
                 HP prefix
             </legend>
             <div>

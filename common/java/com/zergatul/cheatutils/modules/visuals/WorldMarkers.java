@@ -86,7 +86,7 @@ public class WorldMarkers implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight, 0);
 
         String dimension = mc.level.dimension().identifier().toString();
         for (WorldMarkersConfig.Entry entry : config.entries) {

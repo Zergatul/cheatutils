@@ -172,6 +172,9 @@ public class EntityTitle implements FontBackendHolder {
         if (!EspGlobal.enabled) {
             return;
         }
+        if (entities.isEmpty()) {
+            return;
+        }
 
         EntityTitleConfig config = ConfigStore.instance.getConfig().entityTitleConfig;
 
@@ -212,7 +215,7 @@ public class EntityTitle implements FontBackendHolder {
         Matrix4f matrix = new Matrix4f();
         matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
 
-        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight);
+        RenderingContext context = new RenderingContext(event.graphics(), matrix, halfScrWidth, halfScrHeight, config.itemScale);
 
         List<ItemStack> items = new ArrayList<>();
         List<List<EnchantmentEntry>> enchantments = new ArrayList<>();

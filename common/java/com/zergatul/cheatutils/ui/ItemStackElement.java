@@ -22,8 +22,8 @@ public class ItemStackElement implements Element {
 
     @Override
     public void measure(RenderingContext context) {
-        this.measuredWidth = 16 * context.getScale();
-        this.measuredHeight = 16 * context.getScale();
+        this.measuredWidth = 16 * context.getItemScale();
+        this.measuredHeight = 16 * context.getItemScale();
     }
 
     @Override

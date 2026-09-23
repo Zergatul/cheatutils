@@ -67,6 +67,7 @@
     "common.MixinGui",
     "common.MixinGuiFreeCam",
     "common.MixinGuiGraphics",
+    "common.MixinGuiRenderer",
     "common.MixinItemFeatureRenderer",
     "common.MixinItemStack",
     "common.MixinKeyBindingListKeyEntry",
