@@ -24,23 +24,24 @@ public abstract class MixinGuiGraphicsExtractor {
 
     @Inject(
             at = @At("HEAD"),
-            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Lnet/minecraft/world/item/ItemStack;)V",
+            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;ZLnet/minecraft/world/item/ItemStack;)V",
             cancellable = true)
     private void onBeforeRenderTooltip(
             Font font,
-            List<ClientTooltipComponent> components,
+            List<ClientTooltipComponent> lines,
             int x, int y,
             ClientTooltipPositioner positioner,
-            @Nullable Identifier location,
-            ItemStack unused,
+            @Nullable Identifier style,
+            boolean extraSpaceAfterFirstLine,
+            ItemStack itemstack,
             CallbackInfo info
     ) {
-        if (components.isEmpty()) {
+        if (lines.isEmpty()) {
             return;
         }
 
-        if (components instanceof TaggedArrayList<?,?>) {
-            ItemStack itemStack = ((TaggedArrayList<ClientTooltipComponent, ItemStack>) components).getTag();
+        if (lines instanceof TaggedArrayList<?,?>) {
+            ItemStack itemStack = ((TaggedArrayList<ClientTooltipComponent, ItemStack>) lines).getTag();
             if (Events.PreRenderTooltip.trigger(new PreRenderTooltipEvent((GuiGraphicsExtractor) (Object) this, itemStack, x, y))) {
                 info.cancel();
             }
@@ -48,28 +49,29 @@ public abstract class MixinGuiGraphicsExtractor {
     }
 
     @ModifyMethodReturnValue(
-            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Lnet/minecraft/world/item/ItemStack;)V",
+            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;ZLnet/minecraft/world/item/ItemStack;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;positionTooltip(IIIIII)Lorg/joml/Vector2ic;"))
     private static Vector2ic onTooltipPositioned(Vector2ic position) {
         Events.TooltipPositioned.trigger(position);
         return position;
     }
 
-    @Inject(at = @At("TAIL"), method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Lnet/minecraft/world/item/ItemStack;)V")
+    @Inject(at = @At("TAIL"), method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;ZLnet/minecraft/world/item/ItemStack;)V")
     private void onAfterRenderTooltipInternal(
             Font font,
-            List<ClientTooltipComponent> components,
+            List<ClientTooltipComponent> lines,
             int x, int y,
             ClientTooltipPositioner positioner,
-            @Nullable Identifier location,
-            ItemStack unused,
+            @Nullable Identifier style,
+            boolean extraSpaceAfterFirstLine,
+            ItemStack itemstack,
             CallbackInfo info
     ) {
-        if (components.isEmpty()) {
+        if (lines.isEmpty()) {
             return;
         }
 
-        if (components instanceof TaggedArrayList<?,?>) {
+        if (lines instanceof TaggedArrayList<?,?>) {
             Events.PostRenderTooltip.trigger();
         }
     }

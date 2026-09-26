@@ -26,7 +26,7 @@ public abstract class MixinGuiGraphicsExtractor {
     private TaggedArrayList<Component, ItemStack> storedComponents_CU;
 
     @Inject(
-            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V",
+            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;Z)V",
             at = @At("HEAD"))
     private void onBeforeSetTooltipForNextFrame(
             Font font,
@@ -34,6 +34,7 @@ public abstract class MixinGuiGraphicsExtractor {
             Optional<TooltipComponent> optionalImage,
             int xo, int yo,
             @Nullable Identifier style,
+            boolean extraSpaceAfterFirstLine,
             CallbackInfo info
     ) {
         if (texts instanceof TaggedArrayList<?,?>) {
@@ -53,7 +54,7 @@ public abstract class MixinGuiGraphicsExtractor {
     }
 
     @Inject(
-            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V",
+            method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;Z)V",
             at = @At("TAIL"))
     private void onAfterSetTooltipForNextFrame(
             Font font,
@@ -61,6 +62,7 @@ public abstract class MixinGuiGraphicsExtractor {
             Optional<TooltipComponent> optionalImage,
             int xo, int yo,
             @Nullable Identifier style,
+            boolean extraSpaceAfterFirstLine,
             CallbackInfo info
     ) {
         storedComponents_CU = null;
