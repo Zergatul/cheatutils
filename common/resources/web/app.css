@@ -752,8 +752,7 @@ ul.refs {
 }
 
 ul.refs > li {
-    display: flex;
-    flex-direction: row;
+    display: block;
     padding: 4px 8px;
 }
 
