@@ -156,11 +156,14 @@ public class ConfigStore {
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                List<DiagnosticMessage> diagnostics = KeyBindings.instance.add(toggleEspName, "esp.toggle();", false);
-                if (!diagnostics.isEmpty()) {
-                    ScriptRuntimeFailureHandler.instance.reportCompilationFailure(
-                            new ScriptRef(ScriptType.KEYBINDING, toggleEspName), diagnostics);
-                }
+                KeyBindings.instance.add(toggleEspName, "esp.toggle();", false).accept(
+                        _ -> {
+                            throw new IllegalStateException();
+                        },
+                        diagnostics -> {
+                            ScriptRuntimeFailureHandler.instance.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, toggleEspName), diagnostics);
+                        },
+                        _ -> {});
                 //KeyBindings.instance.getKeyMappingByIndex(0).setKey(InputConstants.getKey("key.keyboard.backslash"));
                 KeyBindings.instance.assign(0, toggleEspName);
             } catch (Throwable e) {
@@ -170,11 +173,14 @@ public class ConfigStore {
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                List<DiagnosticMessage> diagnostics = KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false);
-                if (!diagnostics.isEmpty()) {
-                    ScriptRuntimeFailureHandler.instance.reportCompilationFailure(
-                            new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), diagnostics);
-                }
+                KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false).accept(
+                        _ -> {
+                            throw new IllegalStateException();
+                        },
+                        diagnostics -> {
+                            ScriptRuntimeFailureHandler.instance.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), diagnostics);
+                        },
+                        _ -> {});
                 KeyBindings.instance.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
                 KeyBindings.instance.assign(1, toggleFreeCamName);
             } catch (Throwable e) {
@@ -186,11 +192,14 @@ public class ConfigStore {
             config.keyBindingScriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    List<DiagnosticMessage> diagnostics = KeyBindings.instance.add(s.name, s.code, true);
-                    if (!diagnostics.isEmpty()) {
-                        ScriptRuntimeFailureHandler.instance.reportCompilationFailure(
-                                new ScriptRef(ScriptType.KEYBINDING, s.name), diagnostics);
-                    }
+                    KeyBindings.instance.add(s.name, s.code, true).accept(
+                            _ -> {
+                                throw new IllegalStateException();
+                            },
+                            diagnostics -> {
+                                ScriptRuntimeFailureHandler.instance.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, s.name), diagnostics);
+                            },
+                            _ -> {});
                 } catch (Throwable e) {
                     ScriptRuntimeFailureHandler.instance.reportInitializationFailure(
                             new ScriptRef(ScriptType.KEYBINDING, s.name), e);

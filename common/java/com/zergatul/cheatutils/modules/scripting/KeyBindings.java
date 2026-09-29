@@ -2,6 +2,8 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.Constants;
+import com.zergatul.cheatutils.collections.OneOf3;
+import com.zergatul.cheatutils.collections.SuccessfulResult;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.IKeyBindingRegistry;
 import com.zergatul.cheatutils.configs.ConfigStore;
@@ -86,14 +88,21 @@ public class KeyBindings implements Module {
                 .anyMatch(entry -> entry.name.equals(name));
     }
 
-    public List<DiagnosticMessage> add(@Nullable String name, @Nullable String code, boolean addIfCompilationFails) throws IllegalArgumentException {
-        validateNewScript(name, code);
+    public OneOf3<String, List<DiagnosticMessage>, SuccessfulResult> add(@Nullable String name, @Nullable String code, boolean addIfCompilationFails) throws IllegalArgumentException {
+        if (name == null) {
+            return OneOf3.from1("Name is required");
+        }
+        if (code == null || code.isEmpty()) {
+            return OneOf3.from1("Code is required.");
+        }
+        if (exists(name)) {
+            return OneOf3.from1("Script with the same name already exists.");
+        }
 
         if (!addIfCompilationFails) {
             CompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
             if (result.getProgram() == null) {
-                assert result.getDiagnostics() != null;
-                return result.getDiagnostics();
+                return OneOf3.from2(Objects.requireNonNull(result.getDiagnostics()));
             }
         }
 
@@ -104,10 +113,10 @@ public class KeyBindings implements Module {
                 ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.removeIf(entry -> entry.name.equals(name));
                 slot().remove(name);
             }
-            return result.getDiagnostics();
+            return OneOf3.from2(result.getDiagnostics());
         }
 
-        return List.of();
+        return OneOf3.from3(SuccessfulResult.INSTANCE);
     }
 
     public List<DiagnosticMessage> update(String oldName, String newName, @Nullable String code) throws IllegalArgumentException {
@@ -205,18 +214,6 @@ public class KeyBindings implements Module {
     private @Nullable AsyncRunnable getAction(String name) {
         ScriptActivation<AsyncRunnable> activation = scripts.get(name);
         return activation == null ? null : () -> activation.execute(activation.program);
-    }
-
-    private void validateNewScript(@Nullable String name, @Nullable String code) {
-        if (name == null) {
-            throw new IllegalArgumentException("Name is required.");
-        }
-        if (code == null || code.isEmpty()) {
-            throw new IllegalArgumentException("Code is required.");
-        }
-        if (exists(name)) {
-            throw new IllegalArgumentException("Script with the same name already exists.");
-        }
     }
 
     private void refreshAssignments(String name) {

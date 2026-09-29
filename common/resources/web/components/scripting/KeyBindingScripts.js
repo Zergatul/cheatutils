@@ -60,7 +60,11 @@ export function createComponent(template) {
                         if (response.ok) {
                             this.refresh();
                         } else {
-                            alert(formatCodeResponse(response));
+                            if (response.error) {
+                                alert(response.error);
+                            } else {
+                                alert(formatCodeResponse(response));
+                            }
                         }
                     }, handleError);
                 }

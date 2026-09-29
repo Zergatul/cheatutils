@@ -47,12 +47,13 @@ public class KeyBindingScriptsApi extends ApiBase {
     @Override
     public String post(String body) {
         Script script = gson.fromJson(body, Script.class);
-        List<DiagnosticMessage> messages = KeyBindings.instance.add(script.name, script.code, false);
-        if (!messages.isEmpty()) {
-            return gson.toJson(messages);
-        }
-        ConfigStore.instance.requestWrite();
-        return "{ \"ok\": true }";
+        return KeyBindings.instance.add(script.name, script.code, false).match(
+                error -> gson.toJson(new ErrorResponse(error)),
+                diagnostics -> gson.toJson(diagnostics),
+                _ -> {
+                    ConfigStore.instance.requestWrite();
+                    return "{ \"ok\": true }";
+                });
     }
 
     @Override
@@ -77,4 +78,6 @@ public class KeyBindingScriptsApi extends ApiBase {
             code = script.code;
         }
     }
+
+    public record ErrorResponse(String error) {}
 }
