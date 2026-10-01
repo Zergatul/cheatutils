@@ -6,19 +6,13 @@ import com.zergatul.cheatutils.configs.AutoToolConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.AutoToolMiningSpeedCalculator;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.item.enchantment.effects.EnchantmentAttributeEffect;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
@@ -84,6 +78,7 @@ public class AutoTool implements Module {
 
         Inventory inventory = mc.player.getInventory();
         BlockState state = mc.level.getBlockState(pos);
+        AutoToolMiningSpeedCalculator calculator = new AutoToolMiningSpeedCalculator(mc.player);
 
         if (config.mode.equals(AutoToolConfig.MODE_HOTBAR)) {
             List<InventoryEntry> entries = new ArrayList<>(9);
@@ -92,7 +87,7 @@ public class AutoTool implements Module {
             }
             moveSelectedToStart(entries, inventory.getSelectedSlot());
 
-            InventoryEntry entry = findBest(config, entries, state);
+            InventoryEntry entry = findBest(config, entries, state, calculator);
             if (entry != null && entry.index != inventory.getSelectedSlot()) {
                 inventory.setSelectedSlot(entry.index);
                 ((MultiPlayerGameModeAccessor) mc.gameMode).ensureHasSentCarriedItem_CU();
@@ -109,7 +104,7 @@ public class AutoTool implements Module {
             }
             moveSelectedToStart(entries, inventory.getSelectedSlot());
 
-            InventoryEntry entry = findBest(config, entries, state);
+            InventoryEntry entry = findBest(config, entries, state, calculator);
             if (entry != null && entry.index != inventory.getSelectedSlot()) {
                 if (entry.index < 9) {
                     inventory.setSelectedSlot(entry.index);
@@ -137,7 +132,7 @@ public class AutoTool implements Module {
         entries.addFirst(entries.remove(selected));
     }
 
-    private InventoryEntry findBest(AutoToolConfig config, List<InventoryEntry> entries, BlockState state) {
+    private InventoryEntry findBest(AutoToolConfig config, List<InventoryEntry> entries, BlockState state, AutoToolMiningSpeedCalculator calculator) {
         boolean prioritizeDrops = AutoToolConfig.PRIORITY_DROP.equals(config.priority);
         double bestMiningSpeed = 0;
         boolean bestCanHarvest = false;
@@ -151,7 +146,7 @@ public class AutoTool implements Module {
 
             boolean canHarvest = !state.requiresCorrectToolForDrops() || entry.item.isCorrectToolForDrops(state);
             // Block hardness is the same for every candidate; use vanilla's correct-tool divisor.
-            double miningSpeed = getMiningSpeed(state, entry.item) / (canHarvest ? 30 : 100);
+            double miningSpeed = calculator.getMiningSpeed(state, entry.item) / (canHarvest ? 30 : 100);
             // Drop priority preserves drops even when an unsuitable tool would break faster.
             boolean isBetter = bestEntry == null || (prioritizeDrops && canHarvest && !bestCanHarvest);
             boolean samePriority = !prioritizeDrops || canHarvest == bestCanHarvest;
@@ -172,49 +167,6 @@ public class AutoTool implements Module {
         }
 
         return bestEntry;
-    }
-
-    private double getMiningSpeed(BlockState state, ItemStack item) {
-        double speed = item.getDestroySpeed(state);
-        if (speed > 1.0F) {
-            // copied from AttributeInstance.calculateValue
-            ItemEnchantments enchantments = item.getEnchantments();
-            double value1 = Attributes.MINING_EFFICIENCY.value().getDefaultValue();
-
-            for (Holder<Enchantment> enchantment : enchantments.keySet()) {
-                for (EnchantmentAttributeEffect effect : enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES)) {
-                    if (effect.attribute() == Attributes.MINING_EFFICIENCY) {
-                        if (effect.operation() == AttributeModifier.Operation.ADD_VALUE) {
-                            value1 += effect.amount().calculate(enchantments.getLevel(enchantment));
-                        }
-                    }
-                }
-            }
-
-            double value2 = value1;
-            for (Holder<Enchantment> enchantment : enchantments.keySet()) {
-                for (EnchantmentAttributeEffect effect : enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES)) {
-                    if (effect.attribute() == Attributes.MINING_EFFICIENCY) {
-                        if (effect.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE) {
-                            value2 += value1 * effect.amount().calculate(enchantments.getLevel(enchantment));
-                        }
-                    }
-                }
-            }
-            for (Holder<Enchantment> enchantment : enchantments.keySet()) {
-                for (EnchantmentAttributeEffect effect : enchantment.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES)) {
-                    if (effect.attribute() == Attributes.MINING_EFFICIENCY) {
-                        if (effect.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
-                            value2 *= 1 + effect.amount().calculate(enchantments.getLevel(enchantment));
-                        }
-                    }
-                }
-            }
-
-            speed += Attributes.MINING_EFFICIENCY.value().sanitizeValue(value2);
-        }
-
-        return speed;
     }
 
     private record InventoryEntry(int index, ItemStack item) {}

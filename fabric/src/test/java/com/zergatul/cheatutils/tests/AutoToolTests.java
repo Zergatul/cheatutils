@@ -3,14 +3,22 @@ package com.zergatul.cheatutils.tests;
 import com.google.gson.Gson;
 import com.zergatul.cheatutils.configs.AutoToolConfig;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
+import com.zergatul.cheatutils.utils.AutoToolMiningSpeedCalculator;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -143,6 +152,30 @@ public class AutoToolTests {
         assertSame(empty, select(Blocks.DIRT, damageable, empty));
     }
 
+    @Test
+    public void customMiningEfficiencyChangesToolSelection() throws Exception {
+        ItemStack custom = tool(Blocks.DIAMOND_ORE, 6, true);
+        custom.set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder()
+                .add(Attributes.MINING_EFFICIENCY, new AttributeModifier(
+                        Identifier.fromNamespaceAndPath("test", "efficiency"), 10, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
+                .build());
+        ItemStack ordinary = tool(Blocks.DIAMOND_ORE, 8, true);
+
+        assertSame(custom, select(Blocks.DIAMOND_ORE, ordinary, custom));
+    }
+
+    @Test
+    public void customBlockBreakSpeedChangesToolSelection() throws Exception {
+        ItemStack custom = tool(Blocks.DIAMOND_ORE, 6, true);
+        custom.set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder()
+                .add(Attributes.BLOCK_BREAK_SPEED, new AttributeModifier(
+                        Identifier.fromNamespaceAndPath("test", "break_speed"), 1, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
+                .build());
+        ItemStack ordinary = tool(Blocks.DIAMOND_ORE, 8, true);
+
+        assertSame(custom, select(Blocks.DIAMOND_ORE, ordinary, custom));
+    }
+
     private static ItemStack tool(Block block, float speed, boolean correctForDrops) {
         // Direct holders and explicit components avoid requiring datapack loading.
         ItemStack stack = new ItemStack(Holder.direct(Items.DIAMOND_PICKAXE));
@@ -171,9 +204,15 @@ public class AutoToolTests {
         }
 
         var findBest = AutoTool.class.getDeclaredMethod(
-                "findBest", AutoToolConfig.class, List.class, BlockState.class);
+                "findBest", AutoToolConfig.class, List.class, BlockState.class, AutoToolMiningSpeedCalculator.class);
         findBest.setAccessible(true);
-        Object selected = findBest.invoke(AutoTool.instance, config, entries, block.defaultBlockState());
+        AttributeMap attributes = new AttributeMap(AttributeSupplier.builder()
+                .add(Attributes.MINING_EFFICIENCY)
+                .add(Attributes.BLOCK_BREAK_SPEED)
+                .add(Attributes.SUBMERGED_MINING_SPEED)
+                .build());
+        AutoToolMiningSpeedCalculator calculator = new AutoToolMiningSpeedCalculator(attributes, Map.of(), false);
+        Object selected = findBest.invoke(AutoTool.instance, config, entries, block.defaultBlockState(), calculator);
         if (selected == null) {
             return null;
         }
