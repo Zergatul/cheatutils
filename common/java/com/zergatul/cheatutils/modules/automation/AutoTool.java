@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.events.ContinueDestroyBlockEvent;
 import com.zergatul.cheatutils.configs.AutoToolConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
@@ -32,6 +33,7 @@ public class AutoTool implements Module {
 
     private AutoTool() {
         Events.StartDestroyBlock.add(this::onStartDestroyBlock);
+        Events.ContinueDestroyBlock.add(this::onContinueDestroyBlock);
     }
 
     public void enterSkipMode() {
@@ -59,9 +61,25 @@ public class AutoTool implements Module {
         selectToolFor(config, pos);
     }
 
-    private void selectToolFor(AutoToolConfig config, BlockPos pos) {
-        if (mc.level == null || mc.player == null || mc.gameMode == null) {
+    private void onContinueDestroyBlock(ContinueDestroyBlockEvent event) {
+        if (skip) {
             return;
+        }
+
+        AutoToolConfig config = ConfigStore.instance.getConfig().autoTool;
+        if (!config.enabled) {
+            return;
+        }
+
+        if (selectToolFor(config, event.pos)) {
+            event.markNewDestroy = true;
+        }
+    }
+
+    // returns true when selected item was changed
+    private boolean selectToolFor(AutoToolConfig config, BlockPos pos) {
+        if (mc.level == null || mc.player == null || mc.gameMode == null) {
+            return false;
         }
 
         Inventory inventory = mc.player.getInventory();
@@ -75,10 +93,13 @@ public class AutoTool implements Module {
             moveSelectedToStart(entries, inventory.getSelectedSlot());
 
             InventoryEntry entry = findBest(config, entries, state);
-            if (entry != null) {
+            if (entry != null && entry.index != inventory.getSelectedSlot()) {
                 inventory.setSelectedSlot(entry.index);
                 ((MultiPlayerGameModeAccessor) mc.gameMode).ensureHasSentCarriedItem_CU();
+                return true;
             }
+
+            return false;
         }
 
         if (config.mode.equals(AutoToolConfig.MODE_INVENTORY)) {
@@ -89,7 +110,7 @@ public class AutoTool implements Module {
             moveSelectedToStart(entries, inventory.getSelectedSlot());
 
             InventoryEntry entry = findBest(config, entries, state);
-            if (entry != null) {
+            if (entry != null && entry.index != inventory.getSelectedSlot()) {
                 if (entry.index < 9) {
                     inventory.setSelectedSlot(entry.index);
                     ((MultiPlayerGameModeAccessor) mc.gameMode).ensureHasSentCarriedItem_CU();
@@ -98,8 +119,14 @@ public class AutoTool implements Module {
                     inventory.setSelectedSlot(config.slot - 1);
                     ((MultiPlayerGameModeAccessor) mc.gameMode).ensureHasSentCarriedItem_CU();
                 }
+
+                return true;
             }
+
+            return false;
         }
+
+        throw new IllegalStateException();
     }
 
     private void moveSelectedToStart(List<InventoryEntry> entries, int selected) {

@@ -1,7 +1,10 @@
 package com.zergatul.cheatutils.mixins.common;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
+import com.zergatul.cheatutils.common.events.ContinueDestroyBlockEvent;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FastBreakConfig;
@@ -103,6 +106,19 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
         if (config.enabled && config.disableDestroyDelay) {
             this.destroyDelay = 0;
         }
+    }
+
+    @ModifyExpressionValue(
+            method = "continueDestroyBlock",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;sameDestroyTarget(Lnet/minecraft/core/BlockPos;)Z"))
+    private boolean onModifySameDestroyTarget(boolean original, @Local(argsOnly = true) BlockPos pos) {
+        if (!original) {
+            return false;
+        }
+
+        ContinueDestroyBlockEvent event = new ContinueDestroyBlockEvent(pos);
+        Events.ContinueDestroyBlock.trigger(event);
+        return !event.markNewDestroy;
     }
 
     @Inject(at = @At("HEAD"), method = "attack", cancellable = true)

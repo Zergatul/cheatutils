@@ -42,7 +42,9 @@ public class BlockBreaker {
                         // if we call continueDestroyBlock after we block is destroyed
                         // it can trigger destroying next block we don't want to touch
                         if (!instamined) {
+                            AutoTool.instance.enterSkipMode();
                             mc.gameMode.continueDestroyBlock(pos, Direction.UP);
+                            AutoTool.instance.exitSkipMode();
                         }
                         mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), true);
                         if (instamined) {
@@ -86,7 +88,10 @@ public class BlockBreaker {
             } else {
                 // check distance to block
                 if (isInRange(pos, config)) {
-                    if (mc.gameMode.continueDestroyBlock(pos, Direction.UP)) {
+                    AutoTool.instance.enterSkipMode();
+                    boolean continuing = mc.gameMode.continueDestroyBlock(pos, Direction.UP);
+                    AutoTool.instance.exitSkipMode();
+                    if (continuing) {
                         mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
                         queueCheckBreakingProgress(pos, config, future);
                     } else {
