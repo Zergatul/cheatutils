@@ -1,0 +1,83 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - '1.21'
+      - '1.21.[1-9]'
+      - '1.21.1[0-9]'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+        with:
+          submodules: true
+
+      - name: Setup Java
+        uses: actions/setup-java@main
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build Annotation Processor
+        run: |
+          pushd ./mixin-plugin/annotation-processor
+          chmod +x ./gradlew
+          ./gradlew build
+          popd
+
+      - name: Build Forge
+        run: |
+          pushd ./forge
+          chmod +x ./gradlew
+          ./gradlew build
+          popd
+
+      - name: Build Fabric
+        run: |
+          pushd ./fabric
+          chmod +x ./gradlew
+          ./gradlew build
+          popd
+
+      - name: Build NeoForge
+        run: |
+          pushd ./neoforge
+          chmod +x ./gradlew
+          ./gradlew build
+          popd
+
+      - name: Create CurseForge builds
+        shell: pwsh
+        run: |
+          Get-ChildItem    ./forge/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
+          Get-ChildItem   ./fabric/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
+          Get-ChildItem ./neoforge/build/libs/*.jar | ./scripts/ConvertTo-CurseForgeBuild.ps1
+
+      - name: Upload Forge artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: forge
+          path: ./forge/build/libs/*.jar
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload Fabric artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: fabric
+          path: ./fabric/build/libs/*.jar
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload NeoForge artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: neoforge
+          path: ./neoforge/build/libs/*.jar
+          compression-level: 0
+          if-no-files-found: error
