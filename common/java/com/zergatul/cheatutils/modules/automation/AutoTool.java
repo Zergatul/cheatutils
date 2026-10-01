@@ -138,7 +138,9 @@ public class AutoTool implements Module {
     }
 
     private InventoryEntry findBest(AutoToolConfig config, List<InventoryEntry> entries, BlockState state) {
+        boolean prioritizeDrops = AutoToolConfig.PRIORITY_DROP.equals(config.priority);
         double bestMiningSpeed = 0;
+        boolean bestCanHarvest = false;
         InventoryEntry bestEntry = null;
         for (InventoryEntry entry : entries) {
             if (entry.item.isDamageableItem()) {
@@ -147,9 +149,16 @@ public class AutoTool implements Module {
                 }
             }
 
-            double miningSpeed = getMiningSpeed(state, entry.item);
-            boolean isBetter = miningSpeed > bestMiningSpeed;
-            if (!isBetter && miningSpeed == bestMiningSpeed) {
+            boolean canHarvest = !state.requiresCorrectToolForDrops() || entry.item.isCorrectToolForDrops(state);
+            // Block hardness is the same for every candidate; use vanilla's correct-tool divisor.
+            double miningSpeed = getMiningSpeed(state, entry.item) / (canHarvest ? 30 : 100);
+            // Drop priority preserves drops even when an unsuitable tool would break faster.
+            boolean isBetter = bestEntry == null || (prioritizeDrops && canHarvest && !bestCanHarvest);
+            boolean samePriority = !prioritizeDrops || canHarvest == bestCanHarvest;
+            if (!isBetter && samePriority) {
+                isBetter = miningSpeed > bestMiningSpeed;
+            }
+            if (!isBetter && samePriority && miningSpeed == bestMiningSpeed) {
                 if (bestEntry != null && bestEntry.item.isDamageableItem() && !entry.item.isDamageableItem()) {
                     isBetter = true;
                 }
@@ -157,6 +166,7 @@ public class AutoTool implements Module {
 
             if (isBetter) {
                 bestMiningSpeed = miningSpeed;
+                bestCanHarvest = canHarvest;
                 bestEntry = entry;
             }
         }

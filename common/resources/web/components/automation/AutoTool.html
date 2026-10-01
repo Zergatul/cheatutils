@@ -1,7 +1,7 @@
 <div class="module-main" v-if="config">
     <div class="description">
         Automatically switches to the best tool right before you start breaking block.<br>
-        "Best" tool is determined by best mining speed. If there is no such tool, it switches to any non-damageable item.
+        Selects tools according to the chosen priority. On equal speed, non-damageable items are preferred.
     </div>
 
     <div class="module-sections">
@@ -21,6 +21,25 @@
                 <radio name="mode" value="INVENTORY" v-model="config.mode" @change="update()">
                     Search for tools in inventory
                 </radio>
+            </div>
+        </fieldset>
+
+        <fieldset class="flex-column">
+            <legend>
+                Priority
+            </legend>
+            <div>
+                <radio name="priority" value="SPEED" v-model="config.priority" @change="update()">
+                    Prioritize Speed
+                </radio>
+                <radio name="priority" value="DROP" v-model="config.priority" @change="update()">
+                    Prioritize Drop
+                </radio>
+            </div>
+            <div class="section-description">
+                <b>Prioritize Speed:</b> Chooses the fastest tool, accounting for the wrong-tool speed penalty. The block may break without dropping items.<br>
+                <b>Prioritize Drop:</b> Prefers tools that meet the block's harvesting requirements, then chooses the fastest among them. If none qualify, uses the fastest available tool.<br>
+                Harvesting requirements check tool type and tier. This option does not choose between Silk Touch and Fortune.
             </div>
         </fieldset>
 
