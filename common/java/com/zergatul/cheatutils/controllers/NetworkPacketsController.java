@@ -66,6 +66,12 @@ public class NetworkPacketsController {
         }
     }
 
+    public void sendBufferedPacket(Packet<?> packet) {
+        if (connection != null) {
+            connection.send(packet, null, false);
+        }
+    }
+
     public void receivePacket(Packet<?> packet) {
         if (connection != null) {
             try {

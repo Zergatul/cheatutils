@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.configs.AutoCriticalsConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
 
@@ -37,17 +38,26 @@ public class AutoCriticals {
                     (!mc.player.onClimbable()
                             && !mc.player.isInWater() && !mc.player.isMobilityRestricted() && !mc.player.isPassenger()
                             && mc.player.getLivingEntity().isAlive() && !mc.player.isSprinting()))
-            ) return;
+            ) {
+                return;
+            }
 
             // Soft Conditions we can cheat to validate, do nothing if its already valid case
-            if (mc.player.fallDistance > 0 && !mc.player.onGround()) return;
+            if (mc.player.fallDistance > 0 && !mc.player.onGround()) {
+                return;
+            }
 
             Vec3 PrevPos = mc.player.position();
 
-            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false));
-            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
-            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false));
-            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false));
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false));
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
         }
     }
 }
