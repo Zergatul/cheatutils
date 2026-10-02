@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
 public class AntiHunger implements Module {
@@ -23,6 +24,9 @@ public class AntiHunger implements Module {
                 return;
             }
             if (ConfigStore.instance.getConfig().flyHackConfig.enabled) {
+                return;
+            }
+            if (Minecraft.getInstance().player.isFallFlying()) {
                 return;
             }
             ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(false);
