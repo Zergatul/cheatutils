@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.mixins.common.sodium;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.zergatul.cheatutils.modules.automation.Schematica;
+import com.zergatul.cheatutils.modules.automation.schematica.Schematica;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

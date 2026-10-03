@@ -6,7 +6,9 @@ import com.zergatul.cheatutils.configs.KillAuraConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
+import com.zergatul.cheatutils.web.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -40,10 +42,10 @@ public class KillAura implements Module {
         Events.InGameTickStart.add(this::onClientTickStart);
         Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
         Events.DimensionChange.add(this::onDimensionChange);
-    }
 
-    public void onEnabled() {
-        lastAttackTick = 0;
+        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register(new InfoWebApi());
+        WebApiRegistry.INSTANCE.register(new ClassNameWebApi());
     }
 
     public void clearTargetPredicate() {
@@ -54,6 +56,10 @@ public class KillAura implements Module {
         targetPredicate = predicate;
         target = null;
         targets.clear();
+    }
+
+    private void onEnabled() {
+        lastAttackTick = 0;
     }
 
     private void onClientTickStart() {
@@ -243,5 +249,68 @@ public class KillAura implements Module {
     @FunctionalInterface
     public interface TargetPredicate {
         boolean test(int entityId);
+    }
+
+    private final class WebApi extends SimpleModuleConfigWebApi<KillAuraConfig> {
+
+        public WebApi() {
+            super("kill-aura", KillAuraConfig.class);
+        }
+
+        @Override
+        protected KillAuraConfig getConfig() {
+            return ConfigStore.instance.getConfig().killAuraConfig;
+        }
+
+        @Override
+        protected void setConfig(KillAuraConfig config) {
+            KillAuraConfig oldConfig = ConfigStore.instance.getConfig().killAuraConfig;
+            boolean justEnabled = !oldConfig.enabled && config.enabled;
+            config.copyTo(oldConfig);
+
+            if (justEnabled) {
+                KillAura.this.onEnabled();
+            }
+        }
+    }
+
+    private static final class InfoWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "kill-aura-info";
+        }
+
+        @Override
+        public String get() {
+            List<KillAuraConfig.PriorityEntry> entries = new ArrayList<>(KillAuraConfig.PredefinedPriorityEntry.entries.values());
+            for (KillAuraConfig.PriorityEntry entry: ConfigStore.instance.getConfig().killAuraConfig.customEntries) {
+                entries.add(entry);
+            }
+            return gson.toJson(entries);
+        }
+    }
+
+    private static final class ClassNameWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "class-name";
+        }
+
+        @Override
+        public String get(String className) throws ApiException {
+            if (className == null) {
+                throw new ApiException("Class not found", HttpResponseCodes.NOT_FOUND);
+            }
+
+            try {
+                ClassUtils.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw new ApiException("Class not found", HttpResponseCodes.NOT_FOUND);
+            }
+
+            return "{ \"ok\": true }";
+        }
     }
 }

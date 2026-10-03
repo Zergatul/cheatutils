@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.utils.ClassPathExplorer;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.webui.WebHelper;
+import com.zergatul.cheatutils.web.WebHelper;
 import com.zergatul.scripting.TextRange;
 import com.zergatul.scripting.analysis.AnalysisResult;
 import com.zergatul.scripting.analysis.Analyzer;

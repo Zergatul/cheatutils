@@ -6,6 +6,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,6 +23,9 @@ public class AutoHotbar implements Module {
 
     private AutoHotbar() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
+
         clear();
     }
 
@@ -91,5 +96,22 @@ public class AutoHotbar implements Module {
         }
 
         return -1;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AutoHotbarConfig> {
+
+        public WebApi() {
+            super("auto-hotbar", AutoHotbarConfig.class);
+        }
+
+        @Override
+        protected AutoHotbarConfig getConfig() {
+            return ConfigStore.instance.getConfig().autoHotbarConfig;
+        }
+
+        @Override
+        protected void setConfig(AutoHotbarConfig config) {
+            ConfigStore.instance.getConfig().autoHotbarConfig = config;
+        }
     }
 }

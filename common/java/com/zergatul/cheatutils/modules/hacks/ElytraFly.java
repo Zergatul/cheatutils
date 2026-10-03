@@ -4,6 +4,8 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ElytraHackConfig;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.phys.Vec3;
@@ -21,6 +23,8 @@ public class ElytraFly implements Module {
         Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.InGameTickEnd.add(this::onClientTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     public Vec3 onModifyDeltaMove(Vec3 delta) {
@@ -113,5 +117,22 @@ public class ElytraFly implements Module {
 
     private void onClientTickEnd() {
         applySpeedLimit = false;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<ElytraHackConfig> {
+
+        public WebApi() {
+            super("elytra-hack", ElytraHackConfig.class);
+        }
+
+        @Override
+        protected ElytraHackConfig getConfig() {
+            return ConfigStore.instance.getConfig().elytraHackConfig;
+        }
+
+        @Override
+        protected void setConfig(ElytraHackConfig config) {
+            ConfigStore.instance.getConfig().elytraHackConfig = config;
+        }
     }
 }

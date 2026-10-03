@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.common.schematics;
 
-import com.zergatul.cheatutils.modules.automation.Schematica;
+import com.zergatul.cheatutils.modules.automation.schematica.Schematica;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.renderer.SectionOcclusionGraph;
 import org.spongepowered.asm.mixin.Mixin;

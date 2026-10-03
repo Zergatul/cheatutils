@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.controllers.WorldDownloadController;
+import com.zergatul.cheatutils.modules.utilities.WorldDownload;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,6 +13,6 @@ public abstract class MixinLevelChunk {
 
     @Inject(at = @At("TAIL"), method = "replaceWithPacketData")
     private void onAfterReplaceWithPacketData(int chunkX, int chunkZ, ClientboundLevelChunkPacketData chunkData, CallbackInfo info) {
-        WorldDownloadController.instance.onChunkFilledFromPacket((LevelChunk) (Object) this);
+        WorldDownload.INSTANCE.onChunkFilledFromPacket((LevelChunk) (Object) this);
     }
 }

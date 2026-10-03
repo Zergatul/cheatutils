@@ -14,10 +14,13 @@ import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.modules.visuals.LogoutSpots;
 import com.zergatul.cheatutils.render.CacheItemRenderer;
 import com.zergatul.cheatutils.ui.*;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
@@ -82,6 +85,10 @@ public class EntityTitle implements FontBackendHolder {
     private EntityTitle() {
         Events.PreRenderGui.add(this::onPreRenderGui);
         Events.AfterRenderWorld.add(this::onRenderWorld, 20);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
+
+        FontBackendHolders.add(this);
     }
 
     @Override
@@ -571,5 +578,30 @@ public class EntityTitle implements FontBackendHolder {
 
     private static class ColorHolder {
         public int color;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<EntityTitleConfig> {
+
+        public WebApi() {
+            super("entity-title", EntityTitleConfig.class);
+        }
+
+        @Override
+        protected EntityTitleConfig getConfig() {
+            return ConfigStore.instance.getConfig().entityTitleConfig;
+        }
+
+        @Override
+        protected void setConfig(EntityTitleConfig config) {
+            EntityTitleConfig oldConfig = ConfigStore.instance.getConfig().entityTitleConfig;
+            ConfigStore.instance.getConfig().entityTitleConfig = config;
+
+            if (!oldConfig.titleFont.equals(config.titleFont)) {
+                EntityTitle.instance.onTitleFontChange();
+            }
+            if (!oldConfig.enchantmentFont.equals(config.enchantmentFont)) {
+                EntityTitle.instance.onEnchantmentFontChange();
+            }
+        }
     }
 }

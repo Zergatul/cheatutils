@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.modules.scripting;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.EventsScriptingConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.AimAssist;
@@ -15,6 +16,9 @@ import com.zergatul.cheatutils.scripting.modules.PacketEvent;
 import com.zergatul.cheatutils.scripting.modules.PlayerMessageSendingEvent;
 import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
 import com.zergatul.cheatutils.scripting.types.PlayerInfoWrapper;
+import com.zergatul.cheatutils.web.CodeWebApiBase;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.server.IntegratedServer;
@@ -155,6 +159,9 @@ public class EventsScripting implements Module {
         NetworkPacketsController.instance.addServerPacketHandler(args -> {
 
         });
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
     public void setScript(Runnable runnable) {
@@ -346,5 +353,35 @@ public class EventsScripting implements Module {
 
     private boolean canTrigger() {
         return isScriptActive() && mc.player != null && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<EventsScriptingConfig> {
+
+        public WebApi() {
+            super("events-scripting", EventsScriptingConfig.class);
+        }
+
+        @Override
+        protected EventsScriptingConfig getConfig() {
+            return ConfigStore.instance.getConfig().eventsScriptingConfig;
+        }
+
+        @Override
+        protected void setConfig(EventsScriptingConfig config) {
+            ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = config.enabled;
+        }
+    }
+
+    private static final class CodeWebApi extends CodeWebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "events-scripting-code";
+        }
+
+        @Override
+        protected ScriptType getScriptType() {
+            return ScriptType.EVENTS;
+        }
     }
 }

@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.mixins.common.schematics;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
-import com.zergatul.cheatutils.schematics.SchematicaSectionCopy;
-import com.zergatul.cheatutils.schematics.WrapperRenderSectionRegion;
+import com.zergatul.cheatutils.modules.automation.schematica.render.SchematicaSectionCopy;
+import com.zergatul.cheatutils.modules.automation.schematica.render.WrapperRenderSectionRegion;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;

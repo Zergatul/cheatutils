@@ -6,6 +6,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -20,6 +22,8 @@ public class AutoTotem implements Module {
 
     private AutoTotem() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onClientTickEnd() {
@@ -51,6 +55,23 @@ public class AutoTotem implements Module {
             if (totemSlot >= 0) {
                 InventoryUtils.moveItemStack(new InventorySlot(totemSlot), new InventorySlot(EquipmentSlot.OFFHAND));
             }
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AutoTotemConfig> {
+
+        public WebApi() {
+            super("auto-totem", AutoTotemConfig.class);
+        }
+
+        @Override
+        protected AutoTotemConfig getConfig() {
+            return ConfigStore.instance.getConfig().autoTotemConfig;
+        }
+
+        @Override
+        protected void setConfig(AutoTotemConfig config) {
+            ConfigStore.instance.getConfig().autoTotemConfig = config;
         }
     }
 }

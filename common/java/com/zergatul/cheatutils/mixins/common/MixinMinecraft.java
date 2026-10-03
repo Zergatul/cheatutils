@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
-import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.AirPlace;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;

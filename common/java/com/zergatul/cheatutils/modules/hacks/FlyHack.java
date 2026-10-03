@@ -6,6 +6,8 @@ import com.zergatul.cheatutils.configs.FlyHackConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -26,6 +28,8 @@ public class FlyHack implements Module {
         Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.InGameTickEnd.add(this::onTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
@@ -102,6 +106,23 @@ public class FlyHack implements Module {
                     config.onGroundFlag,
                     false);
             NetworkPacketsController.instance.sendPacket(antiKickPacket);
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<FlyHackConfig> {
+
+        public WebApi() {
+            super("fly-hack", FlyHackConfig.class);
+        }
+
+        @Override
+        protected FlyHackConfig getConfig() {
+            return ConfigStore.instance.getConfig().flyHackConfig;
+        }
+
+        @Override
+        protected void setConfig(FlyHackConfig config) {
+            ConfigStore.instance.getConfig().flyHackConfig = config;
         }
     }
 }

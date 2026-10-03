@@ -13,6 +13,8 @@ import com.zergatul.cheatutils.render.*;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -68,6 +70,8 @@ public class LightLevel implements Module {
         Events.RawChunkLoaded.add(this::onChunkLoaded);
         Events.RawChunkUnloaded.add(this::onChunkUnLoaded);
         Events.RawBlockUpdated.add(this::onBlockChanged);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
 
         for (int i = 0; i < 16; i++) {
             float x1 = 0.25f * (i % 4);
@@ -315,4 +319,22 @@ public class LightLevel implements Module {
     private record TextureLocation(float[] x, float[] y) {}
 
     private record RotationIndexes(int[] u, int[] v) {}
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<LightLevelConfig> {
+
+        public WebApi() {
+            super("light-level", LightLevelConfig.class);
+        }
+
+        @Override
+        protected LightLevelConfig getConfig() {
+            return ConfigStore.instance.getConfig().lightLevelConfig;
+        }
+
+        @Override
+        protected void setConfig(LightLevelConfig config) {
+            ConfigStore.instance.getConfig().lightLevelConfig = config;
+            LightLevel.instance.onChanged();
+        }
+    }
 }

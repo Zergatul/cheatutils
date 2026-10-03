@@ -1,0 +1,44 @@
+package com.zergatul.cheatutils.modules.esp.block.web;
+
+import com.zergatul.cheatutils.common.RegistryExtensions;
+import com.zergatul.cheatutils.web.WebApiBase;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+
+import java.util.Collection;
+
+public class BlockInfoWebApi extends WebApiBase {
+
+    @Override
+    public String getRoute() {
+        return "block-info";
+    }
+
+    @Override
+    public String get() {
+        Collection<Block> blocks = RegistryExtensions.getValues(BuiltInRegistries.BLOCK);
+        Object[] result = blocks.stream().filter(b -> !b.equals(Blocks.AIR)).map(BlockInfo::new).toArray();
+        return gson.toJson(result);
+    }
+
+    private static class BlockInfo {
+
+        public String id;
+        public String name;
+
+        public BlockInfo(Block block) {
+            id = BuiltInRegistries.BLOCK.getKey(block).toString();
+
+            MutableComponent text = block.getName();
+            if (text.getContents() instanceof TranslatableContents) {
+                name = I18n.get(((TranslatableContents) text.getContents()).getKey());
+            } else {
+                name = id;
+            }
+        }
+    }
+}

@@ -9,6 +9,8 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.AutoToolMiningSpeedCalculator;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,6 +30,8 @@ public class AutoTool implements Module {
     private AutoTool() {
         Events.StartDestroyBlock.add(this::onStartDestroyBlock);
         Events.ContinueDestroyBlock.add(this::onContinueDestroyBlock);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     public void enterSkipMode() {
@@ -170,4 +174,21 @@ public class AutoTool implements Module {
     }
 
     private record InventoryEntry(int index, ItemStack item) {}
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AutoToolConfig> {
+
+        public WebApi() {
+            super("auto-tool", AutoToolConfig.class);
+        }
+
+        @Override
+        protected AutoToolConfig getConfig() {
+            return ConfigStore.instance.getConfig().autoTool;
+        }
+
+        @Override
+        protected void setConfig(AutoToolConfig config) {
+            ConfigStore.instance.getConfig().autoTool = config;
+        }
+    }
 }

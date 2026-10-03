@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.zergatul.cheatutils.webui.CommitsApi;
+import com.zergatul.cheatutils.features.web.CommitsWebApi;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +20,7 @@ public class ModMetadata {
     }
 
     public static Map<String, String> getCommits() throws IOException {
-        InputStream stream = CommitsApi.class.getClassLoader().getResourceAsStream("commits.json");
+        InputStream stream = CommitsWebApi.class.getClassLoader().getResourceAsStream("commits.json");
         try (stream) {
             if (stream == null) {
                 return Map.of();

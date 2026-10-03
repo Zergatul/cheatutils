@@ -5,6 +5,8 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.AutoCraftConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mixins.common.accessors.AbstractRecipeBookScreenAccessor;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.util.context.ContextMap;
@@ -31,6 +33,8 @@ public class AutoCraft {
 
     private AutoCraft() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onClientTickEnd() {
@@ -214,6 +218,23 @@ public class AutoCraft {
             }
 
             return false;
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AutoCraftConfig> {
+
+        public WebApi() {
+            super("auto-craft", AutoCraftConfig.class);
+        }
+
+        @Override
+        protected AutoCraftConfig getConfig() {
+            return ConfigStore.instance.getConfig().autoCraftConfig;
+        }
+
+        @Override
+        protected void setConfig(AutoCraftConfig config) {
+            ConfigStore.instance.getConfig().autoCraftConfig = config;
         }
     }
 }

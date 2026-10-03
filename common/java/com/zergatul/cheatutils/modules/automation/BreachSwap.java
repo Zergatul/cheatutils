@@ -2,8 +2,11 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
+import com.zergatul.cheatutils.configs.BreachSwapConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -11,6 +14,7 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.phys.HitResult;
 
 public class BreachSwap implements Module {
+
     public static final BreachSwap instance = new BreachSwap();
     private final Minecraft mc = Minecraft.getInstance();
     private Inventory inventory;
@@ -19,6 +23,8 @@ public class BreachSwap implements Module {
 
     private BreachSwap() {
         Events.AttackEventHandler(this::onBeforeAttack, this::onAfterAttack, 2);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
@@ -65,4 +71,20 @@ public class BreachSwap implements Module {
         prevSelectedSlot = -1;
     }
 
+    private static final class WebApi extends SimpleModuleConfigWebApi<BreachSwapConfig> {
+
+        public WebApi() {
+            super("breach-swap", BreachSwapConfig.class);
+        }
+
+        @Override
+        protected BreachSwapConfig getConfig() {
+            return ConfigStore.instance.getConfig().breachSwapConfig;
+        }
+
+        @Override
+        protected void setConfig(BreachSwapConfig config) {
+            ConfigStore.instance.getConfig().breachSwapConfig = config;
+        }
+    }
 }

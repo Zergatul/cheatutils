@@ -4,6 +4,8 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ElytraBounceConfig;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 
 public class ElytraBounce implements Module {
@@ -17,12 +19,14 @@ public class ElytraBounce implements Module {
     private int remainingTicks;
 
     private ElytraBounce() {
-        state = State.NONE;
-
         Events.BeforePlayerAiStep.add(this::onPlayerAiStart);
         Events.ModifyPlayerInput.add(this::onModifyPlayerInput);
         Events.AfterPlayerAiStep.add(this::onPlayerAiEnd);
         Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
+
+        state = State.NONE;
     }
 
     public boolean isEnabled() {
@@ -98,5 +102,22 @@ public class ElytraBounce implements Module {
         FIRST_JUMP,
         JUMP_DELAY,
         SECOND_JUMP,
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<ElytraBounceConfig> {
+
+        public WebApi() {
+            super("elytra-bounce", ElytraBounceConfig.class);
+        }
+
+        @Override
+        protected ElytraBounceConfig getConfig() {
+            return ConfigStore.instance.getConfig().elytraBounceConfig;
+        }
+
+        @Override
+        protected void setConfig(ElytraBounceConfig config) {
+            ConfigStore.instance.getConfig().elytraBounceConfig = config;
+        }
     }
 }

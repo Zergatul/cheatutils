@@ -8,6 +8,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ShulkerTooltipConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.ItemUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -49,6 +51,8 @@ public class ShulkerTooltip implements Module {
         Events.PostRenderTooltip.add(this::onPostRenderTooltip);
         Events.AfterScreenRendered.add(this::onAfterScreenRendered);
         Events.ContainerCalculateHoveredSlot.add(this::onCalculateHoveredSlot);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onPreRenderTooltip(PreRenderTooltipEvent event) {
@@ -245,5 +249,22 @@ public class ShulkerTooltip implements Module {
     private void clearLocked() {
         locked = false;
         lockedStack = null;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<ShulkerTooltipConfig> {
+
+        public WebApi() {
+            super("shulker-tooltip", ShulkerTooltipConfig.class);
+        }
+
+        @Override
+        protected ShulkerTooltipConfig getConfig() {
+            return ConfigStore.instance.getConfig().shulkerTooltipConfig;
+        }
+
+        @Override
+        protected void setConfig(ShulkerTooltipConfig config) {
+            ConfigStore.instance.getConfig().shulkerTooltipConfig = config;
+        }
     }
 }

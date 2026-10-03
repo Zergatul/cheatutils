@@ -17,6 +17,9 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.SlotSelector;
+import com.zergatul.cheatutils.web.CodeWebApiBase;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -49,6 +52,9 @@ public class BlockAutomation {
     private BlockAutomation() {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
+
+        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
     public void setScript(BlockPosConsumer script) {
@@ -285,5 +291,36 @@ public class BlockAutomation {
         breakPlan = null;
         placePlan = null;
         applyFuture = null;
+    }
+
+    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<BlockAutomationConfig> {
+
+        public ConfigWebApi() {
+            super("block-automation", BlockAutomationConfig.class);
+        }
+
+        @Override
+        protected BlockAutomationConfig getConfig() {
+            return ConfigStore.instance.getConfig().blockAutomationConfig;
+        }
+
+        @Override
+        protected void setConfig(BlockAutomationConfig config) {
+            BlockAutomationConfig current = ConfigStore.instance.getConfig().blockAutomationConfig;
+            config.copyTo(current);
+        }
+    }
+
+    private static final class CodeWebApi extends CodeWebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "block-automation-code";
+        }
+
+        @Override
+        protected ScriptType getScriptType() {
+            return ScriptType.BLOCK_AUTOMATION;
+        }
     }
 }

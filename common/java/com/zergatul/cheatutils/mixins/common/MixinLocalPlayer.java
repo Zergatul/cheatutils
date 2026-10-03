@@ -142,8 +142,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         if (config.logTranslationExploitDetails) {
             privacy.forEachExploitable(
                     sign,
-                    translatable -> Debugging.instance.addMessage("Translatable exploit attempt. Key=" + translatable.getKey()),
-                    keybind -> Debugging.instance.addMessage("Keybind exploit attempt. Key=" + keybind.getName()));
+                    translatable -> Debugging.INSTANCE.addMessage("Translatable exploit attempt. Key=" + translatable.getKey()),
+                    keybind -> Debugging.INSTANCE.addMessage("Keybind exploit attempt. Key=" + keybind.getName()));
         }
 
         if (!privacy.shouldDisconnectOnTranslationExploit(config)) {

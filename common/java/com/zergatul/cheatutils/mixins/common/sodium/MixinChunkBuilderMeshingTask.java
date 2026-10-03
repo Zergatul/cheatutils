@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.zergatul.cheatutils.extensions.SodiumBlockRenderCacheExtension;
 import com.zergatul.cheatutils.extensions.SodiumBlockRendererExtension;
 import com.zergatul.cheatutils.extensions.SodiumLevelSliceExtension;
-import com.zergatul.cheatutils.schematics.SodiumSchematicaRendering;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.ChunkBuildContext;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.ChunkBuildOutput;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderCache;

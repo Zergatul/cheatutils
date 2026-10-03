@@ -2,8 +2,11 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.InvMoveConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.KeyMappingAccessor;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,7 +21,9 @@ public class InvMove implements Module {
     private final Minecraft mc = Minecraft.getInstance();
     private Input storedInputState = Input.EMPTY;
 
-    private InvMove() {}
+    private InvMove() {
+        WebApiRegistry.INSTANCE.register(new WebApi());
+    }
 
     public void onOpenScreenStoreKeys(Screen screen) {
         if (!shouldPassEvents(screen)) {
@@ -142,5 +147,22 @@ public class InvMove implements Module {
             }
         }
         return false;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<InvMoveConfig> {
+
+        public WebApi() {
+            super("inv-move", InvMoveConfig.class);
+        }
+
+        @Override
+        protected InvMoveConfig getConfig() {
+            return ConfigStore.instance.getConfig().invMoveConfig;
+        }
+
+        @Override
+        protected void setConfig(InvMoveConfig config) {
+            ConfigStore.instance.getConfig().invMoveConfig = config;
+        }
     }
 }

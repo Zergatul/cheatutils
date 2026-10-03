@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.culling.Frustum;

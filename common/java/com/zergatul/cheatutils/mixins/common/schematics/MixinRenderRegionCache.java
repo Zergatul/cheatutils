@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.mixins.common.schematics;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
-import com.zergatul.cheatutils.modules.automation.Schematica;
-import com.zergatul.cheatutils.schematics.SchematicaSectionCopy;
+import com.zergatul.cheatutils.modules.automation.schematica.Schematica;
+import com.zergatul.cheatutils.modules.automation.schematica.render.SchematicaSectionCopy;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.client.multiplayer.ClientLevel;

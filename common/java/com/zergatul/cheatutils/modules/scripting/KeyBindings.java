@@ -19,11 +19,14 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.KeyBindingScriptSlot;
+import com.zergatul.cheatutils.web.WebApiBase;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import com.zergatul.scripting.DiagnosticMessage;
 import com.zergatul.scripting.compiler.CompilationResult;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -40,6 +43,12 @@ public class KeyBindings implements Module {
     private final Optional<AsyncRunnable>[] actions;
 
     private KeyBindings() {
+        Events.RegisterKeyBindings.add(this::onRegisterKeyBindings);
+        Events.AfterHandleKeyBindings.add(this::onHandleKeyBindings);
+
+        WebApiRegistry.INSTANCE.register(new KeyBindingScriptsWebApi());
+        WebApiRegistry.INSTANCE.register(new ScriptsAssignWebApi());
+
         this.scripts = new HashMap<>();
 
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "common"));
@@ -50,9 +59,6 @@ public class KeyBindings implements Module {
 
         this.actions = createOptionalArray(KeyBindingsConfig.KeysCount);
         clear();
-
-        Events.RegisterKeyBindings.add(this::onRegisterKeyBindings);
-        Events.AfterHandleKeyBindings.add(this::onHandleKeyBindings);
     }
 
     public KeyMapping getKeyMappingByIndex(int index) {
@@ -269,6 +275,98 @@ public class KeyBindings implements Module {
             this.name = name;
             this.code = code;
             this.compiled = compiled;
+        }
+    }
+
+    private static final class KeyBindingScriptsWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "keybinding-scripts";
+        }
+
+        @Override
+        public String get() {
+            String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
+            return gson.toJson(KeyBindings.instance.list().stream().map(s -> {
+                int index = ArrayUtils.indexOf(bindings, s.name);
+                return new Script(s.name, index);
+            }).toArray());
+        }
+
+        @Override
+        public String get(String id) {
+            KeyBindings.Script script = KeyBindings.instance.get(id);
+            if (script == null) {
+                return gson.toJson((Object) null);
+            } else {
+                return gson.toJson(new Script(script));
+            }
+        }
+
+        @Override
+        public String put(String id, String body) {
+            Script script = gson.fromJson(body, Script.class);
+            List<DiagnosticMessage> messages = KeyBindings.instance.update(id, script.name, script.code);
+            if (!messages.isEmpty()) {
+                return gson.toJson(messages);
+            }
+            ConfigStore.instance.requestWrite();
+            return "{ \"ok\": true }";
+        }
+
+        @Override
+        public String post(String body) {
+            Script script = gson.fromJson(body, Script.class);
+            return KeyBindings.instance.add(script.name, script.code, false).match(
+                    error -> gson.toJson(new ErrorResponse(error)),
+                    diagnostics -> gson.toJson(diagnostics),
+                    _ -> {
+                        ConfigStore.instance.requestWrite();
+                        return "{ \"ok\": true }";
+                    });
+        }
+
+        @Override
+        public String delete(String id) {
+            KeyBindings.instance.remove(id);
+            ConfigStore.instance.requestWrite();
+            return "true";
+        }
+
+        public static class Script {
+
+            public String name;
+            public @Nullable String code;
+            public int key;
+
+            public Script(String name, int key) {
+                this.name = name;
+                this.key = key;
+            }
+
+            public Script(KeyBindings.Script script) {
+                name = script.name;
+                code = script.code;
+            }
+        }
+
+        public record ErrorResponse(String error) {}
+    }
+
+    private static final class ScriptsAssignWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "keybinding-scripts-assign";
+        }
+
+        @Override
+        public String put(String id, String body) {
+            int index = gson.fromJson(body, int.class);
+            KeyBindings.instance.assign(index, id);
+            ConfigStore.instance.requestWrite();
+            return "true";
         }
     }
 }

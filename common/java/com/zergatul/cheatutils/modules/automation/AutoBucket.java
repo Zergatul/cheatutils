@@ -8,6 +8,8 @@ import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.VoxelShapeUtils;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -54,6 +56,8 @@ public class AutoBucket implements Module {
     private AutoBucket() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.RawBlockUpdated.add(this::onBlockUpdated);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onClientTickEnd() {
@@ -534,6 +538,23 @@ public class AutoBucket implements Module {
         @Override
         protected BlockItem getItem() {
             return (BlockItem) Items.HAY_BLOCK;
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AutoBucketConfig> {
+
+        public WebApi() {
+            super("auto-bucket", AutoBucketConfig.class);
+        }
+
+        @Override
+        protected AutoBucketConfig getConfig() {
+            return ConfigStore.instance.getConfig().autoBucketConfig;
+        }
+
+        @Override
+        protected void setConfig(AutoBucketConfig config) {
+            ConfigStore.instance.getConfig().autoBucketConfig = config;
         }
     }
 }

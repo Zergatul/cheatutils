@@ -11,7 +11,7 @@ import com.zergatul.cheatutils.mcp.protocol.*;
 import com.zergatul.cheatutils.mcp.resource.*;
 import com.zergatul.cheatutils.mcp.tool.*;
 import com.zergatul.cheatutils.mcp.utility.JsonRpcErrorCodes;
-import com.zergatul.cheatutils.webui.HttpResponseCodes;
+import com.zergatul.cheatutils.web.HttpResponseCodes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

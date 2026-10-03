@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.GsonSkip;
-import com.zergatul.cheatutils.modules.esp.BlockFinder;
+import com.zergatul.cheatutils.modules.esp.block.BlockFinder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 

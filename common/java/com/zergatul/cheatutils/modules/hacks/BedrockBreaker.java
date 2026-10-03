@@ -11,6 +11,8 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
@@ -61,6 +63,8 @@ public class BedrockBreaker implements Module {
 
     private BedrockBreaker() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     public void process() {
@@ -687,6 +691,23 @@ public class BedrockBreaker implements Module {
 
         public void handle(BedrockBreaker instance) {
             action.accept(instance);
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<BedrockBreakerConfig> {
+
+        public WebApi() {
+            super("bedrock-breaker", BedrockBreakerConfig.class);
+        }
+
+        @Override
+        protected BedrockBreakerConfig getConfig() {
+            return ConfigStore.instance.getConfig().bedrockBreakerConfig;
+        }
+
+        @Override
+        protected void setConfig(BedrockBreakerConfig config) {
+            ConfigStore.instance.getConfig().bedrockBreakerConfig = config;
         }
     }
 }

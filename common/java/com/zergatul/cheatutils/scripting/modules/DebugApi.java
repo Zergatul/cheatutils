@@ -7,6 +7,6 @@ public class DebugApi {
 
     @MethodDescription("Writes a message to the scripting debugger.")
     public void write(String message) {
-        Debugging.instance.addMessage(message);
+        Debugging.INSTANCE.addMessage(message);
     }
 }

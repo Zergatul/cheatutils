@@ -2,8 +2,11 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.LoaderBridge;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.PrivacyConfig;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
@@ -22,7 +25,9 @@ public class Privacy implements Module {
 
     public static final Privacy instance = new Privacy();
 
-    private Privacy() {}
+    private Privacy() {
+        WebApiRegistry.INSTANCE.register(new WebApi());
+    }
 
     public boolean shouldDisconnectOnTranslationExploit(PrivacyConfig config) {
         return config.disconnectOnTranslationExploit && !LoaderBridge.INSTANCE.getEnvironment().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
@@ -147,6 +152,23 @@ public class Privacy implements Module {
                 checked.add(key);
                 keybindConsumer.accept(keybind);
             }
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<PrivacyConfig> {
+
+        public WebApi() {
+            super("privacy", PrivacyConfig.class);
+        }
+
+        @Override
+        protected PrivacyConfig getConfig() {
+            return ConfigStore.instance.getConfig().privacyConfig;
+        }
+
+        @Override
+        protected void setConfig(PrivacyConfig config) {
+            ConfigStore.instance.getConfig().privacyConfig = config;
         }
     }
 }

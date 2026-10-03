@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
-import com.zergatul.cheatutils.schematics.ShadedVertexConsumerWrapper;
+import com.zergatul.cheatutils.modules.automation.schematica.render.ShadedVertexConsumerWrapper;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
 import net.minecraft.client.renderer.block.*;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;

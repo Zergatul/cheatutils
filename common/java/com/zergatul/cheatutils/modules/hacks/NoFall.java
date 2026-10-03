@@ -5,6 +5,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.NoFallConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
@@ -16,6 +18,8 @@ public class NoFall implements Module {
 
     private NoFall() {
         NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     public boolean isActive() {
@@ -45,6 +49,23 @@ public class NoFall implements Module {
             if (isActive()) {
                 ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(true);
             }
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<NoFallConfig> {
+
+        public WebApi() {
+            super("no-fall", NoFallConfig.class);
+        }
+
+        @Override
+        protected NoFallConfig getConfig() {
+            return ConfigStore.instance.getConfig().noFallConfig;
+        }
+
+        @Override
+        protected void setConfig(NoFallConfig config) {
+            ConfigStore.instance.getConfig().noFallConfig = config;
         }
     }
 }

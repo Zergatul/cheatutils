@@ -6,6 +6,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.ItemUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -37,6 +39,8 @@ public class ContainerSummary implements Module {
 
     private ContainerSummary() {
         Events.ContainerScreenAfterRenderContents.add(this::onAfterRenderContents);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onAfterRenderContents(ContainerScreenRenderEvent event) {
@@ -321,6 +325,23 @@ public class ContainerSummary implements Module {
 
         public int getHeight() {
             return height;
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<ContainerSummaryConfig> {
+
+        public WebApi() {
+            super("container-summary", ContainerSummaryConfig.class);
+        }
+
+        @Override
+        protected ContainerSummaryConfig getConfig() {
+            return ConfigStore.instance.getConfig().containerSummaryConfig;
+        }
+
+        @Override
+        protected void setConfig(ContainerSummaryConfig config) {
+            ConfigStore.instance.getConfig().containerSummaryConfig = config;
         }
     }
 }

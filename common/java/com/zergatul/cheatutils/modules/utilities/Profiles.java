@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ConfigWriterQueue;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.*;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +35,8 @@ public class Profiles implements Module {
     private volatile boolean isInResetState = false;
 
     private Profiles() {
+        WebApiRegistry.INSTANCE.register(new WebApi());
+
         current = "";
     }
 
@@ -272,4 +275,42 @@ public class Profiles implements Module {
     }
 
     public record ProfileConfig(String name) {}
+
+    private final class WebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "profiles";
+        }
+
+        @Override
+        public String get(String command) throws ApiException {
+            return switch (command) {
+                case "current" -> gson.toJson(Profiles.this.getCurrent());
+                case "list" -> gson.toJson(Profiles.this.list());
+                default -> throw new ApiException("Unsupported command.", HttpResponseCodes.BAD_REQUEST);
+            };
+        }
+
+        @Override
+        public String post(String body) throws ApiException {
+            Request request = gson.fromJson(body, Request.class);
+            switch (request.command) {
+                case "change": Profiles.this.change(request.name); break;
+                case "copy": Profiles.this.createCopy(request.name); break;
+                case "new": Profiles.this.createNew(request.name); break;
+                default: throw new ApiException("Unsupported command.", HttpResponseCodes.BAD_REQUEST);
+            }
+
+            return "{}";
+        }
+
+        @Override
+        public String delete(String name) {
+            Profiles.this.delete(name);
+            return "{}";
+        }
+
+        public record Request(String command, String name) {}
+    }
 }

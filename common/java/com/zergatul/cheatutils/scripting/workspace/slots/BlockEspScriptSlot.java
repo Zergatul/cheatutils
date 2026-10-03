@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.scripting.workspace.slots;
 import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.configs.BlocksConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.modules.esp.BlockEsp;
+import com.zergatul.cheatutils.modules.esp.block.BlockEsp;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;

@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.mojang.brigadier.suggestion.Suggestion;
-import com.mojang.brigadier.suggestion.Suggestions;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ServerPluginsConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.MutableComponent;
@@ -41,6 +41,8 @@ public class ServerPlugins implements Module {
         Events.ClientPlayerLoggingIn.add(this::onLogIn);
         Events.ClientPlayerLoggingOut.add(this::onLogOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
 
         reset();
     }
@@ -155,5 +157,22 @@ public class ServerPlugins implements Module {
         INIT,
         SENT_PACKET,
         RECEIVED_PACKET
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<ServerPluginsConfig> {
+
+        public WebApi() {
+            super("server-plugins", ServerPluginsConfig.class);
+        }
+
+        @Override
+        protected ServerPluginsConfig getConfig() {
+            return ConfigStore.instance.getConfig().serverPluginsConfig;
+        }
+
+        @Override
+        protected void setConfig(ServerPluginsConfig config) {
+            ConfigStore.instance.getConfig().serverPluginsConfig = config;
+        }
     }
 }

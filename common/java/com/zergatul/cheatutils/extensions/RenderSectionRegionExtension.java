@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.extensions;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.zergatul.cheatutils.schematics.SchematicaSectionCopy;
+import com.zergatul.cheatutils.modules.automation.schematica.render.SchematicaSectionCopy;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;

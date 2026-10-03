@@ -9,7 +9,8 @@ import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.utils.ColorUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
@@ -33,6 +34,8 @@ public class AreaMine implements Module {
     private AreaMine() {
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
         Events.BeforeInstaMine.add(this::onBeforeInstaMine);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {
@@ -143,6 +146,23 @@ public class AreaMine implements Module {
                     }
                 }
             }
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AreaMineConfig> {
+
+        public WebApi() {
+            super("area-mine", AreaMineConfig.class);
+        }
+
+        @Override
+        protected AreaMineConfig getConfig() {
+            return ConfigStore.instance.getConfig().areaMineConfig;
+        }
+
+        @Override
+        protected void setConfig(AreaMineConfig config) {
+            ConfigStore.instance.getConfig().areaMineConfig = config;
         }
     }
 }

@@ -4,6 +4,8 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.configs.AutoEatConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
@@ -21,6 +23,9 @@ public class AutoEat {
     private AutoEat() {
         Events.InGameTickStart.add(this::onClickTickStart);
         Events.PlayerReleaseUsingItem.add(this::onPlayerReleaseUsingItem);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
+
         state = State.NONE;
     }
 
@@ -87,5 +92,22 @@ public class AutoEat {
     private enum State {
         NONE,
         EATING
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AutoEatConfig> {
+
+        public WebApi() {
+            super("auto-eat", AutoEatConfig.class);
+        }
+
+        @Override
+        protected AutoEatConfig getConfig() {
+            return ConfigStore.instance.getConfig().autoEatConfig;
+        }
+
+        @Override
+        protected void setConfig(AutoEatConfig config) {
+            ConfigStore.instance.getConfig().autoEatConfig = config;
+        }
     }
 }

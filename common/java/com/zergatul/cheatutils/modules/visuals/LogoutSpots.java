@@ -9,6 +9,8 @@ import com.zergatul.cheatutils.configs.LogoutSpotsConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.Connection;
@@ -37,6 +39,8 @@ public class LogoutSpots implements Module {
         Events.PlayerInfoUpdated.add(this::onPlayerInfoUpdated);
         Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld); // move before other ESPs?
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     public List<EntityLike> getDisconnectedPlayers() {
@@ -170,6 +174,23 @@ public class LogoutSpots implements Module {
             width = player.getBbWidth();
             height = player.getBbHeight();
             entity = EntityLike.asDisconnectedPlayer(player);
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<LogoutSpotsConfig> {
+
+        public WebApi() {
+            super("logout-spots", LogoutSpotsConfig.class);
+        }
+
+        @Override
+        protected LogoutSpotsConfig getConfig() {
+            return ConfigStore.instance.getConfig().logoutSpots;
+        }
+
+        @Override
+        protected void setConfig(LogoutSpotsConfig config) {
+            ConfigStore.instance.getConfig().logoutSpots = config;
         }
     }
 }

@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.chunkoverlays;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.utils.Dimension;
-import com.zergatul.cheatutils.controllers.WorldDownloadController;
+import com.zergatul.cheatutils.modules.utilities.WorldDownload;
 import net.minecraft.world.level.ChunkPos;
 
 import java.util.Map;
@@ -25,7 +25,7 @@ public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
 
     @Override
     public boolean isEnabled() {
-        return WorldDownloadController.instance.isActive();
+        return WorldDownload.INSTANCE.isActive();
     }
 
     public void notifyChunkSaved(Dimension dimension, int x, int z) {

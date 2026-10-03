@@ -4,11 +4,12 @@ import com.mojang.datafixers.util.Either;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
+import com.zergatul.cheatutils.features.Features;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.utils.DebugScreenExtensions;
-import com.zergatul.cheatutils.webui.ConfigHttpServer;
+import com.zergatul.cheatutils.web.WebServer;
 import net.minecraft.network.chat.Component;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -37,6 +38,7 @@ public class ModMain {
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         Modules.register();
+        Features.register();
         NeoForge.EVENT_BUS.register(new NeoForgeEvents());
         DebugScreenExtensions.register();
     }
@@ -44,7 +46,7 @@ public class ModMain {
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
         SystemFonts.initAsync();
         Profiles.instance.init();
-        ConfigHttpServer.instance.start();
+        WebServer.instance.start();
     }
 
     private void onRegisterKeybindings(final RegisterKeyMappingsEvent event) {

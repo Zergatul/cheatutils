@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.FontConfig;
 import com.zergatul.cheatutils.configs.StatusOverlayConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.Module;
@@ -16,7 +17,12 @@ import com.zergatul.cheatutils.render.RenderTargets;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.ui.*;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiBase;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -49,11 +55,16 @@ public class StatusOverlay implements Module, FontBackendHolder {
     private FontRenderer fontRenderer;
 
     private StatusOverlay() {
+        Events.PostRenderGui.add(this::onPostRenderGui);
+
+        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register(new CodeWebApi());
+
+        FontBackendHolders.add(this);
+
         for (Align align : Align.values()) {
             texts.put(align, new ArrayList<>());
         }
-
-        Events.PostRenderGui.add(this::onPostRenderGui);
     }
 
     @Override
@@ -280,6 +291,51 @@ public class StatusOverlay implements Module, FontBackendHolder {
         @Override
         public @Nullable ScreenRectangle bounds() {
             return new ScreenRectangle(0, 0, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
+        }
+    }
+
+    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<StatusOverlayConfig> {
+
+        public ConfigWebApi() {
+            super("status-overlay", StatusOverlayConfig.class);
+        }
+
+        @Override
+        protected StatusOverlayConfig getConfig() {
+            return ConfigStore.instance.getConfig().statusOverlayConfig;
+        }
+
+        @Override
+        protected void setConfig(StatusOverlayConfig config) {
+            StatusOverlayConfig existingConfig = ConfigStore.instance.getConfig().statusOverlayConfig;
+            existingConfig.enabled = config.enabled;
+
+            FontConfig oldFont = existingConfig.font;
+            FontConfig newFont = config.font;
+
+            if (!oldFont.equals(newFont)) {
+                existingConfig.font = newFont;
+                StatusOverlay.instance.onFontChange();
+            }
+        }
+    }
+
+    private static final class CodeWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "status-overlay-code";
+        }
+
+        @Override
+        public String post(String body) throws Throwable {
+            String code = gson.fromJson(body, String.class);
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.OVERLAY).save(code);
+            if (result.isSuccess()) {
+                return "{ \"ok\": true }";
+            } else {
+                return gson.toJson(result.getDiagnostics());
+            }
         }
     }
 }

@@ -2,7 +2,10 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SpearRangeConfig;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -13,14 +16,16 @@ import net.minecraft.world.phys.*;
 import static net.minecraft.core.component.DataComponents.ATTACK_RANGE;
 
 public class SpearRange implements Module {
+
     public static final SpearRange instance = new SpearRange();
     private final Minecraft mc = Minecraft.getInstance();
     private int prevSelectedSlot = -1;
 
-
     private SpearRange() {
         Events.BeforeStartAttack.add(this::onBeforeStartAttack, 0);
         Events.AfterStartAttack.add(this::onAfterStartAttack, 0);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     public void onBeforeStartAttack() {
@@ -119,4 +124,20 @@ public class SpearRange implements Module {
         return false;
     }
 
+    private static final class WebApi extends SimpleModuleConfigWebApi<SpearRangeConfig> {
+
+        public WebApi() {
+            super("spear-range", SpearRangeConfig.class);
+        }
+
+        @Override
+        protected SpearRangeConfig getConfig() {
+            return ConfigStore.instance.getConfig().spearRangeConfig;
+        }
+
+        @Override
+        protected void setConfig(SpearRangeConfig config) {
+            ConfigStore.instance.getConfig().spearRangeConfig = config;
+        }
+    }
 }

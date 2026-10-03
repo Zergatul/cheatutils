@@ -9,12 +9,16 @@ import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.ui.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiBase;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class WorldMarkers implements FontBackendHolder {
 
@@ -28,6 +32,12 @@ public class WorldMarkers implements FontBackendHolder {
 
     private WorldMarkers() {
         Events.AfterRenderWorld.add(this::onRenderWorldLast, 10);
+
+        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register(new DimensionWebApi());
+        WebApiRegistry.INSTANCE.register(new CoordinatesWebApi());
+
+        FontBackendHolders.add(this);
     }
 
     @Override
@@ -126,6 +136,80 @@ public class WorldMarkers implements FontBackendHolder {
                         new RectangleElement(config.borderWidth, (int) fontRenderer.getLineHeight(), entry.color.getRGB()));
 
                 context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
+            }
+        }
+    }
+
+    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<WorldMarkersConfig> {
+
+        public ConfigWebApi() {
+            super("world-markers", WorldMarkersConfig.class);
+        }
+
+        @Override
+        protected WorldMarkersConfig getConfig() {
+            return ConfigStore.instance.getConfig().worldMarkersConfig;
+        }
+
+        @Override
+        protected void setConfig(WorldMarkersConfig config) {
+            WorldMarkersConfig oldConfig = ConfigStore.instance.getConfig().worldMarkersConfig;
+            ConfigStore.instance.getConfig().worldMarkersConfig = config;
+
+            if (!oldConfig.font.equals(config.font)) {
+                WorldMarkers.instance.onFontChange();
+            }
+        }
+    }
+
+    private static final class DimensionWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "dimension";
+        }
+
+        @Override
+        public String get() throws ExecutionException, InterruptedException {
+            return gson.toJson(ClientTickEndExecutor.instance.submit(() -> {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.level == null) {
+                    return null;
+                }
+                return mc.level.dimension().identifier().toString();
+            }).get());
+        }
+    }
+
+    private static final class CoordinatesWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "coordinates";
+        }
+
+        @Override
+        public String get() throws ExecutionException, InterruptedException {
+            return gson.toJson(ClientTickEndExecutor.instance.submit(() -> {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player == null) {
+                    return null;
+                }
+                Vec3 pos = mc.player.getPosition(1.0f);
+                return new Response(pos);
+            }).get());
+        }
+
+        public static class Response {
+
+            public double x;
+            public double y;
+            public double z;
+
+            public Response(Vec3 pos) {
+                this.x = pos.x;
+                this.y = pos.y;
+                this.z = pos.z;
             }
         }
     }

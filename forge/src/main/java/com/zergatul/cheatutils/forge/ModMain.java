@@ -4,11 +4,12 @@ import com.mojang.datafixers.util.Either;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
+import com.zergatul.cheatutils.features.Features;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.utils.DebugScreenExtensions;
-import com.zergatul.cheatutils.webui.ConfigHttpServer;
+import com.zergatul.cheatutils.web.WebServer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -35,6 +36,7 @@ public final class ModMain {
 
         Modules.registerKeyBindings();
         Modules.register();
+        Features.register();
         DebugScreenExtensions.register();
     }
 
@@ -47,7 +49,7 @@ public final class ModMain {
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
         SystemFonts.initAsync();
         Profiles.instance.init();
-        ConfigHttpServer.instance.start();
+        WebServer.instance.start();
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {

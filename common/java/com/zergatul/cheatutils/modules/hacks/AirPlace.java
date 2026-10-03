@@ -7,8 +7,9 @@ import com.zergatul.cheatutils.configs.AirPlaceConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -34,6 +35,8 @@ public class AirPlace implements Module {
     private AirPlace() {
         Events.MouseScroll.add(this::onMouseScroll);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     public boolean isActive() {
@@ -139,5 +142,22 @@ public class AirPlace implements Module {
 
     private void reset() {
         currentPosition = null;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AirPlaceConfig> {
+
+        public WebApi() {
+            super("air-place", AirPlaceConfig.class);
+        }
+
+        @Override
+        protected AirPlaceConfig getConfig() {
+            return ConfigStore.instance.getConfig().airPlaceConfig;
+        }
+
+        @Override
+        protected void setConfig(AirPlaceConfig config) {
+            ConfigStore.instance.getConfig().airPlaceConfig = config;
+        }
     }
 }

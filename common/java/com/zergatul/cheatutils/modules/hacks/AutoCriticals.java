@@ -5,11 +5,12 @@ import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.configs.AutoCriticalsConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
-
 
 public class AutoCriticals {
 
@@ -19,6 +20,8 @@ public class AutoCriticals {
 
     private AutoCriticals() {
         Events.BeforeAttack.add(this::onBeforeAttack, -1);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
@@ -58,6 +61,23 @@ public class AutoCriticals {
             NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
             NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
             NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AutoCriticalsConfig> {
+
+        public WebApi() {
+            super("auto-criticals", AutoCriticalsConfig.class);
+        }
+
+        @Override
+        protected AutoCriticalsConfig getConfig() {
+            return ConfigStore.instance.getConfig().autoCriticalsConfig;
+        }
+
+        @Override
+        protected void setConfig(AutoCriticalsConfig config) {
+            ConfigStore.instance.getConfig().autoCriticalsConfig = config;
         }
     }
 }

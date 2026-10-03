@@ -10,6 +10,8 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.ServerBehavior;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -46,6 +48,8 @@ public class AimAssist implements Module {
         Events.PlayerReleaseUsingItem.add(this::onPlayerReleaseUsingItem);
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     public void clearTargetPredicate() {
@@ -350,6 +354,23 @@ public class AimAssist implements Module {
             }
 
             return lineVector.cross(pointVec1).lengthSqr() / lineVector.lengthSqr();
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AimAssistConfig> {
+
+        public WebApi() {
+            super("aim-assist", AimAssistConfig.class);
+        }
+
+        @Override
+        protected AimAssistConfig getConfig() {
+            return ConfigStore.instance.getConfig().aimAssist;
+        }
+
+        @Override
+        protected void setConfig(AimAssistConfig config) {
+            ConfigStore.instance.getConfig().aimAssist = config;
         }
     }
 }

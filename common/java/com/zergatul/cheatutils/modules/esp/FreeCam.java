@@ -9,6 +9,9 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiBase;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -69,6 +72,9 @@ public class FreeCam implements Module {
         Events.OnAfterPick.add(this::onAfterPick);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
         Events.LevelUnload.add(this::onWorldUnload);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register(new PathWebApi());
     }
 
     public boolean isActive() {
@@ -107,10 +113,6 @@ public class FreeCam implements Module {
         float cosXRot = Mth.cos(xRotRadians);
         float sinXRot = Mth.sin(xRotRadians);
         return new Vec3(sinYRot * cosXRot, -sinXRot, cosYRot * cosXRot);
-    }
-
-    public FreeCamPath getPath() {
-        return path;
     }
 
     public void toggle() {
@@ -383,7 +385,7 @@ public class FreeCam implements Module {
             return;
         }
 
-        List<FreeCamPath.Entry> path = getPath().get();
+        List<FreeCamPath.Entry> path = this.path.get();
         if (path.size() < 2) {
             return;
         }
@@ -522,6 +524,53 @@ public class FreeCam implements Module {
             } else {
                 return b1 ? 1.0F : -1.0F;
             }
+        }
+    }
+
+    private static class WebApi extends SimpleModuleConfigWebApi<FreeCamConfig> {
+
+        public WebApi() {
+            super("free-cam", FreeCamConfig.class);
+        }
+
+        @Override
+        protected FreeCamConfig getConfig() {
+            return ConfigStore.instance.getConfig().freeCamConfig;
+        }
+
+        @Override
+        protected void setConfig(FreeCamConfig config) {
+            ConfigStore.instance.getConfig().freeCamConfig = config;
+        }
+    }
+
+    private class PathWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "free-cam-path";
+        }
+
+        @Override
+        public String get() {
+            return gson.toJson(FreeCam.instance.path.get());
+        }
+
+        @Override
+        public String post(String body) {
+            Double time = gson.fromJson(body, Double.class);
+            if (time == null) {
+                return "{}";
+            }
+
+            FreeCam.this.path.add(time);
+            return "{ \"ok\": true }";
+        }
+
+        @Override
+        public String delete(String id) {
+            FreeCam.this.path.clear();
+            return "{ \"ok\": true }";
         }
     }
 }

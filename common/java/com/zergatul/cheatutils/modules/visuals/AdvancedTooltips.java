@@ -5,10 +5,10 @@ import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
 import com.zergatul.cheatutils.configs.AdvancedTooltipsConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.world.item.Item;
@@ -16,10 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.Bees;
 import net.minecraft.world.item.component.BlockItemStateProperties;
-import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-
-import java.util.List;
 
 public class AdvancedTooltips implements Module {
 
@@ -27,6 +24,8 @@ public class AdvancedTooltips implements Module {
 
     private AdvancedTooltips() {
         Events.GatherTooltipComponents.add(this::onGatherTooltipComponents);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onGatherTooltipComponents(GatherTooltipComponentsEvent event) {
@@ -69,6 +68,23 @@ public class AdvancedTooltips implements Module {
             if (cost > 0) {
                 event.list().add(MutableComponent.create(new PlainTextContents.LiteralContents("Repair cost: " + cost)).withStyle(ChatFormatting.GRAY));
             }
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AdvancedTooltipsConfig> {
+
+        public WebApi() {
+            super("advanced-tooltips", AdvancedTooltipsConfig.class);
+        }
+
+        @Override
+        protected AdvancedTooltipsConfig getConfig() {
+            return ConfigStore.instance.getConfig().advancedTooltipsConfig;
+        }
+
+        @Override
+        protected void setConfig(AdvancedTooltipsConfig config) {
+            ConfigStore.instance.getConfig().advancedTooltipsConfig = config;
         }
     }
 }

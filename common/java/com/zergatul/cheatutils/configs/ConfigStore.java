@@ -16,8 +16,7 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
-import com.zergatul.cheatutils.webui.ConfigHttpServer;
-import com.zergatul.scripting.DiagnosticMessage;
+import com.zergatul.cheatutils.web.WebServer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +26,6 @@ import org.jspecify.annotations.Nullable;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -146,7 +144,7 @@ public class ConfigStore {
         config.blocks.apply();
 
         LightLevel.instance.onChanged();
-        ConfigHttpServer.instance.onConfigUpdated();
+        WebServer.instance.onConfigUpdated();
         EntityTitle.instance.onTitleFontChange();
         EntityTitle.instance.onEnchantmentFontChange();
         WorldMarkers.instance.onFontChange();

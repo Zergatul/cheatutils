@@ -3,6 +3,8 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.HitboxSizeConfig;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -13,7 +15,9 @@ public class HitboxSize implements Module {
 
     public static final HitboxSize instance = new HitboxSize();
 
-    private HitboxSize() {}
+    private HitboxSize() {
+        WebApiRegistry.INSTANCE.register(new WebApi());
+    }
 
     public AABB get(Entity entity) {
         HitboxSizeConfig config = ConfigStore.instance.getConfig().hitboxSizeConfig;
@@ -40,5 +44,22 @@ public class HitboxSize implements Module {
             return value + absolute;
         }
         return value;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<HitboxSizeConfig> {
+
+        public WebApi() {
+            super("hitbox-size", HitboxSizeConfig.class);
+        }
+
+        @Override
+        protected HitboxSizeConfig getConfig() {
+            return ConfigStore.instance.getConfig().hitboxSizeConfig;
+        }
+
+        @Override
+        protected void setConfig(HitboxSizeConfig config) {
+            ConfigStore.instance.getConfig().hitboxSizeConfig = config;
+        }
     }
 }

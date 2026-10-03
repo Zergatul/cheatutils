@@ -6,6 +6,8 @@ import com.zergatul.cheatutils.configs.ScaffoldConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,6 +37,8 @@ public class Scaffold implements Module {
 
     private Scaffold() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onClientTickEnd() {
@@ -189,5 +193,22 @@ public class Scaffold implements Module {
             return false;
         }
         return true;
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<ScaffoldConfig> {
+
+        public WebApi() {
+            super("scaffold", ScaffoldConfig.class);
+        }
+
+        @Override
+        protected ScaffoldConfig getConfig() {
+            return ConfigStore.instance.getConfig().scaffoldConfig;
+        }
+
+        @Override
+        protected void setConfig(ScaffoldConfig config) {
+            ConfigStore.instance.getConfig().scaffoldConfig = config;
+        }
     }
 }

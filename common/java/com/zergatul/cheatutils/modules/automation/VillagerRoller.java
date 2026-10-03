@@ -13,6 +13,10 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.utils.EntityInteraction;
 import com.zergatul.cheatutils.utils.EntityInteractionPlan;
 import com.zergatul.cheatutils.utils.EntityInteractionResult;
+import com.zergatul.cheatutils.web.CodeWebApiBase;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiBase;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -69,6 +73,10 @@ public class VillagerRoller implements Module {
         Events.EntityInteract.add(this::onEntityInteract);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+
+        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register(new StatusWebApi());
+        WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
     public boolean isActive() {
@@ -458,5 +466,58 @@ public class VillagerRoller implements Module {
         START_BREAKING_LECTERN,
         BREAKING_LECTERN_PROGRESS,
         WAITING_FOR_LECTERN_BREAK
+    }
+
+    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<VillagerRollerConfig> {
+
+        public ConfigWebApi() {
+            super("villager-roller", VillagerRollerConfig.class);
+        }
+
+        @Override
+        protected VillagerRollerConfig getConfig() {
+            return ConfigStore.instance.getConfig().villagerRollerConfig;
+        }
+
+        @Override
+        protected void setConfig(VillagerRollerConfig config) {
+            VillagerRollerConfig current = ConfigStore.instance.getConfig().villagerRollerConfig;
+            config.copyTo(current);
+        }
+    }
+
+    private final class StatusWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "villager-roller-status";
+        }
+
+        @Override
+        public String post(String body) {
+            Request request = gson.fromJson(body, Request.class);
+            if (request.start) {
+                VillagerRoller.this.start();
+            }
+            if (request.stop) {
+                VillagerRoller.this.stop();
+            }
+            return "{}";
+        }
+
+        public record Request(boolean start, boolean stop) {}
+    }
+
+    private static final class CodeWebApi extends CodeWebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "villager-roller-code";
+        }
+
+        @Override
+        protected ScriptType getScriptType() {
+            return ScriptType.VILLAGER_ROLLER;
+        }
     }
 }

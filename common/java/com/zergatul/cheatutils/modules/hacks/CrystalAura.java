@@ -7,6 +7,9 @@ import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.*;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiBase;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -16,6 +19,8 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -57,6 +62,9 @@ public class CrystalAura implements Module {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos);
         Events.InGameTickEnd.add(this::onTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register(new EntityTypesWebApi());
     }
 
     public void onEnableStateChanged() {
@@ -464,5 +472,42 @@ public class CrystalAura implements Module {
 
     private CrystalAuraConfig snapshotConfig() {
         return CrystalAuraConfig.copyOf(ConfigStore.instance.getConfig().crystalAuraConfig);
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<CrystalAuraConfig> {
+
+        public WebApi() {
+            super("crystal-aura", CrystalAuraConfig.class);
+        }
+
+        @Override
+        protected CrystalAuraConfig getConfig() {
+            return ConfigStore.instance.getConfig().crystalAuraConfig;
+        }
+
+        @Override
+        protected void setConfig(CrystalAuraConfig config) {
+            CrystalAuraConfig oldConfig = ConfigStore.instance.getConfig().crystalAuraConfig;
+            ConfigStore.instance.getConfig().crystalAuraConfig = config;
+            if (oldConfig.enabled ^ config.enabled) {
+                CrystalAura.instance.onEnableStateChanged();
+            }
+        }
+    }
+
+    private static final class EntityTypesWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "entity-types";
+        }
+
+        @Override
+        public String get() {
+            return gson.toJson(BuiltInRegistries.ENTITY_TYPE.keySet()
+                    .stream()
+                    .map(Identifier::toString)
+                    .toArray(String[]::new));
+        }
     }
 }

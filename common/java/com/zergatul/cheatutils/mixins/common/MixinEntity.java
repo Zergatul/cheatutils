@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ElytraTunnelConfig;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
-import com.zergatul.cheatutils.modules.esp.EntityEsp;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.helpers.MixinEntityHelper;
 import net.minecraft.client.player.LocalPlayer;

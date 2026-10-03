@@ -11,6 +11,8 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.ServerBehavior;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
@@ -46,6 +48,8 @@ public class ProjectilePath {
 
     private ProjectilePath() {
         Events.AfterRenderWorld.add(this::render);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -492,6 +496,23 @@ public class ProjectilePath {
         public TraceRecord(Vec3 position, long time) {
             this.position = position;
             this.time = time;
+        }
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<ProjectilePathConfig> {
+
+        public WebApi() {
+            super("projectile-path", ProjectilePathConfig.class);
+        }
+
+        @Override
+        protected ProjectilePathConfig getConfig() {
+            return ConfigStore.instance.getConfig().projectilePathConfig;
+        }
+
+        @Override
+        protected void setConfig(ProjectilePathConfig config) {
+            ConfigStore.instance.getConfig().projectilePathConfig = config;
         }
     }
 }

@@ -57,7 +57,7 @@ public class MixinClientCommonPacketListenerImpl {
             return;
         }
 
-        Debugging.instance.addMessage(String.format(
+        Debugging.INSTANCE.addMessage(String.format(
                 "Requested resource pack:\n\tURL=%s\n\tUUID=%s\n\tHash=%s\n\tRequired=%s\n\tPrompt=%s",
                 packet.url(),
                 packet.id(),

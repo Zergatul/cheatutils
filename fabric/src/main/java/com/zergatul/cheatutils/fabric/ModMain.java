@@ -2,11 +2,12 @@ package com.zergatul.cheatutils.fabric;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.MixinPlugin;
+import com.zergatul.cheatutils.features.Features;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
 import com.zergatul.cheatutils.modules.utilities.Profiles;
 import com.zergatul.cheatutils.utils.DebugScreenExtensions;
-import com.zergatul.cheatutils.webui.ConfigHttpServer;
+import com.zergatul.cheatutils.web.WebServer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -20,9 +21,10 @@ public final class ModMain implements ClientModInitializer {
 
         SystemFonts.initAsync();
         Profiles.instance.init();
-        ConfigHttpServer.instance.start();
+        WebServer.instance.start();
         Modules.registerKeyBindings();
         Modules.register();
+        Features.register();
         Events.RegisterKeyBindings.trigger(KeyMappingHelper::registerKeyMapping);
         DebugScreenExtensions.register();
 

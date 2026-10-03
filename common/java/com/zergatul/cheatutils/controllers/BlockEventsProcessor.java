@@ -8,7 +8,7 @@ import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.controllers.chunks.ChunkScanTaskGroup;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientChunkCacheAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientChunkCacheStorageAccessor;
-import com.zergatul.cheatutils.modules.esp.BlockFinder;
+import com.zergatul.cheatutils.modules.esp.block.BlockFinder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.world.level.ChunkPos;

@@ -48,7 +48,6 @@ public class Config implements Sanitizable {
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();
     public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
-    public CoordinateLeakProtectionConfig coordinateLeakProtectionConfig = new CoordinateLeakProtectionConfig();
     public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
     public BobHurtConfig bobHurtConfig = new BobHurtConfig();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
@@ -111,5 +110,7 @@ public class Config implements Sanitizable {
         elytraBounceConfig.sanitize();
         handsViewConfig.sanitize();
         crystalAuraConfig.sanitize();
+        pigHackConfig.sanitize();
+        elytraTunnelConfig.sanitize();
     }
 }

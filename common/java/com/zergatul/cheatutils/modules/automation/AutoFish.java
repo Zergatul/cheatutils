@@ -6,6 +6,8 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.sounds.SoundEvents;
@@ -33,6 +35,8 @@ public class AutoFish implements Module {
     private AutoFish() {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
         Events.InGameTickEnd.add(this::onClientTickEnd);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void onClientTickEnd() {
@@ -111,5 +115,22 @@ public class AutoFish implements Module {
         WAITING_FOR_SOUND,
         PULL_IN,
         DELAY_AFTER_PULL_IN,
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<AutoFishConfig> {
+
+        public WebApi() {
+            super("auto-fish", AutoFishConfig.class);
+        }
+
+        @Override
+        protected AutoFishConfig getConfig() {
+            return ConfigStore.instance.getConfig().autoFishConfig;
+        }
+
+        @Override
+        protected void setConfig(AutoFishConfig config) {
+            ConfigStore.instance.getConfig().autoFishConfig = config;
+        }
     }
 }

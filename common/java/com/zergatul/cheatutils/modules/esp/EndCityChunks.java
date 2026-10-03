@@ -3,9 +3,12 @@ package com.zergatul.cheatutils.modules.esp;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.EndCityChunksConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.Position3dColorRenderer;
+import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -22,6 +25,8 @@ public class EndCityChunks {
 
     private EndCityChunks() {
         Events.AfterRenderWorld.add(this::render);
+
+        WebApiRegistry.INSTANCE.register(new WebApi());
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -69,5 +74,22 @@ public class EndCityChunks {
         }
 
         renderer.end(event.getMvp());
+    }
+
+    private static final class WebApi extends SimpleModuleConfigWebApi<EndCityChunksConfig> {
+
+        public WebApi() {
+            super("end-city-chunks", EndCityChunksConfig.class);
+        }
+
+        @Override
+        protected EndCityChunksConfig getConfig() {
+            return ConfigStore.instance.getConfig().endCityChunksConfig;
+        }
+
+        @Override
+        protected void setConfig(EndCityChunksConfig config) {
+            ConfigStore.instance.getConfig().endCityChunksConfig = config;
+        }
     }
 }

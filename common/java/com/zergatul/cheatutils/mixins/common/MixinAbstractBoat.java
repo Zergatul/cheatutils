@@ -30,8 +30,8 @@ public abstract class MixinAbstractBoat extends Entity {
     @Shadow
     private boolean inputDown;
 
-    private MixinAbstractBoat(EntityType<?> p_19870_, Level p_19871_) {
-        super(p_19870_, p_19871_);
+    private MixinAbstractBoat(EntityType<?> type, Level level) {
+        super(type, level);
     }
 
     @Inject(at = @At("HEAD"), method = "controlBoat()V")
