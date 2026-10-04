@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.utils.MathUtils;
 
-public class ProjectilePathConfig implements Sanitizable, ModuleStateProvider {
+public class ProjectilePathConfig extends ModuleConfig implements Sanitizable {
 
     public boolean enderPearls;
     public boolean bows;
@@ -18,6 +18,8 @@ public class ProjectilePathConfig implements Sanitizable, ModuleStateProvider {
     public int fadeDuration;
 
     public ProjectilePathConfig() {
+        enabled = true;
+
         enderPearls = true;
 
         tracesDuration = 10;
@@ -32,6 +34,7 @@ public class ProjectilePathConfig implements Sanitizable, ModuleStateProvider {
 
     @Override
     public boolean isEnabled() {
-        return enderPearls || bows || crossbows || tridents || snowballs || potions || expBottles || eggs;
+        return  super.isEnabled() &&
+                ((enderPearls || bows || crossbows || tridents || snowballs || potions || expBottles || eggs) || showTraces);
     }
 }

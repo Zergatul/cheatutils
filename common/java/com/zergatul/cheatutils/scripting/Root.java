@@ -26,6 +26,7 @@ public class Root {
     // ESP
     public static BlocksApi blocks = new BlocksApi();
     public static EntitiesApi entities = new EntitiesApi();
+    public static ProjectilePathApi projectilePath = new ProjectilePathApi();
     public static FreeCamApi freeCam = new FreeCamApi();
     public static LightLevelApi lightLevel = new LightLevelApi();
 

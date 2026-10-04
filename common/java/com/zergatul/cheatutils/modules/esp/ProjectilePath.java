@@ -58,6 +58,11 @@ public class ProjectilePath {
         }
 
         ProjectilePathConfig config = getConfig();
+        if (!config.enabled) {
+            traces.clear();
+            return;
+        }
+
         if (config.showTraces) {
             long time = System.nanoTime();
             for (Entity entity : mc.level.entitiesForRendering()) {
