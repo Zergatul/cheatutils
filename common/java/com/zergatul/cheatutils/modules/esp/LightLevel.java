@@ -67,7 +67,6 @@ public class LightLevel implements Module {
                     new int[] { 0, 0, 1, 1 })));
 
     private GpuTextureView textureView;
-    private boolean active = false;
 
     private LightLevel() {
         Events.AfterRenderWorld.add(this::render);
@@ -90,12 +89,10 @@ public class LightLevel implements Module {
         return settings;
     }
 
-    private void onConfigChanged() {
+    private void onConfigChanged(LightLevelConfig prev, LightLevelConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
-            boolean value = settings.get().enabled;
-            if (active != value) {
-                active = value;
-                if (active) {
+            if (prev.enabled != curr.enabled) {
+                if (curr.enabled) {
                     AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
                     for (int i = 0; i < chunks.length(); i++) {
                         LevelChunk chunk = chunks.get(i);
@@ -103,6 +100,8 @@ public class LightLevel implements Module {
                             onChunkLoaded(chunk);
                         }
                     }
+                } else {
+                    chunks.clear();
                 }
             }
         });
@@ -208,7 +207,7 @@ public class LightLevel implements Module {
     }
 
     private void onChunkLoaded(LevelChunk chunk) {
-        if (!active) {
+        if (settings.get().enabled) {
             return;
         }
 
@@ -241,7 +240,7 @@ public class LightLevel implements Module {
     }
 
     private void onChunkUnLoaded(ChunkAccess chunk) {
-        if (!active) {
+        if (!settings.get().enabled) {
             return;
         }
 
@@ -251,7 +250,7 @@ public class LightLevel implements Module {
     }
 
     private void onBlockChanged(BlockUpdateEvent event) {
-        if (!active) {
+        if (!settings.get().enabled) {
             return;
         }
 

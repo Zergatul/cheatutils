@@ -19,7 +19,7 @@ public abstract class MixinRenderSectionManager {
             @Local(argsOnly = true, ordinal = 1) int y,
             @Local(argsOnly = true, ordinal = 2) int z
     ) {
-        Schematica schematica = Schematica.instance;
+        Schematica schematica = Schematica.INSTANCE;
         return original && (!schematica.isBlockRenderingEnabled() || !schematica.hasBlocksAtSection(x, y, z));
     }
 }

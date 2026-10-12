@@ -15,7 +15,7 @@ public class DownloadWebApi extends WebApiBase {
     @Override
     public String post(String body) throws Throwable {
         Request request = gson.fromJson(body, Request.class);
-        Schematica.DownloadInfo info = Schematica.instance.download(request.format,
+        Schematica.DownloadInfo info = Schematica.INSTANCE.download(request.format,
                 request.getX1(), request.getY1(), request.getZ1(),
                 request.getX2(), request.getY2(), request.getZ2());
         if (info.data() != null) {

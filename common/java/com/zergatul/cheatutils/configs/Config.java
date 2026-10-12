@@ -113,5 +113,6 @@ public class Config implements Sanitizable {
         pigHackConfig.sanitize();
         elytraTunnelConfig.sanitize();
         airPlaceConfig.sanitize();
+        containerButtonsConfig.sanitize();
     }
 }

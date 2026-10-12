@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -9,11 +10,11 @@ public class ModuleConfigSettingHandle<T extends ModuleConfig> extends SettingHa
         super(getter, setter);
     }
 
-    public ModuleConfigSettingHandle(Supplier<T> getter, Consumer<T> setter, Runnable onChanged) {
+    public ModuleConfigSettingHandle(Supplier<T> getter, Consumer<T> setter, BiConsumer<T, T> onChanged) {
         this(getter, setter, onChanged, ConfigStore.instance::requestWrite);
     }
 
-    public ModuleConfigSettingHandle(Supplier<T> getter, Consumer<T> setter, Runnable onChanged, Runnable requestWrite) {
+    public ModuleConfigSettingHandle(Supplier<T> getter, Consumer<T> setter, BiConsumer<T, T> onChanged, Runnable requestWrite) {
         super(getter, setter, onChanged, requestWrite);
     }
 

@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.configs.SchematicaConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.Module;
@@ -50,10 +51,14 @@ import java.util.function.Function;
 
 public class Schematica implements Module {
 
-    public static final Schematica instance = new Schematica();
+    public static final Schematica INSTANCE = new Schematica();
 
     private static final Strategy<BlockState> STRATEGY = Strategy.createForBlockStates(Block.BLOCK_STATE_REGISTRY);
 
+    private final ModuleConfigSettingHandle<SchematicaConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().schematicaConfig,
+            config -> ConfigStore.instance.getConfig().schematicaConfig = config,
+            this::onConfigChanged);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();
     private final SlotSelector slotSelector = new SlotSelector();
@@ -67,7 +72,7 @@ public class Schematica implements Module {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterRenderWorld.add(this::onRender);
 
-        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register("schematica", settings, SchematicaConfig.class);
         WebApiRegistry.INSTANCE.register(new DownloadWebApi());
         WebApiRegistry.INSTANCE.register(new PlaceWebApi());
         WebApiRegistry.INSTANCE.register(new SummaryWebApi());
@@ -75,12 +80,16 @@ public class Schematica implements Module {
         WebApiRegistry.INSTANCE.register(new BlockStateWebApi());
     }
 
+    public ModuleConfigSettingHandle<SchematicaConfig> getSettings() {
+        return settings;
+    }
+
     public boolean isEnabled() {
-        return getConfig().enabled;
+        return settings.get().enabled;
     }
 
     public boolean isBlockRenderingEnabled() {
-        SchematicaConfig config = getConfig();
+        SchematicaConfig config = settings.get();
         return config.enabled && config.renderBlocks;
     }
 
@@ -145,20 +154,6 @@ public class Schematica implements Module {
         }
 
         return SchematicaSectionCopy.from(states);
-    }
-
-    public void onBlockRenderingStateChanged() {
-        ClientTickEndExecutor.instance.execute(() -> {
-            boolean renderBlocks = isBlockRenderingEnabled();
-            if (mc.level != null) {
-                for (SectionInfo info : lookup.values()) {
-                    mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
-                    if (renderBlocks) {
-                        mc.level.getChunkSource().onSectionEmptinessChanged(info.x, info.y, info.z, false); // hasOnlyAir=false
-                    }
-                }
-            }
-        });
     }
 
     public void place(SchemaFile file, String name, PlacingSettings placing) {
@@ -420,8 +415,32 @@ public class Schematica implements Module {
         }
     }
 
+    private void onConfigChanged(SchematicaConfig prev, SchematicaConfig curr) {
+        ClientTickEndExecutor.instance.execute(() -> {
+            boolean oldBlockRenderingState = prev.enabled && prev.renderBlocks;
+            boolean newBlockRenderingState = curr.enabled && curr.renderBlocks;
+            boolean oldShadeBlocksState = oldBlockRenderingState && prev.shadeBlocks;
+            boolean newShadeBlocksState = newBlockRenderingState && curr.shadeBlocks;
+            if (oldBlockRenderingState != newBlockRenderingState || oldShadeBlocksState != newShadeBlocksState) {
+                onBlockRenderingStateChanged();
+            }
+        });
+    }
+
+    public void onBlockRenderingStateChanged() {
+        boolean renderBlocks = isBlockRenderingEnabled();
+        if (mc.level != null) {
+            for (SectionInfo info : lookup.values()) {
+                mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
+                if (renderBlocks) {
+                    mc.level.getChunkSource().onSectionEmptinessChanged(info.x, info.y, info.z, false); // hasOnlyAir=false
+                }
+            }
+        }
+    }
+
     private void onAfterPlayerAiStep() {
-        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
+        SchematicaConfig config = settings.get();
         if (!config.enabled || !config.autoBuild) {
             resetState();
             return;
@@ -498,7 +517,7 @@ public class Schematica implements Module {
     }
 
     private void onRender(RenderWorldLastEvent event) {
-        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
+        SchematicaConfig config = settings.get();
         if (!config.enabled) {
             return;
         }
@@ -636,10 +655,6 @@ public class Schematica implements Module {
     private void resetState() {
         actionTickCounter = 0;
         applyFuture = null;
-    }
-
-    private SchematicaConfig getConfig() {
-        return ConfigStore.instance.getConfig().schematicaConfig;
     }
 
     private static class Entry {
@@ -924,7 +939,7 @@ public class Schematica implements Module {
             missing.clear();
             wrong.clear();
 
-            SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
+            SchematicaConfig config = Schematica.INSTANCE.settings.get();
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int x = 0; x < 16; x++) {
                 int worldX = minX | x;
@@ -970,7 +985,7 @@ public class Schematica implements Module {
             if (isMissing(chunkState, finalState)) {
                 missing.add(pos.immutable());
             } else {
-                if (isWrong(chunkState, finalState, ConfigStore.instance.getConfig().schematicaConfig)) {
+                if (isWrong(chunkState, finalState, Schematica.INSTANCE.settings.get())) {
                     wrong.add(pos.immutable());
                 }
             }

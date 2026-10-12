@@ -3,12 +3,13 @@ package com.zergatul.cheatutils.mixins.common;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.UserNameConfig;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.AirPlace;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
+import com.zergatul.cheatutils.modules.utilities.UserName;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -74,7 +75,8 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("RETURN"), method = "createTitle()Ljava/lang/String;", cancellable = true)
     private void onCreateTitle(CallbackInfoReturnable<String> info) {
-        if (ConfigStore.instance.getConfig().userNameConfig.showNameInTitle) {
+        UserNameConfig config = UserName.INSTANCE.getSettings().get();
+        if (config.showNameInTitle) {
             info.setReturnValue(Minecraft.getInstance().getUser().getName() + " - " + info.getReturnValue());
         }
     }

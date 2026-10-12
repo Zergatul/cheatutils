@@ -68,9 +68,11 @@ public class KillAura implements Module {
         targets.clear();
     }
 
-    private void onConfigChanged() {
+    private void onConfigChanged(KillAuraConfig prev, KillAuraConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
-            lastAttackTick = 0;
+            if (!prev.enabled && curr.enabled) {
+                lastAttackTick = 0;
+            }
         });
     }
 

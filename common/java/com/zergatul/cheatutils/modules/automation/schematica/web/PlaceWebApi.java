@@ -31,7 +31,7 @@ public class PlaceWebApi extends WebApiBase {
             }
         }
 
-        Schematica.instance.place(schema, request.name, request.placing);
+        Schematica.INSTANCE.place(schema, request.name, request.placing);
         return "{}";
     }
 

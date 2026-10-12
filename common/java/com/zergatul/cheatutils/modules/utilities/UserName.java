@@ -1,9 +1,10 @@
 package com.zergatul.cheatutils.modules.utilities;
 
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.UserNameConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 
@@ -11,25 +12,22 @@ public class UserName implements Module {
 
     public static final UserName INSTANCE = new UserName();
 
+    private final SettingHandle<UserNameConfig> settings = new SettingHandle<>(
+            () -> ConfigStore.instance.getConfig().userNameConfig,
+            config -> ConfigStore.instance.getConfig().userNameConfig = config,
+            this::onConfigChanged);
+
     private UserName() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("user-name", settings, UserNameConfig.class);
     }
 
-    private static final class WebApi extends SimpleModuleConfigWebApi<UserNameConfig> {
+    public SettingHandle<UserNameConfig> getSettings() {
+        return settings;
+    }
 
-        public WebApi() {
-            super("user-name", UserNameConfig.class);
-        }
-
-        @Override
-        protected UserNameConfig getConfig() {
-            return ConfigStore.instance.getConfig().userNameConfig;
-        }
-
-        @Override
-        protected void setConfig(UserNameConfig config) {
-            ConfigStore.instance.getConfig().userNameConfig = config;
+    private void onConfigChanged(UserNameConfig prev, UserNameConfig curr) {
+        ClientTickEndExecutor.instance.execute(() -> {
             Minecraft.getInstance().updateTitle();
-        }
+        });
     }
 }

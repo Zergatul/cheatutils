@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -13,14 +14,18 @@ public class SettingHandle<T> {
 
     private final Supplier<T> getter;
     private final Consumer<T> setter;
-    private final Runnable onChanged;
+    private final BiConsumer<T, T> onChanged;
     private final Runnable requestWrite;
 
     public SettingHandle(Supplier<T> getter, Consumer<T> setter) {
-        this(getter, setter, () -> {}, ConfigStore.instance::requestWrite);
+        this(getter, setter, (_, _) -> {});
     }
 
-    public SettingHandle(Supplier<T> getter, Consumer<T> setter, Runnable onChanged, Runnable requestWrite) {
+    public SettingHandle(Supplier<T> getter, Consumer<T> setter, BiConsumer<T, T> onChanged) {
+        this(getter, setter, onChanged, ConfigStore.instance::requestWrite);
+    }
+
+    public SettingHandle(Supplier<T> getter, Consumer<T> setter, BiConsumer<T, T> onChanged, Runnable requestWrite) {
         this.getter = getter;
         this.setter = setter;
         this.onChanged = onChanged;
@@ -53,8 +58,11 @@ public class SettingHandle<T> {
         if (config instanceof Sanitizable sanitizable) {
             sanitizable.sanitize();
         }
+
+        T prev = getter.get();
         setter.accept(config);
-        onChanged.run();
+        onChanged.accept(prev, config);
+
         if (persist) {
             requestWrite.run();
         }

@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.mixins.common.schematics;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
 import com.zergatul.cheatutils.modules.automation.schematica.Schematica;
 import com.zergatul.cheatutils.modules.automation.schematica.render.SchematicaSectionCopy;
@@ -24,7 +23,7 @@ public abstract class MixinRenderRegionCache {
 
     @Inject(at = @At("RETURN"), method = "createRegion")
     private void onExtendRegionCopy(ClientLevel level, long sectionNode, CallbackInfoReturnable<RenderSectionRegion> info) {
-        Schematica schematica = Schematica.instance;
+        Schematica schematica = Schematica.INSTANCE;
         if (!schematica.isBlockRenderingEnabled()) {
             return;
         }
@@ -65,6 +64,6 @@ public abstract class MixinRenderRegionCache {
             }
         }
 
-        ((RenderSectionRegionExtension) info.getReturnValue()).setSchematicaSections_CU(copies, ConfigStore.instance.getConfig().schematicaConfig.shadeBlocks);
+        ((RenderSectionRegionExtension) info.getReturnValue()).setSchematicaSections_CU(copies, Schematica.INSTANCE.getSettings().get().shadeBlocks);
     }
 }

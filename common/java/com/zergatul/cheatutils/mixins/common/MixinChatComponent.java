@@ -2,13 +2,12 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ChatUtilitiesConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.utilities.ChatUtilities;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.multiplayer.chat.GuiMessageSource;
 import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.Style;
 import org.jspecify.annotations.Nullable;
@@ -31,7 +30,7 @@ public abstract class MixinChatComponent {
             method = "addMessageToQueue",
             constant = @Constant(intValue = 100))
     private int addMessageToQueueModifyMaxChatHistory(int size) {
-        ChatUtilitiesConfig config = ConfigStore.instance.getConfig().chatUtilitiesConfig;
+        ChatUtilitiesConfig config = ChatUtilities.INSTANCE.getSettings().get();
         return config.overrideMessageLimit ? config.messageLimit : size;
     }
 
@@ -39,7 +38,7 @@ public abstract class MixinChatComponent {
             method = "addMessageToDisplayQueue",
             constant = @Constant(intValue = 100))
     private int addMessageToDisplayQueueModifyMaxChatHistory(int size) {
-        ChatUtilitiesConfig config = ConfigStore.instance.getConfig().chatUtilitiesConfig;
+        ChatUtilitiesConfig config = ChatUtilities.INSTANCE.getSettings().get();
         return config.overrideMessageLimit ? config.messageLimit : size;
     }
 
@@ -62,7 +61,7 @@ public abstract class MixinChatComponent {
             return message;
         }
 
-        ChatUtilitiesConfig config = ConfigStore.instance.getConfig().chatUtilitiesConfig;
+        ChatUtilitiesConfig config = ChatUtilities.INSTANCE.getSettings().get();
         if (config.showTime) {
             Component withTime = Component.literal("") // to keep Style.EMPTY for chat message
                     .append(Component.literal(time.format(config.getFormatter())).withStyle(Style.EMPTY.withColor(0xFF808080)))

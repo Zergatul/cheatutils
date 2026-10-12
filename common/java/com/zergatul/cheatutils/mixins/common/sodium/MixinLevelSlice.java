@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.mixins.common.sodium;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.extensions.SodiumLevelSliceExtension;
 import com.zergatul.cheatutils.modules.automation.schematica.Schematica;
 import com.zergatul.cheatutils.modules.automation.schematica.render.SchematicaSectionCopy;
@@ -55,7 +54,7 @@ public abstract class MixinLevelSlice implements SodiumLevelSliceExtension {
             method = "prepare",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunkSection;hasOnlyAir()Z"))
     private static boolean onCheckSectionEmpty(boolean original, @Local(argsOnly = true) SectionPos pos) {
-        Schematica schematica = Schematica.instance;
+        Schematica schematica = Schematica.INSTANCE;
         return original && (!schematica.isBlockRenderingEnabled() || !schematica.hasBlocksAtSection(pos.asLong()));
     }
 
@@ -66,7 +65,7 @@ public abstract class MixinLevelSlice implements SodiumLevelSliceExtension {
         this.schematicaView_CU = false;
         this.schematicaShadeBlocks_CU = false;
 
-        Schematica schematica = Schematica.instance;
+        Schematica schematica = Schematica.INSTANCE;
         if (!schematica.isBlockRenderingEnabled()) {
             return;
         }
@@ -105,7 +104,7 @@ public abstract class MixinLevelSlice implements SodiumLevelSliceExtension {
 
         this.schematicaSections_CU = sections;
         this.schematicaSectionArrayLength_CU = sectionArrayLength;
-        this.schematicaShadeBlocks_CU = ConfigStore.instance.getConfig().schematicaConfig.shadeBlocks;
+        this.schematicaShadeBlocks_CU = schematica.getSettings().get().shadeBlocks;
     }
 
     @Inject(method = "getBlockState(III)Lnet/minecraft/world/level/block/state/BlockState;", at = @At("RETURN"), cancellable = true)

@@ -48,7 +48,6 @@ public class Modules {
         register(AutoBucket.instance);
         register(WorldDownload.INSTANCE);
         register(EntityTitle.instance);
-        register(ContainerButtonsController.instance);
         register(TeleportHack.instance);
         register(WorldMarkers.instance);
         register(TpsCounterController.instance);
@@ -78,7 +77,7 @@ public class Modules {
         register(BedrockBreaker.instance);
         register(Containers.instance);
         register(AntiHunger.INSTANCE);
-        register(Schematica.instance);
+        register(Schematica.INSTANCE);
         register(AimAssist.instance);
         register(LockInputs.instance);
         register(LogoutSpots.instance);
