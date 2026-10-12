@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.web;
 
+import com.zergatul.cheatutils.configs.SettingHandle;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -18,6 +19,11 @@ public final class WebApiRegistry {
 
     public synchronized @Nullable WebApiBase get(String route) {
         return apis.get(route);
+    }
+
+    public <T> void register(String route, SettingHandle<T> settings, Class<T> clazz) {
+        SettingWebApi<T> api = new SettingWebApi<>(route, settings, clazz);
+        register(api);
     }
 
     public synchronized void register(WebApiBase api) {

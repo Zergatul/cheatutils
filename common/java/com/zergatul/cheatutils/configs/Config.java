@@ -112,5 +112,6 @@ public class Config implements Sanitizable {
         crystalAuraConfig.sanitize();
         pigHackConfig.sanitize();
         elytraTunnelConfig.sanitize();
+        airPlaceConfig.sanitize();
     }
 }

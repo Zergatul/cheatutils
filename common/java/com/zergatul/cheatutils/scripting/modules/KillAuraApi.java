@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KillAuraConfig;
+import com.zergatul.cheatutils.modules.hacks.KillAura;
 
-public class KillAuraApi extends ModuleApi<KillAuraConfig> {
-
-    @Override
-    protected KillAuraConfig getConfig() {
-        return ConfigStore.instance.getConfig().killAuraConfig;
+public class KillAuraApi extends SettingHandleApi<KillAuraConfig> {
+    public KillAuraApi() {
+        super(KillAura.INSTANCE.getSettings());
     }
 }

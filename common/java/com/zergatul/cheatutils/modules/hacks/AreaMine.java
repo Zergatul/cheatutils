@@ -4,12 +4,12 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.AreaMineConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
@@ -27,15 +27,22 @@ import java.util.function.Consumer;
 
 public class AreaMine implements Module {
 
-    public static final AreaMine instance = new AreaMine();
+    public static final AreaMine INSTANCE = new AreaMine();
 
+    private final ModuleConfigSettingHandle<AreaMineConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().areaMineConfig,
+            config -> ConfigStore.instance.getConfig().areaMineConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AreaMine() {
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
         Events.BeforeInstaMine.add(this::onBeforeInstaMine);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("area-mine", settings, AreaMineConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<AreaMineConfig> getSettings() {
+        return settings;
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {
@@ -146,23 +153,6 @@ public class AreaMine implements Module {
                     }
                 }
             }
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AreaMineConfig> {
-
-        public WebApi() {
-            super("area-mine", AreaMineConfig.class);
-        }
-
-        @Override
-        protected AreaMineConfig getConfig() {
-            return ConfigStore.instance.getConfig().areaMineConfig;
-        }
-
-        @Override
-        protected void setConfig(AreaMineConfig config) {
-            ConfigStore.instance.getConfig().areaMineConfig = config;
         }
     }
 }

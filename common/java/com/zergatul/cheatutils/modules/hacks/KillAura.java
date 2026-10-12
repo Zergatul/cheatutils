@@ -1,8 +1,10 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.KillAuraConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
@@ -27,8 +29,12 @@ import java.util.List;
 
 public class KillAura implements Module {
 
-    public static final KillAura instance = new KillAura();
+    public static final KillAura INSTANCE = new KillAura();
 
+    private final ModuleConfigSettingHandle<KillAuraConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().killAuraConfig,
+            config -> ConfigStore.instance.getConfig().killAuraConfig = config,
+            this::onConfigChanged);
     private final Minecraft mc = Minecraft.getInstance();
     private long ticks;
     private long lastAttackTick;
@@ -43,9 +49,13 @@ public class KillAura implements Module {
         Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
         Events.DimensionChange.add(this::onDimensionChange);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("kill-aura", settings, KillAuraConfig.class);
         WebApiRegistry.INSTANCE.register(new InfoWebApi());
         WebApiRegistry.INSTANCE.register(new ClassNameWebApi());
+    }
+
+    public ModuleConfigSettingHandle<KillAuraConfig> getSettings() {
+        return settings;
     }
 
     public void clearTargetPredicate() {
@@ -58,8 +68,10 @@ public class KillAura implements Module {
         targets.clear();
     }
 
-    private void onEnabled() {
-        lastAttackTick = 0;
+    private void onConfigChanged() {
+        ClientTickEndExecutor.instance.execute(() -> {
+            lastAttackTick = 0;
+        });
     }
 
     private void onClientTickStart() {
@@ -71,7 +83,7 @@ public class KillAura implements Module {
         assert mc.player != null;
         assert mc.level != null;
 
-        KillAuraConfig config = ConfigStore.instance.getConfig().killAuraConfig;
+        KillAuraConfig config = settings.get();
         if (!config.enabled) {
             target = null;
             targets.clear();
@@ -251,29 +263,6 @@ public class KillAura implements Module {
         boolean test(int entityId);
     }
 
-    private final class WebApi extends SimpleModuleConfigWebApi<KillAuraConfig> {
-
-        public WebApi() {
-            super("kill-aura", KillAuraConfig.class);
-        }
-
-        @Override
-        protected KillAuraConfig getConfig() {
-            return ConfigStore.instance.getConfig().killAuraConfig;
-        }
-
-        @Override
-        protected void setConfig(KillAuraConfig config) {
-            KillAuraConfig oldConfig = ConfigStore.instance.getConfig().killAuraConfig;
-            boolean justEnabled = !oldConfig.enabled && config.enabled;
-            config.copyTo(oldConfig);
-
-            if (justEnabled) {
-                KillAura.this.onEnabled();
-            }
-        }
-    }
-
     private static final class InfoWebApi extends WebApiBase {
 
         @Override
@@ -284,7 +273,7 @@ public class KillAura implements Module {
         @Override
         public String get() {
             List<KillAuraConfig.PriorityEntry> entries = new ArrayList<>(KillAuraConfig.PredefinedPriorityEntry.entries.values());
-            for (KillAuraConfig.PriorityEntry entry: ConfigStore.instance.getConfig().killAuraConfig.customEntries) {
+            for (KillAuraConfig.PriorityEntry entry : KillAura.INSTANCE.settings.get().customEntries) {
                 entries.add(entry);
             }
             return gson.toJson(entries);

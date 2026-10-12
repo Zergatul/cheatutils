@@ -190,7 +190,7 @@ public class EventsScripting implements Module {
             }
             if (!killAuraTargetPredicates.isEmpty()) {
                 List<KillAura.TargetPredicate> predicates = List.copyOf(killAuraTargetPredicates);
-                KillAura.instance.setTargetPredicate(entityId -> activation.test("Kill Aura target filter", () -> {
+                KillAura.INSTANCE.setTargetPredicate(entityId -> activation.test("Kill Aura target filter", () -> {
                     for (KillAura.TargetPredicate predicate : predicates) {
                         if (!predicate.test(entityId)) return false;
                     }
@@ -210,7 +210,7 @@ public class EventsScripting implements Module {
         clearCallbacks();
         AimAssist.instance.clearTargetPredicate();
         aimAssistTargetPredicates.clear();
-        KillAura.instance.clearTargetPredicate();
+        KillAura.INSTANCE.clearTargetPredicate();
         killAuraTargetPredicates.clear();
     }
 
@@ -256,7 +256,7 @@ public class EventsScripting implements Module {
     private void blockFailedFilters(ScriptActivation<Runnable> activation) {
         if (script != activation) return;
         if (!aimAssistTargetPredicates.isEmpty()) AimAssist.instance.setTargetPredicate(_ -> false);
-        if (!killAuraTargetPredicates.isEmpty()) KillAura.instance.setTargetPredicate(_ -> false);
+        if (!killAuraTargetPredicates.isEmpty()) KillAura.INSTANCE.setTargetPredicate(_ -> false);
     }
 
     private boolean runCallback(String context, Runnable callback) {

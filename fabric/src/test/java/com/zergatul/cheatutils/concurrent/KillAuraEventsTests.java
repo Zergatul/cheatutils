@@ -98,7 +98,7 @@ public class KillAuraEventsTests {
     private static KillAura.TargetPredicate getPredicate() throws Exception {
         Field field = KillAura.class.getDeclaredField("targetPredicate");
         field.setAccessible(true);
-        return (KillAura.TargetPredicate) field.get(KillAura.instance);
+        return (KillAura.TargetPredicate) field.get(KillAura.INSTANCE);
     }
 
     @Test

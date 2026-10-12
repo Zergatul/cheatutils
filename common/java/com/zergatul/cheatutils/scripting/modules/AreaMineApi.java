@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.AreaMineConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.hacks.AreaMine;
 
-public class AreaMineApi extends ModuleApi<AreaMineConfig> {
-
-    @Override
-    protected AreaMineConfig getConfig() {
-        return ConfigStore.instance.getConfig().areaMineConfig;
+public class AreaMineApi extends SettingHandleApi<AreaMineConfig> {
+    public AreaMineApi() {
+        super(AreaMine.INSTANCE.getSettings());
     }
 }

@@ -143,7 +143,8 @@ public class ConfigStore {
         config.sanitize();
         config.blocks.apply();
 
-        LightLevel.instance.onChanged();
+        SettingsRegistry.INSTANCE.reload();
+
         WebServer.instance.onConfigUpdated();
         EntityTitle.instance.onTitleFontChange();
         EntityTitle.instance.onEnchantmentFontChange();

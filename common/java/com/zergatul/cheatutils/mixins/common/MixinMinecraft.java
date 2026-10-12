@@ -190,7 +190,7 @@ public abstract class MixinMinecraft {
 
     @Inject(method = "startUseItem", at = @At("HEAD"))
     private void onBeforeStartUseItem(CallbackInfo info) {
-        AirPlace.instance.onBeforeStartUseItem();
+        AirPlace.INSTANCE.onBeforeStartUseItem();
     }
 
     @Inject(method = "pick", at = @At("HEAD"))

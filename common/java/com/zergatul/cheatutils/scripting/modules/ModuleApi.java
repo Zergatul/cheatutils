@@ -20,12 +20,7 @@ public abstract class ModuleApi<T extends ModuleConfig> {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void enable() {
-        var config = getConfig();
-        if (!config.enabled) {
-            config.enabled = true;
-            onEnableChanged();
-            ConfigStore.instance.requestWrite();
-        }
+        updateEnabled(true);
     }
 
     @MethodDescription("""
@@ -33,12 +28,7 @@ public abstract class ModuleApi<T extends ModuleConfig> {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void disable() {
-        var config = getConfig();
-        if (config.enabled) {
-            config.enabled = false;
-            onEnableChanged();
-            ConfigStore.instance.requestWrite();
-        }
+        updateEnabled(false);
     }
 
     @MethodDescription("""
@@ -46,12 +36,7 @@ public abstract class ModuleApi<T extends ModuleConfig> {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void setEnabled(boolean value) {
-        var config = getConfig();
-        if (config.enabled != value) {
-            config.enabled = value;
-            onEnableChanged();
-            ConfigStore.instance.requestWrite();
-        }
+        updateEnabled(value);
     }
 
     @MethodDescription("""
@@ -59,15 +44,19 @@ public abstract class ModuleApi<T extends ModuleConfig> {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
-        var config = getConfig();
-        config.enabled = !config.enabled;
-        onEnableChanged();
-        ConfigStore.instance.requestWrite();
+        updateEnabled(!getConfig().enabled);
     }
 
-    protected void onEnableChanged() {
-
+    protected void updateEnabled(boolean value) {
+        T config = getConfig();
+        if (config.enabled != value) {
+            config.enabled = value;
+            onEnableChanged();
+            ConfigStore.instance.requestWrite();
+        }
     }
+
+    protected void onEnableChanged() {}
 
     protected abstract T getConfig();
 }

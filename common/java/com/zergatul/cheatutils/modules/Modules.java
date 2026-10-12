@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.modules;
 
 import com.zergatul.cheatutils.concurrent.*;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.font.FontBackendHolders;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.automation.schematica.Schematica;
 import com.zergatul.cheatutils.modules.esp.*;
@@ -62,7 +61,7 @@ public class Modules {
         register(ChunkOverlayController.instance);
         register(StatusOverlay.instance);
         register(AutoCriticals.instance);
-        register(LightLevel.instance);
+        register(LightLevel.INSTANCE);
         register(ElytraFly.instance);
         register(AdvancedTooltips.instance);
         register(Zoom.instance);
@@ -74,17 +73,17 @@ public class Modules {
         register(Exec.instance);
         register(VillagerRoller.instance);
         register(AutoHotbar.instance);
-        register(AreaMine.instance);
+        register(AreaMine.INSTANCE);
         register(ServerPlugins.instance);
         register(BedrockBreaker.instance);
         register(Containers.instance);
-        register(AntiHunger.instance);
+        register(AntiHunger.INSTANCE);
         register(Schematica.instance);
         register(AimAssist.instance);
         register(LockInputs.instance);
         register(LogoutSpots.instance);
         register(AutoTool.instance);
-        register(AirPlace.instance);
+        register(AirPlace.INSTANCE);
         register(ContainerSummary.instance);
         register(CrystalAura.instance);
         register(FullBright.instance);
@@ -128,7 +127,7 @@ public class Modules {
         //==========================================
         register(AfterPlayerAiStepExecutor.instance);
         register(AfterSendPlayerPosExecutor.instance);
-        register(KillAura.instance);
+        register(KillAura.INSTANCE);
 
         register(SpearRange.instance);
         register(AutoStunner.instance);
