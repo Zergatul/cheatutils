@@ -2,11 +2,9 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import com.google.common.reflect.TypeToken;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
+import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.controllers.ChunkOverlayController;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 
@@ -19,30 +17,23 @@ public class MiniMap implements Module {
 
     public static final MiniMap INSTANCE = new MiniMap();
 
+    private final ModuleConfigSettingHandle<ExplorationMiniMapConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().explorationMiniMapConfig,
+            config -> ConfigStore.instance.getConfig().explorationMiniMapConfig = config,
+            this::onConfigChanged);
+
     private MiniMap() {
-        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register("exploration-mini-map", settings, ExplorationMiniMapConfig.class);
         WebApiRegistry.INSTANCE.register(new MarkersWebApi());
     }
 
-    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<ExplorationMiniMapConfig> {
+    public ModuleConfigSettingHandle<ExplorationMiniMapConfig> getSettings() {
+        return settings;
+    }
 
-        public ConfigWebApi() {
-            super("exploration-mini-map", ExplorationMiniMapConfig.class);
-        }
-
-        @Override
-        protected ExplorationMiniMapConfig getConfig() {
-            return ConfigStore.instance.getConfig().explorationMiniMapConfig;
-        }
-
-        @Override
-        protected void setConfig(ExplorationMiniMapConfig config) {
-            ExplorationMiniMapConfig oldConfig = ConfigStore.instance.getConfig().explorationMiniMapConfig;
-            ConfigStore.instance.getConfig().explorationMiniMapConfig = config;
-
-            if (oldConfig.enabled != config.enabled) {
-                ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).onEnabledChanged();
-            }
+    private void onConfigChanged(ExplorationMiniMapConfig prev, ExplorationMiniMapConfig curr) {
+        if (prev.enabled != curr.enabled) {
+            ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).onEnabledChanged();
         }
     }
 

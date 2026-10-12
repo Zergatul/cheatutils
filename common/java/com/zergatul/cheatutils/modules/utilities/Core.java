@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.CoreConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import com.zergatul.cheatutils.web.WebServer;
 
@@ -14,24 +14,21 @@ public class Core implements Module {
 
     public static final Core INSTANCE = new Core();
 
+    private final SettingHandle<CoreConfig> settings = new SettingHandle<>(
+            () -> ConfigStore.instance.getConfig().coreConfig,
+            config -> ConfigStore.instance.getConfig().coreConfig = config,
+            this::onConfigChanged);
+
     private Core() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("core", settings, CoreConfig.class);
     }
 
-    private static final class WebApi extends SimpleModuleConfigWebApi<CoreConfig> {
+    public SettingHandle<CoreConfig> getSettings() {
+        return settings;
+    }
 
-        public WebApi() {
-            super("core", CoreConfig.class);
-        }
-
-        @Override
-        protected CoreConfig getConfig() {
-            return ConfigStore.instance.getConfig().coreConfig;
-        }
-
-        @Override
-        protected void setConfig(CoreConfig config) {
-            ConfigStore.instance.getConfig().coreConfig = config;
+    private void onConfigChanged(CoreConfig prev, CoreConfig curr) {
+        if (prev.port != curr.port) {
             CompletableFuture.delayedExecutor(250, TimeUnit.MILLISECONDS).execute(() -> {
                 WebServer.instance.onConfigUpdated();
             });

@@ -5,7 +5,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.modules.esp.EntityTitle;
-import com.zergatul.cheatutils.modules.esp.LightLevel;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
@@ -148,8 +147,8 @@ public class ConfigStore {
         WebServer.instance.onConfigUpdated();
         EntityTitle.instance.onTitleFontChange();
         EntityTitle.instance.onEnchantmentFontChange();
-        WorldMarkers.instance.onFontChange();
-        StatusOverlay.instance.onFontChange();
+        WorldMarkers.INSTANCE.onFontChange();
+        StatusOverlay.INSTANCE.onFontChange();
 
         KeyBindings.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {

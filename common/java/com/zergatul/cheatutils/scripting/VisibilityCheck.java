@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.utilities.Core;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -15,7 +16,7 @@ public class VisibilityCheck {
         boolean isAdvancedApi =
                 method.getDeclaringClass().isAnnotationPresent(AdvancedApi.class) ||
                 method.isAnnotationPresent(AdvancedApi.class);
-        if (isAdvancedApi && !ConfigStore.instance.getConfig().coreConfig.advancedScripting) {
+        if (isAdvancedApi && !Core.INSTANCE.getSettings().get().advancedScripting) {
             return false;
         }
 

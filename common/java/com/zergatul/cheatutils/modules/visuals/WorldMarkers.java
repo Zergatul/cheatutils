@@ -4,12 +4,12 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.ui.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -22,8 +22,12 @@ import java.util.concurrent.ExecutionException;
 
 public class WorldMarkers implements FontBackendHolder {
 
-    public static final WorldMarkers instance = new WorldMarkers();
+    public static final WorldMarkers INSTANCE = new WorldMarkers();
 
+    private final ModuleConfigSettingHandle<WorldMarkersConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().worldMarkersConfig,
+            config -> ConfigStore.instance.getConfig().worldMarkersConfig = config,
+            this::onConfigChanged);
     private final Minecraft mc = Minecraft.getInstance();
 
     private boolean fontChanged;
@@ -33,11 +37,15 @@ public class WorldMarkers implements FontBackendHolder {
     private WorldMarkers() {
         Events.AfterRenderWorld.add(this::onRenderWorldLast, 10);
 
-        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register("world-markers", settings, WorldMarkersConfig.class);
         WebApiRegistry.INSTANCE.register(new DimensionWebApi());
         WebApiRegistry.INSTANCE.register(new CoordinatesWebApi());
 
         FontBackendHolders.add(this);
+    }
+
+    public ModuleConfigSettingHandle<WorldMarkersConfig> getSettings() {
+        return settings;
     }
 
     @Override
@@ -49,12 +57,20 @@ public class WorldMarkers implements FontBackendHolder {
         ClientTickEndExecutor.instance.execute(() -> fontChanged = true);
     }
 
+    private void onConfigChanged(WorldMarkersConfig prev, WorldMarkersConfig curr) {
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (!prev.font.equals(curr.font)) {
+                onFontChange();
+            }
+        });
+    }
+
     private void onRenderWorldLast(RenderWorldLastEvent event) {
         if (!EspGlobal.enabled) {
             return;
         }
 
-        WorldMarkersConfig config = ConfigStore.instance.getConfig().worldMarkersConfig;
+        WorldMarkersConfig config = settings.get();
         if (!config.enabled) {
             return;
         }
@@ -136,28 +152,6 @@ public class WorldMarkers implements FontBackendHolder {
                         new RectangleElement(config.borderWidth, (int) fontRenderer.getLineHeight(), entry.color.getRGB()));
 
                 context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
-            }
-        }
-    }
-
-    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<WorldMarkersConfig> {
-
-        public ConfigWebApi() {
-            super("world-markers", WorldMarkersConfig.class);
-        }
-
-        @Override
-        protected WorldMarkersConfig getConfig() {
-            return ConfigStore.instance.getConfig().worldMarkersConfig;
-        }
-
-        @Override
-        protected void setConfig(WorldMarkersConfig config) {
-            WorldMarkersConfig oldConfig = ConfigStore.instance.getConfig().worldMarkersConfig;
-            ConfigStore.instance.getConfig().worldMarkersConfig = config;
-
-            if (!oldConfig.font.equals(config.font)) {
-                WorldMarkers.instance.onFontChange();
             }
         }
     }

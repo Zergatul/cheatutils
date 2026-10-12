@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
@@ -17,7 +16,7 @@ public class StatusOverlayScriptSlot extends SingleScriptSlot {
 
     @Override
     protected void updateConfigCode(@Nullable String code) {
-        ConfigStore.instance.getConfig().statusOverlayConfig.code = code;
+        StatusOverlay.INSTANCE.getSettings().update(c -> c.code = code);
     }
 
     @Override
@@ -27,6 +26,6 @@ public class StatusOverlayScriptSlot extends SingleScriptSlot {
 
     @Override
     protected <T> void applyScript(@Nullable T program) {
-        StatusOverlay.instance.setScript((Runnable) program);
+        StatusOverlay.INSTANCE.setScript((Runnable) program);
     }
 }

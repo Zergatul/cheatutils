@@ -49,7 +49,7 @@ public class Modules {
         register(WorldDownload.INSTANCE);
         register(EntityTitle.instance);
         register(TeleportHack.instance);
-        register(WorldMarkers.instance);
+        register(WorldMarkers.INSTANCE);
         register(TpsCounterController.instance);
         register(BlockAutomation.instance);
         register(PlayerInfoController.instance);
@@ -58,7 +58,7 @@ public class Modules {
         register(FreeCam.instance);
         register(AutoFish.instance);
         register(ChunkOverlayController.instance);
-        register(StatusOverlay.instance);
+        register(StatusOverlay.INSTANCE);
         register(AutoCriticals.instance);
         register(LightLevel.INSTANCE);
         register(ElytraFly.instance);
@@ -84,7 +84,7 @@ public class Modules {
         register(AutoTool.instance);
         register(AirPlace.INSTANCE);
         register(ContainerSummary.instance);
-        register(CrystalAura.instance);
+        register(CrystalAura.INSTANCE);
         register(FullBright.instance);
         register(InvMove.instance);
         register(HitboxSize.instance);

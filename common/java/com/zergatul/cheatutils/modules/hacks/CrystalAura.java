@@ -1,13 +1,14 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.CrystalAuraConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.*;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
@@ -40,8 +41,12 @@ import java.util.concurrent.CompletableFuture;
 
 public class CrystalAura implements Module {
 
-    public static final CrystalAura instance = new CrystalAura();
+    public static final CrystalAura INSTANCE = new CrystalAura();
 
+    private final ModuleConfigSettingHandle<CrystalAuraConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().crystalAuraConfig,
+            config -> ConfigStore.instance.getConfig().crystalAuraConfig = config,
+            this::onConfigChanged);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<LivingEntity> targets = new ArrayList<>();
     private final List<EndCrystal> spawnedCrystals = new ArrayList<>();
@@ -52,7 +57,7 @@ public class CrystalAura implements Module {
     private int breakCountdown;
     private Runnable afterPositionSentAction;
     private CompletableFuture<Boolean> supportPlacingProcess;
-    private volatile boolean shouldResetState;
+    private boolean shouldResetState;
 
     private CrystalAura() {
         Events.BeforeProcessQueuedPackets.add(this::onBeforeProcessQueuedPackets);
@@ -63,12 +68,20 @@ public class CrystalAura implements Module {
         Events.AfterSendPlayerPos.add(this::onAfterSendPlayerPos);
         Events.InGameTickEnd.add(this::onTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("crystal-aura", settings, CrystalAuraConfig.class);
         WebApiRegistry.INSTANCE.register(new EntityTypesWebApi());
     }
 
-    public void onEnableStateChanged() {
-        shouldResetState = true;
+    public ModuleConfigSettingHandle<CrystalAuraConfig> getSettings() {
+        return settings;
+    }
+
+    private void onConfigChanged(CrystalAuraConfig prev, CrystalAuraConfig curr) {
+        ClientTickEndExecutor.instance.execute(() -> {
+            if (prev.enabled & curr.enabled) {
+                shouldResetState = true;
+            }
+        });
     }
 
     private void onBeforeProcessQueuedPackets() {
@@ -471,28 +484,7 @@ public class CrystalAura implements Module {
     }
 
     private CrystalAuraConfig snapshotConfig() {
-        return CrystalAuraConfig.copyOf(ConfigStore.instance.getConfig().crystalAuraConfig);
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<CrystalAuraConfig> {
-
-        public WebApi() {
-            super("crystal-aura", CrystalAuraConfig.class);
-        }
-
-        @Override
-        protected CrystalAuraConfig getConfig() {
-            return ConfigStore.instance.getConfig().crystalAuraConfig;
-        }
-
-        @Override
-        protected void setConfig(CrystalAuraConfig config) {
-            CrystalAuraConfig oldConfig = ConfigStore.instance.getConfig().crystalAuraConfig;
-            ConfigStore.instance.getConfig().crystalAuraConfig = config;
-            if (oldConfig.enabled ^ config.enabled) {
-                CrystalAura.instance.onEnableStateChanged();
-            }
-        }
+        return CrystalAuraConfig.copyOf(settings.get());
     }
 
     private static final class EntityTypesWebApi extends WebApiBase {

@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
+import com.zergatul.cheatutils.modules.visuals.MiniMap;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
 import com.zergatul.cheatutils.utils.LevelChunkUtils;
@@ -219,7 +220,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
     }
 
     private ExplorationMiniMapConfig getConfig() {
-        return ConfigStore.instance.getConfig().explorationMiniMapConfig;
+        return MiniMap.INSTANCE.getSettings().get();
     }
 
     private static int convert(int color) {

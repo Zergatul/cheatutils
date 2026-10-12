@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.esp.NewChunks;
 import com.zergatul.cheatutils.utils.Dimension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
@@ -39,7 +40,7 @@ public class NewChunksOverlay extends AbstractChunkOverlay {
 
     @Override
     public boolean isEnabled() {
-        return ConfigStore.instance.getConfig().newChunksConfig.enabled;
+        return NewChunks.INSTANCE.getSettings().get().isEnabled();
     }
 
     @Override

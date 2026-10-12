@@ -17,7 +17,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void left() {
-        StatusOverlay.instance.setHorizontalAlign(HorizontalAlign.LEFT);
+        StatusOverlay.INSTANCE.setHorizontalAlign(HorizontalAlign.LEFT);
     }
 
     @MethodDescription("""
@@ -25,7 +25,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void center() {
-        StatusOverlay.instance.setHorizontalAlign(HorizontalAlign.CENTER);
+        StatusOverlay.INSTANCE.setHorizontalAlign(HorizontalAlign.CENTER);
     }
 
     @MethodDescription("""
@@ -33,7 +33,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void right() {
-        StatusOverlay.instance.setHorizontalAlign(HorizontalAlign.RIGHT);
+        StatusOverlay.INSTANCE.setHorizontalAlign(HorizontalAlign.RIGHT);
     }
 
     @MethodDescription("""
@@ -41,7 +41,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void top() {
-        StatusOverlay.instance.setVerticalAlign(VerticalAlign.TOP);
+        StatusOverlay.INSTANCE.setVerticalAlign(VerticalAlign.TOP);
     }
 
     @MethodDescription("""
@@ -49,7 +49,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void middle() {
-        StatusOverlay.instance.setVerticalAlign(VerticalAlign.MIDDLE);
+        StatusOverlay.INSTANCE.setVerticalAlign(VerticalAlign.MIDDLE);
     }
 
     @MethodDescription("""
@@ -57,7 +57,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void bottom() {
-        StatusOverlay.instance.setVerticalAlign(VerticalAlign.BOTTOM);
+        StatusOverlay.INSTANCE.setVerticalAlign(VerticalAlign.BOTTOM);
     }
 
     @MethodDescription("""
@@ -67,7 +67,7 @@ public class OverlayApi {
     public void backgroundColor(String color) {
         Integer colorInt = ColorUtils.parseColor(color);
         if (colorInt != null) {
-            StatusOverlay.instance.setDefaultBackgroundColor(colorInt);
+            StatusOverlay.INSTANCE.setDefaultBackgroundColor(colorInt);
         }
     }
 
@@ -84,7 +84,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void add(String color, String text) {
-        StatusOverlay.instance.addText(StylizedText.createSafe(text, color));
+        StatusOverlay.INSTANCE.addText(StylizedText.createSafe(text, color));
     }
 
     @MethodDescription("""
@@ -92,7 +92,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void add(String color1, String text1, String color2, String text2) {
-        StatusOverlay.instance.addText(StylizedText.createSafe(new String[] {
+        StatusOverlay.INSTANCE.addText(StylizedText.createSafe(new String[] {
                 color1, text1,
                 "#FFFFFF", " ",
                 color2, text2
@@ -108,9 +108,9 @@ public class OverlayApi {
     public void add(String backgroundColor, String[] parameters) {
         Integer background = ColorUtils.parseColor(backgroundColor);
         if (background != null) {
-            StatusOverlay.instance.addText(background, StylizedText.createSafe(parameters));
+            StatusOverlay.INSTANCE.addText(background, StylizedText.createSafe(parameters));
         } else {
-            StatusOverlay.instance.addText(StylizedText.createSafe(parameters));
+            StatusOverlay.INSTANCE.addText(StylizedText.createSafe(parameters));
         }
     }
 
@@ -120,7 +120,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void addAtPosition(int x, int y, String color, String text) {
-        StatusOverlay.instance.addFreeText(x, y, StylizedText.createSafe(text, color));
+        StatusOverlay.INSTANCE.addFreeText(x, y, StylizedText.createSafe(text, color));
     }
 
     @MethodDescription("""
@@ -129,7 +129,7 @@ public class OverlayApi {
             """)
     @ApiVisibility(ApiType.OVERLAY)
     public void addAtPosition(int x, int y, String color1, String text1, String color2, String text2) {
-        StatusOverlay.instance.addFreeText(x, y, StylizedText.createSafe(new String[] {
+        StatusOverlay.INSTANCE.addFreeText(x, y, StylizedText.createSafe(new String[] {
                 color1, text1,
                 "#FFFFFF", " ",
                 color2, text2
@@ -146,9 +146,9 @@ public class OverlayApi {
     public void addAtPosition(int x, int y, String backgroundColor, String[] parameters) {
         Integer background = ColorUtils.parseColor(backgroundColor);
         if (background != null) {
-            StatusOverlay.instance.addFreeText(x, y, background, StylizedText.createSafe(parameters));
+            StatusOverlay.INSTANCE.addFreeText(x, y, background, StylizedText.createSafe(parameters));
         } else {
-            StatusOverlay.instance.addFreeText(x, y, StylizedText.createSafe(parameters));
+            StatusOverlay.INSTANCE.addFreeText(x, y, StylizedText.createSafe(parameters));
         }
     }
 }

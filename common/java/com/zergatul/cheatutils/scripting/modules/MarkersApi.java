@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.WorldMarkersConfig;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
@@ -64,6 +65,6 @@ public class MarkersApi {
     }
 
     private WorldMarkersConfig getConfig() {
-        return ConfigStore.instance.getConfig().worldMarkersConfig;
+        return WorldMarkers.INSTANCE.getSettings().get();
     }
 }

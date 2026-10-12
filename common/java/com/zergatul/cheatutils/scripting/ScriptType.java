@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.utilities.Core;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
 import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
@@ -178,7 +179,7 @@ public enum ScriptType {
 
                     @Override
                     public boolean isJavaTypeUsageAllowed() {
-                        return ConfigStore.instance.getConfig().coreConfig.advancedScripting;
+                        return Core.INSTANCE.getSettings().get().advancedScripting;
                     }
 
                     @Override

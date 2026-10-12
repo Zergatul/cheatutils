@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-import com.zergatul.cheatutils.scripting.modules.ModuleApi;
+import com.zergatul.cheatutils.scripting.modules.SettingHandleApi;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -31,17 +31,7 @@ public class ModuleConfigHandleTests {
         Fixture fixture = new Fixture();
         fixture.current.maxDistance = 0;
         fixture.current.showLightLevelValue = true;
-        ModuleApi<LightLevelConfig> api = new ModuleApi<>() {
-            @Override
-            protected LightLevelConfig getConfig() {
-                return fixture.settings.get();
-            }
-
-            @Override
-            protected void updateEnabled(boolean value) {
-                fixture.settings.setEnabled(value);
-            }
-        };
+        SettingHandleApi<LightLevelConfig> api = new SettingHandleApi<>(fixture.settings) {};
 
         api.enable();
         api.enable();
@@ -101,7 +91,7 @@ public class ModuleConfigHandleTests {
         private final ModuleConfigSettingHandle<LightLevelConfig> settings = new ModuleConfigSettingHandle<>(
                 () -> current,
                 config -> current = config,
-                () -> calls.add("changed:" + current.enabled + ":" + current.maxDistance),
+                (prev, curr) -> calls.add("changed:" + current.enabled + ":" + current.maxDistance),
                 () -> calls.add("save"));
     }
 }

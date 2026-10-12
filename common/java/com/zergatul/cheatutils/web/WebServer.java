@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mcp.McpHttpHandler;
+import com.zergatul.cheatutils.modules.utilities.Core;
 import com.zergatul.cheatutils.scripting.monaco.Integration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +39,7 @@ public class WebServer {
             return;
         }
 
-        int port = ConfigStore.instance.getConfig().coreConfig.port;
+        int port = Core.INSTANCE.getSettings().get().port;
         if (basePort != port) {
             basePort = port;
 

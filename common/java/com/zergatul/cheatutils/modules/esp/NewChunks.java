@@ -2,39 +2,32 @@ package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.configs.NewChunksConfig;
 import com.zergatul.cheatutils.controllers.ChunkOverlayController;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 
 public class NewChunks implements Module {
 
     public static final NewChunks INSTANCE = new NewChunks();
 
+    private final ModuleConfigSettingHandle<NewChunksConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().newChunksConfig,
+            config -> ConfigStore.instance.getConfig().newChunksConfig = config,
+            this::onConfigChanged);
+
     private NewChunks() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("new-chunks", settings, NewChunksConfig.class);
     }
 
-    private static final class WebApi extends SimpleModuleConfigWebApi<NewChunksConfig> {
+    public ModuleConfigSettingHandle<NewChunksConfig> getSettings() {
+        return settings;
+    }
 
-        public WebApi() {
-            super("new-chunks", NewChunksConfig.class);
-        }
-
-        @Override
-        protected NewChunksConfig getConfig() {
-            return ConfigStore.instance.getConfig().newChunksConfig;
-        }
-
-        @Override
-        protected void setConfig(NewChunksConfig config) {
-            NewChunksConfig oldConfig = ConfigStore.instance.getConfig().newChunksConfig;
-            ConfigStore.instance.getConfig().newChunksConfig = config;
-
-            if (oldConfig.enabled != config.enabled) {
-                ChunkOverlayController.instance.ofType(NewChunksOverlay.class).onEnabledChanged();
-            }
+    private void onConfigChanged(NewChunksConfig prev, NewChunksConfig curr) {
+        if (prev.enabled != curr.enabled) {
+            ChunkOverlayController.instance.ofType(NewChunksOverlay.class).onEnabledChanged();
         }
     }
 }
