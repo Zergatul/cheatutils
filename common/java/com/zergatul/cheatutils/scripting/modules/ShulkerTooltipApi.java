@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ShulkerTooltipConfig;
+import com.zergatul.cheatutils.modules.visuals.ShulkerTooltip;
 
-public class ShulkerTooltipApi extends ModuleApi<ShulkerTooltipConfig> {
+public class ShulkerTooltipApi extends SettingHandleApi<ShulkerTooltipConfig> {
 
-    @Override
-    protected ShulkerTooltipConfig getConfig() {
-        return ConfigStore.instance.getConfig().shulkerTooltipConfig;
+    public ShulkerTooltipApi() {
+        super(ShulkerTooltip.instance.getSettings());
     }
 }

@@ -2,10 +2,10 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import com.google.common.collect.Ordering;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.configs.StatusEffectsConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.HudAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -22,14 +22,21 @@ public class BetterStatusEffects implements Module {
 
     public static final BetterStatusEffects instance = new BetterStatusEffects();
 
+    private final ModuleConfigSettingHandle<StatusEffectsConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().statusEffectsConfig,
+            config -> ConfigStore.instance.getConfig().statusEffectsConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
 
     private BetterStatusEffects() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("status-effects", settings, StatusEffectsConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<StatusEffectsConfig> getSettings() {
+        return settings;
     }
 
     public void render(GuiGraphicsExtractor graphics, Player player, int y) {
-        if (!ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
+        if (!settings.get().enabled) {
             return;
         }
 
@@ -72,23 +79,6 @@ public class BetterStatusEffects implements Module {
             graphics.text(mc.font, duration, textLeft, textTop, -1);
 
             left += 25;
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<StatusEffectsConfig> {
-
-        public WebApi() {
-            super("status-effects", StatusEffectsConfig.class);
-        }
-
-        @Override
-        protected StatusEffectsConfig getConfig() {
-            return ConfigStore.instance.getConfig().statusEffectsConfig;
-        }
-
-        @Override
-        protected void setConfig(StatusEffectsConfig config) {
-            ConfigStore.instance.getConfig().statusEffectsConfig = config;
         }
     }
 }

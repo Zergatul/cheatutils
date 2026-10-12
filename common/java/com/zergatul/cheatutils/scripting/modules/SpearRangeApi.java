@@ -1,13 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.SpearRangeConfig;
+import com.zergatul.cheatutils.modules.automation.SpearRange;
 
-public class SpearRangeApi extends ModuleApi<SpearRangeConfig> {
+public class SpearRangeApi extends SettingHandleApi<SpearRangeConfig> {
 
-
-    @Override
-    protected SpearRangeConfig getConfig() {
-        return ConfigStore.instance.getConfig().spearRangeConfig;
+    public SpearRangeApi() {
+        super(SpearRange.instance.getSettings());
     }
 }

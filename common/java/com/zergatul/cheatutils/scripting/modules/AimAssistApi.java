@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.AimAssistConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.automation.AimAssist;
 import net.minecraft.world.entity.Entity;
 
@@ -15,7 +14,7 @@ public class AimAssistApi {
     public void toggleBowAssist() {
         AimAssistConfig config = getConfig();
         config.bowAssist = !config.bowAssist;
-        ConfigStore.instance.requestWrite();
+        AimAssist.instance.getSettings().set(config);
     }
 
     public boolean hasBowAssistTarget() {
@@ -40,6 +39,6 @@ public class AimAssistApi {
     }
 
     private AimAssistConfig getConfig() {
-        return ConfigStore.instance.getConfig().aimAssist;
+        return AimAssist.instance.getSettings().get();
     }
 }

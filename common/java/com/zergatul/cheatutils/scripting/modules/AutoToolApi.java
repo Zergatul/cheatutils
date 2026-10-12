@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.AutoToolConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.automation.AutoTool;
 
-public class AutoToolApi extends ModuleApi<AutoToolConfig> {
+public class AutoToolApi extends SettingHandleApi<AutoToolConfig> {
 
-    @Override
-    protected AutoToolConfig getConfig() {
-        return ConfigStore.instance.getConfig().autoTool;
+    public AutoToolApi() {
+        super(AutoTool.instance.getSettings());
     }
 }

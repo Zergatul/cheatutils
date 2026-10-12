@@ -3,10 +3,10 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.AutoFishConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -25,6 +25,9 @@ public class AutoFish implements Module {
 
     public static final AutoFish instance = new AutoFish();
 
+    private final ModuleConfigSettingHandle<AutoFishConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().autoFishConfig,
+            config -> ConfigStore.instance.getConfig().autoFishConfig = config);
     private static final long PULL_IN_DELAY_MS = 500;
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -36,7 +39,11 @@ public class AutoFish implements Module {
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-fish", settings, AutoFishConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<AutoFishConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
@@ -45,7 +52,7 @@ public class AutoFish implements Module {
             return;
         }
 
-        AutoFishConfig config = ConfigStore.instance.getConfig().autoFishConfig;
+        AutoFishConfig config = settings.get();
         if (!config.enabled) {
             state = State.NONE;
             return;
@@ -115,22 +122,5 @@ public class AutoFish implements Module {
         WAITING_FOR_SOUND,
         PULL_IN,
         DELAY_AFTER_PULL_IN,
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoFishConfig> {
-
-        public WebApi() {
-            super("auto-fish", AutoFishConfig.class);
-        }
-
-        @Override
-        protected AutoFishConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoFishConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoFishConfig config) {
-            ConfigStore.instance.getConfig().autoFishConfig = config;
-        }
     }
 }

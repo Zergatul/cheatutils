@@ -4,12 +4,12 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContinueDestroyBlockEvent;
 import com.zergatul.cheatutils.configs.AutoToolConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.AutoToolMiningSpeedCalculator;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -24,6 +24,9 @@ public class AutoTool implements Module {
 
     public static final AutoTool instance = new AutoTool();
 
+    private final ModuleConfigSettingHandle<AutoToolConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().autoTool,
+            config -> ConfigStore.instance.getConfig().autoTool = config);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean skip;
 
@@ -31,7 +34,11 @@ public class AutoTool implements Module {
         Events.StartDestroyBlock.add(this::onStartDestroyBlock);
         Events.ContinueDestroyBlock.add(this::onContinueDestroyBlock);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-tool", settings, AutoToolConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<AutoToolConfig> getSettings() {
+        return settings;
     }
 
     public void enterSkipMode() {
@@ -43,7 +50,7 @@ public class AutoTool implements Module {
     }
 
     public void selectToolFor(BlockPos pos) {
-        selectToolFor(ConfigStore.instance.getConfig().autoTool, pos);
+        selectToolFor(settings.get(), pos);
     }
 
     private void onStartDestroyBlock(BlockPos pos) {
@@ -51,7 +58,7 @@ public class AutoTool implements Module {
             return;
         }
 
-        AutoToolConfig config = ConfigStore.instance.getConfig().autoTool;
+        AutoToolConfig config = settings.get();
         if (!config.enabled) {
             return;
         }
@@ -64,7 +71,7 @@ public class AutoTool implements Module {
             return;
         }
 
-        AutoToolConfig config = ConfigStore.instance.getConfig().autoTool;
+        AutoToolConfig config = settings.get();
         if (!config.enabled) {
             return;
         }
@@ -174,21 +181,4 @@ public class AutoTool implements Module {
     }
 
     private record InventoryEntry(int index, ItemStack item) {}
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoToolConfig> {
-
-        public WebApi() {
-            super("auto-tool", AutoToolConfig.class);
-        }
-
-        @Override
-        protected AutoToolConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoTool;
-        }
-
-        @Override
-        protected void setConfig(AutoToolConfig config) {
-            ConfigStore.instance.getConfig().autoTool = config;
-        }
-    }
 }

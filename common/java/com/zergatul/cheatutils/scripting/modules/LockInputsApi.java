@@ -1,10 +1,13 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.modules.utilities.LockInputs;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LockInputsConfig;
 
+import java.util.function.Consumer;
+
+@SuppressWarnings("unused")
 public class LockInputsApi {
 
     public boolean isHoldForwardEnabled() {
@@ -25,33 +28,29 @@ public class LockInputsApi {
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleHoldForward() {
-        var config = getConfig();
-        config.holdForward = !config.holdForward;
-        ConfigStore.instance.requestWrite();
+        update(c -> c.holdForward = !c.holdForward);
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleHoldUse() {
-        var config = getConfig();
-        config.holdUse = !config.holdUse;
-        ConfigStore.instance.requestWrite();
+        update(c -> c.holdUse = !c.holdUse);
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleHoldAttack() {
-        var config = getConfig();
-        config.holdAttack = !config.holdAttack;
-        ConfigStore.instance.requestWrite();
+        update(c -> c.holdAttack = !c.holdAttack);
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleMouseInputDisabled() {
-        var config = getConfig();
-        config.mouseInputDisabled = !config.mouseInputDisabled;
-        ConfigStore.instance.requestWrite();
+        update(c -> c.mouseInputDisabled = !c.mouseInputDisabled);
+    }
+
+    private void update(Consumer<LockInputsConfig> consumer) {
+        LockInputs.instance.getSettings().update(consumer);
     }
 
     private LockInputsConfig getConfig() {
-        return ConfigStore.instance.getConfig().lockInputsConfig;
+        return LockInputs.instance.getSettings().get();
     }
 }

@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.AutoCriticalsConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.hacks.AutoCriticals;
 
-public class AutoCriticalsApi extends ModuleApi<AutoCriticalsConfig> {
+public class AutoCriticalsApi extends SettingHandleApi<AutoCriticalsConfig> {
 
-    @Override
-    protected AutoCriticalsConfig getConfig() {
-        return ConfigStore.instance.getConfig().autoCriticalsConfig;
+    public AutoCriticalsApi() {
+        super(AutoCriticals.instance.getSettings());
     }
 }

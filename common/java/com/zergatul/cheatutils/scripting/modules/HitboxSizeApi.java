@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.HitboxSizeConfig;
+import com.zergatul.cheatutils.modules.hacks.HitboxSize;
 
-public class HitboxSizeApi extends ModuleApi<HitboxSizeConfig> {
+public class HitboxSizeApi extends SettingHandleApi<HitboxSizeConfig> {
 
-    @Override
-    protected HitboxSizeConfig getConfig() {
-        return ConfigStore.instance.getConfig().hitboxSizeConfig;
+    public HitboxSizeApi() {
+        super(HitboxSize.instance.getSettings());
     }
 }

@@ -4,9 +4,9 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.configs.AutoStunnerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.extensions.MultiPlayerGameModeExtension;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tags.ItemTags;
@@ -21,16 +21,24 @@ import net.minecraft.world.phys.Vec3;
 public class AutoStunner implements Module {
 
     public static final AutoStunner instance = new AutoStunner();
+
+    private final ModuleConfigSettingHandle<AutoStunnerConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().autoStunnerConfig,
+            config -> ConfigStore.instance.getConfig().autoStunnerConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoStunner() {
         Events.BeforeAttack.add(this::onBeforeAttack, 1);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-stunner", settings, AutoStunnerConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<AutoStunnerConfig> getSettings() {
+        return settings;
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
-        if (!ConfigStore.instance.getConfig().autoStunnerConfig.enabled) return;
+        if (!settings.get().enabled) return;
 
         if (mc.player == null) return;
 
@@ -77,22 +85,5 @@ public class AutoStunner implements Module {
             }
         }
         return false;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoStunnerConfig> {
-
-        public WebApi() {
-            super("auto-stunner", AutoStunnerConfig.class);
-        }
-
-        @Override
-        protected AutoStunnerConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoStunnerConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoStunnerConfig config) {
-            ConfigStore.instance.getConfig().autoStunnerConfig = config;
-        }
     }
 }

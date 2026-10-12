@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FreeCamConfig;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
@@ -133,6 +132,6 @@ public class FreeCamApi {
     }
 
     private FreeCamConfig getConfig() {
-        return ConfigStore.instance.getConfig().freeCamConfig;
+        return FreeCam.instance.getSettings().get();
     }
 }

@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.HitboxSizeConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -15,12 +15,20 @@ public class HitboxSize implements Module {
 
     public static final HitboxSize instance = new HitboxSize();
 
+    private final ModuleConfigSettingHandle<HitboxSizeConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().hitboxSizeConfig,
+            config -> ConfigStore.instance.getConfig().hitboxSizeConfig = config);
+
     private HitboxSize() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("hitbox-size", settings, HitboxSizeConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<HitboxSizeConfig> getSettings() {
+        return settings;
     }
 
     public AABB get(Entity entity) {
-        HitboxSizeConfig config = ConfigStore.instance.getConfig().hitboxSizeConfig;
+        HitboxSizeConfig config = settings.get();
         if (config.enabled) {
             Vec3 pos = entity.position();
             double width = entity.getBbWidth();
@@ -44,22 +52,5 @@ public class HitboxSize implements Module {
             return value + absolute;
         }
         return value;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<HitboxSizeConfig> {
-
-        public WebApi() {
-            super("hitbox-size", HitboxSizeConfig.class);
-        }
-
-        @Override
-        protected HitboxSizeConfig getConfig() {
-            return ConfigStore.instance.getConfig().hitboxSizeConfig;
-        }
-
-        @Override
-        protected void setConfig(HitboxSizeConfig config) {
-            ConfigStore.instance.getConfig().hitboxSizeConfig = config;
-        }
     }
 }

@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.AutoEatConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.automation.AutoEat;
 
-public class AutoEatApi extends ModuleApi<AutoEatConfig> {
+public class AutoEatApi extends SettingHandleApi<AutoEatConfig> {
 
-    @Override
-    protected AutoEatConfig getConfig() {
-        return ConfigStore.instance.getConfig().autoEatConfig;
+    public AutoEatApi() {
+        super(AutoEat.instance.getSettings());
     }
 }

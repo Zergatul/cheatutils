@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.BlockAutomationConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
@@ -18,7 +19,6 @@ import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.SlotSelector;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -34,6 +34,9 @@ public class BlockAutomation {
 
     public static final BlockAutomation instance = new BlockAutomation();
 
+    private final ModuleConfigSettingHandle<BlockAutomationConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().blockAutomationConfig,
+            config -> config.copyTo(ConfigStore.instance.getConfig().blockAutomationConfig));
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
     private volatile ScriptActivation<BlockPosConsumer> script;
@@ -53,8 +56,12 @@ public class BlockAutomation {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
 
-        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register("block-automation", settings, BlockAutomationConfig.class);
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
+    }
+
+    public ModuleConfigSettingHandle<BlockAutomationConfig> getSettings() {
+        return settings;
     }
 
     public void setScript(BlockPosConsumer script) {
@@ -96,7 +103,7 @@ public class BlockAutomation {
     }
 
     public boolean isBreakingBlock() {
-        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
+        BlockAutomationConfig config = settings.get();
         if (!config.enabled) {
             return false;
         }
@@ -110,7 +117,7 @@ public class BlockAutomation {
 
     private void onAfterPlayerAiStep() {
         ScriptActivation<BlockPosConsumer> script = this.script;
-        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
+        BlockAutomationConfig config = settings.get();
         // Block Automation code stops breaking lectern after first tick for Villager Roller
         if (!config.enabled || VillagerRoller.instance.isActive()) {
             resetState();
@@ -225,7 +232,7 @@ public class BlockAutomation {
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {
-        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
+        BlockAutomationConfig config = settings.get();
 //        if (config.enabled && config.debugMode && debugPlan != null) {
 //            // draw neighbour block
 //            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
@@ -291,24 +298,6 @@ public class BlockAutomation {
         breakPlan = null;
         placePlan = null;
         applyFuture = null;
-    }
-
-    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<BlockAutomationConfig> {
-
-        public ConfigWebApi() {
-            super("block-automation", BlockAutomationConfig.class);
-        }
-
-        @Override
-        protected BlockAutomationConfig getConfig() {
-            return ConfigStore.instance.getConfig().blockAutomationConfig;
-        }
-
-        @Override
-        protected void setConfig(BlockAutomationConfig config) {
-            BlockAutomationConfig current = ConfigStore.instance.getConfig().blockAutomationConfig;
-            config.copyTo(current);
-        }
     }
 
     private static final class CodeWebApi extends CodeWebApiBase {

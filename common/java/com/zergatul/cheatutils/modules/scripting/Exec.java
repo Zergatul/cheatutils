@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExecConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
@@ -12,7 +13,6 @@ import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import com.zergatul.scripting.DiagnosticMessage;
 import com.zergatul.scripting.compiler.CompilationResult;
@@ -26,14 +26,22 @@ public class Exec implements Module {
 
     public static final Exec instance = new Exec();
 
+    private final ModuleConfigSettingHandle<ExecConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().execConfig,
+            config -> ConfigStore.instance.getConfig().execConfig = config);
+
     private Exec() {
         Events.SendChat.add(this::onSendChat);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("exec", settings, ExecConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<ExecConfig> getSettings() {
+        return settings;
     }
 
     private void onSendChat(SendChatEvent event) {
-        if (!ConfigStore.instance.getConfig().execConfig.enabled) {
+        if (!settings.get().enabled) {
             return;
         }
 
@@ -65,22 +73,5 @@ public class Exec implements Module {
 
     private void systemMessage(String message, int color) {
         Minecraft.getInstance().gui.chatListener().handleSystemMessage(Component.literal(message).withStyle(Style.EMPTY.withColor(color)), false);
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ExecConfig> {
-
-        public WebApi() {
-            super("exec", ExecConfig.class);
-        }
-
-        @Override
-        protected ExecConfig getConfig() {
-            return ConfigStore.instance.getConfig().execConfig;
-        }
-
-        @Override
-        protected void setConfig(ExecConfig config) {
-            ConfigStore.instance.getConfig().execConfig = config;
-        }
     }
 }

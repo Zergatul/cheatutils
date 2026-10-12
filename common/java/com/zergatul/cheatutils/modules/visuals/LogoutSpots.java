@@ -6,10 +6,10 @@ import com.zergatul.cheatutils.common.events.PlayerInfoUpdateType;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.LogoutSpotsConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
@@ -26,6 +26,9 @@ public class LogoutSpots implements Module {
 
     public static final LogoutSpots instance = new LogoutSpots();
 
+    private final ModuleConfigSettingHandle<LogoutSpotsConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().logoutSpots,
+            config -> ConfigStore.instance.getConfig().logoutSpots = config);
     private static final int TICKS_WINDOW = 5;
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -40,7 +43,11 @@ public class LogoutSpots implements Module {
         Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld); // move before other ESPs?
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("logout-spots", settings, LogoutSpotsConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<LogoutSpotsConfig> getSettings() {
+        return settings;
     }
 
     public List<EntityLike> getDisconnectedPlayers() {
@@ -140,7 +147,7 @@ public class LogoutSpots implements Module {
     }
 
     private LogoutSpotsConfig getConfig() {
-        return ConfigStore.instance.getConfig().logoutSpots;
+        return settings.get();
     }
 
     private static class CachedPlayerEntry {
@@ -174,23 +181,6 @@ public class LogoutSpots implements Module {
             width = player.getBbWidth();
             height = player.getBbHeight();
             entity = EntityLike.asDisconnectedPlayer(player);
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<LogoutSpotsConfig> {
-
-        public WebApi() {
-            super("logout-spots", LogoutSpotsConfig.class);
-        }
-
-        @Override
-        protected LogoutSpotsConfig getConfig() {
-            return ConfigStore.instance.getConfig().logoutSpots;
-        }
-
-        @Override
-        protected void setConfig(LogoutSpotsConfig config) {
-            ConfigStore.instance.getConfig().logoutSpots = config;
         }
     }
 }

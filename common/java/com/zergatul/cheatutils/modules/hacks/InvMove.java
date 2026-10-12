@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.InvMoveConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.mixins.common.accessors.KeyMappingAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -18,11 +18,18 @@ public class InvMove implements Module {
 
     public static final InvMove instance = new InvMove();
 
+    private final ModuleConfigSettingHandle<InvMoveConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().invMoveConfig,
+            config -> ConfigStore.instance.getConfig().invMoveConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private Input storedInputState = Input.EMPTY;
 
     private InvMove() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("inv-move", settings, InvMoveConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<InvMoveConfig> getSettings() {
+        return settings;
     }
 
     public void onOpenScreenStoreKeys(Screen screen) {
@@ -109,7 +116,7 @@ public class InvMove implements Module {
     }
 
     public boolean shouldPassEvents(Screen screen) {
-        return ConfigStore.instance.getConfig().invMoveConfig.enabled && isValidScreen(screen);
+        return settings.get().enabled && isValidScreen(screen);
     }
 
     private boolean isValidScreen(Screen screen) {
@@ -147,22 +154,5 @@ public class InvMove implements Module {
             }
         }
         return false;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<InvMoveConfig> {
-
-        public WebApi() {
-            super("inv-move", InvMoveConfig.class);
-        }
-
-        @Override
-        protected InvMoveConfig getConfig() {
-            return ConfigStore.instance.getConfig().invMoveConfig;
-        }
-
-        @Override
-        protected void setConfig(InvMoveConfig config) {
-            ConfigStore.instance.getConfig().invMoveConfig = config;
-        }
     }
 }

@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FastBreakConfig;
+import com.zergatul.cheatutils.modules.hacks.FastBreak;
 
-public class FastBreakApi extends ModuleApi<FastBreakConfig> {
+public class FastBreakApi extends SettingHandleApi<FastBreakConfig> {
 
-    @Override
-    protected FastBreakConfig getConfig() {
-        return ConfigStore.instance.getConfig().fastBreakConfig;
+    public FastBreakApi() {
+        super(FastBreak.INSTANCE.getSettings());
     }
 }

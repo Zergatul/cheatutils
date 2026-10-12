@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ServerPluginsConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
@@ -23,6 +23,9 @@ public class ServerPlugins implements Module {
 
     public static final ServerPlugins instance = new ServerPlugins();
 
+    private final SettingHandle<ServerPluginsConfig> settings = new SettingHandle<>(
+            () -> ConfigStore.instance.getConfig().serverPluginsConfig,
+            config -> ConfigStore.instance.getConfig().serverPluginsConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     //private final String completion = "/:abcdefghijklmnopqrstuvwxyz0123456789-";
     private long logInNano;
@@ -42,9 +45,13 @@ public class ServerPlugins implements Module {
         Events.ClientPlayerLoggingOut.add(this::onLogOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("server-plugins", settings, ServerPluginsConfig.class);
 
         reset();
+    }
+
+    public SettingHandle<ServerPluginsConfig> getSettings() {
+        return settings;
     }
 
     public String[] getPlugins() {
@@ -86,7 +93,7 @@ public class ServerPlugins implements Module {
             return;
         }
 
-        ServerPluginsConfig config = ConfigStore.instance.getConfig().serverPluginsConfig;
+        ServerPluginsConfig config = settings.get();
         if (System.nanoTime() - logInNano < (long) config.waitTicks * 50000000) {
             return;
         }
@@ -109,7 +116,7 @@ public class ServerPlugins implements Module {
             return;
         }
 
-        ServerPluginsConfig config = ConfigStore.instance.getConfig().serverPluginsConfig;
+        ServerPluginsConfig config = settings.get();
         if (System.nanoTime() - logInNano < (long) config.waitTicks * 50000000) {
             return;
         }
@@ -133,7 +140,7 @@ public class ServerPlugins implements Module {
                 state = State.RECEIVED_PACKET;
                 List<ClientboundCommandSuggestionsPacket.Entry> suggestions = packet.suggestions();
                 plugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
-                if (ConfigStore.instance.getConfig().serverPluginsConfig.autoPrint) {
+                if (settings.get().autoPrint) {
                     for (String plugin: plugins) {
                         mc.gui.chatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
                     }
@@ -144,7 +151,7 @@ public class ServerPlugins implements Module {
                 bukkitState = State.RECEIVED_PACKET;
                 List<ClientboundCommandSuggestionsPacket.Entry> suggestions = packet.suggestions();
                 bukkitPlugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
-                if (ConfigStore.instance.getConfig().serverPluginsConfig.autoPrint) {
+                if (settings.get().autoPrint) {
                     for (String plugin: bukkitPlugins) {
                         mc.gui.chatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
                     }
@@ -157,22 +164,5 @@ public class ServerPlugins implements Module {
         INIT,
         SENT_PACKET,
         RECEIVED_PACKET
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ServerPluginsConfig> {
-
-        public WebApi() {
-            super("server-plugins", ServerPluginsConfig.class);
-        }
-
-        @Override
-        protected ServerPluginsConfig getConfig() {
-            return ConfigStore.instance.getConfig().serverPluginsConfig;
-        }
-
-        @Override
-        protected void setConfig(ServerPluginsConfig config) {
-            ConfigStore.instance.getConfig().serverPluginsConfig = config;
-        }
     }
 }

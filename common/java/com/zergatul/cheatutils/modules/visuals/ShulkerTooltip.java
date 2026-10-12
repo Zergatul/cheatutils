@@ -5,10 +5,10 @@ import com.zergatul.cheatutils.common.events.ScreenRenderEvent;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.configs.ShulkerTooltipConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.ItemUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -36,6 +36,9 @@ public class ShulkerTooltip implements Module {
     private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_back");
     private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_front");
 
+    private final ModuleConfigSettingHandle<ShulkerTooltipConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().shulkerTooltipConfig,
+            config -> ConfigStore.instance.getConfig().shulkerTooltipConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean locked = false;
     private boolean allowTooltip = false;
@@ -52,7 +55,11 @@ public class ShulkerTooltip implements Module {
         Events.AfterScreenRendered.add(this::onAfterScreenRendered);
         Events.ContainerCalculateHoveredSlot.add(this::onCalculateHoveredSlot);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("shulker-tooltip", settings, ShulkerTooltipConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<ShulkerTooltipConfig> getSettings() {
+        return settings;
     }
 
     private void onPreRenderTooltip(PreRenderTooltipEvent event) {
@@ -69,7 +76,7 @@ public class ShulkerTooltip implements Module {
             return;
         }
 
-        ShulkerTooltipConfig config = ConfigStore.instance.getConfig().shulkerTooltipConfig;
+        ShulkerTooltipConfig config = settings.get();
         if (!config.enabled) {
             clearLocked();
             return;
@@ -249,22 +256,5 @@ public class ShulkerTooltip implements Module {
     private void clearLocked() {
         locked = false;
         lockedStack = null;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ShulkerTooltipConfig> {
-
-        public WebApi() {
-            super("shulker-tooltip", ShulkerTooltipConfig.class);
-        }
-
-        @Override
-        protected ShulkerTooltipConfig getConfig() {
-            return ConfigStore.instance.getConfig().shulkerTooltipConfig;
-        }
-
-        @Override
-        protected void setConfig(ShulkerTooltipConfig config) {
-            ConfigStore.instance.getConfig().shulkerTooltipConfig = config;
-        }
     }
 }

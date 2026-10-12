@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.configs.AutoEatConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -17,6 +17,9 @@ public class AutoEat {
 
     public static final AutoEat instance = new AutoEat();
 
+    private final ModuleConfigSettingHandle<AutoEatConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().autoEatConfig,
+            config -> ConfigStore.instance.getConfig().autoEatConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private State state;
 
@@ -24,9 +27,13 @@ public class AutoEat {
         Events.InGameTickStart.add(this::onClickTickStart);
         Events.PlayerReleaseUsingItem.add(this::onPlayerReleaseUsingItem);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-eat", settings, AutoEatConfig.class);
 
         state = State.NONE;
+    }
+
+    public ModuleConfigSettingHandle<AutoEatConfig> getSettings() {
+        return settings;
     }
 
     private void onClickTickStart() {
@@ -34,7 +41,7 @@ public class AutoEat {
             return;
         }
 
-        AutoEatConfig config = ConfigStore.instance.getConfig().autoEatConfig;
+        AutoEatConfig config = settings.get();
         if (shouldStartEating(config)) {
             ItemStack itemStack = mc.player.getOffhandItem();
             FoodProperties food = itemStack.get(DataComponents.FOOD);
@@ -92,22 +99,5 @@ public class AutoEat {
     private enum State {
         NONE,
         EATING
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoEatConfig> {
-
-        public WebApi() {
-            super("auto-eat", AutoEatConfig.class);
-        }
-
-        @Override
-        protected AutoEatConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoEatConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoEatConfig config) {
-            ConfigStore.instance.getConfig().autoEatConfig = config;
-        }
     }
 }

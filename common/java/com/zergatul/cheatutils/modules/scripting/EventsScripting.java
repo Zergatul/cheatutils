@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EventsScriptingConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.AimAssist;
@@ -17,7 +18,6 @@ import com.zergatul.cheatutils.scripting.modules.PlayerMessageSendingEvent;
 import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
 import com.zergatul.cheatutils.scripting.types.PlayerInfoWrapper;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
@@ -33,6 +33,9 @@ public class EventsScripting implements Module {
 
     public static final EventsScripting instance = new EventsScripting();
 
+    private final ModuleConfigSettingHandle<EventsScriptingConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().eventsScriptingConfig,
+            config -> ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = config.enabled);
     private final Minecraft mc = Minecraft.getInstance();
     private volatile ScriptActivation<Runnable> script;
     private final ConcurrentLinkedQueue<ScriptActivation<Runnable>> pendingFailures = new ConcurrentLinkedQueue<>();
@@ -67,7 +70,7 @@ public class EventsScripting implements Module {
         });
 
         Events.ClientTickEnd.add(() -> {
-            if (isScriptActive() && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
+            if (isScriptActive() && settings.get().enabled) {
                 if (mc.level == null && mc.player == null) {
                     for (Runnable handler : onMenuTickEnd) {
                         if (!runCallback("menu tick", handler)) return;
@@ -127,7 +130,7 @@ public class EventsScripting implements Module {
         });
 
         Events.ClientPlayerLoggingIn.add(connection -> {
-            if (isScriptActive() && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled && !onJoinServer.isEmpty()) {
+            if (isScriptActive() && settings.get().enabled && !onJoinServer.isEmpty()) {
                 String address = connection == null ? "" : connection.getRemoteAddress().toString();
                 IntegratedServer integratedServer = mc.getSingleplayerServer();
                 ServerInformation info = new ServerInformation(address, integratedServer);
@@ -160,8 +163,12 @@ public class EventsScripting implements Module {
 
         });
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("events-scripting", settings, EventsScriptingConfig.class);
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
+    }
+
+    public ModuleConfigSettingHandle<EventsScriptingConfig> getSettings() {
+        return settings;
     }
 
     public void setScript(Runnable runnable) {
@@ -352,24 +359,7 @@ public class EventsScripting implements Module {
     }
 
     private boolean canTrigger() {
-        return isScriptActive() && mc.player != null && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<EventsScriptingConfig> {
-
-        public WebApi() {
-            super("events-scripting", EventsScriptingConfig.class);
-        }
-
-        @Override
-        protected EventsScriptingConfig getConfig() {
-            return ConfigStore.instance.getConfig().eventsScriptingConfig;
-        }
-
-        @Override
-        protected void setConfig(EventsScriptingConfig config) {
-            ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = config.enabled;
-        }
+        return isScriptActive() && mc.player != null && settings.get().enabled;
     }
 
     private static final class CodeWebApi extends CodeWebApiBase {

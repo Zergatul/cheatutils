@@ -3,10 +3,10 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.AutoTotemConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -18,12 +18,19 @@ public class AutoTotem implements Module {
 
     public static final AutoTotem instance = new AutoTotem();
 
+    private final ModuleConfigSettingHandle<AutoTotemConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().autoTotemConfig,
+            config -> ConfigStore.instance.getConfig().autoTotemConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoTotem() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-totem", settings, AutoTotemConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<AutoTotemConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
@@ -31,7 +38,7 @@ public class AutoTotem implements Module {
             return;
         }
 
-        AutoTotemConfig config = ConfigStore.instance.getConfig().autoTotemConfig;
+        AutoTotemConfig config = settings.get();
         if (!config.enabled) {
             return;
         }
@@ -55,23 +62,6 @@ public class AutoTotem implements Module {
             if (totemSlot >= 0) {
                 InventoryUtils.moveItemStack(new InventorySlot(totemSlot), new InventorySlot(EquipmentSlot.OFFHAND));
             }
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoTotemConfig> {
-
-        public WebApi() {
-            super("auto-totem", AutoTotemConfig.class);
-        }
-
-        @Override
-        protected AutoTotemConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoTotemConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoTotemConfig config) {
-            ConfigStore.instance.getConfig().autoTotemConfig = config;
         }
     }
 }

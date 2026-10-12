@@ -4,10 +4,10 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.Config;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.EndCityChunksConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.Position3dColorRenderer;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
@@ -21,12 +21,19 @@ public class EndCityChunks {
 
     public static final EndCityChunks instance = new EndCityChunks();
 
+    private final ModuleConfigSettingHandle<EndCityChunksConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().endCityChunksConfig,
+            config -> ConfigStore.instance.getConfig().endCityChunksConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
 
     private EndCityChunks() {
         Events.AfterRenderWorld.add(this::render);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("end-city-chunks", settings, EndCityChunksConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<EndCityChunksConfig> getSettings() {
+        return settings;
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -74,22 +81,5 @@ public class EndCityChunks {
         }
 
         renderer.end(event.getMvp());
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<EndCityChunksConfig> {
-
-        public WebApi() {
-            super("end-city-chunks", EndCityChunksConfig.class);
-        }
-
-        @Override
-        protected EndCityChunksConfig getConfig() {
-            return ConfigStore.instance.getConfig().endCityChunksConfig;
-        }
-
-        @Override
-        protected void setConfig(EndCityChunksConfig config) {
-            ConfigStore.instance.getConfig().endCityChunksConfig = config;
-        }
     }
 }

@@ -3,12 +3,12 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.AutoBucketConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.VoxelShapeUtils;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -39,6 +39,9 @@ public class AutoBucket implements Module {
 
     public static final AutoBucket instance = new AutoBucket();
 
+    private final ModuleConfigSettingHandle<AutoBucketConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().autoBucketConfig,
+            config -> ConfigStore.instance.getConfig().autoBucketConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private final NoFallMethod[] methods = new NoFallMethod[] {
             new WaterBucketMethod(),
@@ -57,14 +60,18 @@ public class AutoBucket implements Module {
         Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.RawBlockUpdated.add(this::onBlockUpdated);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-bucket", settings, AutoBucketConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<AutoBucketConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
         if (mc.player == null || mc.level == null) {
             return;
         }
-        AutoBucketConfig config = ConfigStore.instance.getConfig().autoBucketConfig;
+        AutoBucketConfig config = settings.get();
         if (!config.enabled) {
             return;
         }
@@ -538,23 +545,6 @@ public class AutoBucket implements Module {
         @Override
         protected BlockItem getItem() {
             return (BlockItem) Items.HAY_BLOCK;
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoBucketConfig> {
-
-        public WebApi() {
-            super("auto-bucket", AutoBucketConfig.class);
-        }
-
-        @Override
-        protected AutoBucketConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoBucketConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoBucketConfig config) {
-            ConfigStore.instance.getConfig().autoBucketConfig = config;
         }
     }
 }

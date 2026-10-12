@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FullBrightConfig;
+import com.zergatul.cheatutils.modules.visuals.FullBright;
 
-public class FullBrightApi extends ModuleApi<FullBrightConfig> {
+public class FullBrightApi extends SettingHandleApi<FullBrightConfig> {
 
-    @Override
-    protected FullBrightConfig getConfig() {
-        return ConfigStore.instance.getConfig().fullBrightConfig;
+    public FullBrightApi() {
+        super(FullBright.instance.getSettings());
     }
 }

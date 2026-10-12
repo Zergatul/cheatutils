@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.VillagerRollerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
@@ -14,7 +15,6 @@ import com.zergatul.cheatutils.utils.EntityInteraction;
 import com.zergatul.cheatutils.utils.EntityInteractionPlan;
 import com.zergatul.cheatutils.utils.EntityInteractionResult;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -45,6 +45,9 @@ public class VillagerRoller implements Module {
 
     public static final VillagerRoller instance = new VillagerRoller();
 
+    private final SettingHandle<VillagerRollerConfig> settings = new SettingHandle<>(
+            () -> ConfigStore.instance.getConfig().villagerRollerConfig,
+            config -> config.copyTo(ConfigStore.instance.getConfig().villagerRollerConfig));
     private final Minecraft mc = Minecraft.getInstance();
     private boolean active;
     private State state = State.STOPPED;
@@ -74,9 +77,13 @@ public class VillagerRoller implements Module {
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
 
-        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register("villager-roller", settings, VillagerRollerConfig.class);
         WebApiRegistry.INSTANCE.register(new StatusWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
+    }
+
+    public SettingHandle<VillagerRollerConfig> getSettings() {
+        return settings;
     }
 
     public boolean isActive() {
@@ -450,7 +457,7 @@ public class VillagerRoller implements Module {
     }
 
     private VillagerRollerConfig getConfig() {
-        return ConfigStore.instance.getConfig().villagerRollerConfig;
+        return settings.get();
     }
 
     private enum State {
@@ -466,24 +473,6 @@ public class VillagerRoller implements Module {
         START_BREAKING_LECTERN,
         BREAKING_LECTERN_PROGRESS,
         WAITING_FOR_LECTERN_BREAK
-    }
-
-    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<VillagerRollerConfig> {
-
-        public ConfigWebApi() {
-            super("villager-roller", VillagerRollerConfig.class);
-        }
-
-        @Override
-        protected VillagerRollerConfig getConfig() {
-            return ConfigStore.instance.getConfig().villagerRollerConfig;
-        }
-
-        @Override
-        protected void setConfig(VillagerRollerConfig config) {
-            VillagerRollerConfig current = ConfigStore.instance.getConfig().villagerRollerConfig;
-            config.copyTo(current);
-        }
     }
 
     private final class StatusWebApi extends WebApiBase {

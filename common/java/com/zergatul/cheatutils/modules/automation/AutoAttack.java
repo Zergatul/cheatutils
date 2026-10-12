@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.AutoAttackConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.HitResult;
@@ -14,13 +14,20 @@ public class AutoAttack implements Module {
 
     public static final AutoAttack instance = new AutoAttack();
 
+    private final ModuleConfigSettingHandle<AutoAttackConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().autoAttackConfig,
+            config -> ConfigStore.instance.getConfig().autoAttackConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private int nextExtraTicks = Integer.MIN_VALUE;
 
     private AutoAttack() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-attack", settings, AutoAttackConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<AutoAttackConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
@@ -28,7 +35,7 @@ public class AutoAttack implements Module {
             return;
         }
 
-        AutoAttackConfig config = ConfigStore.instance.getConfig().autoAttackConfig;
+        AutoAttackConfig config = settings.get();
         if (!config.enabled) {
             return;
         }
@@ -63,23 +70,6 @@ public class AutoAttack implements Module {
     private void calculateNextExtraTicksIfRequired(AutoAttackConfig config) {
         if (nextExtraTicks == Integer.MIN_VALUE) {
             nextExtraTicks = config.extraTicksMin + (int) Math.floor(Math.random() * (config.extraTicksMax - config.extraTicksMin + 1));
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoAttackConfig> {
-
-        public WebApi() {
-            super("auto-attack", AutoAttackConfig.class);
-        }
-
-        @Override
-        protected AutoAttackConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoAttackConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoAttackConfig config) {
-            ConfigStore.instance.getConfig().autoAttackConfig = config;
         }
     }
 }

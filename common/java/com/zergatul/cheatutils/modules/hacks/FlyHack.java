@@ -3,10 +3,10 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.FlyHackConfig;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -16,6 +16,9 @@ public class FlyHack implements Module {
 
     public static final FlyHack instance = new FlyHack();
 
+    private final ModuleConfigSettingHandle<FlyHackConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().flyHackConfig,
+            config -> ConfigStore.instance.getConfig().flyHackConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean abilitiesOverridden;
     private boolean oldFlying;
@@ -29,7 +32,11 @@ public class FlyHack implements Module {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.InGameTickEnd.add(this::onTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("fly-hack", settings, FlyHackConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<FlyHackConfig> getSettings() {
+        return settings;
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
@@ -42,7 +49,7 @@ public class FlyHack implements Module {
                 }
             }
 
-            FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
+            FlyHackConfig config = settings.get();
             if (config.enabled) {
                 ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(config.onGroundFlag);
             }
@@ -52,7 +59,7 @@ public class FlyHack implements Module {
     private void onBeforePlayerAiStep() {
         assert mc.player != null;
 
-        FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
+        FlyHackConfig config = settings.get();
         if (config.enabled) {
             LocalPlayer player = mc.player;
 
@@ -85,7 +92,7 @@ public class FlyHack implements Module {
             antiKickPacket = null;
         }
 
-        FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
+        FlyHackConfig config = settings.get();
         if (!config.enabled || !config.vanillaAntiFlyBypass) {
             tickCounter = 0;
             return;
@@ -106,23 +113,6 @@ public class FlyHack implements Module {
                     config.onGroundFlag,
                     false);
             NetworkPacketsController.instance.sendPacket(antiKickPacket);
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<FlyHackConfig> {
-
-        public WebApi() {
-            super("fly-hack", FlyHackConfig.class);
-        }
-
-        @Override
-        protected FlyHackConfig getConfig() {
-            return ConfigStore.instance.getConfig().flyHackConfig;
-        }
-
-        @Override
-        protected void setConfig(FlyHackConfig config) {
-            ConfigStore.instance.getConfig().flyHackConfig = config;
         }
     }
 }

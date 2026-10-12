@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.modules.hacks.Movement;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
 
 import java.util.function.Consumer;
@@ -38,9 +38,7 @@ public class MovementApi {
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleOverrideJumpHeight() {
-        var config = getConfig();
-        config.scaleJumpHeight = !config.scaleJumpHeight;
-        ConfigStore.instance.requestWrite();
+        update(c -> c.scaleJumpHeight = !c.scaleJumpHeight);
     }
 
     @ApiVisibility(ApiType.UPDATE)
@@ -48,11 +46,11 @@ public class MovementApi {
         update(c -> c.scaleInputVector = !c.scaleInputVector);
     }
 
-    private void update(Consumer<MovementHackConfig> update) {
-        ConfigStore.updateFromApi(c -> c.movementHackConfig, update);
+    private void update(Consumer<MovementHackConfig> consumer) {
+        Movement.INSTANCE.getSettings().update(consumer);
     }
 
     private MovementHackConfig getConfig() {
-        return ConfigStore.instance.getConfig().movementHackConfig;
+        return Movement.INSTANCE.getSettings().get();
     }
 }

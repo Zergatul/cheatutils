@@ -42,6 +42,12 @@ public class SettingHandle<T> {
         apply(get(), false);
     }
 
+    public void update(Consumer<T> consumer) {
+        T config = get();
+        consumer.accept(config);
+        set(config);
+    }
+
     protected void apply(T config, boolean persist) {
         Objects.requireNonNull(config);
         if (config instanceof Sanitizable sanitizable) {

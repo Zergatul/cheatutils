@@ -4,8 +4,8 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.configs.AutoCriticalsConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
@@ -16,16 +16,23 @@ public class AutoCriticals {
 
     public static final AutoCriticals instance = new AutoCriticals();
 
+    private final ModuleConfigSettingHandle<AutoCriticalsConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().autoCriticalsConfig,
+            config -> ConfigStore.instance.getConfig().autoCriticalsConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoCriticals() {
         Events.BeforeAttack.add(this::onBeforeAttack, -1);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-criticals", settings, AutoCriticalsConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<AutoCriticalsConfig> getSettings() {
+        return settings;
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
-        AutoCriticalsConfig config = ConfigStore.instance.getConfig().autoCriticalsConfig;
+        AutoCriticalsConfig config = settings.get();
 
         if (config.enabled) {
             if (mc.level == null) {
@@ -61,23 +68,6 @@ public class AutoCriticals {
             NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
             NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
             NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoCriticalsConfig> {
-
-        public WebApi() {
-            super("auto-criticals", AutoCriticalsConfig.class);
-        }
-
-        @Override
-        protected AutoCriticalsConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoCriticalsConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoCriticalsConfig config) {
-            ConfigStore.instance.getConfig().autoCriticalsConfig = config;
         }
     }
 }

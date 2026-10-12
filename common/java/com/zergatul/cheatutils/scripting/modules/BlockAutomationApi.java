@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.configs.BlockAutomationConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
@@ -16,7 +15,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 
 @SuppressWarnings("unused")
-public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
+public class BlockAutomationApi extends SettingHandleApi<BlockAutomationConfig> {
+
+    public BlockAutomationApi() {
+        super(BlockAutomation.instance.getSettings());
+    }
 
     @MethodDescription("""
             For debugging
@@ -158,10 +161,5 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlockAutoTool() {
         BlockAutomation.instance.breakBlockAutoTool();
-    }
-
-    @Override
-    protected BlockAutomationConfig getConfig() {
-        return ConfigStore.instance.getConfig().blockAutomationConfig;
     }
 }

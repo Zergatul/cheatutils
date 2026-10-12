@@ -5,13 +5,13 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.collections.LinesIterable;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.configs.ProjectilePathConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.CrossbowItemAccessor;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.cheatutils.utils.ServerBehavior;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -32,6 +32,9 @@ public class ProjectilePath {
 
     public static final ProjectilePath instance = new ProjectilePath();
 
+    private final ModuleConfigSettingHandle<ProjectilePathConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().projectilePathConfig,
+            config -> ConfigStore.instance.getConfig().projectilePathConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<ThrowableItemEntry> entries = Lists.newArrayList(
             new EnderPearlEntry(),
@@ -49,7 +52,11 @@ public class ProjectilePath {
     private ProjectilePath() {
         Events.AfterRenderWorld.add(this::render);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("projectile-path", settings, ProjectilePathConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<ProjectilePathConfig> getSettings() {
+        return settings;
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -213,7 +220,7 @@ public class ProjectilePath {
     }
 
     private ProjectilePathConfig getConfig() {
-        return ConfigStore.instance.getConfig().projectilePathConfig;
+        return settings.get();
     }
 
     private List<Vec3> calculatePath(ThrowableItemEntry entry, Vec3 from, Vec3 speed, Vec3 shift) {
@@ -501,23 +508,6 @@ public class ProjectilePath {
         public TraceRecord(Vec3 position, long time) {
             this.position = position;
             this.time = time;
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ProjectilePathConfig> {
-
-        public WebApi() {
-            super("projectile-path", ProjectilePathConfig.class);
-        }
-
-        @Override
-        protected ProjectilePathConfig getConfig() {
-            return ConfigStore.instance.getConfig().projectilePathConfig;
-        }
-
-        @Override
-        protected void setConfig(ProjectilePathConfig config) {
-            ConfigStore.instance.getConfig().projectilePathConfig = config;
         }
     }
 }

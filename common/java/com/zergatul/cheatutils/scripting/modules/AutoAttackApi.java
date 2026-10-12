@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.AutoAttackConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.automation.AutoAttack;
 
-public class AutoAttackApi extends ModuleApi<AutoAttackConfig> {
+public class AutoAttackApi extends SettingHandleApi<AutoAttackConfig> {
 
-    @Override
-    protected AutoAttackConfig getConfig() {
-        return ConfigStore.instance.getConfig().autoAttackConfig;
+    public AutoAttackApi() {
+        super(AutoAttack.instance.getSettings());
     }
 }

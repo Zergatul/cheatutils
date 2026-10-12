@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.modules.automation.AutoDrop;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.configs.AutoDropConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
 import com.zergatul.scripting.MethodDescription;
@@ -23,7 +23,7 @@ public class AutoDropApi {
     public void dropItems() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
-            AutoDropConfig config = ConfigStore.instance.getConfig().autoDropConfig;
+            AutoDropConfig config = AutoDrop.INSTANCE.getSettings().get();
             List<InventorySlot> slots = new ArrayList<>();
             for (int i = 0; i < 36; i++) {
                 ItemStack itemStack = mc.player.getInventory().getItem(i);

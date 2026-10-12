@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.BoatHackConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.hacks.BoatHack;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.scripting.MethodDescription;
@@ -13,7 +12,7 @@ public class BoatHackApi {
             If Boat Fly enabled
             """)
     public boolean isFlyEnabled() {
-        return getConfig().fly;
+        return BoatHack.INSTANCE.getSettings().get().fly;
     }
 
     @MethodDescription("""
@@ -21,12 +20,6 @@ public class BoatHackApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggleFly() {
-        BoatHackConfig config = getConfig();
-        config.fly = !config.fly;
-        ConfigStore.instance.requestWrite();
-    }
-
-    private BoatHackConfig getConfig() {
-        return ConfigStore.instance.getConfig().boatHackConfig;
+        BoatHack.INSTANCE.getSettings().update(c -> c.fly = !c.fly);
     }
 }

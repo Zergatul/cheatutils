@@ -2,11 +2,11 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.configs.ScaffoldConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -32,20 +32,27 @@ public class Scaffold implements Module {
 
     public static final Scaffold instance = new Scaffold();
 
+    private final ModuleConfigSettingHandle<ScaffoldConfig> settings = new ModuleConfigSettingHandle<>(
+            () -> ConfigStore.instance.getConfig().scaffoldConfig,
+            config -> ConfigStore.instance.getConfig().scaffoldConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<BlockPos> list = new ArrayList<>();
 
     private Scaffold() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("scaffold", settings, ScaffoldConfig.class);
+    }
+
+    public ModuleConfigSettingHandle<ScaffoldConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
         if (mc.player == null || mc.level == null) {
             return;
         }
-        ScaffoldConfig config = ConfigStore.instance.getConfig().scaffoldConfig;
+        ScaffoldConfig config = settings.get();
         if (config.enabled) {
             double x = mc.player.getX();
             double y = mc.player.getY();
@@ -193,22 +200,5 @@ public class Scaffold implements Module {
             return false;
         }
         return true;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ScaffoldConfig> {
-
-        public WebApi() {
-            super("scaffold", ScaffoldConfig.class);
-        }
-
-        @Override
-        protected ScaffoldConfig getConfig() {
-            return ConfigStore.instance.getConfig().scaffoldConfig;
-        }
-
-        @Override
-        protected void setConfig(ScaffoldConfig config) {
-            ConfigStore.instance.getConfig().scaffoldConfig = config;
-        }
     }
 }

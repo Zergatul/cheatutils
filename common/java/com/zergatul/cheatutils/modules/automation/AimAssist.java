@@ -5,12 +5,12 @@ import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.configs.AimAssistConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.ServerBehavior;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -36,6 +36,9 @@ public class AimAssist implements Module {
 
     public static final AimAssist instance = new AimAssist();
 
+    private final SettingHandle<AimAssistConfig> settings = new SettingHandle<>(
+            () -> ConfigStore.instance.getConfig().aimAssist,
+            config -> ConfigStore.instance.getConfig().aimAssist = config);
     private final Minecraft mc = Minecraft.getInstance();
 
     private @Nullable TargetPredicate script;
@@ -49,7 +52,11 @@ public class AimAssist implements Module {
         Events.RenderTickStart.add(this::onRenderTickStart);
         Events.PlayerTurnByMouse.add(this::onPlayerTurnByMouse);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("aim-assist", settings, AimAssistConfig.class);
+    }
+
+    public SettingHandle<AimAssistConfig> getSettings() {
+        return settings;
     }
 
     public void clearTargetPredicate() {
@@ -81,7 +88,7 @@ public class AimAssist implements Module {
     private void onTickEnd() {
         bowAssistTarget = null;
 
-        if (!ConfigStore.instance.getConfig().aimAssist.bowAssist) {
+        if (!settings.get().bowAssist) {
             return;
         }
         if (mc.player == null || mc.level == null) {
@@ -113,7 +120,7 @@ public class AimAssist implements Module {
     }
 
     private void onPlayerReleaseUsingItem(PlayerReleaseUsingItemEvent event) {
-        if (!ConfigStore.instance.getConfig().aimAssist.bowAssist) {
+        if (!settings.get().bowAssist) {
             return;
         }
         if (mc.player == null || mc.level == null || bowAssistTarget == null) {
@@ -151,7 +158,7 @@ public class AimAssist implements Module {
         if (targetLockEntity != null) {
             AABB box = targetLockEntity.getDimensions(targetLockEntity.getPose()).makeBoundingBox(targetLockEntity.getPosition(partialTicks));
 
-            AimAssistConfig config = ConfigStore.instance.getConfig().aimAssist;
+            AimAssistConfig config = settings.get();
             Vec3 target;
             if (AimAssistConfig.AIM_ASSIST_HEAD.equals(config.aimAssistMode)) {
                 target = new Vec3(Mth.lerp(0.5, box.minX, box.maxX), box.maxY, Mth.lerp(0.5, box.minZ, box.maxZ));
@@ -354,23 +361,6 @@ public class AimAssist implements Module {
             }
 
             return lineVector.cross(pointVec1).lengthSqr() / lineVector.lengthSqr();
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AimAssistConfig> {
-
-        public WebApi() {
-            super("aim-assist", AimAssistConfig.class);
-        }
-
-        @Override
-        protected AimAssistConfig getConfig() {
-            return ConfigStore.instance.getConfig().aimAssist;
-        }
-
-        @Override
-        protected void setConfig(AimAssistConfig config) {
-            ConfigStore.instance.getConfig().aimAssist = config;
         }
     }
 }

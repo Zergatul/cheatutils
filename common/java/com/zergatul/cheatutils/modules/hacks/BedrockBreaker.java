@@ -6,12 +6,12 @@ import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.BedrockBreakerConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
@@ -49,6 +49,9 @@ public class BedrockBreaker implements Module {
 
     public static final BedrockBreaker instance = new BedrockBreaker();
 
+    private final SettingHandle<BedrockBreakerConfig> settings = new SettingHandle<>(
+            () -> ConfigStore.instance.getConfig().bedrockBreakerConfig,
+            config -> ConfigStore.instance.getConfig().bedrockBreakerConfig = config);
     private final Minecraft mc = Minecraft.getInstance();
     private final Queue<BlockPos> queue = new ArrayDeque<>();
     private BlockPos bedrockPos;
@@ -64,7 +67,11 @@ public class BedrockBreaker implements Module {
     private BedrockBreaker() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("bedrock-breaker", settings, BedrockBreakerConfig.class);
+    }
+
+    public SettingHandle<BedrockBreakerConfig> getSettings() {
+        return settings;
     }
 
     public void process() {
@@ -106,7 +113,7 @@ public class BedrockBreaker implements Module {
             return;
         }
 
-        BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
+        BedrockBreakerConfig config = settings.get();
 
         //Predicate<BlockPos> condition = pos -> Math.abs(pos.getX()) <= 100 && Math.abs(pos.getZ()) <= 100;
         Predicate<BlockPos> condition = pos -> true;
@@ -343,7 +350,7 @@ public class BedrockBreaker implements Module {
         assert mc.level != null;
 
         if (mc.level.getBlockState(bedrockPos).isAir() && !mc.level.getBlockState(pistonPos.relative(pistonDirection)).is(Blocks.MOVING_PISTON)) {
-            BedrockBreakerConfig config = ConfigStore.instance.getConfig().bedrockBreakerConfig;
+            BedrockBreakerConfig config = settings.get();
             if (config.replace) {
                 Identifier id = Identifier.tryParse(config.replaceBlockId);
                 if (id == null || id.equals(BuiltInRegistries.ITEM.getDefaultKey())) {
@@ -572,7 +579,7 @@ public class BedrockBreaker implements Module {
     }
 
     private boolean isValidBlock(BlockPos pos) {
-        return isValidBlock(ConfigStore.instance.getConfig().bedrockBreakerConfig, pos);
+        return isValidBlock(settings.get(), pos);
     }
 
     private boolean isValidBlock(BedrockBreakerConfig config, BlockPos pos) {
@@ -691,23 +698,6 @@ public class BedrockBreaker implements Module {
 
         public void handle(BedrockBreaker instance) {
             action.accept(instance);
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<BedrockBreakerConfig> {
-
-        public WebApi() {
-            super("bedrock-breaker", BedrockBreakerConfig.class);
-        }
-
-        @Override
-        protected BedrockBreakerConfig getConfig() {
-            return ConfigStore.instance.getConfig().bedrockBreakerConfig;
-        }
-
-        @Override
-        protected void setConfig(BedrockBreakerConfig config) {
-            ConfigStore.instance.getConfig().bedrockBreakerConfig = config;
         }
     }
 }

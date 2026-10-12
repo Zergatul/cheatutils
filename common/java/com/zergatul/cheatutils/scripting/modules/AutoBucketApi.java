@@ -1,12 +1,11 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.configs.AutoBucketConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.automation.AutoBucket;
 
-public class AutoBucketApi extends ModuleApi<AutoBucketConfig> {
+public class AutoBucketApi extends SettingHandleApi<AutoBucketConfig> {
 
-    @Override
-    protected AutoBucketConfig getConfig() {
-        return ConfigStore.instance.getConfig().autoBucketConfig;
+    public AutoBucketApi() {
+        super(AutoBucket.instance.getSettings());
     }
 }
