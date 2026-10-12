@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.web;
 
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.mcp.McpHttpHandler;
 import com.zergatul.cheatutils.modules.utilities.Core;
 import com.zergatul.cheatutils.scripting.monaco.Integration;

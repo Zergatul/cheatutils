@@ -20,7 +20,7 @@ import java.util.List;
 
 public class BetterStatusEffects implements Module {
 
-    public static final BetterStatusEffects instance = new BetterStatusEffects();
+    public static final BetterStatusEffects INSTANCE = new BetterStatusEffects();
 
     private final ModuleConfigSettingHandle<StatusEffectsConfig> settings = new ModuleConfigSettingHandle<>(
             () -> ConfigStore.instance.getConfig().statusEffectsConfig,

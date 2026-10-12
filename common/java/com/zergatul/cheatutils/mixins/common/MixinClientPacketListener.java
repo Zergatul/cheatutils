@@ -2,7 +2,8 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.ChunksConfig;
+import com.zergatul.cheatutils.modules.visuals.Chunks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
@@ -27,7 +28,8 @@ public abstract class MixinClientPacketListener {
             argsOnly = true,
             ordinal = 0)
     private ClientboundLoginPacket onModifyLoginPacket(ClientboundLoginPacket packet) {
-        if (ConfigStore.instance.getConfig().chunksConfig.ignoreServerViewDistance) {
+        ChunksConfig config = Chunks.INSTANCE.getSettings().get();
+        if (config.ignoreServerViewDistance) {
             Minecraft mc = Minecraft.getInstance();
             return new ClientboundLoginPacket(
                     packet.playerId(),
@@ -53,7 +55,8 @@ public abstract class MixinClientPacketListener {
             argsOnly = true,
             ordinal = 0)
     private ClientboundSetChunkCacheRadiusPacket onModifySetChunkCacheRadiusPacket(ClientboundSetChunkCacheRadiusPacket packet) {
-        if (ConfigStore.instance.getConfig().chunksConfig.ignoreServerViewDistance) {
+        ChunksConfig config = Chunks.INSTANCE.getSettings().get();
+        if (config.ignoreServerViewDistance) {
             Minecraft mc = Minecraft.getInstance();
             return new ClientboundSetChunkCacheRadiusPacket(mc.options.renderDistance().get());
         } else {

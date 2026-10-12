@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.configs.BoatHackConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.hacks.BoatHack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -40,7 +40,7 @@ public abstract class MixinAbstractBoat extends Entity {
             return;
         }
 
-        BoatHackConfig config = ConfigStore.instance.getConfig().boatHackConfig;
+        BoatHackConfig config = BoatHack.INSTANCE.getSettings().get();
         if (config.fly) {
             this.inputUp = false;
             this.inputLeft = false;
@@ -56,7 +56,7 @@ public abstract class MixinAbstractBoat extends Entity {
             return;
         }
 
-        BoatHackConfig config = ConfigStore.instance.getConfig().boatHackConfig;
+        BoatHackConfig config = BoatHack.INSTANCE.getSettings().get();
         if (!config.fly) {
             super.move(type, speed);
             return;

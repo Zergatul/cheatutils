@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.StatusEffectsConfig;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 import com.zergatul.cheatutils.modules.visuals.BetterStatusEffects;
 import net.minecraft.client.DeltaTracker;
@@ -41,7 +41,8 @@ public abstract class MixinHud {
 
     @Inject(at = @At("HEAD"), method = "extractEffects", cancellable = true)
     private void onExtractEffects(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo info) {
-        if (ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
+        StatusEffectsConfig config = BetterStatusEffects.INSTANCE.getSettings().get();
+        if (config.enabled) {
             info.cancel();
         }
     }
@@ -64,7 +65,7 @@ public abstract class MixinHud {
             return;
         }
 
-        if (ConfigStore.instance.getConfig().armorOverlayConfig.enabled) {
+        if (ArmorOverlay.INSTANCE.getSettings().get().enabled) {
             int j1 = graphics.guiHeight() - 39;
             int j2 = j1 - 10;
 
@@ -83,11 +84,11 @@ public abstract class MixinHud {
                 j2 -= 10;
             }
 
-            ArmorOverlay.instance.render(graphics, player, graphics.guiWidth() / 2 + 28, j2 - 6);
+            ArmorOverlay.INSTANCE.render(graphics, player, graphics.guiWidth() / 2 + 28, j2 - 6);
         }
 
-        if (ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
-            BetterStatusEffects.instance.render(graphics, player, graphics.guiHeight() - 50 - 2 * this.minecraft.font.lineHeight - 25);
+        if (BetterStatusEffects.INSTANCE.getSettings().get().enabled) {
+            BetterStatusEffects.INSTANCE.render(graphics, player, graphics.guiHeight() - 50 - 2 * this.minecraft.font.lineHeight - 25);
         }
     }
 

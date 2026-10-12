@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.utilities.Core;
 
 import java.lang.reflect.Method;

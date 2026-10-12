@@ -137,7 +137,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
     @Inject(at = @At("HEAD"), method = "openTextEdit", cancellable = true)
     private void onOpenTextEdit(SignBlockEntity sign, SignTextSlot slot, CallbackInfo info) {
         PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
-        Privacy privacy = Privacy.instance;
+        Privacy privacy = Privacy.INSTANCE;
 
         if (config.logTranslationExploitDetails) {
             privacy.forEachExploitable(

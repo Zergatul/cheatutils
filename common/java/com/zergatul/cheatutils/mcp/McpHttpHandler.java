@@ -5,12 +5,12 @@ import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.McpServerConfig;
 import com.zergatul.cheatutils.mcp.protocol.*;
 import com.zergatul.cheatutils.mcp.resource.*;
 import com.zergatul.cheatutils.mcp.tool.*;
 import com.zergatul.cheatutils.mcp.utility.JsonRpcErrorCodes;
+import com.zergatul.cheatutils.modules.scripting.McpServer;
 import com.zergatul.cheatutils.web.HttpResponseCodes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -413,7 +413,7 @@ public class McpHttpHandler implements HttpHandler {
     }
 
     private McpServerConfig getConfig() {
-        return ConfigStore.instance.getConfig().mcpServerConfig;
+        return McpServer.INSTANCE.getSettings().get();
     }
 
     private record RpcRequest(RequestId id, String method, JsonObject parameters) {}

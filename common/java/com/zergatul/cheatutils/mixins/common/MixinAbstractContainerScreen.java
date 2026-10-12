@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.common.events.ContainerScreenRenderEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
 import com.zergatul.cheatutils.modules.automation.ContainerButtons;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

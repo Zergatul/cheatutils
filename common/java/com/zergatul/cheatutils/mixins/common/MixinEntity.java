@@ -1,11 +1,12 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ElytraTunnelConfig;
 import com.zergatul.cheatutils.configs.MovementHackConfig;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.helpers.MixinEntityHelper;
+import com.zergatul.cheatutils.modules.hacks.ElytraTunnel;
+import com.zergatul.cheatutils.modules.hacks.Movement;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -46,7 +47,7 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("TAIL"), method = "collide(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private void onCollide(Vec3 vec31, CallbackInfoReturnable<Vec3> info) {
-        ElytraTunnelConfig config = ConfigStore.instance.getConfig().elytraTunnelConfig;
+        ElytraTunnelConfig config = ElytraTunnel.INSTANCE.getSettings().get();
         if (config.enabled) {
             Entity entity = (Entity) (Object) this;
             if (entity instanceof LocalPlayer player) {
@@ -80,7 +81,7 @@ public abstract class MixinEntity {
     @Inject(at = @At("TAIL"), method = "getInputVector(Lnet/minecraft/world/phys/Vec3;FF)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private static void onGetInputVector(Vec3 vec3, float f, float f1, CallbackInfoReturnable<Vec3> info) {
         if (MixinEntityHelper.insideMoveRelativeLocalPlayer) {
-            MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
+            MovementHackConfig config = Movement.INSTANCE.getSettings().get();
             if (config.scaleInputVector) {
                 Vec3 vec = info.getReturnValue();
                 info.setReturnValue(new Vec3(vec.x * config.inputVectorFactor, vec.y, vec.z * config.inputVectorFactor));

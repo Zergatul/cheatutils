@@ -26,11 +26,12 @@ public class WorldMarkersConfig extends ModuleConfig implements Sanitizable {
 
         borderWidth = MathUtils.clamp(borderWidth, 1, 10);
         for (Entry entry : entries) {
-            entry.validate();
+            entry.sanitize();
         }
     }
 
-    public static class Entry {
+    public static class Entry implements Sanitizable {
+
         public double x;
         public double y;
         public double z;
@@ -40,7 +41,8 @@ public class WorldMarkersConfig extends ModuleConfig implements Sanitizable {
         public String name;
         public boolean enabled;
 
-        public void validate() {
+        @Override
+        public void sanitize() {
             minDistance = MathUtils.clamp(minDistance, 0, 1e6);
         }
     }

@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.chunkoverlays;
 
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
 import com.zergatul.cheatutils.modules.visuals.MiniMap;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;

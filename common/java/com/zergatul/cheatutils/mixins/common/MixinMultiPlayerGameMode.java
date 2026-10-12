@@ -6,9 +6,11 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.common.events.ContinueDestroyBlockEvent;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.AntiRespawnResetConfig;
 import com.zergatul.cheatutils.configs.FastBreakConfig;
 import com.zergatul.cheatutils.extensions.MultiPlayerGameModeExtension;
+import com.zergatul.cheatutils.modules.automation.AntiRespawnReset;
+import com.zergatul.cheatutils.modules.hacks.FastBreak;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
@@ -72,7 +74,8 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
 
     @Inject(at = @At("HEAD"), method = "useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;", cancellable = true)
     private void onUseItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult blockHit, CallbackInfoReturnable<InteractionResult> info) {
-        if (ConfigStore.instance.getConfig().antiRespawnResetConfig.enabled) {
+        AntiRespawnResetConfig config = AntiRespawnReset.INSTANCE.getSettings().get();
+        if (config.enabled) {
             BlockState state = player.level().getBlockState(blockHit.getBlockPos());
             if (state.getBlock() instanceof BedBlock) {
                 info.setReturnValue(InteractionResult.FAIL);
@@ -102,7 +105,7 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
 
     @Inject(at = @At("HEAD"), method = "continueDestroyBlock")
     private void onContinueDestroyBlock(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> info) {
-        FastBreakConfig config = ConfigStore.instance.getConfig().fastBreakConfig;
+        FastBreakConfig config = FastBreak.INSTANCE.getSettings().get();
         if (config.enabled && config.disableDestroyDelay) {
             this.destroyDelay = 0;
         }

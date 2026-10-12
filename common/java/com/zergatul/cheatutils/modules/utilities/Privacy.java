@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 
 public class Privacy implements Module {
 
-    public static final Privacy instance = new Privacy();
+    public static final Privacy INSTANCE = new Privacy();
 
     private final SettingHandle<PrivacyConfig> settings = new SettingHandle<>(
             () -> ConfigStore.instance.getConfig().privacyConfig,

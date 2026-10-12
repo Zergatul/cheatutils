@@ -4,8 +4,7 @@ import com.zergatul.cheatutils.configs.ArmorOverlayConfig;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 
 public class ArmorOverlayApi extends SettingHandleApi<ArmorOverlayConfig> {
-
     public ArmorOverlayApi() {
-        super(ArmorOverlay.instance.getSettings());
+        super(ArmorOverlay.INSTANCE.getSettings());
     }
 }

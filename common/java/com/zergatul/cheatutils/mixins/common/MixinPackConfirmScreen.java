@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.PrivacyConfig;
+import com.zergatul.cheatutils.modules.utilities.Privacy;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.network.chat.Component;
@@ -25,7 +25,7 @@ public abstract class MixinPackConfirmScreen {
             // this is because constructor has synthetic parameter as this class is inner class, and it receives outer-class instance
             @Local(name = "requests") List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> requests
     ) {
-        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
+        PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
         if (!config.displayResourcePackUrls) {
             return original;
         }

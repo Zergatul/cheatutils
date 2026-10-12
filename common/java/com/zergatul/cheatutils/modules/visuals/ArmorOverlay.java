@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class ArmorOverlay {
 
-    public static final ArmorOverlay instance = new ArmorOverlay();
+    public static final ArmorOverlay INSTANCE = new ArmorOverlay();
 
     private final ModuleConfigSettingHandle<ArmorOverlayConfig> settings = new ModuleConfigSettingHandle<>(
             () -> ConfigStore.instance.getConfig().armorOverlayConfig,

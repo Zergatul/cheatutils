@@ -40,7 +40,6 @@ public class Modules {
         register(ElytraBounce.instance);
         register(ParkourAssist.instance);
 
-        register(LockInputsController.instance);
         register(AutoCraft.instance);
         register(BlockEsp.instance);
         register(ProjectilePath.instance);
@@ -65,7 +64,7 @@ public class Modules {
         register(AdvancedTooltips.instance);
         register(Zoom.instance);
         register(ShulkerTooltip.instance);
-        register(ArmorOverlay.instance);
+        register(ArmorOverlay.INSTANCE);
         register(Fog.instance);
         register(AutoAttack.instance);
 
@@ -88,7 +87,7 @@ public class Modules {
         register(FullBright.instance);
         register(InvMove.instance);
         register(HitboxSize.instance);
-        register(BetterStatusEffects.instance);
+        register(BetterStatusEffects.INSTANCE);
         register(BoatHack.INSTANCE);
         register(Blink.instance);
         register(PigHack.INSTANCE);
@@ -117,7 +116,7 @@ public class Modules {
 
         register(EventsScripting.instance);
 
-        register(Privacy.instance);
+        register(Privacy.INSTANCE);
 
         register(ClientTickEndExecutor.instance);
         register(InGameTickEndExecutor.instance);

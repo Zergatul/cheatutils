@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.PigHackConfig;
+import com.zergatul.cheatutils.modules.hacks.PigHack;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.pig.Pig;
@@ -16,7 +16,7 @@ public abstract class MixinPig {
 
     @Inject(at = @At("HEAD"), method = "getControllingPassenger()Lnet/minecraft/world/entity/LivingEntity;", cancellable = true)
     private void onGetControllingPassenger(CallbackInfoReturnable<LivingEntity> info) {
-        PigHackConfig config = ConfigStore.instance.getConfig().pigHackConfig;
+        PigHackConfig config = PigHack.INSTANCE.getSettings().get();
         if (config.enabled && config.allowRideWithoutCarrot) {
             var pig = (Pig) (Object) this;
             if (pig.level().isClientSide()) {
@@ -32,7 +32,7 @@ public abstract class MixinPig {
 
     @Inject(at = @At("HEAD"), method = "getRiddenSpeed(Lnet/minecraft/world/entity/player/Player;)F", cancellable = true)
     private void onGetRiddenSpeed(Player controller, CallbackInfoReturnable<Float> info) {
-        PigHackConfig config = ConfigStore.instance.getConfig().pigHackConfig;
+        PigHackConfig config = PigHack.INSTANCE.getSettings().get();
         if (config.enabled && config.overrideSteeringSpeed) {
             var pig = (Pig) (Object) this;
             if (pig.level().isClientSide()) {

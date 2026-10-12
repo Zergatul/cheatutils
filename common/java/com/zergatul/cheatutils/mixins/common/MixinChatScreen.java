@@ -1,7 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.configs.ChatUtilitiesConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.utilities.ChatUtilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;

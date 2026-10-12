@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.PrivacyConfig;
 import com.zergatul.cheatutils.helpers.MixinClientPacketListenerHelper;
 import com.zergatul.cheatutils.modules.scripting.Debugging;
@@ -52,7 +51,7 @@ public class MixinClientCommonPacketListenerImpl {
             method = "handleResourcePackPush",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V", shift = At.Shift.AFTER))
     private void onBeforePushResourcePack(ClientboundResourcePackPushPacket packet, CallbackInfo info) {
-        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
+        PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
         if (!config.logResourcePackDetails) {
             return;
         }
@@ -71,8 +70,8 @@ public class MixinClientCommonPacketListenerImpl {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;send(Lnet/minecraft/network/protocol/Packet;)V"),
             cancellable = true)
     private void onPushResourcePackInvalidUrl(ClientboundResourcePackPushPacket packet, CallbackInfo info) {
-        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
-        Privacy privacy = Privacy.instance;
+        PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
+        Privacy privacy = Privacy.INSTANCE;
 
         if (!privacy.shouldDisconnectOnMaliciousResourcePack(config)) {
             return;
@@ -94,8 +93,8 @@ public class MixinClientCommonPacketListenerImpl {
             CallbackInfo info,
             @Local(name = "url") URL url
     ) {
-        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
-        Privacy privacy = Privacy.instance;
+        PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
+        Privacy privacy = Privacy.INSTANCE;
 
         if (!privacy.shouldDisconnectOnMaliciousResourcePack(config)) {
             return;
@@ -110,7 +109,7 @@ public class MixinClientCommonPacketListenerImpl {
                     .append(Component.literal(url.getHost()).withStyle(ChatFormatting.GREEN))
                     .append("\n")
                     .append(Component.literal(url.toString()).withStyle(ChatFormatting.BLUE));
-            this.connection.disconnect(Privacy.instance.createDisconnectMessage(message));
+            this.connection.disconnect(Privacy.INSTANCE.createDisconnectMessage(message));
             info.cancel();
             return;
         }
@@ -122,7 +121,7 @@ public class MixinClientCommonPacketListenerImpl {
                         .append(Component.literal(address.toString()).withStyle(ChatFormatting.GREEN))
                         .append("\n")
                         .append(Component.literal(url.toString()).withStyle(ChatFormatting.BLUE));
-                this.connection.disconnect(Privacy.instance.createDisconnectMessage(message));
+                this.connection.disconnect(Privacy.INSTANCE.createDisconnectMessage(message));
                 info.cancel();
                 return;
             }
@@ -132,7 +131,7 @@ public class MixinClientCommonPacketListenerImpl {
                         .append(Component.literal(address.toString()).withStyle(ChatFormatting.GREEN))
                         .append("\n")
                         .append(Component.literal(url.toString()).withStyle(ChatFormatting.BLUE));
-                this.connection.disconnect(Privacy.instance.createDisconnectMessage(message));
+                this.connection.disconnect(Privacy.INSTANCE.createDisconnectMessage(message));
                 info.cancel();
                 return;
             }
@@ -147,7 +146,7 @@ public class MixinClientCommonPacketListenerImpl {
             return original;
         }
 
-        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
+        PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
         return config.alwaysPromptOnResourcePack ? ServerData.ServerPackStatus.PROMPT : original;
     }
 }

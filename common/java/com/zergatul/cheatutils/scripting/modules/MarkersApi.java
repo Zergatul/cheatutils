@@ -25,22 +25,21 @@ public class MarkersApi {
             return;
         }
 
-        WorldMarkersConfig config = getConfig();
-        config.entries.removeIf(e -> e.name.equals(name));
+        WorldMarkers.INSTANCE.getSettings().update(config -> {
+            config.entries.removeIf(e -> e.name.equals(name));
 
-        WorldMarkersConfig.Entry entry = new WorldMarkersConfig.Entry();
-        entry.name = name;
-        entry.dimension = mc.level.dimension().identifier().toString();
-        entry.x = x;
-        entry.y = y;
-        entry.z = z;
-        entry.minDistance = minDistance;
-        entry.color = colorValue;
-        entry.enabled = true;
-        entry.validate();
+            WorldMarkersConfig.Entry entry = new WorldMarkersConfig.Entry();
+            entry.name = name;
+            entry.dimension = mc.level.dimension().identifier().toString();
+            entry.x = x;
+            entry.y = y;
+            entry.z = z;
+            entry.minDistance = minDistance;
+            entry.color = colorValue;
+            entry.enabled = true;
 
-        config.entries.add(entry);
-        ConfigStore.instance.requestWrite();
+            config.entries.add(entry);
+        });
     }
 
     public void removeByName(String name) {
