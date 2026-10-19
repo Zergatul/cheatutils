@@ -1,0 +1,9 @@
+*.java text eol=lf
+*.vsh  text eol=lf
+*.fsh  text eol=lf
+*.html text eol=lf
+*.js   text eol=lf
+*.css  text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf

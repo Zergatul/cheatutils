@@ -145,10 +145,6 @@ public class ConfigStore {
         SettingsRegistry.INSTANCE.reload();
 
         WebServer.instance.onConfigUpdated();
-        EntityTitle.instance.onTitleFontChange();
-        EntityTitle.instance.onEnchantmentFontChange();
-        WorldMarkers.INSTANCE.onFontChange();
-        StatusOverlay.INSTANCE.onFontChange();
 
         KeyBindings.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {

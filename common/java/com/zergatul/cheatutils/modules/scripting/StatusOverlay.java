@@ -66,6 +66,9 @@ public class StatusOverlay implements Module, FontBackendHolder {
         for (Align align : Align.values()) {
             texts.put(align, new ArrayList<>());
         }
+
+        // make fonts load on the first render event
+        fontChanged = true;
     }
 
     public ModuleConfigSettingHandle<StatusOverlayConfig> getSettings() {
@@ -75,10 +78,6 @@ public class StatusOverlay implements Module, FontBackendHolder {
     @Override
     public boolean uses(FontBackend backend) {
         return fontRenderer != null && fontRenderer.uses(backend);
-    }
-
-    public void onFontChange() {
-        ClientTickEndExecutor.instance.execute(() -> fontChanged = true);
     }
 
     public void setScript(Runnable script) {
@@ -120,7 +119,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
     private void onConfigChanged(StatusOverlayConfig prev, StatusOverlayConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
             if (!prev.font.equals(curr.font)) {
-                onFontChange();
+                fontChanged = true;
             }
         });
     }
