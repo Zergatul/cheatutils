@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.web;
 
 import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.ImmutableConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -24,6 +26,10 @@ public final class WebApiRegistry {
     public <T> void register(String route, SettingHandle<T> settings, Class<T> clazz) {
         SettingWebApi<T> api = new SettingWebApi<>(route, settings, clazz);
         register(api);
+    }
+
+    public <T extends ImmutableConfig> void register(String route, SettingHandle2<T> settings, Class<T> clazz) {
+        register(SettingWebApi.immutable(route, settings, clazz));
     }
 
     public synchronized void register(WebApiBase api) {

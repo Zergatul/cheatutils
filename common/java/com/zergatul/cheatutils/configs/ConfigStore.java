@@ -46,15 +46,23 @@ public class ConfigStore {
             .create();
 
     private final Logger logger = LogManager.getLogger(ConfigStore.class);
-    private Config config;
+    private final SettingsRegistry2<Config> settingsRegistry;
+    private final Settings settings;
     private File currentFile;
 
     private ConfigStore() {
-        setConfig(new Config());
+        Config config = new Config();
+        config.blocks.refreshMap();
+        settingsRegistry = new SettingsRegistry2<>(this, config, this::requestWrite);
+        settings = new Settings(settingsRegistry);
     }
 
     public Config getConfig() {
-        return config;
+        return settingsRegistry.getConfig();
+    }
+
+    Settings getSettings() {
+        return settings;
     }
 
     public synchronized void read(File file) {
@@ -106,7 +114,7 @@ public class ConfigStore {
 
     public Runnable getWriteToFileTask() {
         File file = this.currentFile;
-        Config config = this.config;
+        Config config = getConfig();
         return () -> {
             logger.debug("Saving config to file {}", file.getName());
             try {
@@ -130,14 +138,15 @@ public class ConfigStore {
         store.requestWrite();
     }
 
-    // only this method should update this.config
+    // Prepare the profile before publishing it and notifying immutable settings listeners.
     private void setConfig(Config config) {
+        config.sanitize();
         config.blocks.refreshMap();
-        this.config = config;
+        settingsRegistry.replace(config);
     }
 
     private void onConfigLoaded() {
-        config.sanitize();
+        Config config = getConfig();
         config.blocks.apply();
 
         SettingsRegistry.INSTANCE.reload();

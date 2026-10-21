@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.EntityTitleConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -45,10 +46,7 @@ public class EntityTitle implements FontBackendHolder {
 
     public static final EntityTitle instance = new EntityTitle();
 
-    private final SettingHandle<com.zergatul.cheatutils.configs.modules.EntityTitleConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().entityTitleConfig,
-            config -> ConfigStore.instance.getConfig().entityTitleConfig = config,
-            this::onConfigChanged);
+    private final SettingHandle2<EntityTitleConfig> settings = Settings.entityTitle();
     private final Minecraft mc = Minecraft.getInstance();
     private final ArrayList<StylizedTextChunk> buffer = new ArrayList<>();
     private final StringBuilder builder = new StringBuilder();
@@ -86,8 +84,9 @@ public class EntityTitle implements FontBackendHolder {
     private EntityTitle() {
         Events.PreRenderGui.add(this::onPreRenderGui);
         Events.AfterRenderWorld.add(this::onRenderWorld, 20);
+        settings.onChanged(this::onConfigChanged);
 
-        WebApiRegistry.INSTANCE.register("entity-title", settings, com.zergatul.cheatutils.configs.modules.EntityTitleConfig.class);
+        WebApiRegistry.INSTANCE.register("entity-title", settings, EntityTitleConfig.class);
 
         FontBackendHolders.add(this);
 
@@ -95,7 +94,7 @@ public class EntityTitle implements FontBackendHolder {
         titleFontChanged = enchantmentFontChanged = true;
     }
 
-    public SettingHandle<com.zergatul.cheatutils.configs.modules.EntityTitleConfig> getSettings() {
+    public SettingHandle2<EntityTitleConfig> getSettings() {
         return settings;
     }
 
@@ -110,7 +109,7 @@ public class EntityTitle implements FontBackendHolder {
         return false;
     }
 
-    private void onConfigChanged(com.zergatul.cheatutils.configs.modules.EntityTitleConfig prev, com.zergatul.cheatutils.configs.modules.EntityTitleConfig curr) {
+    private void onConfigChanged(EntityTitleConfig prev, EntityTitleConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
             if (!prev.titleFont().equals(curr.titleFont())) {
                 titleFontChanged = true;
@@ -139,7 +138,7 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        com.zergatul.cheatutils.configs.modules.EntityTitleConfig config = settings.get();
+        EntityTitleConfig config = settings.get();
         itemScale = config.itemScale() == 0 ? mc.getWindow().getGuiScale() : config.itemScale();
 
         CacheItemRenderer renderer = CacheItemRenderer.instance;
@@ -169,7 +168,7 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        com.zergatul.cheatutils.configs.modules.EntityTitleConfig config = settings.get();
+        EntityTitleConfig config = settings.get();
 
         if (titleFontChanged) {
             titleFontBackendFuture = FontLibrary.instance.createBackend(config.titleFont().asFontParameters());
@@ -393,7 +392,7 @@ public class EntityTitle implements FontBackendHolder {
         }
     }
 
-    private StylizedText getEntityText(com.zergatul.cheatutils.configs.modules.EntityTitleConfig config, EntityEntry entry) {
+    private StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
         if (entry.title != null) {
             return entry.title;
         }
