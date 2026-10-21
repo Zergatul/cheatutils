@@ -17,7 +17,6 @@ import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.modules.visuals.LogoutSpots;
 import com.zergatul.cheatutils.render.CacheItemRenderer;
 import com.zergatul.cheatutils.ui.*;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -46,7 +45,7 @@ public class EntityTitle implements FontBackendHolder {
 
     public static final EntityTitle instance = new EntityTitle();
 
-    private final SettingHandle<EntityTitleConfig> settings = new SettingHandle<>(
+    private final SettingHandle<com.zergatul.cheatutils.configs.modules.EntityTitleConfig> settings = new SettingHandle<>(
             () -> ConfigStore.instance.getConfig().entityTitleConfig,
             config -> ConfigStore.instance.getConfig().entityTitleConfig = config,
             this::onConfigChanged);
@@ -88,7 +87,7 @@ public class EntityTitle implements FontBackendHolder {
         Events.PreRenderGui.add(this::onPreRenderGui);
         Events.AfterRenderWorld.add(this::onRenderWorld, 20);
 
-        WebApiRegistry.INSTANCE.register("entity-title", settings, EntityTitleConfig.class);
+        WebApiRegistry.INSTANCE.register("entity-title", settings, com.zergatul.cheatutils.configs.modules.EntityTitleConfig.class);
 
         FontBackendHolders.add(this);
 
@@ -96,7 +95,7 @@ public class EntityTitle implements FontBackendHolder {
         titleFontChanged = enchantmentFontChanged = true;
     }
 
-    public SettingHandle<EntityTitleConfig> getSettings() {
+    public SettingHandle<com.zergatul.cheatutils.configs.modules.EntityTitleConfig> getSettings() {
         return settings;
     }
 
@@ -111,12 +110,12 @@ public class EntityTitle implements FontBackendHolder {
         return false;
     }
 
-    private void onConfigChanged(EntityTitleConfig prev, EntityTitleConfig curr) {
+    private void onConfigChanged(com.zergatul.cheatutils.configs.modules.EntityTitleConfig prev, com.zergatul.cheatutils.configs.modules.EntityTitleConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
-            if (!prev.titleFont.equals(curr.titleFont)) {
+            if (!prev.titleFont().equals(curr.titleFont())) {
                 titleFontChanged = true;
             }
-            if (!prev.enchantmentFont.equals(curr.enchantmentFont)) {
+            if (!prev.enchantmentFont().equals(curr.enchantmentFont())) {
                 enchantmentFontChanged = true;
             }
         });
@@ -140,8 +139,8 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        EntityTitleConfig config = settings.get();
-        itemScale = config.itemScale == 0 ? mc.getWindow().getGuiScale() : config.itemScale;
+        com.zergatul.cheatutils.configs.modules.EntityTitleConfig config = settings.get();
+        itemScale = config.itemScale() == 0 ? mc.getWindow().getGuiScale() : config.itemScale();
 
         CacheItemRenderer renderer = CacheItemRenderer.instance;
         renderer.beginFrame(itemScale);
@@ -170,29 +169,29 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        EntityTitleConfig config = settings.get();
+        com.zergatul.cheatutils.configs.modules.EntityTitleConfig config = settings.get();
 
         if (titleFontChanged) {
-            titleFontBackendFuture = FontLibrary.instance.createBackend(config.titleFont.asFontParameters());
+            titleFontBackendFuture = FontLibrary.instance.createBackend(config.titleFont().asFontParameters());
             // titleFontRenderer = null; // more smooth transition, but shows prev font for few frames?
             titleFontChanged = false;
         }
 
         if (enchantmentFontChanged) {
-            enchantmentFontBackendFuture = FontLibrary.instance.createBackend(config.enchantmentFont.asFontParameters());
+            enchantmentFontBackendFuture = FontLibrary.instance.createBackend(config.enchantmentFont().asFontParameters());
             // enchantmentFontRenderer = null; // more smooth transition, but shows prev font for few frames?
             enchantmentFontChanged = false;
         }
 
         if (titleFontBackendFuture != null) {
             if (titleFontBackendFuture.isDone()) {
-                titleFontRenderer = titleFontBackendFuture.join().createFontRenderer(config.titleFont.asFontRenderDetails());
+                titleFontRenderer = titleFontBackendFuture.join().createFontRenderer(config.titleFont().asFontRenderDetails());
                 titleFontBackendFuture = null;
             }
         }
         if (enchantmentFontBackendFuture != null) {
             if (enchantmentFontBackendFuture.isDone()) {
-                enchantmentFontRenderer = enchantmentFontBackendFuture.join().createFontRenderer(config.enchantmentFont.asFontRenderDetails());
+                enchantmentFontRenderer = enchantmentFontBackendFuture.join().createFontRenderer(config.enchantmentFont().asFontRenderDetails());
                 enchantmentFontBackendFuture = null;
             }
         }
@@ -394,7 +393,7 @@ public class EntityTitle implements FontBackendHolder {
         }
     }
 
-    private StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
+    private StylizedText getEntityText(com.zergatul.cheatutils.configs.modules.EntityTitleConfig config, EntityEntry entry) {
         if (entry.title != null) {
             return entry.title;
         }
@@ -443,9 +442,9 @@ public class EntityTitle implements FontBackendHolder {
         if (entry.showHp && entry.entityLike.hasHealth()) {
             if (text == null) {
                 text = new StylizedText();
-                text.append(config.hpPrefix, 0xFFFF5555);
+                text.append(config.hpPrefix(), 0xFFFF5555);
             } else {
-                text.append(" " + config.hpPrefix, 0xFFFF5555);
+                text.append(" " + config.hpPrefix(), 0xFFFF5555);
             }
             text.append(String.valueOf(entry.entityLike.getHealth()), Color.WHITE.getRGB());
 

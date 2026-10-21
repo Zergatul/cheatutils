@@ -1,4 +1,5 @@
 *.java text eol=lf
+*.kt   text eol=lf
 *.vsh  text eol=lf
 *.fsh  text eol=lf
 *.html text eol=lf

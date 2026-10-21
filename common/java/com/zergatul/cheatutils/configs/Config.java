@@ -47,7 +47,7 @@ public class Config implements Sanitizable {
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();
-    public EntityTitleConfig entityTitleConfig = new EntityTitleConfig();
+    public com.zergatul.cheatutils.configs.modules.EntityTitleConfig entityTitleConfig = com.zergatul.cheatutils.configs.modules.EntityTitleConfig.defaults();
     public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
     public BobHurtConfig bobHurtConfig = new BobHurtConfig();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
@@ -97,7 +97,6 @@ public class Config implements Sanitizable {
         schematicaConfig.sanitize();
         autoBucketConfig.sanitize();
         performanceConfig.sanitize();
-        entityTitleConfig.sanitize();
         keyBindingsConfig.sanitize();
         worldMarkersConfig.sanitize();
         autoAttackConfig.sanitize();

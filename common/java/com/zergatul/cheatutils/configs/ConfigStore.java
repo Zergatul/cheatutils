@@ -4,10 +4,7 @@ import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
-import com.zergatul.cheatutils.modules.esp.EntityTitle;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
-import com.zergatul.cheatutils.modules.scripting.StatusOverlay;
-import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
@@ -41,6 +38,7 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new EntityTypeTypeAdapterFactory())
             .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
             .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
+            .registerTypeAdapterFactory(new ImmutableConfigAdapterFactory())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
             .registerTypeAdapter(Color.class, new ColorTypeAdapter())
             .registerTypeAdapter(ImmutableList.class, new ImmutableListSerializer())
