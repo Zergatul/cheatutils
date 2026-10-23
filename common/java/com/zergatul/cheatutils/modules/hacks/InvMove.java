@@ -1,9 +1,8 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.InvMoveConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.InvMoveConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.KeyMappingAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
@@ -16,11 +15,9 @@ import net.minecraft.world.entity.player.Input;
 
 public class InvMove implements Module {
 
-    public static final InvMove instance = new InvMove();
+    public static final InvMove INSTANCE = new InvMove();
 
-    private final ModuleConfigSettingHandle<InvMoveConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().invMoveConfig,
-            config -> ConfigStore.instance.getConfig().invMoveConfig = config);
+    private final SettingHandle2<InvMoveConfig> settings = Settings.get(InvMoveConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private Input storedInputState = Input.EMPTY;
 
@@ -28,7 +25,7 @@ public class InvMove implements Module {
         WebApiRegistry.INSTANCE.register("inv-move", settings, InvMoveConfig.class);
     }
 
-    public ModuleConfigSettingHandle<InvMoveConfig> getSettings() {
+    public SettingHandle2<InvMoveConfig> getSettings() {
         return settings;
     }
 
@@ -108,7 +105,7 @@ public class InvMove implements Module {
     }
 
     public Screen overrideCurrentScreen(Screen screen) {
-        if (screen != null && InvMove.instance.shouldPassEvents(screen)) {
+        if (screen != null && InvMove.INSTANCE.shouldPassEvents(screen)) {
             return null;
         } else {
             return screen;
@@ -116,7 +113,7 @@ public class InvMove implements Module {
     }
 
     public boolean shouldPassEvents(Screen screen) {
-        return settings.get().enabled && isValidScreen(screen);
+        return settings.get().enabled() && isValidScreen(screen);
     }
 
     private boolean isValidScreen(Screen screen) {

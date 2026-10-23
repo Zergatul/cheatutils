@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoFishConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoFishConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
 import com.zergatul.cheatutils.modules.Module;
@@ -23,13 +23,11 @@ import java.util.concurrent.TimeUnit;
 
 public class AutoFish implements Module {
 
-    public static final AutoFish instance = new AutoFish();
+    public static final AutoFish INSTANCE = new AutoFish();
 
-    private final ModuleConfigSettingHandle<AutoFishConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().autoFishConfig,
-            config -> ConfigStore.instance.getConfig().autoFishConfig = config);
     private static final long PULL_IN_DELAY_MS = 500;
 
+    private final SettingHandle2<AutoFishConfig> settings = Settings.get(AutoFishConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private volatile State state = State.NONE;
     private Optional<FishingHook> bobber = Optional.empty();
@@ -42,7 +40,7 @@ public class AutoFish implements Module {
         WebApiRegistry.INSTANCE.register("auto-fish", settings, AutoFishConfig.class);
     }
 
-    public ModuleConfigSettingHandle<AutoFishConfig> getSettings() {
+    public SettingHandle2<AutoFishConfig> getSettings() {
         return settings;
     }
 
@@ -53,7 +51,7 @@ public class AutoFish implements Module {
         }
 
         AutoFishConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             state = State.NONE;
             return;
         }
@@ -83,7 +81,7 @@ public class AutoFish implements Module {
                     state = State.WAITING_FOR_BOBBER;
                     break;
                 }
-                if (config.autoRestartOnIdle && TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - lastPullInTime) > config.idleTimeout) {
+                if (config.autoRestartOnIdle() && TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - lastPullInTime) > config.idleTimeout()) {
                     ((MinecraftAccessor) mc).startUseItem_CU();
                     state = State.DELAY_AFTER_PULL_IN;
                     lastPullInTime = System.nanoTime();

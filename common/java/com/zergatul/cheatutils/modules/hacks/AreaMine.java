@@ -2,9 +2,11 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.AreaMineConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AreaMineConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
@@ -29,9 +31,7 @@ public class AreaMine implements Module {
 
     public static final AreaMine INSTANCE = new AreaMine();
 
-    private final ModuleConfigSettingHandle<AreaMineConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().areaMineConfig,
-            config -> ConfigStore.instance.getConfig().areaMineConfig = config);
+    private final SettingHandle2<AreaMineConfig> settings = Settings.get(AreaMineConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AreaMine() {
@@ -41,7 +41,7 @@ public class AreaMine implements Module {
         WebApiRegistry.INSTANCE.register("area-mine", settings, AreaMineConfig.class);
     }
 
-    public ModuleConfigSettingHandle<AreaMineConfig> getSettings() {
+    public SettingHandle2<AreaMineConfig> getSettings() {
         return settings;
     }
 
@@ -50,8 +50,8 @@ public class AreaMine implements Module {
             return;
         }
 
-        AreaMineConfig config = ConfigStore.instance.getConfig().areaMineConfig;
-        if (!config.enabled || !config.preview) {
+        AreaMineConfig config = settings.get();
+        if (!config.enabled() || !config.preview()) {
             return;
         }
 
@@ -98,8 +98,8 @@ public class AreaMine implements Module {
     }
 
     private void onBeforeInstaMine(BlockPos origin) {
-        AreaMineConfig config = ConfigStore.instance.getConfig().areaMineConfig;
-        if (!config.enabled) {
+        AreaMineConfig config = settings.get();
+        if (!config.enabled()) {
             return;
         }
 
@@ -130,8 +130,8 @@ public class AreaMine implements Module {
     private void forEachInstaminable(Vec3 playerPos, BlockPos origin, AreaMineConfig config, Consumer<BlockPos> consumer) {
         double pick2 = mc.player.blockInteractionRange();
         pick2 = pick2 * pick2;
-        int delta = (int) Math.floor(config.radius);
-        int r2 = (int) Math.floor(config.radius * config.radius);
+        int delta = (int) Math.floor(config.radius());
+        int r2 = (int) Math.floor(config.radius() * config.radius());
         for (int x = -delta; x <= delta; x++) {
             for (int y = -delta; y <= delta; y++) {
                 for (int z = -delta; z <= delta; z++) {

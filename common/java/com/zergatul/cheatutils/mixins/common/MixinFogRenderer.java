@@ -13,6 +13,6 @@ public abstract class MixinFogRenderer {
             method = "computeFogColor",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;hasEffect(Lnet/minecraft/core/Holder;)Z", ordinal = 0))
     private boolean onOverrideNightVisionEffect(boolean original) {
-        return FullBright.instance.shouldFakeNighVision() || original;
+        return FullBright.INSTANCE.shouldFakeNighVision() || original;
     }
 }

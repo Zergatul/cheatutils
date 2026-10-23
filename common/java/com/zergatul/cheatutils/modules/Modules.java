@@ -55,10 +55,10 @@ public class Modules {
 
         register(FlyHack.INSTANCE);
         register(FreeCam.instance);
-        register(AutoFish.instance);
+        register(AutoFish.INSTANCE);
         register(ChunkOverlayController.instance);
         register(StatusOverlay.INSTANCE);
-        register(AutoCriticals.instance);
+        register(AutoCriticals.INSTANCE);
         register(LightLevel.INSTANCE);
         register(ElytraFly.instance);
         register(AdvancedTooltips.instance);
@@ -68,7 +68,7 @@ public class Modules {
         register(Fog.instance);
         register(AutoAttack.instance);
 
-        register(Exec.instance);
+        register(Exec.INSTANCE);
         register(VillagerRoller.instance);
         register(AutoHotbar.instance);
         register(AreaMine.INSTANCE);
@@ -84,8 +84,8 @@ public class Modules {
         register(AirPlace.INSTANCE);
         register(ContainerSummary.instance);
         register(CrystalAura.INSTANCE);
-        register(FullBright.instance);
-        register(InvMove.instance);
+        register(FullBright.INSTANCE);
+        register(InvMove.INSTANCE);
         register(HitboxSize.instance);
         register(BetterStatusEffects.INSTANCE);
         register(BoatHack.INSTANCE);

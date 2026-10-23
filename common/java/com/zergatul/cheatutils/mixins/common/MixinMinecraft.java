@@ -182,7 +182,7 @@ public abstract class MixinMinecraft {
             method = "tick",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;screen()Lnet/minecraft/client/gui/screens/Screen;"))
     private Screen onTickScreenPassEvents(Screen screen) {
-        return InvMove.instance.overrideCurrentScreen(screen);
+        return InvMove.INSTANCE.overrideCurrentScreen(screen);
     }
 
     @Inject(at = @At(value = "TAIL"), method = "resizeGui()V")

@@ -2,9 +2,8 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ExecConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.ExecConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
@@ -24,11 +23,9 @@ import java.util.Objects;
 
 public class Exec implements Module {
 
-    public static final Exec instance = new Exec();
+    public static final Exec INSTANCE = new Exec();
 
-    private final ModuleConfigSettingHandle<ExecConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().execConfig,
-            config -> ConfigStore.instance.getConfig().execConfig = config);
+    private final SettingHandle2<ExecConfig> settings = Settings.get(ExecConfig.class);
 
     private Exec() {
         Events.SendChat.add(this::onSendChat);
@@ -36,12 +33,12 @@ public class Exec implements Module {
         WebApiRegistry.INSTANCE.register("exec", settings, ExecConfig.class);
     }
 
-    public ModuleConfigSettingHandle<ExecConfig> getSettings() {
+    public SettingHandle2<ExecConfig> getSettings() {
         return settings;
     }
 
     private void onSendChat(SendChatEvent event) {
-        if (!settings.get().enabled) {
+        if (!settings.get().enabled()) {
             return;
         }
 

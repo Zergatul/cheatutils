@@ -85,7 +85,7 @@ public abstract class MixinGameRenderer {
 
     @Inject(at = @At("HEAD"), method = "nightVisionScale", cancellable = true)
     private static void onBeforeNightVisionScale(LivingEntity camera, float a, CallbackInfoReturnable<Float> info) {
-        if (FullBright.instance.shouldFakeNighVision()) {
+        if (FullBright.INSTANCE.shouldFakeNighVision()) {
             info.setReturnValue(1f);
         }
     }

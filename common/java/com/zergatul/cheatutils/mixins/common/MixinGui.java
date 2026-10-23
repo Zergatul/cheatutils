@@ -13,11 +13,11 @@ public abstract class MixinGui {
 
     @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V"))
     private void onSetScreenBeforeReleasingAllKeys(Screen screen, CallbackInfo info) {
-        InvMove.instance.onOpenScreenStoreKeys(screen);
+        InvMove.INSTANCE.onOpenScreenStoreKeys(screen);
     }
 
     @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V", shift = At.Shift.AFTER))
     private void onSetScreenAfterReleasingAllKeys(Screen screen, CallbackInfo info) {
-        InvMove.instance.onOpenScreenRestoreKeys(screen);
+        InvMove.INSTANCE.onOpenScreenRestoreKeys(screen);
     }
 }

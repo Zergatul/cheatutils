@@ -1,8 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-import com.zergatul.cheatutils.configs.modules.AirPlaceConfig;
-import com.zergatul.cheatutils.configs.modules.EntityTitleConfig;
-import com.zergatul.cheatutils.configs.modules.FlyHackConfig;
+import com.zergatul.cheatutils.configs.modules.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,9 +23,39 @@ public final class Settings {
                 (config, value) -> config.airPlaceConfig = value);
 
         registrar.register(
+                AreaMineConfig.class,
+                config -> config.areaMineConfig,
+                (config, value) -> config.areaMineConfig = value);
+
+        registrar.register(
+                AutoCriticalsConfig.class,
+                config -> config.autoCriticalsConfig,
+                (config, value) -> config.autoCriticalsConfig = value);
+
+        registrar.register(
+                AutoFishConfig.class,
+                config -> config.autoFishConfig,
+                (config, value) -> config.autoFishConfig = value);
+
+        registrar.register(
                 EntityTitleConfig.class,
                 config -> config.entityTitleConfig,
                 (config, value) -> config.entityTitleConfig = value);
+
+        registrar.register(
+                ExecConfig.class,
+                config -> config.execConfig,
+                (config, value) -> config.execConfig = value);
+
+        registrar.register(
+                FullBrightConfig.class,
+                config -> config.fullBrightConfig,
+                (config, value) -> config.fullBrightConfig = value);
+
+        registrar.register(
+                InvMoveConfig.class,
+                config -> config.invMoveConfig,
+                (config, value) -> config.invMoveConfig = value);
 
         registrar.register(
                 FlyHackConfig.class,
@@ -38,6 +66,7 @@ public final class Settings {
     }
 
     public static <T extends ImmutableConfig> SettingHandle2<T> get(Class<T> type) {
+        // TODO: why config store own settings, and not singleton?
         return ConfigStore.instance.getSettings().find(type);
     }
 

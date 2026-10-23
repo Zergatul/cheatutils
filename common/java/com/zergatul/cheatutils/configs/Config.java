@@ -1,13 +1,11 @@
 package com.zergatul.cheatutils.configs;
 
-import com.zergatul.cheatutils.configs.modules.AirPlaceConfig;
-import com.zergatul.cheatutils.configs.modules.EntityTitleConfig;
-import com.zergatul.cheatutils.configs.modules.FlyHackConfig;
+import com.zergatul.cheatutils.configs.modules.*;
 
 public class Config implements Sanitizable {
 
-    public FullBrightConfig fullBrightConfig = new FullBrightConfig();
-    public AutoFishConfig autoFishConfig = new AutoFishConfig();
+    public FullBrightConfig fullBrightConfig = FullBrightConfig.defaults();
+    public AutoFishConfig autoFishConfig = AutoFishConfig.defaults();
     public ArmorOverlayConfig armorOverlayConfig = new ArmorOverlayConfig();
     public BlocksConfig blocks = new BlocksConfig();
     public EntitiesConfig entities = new EntitiesConfig();
@@ -20,7 +18,7 @@ public class Config implements Sanitizable {
     public PigHackConfig pigHackConfig = new PigHackConfig();
     public EndCityChunksConfig endCityChunksConfig = new EndCityChunksConfig();
     public ExplorationMiniMapConfig explorationMiniMapConfig = new ExplorationMiniMapConfig();
-    public AutoCriticalsConfig autoCriticalsConfig = new AutoCriticalsConfig();
+    public AutoCriticalsConfig autoCriticalsConfig = AutoCriticalsConfig.defaults();
     public FlyHackConfig flyHackConfig = FlyHackConfig.defaults();
     public AutoTotemConfig autoTotemConfig = new AutoTotemConfig();
     public DeathCoordinatesConfig deathCoordinatesConfig = new DeathCoordinatesConfig();
@@ -59,11 +57,11 @@ public class Config implements Sanitizable {
     public SpearRangeConfig spearRangeConfig = new SpearRangeConfig();
     public AutoStunnerConfig autoStunnerConfig = new AutoStunnerConfig();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
-    public ExecConfig execConfig = new ExecConfig();
+    public ExecConfig execConfig = ExecConfig.defaults();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
     public AutoHotbarConfig autoHotbarConfig = new AutoHotbarConfig();
-    public InvMoveConfig invMoveConfig = new InvMoveConfig();
-    public AreaMineConfig areaMineConfig = new AreaMineConfig();
+    public InvMoveConfig invMoveConfig = InvMoveConfig.defaults();
+    public AreaMineConfig areaMineConfig = AreaMineConfig.defaults();
     public ServerPluginsConfig serverPluginsConfig = new ServerPluginsConfig();
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
     public EventsScriptingConfig eventsScriptingConfig = new EventsScriptingConfig();
@@ -105,7 +103,6 @@ public class Config implements Sanitizable {
         autoAttackConfig.sanitize();
         projectilePathConfig.sanitize();
         chatUtilitiesConfig.sanitize();
-        areaMineConfig.sanitize();
         hitboxSizeConfig.sanitize();
         coreConfig.sanitize();
         blockEntityDistance.sanitize();
