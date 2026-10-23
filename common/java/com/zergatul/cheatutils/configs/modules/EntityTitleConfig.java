@@ -67,22 +67,22 @@ public record EntityTitleConfig(
                     .itemScale(config.itemScale);
         }
 
-        public EntityTitleConfig.Builder hpPrefix(String hpPrefix) {
+        public Builder hpPrefix(String hpPrefix) {
             this.hpPrefix = hpPrefix;
             return this;
         }
 
-        public EntityTitleConfig.Builder titleFont(FontConfig titleFont) {
+        public Builder titleFont(FontConfig titleFont) {
             this.titleFont = titleFont;
             return this;
         }
 
-        public EntityTitleConfig.Builder enchantmentFont(FontConfig enchantmentFont) {
+        public Builder enchantmentFont(FontConfig enchantmentFont) {
             this.enchantmentFont = enchantmentFont;
             return this;
         }
 
-        public EntityTitleConfig.Builder itemScale(int itemScale) {
+        public Builder itemScale(int itemScale) {
             this.itemScale = itemScale;
             return this;
         }

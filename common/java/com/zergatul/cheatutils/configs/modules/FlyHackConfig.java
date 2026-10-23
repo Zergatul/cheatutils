@@ -86,37 +86,37 @@ public record FlyHackConfig(
                     .antiFlyDistance(config.antiFlyDistance);
         }
 
-        public FlyHackConfig.Builder enabled(boolean enabled) {
+        public Builder enabled(boolean enabled) {
             this.enabled = enabled;
             return this;
         }
 
-        public FlyHackConfig.Builder overrideFlyingSpeed(boolean overrideFlyingSpeed) {
+        public Builder overrideFlyingSpeed(boolean overrideFlyingSpeed) {
             this.overrideFlyingSpeed = overrideFlyingSpeed;
             return this;
         }
 
-        public FlyHackConfig.Builder flyingSpeed(float flyingSpeed) {
+        public Builder flyingSpeed(float flyingSpeed) {
             this.flyingSpeed = flyingSpeed;
             return this;
         }
 
-        public FlyHackConfig.Builder onGroundFlag(boolean onGroundFlag) {
+        public Builder onGroundFlag(boolean onGroundFlag) {
             this.onGroundFlag = onGroundFlag;
             return this;
         }
 
-        public FlyHackConfig.Builder vanillaAntiFlyBypass(boolean vanillaAntiFlyBypass) {
+        public Builder vanillaAntiFlyBypass(boolean vanillaAntiFlyBypass) {
             this.vanillaAntiFlyBypass = vanillaAntiFlyBypass;
             return this;
         }
 
-        public FlyHackConfig.Builder antiFlyInterval(int antiFlyInterval) {
+        public Builder antiFlyInterval(int antiFlyInterval) {
             this.antiFlyInterval = antiFlyInterval;
             return this;
         }
 
-        public FlyHackConfig.Builder antiFlyDistance(double antiFlyDistance) {
+        public Builder antiFlyDistance(double antiFlyDistance) {
             this.antiFlyDistance = antiFlyDistance;
             return this;
         }

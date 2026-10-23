@@ -51,17 +51,17 @@ public record AreaMineConfig(
                     .preview(config.preview);
         }
 
-        public AreaMineConfig.Builder enabled(boolean enabled) {
+        public Builder enabled(boolean enabled) {
             this.enabled = enabled;
             return this;
         }
 
-        public AreaMineConfig.Builder radius(double radius) {
+        public Builder radius(double radius) {
             this.radius = radius;
             return this;
         }
 
-        public AreaMineConfig.Builder preview(boolean preview) {
+        public Builder preview(boolean preview) {
             this.preview = preview;
             return this;
         }

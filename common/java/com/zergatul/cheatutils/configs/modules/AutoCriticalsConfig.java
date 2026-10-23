@@ -30,7 +30,7 @@ public record AutoCriticalsConfig(
                     .enabled(config.enabled);
         }
 
-        public AutoCriticalsConfig.Builder enabled(boolean enabled) {
+        public Builder enabled(boolean enabled) {
             this.enabled = enabled;
             return this;
         }

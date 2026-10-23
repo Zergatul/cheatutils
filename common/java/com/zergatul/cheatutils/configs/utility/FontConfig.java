@@ -27,17 +27,18 @@ public record FontConfig(
     }
 
     public static FontConfig defaults() {
-        return new FontConfig(
-                FontRendererType.VANILLA,
-                "Consolas",
-                16,
-                0,
-                false,
-                0,
-                0,
-                false,
-                1,
-                1);
+        return new Builder()
+                .renderer(FontRendererType.VANILLA)
+                .face("Consolas")
+                .size(16)
+                .scale(0)
+                .antiAliasing(false)
+                .letterSpacing(0)
+                .lineSpacing(0)
+                .dropShadow(false)
+                .shadowOffsetX(1)
+                .shadowOffsetY(1)
+                .build();
     }
 
     public boolean equals(FontConfig other) {
@@ -147,52 +148,52 @@ public record FontConfig(
                     .shadowOffsetY(config.shadowOffsetY);
         }
 
-        public FontConfig.Builder renderer(FontRendererType renderer) {
+        public Builder renderer(FontRendererType renderer) {
             this.renderer = renderer;
             return this;
         }
 
-        public FontConfig.Builder face(String face) {
+        public Builder face(String face) {
             this.face = face;
             return this;
         }
 
-        public FontConfig.Builder size(double size) {
+        public Builder size(double size) {
             this.size = size;
             return this;
         }
 
-        public FontConfig.Builder scale(int scale) {
+        public Builder scale(int scale) {
             this.scale = scale;
             return this;
         }
 
-        public FontConfig.Builder antiAliasing(boolean antiAliasing) {
+        public Builder antiAliasing(boolean antiAliasing) {
             this.antiAliasing = antiAliasing;
             return this;
         }
 
-        public FontConfig.Builder letterSpacing(double letterSpacing) {
+        public Builder letterSpacing(double letterSpacing) {
             this.letterSpacing = letterSpacing;
             return this;
         }
 
-        public FontConfig.Builder lineSpacing(double lineSpacing) {
+        public Builder lineSpacing(double lineSpacing) {
             this.lineSpacing = lineSpacing;
             return this;
         }
 
-        public FontConfig.Builder dropShadow(boolean dropShadow) {
+        public Builder dropShadow(boolean dropShadow) {
             this.dropShadow = dropShadow;
             return this;
         }
 
-        public FontConfig.Builder shadowOffsetX(int shadowOffsetX) {
+        public Builder shadowOffsetX(int shadowOffsetX) {
             this.shadowOffsetX = shadowOffsetX;
             return this;
         }
 
-        public FontConfig.Builder shadowOffsetY(int shadowOffsetY) {
+        public Builder shadowOffsetY(int shadowOffsetY) {
             this.shadowOffsetY = shadowOffsetY;
             return this;
         }

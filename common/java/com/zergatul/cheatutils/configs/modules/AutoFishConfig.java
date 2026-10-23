@@ -51,17 +51,17 @@ public record AutoFishConfig(
                     .idleTimeout(config.idleTimeout);
         }
 
-        public AutoFishConfig.Builder enabled(boolean enabled) {
+        public Builder enabled(boolean enabled) {
             this.enabled = enabled;
             return this;
         }
 
-        public AutoFishConfig.Builder autoRestartOnIdle(boolean autoRestartOnIdle) {
+        public Builder autoRestartOnIdle(boolean autoRestartOnIdle) {
             this.autoRestartOnIdle = autoRestartOnIdle;
             return this;
         }
 
-        public AutoFishConfig.Builder idleTimeout(int idleTimeout) {
+        public Builder idleTimeout(int idleTimeout) {
             this.idleTimeout = idleTimeout;
             return this;
         }

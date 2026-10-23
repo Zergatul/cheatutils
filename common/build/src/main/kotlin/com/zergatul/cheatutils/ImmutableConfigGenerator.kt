@@ -59,7 +59,7 @@ object ImmutableConfigGenerator {
             appendLine("        }")
             appendLine()
             for (component in components) {
-                appendLine("        public $name.Builder ${component.name}(${component.type} ${component.name}) {")
+                appendLine("        public Builder ${component.name}(${component.type} ${component.name}) {")
                 appendLine("            this.${component.name} = ${component.name};")
                 appendLine("            return this;")
                 appendLine("        }")

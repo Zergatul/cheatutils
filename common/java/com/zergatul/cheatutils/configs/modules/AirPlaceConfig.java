@@ -44,12 +44,12 @@ public record AirPlaceConfig(
                     .maxRange(config.maxRange);
         }
 
-        public AirPlaceConfig.Builder minRange(double minRange) {
+        public Builder minRange(double minRange) {
             this.minRange = minRange;
             return this;
         }
 
-        public AirPlaceConfig.Builder maxRange(double maxRange) {
+        public Builder maxRange(double maxRange) {
             this.maxRange = maxRange;
             return this;
         }
