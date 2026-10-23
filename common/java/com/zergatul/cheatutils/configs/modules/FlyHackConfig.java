@@ -13,7 +13,7 @@ public record FlyHackConfig(
         boolean vanillaAntiFlyBypass,
         int antiFlyInterval,
         double antiFlyDistance
-) implements ImmutableConfig, ToggleableConfig {
+) implements ImmutableConfig, ToggleableConfig<FlyHackConfig> {
 
     public FlyHackConfig {
         flyingSpeed = MathUtils.clamp(flyingSpeed, 0.001f, 10f);

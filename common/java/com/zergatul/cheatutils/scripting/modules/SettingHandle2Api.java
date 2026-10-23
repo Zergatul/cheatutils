@@ -7,7 +7,7 @@ import com.zergatul.scripting.MethodDescription;
 
 import java.util.function.UnaryOperator;
 
-public abstract class SettingHandle2Api<T extends ToggleableConfig & ImmutableConfig> {
+public abstract class SettingHandle2Api<T extends ToggleableConfig<T> & ImmutableConfig> {
 
     private final SettingHandle2<T> handle;
 
@@ -50,16 +50,13 @@ public abstract class SettingHandle2Api<T extends ToggleableConfig & ImmutableCo
             Toggles module enabled state
             """)
     @ApiVisibility(ApiType.UPDATE)
-    @SuppressWarnings("unchecked")
     public void toggle() {
-        boolean enabled = handle.get().enabled();
-        handle.update(config -> (T) config.withEnabled(!enabled));
+        handle.update(config -> config.withEnabled(!config.enabled()));
     }
 
-    @SuppressWarnings("unchecked")
     private void updateEnabled(boolean value) {
         if (handle.get().enabled() != value) {
-            handle.update(config -> (T) config.withEnabled(value));
+            handle.update(config -> config.withEnabled(value));
         }
     }
 

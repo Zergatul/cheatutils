@@ -1,0 +1,4 @@
+root = true
+
+[*.{java,kt,vsh,fsh,html,js,css,md,json,yaml}]
+end_of_line = lf

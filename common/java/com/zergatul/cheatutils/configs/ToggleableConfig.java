@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.configs;
 
-public interface ToggleableConfig {
+public interface ToggleableConfig<T extends ToggleableConfig<T>> {
     boolean enabled();
-    ToggleableConfig withEnabled(boolean enabled);
+    T withEnabled(boolean enabled);
 }
