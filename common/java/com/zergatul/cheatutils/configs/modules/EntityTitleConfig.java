@@ -24,7 +24,12 @@ public record EntityTitleConfig(
     }
 
     public static EntityTitleConfig defaults() {
-        return new EntityTitleConfig("\u2665", FontConfig.defaults(), FontConfig.defaults(), 0);
+        return new Builder()
+                .hpPrefix("\u2665")
+                .titleFont(FontConfig.defaults())
+                .enchantmentFont(FontConfig.defaults())
+                .itemScale(0)
+                .build();
     }
 
     // <generated-code>

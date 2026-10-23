@@ -53,7 +53,7 @@ public class Modules {
         register(BlockAutomation.instance);
         register(PlayerInfoController.instance);
 
-        register(FlyHack.instance);
+        register(FlyHack.INSTANCE);
         register(FreeCam.instance);
         register(AutoFish.instance);
         register(ChunkOverlayController.instance);

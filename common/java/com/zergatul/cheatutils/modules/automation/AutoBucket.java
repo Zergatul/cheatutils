@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.AutoBucketConfig;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.hacks.FlyHack;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.VoxelShapeUtils;
@@ -76,7 +77,7 @@ public class AutoBucket implements Module {
             return;
         }
 
-        if (ConfigStore.instance.getConfig().flyHackConfig.enabled) {
+        if (FlyHack.INSTANCE.getSettings().get().enabled()) {
             return;
         }
 

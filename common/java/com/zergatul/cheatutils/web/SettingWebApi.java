@@ -12,21 +12,21 @@ public class SettingWebApi<T> extends WebApiBase {
     private final String route;
     private final Supplier<T> getter;
     private final Consumer<T> setter;
-    private final Class<T> clazz;
+    private final Class<T> type;
 
-    public SettingWebApi(String route, SettingHandle<T> handle, Class<T> clazz) {
-        this(route, handle::get, handle::set, clazz);
+    public SettingWebApi(String route, SettingHandle<T> handle, Class<T> type) {
+        this(route, handle::get, handle::set, type);
     }
 
-    public static <T extends ImmutableConfig> SettingWebApi<T> immutable(String route, SettingHandle2<T> handle, Class<T> clazz) {
-        return new SettingWebApi<>(route, handle::get, handle::set, clazz);
+    public static <T extends ImmutableConfig> SettingWebApi<T> immutable(String route, SettingHandle2<T> handle, Class<T> type) {
+        return new SettingWebApi<>(route, handle::get, handle::set, type);
     }
 
-    private SettingWebApi(String route, Supplier<T> getter, Consumer<T> setter, Class<T> clazz) {
+    private SettingWebApi(String route, Supplier<T> getter, Consumer<T> setter, Class<T> type) {
         this.route = route;
         this.getter = getter;
         this.setter = setter;
-        this.clazz = clazz;
+        this.type = type;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class SettingWebApi<T> extends WebApiBase {
 
     @Override
     public String post(String body) {
-        T config = gson.fromJson(body, clazz);
+        T config = gson.fromJson(body, type);
         if (config != null) {
             setter.accept(config);
         }

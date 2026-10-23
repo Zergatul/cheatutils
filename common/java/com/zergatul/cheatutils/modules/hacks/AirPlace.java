@@ -3,7 +3,9 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.MouseScrollEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AirPlaceConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.LineRenderer;
 import com.zergatul.cheatutils.utils.MathUtils;
@@ -25,9 +27,7 @@ public class AirPlace implements Module {
 
     public static final AirPlace INSTANCE = new AirPlace();
 
-    private final SettingHandle<AirPlaceConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().airPlaceConfig,
-            config -> ConfigStore.instance.getConfig().airPlaceConfig = config);
+    private final SettingHandle2<AirPlaceConfig> settings = Settings.get(AirPlaceConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean active;
     private double range;
@@ -82,7 +82,7 @@ public class AirPlace implements Module {
         if (currentPosition != null) {
             AirPlaceConfig config = settings.get();
             range += event.getScrollDelta() * 0.5;
-            range = MathUtils.clamp(range, config.minRange, config.maxRange);
+            range = MathUtils.clamp(range, config.minRange(), config.maxRange());
             event.cancel();
         }
     }
@@ -137,7 +137,7 @@ public class AirPlace implements Module {
         if (range == 0) {
             // first activation
             AirPlaceConfig config = settings.get();
-            range = (config.minRange + config.maxRange) / 2;
+            range = (config.minRange() + config.maxRange()) / 2;
         }
     }
 

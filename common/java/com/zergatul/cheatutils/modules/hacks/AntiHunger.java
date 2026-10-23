@@ -37,7 +37,7 @@ public class AntiHunger implements Module {
             if (NoFall.instance.isActive()) {
                 return;
             }
-            if (ConfigStore.instance.getConfig().flyHackConfig.enabled) {
+            if (FlyHack.INSTANCE.getSettings().get().enabled()) {
                 return;
             }
             if (Minecraft.getInstance().player.isFallFlying()) {

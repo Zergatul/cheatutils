@@ -15,7 +15,10 @@ public record AirPlaceConfig(
     }
 
     public static AirPlaceConfig defaults() {
-        return new AirPlaceConfig(1, 5);
+        return new Builder()
+                .minRange(1)
+                .maxRange(5)
+                .build();
     }
 
     // <generated-code>

@@ -35,7 +35,7 @@ public class NoFall implements Module {
             return false;
         }
 
-        if (ConfigStore.instance.getConfig().flyHackConfig.enabled) {
+        if (FlyHack.INSTANCE.getSettings().get().enabled()) {
             return false;
         }
 

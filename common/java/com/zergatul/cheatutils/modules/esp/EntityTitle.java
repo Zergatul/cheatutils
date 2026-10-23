@@ -35,25 +35,29 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
+@NullMarked
 public class EntityTitle implements FontBackendHolder {
 
     public static final EntityTitle instance = new EntityTitle();
 
-    private final SettingHandle2<EntityTitleConfig> settings = Settings.entityTitle();
+    private final SettingHandle2<EntityTitleConfig> settings = Settings.get(EntityTitleConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final ArrayList<StylizedTextChunk> buffer = new ArrayList<>();
     private final StringBuilder builder = new StringBuilder();
 
     private final LoadingCache<UUID, Optional<String>> usernameCache = CacheBuilder
             .newBuilder()
-            .expireAfterWrite(1, TimeUnit.HOURS)
+            .expireAfterWrite(Duration.of(1, ChronoUnit.HOURS))
             .build(new CacheLoader<>() {
                 @Override
                 public Optional<String> load(UUID uuid) {
@@ -72,12 +76,12 @@ public class EntityTitle implements FontBackendHolder {
     private final List<EntityEntry> entities = new ArrayList<>();
 
     private boolean titleFontChanged;
-    private CompletableFuture<FontBackend> titleFontBackendFuture;
-    private FontRenderer titleFontRenderer;
+    private @Nullable CompletableFuture<FontBackend> titleFontBackendFuture;
+    private @Nullable FontRenderer titleFontRenderer;
 
     private boolean enchantmentFontChanged;
-    private CompletableFuture<FontBackend> enchantmentFontBackendFuture;
-    private FontRenderer enchantmentFontRenderer;
+    private @Nullable CompletableFuture<FontBackend> enchantmentFontBackendFuture;
+    private @Nullable FontRenderer enchantmentFontRenderer;
 
     private int itemScale;
 
@@ -392,7 +396,7 @@ public class EntityTitle implements FontBackendHolder {
         }
     }
 
-    private StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
+    private @Nullable StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
         if (entry.title != null) {
             return entry.title;
         }
@@ -490,8 +494,9 @@ public class EntityTitle implements FontBackendHolder {
             boolean showHp,
             boolean showEquippedItems,
             boolean showOwner,
-            StylizedText title,
-            StylizedText suffix) {}
+            @Nullable StylizedText title,
+            @Nullable StylizedText suffix
+    ) {}
 
     private static class EnchantmentEntry {
 

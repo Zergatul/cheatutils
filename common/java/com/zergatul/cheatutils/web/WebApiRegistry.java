@@ -23,13 +23,13 @@ public final class WebApiRegistry {
         return apis.get(route);
     }
 
-    public <T> void register(String route, SettingHandle<T> settings, Class<T> clazz) {
-        SettingWebApi<T> api = new SettingWebApi<>(route, settings, clazz);
+    public <T> void register(String route, SettingHandle<T> settings, Class<T> type) {
+        SettingWebApi<T> api = new SettingWebApi<>(route, settings, type);
         register(api);
     }
 
-    public <T extends ImmutableConfig> void register(String route, SettingHandle2<T> settings, Class<T> clazz) {
-        register(SettingWebApi.immutable(route, settings, clazz));
+    public <T extends ImmutableConfig> void register(String route, SettingHandle2<T> settings, Class<T> type) {
+        register(SettingWebApi.immutable(route, settings, type));
     }
 
     public synchronized void register(WebApiBase api) {

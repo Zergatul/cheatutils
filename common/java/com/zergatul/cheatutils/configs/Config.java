@@ -1,5 +1,9 @@
 package com.zergatul.cheatutils.configs;
 
+import com.zergatul.cheatutils.configs.modules.AirPlaceConfig;
+import com.zergatul.cheatutils.configs.modules.EntityTitleConfig;
+import com.zergatul.cheatutils.configs.modules.FlyHackConfig;
+
 public class Config implements Sanitizable {
 
     public FullBrightConfig fullBrightConfig = new FullBrightConfig();
@@ -17,7 +21,7 @@ public class Config implements Sanitizable {
     public EndCityChunksConfig endCityChunksConfig = new EndCityChunksConfig();
     public ExplorationMiniMapConfig explorationMiniMapConfig = new ExplorationMiniMapConfig();
     public AutoCriticalsConfig autoCriticalsConfig = new AutoCriticalsConfig();
-    public FlyHackConfig flyHackConfig = new FlyHackConfig();
+    public FlyHackConfig flyHackConfig = FlyHackConfig.defaults();
     public AutoTotemConfig autoTotemConfig = new AutoTotemConfig();
     public DeathCoordinatesConfig deathCoordinatesConfig = new DeathCoordinatesConfig();
     public ElytraTunnelConfig elytraTunnelConfig = new ElytraTunnelConfig();
@@ -47,7 +51,7 @@ public class Config implements Sanitizable {
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
     public SchematicaConfig schematicaConfig = new SchematicaConfig();
     public PerformanceConfig performanceConfig = new PerformanceConfig();
-    public com.zergatul.cheatutils.configs.modules.EntityTitleConfig entityTitleConfig = com.zergatul.cheatutils.configs.modules.EntityTitleConfig.defaults();
+    public EntityTitleConfig entityTitleConfig = EntityTitleConfig.defaults();
     public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
     public BobHurtConfig bobHurtConfig = new BobHurtConfig();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
@@ -72,7 +76,7 @@ public class Config implements Sanitizable {
     public LogoutSpotsConfig logoutSpots = new LogoutSpotsConfig();
     public AutoToolConfig autoTool = new AutoToolConfig();
     public BlockEntityDistanceConfig blockEntityDistance = new BlockEntityDistanceConfig();
-    public AirPlaceConfig airPlaceConfig = new AirPlaceConfig();
+    public AirPlaceConfig airPlaceConfig = AirPlaceConfig.defaults();
     public ElytraBounceConfig elytraBounceConfig = new ElytraBounceConfig();
     public ParkourAssistConfig parkourAssistConfig = new ParkourAssistConfig();
     public HandsViewConfig handsViewConfig = new HandsViewConfig();
@@ -89,7 +93,6 @@ public class Config implements Sanitizable {
         fastBreakConfig.sanitize();
         elytraHackConfig.sanitize();
         freeCamConfig.sanitize();
-        flyHackConfig.sanitize();
         boatHackConfig.sanitize();
         explorationMiniMapConfig.sanitize();
         reachConfig.sanitize();
@@ -111,7 +114,6 @@ public class Config implements Sanitizable {
         crystalAuraConfig.sanitize();
         pigHackConfig.sanitize();
         elytraTunnelConfig.sanitize();
-        airPlaceConfig.sanitize();
         containerButtonsConfig.sanitize();
     }
 }
