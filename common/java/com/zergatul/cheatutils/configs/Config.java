@@ -11,7 +11,7 @@ public class Config implements Sanitizable {
     public EntitiesConfig entities = new EntitiesConfig();
     public LightLevelConfig lightLevelConfig = new LightLevelConfig();
     public KillAuraConfig killAuraConfig = new KillAuraConfig();
-    public BoatHackConfig boatHackConfig = new BoatHackConfig();
+    public BoatHackConfig boatHackConfig = BoatHackConfig.defaults();
     public ShulkerTooltipConfig shulkerTooltipConfig = new ShulkerTooltipConfig();
     public ProjectilePathConfig projectilePathConfig = new ProjectilePathConfig();
     public ElytraHackConfig elytraHackConfig = new ElytraHackConfig();
@@ -51,7 +51,7 @@ public class Config implements Sanitizable {
     public PerformanceConfig performanceConfig = new PerformanceConfig();
     public EntityTitleConfig entityTitleConfig = EntityTitleConfig.defaults();
     public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
-    public BobHurtConfig bobHurtConfig = new BobHurtConfig();
+    public BobHurtConfig bobHurtConfig = BobHurtConfig.defaults();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
     public BreachSwapConfig breachSwapConfig = new BreachSwapConfig();
     public SpearRangeConfig spearRangeConfig = new SpearRangeConfig();
@@ -91,7 +91,6 @@ public class Config implements Sanitizable {
         fastBreakConfig.sanitize();
         elytraHackConfig.sanitize();
         freeCamConfig.sanitize();
-        boatHackConfig.sanitize();
         explorationMiniMapConfig.sanitize();
         reachConfig.sanitize();
         lightLevelConfig.sanitize();

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.BoatHackConfig;
+import com.zergatul.cheatutils.configs.modules.BoatHackConfig;
 import com.zergatul.cheatutils.modules.hacks.BoatHack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -41,7 +41,7 @@ public abstract class MixinAbstractBoat extends Entity {
         }
 
         BoatHackConfig config = BoatHack.INSTANCE.getSettings().get();
-        if (config.fly) {
+        if (config.fly()) {
             this.inputUp = false;
             this.inputLeft = false;
             this.inputRight = false;
@@ -57,7 +57,7 @@ public abstract class MixinAbstractBoat extends Entity {
         }
 
         BoatHackConfig config = BoatHack.INSTANCE.getSettings().get();
-        if (!config.fly) {
+        if (!config.fly()) {
             super.move(type, speed);
             return;
         }
@@ -107,14 +107,14 @@ public abstract class MixinAbstractBoat extends Entity {
             } else {
                 angle += Math.PI / 2;
             }
-            speed = new Vec3(-config.horizontalFlySpeed / 20 * Math.sin(angle), 0, config.horizontalFlySpeed / 20 * Math.cos(angle));
+            speed = new Vec3(-config.horizontalFlySpeed() / 20 * Math.sin(angle), 0, config.horizontalFlySpeed() / 20 * Math.cos(angle));
         }
 
         if (mc.options.keyJump.isDown()) {
-            speed = speed.add(0, config.verticalFlySpeed / 20, 0);
+            speed = speed.add(0, config.verticalFlySpeed() / 20, 0);
         }
         if (mc.options.keySprint.isDown()) {
-            speed = speed.add(0, -config.verticalFlySpeed / 20, 0);
+            speed = speed.add(0, -config.verticalFlySpeed() / 20, 0);
         }
 
         this.setDeltaMovement(speed);

@@ -38,6 +38,16 @@ public final class Settings {
                 (config, value) -> config.autoFishConfig = value);
 
         registrar.register(
+                BoatHackConfig.class,
+                config -> config.boatHackConfig,
+                (config, value) -> config.boatHackConfig = value);
+
+        registrar.register(
+                BobHurtConfig.class,
+                config -> config.bobHurtConfig,
+                (config, value) -> config.bobHurtConfig = value);
+
+        registrar.register(
                 EntityTitleConfig.class,
                 config -> config.entityTitleConfig,
                 (config, value) -> config.entityTitleConfig = value);

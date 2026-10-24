@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ResizeEvent;
-import com.zergatul.cheatutils.configs.BobHurtConfig;
+import com.zergatul.cheatutils.configs.modules.BobHurtConfig;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.modules.visuals.BobHurt;
@@ -78,7 +78,7 @@ public abstract class MixinGameRenderer {
     @Inject(at = @At("HEAD"), method = "bobHurt", cancellable = true)
     private void onBobHurt(final CameraRenderState cameraState, final PoseStack poseStack, CallbackInfo info) {
         BobHurtConfig config = BobHurt.INSTANCE.getSettings().get();
-        if (config.enabled) {
+        if (config.enabled()) {
             info.cancel();
         }
     }

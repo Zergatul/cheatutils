@@ -12,7 +12,7 @@ public class BoatHackApi {
             If Boat Fly enabled
             """)
     public boolean isFlyEnabled() {
-        return BoatHack.INSTANCE.getSettings().get().fly;
+        return BoatHack.INSTANCE.getSettings().get().fly();
     }
 
     @MethodDescription("""
@@ -20,6 +20,6 @@ public class BoatHackApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggleFly() {
-        BoatHack.INSTANCE.getSettings().update(c -> c.fly = !c.fly);
+        BoatHack.INSTANCE.getSettings().update(config -> config.withFly(!config.fly()));
     }
 }
