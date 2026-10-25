@@ -8,84 +8,84 @@ import com.zergatul.cheatutils.scripting.ApiVisibility;
 public class VillagerRollerApi {
 
     public boolean isActive() {
-        return VillagerRoller.instance.isActive();
+        return VillagerRoller.INSTANCE.isActive();
     }
 
     public String getStopReason() {
-        String reason = VillagerRoller.instance.getStopReason();
+        String reason = VillagerRoller.INSTANCE.getStopReason();
         return reason == null ? "" : reason;
     }
 
     public void resetStopReason() {
-        VillagerRoller.instance.resetStopReason();
+        VillagerRoller.INSTANCE.resetStopReason();
     }
 
     public String getState() {
-        return VillagerRoller.instance.getState();
+        return VillagerRoller.INSTANCE.getState();
     }
 
     @ApiVisibility({ ApiType.UPDATE, ApiType.VILLAGER_ROLLER })
     public void start() {
-        VillagerRoller.instance.start();
+        VillagerRoller.INSTANCE.start();
     }
 
     @ApiVisibility({ ApiType.UPDATE, ApiType.VILLAGER_ROLLER })
     public void stop() {
-        VillagerRoller.instance.stop();
+        VillagerRoller.INSTANCE.stop();
     }
 
     @ApiVisibility({ ApiType.UPDATE, ApiType.VILLAGER_ROLLER })
     public void toggle() {
-        VillagerRoller.instance.toggle();
+        VillagerRoller.INSTANCE.toggle();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public String getEnchantmentId() {
-        return VillagerRoller.instance.getEnchantmentId();
+        return VillagerRoller.INSTANCE.getEnchantmentId();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public String getEnchantmentName() {
-        return VillagerRoller.instance.getEnchantmentName();
+        return VillagerRoller.INSTANCE.getEnchantmentName();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public int getLevel() {
-        return VillagerRoller.instance.getLevel();
+        return VillagerRoller.INSTANCE.getLevel();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public int getMaxLevel() {
-        return VillagerRoller.instance.getMaxLevel();
+        return VillagerRoller.INSTANCE.getMaxLevel();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public boolean isMaxLevel() {
-        return VillagerRoller.instance.getLevel() == VillagerRoller.instance.getMaxLevel();
+        return VillagerRoller.INSTANCE.getLevel() == VillagerRoller.INSTANCE.getMaxLevel();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public int getPrice() {
-        return VillagerRoller.instance.getPrice();
+        return VillagerRoller.INSTANCE.getPrice();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public int getMinPrice() {
-        return VillagerRoller.instance.getMinPrice();
+        return VillagerRoller.INSTANCE.getMinPrice();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public int getMaxPrice() {
-        return VillagerRoller.instance.getMaxPrice();
+        return VillagerRoller.INSTANCE.getMaxPrice();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public boolean isBestPrice() {
-        return VillagerRoller.instance.getPrice() == VillagerRoller.instance.getMinPrice();
+        return VillagerRoller.INSTANCE.getPrice() == VillagerRoller.INSTANCE.getMinPrice();
     }
 
     @ApiVisibility(ApiType.VILLAGER_ROLLER)
     public boolean isCurse() {
-        return VillagerRoller.instance.isCurse();
+        return VillagerRoller.INSTANCE.isCurse();
     }
 }

@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.SettingHandle;
-import com.zergatul.cheatutils.configs.VillagerRollerConfig;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.VillagerRollerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
@@ -43,11 +43,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class VillagerRoller implements Module {
 
-    public static final VillagerRoller instance = new VillagerRoller();
+    public static final VillagerRoller INSTANCE = new VillagerRoller();
 
-    private final SettingHandle<VillagerRollerConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().villagerRollerConfig,
-            config -> config.copyTo(ConfigStore.instance.getConfig().villagerRollerConfig));
+    private final SettingHandle2<VillagerRollerConfig> settings = Settings.get(VillagerRollerConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean active;
     private State state = State.STOPPED;
@@ -82,7 +80,7 @@ public class VillagerRoller implements Module {
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
-    public SettingHandle<VillagerRollerConfig> getSettings() {
+    public SettingHandle2<VillagerRollerConfig> getSettings() {
         return settings;
     }
 

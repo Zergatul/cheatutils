@@ -167,7 +167,7 @@ public abstract class MixinMinecraft {
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
     private boolean onShouldContinueAttack(Minecraft instance, boolean down) {
-        if (VillagerRoller.instance.isBreakingBlock()) {
+        if (VillagerRoller.INSTANCE.isBreakingBlock()) {
             return false;
         }
 

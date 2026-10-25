@@ -207,6 +207,11 @@ public final class Settings {
                 config -> config.stepUp,
                 (config, value) -> config.stepUp = value);
 
+        registrar.register(
+                VillagerRollerConfig.class,
+                config -> config.villagerRollerConfig,
+                (config, value) -> config.villagerRollerConfig = value);
+
         this.handles = Collections.unmodifiableMap(handles);
     }
 

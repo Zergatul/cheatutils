@@ -58,7 +58,7 @@ public class Config implements Sanitizable {
     public AutoStunnerConfig autoStunnerConfig = AutoStunnerConfig.defaults();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
     public ExecConfig execConfig = ExecConfig.defaults();
-    public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
+    public VillagerRollerConfig villagerRollerConfig = VillagerRollerConfig.defaults();
     public AutoHotbarConfig autoHotbarConfig = new AutoHotbarConfig();
     public InvMoveConfig invMoveConfig = InvMoveConfig.defaults();
     public AreaMineConfig areaMineConfig = AreaMineConfig.defaults();

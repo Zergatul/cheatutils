@@ -69,7 +69,7 @@ public class Modules {
         register(AutoAttack.instance);
 
         register(Exec.INSTANCE);
-        register(VillagerRoller.instance);
+        register(VillagerRoller.INSTANCE);
         register(AutoHotbar.instance);
         register(AreaMine.INSTANCE);
         register(ServerPlugins.instance);

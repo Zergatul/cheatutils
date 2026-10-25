@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
@@ -17,7 +16,7 @@ public class VillagerRollerScriptSlot extends SingleScriptSlot {
 
     @Override
     protected void updateConfigCode(@Nullable String code) {
-        ConfigStore.instance.getConfig().villagerRollerConfig.code = code;
+        VillagerRoller.INSTANCE.getSettings().update(config -> config.withCode(code));
     }
 
     @Override
@@ -27,6 +26,6 @@ public class VillagerRollerScriptSlot extends SingleScriptSlot {
 
     @Override
     protected <T> void applyScript(@Nullable T program) {
-        VillagerRoller.instance.setScript((Runnable) program);
+        VillagerRoller.INSTANCE.setScript((Runnable) program);
     }
 }

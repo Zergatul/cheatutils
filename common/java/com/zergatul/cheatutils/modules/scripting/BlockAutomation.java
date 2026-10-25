@@ -119,7 +119,7 @@ public class BlockAutomation {
         ScriptActivation<BlockPosConsumer> script = this.script;
         BlockAutomationConfig config = settings.get();
         // Block Automation code stops breaking lectern after first tick for Villager Roller
-        if (!config.enabled || VillagerRoller.instance.isActive()) {
+        if (!config.enabled || VillagerRoller.INSTANCE.isActive()) {
             resetState();
             return;
         }
