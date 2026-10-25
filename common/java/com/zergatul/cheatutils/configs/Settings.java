@@ -23,9 +23,24 @@ public final class Settings {
                 (config, value) -> config.airPlaceConfig = value);
 
         registrar.register(
+                AntiHungerConfig.class,
+                config -> config.antiHungerConfig,
+                (config, value) -> config.antiHungerConfig = value);
+
+        registrar.register(
+                AntiRespawnResetConfig.class,
+                config -> config.antiRespawnResetConfig,
+                (config, value) -> config.antiRespawnResetConfig = value);
+
+        registrar.register(
                 AreaMineConfig.class,
                 config -> config.areaMineConfig,
                 (config, value) -> config.areaMineConfig = value);
+
+        registrar.register(
+                ArmorOverlayConfig.class,
+                config -> config.armorOverlayConfig,
+                (config, value) -> config.armorOverlayConfig = value);
 
         registrar.register(
                 AutoCriticalsConfig.class,
@@ -38,6 +53,11 @@ public final class Settings {
                 (config, value) -> config.autoFishConfig = value);
 
         registrar.register(
+                AutoStunnerConfig.class,
+                config -> config.autoStunnerConfig,
+                (config, value) -> config.autoStunnerConfig = value);
+
+        registrar.register(
                 BoatHackConfig.class,
                 config -> config.boatHackConfig,
                 (config, value) -> config.boatHackConfig = value);
@@ -46,6 +66,11 @@ public final class Settings {
                 BobHurtConfig.class,
                 config -> config.bobHurtConfig,
                 (config, value) -> config.bobHurtConfig = value);
+
+        registrar.register(
+                BreachSwapConfig.class,
+                config -> config.breachSwapConfig,
+                (config, value) -> config.breachSwapConfig = value);
 
         registrar.register(
                 EntityTitleConfig.class,
@@ -58,6 +83,11 @@ public final class Settings {
                 (config, value) -> config.execConfig = value);
 
         registrar.register(
+                FlyHackConfig.class,
+                config -> config.flyHackConfig,
+                (config, value) -> config.flyHackConfig = value);
+
+        registrar.register(
                 FullBrightConfig.class,
                 config -> config.fullBrightConfig,
                 (config, value) -> config.fullBrightConfig = value);
@@ -66,11 +96,6 @@ public final class Settings {
                 InvMoveConfig.class,
                 config -> config.invMoveConfig,
                 (config, value) -> config.invMoveConfig = value);
-
-        registrar.register(
-                FlyHackConfig.class,
-                config -> config.flyHackConfig,
-                (config, value) -> config.flyHackConfig = value);
 
         this.handles = Collections.unmodifiableMap(handles);
     }

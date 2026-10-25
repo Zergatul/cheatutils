@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
-import com.zergatul.cheatutils.configs.BreachSwapConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.BreachSwapConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -15,11 +15,9 @@ import net.minecraft.world.phys.HitResult;
 
 public class BreachSwap implements Module {
 
-    public static final BreachSwap instance = new BreachSwap();
+    public static final BreachSwap INSTANCE = new BreachSwap();
 
-    private final ModuleConfigSettingHandle<BreachSwapConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().breachSwapConfig,
-            config -> ConfigStore.instance.getConfig().breachSwapConfig = config);
+    private final SettingHandle2<BreachSwapConfig> settings = Settings.get(BreachSwapConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private Inventory inventory;
 
@@ -31,13 +29,13 @@ public class BreachSwap implements Module {
         WebApiRegistry.INSTANCE.register("breach-swap", settings, BreachSwapConfig.class);
     }
 
-    public ModuleConfigSettingHandle<BreachSwapConfig> getSettings() {
+    public SettingHandle2<BreachSwapConfig> getSettings() {
         return settings;
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
 
-        if (!settings.get().enabled) {
+        if (!settings.get().enabled()) {
             return;
         }
         if (mc.player == null) {
@@ -73,7 +71,7 @@ public class BreachSwap implements Module {
     }
 
     private void onAfterAttack() {
-        if (!settings.get().enabled) return;
+        if (!settings.get().enabled()) return;
         if (prevSelectedSlot == -1) return;
         inventory.setSelectedSlot(prevSelectedSlot);
         prevSelectedSlot = -1;

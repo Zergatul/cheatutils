@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.common.events.ContinueDestroyBlockEvent;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
-import com.zergatul.cheatutils.configs.AntiRespawnResetConfig;
+import com.zergatul.cheatutils.configs.modules.AntiRespawnResetConfig;
 import com.zergatul.cheatutils.configs.FastBreakConfig;
 import com.zergatul.cheatutils.extensions.MultiPlayerGameModeExtension;
 import com.zergatul.cheatutils.modules.automation.AntiRespawnReset;
@@ -75,7 +75,7 @@ public abstract class MixinMultiPlayerGameMode implements MultiPlayerGameModeExt
     @Inject(at = @At("HEAD"), method = "useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;", cancellable = true)
     private void onUseItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult blockHit, CallbackInfoReturnable<InteractionResult> info) {
         AntiRespawnResetConfig config = AntiRespawnReset.INSTANCE.getSettings().get();
-        if (config.enabled) {
+        if (config.enabled()) {
             BlockState state = player.level().getBlockState(blockHit.getBlockPos());
             if (state.getBlock() instanceof BedBlock) {
                 info.setReturnValue(InteractionResult.FAIL);

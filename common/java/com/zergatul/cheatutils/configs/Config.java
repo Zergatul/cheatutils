@@ -6,7 +6,7 @@ public class Config implements Sanitizable {
 
     public FullBrightConfig fullBrightConfig = FullBrightConfig.defaults();
     public AutoFishConfig autoFishConfig = AutoFishConfig.defaults();
-    public ArmorOverlayConfig armorOverlayConfig = new ArmorOverlayConfig();
+    public ArmorOverlayConfig armorOverlayConfig = ArmorOverlayConfig.defaults();
     public BlocksConfig blocks = new BlocksConfig();
     public EntitiesConfig entities = new EntitiesConfig();
     public LightLevelConfig lightLevelConfig = new LightLevelConfig();
@@ -41,7 +41,7 @@ public class Config implements Sanitizable {
     public StatusEffectsConfig statusEffectsConfig = new StatusEffectsConfig();
     public AutoEatConfig autoEatConfig = new AutoEatConfig();
     public NoFallConfig noFallConfig = new NoFallConfig();
-    public AntiRespawnResetConfig antiRespawnResetConfig = new AntiRespawnResetConfig();
+    public AntiRespawnResetConfig antiRespawnResetConfig = AntiRespawnResetConfig.defaults();
     public FastBreakConfig fastBreakConfig = new FastBreakConfig();
     public ContainerSummaryConfig containerSummaryConfig = new ContainerSummaryConfig();
     public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
@@ -53,9 +53,9 @@ public class Config implements Sanitizable {
     public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
     public BobHurtConfig bobHurtConfig = BobHurtConfig.defaults();
     public AutoAttackConfig autoAttackConfig = new AutoAttackConfig();
-    public BreachSwapConfig breachSwapConfig = new BreachSwapConfig();
+    public BreachSwapConfig breachSwapConfig = BreachSwapConfig.defaults();
     public SpearRangeConfig spearRangeConfig = new SpearRangeConfig();
-    public AutoStunnerConfig autoStunnerConfig = new AutoStunnerConfig();
+    public AutoStunnerConfig autoStunnerConfig = AutoStunnerConfig.defaults();
     public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
     public ExecConfig execConfig = ExecConfig.defaults();
     public VillagerRollerConfig villagerRollerConfig = new VillagerRollerConfig();
@@ -67,7 +67,7 @@ public class Config implements Sanitizable {
     public EventsScriptingConfig eventsScriptingConfig = new EventsScriptingConfig();
     public BedrockBreakerConfig bedrockBreakerConfig = new BedrockBreakerConfig();
     public CoreConfig coreConfig = new CoreConfig();
-    public AntiHungerConfig antiHungerConfig = new AntiHungerConfig();
+    public AntiHungerConfig antiHungerConfig = AntiHungerConfig.defaults();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
     public StepUpConfig stepUp = new StepUpConfig();
     public AimAssistConfig aimAssist = new AimAssistConfig();

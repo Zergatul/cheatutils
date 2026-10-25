@@ -1,10 +1,10 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.configs.AntiHungerConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
-import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AntiHungerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -14,9 +14,7 @@ public class AntiHunger implements Module {
 
     public static final AntiHunger INSTANCE = new AntiHunger();
 
-    private final ModuleConfigSettingHandle<AntiHungerConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().antiHungerConfig,
-            config -> ConfigStore.instance.getConfig().antiHungerConfig = config);
+    private final SettingHandle2<AntiHungerConfig> settings = Settings.get(AntiHungerConfig.class);
 
     private AntiHunger() {
         NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
@@ -24,14 +22,14 @@ public class AntiHunger implements Module {
         WebApiRegistry.INSTANCE.register("anti-hunger", settings, AntiHungerConfig.class);
     }
 
-    public ModuleConfigSettingHandle<AntiHungerConfig> getSettings() {
+    public SettingHandle2<AntiHungerConfig> getSettings() {
         return settings;
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
         if (args.packet instanceof ServerboundMovePlayerPacket packet) {
             AntiHungerConfig config = settings.get();
-            if (!config.enabled) {
+            if (!config.enabled()) {
                 return;
             }
             if (NoFall.instance.isActive()) {

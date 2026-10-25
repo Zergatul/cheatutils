@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.modules.visuals;
 
-import com.zergatul.cheatutils.configs.ArmorOverlayConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ArmorOverlayConfig;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,16 +14,14 @@ public class ArmorOverlay {
 
     public static final ArmorOverlay INSTANCE = new ArmorOverlay();
 
-    private final ModuleConfigSettingHandle<ArmorOverlayConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().armorOverlayConfig,
-            config -> ConfigStore.instance.getConfig().armorOverlayConfig = config);
+    private final SettingHandle2<ArmorOverlayConfig> settings = Settings.get(ArmorOverlayConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private ArmorOverlay() {
         WebApiRegistry.INSTANCE.register("armor-overlay", settings, ArmorOverlayConfig.class);
     }
 
-    public ModuleConfigSettingHandle<ArmorOverlayConfig> getSettings() {
+    public SettingHandle2<ArmorOverlayConfig> getSettings() {
         return settings;
     }
 

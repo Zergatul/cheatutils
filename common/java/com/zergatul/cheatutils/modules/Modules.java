@@ -128,8 +128,8 @@ public class Modules {
         register(KillAura.INSTANCE);
 
         register(SpearRange.instance);
-        register(AutoStunner.instance);
-        register(BreachSwap.instance);
+        register(AutoStunner.INSTANCE);
+        register(BreachSwap.INSTANCE);
         //===========================================
     }
 

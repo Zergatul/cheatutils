@@ -65,7 +65,7 @@ public abstract class MixinHud {
             return;
         }
 
-        if (ArmorOverlay.INSTANCE.getSettings().get().enabled) {
+        if (ArmorOverlay.INSTANCE.getSettings().get().enabled()) {
             int j1 = graphics.guiHeight() - 39;
             int j2 = j1 - 10;
 

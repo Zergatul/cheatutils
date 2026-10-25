@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.modules.automation;
 
-import com.zergatul.cheatutils.configs.AntiRespawnResetConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AntiRespawnResetConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 
@@ -10,15 +10,13 @@ public class AntiRespawnReset implements Module {
 
     public static final AntiRespawnReset INSTANCE = new AntiRespawnReset();
 
-    private final ModuleConfigSettingHandle<AntiRespawnResetConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().antiRespawnResetConfig,
-            config -> ConfigStore.instance.getConfig().antiRespawnResetConfig = config);
+    private final SettingHandle2<AntiRespawnResetConfig> settings = Settings.get(AntiRespawnResetConfig.class);
 
     private AntiRespawnReset() {
         WebApiRegistry.INSTANCE.register("anti-respawn-reset", settings, AntiRespawnResetConfig.class);
     }
 
-    public ModuleConfigSettingHandle<AntiRespawnResetConfig> getSettings() {
+    public SettingHandle2<AntiRespawnResetConfig> getSettings() {
         return settings;
     }
 }
