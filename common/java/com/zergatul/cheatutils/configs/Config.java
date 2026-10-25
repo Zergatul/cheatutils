@@ -33,7 +33,7 @@ public class Config implements Sanitizable {
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
     public WorldMarkersConfig worldMarkersConfig = new WorldMarkersConfig();
     public UserNameConfig userNameConfig = new UserNameConfig();
-    public NewChunksConfig newChunksConfig = new NewChunksConfig();
+    public NewChunksConfig newChunksConfig = NewChunksConfig.defaults();
     public AutoDropConfig autoDropConfig = new AutoDropConfig();
     public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
     public ChunksConfig chunksConfig = ChunksConfig.defaults();

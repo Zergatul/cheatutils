@@ -138,6 +138,11 @@ public final class Settings {
                 (config, value) -> config.invMoveConfig = value);
 
         registrar.register(
+                NewChunksConfig.class,
+                config -> config.newChunksConfig,
+                (config, value) -> config.newChunksConfig = value);
+
+        registrar.register(
                 ShulkerTooltipConfig.class,
                 config -> config.shulkerTooltipConfig,
                 (config, value) -> config.shulkerTooltipConfig = value);
