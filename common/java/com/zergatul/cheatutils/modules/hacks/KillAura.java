@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
 import com.zergatul.cheatutils.web.*;
@@ -147,7 +148,7 @@ public class KillAura implements Module {
             }
 
             TargetPredicate predicate = targetPredicate;
-            if (predicate != null && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
+            if (predicate != null && EventsScripting.INSTANCE.getSettings().get().enabled()) {
                 boolean matches = predicate.test(entity.getId());
                 // Failure replaces the predicate and clears pending attacks; abort this selection pass too.
                 if (targetPredicate != predicate) return;

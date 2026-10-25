@@ -30,7 +30,7 @@ public class KillAuraEventsTests {
 
     @AfterEach
     public void clear() throws Exception {
-        EventsScripting.instance.clear();
+        EventsScripting.INSTANCE.clear();
         ClientTickEndExecutor.instance.processQueue();
         drainFailures();
     }
@@ -49,7 +49,7 @@ public class KillAuraEventsTests {
     public void killAuraOnlyRegistrationsCombineAndShortCircuit() throws Exception {
         EventsApi events = new EventsApi();
         List<Integer> calls = new ArrayList<>();
-        EventsScripting.instance.setScript(() -> {
+        EventsScripting.INSTANCE.setScript(() -> {
             events.modules.killAura.addTargetFilter(id -> {
                 calls.add(1);
                 return id != 10;
@@ -76,21 +76,21 @@ public class KillAuraEventsTests {
     @Test
     public void replacingAndClearingEventsScriptDetachPreviousFilters() throws Exception {
         EventsApi events = new EventsApi();
-        EventsScripting.instance.setScript(() -> events.modules.killAura.addTargetFilter(id -> false));
+        EventsScripting.INSTANCE.setScript(() -> events.modules.killAura.addTargetFilter(id -> false));
         ClientTickEndExecutor.instance.processQueue();
         assertFalse(getPredicate().test(1));
 
-        EventsScripting.instance.setScript(() -> events.modules.killAura.addTargetFilter(id -> true));
+        EventsScripting.INSTANCE.setScript(() -> events.modules.killAura.addTargetFilter(id -> true));
         ClientTickEndExecutor.instance.processQueue();
         assertTrue(getPredicate().test(1));
 
-        EventsScripting.instance.setScript(() -> {});
+        EventsScripting.INSTANCE.setScript(() -> {});
         ClientTickEndExecutor.instance.processQueue();
         assertNull(getPredicate());
 
-        EventsScripting.instance.setScript(() -> events.modules.killAura.addTargetFilter(id -> false));
+        EventsScripting.INSTANCE.setScript(() -> events.modules.killAura.addTargetFilter(id -> false));
         ClientTickEndExecutor.instance.processQueue();
-        EventsScripting.instance.setScript(null);
+        EventsScripting.INSTANCE.setScript(null);
         ClientTickEndExecutor.instance.processQueue();
         assertNull(getPredicate());
     }
@@ -105,11 +105,11 @@ public class KillAuraEventsTests {
     public void failedFilterDisablesTheWholeEventsInstallationUntilSaved() throws Exception {
         AtomicInteger calls = new AtomicInteger();
         Runnable program = () -> {
-            EventsScripting.instance.addOnTickEnd(calls::incrementAndGet);
-            EventsScripting.instance.addAimAssistTargetPredicate(_ -> { calls.incrementAndGet(); return true; });
-            EventsScripting.instance.addKillAuraTargetPredicate(_ -> { calls.incrementAndGet(); throw new IllegalStateException("filter failed"); });
+            EventsScripting.INSTANCE.addOnTickEnd(calls::incrementAndGet);
+            EventsScripting.INSTANCE.addAimAssistTargetPredicate(_ -> { calls.incrementAndGet(); return true; });
+            EventsScripting.INSTANCE.addKillAuraTargetPredicate(_ -> { calls.incrementAndGet(); throw new IllegalStateException("filter failed"); });
         };
-        EventsScripting.instance.setScript(program);
+        EventsScripting.INSTANCE.setScript(program);
         ClientTickEndExecutor.instance.processQueue();
         ScriptActivation<?> failed = getActivation();
         KillAura.TargetPredicate old = getPredicate();
@@ -123,7 +123,7 @@ public class KillAuraEventsTests {
         assertFalse(getAimPredicate().test(1));
         assertTrue(getCallbacks().isEmpty());
 
-        EventsScripting.instance.setScript(program);
+        EventsScripting.INSTANCE.setScript(program);
         ClientTickEndExecutor.instance.processQueue();
         assertTrue(getActivation().isActive());
         assertTrue(getAimPredicate().test(1));
@@ -134,9 +134,9 @@ public class KillAuraEventsTests {
 
     @Test
     public void initializationFailureBlocksPartiallyRegisteredFiltersAndDetachesCallbacks() throws Exception {
-        EventsScripting.instance.setScript(() -> {
-            EventsScripting.instance.addOnTickEnd(() -> {});
-            EventsScripting.instance.addKillAuraTargetPredicate(_ -> true);
+        EventsScripting.INSTANCE.setScript(() -> {
+            EventsScripting.INSTANCE.addOnTickEnd(() -> {});
+            EventsScripting.INSTANCE.addKillAuraTargetPredicate(_ -> true);
             throw new IllegalStateException("initialization failed");
         });
         ClientTickEndExecutor.instance.processQueue();
@@ -148,11 +148,11 @@ public class KillAuraEventsTests {
 
     @Test
     public void pendingFailureCleanupCannotDisableSavedReplacement() throws Exception {
-        EventsScripting.instance.setScript(() -> EventsScripting.instance.addKillAuraTargetPredicate(_ -> { throw new IllegalStateException(); }));
+        EventsScripting.INSTANCE.setScript(() -> EventsScripting.INSTANCE.addKillAuraTargetPredicate(_ -> { throw new IllegalStateException(); }));
         ClientTickEndExecutor.instance.processQueue();
         assertFalse(getPredicate().test(1));
 
-        EventsScripting.instance.setScript(() -> EventsScripting.instance.addKillAuraTargetPredicate(_ -> true));
+        EventsScripting.INSTANCE.setScript(() -> EventsScripting.INSTANCE.addKillAuraTargetPredicate(_ -> true));
         ClientTickEndExecutor.instance.processQueue();
         drainFailures();
         assertTrue(getActivation().isActive());
@@ -162,7 +162,7 @@ public class KillAuraEventsTests {
     private static ScriptActivation<?> getActivation() throws Exception {
         Field field = EventsScripting.class.getDeclaredField("script");
         field.setAccessible(true);
-        return (ScriptActivation<?>) field.get(EventsScripting.instance);
+        return (ScriptActivation<?>) field.get(EventsScripting.INSTANCE);
     }
 
     private static AimAssist.TargetPredicate getAimPredicate() throws Exception {
@@ -174,12 +174,12 @@ public class KillAuraEventsTests {
     private static List<?> getCallbacks() throws Exception {
         Field field = EventsScripting.class.getDeclaredField("onTickEnd");
         field.setAccessible(true);
-        return (List<?>) field.get(EventsScripting.instance);
+        return (List<?>) field.get(EventsScripting.INSTANCE);
     }
 
     private static void drainFailures() throws Exception {
         var method = EventsScripting.class.getDeclaredMethod("processPendingFailures");
         method.setAccessible(true);
-        method.invoke(EventsScripting.instance);
+        method.invoke(EventsScripting.INSTANCE);
     }
 }

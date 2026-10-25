@@ -218,7 +218,7 @@ public class ConfigStore {
         initializeScript(ScriptType.OVERLAY, null, config.statusOverlayConfig.code);
         initializeScript(ScriptType.BLOCK_AUTOMATION, null, config.blockAutomationConfig.code);
         initializeScript(ScriptType.VILLAGER_ROLLER, null, config.villagerRollerConfig.code());
-        initializeScript(ScriptType.EVENTS, null, config.eventsScriptingConfig.code);
+        initializeScript(ScriptType.EVENTS, null, config.eventsScriptingConfig.code());
 
         ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP)).clear();
         if (config.blocks != null && config.blocks.getBlockConfigs() != null) {

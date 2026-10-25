@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.configs.modules;
 
-import com.zergatul.cheatutils.configs.ImmutableConfig;
 import com.zergatul.cheatutils.configs.InteractionConfig;
+import com.zergatul.cheatutils.configs.ImmutableConfigWithUpdateOptions;
 
 public record VillagerRollerConfig(
         boolean autoRotate,
         String code
-) implements ImmutableConfig, InteractionConfig {
+) implements ImmutableConfigWithUpdateOptions<VillagerRollerConfig.UpdateOptions>, InteractionConfig {
 
     public static VillagerRollerConfig defaults() {
         return new Builder()
@@ -34,6 +34,17 @@ public record VillagerRollerConfig(
     public VillagerRollerConfig withCode(String code) {
         return Builder.from(this).code(code).build();
     }
+
+    @Override
+    public VillagerRollerConfig withOptions(UpdateOptions options) {
+        return Builder.from(this)
+                .autoRotate(options.autoRotate())
+                .build();
+    }
+
+    public record UpdateOptions(
+            boolean autoRotate
+    ) {}
 
     public static class Builder {
 

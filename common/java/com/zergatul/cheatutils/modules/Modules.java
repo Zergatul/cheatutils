@@ -114,7 +114,7 @@ public class Modules {
         register(Movement.INSTANCE);
         register(Debugging.INSTANCE);
 
-        register(EventsScripting.instance);
+        register(EventsScripting.INSTANCE);
 
         register(Privacy.INSTANCE);
 

@@ -64,7 +64,7 @@ public class Config implements Sanitizable {
     public AreaMineConfig areaMineConfig = AreaMineConfig.defaults();
     public ServerPluginsConfig serverPluginsConfig = new ServerPluginsConfig();
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
-    public EventsScriptingConfig eventsScriptingConfig = new EventsScriptingConfig();
+    public EventsScriptingConfig eventsScriptingConfig = EventsScriptingConfig.defaults();
     public BedrockBreakerConfig bedrockBreakerConfig = new BedrockBreakerConfig();
     public CoreConfig coreConfig = new CoreConfig();
     public AntiHungerConfig antiHungerConfig = AntiHungerConfig.defaults();

@@ -32,6 +32,14 @@ object ImmutableConfigGenerator {
             }
             .toList()
 
+        val interfaces = source.substring(componentsEnd.range.last + 1).substringBefore("{")
+        val withUpdateOptions = Regex("""\bImmutableConfigWithUpdateOptions\s*<""").containsMatchIn(interfaces)
+        if (withUpdateOptions) {
+            require(components.any { it.name == "code" && it.type == "String" }) {
+                "ImmutableConfigWithUpdateOptions requires a String code component"
+            }
+        }
+
         val generated = buildString {
             appendLine()
             for (component in components) {
@@ -39,6 +47,25 @@ object ImmutableConfigGenerator {
                 appendLine("    public $name with$methodName(${component.type} ${component.name}) {")
                 appendLine("        return Builder.from(this).${component.name}(${component.name}).build();")
                 appendLine("    }")
+                appendLine()
+            }
+            if (withUpdateOptions) {
+                val options = components.filter { it.name != "code" }
+                appendLine("    @Override")
+                appendLine("    public $name withOptions(UpdateOptions options) {")
+                appendLine("        return Builder.from(this)")
+                for (component in options) {
+                    appendLine("                .${component.name}(options.${component.name}())")
+                }
+                appendLine("                .build();")
+                appendLine("    }")
+                appendLine()
+                appendLine("    public record UpdateOptions(")
+                options.forEachIndexed { index, component ->
+                    val comma = if (index < options.lastIndex) "," else ""
+                    appendLine("            ${component.type} ${component.name}$comma")
+                }
+                appendLine("    ) {}")
                 appendLine()
             }
             appendLine("    public static class Builder {")

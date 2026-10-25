@@ -75,7 +75,7 @@ public class VillagerRoller implements Module {
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
         NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
 
-        WebApiRegistry.INSTANCE.register("villager-roller", settings, VillagerRollerConfig.class);
+        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new StatusWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
@@ -471,6 +471,28 @@ public class VillagerRoller implements Module {
         START_BREAKING_LECTERN,
         BREAKING_LECTERN_PROGRESS,
         WAITING_FOR_LECTERN_BREAK
+    }
+
+    private class ConfigWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "villager-roller";
+        }
+
+        @Override
+        public String get() {
+            return gson.toJson(settings.get());
+        }
+
+        @Override
+        public String post(String body) {
+            VillagerRollerConfig.UpdateOptions options = gson.fromJson(body, VillagerRollerConfig.UpdateOptions.class);
+            if (options != null) {
+                settings.update(config -> config.withOptions(options));
+            }
+            return get();
+        }
     }
 
     private final class StatusWebApi extends WebApiBase {

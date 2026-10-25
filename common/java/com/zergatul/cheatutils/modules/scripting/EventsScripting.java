@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EventsScriptingConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.EventsScriptingConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.AimAssist;
@@ -18,6 +18,7 @@ import com.zergatul.cheatutils.scripting.modules.PlayerMessageSendingEvent;
 import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
 import com.zergatul.cheatutils.scripting.types.PlayerInfoWrapper;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
+import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
@@ -31,11 +32,9 @@ import java.util.function.Consumer;
 
 public class EventsScripting implements Module {
 
-    public static final EventsScripting instance = new EventsScripting();
+    public static final EventsScripting INSTANCE = new EventsScripting();
 
-    private final ModuleConfigSettingHandle<EventsScriptingConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().eventsScriptingConfig,
-            config -> ConfigStore.instance.getConfig().eventsScriptingConfig.enabled = config.enabled);
+    private final SettingHandle2<EventsScriptingConfig> settings = Settings.get(EventsScriptingConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private volatile ScriptActivation<Runnable> script;
     private final ConcurrentLinkedQueue<ScriptActivation<Runnable>> pendingFailures = new ConcurrentLinkedQueue<>();
@@ -70,7 +69,7 @@ public class EventsScripting implements Module {
         });
 
         Events.ClientTickEnd.add(() -> {
-            if (isScriptActive() && settings.get().enabled) {
+            if (isScriptActive() && settings.get().enabled()) {
                 if (mc.level == null && mc.player == null) {
                     for (Runnable handler : onMenuTickEnd) {
                         if (!runCallback("menu tick", handler)) return;
@@ -130,7 +129,7 @@ public class EventsScripting implements Module {
         });
 
         Events.ClientPlayerLoggingIn.add(connection -> {
-            if (isScriptActive() && settings.get().enabled && !onJoinServer.isEmpty()) {
+            if (isScriptActive() && settings.get().enabled() && !onJoinServer.isEmpty()) {
                 String address = connection == null ? "" : connection.getRemoteAddress().toString();
                 IntegratedServer integratedServer = mc.getSingleplayerServer();
                 ServerInformation info = new ServerInformation(address, integratedServer);
@@ -163,11 +162,11 @@ public class EventsScripting implements Module {
 
         });
 
-        WebApiRegistry.INSTANCE.register("events-scripting", settings, EventsScriptingConfig.class);
+        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
-    public ModuleConfigSettingHandle<EventsScriptingConfig> getSettings() {
+    public SettingHandle2<EventsScriptingConfig> getSettings() {
         return settings;
     }
 
@@ -359,7 +358,29 @@ public class EventsScripting implements Module {
     }
 
     private boolean canTrigger() {
-        return isScriptActive() && mc.player != null && settings.get().enabled;
+        return isScriptActive() && mc.player != null && settings.get().enabled();
+    }
+
+    private final class ConfigWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "events-scripting";
+        }
+
+        @Override
+        public String get() {
+            return gson.toJson(settings.get());
+        }
+
+        @Override
+        public String post(String body) {
+            EventsScriptingConfig.UpdateOptions options = gson.fromJson(body, EventsScriptingConfig.UpdateOptions.class);
+            if (options != null) {
+                settings.update(config -> config.withOptions(options));
+            }
+            return get();
+        }
     }
 
     private static final class CodeWebApi extends CodeWebApiBase {

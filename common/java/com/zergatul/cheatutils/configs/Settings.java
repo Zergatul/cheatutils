@@ -128,6 +128,11 @@ public final class Settings {
                 (config, value) -> config.entityTitleConfig = value);
 
         registrar.register(
+                EventsScriptingConfig.class,
+                config -> config.eventsScriptingConfig,
+                (config, value) -> config.eventsScriptingConfig = value);
+
+        registrar.register(
                 ExecConfig.class,
                 config -> config.execConfig,
                 (config, value) -> config.execConfig = value);
