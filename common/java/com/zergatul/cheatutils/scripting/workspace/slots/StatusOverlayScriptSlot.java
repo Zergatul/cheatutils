@@ -16,7 +16,7 @@ public class StatusOverlayScriptSlot extends SingleScriptSlot {
 
     @Override
     protected void updateConfigCode(@Nullable String code) {
-        StatusOverlay.INSTANCE.getSettings().update(c -> c.code = code);
+        StatusOverlay.INSTANCE.getSettings().update(config -> config.withCode(code));
     }
 
     @Override

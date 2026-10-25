@@ -37,7 +37,7 @@ public class Config implements Sanitizable {
     public AutoDropConfig autoDropConfig = AutoDropConfig.defaults();
     public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
     public ChunksConfig chunksConfig = ChunksConfig.defaults();
-    public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
+    public StatusOverlayConfig statusOverlayConfig = StatusOverlayConfig.defaults();
     public StatusEffectsConfig statusEffectsConfig = StatusEffectsConfig.defaults();
     public AutoEatConfig autoEatConfig = AutoEatConfig.defaults();
     public NoFallConfig noFallConfig = NoFallConfig.defaults();

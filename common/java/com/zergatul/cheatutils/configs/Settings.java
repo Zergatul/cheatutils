@@ -208,6 +208,11 @@ public final class Settings {
                 (config, value) -> config.statusEffectsConfig = value);
 
         registrar.register(
+                StatusOverlayConfig.class,
+                config -> config.statusOverlayConfig,
+                (config, value) -> config.statusOverlayConfig = value);
+
+        registrar.register(
                 StepUpConfig.class,
                 config -> config.stepUp,
                 (config, value) -> config.stepUp = value);
