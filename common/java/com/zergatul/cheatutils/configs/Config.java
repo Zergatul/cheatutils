@@ -44,7 +44,7 @@ public class Config implements Sanitizable {
     public AntiRespawnResetConfig antiRespawnResetConfig = AntiRespawnResetConfig.defaults();
     public FastBreakConfig fastBreakConfig = new FastBreakConfig();
     public ContainerSummaryConfig containerSummaryConfig = ContainerSummaryConfig.defaults();
-    public AutoCraftConfig autoCraftConfig = new AutoCraftConfig();
+    public AutoCraftConfig autoCraftConfig = AutoCraftConfig.defaults();
     public ReachConfig reachConfig = new ReachConfig();
     public AutoBucketConfig autoBucketConfig = new AutoBucketConfig();
     public SchematicaConfig schematicaConfig = new SchematicaConfig();

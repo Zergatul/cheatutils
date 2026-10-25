@@ -40,7 +40,7 @@ public class Modules {
         register(ElytraBounce.instance);
         register(ParkourAssist.instance);
 
-        register(AutoCraft.instance);
+        register(AutoCraft.INSTANCE);
         register(BlockEsp.instance);
         register(ProjectilePath.instance);
         register(EndCityChunks.INSTANCE);

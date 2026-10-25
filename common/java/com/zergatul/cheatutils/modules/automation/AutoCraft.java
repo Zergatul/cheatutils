@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoCraftConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoCraftConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.AbstractRecipeBookScreenAccessor;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -25,11 +25,9 @@ import java.util.*;
 
 public class AutoCraft {
 
-    public static final AutoCraft instance = new AutoCraft();
+    public static final AutoCraft INSTANCE = new AutoCraft();
 
-    private final ModuleConfigSettingHandle<AutoCraftConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().autoCraftConfig,
-            config -> ConfigStore.instance.getConfig().autoCraftConfig = config);
+    private final SettingHandle2<AutoCraftConfig> settings = Settings.get(AutoCraftConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final Logger logger = LogManager.getLogger(AutoCraft.class);
     private State state = State.NONE;
@@ -40,7 +38,7 @@ public class AutoCraft {
         WebApiRegistry.INSTANCE.register("auto-craft", settings, AutoCraftConfig.class);
     }
 
-    public ModuleConfigSettingHandle<AutoCraftConfig> getSettings() {
+    public SettingHandle2<AutoCraftConfig> getSettings() {
         return settings;
     }
 
@@ -51,7 +49,7 @@ public class AutoCraft {
         }
 
         AutoCraftConfig config = settings.get();
-        if (!config.enabled || config.items.length == 0) {
+        if (!config.enabled() || config.items().isEmpty()) {
             state = State.NONE;
             return;
         }
@@ -74,7 +72,7 @@ public class AutoCraft {
 
                     RecipeDisplayEntry recipe = findRecipe(config, context, stackedContents);
                     if (recipe != null) {
-                        boolean shift = recipe.resultItems(context).get(0).getItem().getDefaultMaxStackSize() > 1;
+                        boolean shift = recipe.resultItems(context).getFirst().getItem().getDefaultMaxStackSize() > 1;
                         mc.gameMode.handlePlaceRecipe(craftingScreen.getMenu().containerId, recipe.id(), shift);
                         state = State.RECIPE_CLICKED;
                     }
@@ -95,10 +93,9 @@ public class AutoCraft {
                     }
                     break;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error(e);
-            config.enabled = false;
+            settings.update(c -> c.withEnabled(false));
         }
     }
 
@@ -113,7 +110,7 @@ public class AutoCraft {
                 .filter(r -> r.display() instanceof ShapedCraftingRecipeDisplay || r.display() instanceof ShapelessCraftingRecipeDisplay)
                 .toList();
 
-        for (Item baseItem : config.items) {
+        for (Item baseItem : config.items()) {
             // queue for next recipes to process
             Queue<CraftingTreeEntry> queue = new LinkedList<>();
 

@@ -48,6 +48,11 @@ public final class Settings {
                 (config, value) -> config.armorOverlayConfig = value);
 
         registrar.register(
+                AutoCraftConfig.class,
+                config -> config.autoCraftConfig,
+                (config, value) -> config.autoCraftConfig = value);
+
+        registrar.register(
                 AutoCriticalsConfig.class,
                 config -> config.autoCriticalsConfig,
                 (config, value) -> config.autoCriticalsConfig = value);
