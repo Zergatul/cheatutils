@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.NoFallConfig;
+import com.zergatul.cheatutils.configs.modules.NoFallConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
@@ -12,11 +12,9 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
 public class NoFall implements Module {
 
-    public static final NoFall instance = new NoFall();
+    public static final NoFall INSTANCE = new NoFall();
 
-    private final ModuleConfigSettingHandle<NoFallConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().noFallConfig,
-            config -> ConfigStore.instance.getConfig().noFallConfig = config);
+    private final SettingHandle2<NoFallConfig> settings = Settings.get(NoFallConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private NoFall() {
@@ -25,13 +23,13 @@ public class NoFall implements Module {
         WebApiRegistry.INSTANCE.register("no-fall", settings, NoFallConfig.class);
     }
 
-    public ModuleConfigSettingHandle<NoFallConfig> getSettings() {
+    public SettingHandle2<NoFallConfig> getSettings() {
         return settings;
     }
 
     public boolean isActive() {
         NoFallConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return false;
         }
 

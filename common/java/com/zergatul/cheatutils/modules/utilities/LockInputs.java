@@ -2,19 +2,17 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.LockInputsConfig;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.LockInputsConfig;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 
 public class LockInputs {
 
-    public static final LockInputs instance = new LockInputs();
+    public static final LockInputs INSTANCE = new LockInputs();
 
-    private final SettingHandle<LockInputsConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().lockInputsConfig,
-            config -> ConfigStore.instance.getConfig().lockInputsConfig = config);
+    private final SettingHandle2<LockInputsConfig> settings = Settings.get(LockInputsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean lastHoldForward;
     private boolean lastHoldAttack;
@@ -27,7 +25,7 @@ public class LockInputs {
         WebApiRegistry.INSTANCE.register("lock-inputs", settings, LockInputsConfig.class);
     }
 
-    public SettingHandle<LockInputsConfig> getSettings() {
+    public SettingHandle2<LockInputsConfig> getSettings() {
         return settings;
     }
 
@@ -38,7 +36,7 @@ public class LockInputs {
 
         LockInputsConfig config = settings.get();
 
-        if (config.holdForward) {
+        if (config.holdForward()) {
             mc.options.keyUp.setDown(true);
         } else {
             if (lastHoldForward) {
@@ -46,7 +44,7 @@ public class LockInputs {
             }
         }
 
-        if (config.holdAttack) {
+        if (config.holdAttack()) {
             mc.options.keyAttack.setDown(true);
         } else {
             if (lastHoldAttack) {
@@ -54,7 +52,7 @@ public class LockInputs {
             }
         }
 
-        if (config.holdUse) {
+        if (config.holdUse()) {
             mc.options.keyUse.setDown(true);
         } else {
             if (lastHoldUse) {
@@ -62,13 +60,13 @@ public class LockInputs {
             }
         }
 
-        lastHoldForward = config.holdForward;
-        lastHoldAttack = config.holdAttack;
-        lastHoldUse = config.holdUse;
+        lastHoldForward = config.holdForward();
+        lastHoldAttack = config.holdAttack();
+        lastHoldUse = config.holdUse();
     }
 
     private void onPlayerTurnByMouse(PlayerTurnByMouseEvent event) {
-        if (settings.get().mouseInputDisabled) {
+        if (settings.get().mouseInputDisabled()) {
             event.cancel();
         }
     }

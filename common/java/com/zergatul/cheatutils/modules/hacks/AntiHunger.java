@@ -32,7 +32,7 @@ public class AntiHunger implements Module {
             if (!config.enabled()) {
                 return;
             }
-            if (NoFall.instance.isActive()) {
+            if (NoFall.INSTANCE.isActive()) {
                 return;
             }
             if (FlyHack.INSTANCE.getSettings().get().enabled()) {

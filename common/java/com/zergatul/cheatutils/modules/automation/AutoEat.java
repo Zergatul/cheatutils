@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
-import com.zergatul.cheatutils.configs.AutoEatConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoEatConfig;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -15,11 +15,9 @@ import net.minecraft.world.item.ItemStack;
 
 public class AutoEat {
 
-    public static final AutoEat instance = new AutoEat();
+    public static final AutoEat INSTANCE = new AutoEat();
 
-    private final ModuleConfigSettingHandle<AutoEatConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().autoEatConfig,
-            config -> ConfigStore.instance.getConfig().autoEatConfig = config);
+    private final SettingHandle2<AutoEatConfig> settings = Settings.get(AutoEatConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private State state;
 
@@ -32,7 +30,7 @@ public class AutoEat {
         state = State.NONE;
     }
 
-    public ModuleConfigSettingHandle<AutoEatConfig> getSettings() {
+    public SettingHandle2<AutoEatConfig> getSettings() {
         return settings;
     }
 
@@ -58,13 +56,13 @@ public class AutoEat {
     private boolean shouldStartEating(AutoEatConfig config) {
         assert mc.player != null;
 
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return false;
         }
         if (state != State.EATING && mc.player.isUsingItem()) {
             return false;
         }
-        return !config.isHungerLimitEnabled || mc.player.getFoodData().getFoodLevel() <= config.hungerLimit;
+        return !config.isHungerLimitEnabled() || mc.player.getFoodData().getFoodLevel() <= config.hungerLimit();
     }
 
     private void onPlayerReleaseUsingItem(PlayerReleaseUsingItemEvent event) {

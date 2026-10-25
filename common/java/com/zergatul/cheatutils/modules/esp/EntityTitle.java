@@ -352,7 +352,7 @@ public class EntityTitle implements FontBackendHolder {
     }
 
     private void addDisconnectedPlayers(Vec3 view) {
-        List<EntityLike> players = LogoutSpots.instance.getDisconnectedPlayers();
+        List<EntityLike> players = LogoutSpots.INSTANCE.getDisconnectedPlayers();
         if (players.isEmpty()) {
             return;
         }

@@ -58,6 +58,16 @@ public final class Settings {
                 (config, value) -> config.autoCriticalsConfig = value);
 
         registrar.register(
+                AutoDropConfig.class,
+                config -> config.autoDropConfig,
+                (config, value) -> config.autoDropConfig = value);
+
+        registrar.register(
+                AutoEatConfig.class,
+                config -> config.autoEatConfig,
+                (config, value) -> config.autoEatConfig = value);
+
+        registrar.register(
                 AutoFishConfig.class,
                 config -> config.autoFishConfig,
                 (config, value) -> config.autoFishConfig = value);
@@ -103,6 +113,11 @@ public final class Settings {
                 (config, value) -> config.deathCoordinatesConfig = value);
 
         registrar.register(
+                ElytraTunnelConfig.class,
+                config -> config.elytraTunnelConfig,
+                (config, value) -> config.elytraTunnelConfig = value);
+
+        registrar.register(
                 EndCityChunksConfig.class,
                 config -> config.endCityChunksConfig,
                 (config, value) -> config.endCityChunksConfig = value);
@@ -116,6 +131,11 @@ public final class Settings {
                 ExecConfig.class,
                 config -> config.execConfig,
                 (config, value) -> config.execConfig = value);
+
+        registrar.register(
+                FastBreakConfig.class,
+                config -> config.fastBreakConfig,
+                (config, value) -> config.fastBreakConfig = value);
 
         registrar.register(
                 FlyHackConfig.class,
@@ -138,9 +158,34 @@ public final class Settings {
                 (config, value) -> config.invMoveConfig = value);
 
         registrar.register(
+                LockInputsConfig.class,
+                config -> config.lockInputsConfig,
+                (config, value) -> config.lockInputsConfig = value);
+
+        registrar.register(
+                LogoutSpotsConfig.class,
+                config -> config.logoutSpots,
+                (config, value) -> config.logoutSpots = value);
+
+        registrar.register(
                 NewChunksConfig.class,
                 config -> config.newChunksConfig,
                 (config, value) -> config.newChunksConfig = value);
+
+        registrar.register(
+                NoFallConfig.class,
+                config -> config.noFallConfig,
+                (config, value) -> config.noFallConfig = value);
+
+        registrar.register(
+                ParkourAssistConfig.class,
+                config -> config.parkourAssistConfig,
+                (config, value) -> config.parkourAssistConfig = value);
+
+        registrar.register(
+                ScaffoldConfig.class,
+                config -> config.scaffoldConfig,
+                (config, value) -> config.scaffoldConfig = value);
 
         registrar.register(
                 ShulkerTooltipConfig.class,
@@ -156,6 +201,11 @@ public final class Settings {
                 StatusEffectsConfig.class,
                 config -> config.statusEffectsConfig,
                 (config, value) -> config.statusEffectsConfig = value);
+
+        registrar.register(
+                StepUpConfig.class,
+                config -> config.stepUp,
+                (config, value) -> config.stepUp = value);
 
         this.handles = Collections.unmodifiableMap(handles);
     }

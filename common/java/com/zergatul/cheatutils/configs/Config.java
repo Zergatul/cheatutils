@@ -22,11 +22,11 @@ public class Config implements Sanitizable {
     public FlyHackConfig flyHackConfig = FlyHackConfig.defaults();
     public AutoTotemConfig autoTotemConfig = AutoTotemConfig.defaults();
     public DeathCoordinatesConfig deathCoordinatesConfig = DeathCoordinatesConfig.defaults();
-    public ElytraTunnelConfig elytraTunnelConfig = new ElytraTunnelConfig();
+    public ElytraTunnelConfig elytraTunnelConfig = ElytraTunnelConfig.defaults();
     public FreeCamConfig freeCamConfig = new FreeCamConfig();
     public MovementHackConfig movementHackConfig = new MovementHackConfig();
-    public LockInputsConfig lockInputsConfig = new LockInputsConfig();
-    public ScaffoldConfig scaffoldConfig = new ScaffoldConfig();
+    public LockInputsConfig lockInputsConfig = LockInputsConfig.defaults();
+    public ScaffoldConfig scaffoldConfig = ScaffoldConfig.defaults();
     public AdvancedTooltipsConfig advancedTooltipsConfig = AdvancedTooltipsConfig.defaults();
     public FogConfig fogConfig = FogConfig.defaults();
     public KeyBindingScriptsConfig keyBindingScriptsConfig = new KeyBindingScriptsConfig();
@@ -34,15 +34,15 @@ public class Config implements Sanitizable {
     public WorldMarkersConfig worldMarkersConfig = new WorldMarkersConfig();
     public UserNameConfig userNameConfig = new UserNameConfig();
     public NewChunksConfig newChunksConfig = NewChunksConfig.defaults();
-    public AutoDropConfig autoDropConfig = new AutoDropConfig();
+    public AutoDropConfig autoDropConfig = AutoDropConfig.defaults();
     public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
     public ChunksConfig chunksConfig = ChunksConfig.defaults();
     public StatusOverlayConfig statusOverlayConfig = new StatusOverlayConfig();
     public StatusEffectsConfig statusEffectsConfig = StatusEffectsConfig.defaults();
-    public AutoEatConfig autoEatConfig = new AutoEatConfig();
-    public NoFallConfig noFallConfig = new NoFallConfig();
+    public AutoEatConfig autoEatConfig = AutoEatConfig.defaults();
+    public NoFallConfig noFallConfig = NoFallConfig.defaults();
     public AntiRespawnResetConfig antiRespawnResetConfig = AntiRespawnResetConfig.defaults();
-    public FastBreakConfig fastBreakConfig = new FastBreakConfig();
+    public FastBreakConfig fastBreakConfig = FastBreakConfig.defaults();
     public ContainerSummaryConfig containerSummaryConfig = ContainerSummaryConfig.defaults();
     public AutoCraftConfig autoCraftConfig = AutoCraftConfig.defaults();
     public ReachConfig reachConfig = new ReachConfig();
@@ -69,14 +69,14 @@ public class Config implements Sanitizable {
     public CoreConfig coreConfig = new CoreConfig();
     public AntiHungerConfig antiHungerConfig = AntiHungerConfig.defaults();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
-    public StepUpConfig stepUp = new StepUpConfig();
+    public StepUpConfig stepUp = StepUpConfig.defaults();
     public AimAssistConfig aimAssist = new AimAssistConfig();
-    public LogoutSpotsConfig logoutSpots = new LogoutSpotsConfig();
+    public LogoutSpotsConfig logoutSpots = LogoutSpotsConfig.defaults();
     public AutoToolConfig autoTool = new AutoToolConfig();
     public BlockEntityDistanceConfig blockEntityDistance = new BlockEntityDistanceConfig();
     public AirPlaceConfig airPlaceConfig = AirPlaceConfig.defaults();
     public ElytraBounceConfig elytraBounceConfig = new ElytraBounceConfig();
-    public ParkourAssistConfig parkourAssistConfig = new ParkourAssistConfig();
+    public ParkourAssistConfig parkourAssistConfig = ParkourAssistConfig.defaults();
     public HandsViewConfig handsViewConfig = new HandsViewConfig();
     public PrivacyConfig privacyConfig = new PrivacyConfig();
     public CrystalAuraConfig crystalAuraConfig = new CrystalAuraConfig();
@@ -88,7 +88,6 @@ public class Config implements Sanitizable {
         entities.sanitize();
         killAuraConfig.sanitize();
         movementHackConfig.sanitize();
-        fastBreakConfig.sanitize();
         elytraHackConfig.sanitize();
         freeCamConfig.sanitize();
         explorationMiniMapConfig.sanitize();
@@ -109,7 +108,6 @@ public class Config implements Sanitizable {
         handsViewConfig.sanitize();
         crystalAuraConfig.sanitize();
         pigHackConfig.sanitize();
-        elytraTunnelConfig.sanitize();
         containerButtonsConfig.sanitize();
     }
 }

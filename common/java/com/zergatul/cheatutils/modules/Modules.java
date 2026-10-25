@@ -34,11 +34,11 @@ public class Modules {
         register(PreRenderGuiExecutor.instance);
 
         register(AutoTotem.INSTANCE);
-        register(AutoEat.instance);
-        register(NoFall.instance);
-        register(Scaffold.instance);
+        register(AutoEat.INSTANCE);
+        register(NoFall.INSTANCE);
+        register(Scaffold.INSTANCE);
         register(ElytraBounce.instance);
-        register(ParkourAssist.instance);
+        register(ParkourAssist.INSTANCE);
 
         register(AutoCraft.INSTANCE);
         register(BlockEsp.instance);
@@ -78,8 +78,8 @@ public class Modules {
         register(AntiHunger.INSTANCE);
         register(Schematica.INSTANCE);
         register(AimAssist.instance);
-        register(LockInputs.instance);
-        register(LogoutSpots.instance);
+        register(LockInputs.INSTANCE);
+        register(LogoutSpots.INSTANCE);
         register(AutoTool.instance);
         register(AirPlace.INSTANCE);
         register(ContainerSummary.instance);

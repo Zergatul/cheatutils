@@ -7,34 +7,34 @@ import com.zergatul.cheatutils.scripting.ApiVisibility;
 public class ParkourAssistApi {
 
     public boolean isEnabled() {
-        return ParkourAssist.instance.isEnabled();
+        return ParkourAssist.INSTANCE.isEnabled();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void enable() {
-        ParkourAssist.instance.enable();
+        ParkourAssist.INSTANCE.enable();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void disable() {
-        ParkourAssist.instance.disable();
+        ParkourAssist.INSTANCE.disable();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
-        if (ParkourAssist.instance.isEnabled()) {
-            ParkourAssist.instance.disable();
+        if (ParkourAssist.INSTANCE.isEnabled()) {
+            ParkourAssist.INSTANCE.disable();
         } else {
-            ParkourAssist.instance.enable();
+            ParkourAssist.INSTANCE.enable();
         }
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void setEnabled(boolean enabled) {
         if (enabled) {
-            ParkourAssist.instance.enable();
+            ParkourAssist.INSTANCE.enable();
         } else {
-            ParkourAssist.instance.disable();
+            ParkourAssist.INSTANCE.disable();
         }
     }
 }

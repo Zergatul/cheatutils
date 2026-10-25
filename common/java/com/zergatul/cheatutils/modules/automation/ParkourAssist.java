@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ParkourAssistConfig;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ParkourAssistConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -14,11 +14,9 @@ import java.util.Optional;
 
 public class ParkourAssist implements Module {
 
-    public static final ParkourAssist instance = new ParkourAssist();
+    public static final ParkourAssist INSTANCE = new ParkourAssist();
 
-    private final SettingHandle<ParkourAssistConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().parkourAssistConfig,
-            config -> ConfigStore.instance.getConfig().parkourAssistConfig = config);
+    private final SettingHandle2<ParkourAssistConfig> settings = Settings.get(ParkourAssistConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean enabled;
 
@@ -28,7 +26,7 @@ public class ParkourAssist implements Module {
         WebApiRegistry.INSTANCE.register("parkour-assist", settings, ParkourAssistConfig.class);
     }
 
-    public SettingHandle<ParkourAssistConfig> getSettings() {
+    public SettingHandle2<ParkourAssistConfig> getSettings() {
         return settings;
     }
 
@@ -57,7 +55,7 @@ public class ParkourAssist implements Module {
         }
 
         // copied from Entity.checkSupportingBlock
-        double threshold = settings.get().threshold;
+        double threshold = settings.get().threshold();
         AABB boundingBox = mc.player.getBoundingBox();
         AABB testArea = new AABB(boundingBox.minX, boundingBox.minY - threshold, boundingBox.minZ, boundingBox.maxX, boundingBox.minY, boundingBox.maxZ);
         Optional<BlockPos> supportingBlock = mc.level.findSupportingBlock(mc.player, testArea);

@@ -3,7 +3,9 @@ package com.zergatul.cheatutils.mixins.common;
 import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.StepUpConfig;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
+import com.zergatul.cheatutils.modules.hacks.StepUp;
 import com.zergatul.cheatutils.modules.scripting.Debugging;
 import com.zergatul.cheatutils.modules.utilities.Privacy;
 import com.zergatul.mixin.ExecuteAfterIfElseCondition;
@@ -191,9 +193,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public float maxUpStep() {
-        StepUpConfig config = ConfigStore.instance.getConfig().stepUp;
-        if (config.enabled) {
-            return (float) config.height;
+        StepUpConfig config = StepUp.INSTANCE.getSettings().get();
+        if (config.enabled()) {
+            return (float) config.height();
         } else {
             return super.maxUpStep();
         }

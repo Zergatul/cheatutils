@@ -4,9 +4,9 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerInfoUpdateEvent;
 import com.zergatul.cheatutils.common.events.PlayerInfoUpdateType;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.LogoutSpotsConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.LogoutSpotsConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.LineRenderer;
@@ -24,11 +24,9 @@ import java.util.List;
 
 public class LogoutSpots implements Module {
 
-    public static final LogoutSpots instance = new LogoutSpots();
+    public static final LogoutSpots INSTANCE = new LogoutSpots();
 
-    private final ModuleConfigSettingHandle<LogoutSpotsConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().logoutSpots,
-            config -> ConfigStore.instance.getConfig().logoutSpots = config);
+    private final SettingHandle2<LogoutSpotsConfig> settings = Settings.get(LogoutSpotsConfig.class);
     private static final int TICKS_WINDOW = 5;
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -46,14 +44,14 @@ public class LogoutSpots implements Module {
         WebApiRegistry.INSTANCE.register("logout-spots", settings, LogoutSpotsConfig.class);
     }
 
-    public ModuleConfigSettingHandle<LogoutSpotsConfig> getSettings() {
+    public SettingHandle2<LogoutSpotsConfig> getSettings() {
         return settings;
     }
 
     public List<EntityLike> getDisconnectedPlayers() {
         assert mc.level != null;
 
-        if (!getConfig().enabled) {
+        if (!getConfig().enabled()) {
             return List.of();
         }
         if (entries.isEmpty()) {
@@ -123,7 +121,7 @@ public class LogoutSpots implements Module {
     private void onAfterRenderWorld(RenderWorldLastEvent event) {
         assert mc.level != null;
 
-        if (!getConfig().enabled || entries.isEmpty()) {
+        if (!getConfig().enabled() || entries.isEmpty()) {
             return;
         }
 

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.FastBreakConfig;
+import com.zergatul.cheatutils.configs.modules.FastBreakConfig;
 import com.zergatul.cheatutils.modules.hacks.FastBreak;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
@@ -18,9 +18,9 @@ public abstract class MixinBlockBehaviourBlockStateBase {
     private void onGetDestroyProgress(Player player, BlockGetter level, BlockPos pos, CallbackInfoReturnable<Float> info) {
         if (player.level().isClientSide()) {
             FastBreakConfig config = FastBreak.INSTANCE.getSettings().get();
-            if (config.enabled) {
+            if (config.enabled()) {
                 float oldValue = info.getReturnValue();
-                float newValue = (float) (oldValue * config.factor);
+                float newValue = (float) (oldValue * config.factor());
                 if (oldValue < 1 && newValue >= 1) {
                     // we cannot make block instamineable
                     info.setReturnValue(0.999999f);

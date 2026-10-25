@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
-import com.zergatul.cheatutils.configs.ScaffoldConfig;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ScaffoldConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
@@ -30,11 +30,9 @@ import java.util.Optional;
 
 public class Scaffold implements Module {
 
-    public static final Scaffold instance = new Scaffold();
+    public static final Scaffold INSTANCE = new Scaffold();
 
-    private final ModuleConfigSettingHandle<ScaffoldConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().scaffoldConfig,
-            config -> ConfigStore.instance.getConfig().scaffoldConfig = config);
+    private final SettingHandle2<ScaffoldConfig> settings = Settings.get(ScaffoldConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<BlockPos> list = new ArrayList<>();
 
@@ -44,7 +42,7 @@ public class Scaffold implements Module {
         WebApiRegistry.INSTANCE.register("scaffold", settings, ScaffoldConfig.class);
     }
 
-    public ModuleConfigSettingHandle<ScaffoldConfig> getSettings() {
+    public SettingHandle2<ScaffoldConfig> getSettings() {
         return settings;
     }
 
@@ -53,7 +51,7 @@ public class Scaffold implements Module {
             return;
         }
         ScaffoldConfig config = settings.get();
-        if (config.enabled) {
+        if (config.enabled()) {
             double x = mc.player.getX();
             double y = mc.player.getY();
             double z = mc.player.getZ();
@@ -63,23 +61,23 @@ public class Scaffold implements Module {
             list.clear();
             list.add(new BlockPos(Mth.floor(x), yb, Mth.floor(z)));
 
-            if (config.distance > 0) {
-                BlockPos bp1 = new BlockPos(Mth.floor(x + config.distance), yb, Mth.floor(z));
+            if (config.distance() > 0) {
+                BlockPos bp1 = new BlockPos(Mth.floor(x + config.distance()), yb, Mth.floor(z));
                 if (!list.contains(bp1)) {
                     list.add(bp1);
                 }
 
-                BlockPos bp2 = new BlockPos(Mth.floor(x - config.distance), yb, Mth.floor(z));
+                BlockPos bp2 = new BlockPos(Mth.floor(x - config.distance()), yb, Mth.floor(z));
                 if (!list.contains(bp2)) {
                     list.add(bp2);
                 }
 
-                BlockPos bp3 = new BlockPos(Mth.floor(x), yb, Mth.floor(z - config.distance));
+                BlockPos bp3 = new BlockPos(Mth.floor(x), yb, Mth.floor(z - config.distance()));
                 if (!list.contains(bp3)) {
                     list.add(bp3);
                 }
 
-                BlockPos bp4 = new BlockPos(Mth.floor(x), yb, Mth.floor(z + config.distance));
+                BlockPos bp4 = new BlockPos(Mth.floor(x), yb, Mth.floor(z + config.distance()));
                 if (!list.contains(bp4)) {
                     list.add(bp4);
                 }
@@ -103,7 +101,7 @@ public class Scaffold implements Module {
                 }
             }
 
-            if (!placed && config.attachToAir) {
+            if (!placed && config.attachToAir()) {
                 for (BlockPos bp: list) {
                     if (canPlaceBlock(mc.level.getBlockState(bp))) {
                         BlockPos other = bp.relative(Direction.DOWN);
@@ -147,11 +145,11 @@ public class Scaffold implements Module {
             }
         }
 
-        if (config.keepSelectedSlot) {
+        if (config.keepSelectedSlot()) {
             mc.player.getInventory().setSelectedSlot(selectedSlot);
         }
 
-        if (itemStack.isEmpty() && config.replaceBlocksFromInventory) {
+        if (itemStack.isEmpty() && config.replaceBlocksFromInventory()) {
             for (int i = 9; i < 36; i++) {
                 ItemStack itemStack1 = mc.player.getInventory().getItem(i);
                 if (!itemStack1.isEmpty() && item == itemStack1.getItem()) {
