@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
-import com.zergatul.cheatutils.configs.ChunksConfig;
+import com.zergatul.cheatutils.configs.modules.ChunksConfig;
 import com.zergatul.cheatutils.modules.visuals.Chunks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -29,7 +29,7 @@ public abstract class MixinClientPacketListener {
             ordinal = 0)
     private ClientboundLoginPacket onModifyLoginPacket(ClientboundLoginPacket packet) {
         ChunksConfig config = Chunks.INSTANCE.getSettings().get();
-        if (config.ignoreServerViewDistance) {
+        if (config.ignoreServerViewDistance()) {
             Minecraft mc = Minecraft.getInstance();
             return new ClientboundLoginPacket(
                     packet.playerId(),
@@ -56,7 +56,7 @@ public abstract class MixinClientPacketListener {
             ordinal = 0)
     private ClientboundSetChunkCacheRadiusPacket onModifySetChunkCacheRadiusPacket(ClientboundSetChunkCacheRadiusPacket packet) {
         ChunksConfig config = Chunks.INSTANCE.getSettings().get();
-        if (config.ignoreServerViewDistance) {
+        if (config.ignoreServerViewDistance()) {
             Minecraft mc = Minecraft.getInstance();
             return new ClientboundSetChunkCacheRadiusPacket(mc.options.renderDistance().get());
         } else {
@@ -66,7 +66,7 @@ public abstract class MixinClientPacketListener {
 
     /*@Inject(at = @At("HEAD"), method = "handleForgetLevelChunk", cancellable = true)
     private void onHandleForgetLevelChunkPacket(ClientboundForgetLevelChunkPacket packet, CallbackInfo info) {
-        if (ConfigStore.instance.getConfig().chunksConfig.dontUnloadChunks) {
+        if (Chunks.INSTANCE.getSettings().get().dontUnloadChunks()) {
             info.cancel();
         }
     }*/

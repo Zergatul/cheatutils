@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoTotemConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoTotemConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
@@ -16,11 +16,9 @@ import net.minecraft.world.item.ItemStack;
 
 public class AutoTotem implements Module {
 
-    public static final AutoTotem instance = new AutoTotem();
+    public static final AutoTotem INSTANCE = new AutoTotem();
 
-    private final ModuleConfigSettingHandle<AutoTotemConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().autoTotemConfig,
-            config -> ConfigStore.instance.getConfig().autoTotemConfig = config);
+    private final SettingHandle2<AutoTotemConfig> settings = Settings.get(AutoTotemConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoTotem() {
@@ -29,7 +27,7 @@ public class AutoTotem implements Module {
         WebApiRegistry.INSTANCE.register("auto-totem", settings, AutoTotemConfig.class);
     }
 
-    public ModuleConfigSettingHandle<AutoTotemConfig> getSettings() {
+    public SettingHandle2<AutoTotemConfig> getSettings() {
         return settings;
     }
 
@@ -39,11 +37,11 @@ public class AutoTotem implements Module {
         }
 
         AutoTotemConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return;
         }
 
-        if (config.skipIfUsingItem && mc.player.isUsingItem()) {
+        if (config.skipIfUsingItem() && mc.player.isUsingItem()) {
             return;
         }
 

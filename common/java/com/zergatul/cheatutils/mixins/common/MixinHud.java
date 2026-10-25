@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
-import com.zergatul.cheatutils.configs.StatusEffectsConfig;
+import com.zergatul.cheatutils.configs.modules.StatusEffectsConfig;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 import com.zergatul.cheatutils.modules.visuals.BetterStatusEffects;
 import net.minecraft.client.DeltaTracker;
@@ -42,7 +42,7 @@ public abstract class MixinHud {
     @Inject(at = @At("HEAD"), method = "extractEffects", cancellable = true)
     private void onExtractEffects(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo info) {
         StatusEffectsConfig config = BetterStatusEffects.INSTANCE.getSettings().get();
-        if (config.enabled) {
+        if (config.enabled()) {
             info.cancel();
         }
     }
@@ -87,7 +87,7 @@ public abstract class MixinHud {
             ArmorOverlay.INSTANCE.render(graphics, player, graphics.guiWidth() / 2 + 28, j2 - 6);
         }
 
-        if (BetterStatusEffects.INSTANCE.getSettings().get().enabled) {
+        if (BetterStatusEffects.INSTANCE.getSettings().get().enabled()) {
             BetterStatusEffects.INSTANCE.render(graphics, player, graphics.guiHeight() - 50 - 2 * this.minecraft.font.lineHeight - 25);
         }
     }

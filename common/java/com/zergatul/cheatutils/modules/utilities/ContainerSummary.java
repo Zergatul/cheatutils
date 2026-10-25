@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerScreenRenderEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ContainerSummaryConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
@@ -33,9 +33,7 @@ public class ContainerSummary implements Module {
 
     public static final ContainerSummary instance = new ContainerSummary();
 
-    private final ModuleConfigSettingHandle<ContainerSummaryConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().containerSummaryConfig,
-            config -> ConfigStore.instance.getConfig().containerSummaryConfig = config);
+    private final SettingHandle2<ContainerSummaryConfig> settings = Settings.get(ContainerSummaryConfig.class);
     private static final int BORDER_WIDTH = 2;
     private final Minecraft mc = Minecraft.getInstance();
     private final Identifier background = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png");
@@ -46,13 +44,13 @@ public class ContainerSummary implements Module {
         WebApiRegistry.INSTANCE.register("container-summary", settings, ContainerSummaryConfig.class);
     }
 
-    public ModuleConfigSettingHandle<ContainerSummaryConfig> getSettings() {
+    public SettingHandle2<ContainerSummaryConfig> getSettings() {
         return settings;
     }
 
     private void onAfterRenderContents(ContainerScreenRenderEvent event) {
         ContainerSummaryConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return;
         }
 
@@ -70,7 +68,7 @@ public class ContainerSummary implements Module {
                 }
             }
         } else {
-            if (config.showForInventory) {
+            if (config.showForInventory()) {
                 if (event.screen() instanceof InventoryScreen) {
                     for (Slot slot : slots) {
                         if (slot.container instanceof ResultContainer) {

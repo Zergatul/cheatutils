@@ -18,6 +18,11 @@ public final class Settings {
         Registrar registrar = new Registrar(registry, handles);
 
         registrar.register(
+                AdvancedTooltipsConfig.class,
+                config -> config.advancedTooltipsConfig,
+                (config, value) -> config.advancedTooltipsConfig = value);
+
+        registrar.register(
                 AirPlaceConfig.class,
                 config -> config.airPlaceConfig,
                 (config, value) -> config.airPlaceConfig = value);
@@ -58,6 +63,11 @@ public final class Settings {
                 (config, value) -> config.autoStunnerConfig = value);
 
         registrar.register(
+                AutoTotemConfig.class,
+                config -> config.autoTotemConfig,
+                (config, value) -> config.autoTotemConfig = value);
+
+        registrar.register(
                 BoatHackConfig.class,
                 config -> config.boatHackConfig,
                 (config, value) -> config.boatHackConfig = value);
@@ -71,6 +81,26 @@ public final class Settings {
                 BreachSwapConfig.class,
                 config -> config.breachSwapConfig,
                 (config, value) -> config.breachSwapConfig = value);
+
+        registrar.register(
+                ChunksConfig.class,
+                config -> config.chunksConfig,
+                (config, value) -> config.chunksConfig = value);
+
+        registrar.register(
+                ContainerSummaryConfig.class,
+                config -> config.containerSummaryConfig,
+                (config, value) -> config.containerSummaryConfig = value);
+
+        registrar.register(
+                DeathCoordinatesConfig.class,
+                config -> config.deathCoordinatesConfig,
+                (config, value) -> config.deathCoordinatesConfig = value);
+
+        registrar.register(
+                EndCityChunksConfig.class,
+                config -> config.endCityChunksConfig,
+                (config, value) -> config.endCityChunksConfig = value);
 
         registrar.register(
                 EntityTitleConfig.class,
@@ -88,6 +118,11 @@ public final class Settings {
                 (config, value) -> config.flyHackConfig = value);
 
         registrar.register(
+                FogConfig.class,
+                config -> config.fogConfig,
+                (config, value) -> config.fogConfig = value);
+
+        registrar.register(
                 FullBrightConfig.class,
                 config -> config.fullBrightConfig,
                 (config, value) -> config.fullBrightConfig = value);
@@ -96,6 +131,21 @@ public final class Settings {
                 InvMoveConfig.class,
                 config -> config.invMoveConfig,
                 (config, value) -> config.invMoveConfig = value);
+
+        registrar.register(
+                ShulkerTooltipConfig.class,
+                config -> config.shulkerTooltipConfig,
+                (config, value) -> config.shulkerTooltipConfig = value);
+
+        registrar.register(
+                SpearRangeConfig.class,
+                config -> config.spearRangeConfig,
+                (config, value) -> config.spearRangeConfig = value);
+
+        registrar.register(
+                StatusEffectsConfig.class,
+                config -> config.statusEffectsConfig,
+                (config, value) -> config.statusEffectsConfig = value);
 
         this.handles = Collections.unmodifiableMap(handles);
     }

@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.DeathCoordinatesConfig;
+import com.zergatul.cheatutils.configs.modules.DeathCoordinatesConfig;
 import com.zergatul.cheatutils.modules.visuals.DeathCoordinates;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.DeathScreen;
@@ -25,7 +25,7 @@ public abstract class MixinDeathScreen extends Screen {
     @Inject(at = @At("TAIL"), method = "extractRenderState")
     private void onExtractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo info) {
         DeathCoordinatesConfig config = DeathCoordinates.INSTANCE.getSettings().get();
-        if (config.enabled) {
+        if (config.enabled()) {
             LocalPlayer player = this.minecraft.player;
             if (player != null) {
                 DecimalFormat format = new DecimalFormat("0.000");

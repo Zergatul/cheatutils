@@ -33,7 +33,7 @@ public class Modules {
         register(BlockFinder.instance);
         register(PreRenderGuiExecutor.instance);
 
-        register(AutoTotem.instance);
+        register(AutoTotem.INSTANCE);
         register(AutoEat.instance);
         register(NoFall.instance);
         register(Scaffold.instance);
@@ -43,7 +43,7 @@ public class Modules {
         register(AutoCraft.instance);
         register(BlockEsp.instance);
         register(ProjectilePath.instance);
-        register(EndCityChunks.instance);
+        register(EndCityChunks.INSTANCE);
         register(AutoBucket.instance);
         register(WorldDownload.INSTANCE);
         register(EntityTitle.instance);
@@ -61,11 +61,11 @@ public class Modules {
         register(AutoCriticals.INSTANCE);
         register(LightLevel.INSTANCE);
         register(ElytraFly.instance);
-        register(AdvancedTooltips.instance);
+        register(AdvancedTooltips.INSTANCE);
         register(Zoom.instance);
-        register(ShulkerTooltip.instance);
+        register(ShulkerTooltip.INSTANCE);
         register(ArmorOverlay.INSTANCE);
-        register(Fog.instance);
+        register(Fog.INSTANCE);
         register(AutoAttack.instance);
 
         register(Exec.INSTANCE);
@@ -127,7 +127,7 @@ public class Modules {
         register(AfterSendPlayerPosExecutor.instance);
         register(KillAura.INSTANCE);
 
-        register(SpearRange.instance);
+        register(SpearRange.INSTANCE);
         register(AutoStunner.INSTANCE);
         register(BreachSwap.INSTANCE);
         //===========================================

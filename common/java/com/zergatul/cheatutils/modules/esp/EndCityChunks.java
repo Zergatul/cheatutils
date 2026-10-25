@@ -1,10 +1,9 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.Config;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EndCityChunksConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.EndCityChunksConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.Position3dColorRenderer;
@@ -19,11 +18,9 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class EndCityChunks {
 
-    public static final EndCityChunks instance = new EndCityChunks();
+    public static final EndCityChunks INSTANCE = new EndCityChunks();
 
-    private final ModuleConfigSettingHandle<EndCityChunksConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().endCityChunksConfig,
-            config -> ConfigStore.instance.getConfig().endCityChunksConfig = config);
+    private final SettingHandle2<EndCityChunksConfig> settings = Settings.get(EndCityChunksConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private EndCityChunks() {
@@ -32,13 +29,13 @@ public class EndCityChunks {
         WebApiRegistry.INSTANCE.register("end-city-chunks", settings, EndCityChunksConfig.class);
     }
 
-    public ModuleConfigSettingHandle<EndCityChunksConfig> getSettings() {
+    public SettingHandle2<EndCityChunksConfig> getSettings() {
         return settings;
     }
 
     private void render(RenderWorldLastEvent event) {
-        Config config = ConfigStore.instance.getConfig();
-        if (!EspGlobal.enabled || !config.endCityChunksConfig.enabled) {
+        EndCityChunksConfig config = settings.get();
+        if (!EspGlobal.enabled || !config.enabled()) {
             return;
         }
 

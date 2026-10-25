@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.visuals;
 
 import com.google.common.collect.Ordering;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
-import com.zergatul.cheatutils.configs.StatusEffectsConfig;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.StatusEffectsConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.HudAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
@@ -22,21 +22,19 @@ public class BetterStatusEffects implements Module {
 
     public static final BetterStatusEffects INSTANCE = new BetterStatusEffects();
 
-    private final ModuleConfigSettingHandle<StatusEffectsConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().statusEffectsConfig,
-            config -> ConfigStore.instance.getConfig().statusEffectsConfig = config);
+    private final SettingHandle2<StatusEffectsConfig> settings = Settings.get(StatusEffectsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private BetterStatusEffects() {
         WebApiRegistry.INSTANCE.register("status-effects", settings, StatusEffectsConfig.class);
     }
 
-    public ModuleConfigSettingHandle<StatusEffectsConfig> getSettings() {
+    public SettingHandle2<StatusEffectsConfig> getSettings() {
         return settings;
     }
 
     public void render(GuiGraphicsExtractor graphics, Player player, int y) {
-        if (!settings.get().enabled) {
+        if (!settings.get().enabled()) {
             return;
         }
 

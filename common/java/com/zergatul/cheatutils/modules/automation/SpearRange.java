@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
-import com.zergatul.cheatutils.configs.SpearRangeConfig;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.SpearRangeConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -17,11 +17,9 @@ import static net.minecraft.core.component.DataComponents.ATTACK_RANGE;
 
 public class SpearRange implements Module {
 
-    public static final SpearRange instance = new SpearRange();
+    public static final SpearRange INSTANCE = new SpearRange();
 
-    private final ModuleConfigSettingHandle<SpearRangeConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().spearRangeConfig,
-            config -> ConfigStore.instance.getConfig().spearRangeConfig = config);
+    private final SettingHandle2<SpearRangeConfig> settings = Settings.get(SpearRangeConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private int prevSelectedSlot = -1;
 
@@ -32,12 +30,12 @@ public class SpearRange implements Module {
         WebApiRegistry.INSTANCE.register("spear-range", settings, SpearRangeConfig.class);
     }
 
-    public ModuleConfigSettingHandle<SpearRangeConfig> getSettings() {
+    public SettingHandle2<SpearRangeConfig> getSettings() {
         return settings;
     }
 
     public void onBeforeStartAttack() {
-        if (!settings.get().enabled) return;
+        if (!settings.get().enabled()) return;
         prevSelectedSlot = -1;
         if (mc.player == null) return;
         if (mc.player.isSpectator()) return;
@@ -49,7 +47,7 @@ public class SpearRange implements Module {
         if (spear == -1) return;
 
         //Check for valid target before executing
-        if (!settings.get().lungeWithoutTarget) {
+        if (!settings.get().lungeWithoutTarget()) {
             if (!hasValidTarget(inventory.getItem(spear))) {
                 return;
             }
@@ -60,7 +58,7 @@ public class SpearRange implements Module {
     }
 
     public void onAfterStartAttack() {
-        if (!settings.get().enabled) return;
+        if (!settings.get().enabled()) return;
         if (mc.player == null) return;
         if (prevSelectedSlot == -1) return;
         mc.player.getInventory().setSelectedSlot(prevSelectedSlot);
