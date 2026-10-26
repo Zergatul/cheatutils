@@ -66,14 +66,14 @@ public class Config implements Sanitizable {
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
     public EventsScriptingConfig eventsScriptingConfig = EventsScriptingConfig.defaults();
     public BedrockBreakerConfig bedrockBreakerConfig = new BedrockBreakerConfig();
-    public CoreConfig coreConfig = new CoreConfig();
+    public CoreConfig coreConfig = CoreConfig.defaults();
     public AntiHungerConfig antiHungerConfig = AntiHungerConfig.defaults();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
     public StepUpConfig stepUp = StepUpConfig.defaults();
     public AimAssistConfig aimAssist = AimAssistConfig.defaults();
     public LogoutSpotsConfig logoutSpots = LogoutSpotsConfig.defaults();
     public AutoToolConfig autoTool = new AutoToolConfig();
-    public BlockEntityDistanceConfig blockEntityDistance = new BlockEntityDistanceConfig();
+    public BlockEntityDistanceConfig blockEntityDistance = BlockEntityDistanceConfig.defaults();
     public AirPlaceConfig airPlaceConfig = AirPlaceConfig.defaults();
     public ElytraBounceConfig elytraBounceConfig = ElytraBounceConfig.defaults();
     public ParkourAssistConfig parkourAssistConfig = ParkourAssistConfig.defaults();
@@ -98,8 +98,6 @@ public class Config implements Sanitizable {
         worldMarkersConfig.sanitize();
         chatUtilitiesConfig.sanitize();
         hitboxSizeConfig.sanitize();
-        coreConfig.sanitize();
-        blockEntityDistance.sanitize();
         handsViewConfig.sanitize();
         crystalAuraConfig.sanitize();
         containerButtonsConfig.sanitize();

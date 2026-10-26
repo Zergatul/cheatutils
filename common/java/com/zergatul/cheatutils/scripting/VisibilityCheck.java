@@ -15,7 +15,7 @@ public class VisibilityCheck {
         boolean isAdvancedApi =
                 method.getDeclaringClass().isAnnotationPresent(AdvancedApi.class) ||
                 method.isAnnotationPresent(AdvancedApi.class);
-        if (isAdvancedApi && !Core.INSTANCE.getSettings().get().advancedScripting) {
+        if (isAdvancedApi && !Core.INSTANCE.getSettings().get().advancedScripting()) {
             return false;
         }
 

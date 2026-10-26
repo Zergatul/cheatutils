@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.web;
 
 import com.sun.net.httpserver.HttpServer;
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.configs.modules.CoreConfig;
 import com.zergatul.cheatutils.mcp.McpHttpHandler;
 import com.zergatul.cheatutils.modules.utilities.Core;
 import com.zergatul.cheatutils.scripting.monaco.Integration;
@@ -11,42 +12,28 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class WebServer {
 
-    public static WebServer instance = new WebServer();
+    public static final WebServer INSTANCE = new WebServer();
 
     private final Logger logger = LogManager.getLogger(WebServer.class);
     // we may need more threads, but they will not eat CPU,
     // since most likely they will be waiting for Future to be completed in the main thread
     private final ExecutorService executor = Executors.newFixedThreadPool(8);
-    private int basePort;
     private HttpServer server;
     private boolean closed;
 
     private WebServer() {
         Events.Close.add(this::onClose);
-        this.basePort = 5005;
+        Core.INSTANCE.getSettings().onChanged(this::onConfigUpdated);
+
         this.server = null;
         this.closed = false;
-    }
-
-    public synchronized void onConfigUpdated() {
-        if (this.closed) {
-            return;
-        }
-
-        int port = Core.INSTANCE.getSettings().get().port;
-        if (basePort != port) {
-            basePort = port;
-
-            if (server != null) {
-                server.stop(1);
-                start();
-            }
-        }
     }
 
     public synchronized void start() {
@@ -54,6 +41,7 @@ public class WebServer {
             return;
         }
 
+        int basePort = Core.INSTANCE.getSettings().get().port();
         int port = 0;
         for (int i = 0; i < 100; i++) {
             if (isAvailable(basePort + i)) {
@@ -91,6 +79,24 @@ public class WebServer {
         logger.info("HTTP server started at port {}", port);
     }
 
+    private synchronized void onConfigUpdated(CoreConfig prev, CoreConfig curr) {
+        if (this.closed) {
+            return;
+        }
+
+        if (prev.port() != curr.port()) {
+            CompletableFuture.delayedExecutor(250, TimeUnit.MILLISECONDS).execute(() -> {
+                int existingPort = this.server != null ? this.server.getAddress().getPort() : -1;
+                if (existingPort != curr.port()) {
+                    if (server != null) {
+                        server.stop(1);
+                    }
+                    start();
+                }
+            });
+        }
+    }
+
     private synchronized void onClose() {
         this.closed = true;
 
@@ -103,22 +109,12 @@ public class WebServer {
     }
 
     private static boolean isAvailable(int port) {
-        ServerSocket socket = null;
-        try {
-            socket = new ServerSocket(port);
+        try (ServerSocket socket = new ServerSocket(port)) {
             socket.setReuseAddress(true);
             return true;
         } catch (IOException _) {
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    /* should not be thrown */
-                }
-            }
+            // port is occupied
+            return false;
         }
-
-        return false;
     }
 }

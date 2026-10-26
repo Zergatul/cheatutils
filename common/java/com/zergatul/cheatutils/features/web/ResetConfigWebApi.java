@@ -19,7 +19,7 @@ public class ResetConfigWebApi extends WebApiBase {
 
     @Override
     public String post(String body) throws Throwable {
-        String[] errors = Profiles.instance.reset();
+        String[] errors = Profiles.INSTANCE.reset();
         return gson.toJson(errors);
     }
 }

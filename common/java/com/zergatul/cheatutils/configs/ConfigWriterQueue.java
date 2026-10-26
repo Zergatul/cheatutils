@@ -35,7 +35,7 @@ public class ConfigWriterQueue {
     }
 
     public void flush(File file) {
-        if (Profiles.instance.isInResetState()) {
+        if (Profiles.INSTANCE.isInResetState()) {
             return;
         }
 
@@ -56,7 +56,7 @@ public class ConfigWriterQueue {
     }
 
     public void queue(File file, long timeout, Runnable runnable) {
-        if (Profiles.instance.isInResetState()) {
+        if (Profiles.INSTANCE.isInResetState()) {
             return;
         }
         synchronized (lock) {

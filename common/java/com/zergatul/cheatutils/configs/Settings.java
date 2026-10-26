@@ -98,6 +98,11 @@ public final class Settings {
                 (config, value) -> config.autoTotemConfig = value);
 
         registrar.register(
+                BlockEntityDistanceConfig.class,
+                config -> config.blockEntityDistance,
+                (config, value) -> config.blockEntityDistance = value);
+
+        registrar.register(
                 BoatHackConfig.class,
                 config -> config.boatHackConfig,
                 (config, value) -> config.boatHackConfig = value);
@@ -121,6 +126,11 @@ public final class Settings {
                 ContainerSummaryConfig.class,
                 config -> config.containerSummaryConfig,
                 (config, value) -> config.containerSummaryConfig = value);
+
+        registrar.register(
+                CoreConfig.class,
+                config -> config.coreConfig,
+                (config, value) -> config.coreConfig = value);
 
         registrar.register(
                 DeathCoordinatesConfig.class,

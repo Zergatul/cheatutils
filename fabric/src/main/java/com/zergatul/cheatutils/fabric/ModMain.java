@@ -20,8 +20,8 @@ public final class ModMain implements ClientModInitializer {
         setupFabricEvents();
 
         SystemFonts.initAsync();
-        Profiles.instance.init();
-        WebServer.instance.start();
+        Profiles.INSTANCE.init();
+        WebServer.INSTANCE.start();
         Modules.registerKeyBindings();
         Modules.register();
         Features.register();

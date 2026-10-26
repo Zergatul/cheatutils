@@ -178,7 +178,7 @@ public enum ScriptType {
 
                     @Override
                     public boolean isJavaTypeUsageAllowed() {
-                        return Core.INSTANCE.getSettings().get().advancedScripting;
+                        return Core.INSTANCE.getSettings().get().advancedScripting();
                     }
 
                     @Override

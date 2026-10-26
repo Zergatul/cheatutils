@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 public class Profiles implements Module {
 
-    public static final Profiles instance = new Profiles();
+    public static final Profiles INSTANCE = new Profiles();
 
     private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
     private static final String OLD_CONFIG_FILE_NAME = "zergatulcheatutils.json";

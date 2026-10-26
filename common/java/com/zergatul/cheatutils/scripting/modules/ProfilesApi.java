@@ -11,20 +11,20 @@ public class ProfilesApi {
             Returns name of currently selected profile
             """)
     public String getCurrent() {
-        return Profiles.instance.getCurrent();
+        return Profiles.INSTANCE.getCurrent();
     }
 
     @MethodDescription("""
             Returns true if change was successful
             """)
     public boolean change(String name) {
-        if (!Profiles.instance.isValidProfileName(name)) {
+        if (!Profiles.INSTANCE.isValidProfileName(name)) {
             return false;
         }
 
         boolean exists = name.isEmpty();
         if (!exists) {
-            List<String> profiles = Profiles.instance.list();
+            List<String> profiles = Profiles.INSTANCE.list();
             exists = profiles.contains(name);
         }
 
@@ -32,7 +32,7 @@ public class ProfilesApi {
             return false;
         }
 
-        Profiles.instance.change(name);
+        Profiles.INSTANCE.change(name);
         return true;
     }
 }

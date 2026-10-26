@@ -151,8 +151,6 @@ public class ConfigStore {
 
         SettingsRegistry.INSTANCE.reload();
 
-        WebServer.instance.onConfigUpdated();
-
         KeyBindings.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
