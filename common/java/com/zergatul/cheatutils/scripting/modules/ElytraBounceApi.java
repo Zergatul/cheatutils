@@ -7,34 +7,34 @@ import com.zergatul.cheatutils.scripting.ApiVisibility;
 public class ElytraBounceApi {
 
     public boolean isEnabled() {
-        return ElytraBounce.instance.isEnabled();
+        return ElytraBounce.INSTANCE.isEnabled();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void enable() {
-        ElytraBounce.instance.enable();
+        ElytraBounce.INSTANCE.enable();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void disable() {
-        ElytraBounce.instance.disable();
+        ElytraBounce.INSTANCE.disable();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
-        if (ElytraBounce.instance.isEnabled()) {
-            ElytraBounce.instance.disable();
+        if (ElytraBounce.INSTANCE.isEnabled()) {
+            ElytraBounce.INSTANCE.disable();
         } else {
-            ElytraBounce.instance.enable();
+            ElytraBounce.INSTANCE.enable();
         }
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void setEnabled(boolean enabled) {
         if (enabled) {
-            ElytraBounce.instance.enable();
+            ElytraBounce.INSTANCE.enable();
         } else {
-            ElytraBounce.instance.disable();
+            ElytraBounce.INSTANCE.disable();
         }
     }
 }

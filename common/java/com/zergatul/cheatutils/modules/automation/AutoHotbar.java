@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoHotbarConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoHotbarConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
@@ -15,11 +15,9 @@ import net.minecraft.world.item.ItemStack;
 
 public class AutoHotbar implements Module {
 
-    public static final AutoHotbar instance = new AutoHotbar();
+    public static final AutoHotbar INSTANCE = new AutoHotbar();
 
-    private final ModuleConfigSettingHandle<AutoHotbarConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().autoHotbarConfig,
-            config -> ConfigStore.instance.getConfig().autoHotbarConfig = config);
+    private final SettingHandle2<AutoHotbarConfig> settings = Settings.get(AutoHotbarConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final ItemStack[] lastTickHotbar = new ItemStack[9];
     private ItemStack lastTickOffhand;
@@ -32,7 +30,7 @@ public class AutoHotbar implements Module {
         clear();
     }
 
-    public ModuleConfigSettingHandle<AutoHotbarConfig> getSettings() {
+    public SettingHandle2<AutoHotbarConfig> getSettings() {
         return settings;
     }
 
@@ -43,7 +41,7 @@ public class AutoHotbar implements Module {
         }
 
         AutoHotbarConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             clear();
             return;
         }
@@ -64,7 +62,7 @@ public class AutoHotbar implements Module {
             }
         }
 
-        if (config.refillSlotOffhand && !lastTickOffhand.isEmpty()) {
+        if (config.refillSlotOffhand() && !lastTickOffhand.isEmpty()) {
             if (shouldRefill(lastTickOffhand, mc.player.getOffhandItem())) {
                 int slot = findSameItem(inventory, lastTickOffhand);
                 if (slot > 0) {

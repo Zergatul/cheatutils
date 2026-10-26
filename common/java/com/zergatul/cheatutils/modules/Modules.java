@@ -37,12 +37,12 @@ public class Modules {
         register(AutoEat.INSTANCE);
         register(NoFall.INSTANCE);
         register(Scaffold.INSTANCE);
-        register(ElytraBounce.instance);
+        register(ElytraBounce.INSTANCE);
         register(ParkourAssist.INSTANCE);
 
         register(AutoCraft.INSTANCE);
         register(BlockEsp.instance);
-        register(ProjectilePath.instance);
+        register(ProjectilePath.INSTANCE);
         register(EndCityChunks.INSTANCE);
         register(AutoBucket.instance);
         register(WorldDownload.INSTANCE);
@@ -66,18 +66,18 @@ public class Modules {
         register(ShulkerTooltip.INSTANCE);
         register(ArmorOverlay.INSTANCE);
         register(Fog.INSTANCE);
-        register(AutoAttack.instance);
+        register(AutoAttack.INSTANCE);
 
         register(Exec.INSTANCE);
         register(VillagerRoller.INSTANCE);
-        register(AutoHotbar.instance);
+        register(AutoHotbar.INSTANCE);
         register(AreaMine.INSTANCE);
         register(ServerPlugins.instance);
         register(BedrockBreaker.instance);
         register(Containers.instance);
         register(AntiHunger.INSTANCE);
         register(Schematica.INSTANCE);
-        register(AimAssist.instance);
+        register(AimAssist.INSTANCE);
         register(LockInputs.INSTANCE);
         register(LogoutSpots.INSTANCE);
         register(AutoTool.instance);

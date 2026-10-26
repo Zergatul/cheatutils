@@ -1,20 +1,18 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ElytraBounceConfig;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ElytraBounceConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 
 public class ElytraBounce implements Module {
 
-    public static final ElytraBounce instance = new ElytraBounce();
+    public static final ElytraBounce INSTANCE = new ElytraBounce();
 
-    private final SettingHandle<ElytraBounceConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().elytraBounceConfig,
-            config -> ConfigStore.instance.getConfig().elytraBounceConfig = config);
+    private final SettingHandle2<ElytraBounceConfig> settings = Settings.get(ElytraBounceConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean enabled;
     private boolean wasFallFlying;
@@ -32,7 +30,7 @@ public class ElytraBounce implements Module {
         state = State.NONE;
     }
 
-    public SettingHandle<ElytraBounceConfig> getSettings() {
+    public SettingHandle2<ElytraBounceConfig> getSettings() {
         return settings;
     }
 
@@ -68,13 +66,13 @@ public class ElytraBounce implements Module {
                 mc.player.input.makeJump();
                 if (--remainingTicks == 0) {
                     state = State.JUMP_DELAY;
-                    remainingTicks = getConfig().betweenJumpsTicks;
+                    remainingTicks = getConfig().betweenJumpsTicks();
                 }
             }
             case JUMP_DELAY -> {
                 if (--remainingTicks == 0) {
                     state = State.SECOND_JUMP;
-                    remainingTicks = getConfig().secondJumpTicks;
+                    remainingTicks = getConfig().secondJumpTicks();
                 }
             }
             case SECOND_JUMP -> {
@@ -96,7 +94,7 @@ public class ElytraBounce implements Module {
 
         if (state == State.NONE && wasFallFlying && mc.player.onGround()) {
             state = State.FIRST_JUMP;
-            remainingTicks = getConfig().firstJumpTicks;
+            remainingTicks = getConfig().firstJumpTicks();
         }
     }
 

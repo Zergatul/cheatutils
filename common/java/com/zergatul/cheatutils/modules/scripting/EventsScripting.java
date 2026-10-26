@@ -187,7 +187,7 @@ public class EventsScripting implements Module {
 
             if (!aimAssistTargetPredicates.isEmpty()) {
                 List<AimAssist.TargetPredicate> predicates = List.copyOf(aimAssistTargetPredicates);
-                AimAssist.instance.setTargetPredicate(entityId -> activation.test("Aim Assist target filter", () -> {
+                AimAssist.INSTANCE.setTargetPredicate(entityId -> activation.test("Aim Assist target filter", () -> {
                     for (AimAssist.TargetPredicate predicate : predicates) {
                         if (!predicate.test(entityId)) return false;
                     }
@@ -214,7 +214,7 @@ public class EventsScripting implements Module {
         if (script != null) script.deactivate();
         script = null;
         clearCallbacks();
-        AimAssist.instance.clearTargetPredicate();
+        AimAssist.INSTANCE.clearTargetPredicate();
         aimAssistTargetPredicates.clear();
         KillAura.INSTANCE.clearTargetPredicate();
         killAuraTargetPredicates.clear();
@@ -261,7 +261,7 @@ public class EventsScripting implements Module {
 
     private void blockFailedFilters(ScriptActivation<Runnable> activation) {
         if (script != activation) return;
-        if (!aimAssistTargetPredicates.isEmpty()) AimAssist.instance.setTargetPredicate(_ -> false);
+        if (!aimAssistTargetPredicates.isEmpty()) AimAssist.INSTANCE.setTargetPredicate(_ -> false);
         if (!killAuraTargetPredicates.isEmpty()) KillAura.INSTANCE.setTargetPredicate(_ -> false);
     }
 

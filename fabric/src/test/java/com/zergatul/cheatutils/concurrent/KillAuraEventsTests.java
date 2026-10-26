@@ -168,7 +168,7 @@ public class KillAuraEventsTests {
     private static AimAssist.TargetPredicate getAimPredicate() throws Exception {
         Field field = AimAssist.class.getDeclaredField("script");
         field.setAccessible(true);
-        return (AimAssist.TargetPredicate) field.get(AimAssist.instance);
+        return (AimAssist.TargetPredicate) field.get(AimAssist.INSTANCE);
     }
 
     private static List<?> getCallbacks() throws Exception {

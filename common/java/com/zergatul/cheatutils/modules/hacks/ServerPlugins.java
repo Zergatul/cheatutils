@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ServerPluginsConfig;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ServerPluginsConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
@@ -23,9 +23,7 @@ public class ServerPlugins implements Module {
 
     public static final ServerPlugins instance = new ServerPlugins();
 
-    private final SettingHandle<ServerPluginsConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().serverPluginsConfig,
-            config -> ConfigStore.instance.getConfig().serverPluginsConfig = config);
+    private final SettingHandle2<ServerPluginsConfig> settings = Settings.get(ServerPluginsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     //private final String completion = "/:abcdefghijklmnopqrstuvwxyz0123456789-";
     private long logInNano;
@@ -50,7 +48,7 @@ public class ServerPlugins implements Module {
         reset();
     }
 
-    public SettingHandle<ServerPluginsConfig> getSettings() {
+    public SettingHandle2<ServerPluginsConfig> getSettings() {
         return settings;
     }
 
@@ -94,7 +92,7 @@ public class ServerPlugins implements Module {
         }
 
         ServerPluginsConfig config = settings.get();
-        if (System.nanoTime() - logInNano < (long) config.waitTicks * 50000000) {
+        if (System.nanoTime() - logInNano < (long) config.waitTicks() * 50000000) {
             return;
         }
 
@@ -117,7 +115,7 @@ public class ServerPlugins implements Module {
         }
 
         ServerPluginsConfig config = settings.get();
-        if (System.nanoTime() - logInNano < (long) config.waitTicks * 50000000) {
+        if (System.nanoTime() - logInNano < (long) config.waitTicks() * 50000000) {
             return;
         }
 
@@ -140,7 +138,7 @@ public class ServerPlugins implements Module {
                 state = State.RECEIVED_PACKET;
                 List<ClientboundCommandSuggestionsPacket.Entry> suggestions = packet.suggestions();
                 plugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
-                if (settings.get().autoPrint) {
+                if (settings.get().autoPrint()) {
                     for (String plugin: plugins) {
                         mc.gui.chatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
                     }
@@ -151,7 +149,7 @@ public class ServerPlugins implements Module {
                 bukkitState = State.RECEIVED_PACKET;
                 List<ClientboundCommandSuggestionsPacket.Entry> suggestions = packet.suggestions();
                 bukkitPlugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
-                if (settings.get().autoPrint) {
+                if (settings.get().autoPrint()) {
                     for (String plugin: bukkitPlugins) {
                         mc.gui.chatListener().handleSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents(plugin)), false);
                     }

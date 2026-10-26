@@ -3,9 +3,9 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
-import com.zergatul.cheatutils.configs.AimAssistConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AimAssistConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.Rotation;
@@ -34,11 +34,9 @@ import java.util.Optional;
 @NullMarked
 public class AimAssist implements Module {
 
-    public static final AimAssist instance = new AimAssist();
+    public static final AimAssist INSTANCE = new AimAssist();
 
-    private final SettingHandle<AimAssistConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().aimAssist,
-            config -> ConfigStore.instance.getConfig().aimAssist = config);
+    private final SettingHandle2<AimAssistConfig> settings = Settings.get(AimAssistConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private @Nullable TargetPredicate script;
@@ -55,7 +53,7 @@ public class AimAssist implements Module {
         WebApiRegistry.INSTANCE.register("aim-assist", settings, AimAssistConfig.class);
     }
 
-    public SettingHandle<AimAssistConfig> getSettings() {
+    public SettingHandle2<AimAssistConfig> getSettings() {
         return settings;
     }
 
@@ -88,7 +86,7 @@ public class AimAssist implements Module {
     private void onTickEnd() {
         bowAssistTarget = null;
 
-        if (!settings.get().bowAssist) {
+        if (!settings.get().bowAssist()) {
             return;
         }
         if (mc.player == null || mc.level == null) {
@@ -120,7 +118,7 @@ public class AimAssist implements Module {
     }
 
     private void onPlayerReleaseUsingItem(PlayerReleaseUsingItemEvent event) {
-        if (!settings.get().bowAssist) {
+        if (!settings.get().bowAssist()) {
             return;
         }
         if (mc.player == null || mc.level == null || bowAssistTarget == null) {
@@ -160,7 +158,7 @@ public class AimAssist implements Module {
 
             AimAssistConfig config = settings.get();
             Vec3 target;
-            if (AimAssistConfig.AIM_ASSIST_HEAD.equals(config.aimAssistMode)) {
+            if (AimAssistConfig.AIM_ASSIST_HEAD.equals(config.aimAssistMode())) {
                 target = new Vec3(Mth.lerp(0.5, box.minX, box.maxX), box.maxY, Mth.lerp(0.5, box.minZ, box.maxZ));
             } else {
                 target = box.getCenter();

@@ -23,6 +23,11 @@ public final class Settings {
                 (config, value) -> config.advancedTooltipsConfig = value);
 
         registrar.register(
+                AimAssistConfig.class,
+                config -> config.aimAssist,
+                (config, value) -> config.aimAssist = value);
+
+        registrar.register(
                 AirPlaceConfig.class,
                 config -> config.airPlaceConfig,
                 (config, value) -> config.airPlaceConfig = value);
@@ -48,6 +53,11 @@ public final class Settings {
                 (config, value) -> config.armorOverlayConfig = value);
 
         registrar.register(
+                AutoAttackConfig.class,
+                config -> config.autoAttackConfig,
+                (config, value) -> config.autoAttackConfig = value);
+
+        registrar.register(
                 AutoCraftConfig.class,
                 config -> config.autoCraftConfig,
                 (config, value) -> config.autoCraftConfig = value);
@@ -71,6 +81,11 @@ public final class Settings {
                 AutoFishConfig.class,
                 config -> config.autoFishConfig,
                 (config, value) -> config.autoFishConfig = value);
+
+        registrar.register(
+                AutoHotbarConfig.class,
+                config -> config.autoHotbarConfig,
+                (config, value) -> config.autoHotbarConfig = value);
 
         registrar.register(
                 AutoStunnerConfig.class,
@@ -111,6 +126,11 @@ public final class Settings {
                 DeathCoordinatesConfig.class,
                 config -> config.deathCoordinatesConfig,
                 (config, value) -> config.deathCoordinatesConfig = value);
+
+        registrar.register(
+                ElytraBounceConfig.class,
+                config -> config.elytraBounceConfig,
+                (config, value) -> config.elytraBounceConfig = value);
 
         registrar.register(
                 ElytraTunnelConfig.class,
@@ -188,9 +208,34 @@ public final class Settings {
                 (config, value) -> config.parkourAssistConfig = value);
 
         registrar.register(
+                PerformanceConfig.class,
+                config -> config.performanceConfig,
+                (config, value) -> config.performanceConfig = value);
+
+        registrar.register(
+                PigHackConfig.class,
+                config -> config.pigHackConfig,
+                (config, value) -> config.pigHackConfig = value);
+
+        registrar.register(
+                ProjectilePathConfig.class,
+                config -> config.projectilePathConfig,
+                (config, value) -> config.projectilePathConfig = value);
+
+        registrar.register(
+                ReachConfig.class,
+                config -> config.reachConfig,
+                (config, value) -> config.reachConfig = value);
+
+        registrar.register(
                 ScaffoldConfig.class,
                 config -> config.scaffoldConfig,
                 (config, value) -> config.scaffoldConfig = value);
+
+        registrar.register(
+                ServerPluginsConfig.class,
+                config -> config.serverPluginsConfig,
+                (config, value) -> config.serverPluginsConfig = value);
 
         registrar.register(
                 ShulkerTooltipConfig.class,
@@ -216,6 +261,11 @@ public final class Settings {
                 StepUpConfig.class,
                 config -> config.stepUp,
                 (config, value) -> config.stepUp = value);
+
+        registrar.register(
+                UserNameConfig.class,
+                config -> config.userNameConfig,
+                (config, value) -> config.userNameConfig = value);
 
         registrar.register(
                 VillagerRollerConfig.class,

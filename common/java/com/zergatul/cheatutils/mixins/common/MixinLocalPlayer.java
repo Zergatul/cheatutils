@@ -3,8 +3,10 @@ package com.zergatul.cheatutils.mixins.common;
 import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.ReachConfig;
 import com.zergatul.cheatutils.configs.modules.StepUpConfig;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
+import com.zergatul.cheatutils.modules.hacks.Reach;
 import com.zergatul.cheatutils.modules.hacks.StepUp;
 import com.zergatul.cheatutils.modules.scripting.Debugging;
 import com.zergatul.cheatutils.modules.utilities.Privacy;
@@ -173,9 +175,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public double blockInteractionRange() {
-        ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
-        if (config.overrideReachDistance) {
-            return config.reachDistance;
+        ReachConfig config = Reach.INSTANCE.getSettings().get();
+        if (config.overrideReachDistance()) {
+            return config.reachDistance();
         } else {
             return super.blockInteractionRange();
         }
@@ -183,9 +185,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public double entityInteractionRange() {
-        ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
-        if (config.overrideAttackRange) {
-            return config.attackRange;
+        ReachConfig config = Reach.INSTANCE.getSettings().get();
+        if (config.overrideAttackRange()) {
+            return config.attackRange();
         } else {
             return super.entityInteractionRange();
         }
