@@ -60,4 +60,20 @@ public class InputApi {
 
         return false;
     }
+
+    @MethodDescription("""
+            Low level method to check if key is down by its GLFW code.
+            Check https://www.glfw.org/docs/latest/group__keys.html to get exact code for your key.
+            """)
+    public boolean isKeyboardKeyDown(int code) {
+        return InputConstants.isKeyDown(mc.getWindow(), code);
+    }
+
+    @MethodDescription("""
+            Low level method to check if button is down by its GLFW code.
+            Check https://www.glfw.org/docs/latest/group__buttons.html for more details.
+            """)
+    public boolean isMouseKeyDown(int button) {
+        return org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), button) == 1;
+    }
 }
