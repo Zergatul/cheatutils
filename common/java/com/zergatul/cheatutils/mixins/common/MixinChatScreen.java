@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.ChatUtilitiesConfig;
+import com.zergatul.cheatutils.configs.modules.ChatUtilitiesConfig;
 import com.zergatul.cheatutils.modules.utilities.ChatUtilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
@@ -27,7 +27,7 @@ public abstract class MixinChatScreen {
             cancellable = true)
     private void onAfterHandleChatInput(KeyEvent keyEvent, CallbackInfoReturnable<Boolean> info) {
         ChatUtilitiesConfig config = ChatUtilities.INSTANCE.getSettings().get();
-        if (config.dontCloseChatOnEnter) {
+        if (config.dontCloseChatOnEnter()) {
             if (!this.input.getValue().isEmpty()) {
                 this.input.setValue("");
                 this.historyPos = Minecraft.getInstance().gui.hud.getChat().getRecentChat().size();

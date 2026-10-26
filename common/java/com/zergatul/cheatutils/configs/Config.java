@@ -56,7 +56,7 @@ public class Config implements Sanitizable {
     public BreachSwapConfig breachSwapConfig = BreachSwapConfig.defaults();
     public SpearRangeConfig spearRangeConfig = SpearRangeConfig.defaults();
     public AutoStunnerConfig autoStunnerConfig = AutoStunnerConfig.defaults();
-    public ChatUtilitiesConfig chatUtilitiesConfig = new ChatUtilitiesConfig();
+    public ChatUtilitiesConfig chatUtilitiesConfig = ChatUtilitiesConfig.defaults();
     public ExecConfig execConfig = ExecConfig.defaults();
     public VillagerRollerConfig villagerRollerConfig = VillagerRollerConfig.defaults();
     public AutoHotbarConfig autoHotbarConfig = AutoHotbarConfig.defaults();
@@ -90,7 +90,6 @@ public class Config implements Sanitizable {
         schematicaConfig.sanitize();
         keyBindingsConfig.sanitize();
         worldMarkersConfig.sanitize();
-        chatUtilitiesConfig.sanitize();
         handsViewConfig.sanitize();
         crystalAuraConfig.sanitize();
         containerButtonsConfig.sanitize();

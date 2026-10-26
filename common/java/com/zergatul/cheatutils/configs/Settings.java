@@ -133,6 +133,11 @@ public final class Settings {
                 (config, value) -> config.breachSwapConfig = value);
 
         registrar.register(
+                ChatUtilitiesConfig.class,
+                config -> config.chatUtilitiesConfig,
+                (config, value) -> config.chatUtilitiesConfig = value);
+
+        registrar.register(
                 ChunksConfig.class,
                 config -> config.chunksConfig,
                 (config, value) -> config.chunksConfig = value);
