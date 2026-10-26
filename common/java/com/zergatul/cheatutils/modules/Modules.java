@@ -72,8 +72,8 @@ public class Modules {
         register(VillagerRoller.INSTANCE);
         register(AutoHotbar.INSTANCE);
         register(AreaMine.INSTANCE);
-        register(ServerPlugins.instance);
-        register(BedrockBreaker.instance);
+        register(ServerPlugins.INSTANCE);
+        register(BedrockBreaker.INSTANCE);
         register(Containers.instance);
         register(AntiHunger.INSTANCE);
         register(Schematica.INSTANCE);
@@ -82,7 +82,7 @@ public class Modules {
         register(LogoutSpots.INSTANCE);
         register(AutoTool.instance);
         register(AirPlace.INSTANCE);
-        register(ContainerSummary.instance);
+        register(ContainerSummary.INSTANCE);
         register(CrystalAura.INSTANCE);
         register(FullBright.INSTANCE);
         register(InvMove.INSTANCE);

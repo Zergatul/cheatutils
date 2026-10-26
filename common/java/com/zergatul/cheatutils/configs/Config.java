@@ -65,7 +65,7 @@ public class Config implements Sanitizable {
     public ServerPluginsConfig serverPluginsConfig = ServerPluginsConfig.defaults();
     public HitboxSizeConfig hitboxSizeConfig = new HitboxSizeConfig();
     public EventsScriptingConfig eventsScriptingConfig = EventsScriptingConfig.defaults();
-    public BedrockBreakerConfig bedrockBreakerConfig = new BedrockBreakerConfig();
+    public BedrockBreakerConfig bedrockBreakerConfig = BedrockBreakerConfig.defaults();
     public CoreConfig coreConfig = CoreConfig.defaults();
     public AntiHungerConfig antiHungerConfig = AntiHungerConfig.defaults();
     public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();

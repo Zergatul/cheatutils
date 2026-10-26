@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 public class ContainerSummary implements Module {
 
-    public static final ContainerSummary instance = new ContainerSummary();
+    public static final ContainerSummary INSTANCE = new ContainerSummary();
 
     private final SettingHandle2<ContainerSummaryConfig> settings = Settings.get(ContainerSummaryConfig.class);
     private static final int BORDER_WIDTH = 2;

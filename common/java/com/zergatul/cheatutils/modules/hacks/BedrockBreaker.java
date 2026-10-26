@@ -4,9 +4,9 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.BedrockBreakerConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.BedrockBreakerConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.Root;
@@ -47,11 +47,9 @@ import java.util.stream.Collectors;
 
 public class BedrockBreaker implements Module {
 
-    public static final BedrockBreaker instance = new BedrockBreaker();
+    public static final BedrockBreaker INSTANCE = new BedrockBreaker();
 
-    private final SettingHandle<BedrockBreakerConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().bedrockBreakerConfig,
-            config -> ConfigStore.instance.getConfig().bedrockBreakerConfig = config);
+    private final SettingHandle2<BedrockBreakerConfig> settings = Settings.get(BedrockBreakerConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final Queue<BlockPos> queue = new ArrayDeque<>();
     private BlockPos bedrockPos;
@@ -70,7 +68,7 @@ public class BedrockBreaker implements Module {
         WebApiRegistry.INSTANCE.register("bedrock-breaker", settings, BedrockBreakerConfig.class);
     }
 
-    public SettingHandle<BedrockBreakerConfig> getSettings() {
+    public SettingHandle2<BedrockBreakerConfig> getSettings() {
         return settings;
     }
 
@@ -116,7 +114,7 @@ public class BedrockBreaker implements Module {
         BedrockBreakerConfig config = settings.get();
 
         //Predicate<BlockPos> condition = pos -> Math.abs(pos.getX()) <= 100 && Math.abs(pos.getZ()) <= 100;
-        Predicate<BlockPos> condition = pos -> true;
+        Predicate<BlockPos> condition = _ -> true;
 
         Vec3 eyePos = mc.player.getEyePosition(1);
         List<BlockPos> positions = NearbyBlockEnumerator.getPositions(eyePos, 4);
@@ -351,10 +349,10 @@ public class BedrockBreaker implements Module {
 
         if (mc.level.getBlockState(bedrockPos).isAir() && !mc.level.getBlockState(pistonPos.relative(pistonDirection)).is(Blocks.MOVING_PISTON)) {
             BedrockBreakerConfig config = settings.get();
-            if (config.replace) {
-                Identifier id = Identifier.tryParse(config.replaceBlockId);
+            if (config.replace()) {
+                Identifier id = Identifier.tryParse(config.replaceBlockId());
                 if (id == null || id.equals(BuiltInRegistries.ITEM.getDefaultKey())) {
-                    reset(config.replaceBlockId + " is not valid block ID");
+                    reset(config.replaceBlockId() + " is not valid block ID");
                     return;
                 }
 
@@ -584,7 +582,7 @@ public class BedrockBreaker implements Module {
 
     private boolean isValidBlock(BedrockBreakerConfig config, BlockPos pos) {
         assert mc.level != null;
-        return config.allBlocks || mc.level.getBlockState(pos).is(Blocks.BEDROCK);
+        return config.allBlocks() || mc.level.getBlockState(pos).is(Blocks.BEDROCK);
     }
 
     private int findItem(Item item) {
@@ -677,7 +675,7 @@ public class BedrockBreaker implements Module {
     }
 
     private enum State {
-        INIT(instance -> {}),
+        INIT(_ -> {}),
         START(BedrockBreaker::handleStart),
         PLACE_LEVER(BedrockBreaker::handlePlaceLever),
         BREAK_PISTON_START(BedrockBreaker::handleBreakPistonStart),

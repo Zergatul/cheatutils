@@ -98,6 +98,11 @@ public final class Settings {
                 (config, value) -> config.autoTotemConfig = value);
 
         registrar.register(
+                BedrockBreakerConfig.class,
+                config -> config.bedrockBreakerConfig,
+                (config, value) -> config.bedrockBreakerConfig = value);
+
+        registrar.register(
                 BlockEntityDistanceConfig.class,
                 config -> config.blockEntityDistance,
                 (config, value) -> config.blockEntityDistance = value);

@@ -21,7 +21,7 @@ import java.util.Random;
 
 public class ServerPlugins implements Module {
 
-    public static final ServerPlugins instance = new ServerPlugins();
+    public static final ServerPlugins INSTANCE = new ServerPlugins();
 
     private final SettingHandle2<ServerPluginsConfig> settings = Settings.get(ServerPluginsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
