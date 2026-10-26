@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.HitboxSizeConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.HitboxSizeConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.world.entity.Entity;
@@ -13,28 +13,26 @@ import java.util.Objects;
 
 public class HitboxSize implements Module {
 
-    public static final HitboxSize instance = new HitboxSize();
+    public static final HitboxSize INSTANCE = new HitboxSize();
 
-    private final ModuleConfigSettingHandle<HitboxSizeConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().hitboxSizeConfig,
-            config -> ConfigStore.instance.getConfig().hitboxSizeConfig = config);
+    private final SettingHandle2<HitboxSizeConfig> settings = Settings.get(HitboxSizeConfig.class);
 
     private HitboxSize() {
         WebApiRegistry.INSTANCE.register("hitbox-size", settings, HitboxSizeConfig.class);
     }
 
-    public ModuleConfigSettingHandle<HitboxSizeConfig> getSettings() {
+    public SettingHandle2<HitboxSizeConfig> getSettings() {
         return settings;
     }
 
     public AABB get(Entity entity) {
         HitboxSizeConfig config = settings.get();
-        if (config.enabled) {
+        if (config.enabled()) {
             Vec3 pos = entity.position();
             double width = entity.getBbWidth();
             double height = entity.getBbHeight();
-            width = apply(width, config.widthMode, config.widthPercent, config.widthAbsolute);
-            height = apply(height, config.heightMode, config.heightPercent, config.heightAbsolute);
+            width = apply(width, config.widthMode(), config.widthPercent(), config.widthAbsolute());
+            height = apply(height, config.heightMode(), config.heightPercent(), config.heightAbsolute());
             width /= 2;
             return new AABB(
                     pos.x - width, pos.y, pos.z - width,

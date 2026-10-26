@@ -2,7 +2,9 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import com.google.common.reflect.TypeToken;
 import com.zergatul.cheatutils.chunkoverlays.ExplorationMiniMapChunkOverlay;
-import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ExplorationMiniMapConfig;
 import com.zergatul.cheatutils.controllers.ChunkOverlayController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiBase;
@@ -17,22 +19,21 @@ public class MiniMap implements Module {
 
     public static final MiniMap INSTANCE = new MiniMap();
 
-    private final ModuleConfigSettingHandle<ExplorationMiniMapConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().explorationMiniMapConfig,
-            config -> ConfigStore.instance.getConfig().explorationMiniMapConfig = config,
-            this::onConfigChanged);
+    private final SettingHandle2<ExplorationMiniMapConfig> settings = Settings.get(ExplorationMiniMapConfig.class);
 
     private MiniMap() {
+        settings.onChanged(this::onConfigChanged);
+
         WebApiRegistry.INSTANCE.register("exploration-mini-map", settings, ExplorationMiniMapConfig.class);
         WebApiRegistry.INSTANCE.register(new MarkersWebApi());
     }
 
-    public ModuleConfigSettingHandle<ExplorationMiniMapConfig> getSettings() {
+    public SettingHandle2<ExplorationMiniMapConfig> getSettings() {
         return settings;
     }
 
     private void onConfigChanged(ExplorationMiniMapConfig prev, ExplorationMiniMapConfig curr) {
-        if (prev.enabled != curr.enabled) {
+        if (prev.enabled() != curr.enabled()) {
             ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).onEnabledChanged();
         }
     }

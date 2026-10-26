@@ -169,7 +169,7 @@ public class BlockAutomation {
                 if (breakCurrentBlock && !mc.level.isEmptyBlock(pos)) {
                     boolean proceed;
                     if (breakWithAutoTool) {
-                        AutoTool.instance.selectToolFor(pos);
+                        AutoTool.INSTANCE.selectToolFor(pos);
                         proceed = true;
                     } else {
                         proceed = selectItemForBlockBreak(config);

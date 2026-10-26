@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.MovementHackConfig;
 import com.zergatul.cheatutils.configs.modules.ElytraTunnelConfig;
+import com.zergatul.cheatutils.configs.modules.MovementHackConfig;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.helpers.MixinEntityHelper;
@@ -82,9 +82,9 @@ public abstract class MixinEntity {
     private static void onGetInputVector(Vec3 vec3, float f, float f1, CallbackInfoReturnable<Vec3> info) {
         if (MixinEntityHelper.insideMoveRelativeLocalPlayer) {
             MovementHackConfig config = Movement.INSTANCE.getSettings().get();
-            if (config.scaleInputVector) {
+            if (config.scaleInputVector()) {
                 Vec3 vec = info.getReturnValue();
-                info.setReturnValue(new Vec3(vec.x * config.inputVectorFactor, vec.y, vec.z * config.inputVectorFactor));
+                info.setReturnValue(new Vec3(vec.x * config.inputVectorFactor(), vec.y, vec.z * config.inputVectorFactor()));
             }
         }
     }

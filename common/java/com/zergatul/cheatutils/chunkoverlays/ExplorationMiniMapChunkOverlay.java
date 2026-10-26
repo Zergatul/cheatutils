@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.chunkoverlays;
 
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.concurrent.PreRenderGuiExecutor;
-import com.zergatul.cheatutils.configs.ExplorationMiniMapConfig;
+import com.zergatul.cheatutils.configs.modules.ExplorationMiniMapConfig;
 import com.zergatul.cheatutils.modules.visuals.MiniMap;
 import com.zergatul.cheatutils.render.Position2dTextureColorRenderer;
 import com.zergatul.cheatutils.utils.Dimension;
@@ -65,7 +65,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
 
     @Override
     public boolean isEnabled() {
-        return getConfig().enabled;
+        return getConfig().enabled();
     }
 
     @Override
@@ -129,7 +129,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
         int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
         int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
 
-        Integer scanFromY = getConfig().scanFromY;
+        Integer scanFromY = getConfig().scanFromY();
         for (int dx = 0; dx < 16; dx++) {
             for (int dz = 0; dz < 16; dz++) {
                 drawPixel(dimension, xf, yf, dx, dz, segment, chunk, scanFromY);
@@ -149,7 +149,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
             int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
             LevelChunk chunk = mc.level.getChunk(chunkPos.x(), chunkPos.z());
-            boolean updated = drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, chunk, getConfig().scanFromY);
+            boolean updated = drawPixel(dimension, xf, yf, Math.floorMod(pos.getX(), 16), Math.floorMod(pos.getZ(), 16), segment, chunk, getConfig().scanFromY());
             if (updated && !segment.updated) {
                 segment.updated = true;
                 segment.updateTime = System.nanoTime();
@@ -163,7 +163,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             if (pos.getY() >= height) {
                 int xf = Math.floorMod(chunkPos.x(), segmentSize) * 16;
                 int yf = Math.floorMod(chunkPos.z(), segmentSize) * 16;
-                boolean updated = drawPixel(dimension, xf, yf, dx, dz, segment, chunk, getConfig().scanFromY);
+                boolean updated = drawPixel(dimension, xf, yf, dx, dz, segment, chunk, getConfig().scanFromY());
                 if (updated && !segment.updated) {
                     segment.updated = true;
                     segment.updateTime = System.nanoTime();

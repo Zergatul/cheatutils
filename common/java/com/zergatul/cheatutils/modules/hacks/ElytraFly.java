@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ElytraHackConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ElytraHackConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -14,9 +14,7 @@ public class ElytraFly implements Module {
 
     public static final ElytraFly instance = new ElytraFly();
 
-    private final ModuleConfigSettingHandle<ElytraHackConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().elytraHackConfig,
-            config -> ConfigStore.instance.getConfig().elytraHackConfig = config);
+    private final SettingHandle2<ElytraHackConfig> settings = Settings.get(ElytraHackConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean applySpeedLimit;
     private boolean applyFly;
@@ -30,7 +28,7 @@ public class ElytraFly implements Module {
         WebApiRegistry.INSTANCE.register("elytra-hack", settings, ElytraHackConfig.class);
     }
 
-    public ModuleConfigSettingHandle<ElytraHackConfig> getSettings() {
+    public SettingHandle2<ElytraHackConfig> getSettings() {
         return settings;
     }
 
@@ -40,8 +38,8 @@ public class ElytraFly implements Module {
         if (applySpeedLimit) {
             ElytraHackConfig config = settings.get();
             double speed = delta.length() * 20;
-            if (speed > config.maxSpeed) {
-                delta = delta.normalize().scale(config.maxSpeed / 20);
+            if (speed > config.maxSpeed()) {
+                delta = delta.normalize().scale(config.maxSpeed() / 20);
             }
 
             mc.player.setDeltaMovement(delta);
@@ -60,7 +58,7 @@ public class ElytraFly implements Module {
 
     private void onClientTickStart() {
         ElytraHackConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return;
         }
         if (mc.player == null) {
@@ -70,7 +68,7 @@ public class ElytraFly implements Module {
             return;
         }
 
-        switch (config.method) {
+        switch (config.method()) {
             case ElytraHackConfig.CREATIVE_FLY -> {
                 applyFly = true;
                 applySpeedLimit = true;
@@ -79,14 +77,14 @@ public class ElytraFly implements Module {
                 Vec3 delta = mc.player.getDeltaMovement();
                 ClientInput input = mc.player.input;
                 if (input.keyPresses.jump()) {
-                    delta = delta.add(0, config.vanillaFlyVerticalAcceleration / 20, 0);
+                    delta = delta.add(0, config.vanillaFlyVerticalAcceleration() / 20, 0);
                 }
                 if (input.keyPresses.shift()) {
-                    delta = delta.subtract(0, config.vanillaFlyVerticalAcceleration / 20, 0);
+                    delta = delta.subtract(0, config.vanillaFlyVerticalAcceleration() / 20, 0);
                 }
 
                 float yaw = (float) Math.toRadians(mc.player.getYRot());
-                Vec3 forward = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)).scale(config.vanillaFlyHorizontalAcceleration / 20);
+                Vec3 forward = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)).scale(config.vanillaFlyHorizontalAcceleration() / 20);
                 if (input.keyPresses.forward()) {
                     delta = delta.add(forward);
                 }
@@ -106,7 +104,7 @@ public class ElytraFly implements Module {
         if (applyFly) {
             mc.player.stopFallFlying();
             mc.player.getAbilities().flying = true;
-            mc.player.getAbilities().setFlyingSpeed((float) (config.maxSpeed / 100));
+            mc.player.getAbilities().setFlyingSpeed((float) (config.maxSpeed() / 100));
         }
     }
 

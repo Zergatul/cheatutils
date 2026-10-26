@@ -5,9 +5,9 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.LightLevelConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.LightLevelConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.*;
@@ -43,10 +43,7 @@ public class LightLevel implements Module {
 
     public static final LightLevel INSTANCE = new LightLevel();
 
-    private final ModuleConfigSettingHandle<LightLevelConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().lightLevelConfig,
-            config -> ConfigStore.instance.getConfig().lightLevelConfig = config,
-            this::onConfigChanged);
+    private final SettingHandle2<LightLevelConfig> settings = Settings.get(LightLevelConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final Identifier texture = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/light-level.png");
     private final TextureLocation[] numbers = new TextureLocation[16];
@@ -73,6 +70,7 @@ public class LightLevel implements Module {
         Events.RawChunkLoaded.add(this::onChunkLoaded);
         Events.RawChunkUnloaded.add(this::onChunkUnLoaded);
         Events.RawBlockUpdated.add(this::onBlockChanged);
+        settings.onChanged(this::onConfigChanged);
 
         WebApiRegistry.INSTANCE.register("light-level", settings, LightLevelConfig.class);
 
@@ -85,14 +83,14 @@ public class LightLevel implements Module {
         }
     }
 
-    public ModuleConfigSettingHandle<LightLevelConfig> getSettings() {
+    public SettingHandle2<LightLevelConfig> getSettings() {
         return settings;
     }
 
     private void onConfigChanged(LightLevelConfig prev, LightLevelConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
-            if (prev.enabled != curr.enabled) {
-                if (curr.enabled) {
+            if (prev.enabled() != curr.enabled()) {
+                if (curr.enabled()) {
                     AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
                     for (int i = 0; i < chunks.length(); i++) {
                         LevelChunk chunk = chunks.get(i);
@@ -112,7 +110,7 @@ public class LightLevel implements Module {
         assert mc.player != null;
 
         LightLevelConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return;
         }
 
@@ -122,10 +120,10 @@ public class LightLevel implements Module {
         Direction direction = Direction.fromYRot(camera.yRot());
         RotationIndexes rot = rotations.get(direction);
 
-        double maxDistance2 = config.maxDistance * config.maxDistance;
-        double xc = config.useFreeCamPosition ? view.x : mc.player.getX();
-        double yc = config.useFreeCamPosition ? view.y : mc.player.getY();
-        double zc = config.useFreeCamPosition ? view.z : mc.player.getZ();
+        double maxDistance2 = config.maxDistance() * config.maxDistance();
+        double xc = config.useFreeCamPosition() ? view.x : mc.player.getX();
+        double yc = config.useFreeCamPosition() ? view.y : mc.player.getY();
+        double zc = config.useFreeCamPosition() ? view.z : mc.player.getZ();
 
         Position3dTextureRenderer textureRenderer = Position3dTextureRenderer.getInstance();
         textureRenderer.begin();
@@ -142,7 +140,7 @@ public class LightLevel implements Module {
             if (blockLight == 0) {
                 listTracers.add(pos);
             }
-            if (config.showLightLevelValue) {
+            if (config.showLightLevelValue()) {
                 float y = (float)(pos.getY() + 0.05 - view.y);
                 float x1 = (float)(pos.getX() + 0.05 - view.x);
                 float z1 = (float)(pos.getZ() + 0.05 - view.z);
@@ -171,14 +169,14 @@ public class LightLevel implements Module {
 
         for (BlockPos pos: listTracers) {
             double y = pos.getY() + 0.05;
-            if (config.showTracers) {
+            if (config.showTracers()) {
                 tracerRenderer.tracer(
                         event.getCameraPos(),
                         pos.getX() + 0.5, y, pos.getZ() + 0.5,
                         0x7FFFFFFF, 1f);
             }
 
-            if (config.showLocations) {
+            if (config.showLocations()) {
                 double x1 = pos.getX() + 0.05;
                 double z1 = pos.getZ() + 0.05;
                 double x2 = x1 + 0.9;
@@ -207,7 +205,7 @@ public class LightLevel implements Module {
     }
 
     private void onChunkLoaded(LevelChunk chunk) {
-        if (settings.get().enabled) {
+        if (settings.get().enabled()) {
             return;
         }
 
@@ -240,7 +238,7 @@ public class LightLevel implements Module {
     }
 
     private void onChunkUnLoaded(ChunkAccess chunk) {
-        if (!settings.get().enabled) {
+        if (!settings.get().enabled()) {
             return;
         }
 
@@ -250,7 +248,7 @@ public class LightLevel implements Module {
     }
 
     private void onBlockChanged(BlockUpdateEvent event) {
-        if (!settings.get().enabled) {
+        if (!settings.get().enabled()) {
             return;
         }
 

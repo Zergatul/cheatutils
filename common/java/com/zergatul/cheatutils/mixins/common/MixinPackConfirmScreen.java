@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.zergatul.cheatutils.configs.PrivacyConfig;
+import com.zergatul.cheatutils.configs.modules.PrivacyConfig;
 import com.zergatul.cheatutils.modules.utilities.Privacy;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
@@ -26,7 +26,7 @@ public abstract class MixinPackConfirmScreen {
             @Local(name = "requests") List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> requests
     ) {
         PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
-        if (!config.displayResourcePackUrls) {
+        if (!config.displayResourcePackUrls()) {
             return original;
         }
 

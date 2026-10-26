@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.LoaderBridge;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.PrivacyConfig;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.PrivacyConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.ChatFormatting;
@@ -25,24 +25,22 @@ public class Privacy implements Module {
 
     public static final Privacy INSTANCE = new Privacy();
 
-    private final SettingHandle<PrivacyConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().privacyConfig,
-            config -> ConfigStore.instance.getConfig().privacyConfig = config);
+    private final SettingHandle2<PrivacyConfig> settings = Settings.get(PrivacyConfig.class);
 
     private Privacy() {
         WebApiRegistry.INSTANCE.register("privacy", settings, PrivacyConfig.class);
     }
 
-    public SettingHandle<PrivacyConfig> getSettings() {
+    public SettingHandle2<PrivacyConfig> getSettings() {
         return settings;
     }
 
     public boolean shouldDisconnectOnTranslationExploit(PrivacyConfig config) {
-        return config.disconnectOnTranslationExploit && !LoaderBridge.INSTANCE.getEnvironment().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
+        return config.disconnectOnTranslationExploit() && !LoaderBridge.INSTANCE.getEnvironment().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
     }
 
     public boolean shouldDisconnectOnMaliciousResourcePack(PrivacyConfig config) {
-        return config.disconnectOnMaliciousResourcePackBehavior && !LoaderBridge.INSTANCE.getEnvironment().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
+        return config.disconnectOnMaliciousResourcePackBehavior() && !LoaderBridge.INSTANCE.getEnvironment().hasMod(Constants.EXPLOIT_PREVENTER_MOD_ID);
     }
 
     public Optional<Component> checkExploitable(SignText text) {

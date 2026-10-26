@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.scripting.modules.SettingHandleApi;
+import com.zergatul.cheatutils.utils.MathUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class ModuleConfigHandleTests {
     @Test
     public void replacementIsSanitizedAndInstalledBeforeNotificationAndSavedOnce() {
         Fixture fixture = new Fixture();
-        LightLevelConfig replacement = new LightLevelConfig();
+        LegacyConfig replacement = new LegacyConfig();
         replacement.enabled = true;
         replacement.maxDistance = 2000;
         replacement.showLocations = true;
@@ -31,7 +32,7 @@ public class ModuleConfigHandleTests {
         Fixture fixture = new Fixture();
         fixture.current.maxDistance = 0;
         fixture.current.showLightLevelValue = true;
-        SettingHandleApi<LightLevelConfig> api = new SettingHandleApi<>(fixture.settings) {};
+        SettingHandleApi<LegacyConfig> api = new SettingHandleApi<>(fixture.settings) {};
 
         api.enable();
         api.enable();
@@ -58,8 +59,8 @@ public class ModuleConfigHandleTests {
     @Test
     public void profileReloadUsesTheNewConfigWithoutSavingAndLaterEditsTargetIt() {
         Fixture fixture = new Fixture();
-        LightLevelConfig previous = fixture.current;
-        LightLevelConfig loaded = new LightLevelConfig();
+        LegacyConfig previous = fixture.current;
+        LegacyConfig loaded = new LegacyConfig();
         loaded.maxDistance = -10;
         fixture.current = loaded;
 
@@ -85,10 +86,22 @@ public class ModuleConfigHandleTests {
         assertEquals(List.of("changed:false:20.0", "changed:false:20.0"), fixture.calls);
     }
 
+    // Keep legacy handle coverage independent of migrated module configs.
+    private static class LegacyConfig extends ModuleConfig implements Sanitizable {
+        public float maxDistance = 20;
+        public boolean showLocations;
+        public boolean showLightLevelValue;
+
+        @Override
+        public void sanitize() {
+            maxDistance = MathUtils.clamp(maxDistance, 1, 1000);
+        }
+    }
+
     private static class Fixture {
-        private LightLevelConfig current = new LightLevelConfig();
+        private LegacyConfig current = new LegacyConfig();
         private final List<String> calls = new ArrayList<>();
-        private final ModuleConfigSettingHandle<LightLevelConfig> settings = new ModuleConfigSettingHandle<>(
+        private final ModuleConfigSettingHandle<LegacyConfig> settings = new ModuleConfigSettingHandle<>(
                 () -> current,
                 config -> current = config,
                 (prev, curr) -> calls.add("changed:" + current.enabled + ":" + current.maxDistance),

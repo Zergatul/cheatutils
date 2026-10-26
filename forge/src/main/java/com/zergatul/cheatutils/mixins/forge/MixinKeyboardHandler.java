@@ -23,7 +23,7 @@ public abstract class MixinKeyboardHandler {
             at = @At("TAIL"))
     private void onKeyPress(long handle, int action, KeyEvent event, CallbackInfo info) {
         if (handle == this.minecraft.getWindow().handle()) {
-            InvMove.instance.onKeyPress(action, event);
+            InvMove.INSTANCE.onKeyPress(action, event);
         }
     }
 }

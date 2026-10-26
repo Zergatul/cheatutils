@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.mcp.tool;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.zergatul.cheatutils.configs.McpServerConfig;
+import com.zergatul.cheatutils.configs.modules.McpServerConfig;
 import com.zergatul.cheatutils.mcp.McpItemStatus;
 import com.zergatul.cheatutils.mcp.protocol.ImageContent;
 import com.zergatul.cheatutils.render.ImageUtils;
@@ -60,7 +60,7 @@ public class ScreenshotTool implements McpTool {
             return status;
         }
 
-        if (!config.allowScreenshots) {
+        if (!config.allowScreenshots()) {
             return McpItemStatus.disabled("Disabled by CheatUtils MCP Server settings: allowScreenshots is false.");
         }
 

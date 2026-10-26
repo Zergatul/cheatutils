@@ -44,7 +44,7 @@ public class Modules {
         register(BlockEsp.instance);
         register(ProjectilePath.INSTANCE);
         register(EndCityChunks.INSTANCE);
-        register(AutoBucket.instance);
+        register(AutoBucket.INSTANCE);
         register(WorldDownload.INSTANCE);
         register(EntityTitle.instance);
         register(TeleportHack.instance);
@@ -80,13 +80,13 @@ public class Modules {
         register(AimAssist.INSTANCE);
         register(LockInputs.INSTANCE);
         register(LogoutSpots.INSTANCE);
-        register(AutoTool.instance);
+        register(AutoTool.INSTANCE);
         register(AirPlace.INSTANCE);
         register(ContainerSummary.INSTANCE);
         register(CrystalAura.INSTANCE);
         register(FullBright.INSTANCE);
         register(InvMove.INSTANCE);
-        register(HitboxSize.instance);
+        register(HitboxSize.INSTANCE);
         register(BetterStatusEffects.INSTANCE);
         register(BoatHack.INSTANCE);
         register(Blink.instance);

@@ -48,8 +48,8 @@ public final class ModMain {
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
         SystemFonts.initAsync();
-        Profiles.instance.init();
-        WebServer.instance.start();
+        Profiles.INSTANCE.init();
+        WebServer.INSTANCE.start();
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {

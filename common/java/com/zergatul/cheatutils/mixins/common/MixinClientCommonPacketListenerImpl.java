@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.zergatul.cheatutils.configs.PrivacyConfig;
+import com.zergatul.cheatutils.configs.modules.PrivacyConfig;
 import com.zergatul.cheatutils.helpers.MixinClientPacketListenerHelper;
 import com.zergatul.cheatutils.modules.scripting.Debugging;
 import com.zergatul.cheatutils.modules.utilities.Privacy;
@@ -52,7 +52,7 @@ public class MixinClientCommonPacketListenerImpl {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V", shift = At.Shift.AFTER))
     private void onBeforePushResourcePack(ClientboundResourcePackPushPacket packet, CallbackInfo info) {
         PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
-        if (!config.logResourcePackDetails) {
+        if (!config.logResourcePackDetails()) {
             return;
         }
 
@@ -147,6 +147,6 @@ public class MixinClientCommonPacketListenerImpl {
         }
 
         PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
-        return config.alwaysPromptOnResourcePack ? ServerData.ServerPackStatus.PROMPT : original;
+        return config.alwaysPromptOnResourcePack() ? ServerData.ServerPackStatus.PROMPT : original;
     }
 }

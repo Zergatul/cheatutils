@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoBucketConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoBucketConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.hacks.FlyHack;
 import com.zergatul.cheatutils.utils.Rotation;
@@ -38,11 +38,9 @@ import java.util.Set;
 
 public class AutoBucket implements Module {
 
-    public static final AutoBucket instance = new AutoBucket();
+    public static final AutoBucket INSTANCE = new AutoBucket();
 
-    private final ModuleConfigSettingHandle<AutoBucketConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().autoBucketConfig,
-            config -> ConfigStore.instance.getConfig().autoBucketConfig = config);
+    private final SettingHandle2<AutoBucketConfig> settings = Settings.get(AutoBucketConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final NoFallMethod[] methods = new NoFallMethod[] {
             new WaterBucketMethod(),
@@ -64,7 +62,7 @@ public class AutoBucket implements Module {
         WebApiRegistry.INSTANCE.register("auto-bucket", settings, AutoBucketConfig.class);
     }
 
-    public ModuleConfigSettingHandle<AutoBucketConfig> getSettings() {
+    public SettingHandle2<AutoBucketConfig> getSettings() {
         return settings;
     }
 
@@ -73,7 +71,7 @@ public class AutoBucket implements Module {
             return;
         }
         AutoBucketConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return;
         }
 
@@ -87,7 +85,7 @@ public class AutoBucket implements Module {
         }
 
         Vec3 speed = mc.player.getDeltaMovement();
-        if (speed.y > -config.speedThreshold / 20) {
+        if (speed.y > -config.speedThreshold() / 20) {
             tryPickUp(config);
             return;
         }
@@ -242,7 +240,7 @@ public class AutoBucket implements Module {
             return;
         }
 
-        if (!config.autoPickUp) {
+        if (!config.autoPickUp()) {
             resetState();
             return;
         }
@@ -252,7 +250,7 @@ public class AutoBucket implements Module {
             if (System.nanoTime() - itemAppliedTime < 4000000000L) {
                 Vec3 blockCenter = Vec3.atCenterOf(itemAppliedRealPos);
                 double d2 = mc.player.getPosition(1).distanceToSqr(blockCenter);
-                if (d2 < config.reachDistance * config.reachDistance) {
+                if (d2 < config.reachDistance() * config.reachDistance()) {
                     if (currentMethod.tryPickUp(mc, blockCenter, config)) {
                         resetState();
                     }
@@ -287,7 +285,7 @@ public class AutoBucket implements Module {
 
         @Override
         public boolean isEnabled(AutoBucketConfig config) {
-            return config.useWaterBucket;
+            return config.useWaterBucket();
         }
 
         @Override
@@ -316,7 +314,7 @@ public class AutoBucket implements Module {
             mc.player.setXRot(rotation.xRot());
             mc.player.setYRot(rotation.yRot());
 
-            HitResult result = mc.player.pick(config.reachDistance, 1, true);
+            HitResult result = mc.player.pick(config.reachDistance(), 1, true);
             BlockPos appliedAtPos;
             if (result instanceof BlockHitResult blockHitResult && result.getType() != HitResult.Type.MISS) {
                 mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
@@ -362,7 +360,7 @@ public class AutoBucket implements Module {
 
         @Override
         public boolean isEnabled(AutoBucketConfig config) {
-            return config.usePowderSnowBucket;
+            return config.usePowderSnowBucket();
         }
 
         @Override
@@ -391,7 +389,7 @@ public class AutoBucket implements Module {
             mc.player.setXRot(rotation.xRot());
             mc.player.setYRot(rotation.yRot());
 
-            HitResult result = mc.player.pick(config.reachDistance, 1, true);
+            HitResult result = mc.player.pick(config.reachDistance(), 1, true);
             BlockPos appliedAtPos;
             if (result instanceof BlockHitResult blockHitResult && result.getType() != HitResult.Type.MISS) {
                 mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, blockHitResult);
@@ -459,7 +457,7 @@ public class AutoBucket implements Module {
             mc.player.setXRot(rotation.xRot());
             mc.player.setYRot(rotation.yRot());
 
-            HitResult result = mc.player.pick(config.reachDistance, 1, true);
+            HitResult result = mc.player.pick(config.reachDistance(), 1, true);
             BlockPos appliedAtPos;
             if (result instanceof BlockHitResult blockHitResult && result.getType() != HitResult.Type.MISS) {
                 mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, blockHitResult);
@@ -501,7 +499,7 @@ public class AutoBucket implements Module {
 
         @Override
         public boolean isEnabled(AutoBucketConfig config) {
-            return config.useSlimeBlock;
+            return config.useSlimeBlock();
         }
 
         @Override
@@ -514,7 +512,7 @@ public class AutoBucket implements Module {
 
         @Override
         public boolean isEnabled(AutoBucketConfig config) {
-            return config.useHoneyBlock;
+            return config.useHoneyBlock();
         }
 
         @Override
@@ -527,7 +525,7 @@ public class AutoBucket implements Module {
 
         @Override
         public boolean isEnabled(AutoBucketConfig config) {
-            return config.useCobweb;
+            return config.useCobweb();
         }
 
         @Override
@@ -540,7 +538,7 @@ public class AutoBucket implements Module {
 
         @Override
         public boolean isEnabled(AutoBucketConfig config) {
-            return config.useHayBale;
+            return config.useHayBale();
         }
 
         @Override

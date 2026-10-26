@@ -5,7 +5,7 @@ import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.zergatul.cheatutils.configs.McpServerConfig;
+import com.zergatul.cheatutils.configs.modules.McpServerConfig;
 import com.zergatul.cheatutils.mcp.protocol.*;
 import com.zergatul.cheatutils.mcp.resource.*;
 import com.zergatul.cheatutils.mcp.tool.*;

@@ -58,6 +58,11 @@ public final class Settings {
                 (config, value) -> config.autoAttackConfig = value);
 
         registrar.register(
+                AutoBucketConfig.class,
+                config -> config.autoBucketConfig,
+                (config, value) -> config.autoBucketConfig = value);
+
+        registrar.register(
                 AutoCraftConfig.class,
                 config -> config.autoCraftConfig,
                 (config, value) -> config.autoCraftConfig = value);
@@ -91,6 +96,11 @@ public final class Settings {
                 AutoStunnerConfig.class,
                 config -> config.autoStunnerConfig,
                 (config, value) -> config.autoStunnerConfig = value);
+
+        registrar.register(
+                AutoToolConfig.class,
+                config -> config.autoTool,
+                (config, value) -> config.autoTool = value);
 
         registrar.register(
                 AutoTotemConfig.class,
@@ -148,6 +158,11 @@ public final class Settings {
                 (config, value) -> config.elytraBounceConfig = value);
 
         registrar.register(
+                ElytraHackConfig.class,
+                config -> config.elytraHackConfig,
+                (config, value) -> config.elytraHackConfig = value);
+
+        registrar.register(
                 ElytraTunnelConfig.class,
                 config -> config.elytraTunnelConfig,
                 (config, value) -> config.elytraTunnelConfig = value);
@@ -173,6 +188,11 @@ public final class Settings {
                 (config, value) -> config.execConfig = value);
 
         registrar.register(
+                ExplorationMiniMapConfig.class,
+                config -> config.explorationMiniMapConfig,
+                (config, value) -> config.explorationMiniMapConfig = value);
+
+        registrar.register(
                 FastBreakConfig.class,
                 config -> config.fastBreakConfig,
                 (config, value) -> config.fastBreakConfig = value);
@@ -188,14 +208,29 @@ public final class Settings {
                 (config, value) -> config.fogConfig = value);
 
         registrar.register(
+                FreeCamConfig.class,
+                config -> config.freeCamConfig,
+                (config, value) -> config.freeCamConfig = value);
+
+        registrar.register(
                 FullBrightConfig.class,
                 config -> config.fullBrightConfig,
                 (config, value) -> config.fullBrightConfig = value);
 
         registrar.register(
+                HitboxSizeConfig.class,
+                config -> config.hitboxSizeConfig,
+                (config, value) -> config.hitboxSizeConfig = value);
+
+        registrar.register(
                 InvMoveConfig.class,
                 config -> config.invMoveConfig,
                 (config, value) -> config.invMoveConfig = value);
+
+        registrar.register(
+                LightLevelConfig.class,
+                config -> config.lightLevelConfig,
+                (config, value) -> config.lightLevelConfig = value);
 
         registrar.register(
                 LockInputsConfig.class,
@@ -206,6 +241,16 @@ public final class Settings {
                 LogoutSpotsConfig.class,
                 config -> config.logoutSpots,
                 (config, value) -> config.logoutSpots = value);
+
+        registrar.register(
+                McpServerConfig.class,
+                config -> config.mcpServerConfig,
+                (config, value) -> config.mcpServerConfig = value);
+
+        registrar.register(
+                MovementHackConfig.class,
+                config -> config.movementHackConfig,
+                (config, value) -> config.movementHackConfig = value);
 
         registrar.register(
                 NewChunksConfig.class,
@@ -231,6 +276,11 @@ public final class Settings {
                 PigHackConfig.class,
                 config -> config.pigHackConfig,
                 (config, value) -> config.pigHackConfig = value);
+
+        registrar.register(
+                PrivacyConfig.class,
+                config -> config.privacyConfig,
+                (config, value) -> config.privacyConfig = value);
 
         registrar.register(
                 ProjectilePathConfig.class,
