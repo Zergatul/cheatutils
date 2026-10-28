@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ContainerButtonsConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.ItemUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
@@ -29,9 +29,7 @@ public class ContainerButtons implements Module {
 
     public static final ContainerButtons INSTANCE = new ContainerButtons();
 
-    private final SettingHandle<ContainerButtonsConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().containerButtonsConfig,
-            config -> ConfigStore.instance.getConfig().containerButtonsConfig = config);
+    private final SettingHandle2<ContainerButtonsConfig> settings = Settings.get(ContainerButtonsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private ContainerButtons() {
@@ -40,7 +38,7 @@ public class ContainerButtons implements Module {
         WebApiRegistry.INSTANCE.register("container-buttons", settings, ContainerButtonsConfig.class);
     }
 
-    public SettingHandle<ContainerButtonsConfig> getSettings() {
+    public SettingHandle2<ContainerButtonsConfig> getSettings() {
         return settings;
     }
 
@@ -85,7 +83,7 @@ public class ContainerButtons implements Module {
                     if (slot.getItem().isEmpty()) {
                         continue;
                     }
-                    if (config.useFilter && !config.items.contains(slot.getItem().getItem())) {
+                    if (config.useFilter() && !config.items().contains(slot.getItem().getItem())) {
                         continue;
                     }
                     mc.gameMode.handleContainerInput(screen.getMenu().containerId, i, 1, ContainerInput.THROW, mc.player);
@@ -120,7 +118,7 @@ public class ContainerButtons implements Module {
                     if (slot.getItem().isEmpty()) {
                         continue;
                     }
-                    if (config.useFilter && !config.items.contains(slot.getItem().getItem())) {
+                    if (config.useFilter() && !config.items().contains(slot.getItem().getItem())) {
                         continue;
                     }
                     mc.gameMode.handleContainerInput(screen.getMenu().containerId, i, 0, ContainerInput.QUICK_MOVE, mc.player);
@@ -139,7 +137,7 @@ public class ContainerButtons implements Module {
         }
 
         if (mc.gui.screen() instanceof AbstractContainerScreen<?> screen) {
-            boolean checkShulkerContent = settings.get().checkShulkerContent;
+            boolean checkShulkerContent = settings.get().checkShulkerContent();
 
             NonNullList<Slot> slots = screen.getMenu().slots;
             if (!slots.isEmpty()) {
@@ -224,15 +222,15 @@ public class ContainerButtons implements Module {
 
     private void onClientTickEnd() {
         ContainerButtonsConfig config = settings.get();
-        if (config.autoTakeAll || config.autoDropAll) {
+        if (config.autoTakeAll() || config.autoDropAll()) {
             if (!isValidScreen(mc.gui.screen())) {
                 return;
             }
 
-            if (config.autoTakeAll) {
-                takeAll(config.autoClose);
-            } else if (config.autoDropAll) {
-                dropAll(config.autoClose);
+            if (config.autoTakeAll()) {
+                takeAll(config.autoClose());
+            } else if (config.autoDropAll()) {
+                dropAll(config.autoClose());
             }
         }
     }

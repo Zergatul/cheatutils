@@ -1,41 +1,41 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
+import com.zergatul.cheatutils.configs.modules.ContainerButtonsConfig;
 import com.zergatul.cheatutils.modules.automation.ContainerButtons;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.scripting.MethodDescription;
 
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unused")
 public class ContainerButtonsApi {
 
     public boolean isAutoTakeAllEnabled() {
-        return getConfig().autoTakeAll;
+        return getConfig().autoTakeAll();
     }
 
     public boolean isAutoDropAllEnabled() {
-        return getConfig().autoDropAll;
+        return getConfig().autoDropAll();
     }
 
     public boolean isAutoCloseEnabled() {
-        return getConfig().autoClose;
+        return getConfig().autoClose();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleAutoTakeAll() {
-        update(c -> c.autoTakeAll = !c.autoTakeAll);
+        update(c -> c.withAutoTakeAll(!c.autoTakeAll()));
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleAutoDropAll() {
-        update(c -> c.autoDropAll = !c.autoDropAll);
+        update(c -> c.withAutoDropAll(!c.autoDropAll()));
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleAutoClose() {
-        update(c -> c.autoClose = !c.autoClose);
+        update(c -> c.withAutoClose(!c.autoClose()));
     }
 
     @ApiVisibility(ApiType.ACTION)
@@ -54,8 +54,8 @@ public class ContainerButtonsApi {
         ContainerButtons.INSTANCE.smartPut();
     }
 
-    private void update(Consumer<ContainerButtonsConfig> consumer) {
-        ContainerButtons.INSTANCE.getSettings().update(consumer);
+    private void update(UnaryOperator<ContainerButtonsConfig> update) {
+        ContainerButtons.INSTANCE.getSettings().update(update);
     }
 
     private ContainerButtonsConfig getConfig() {

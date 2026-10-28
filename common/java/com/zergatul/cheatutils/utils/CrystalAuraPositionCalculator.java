@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.utils;
 
 import com.zergatul.cheatutils.blocks.SimpleBlockPlacer;
 import com.zergatul.cheatutils.blocks.SimpleBlockPlan;
-import com.zergatul.cheatutils.configs.CrystalAuraConfig;
+import com.zergatul.cheatutils.configs.modules.CrystalAuraConfig;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -28,8 +28,8 @@ public class CrystalAuraPositionCalculator {
             CrystalAuraDamageCalculator calculator,
             CrystalAuraConfig config
     ) {
-        int radius = Mth.ceil(config.placeRange);
-        double placeRangeSqr = config.placeRange * config.placeRange;
+        int radius = Mth.ceil(config.placeRange());
+        double placeRangeSqr = config.placeRange() * config.placeRange();
         BlockGetter levelSlice = calculator.getBlockGetter();
 
         float bestDamage = 0;
@@ -90,8 +90,8 @@ public class CrystalAuraPositionCalculator {
             CrystalAuraDamageCalculator calculator,
             CrystalAuraConfig config
     ) {
-        int radius = Mth.ceil(config.placeRange);
-        double placeRangeSqr = config.placeRange * config.placeRange;
+        int radius = Mth.ceil(config.placeRange());
+        double placeRangeSqr = config.placeRange() * config.placeRange();
         BlockGetter levelSlice = calculator.getBlockGetter();
 
         float bestDamage = 0;
@@ -133,8 +133,8 @@ public class CrystalAuraPositionCalculator {
                     SimpleBlockPlan plan = SimpleBlockPlacer.createPlan(
                             levelSlice,
                             pos.immutable(),
-                            config.airPlace,
-                            config.autoRotate);
+                            config.airPlace(),
+                            config.autoRotate());
                     if (plan == null) {
                         continue;
                     }

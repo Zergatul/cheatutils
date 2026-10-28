@@ -35,7 +35,7 @@ public class Config implements Sanitizable {
     public UserNameConfig userNameConfig = UserNameConfig.defaults();
     public NewChunksConfig newChunksConfig = NewChunksConfig.defaults();
     public AutoDropConfig autoDropConfig = AutoDropConfig.defaults();
-    public ContainerButtonsConfig containerButtonsConfig = new ContainerButtonsConfig();
+    public ContainerButtonsConfig containerButtonsConfig = ContainerButtonsConfig.defaults();
     public ChunksConfig chunksConfig = ChunksConfig.defaults();
     public StatusOverlayConfig statusOverlayConfig = StatusOverlayConfig.defaults();
     public StatusEffectsConfig statusEffectsConfig = StatusEffectsConfig.defaults();
@@ -68,7 +68,7 @@ public class Config implements Sanitizable {
     public BedrockBreakerConfig bedrockBreakerConfig = BedrockBreakerConfig.defaults();
     public CoreConfig coreConfig = CoreConfig.defaults();
     public AntiHungerConfig antiHungerConfig = AntiHungerConfig.defaults();
-    public MonacoEditorConfig monacoEditor = new MonacoEditorConfig();
+    public MonacoEditorConfig monacoEditor = MonacoEditorConfig.defaults();
     public StepUpConfig stepUp = StepUpConfig.defaults();
     public AimAssistConfig aimAssist = AimAssistConfig.defaults();
     public LogoutSpotsConfig logoutSpots = LogoutSpotsConfig.defaults();
@@ -77,9 +77,9 @@ public class Config implements Sanitizable {
     public AirPlaceConfig airPlaceConfig = AirPlaceConfig.defaults();
     public ElytraBounceConfig elytraBounceConfig = ElytraBounceConfig.defaults();
     public ParkourAssistConfig parkourAssistConfig = ParkourAssistConfig.defaults();
-    public HandsViewConfig handsViewConfig = new HandsViewConfig();
+    public HandsViewConfig handsViewConfig = HandsViewConfig.defaults();
     public PrivacyConfig privacyConfig = PrivacyConfig.defaults();
-    public CrystalAuraConfig crystalAuraConfig = new CrystalAuraConfig();
+    public CrystalAuraConfig crystalAuraConfig = CrystalAuraConfig.defaults();
     public McpServerConfig mcpServerConfig = McpServerConfig.defaults();
 
     @Override
@@ -90,8 +90,5 @@ public class Config implements Sanitizable {
         schematicaConfig.sanitize();
         keyBindingsConfig.sanitize();
         worldMarkersConfig.sanitize();
-        handsViewConfig.sanitize();
-        crystalAuraConfig.sanitize();
-        containerButtonsConfig.sanitize();
     }
 }

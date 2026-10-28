@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.tests;
 
-import com.zergatul.cheatutils.configs.CrystalAuraConfig;
+import com.zergatul.cheatutils.configs.modules.CrystalAuraConfig;
 import com.zergatul.cheatutils.tests.utility.MockLevel;
 import com.zergatul.cheatutils.tests.utility.MockPlayer;
 import com.zergatul.cheatutils.utils.CrystalAuraDamageCalculator;
@@ -32,9 +32,7 @@ public class CrystalAuraDamageCalculatorTests {
         player.setPos(19.5, -63, 20.5);
         level.addFreshEntity(player);
 
-        CrystalAuraConfig config = new CrystalAuraConfig();
-        config.placeRange = 4;
-        config.breakRange = 4;
+        CrystalAuraConfig config = CrystalAuraConfig.defaults().withPlaceRange(4).withBreakRange(4);
 
         CrystalAuraDamageCalculator calculator1 = new VanillaCrystalAuraDamageCalculator();
         CrystalAuraDamageCalculator calculator2 = new FastCrystalAuraDamageCalculator();
@@ -57,9 +55,7 @@ public class CrystalAuraDamageCalculatorTests {
         player.setPos(19.5, -63, 20.5);
         level.addFreshEntity(player);
 
-        CrystalAuraConfig config = new CrystalAuraConfig();
-        config.placeRange = 4;
-        config.breakRange = 4;
+        CrystalAuraConfig config = CrystalAuraConfig.defaults().withPlaceRange(4).withBreakRange(4);
 
         CrystalAuraDamageCalculator calculator1 = new VanillaCrystalAuraDamageCalculator();
         CrystalAuraDamageCalculator calculator2 = new FastCrystalAuraDamageCalculator();
@@ -82,9 +78,7 @@ public class CrystalAuraDamageCalculatorTests {
         player.setPos(19.5, -63, 20.5);
         level.addFreshEntity(player);
 
-        CrystalAuraConfig config = new CrystalAuraConfig();
-        config.placeRange = 4;
-        config.breakRange = 4;
+        CrystalAuraConfig config = CrystalAuraConfig.defaults().withPlaceRange(4).withBreakRange(4);
 
         CrystalAuraDamageCalculator calculator1 = new VanillaCrystalAuraDamageCalculator();
         CrystalAuraDamageCalculator calculator2 = new FastCrystalAuraDamageCalculator();
@@ -107,9 +101,7 @@ public class CrystalAuraDamageCalculatorTests {
         player.setPos(19.5, -63, 20.5);
         level.addFreshEntity(player);
 
-        CrystalAuraConfig config = new CrystalAuraConfig();
-        config.placeRange = 4;
-        config.breakRange = 4;
+        CrystalAuraConfig config = CrystalAuraConfig.defaults().withPlaceRange(4).withBreakRange(4);
 
         CrystalAuraDamageCalculator calculator1 = new VanillaCrystalAuraDamageCalculator();
         CrystalAuraDamageCalculator calculator2 = new FastCrystalAuraDamageCalculator();
@@ -134,9 +126,7 @@ public class CrystalAuraDamageCalculatorTests {
         player.setPos(19.5, -63, 20.5);
         level.addFreshEntity(player);
 
-        CrystalAuraConfig config = new CrystalAuraConfig();
-        config.placeRange = 4;
-        config.breakRange = 4;
+        CrystalAuraConfig config = CrystalAuraConfig.defaults().withPlaceRange(4).withBreakRange(4);
 
         CrystalAuraDamageCalculator calculator1 = new VanillaCrystalAuraDamageCalculator();
         CrystalAuraDamageCalculator calculator2 = new FastCrystalAuraDamageCalculator();

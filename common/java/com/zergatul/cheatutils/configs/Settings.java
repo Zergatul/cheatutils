@@ -143,6 +143,11 @@ public final class Settings {
                 (config, value) -> config.chunksConfig = value);
 
         registrar.register(
+                ContainerButtonsConfig.class,
+                config -> config.containerButtonsConfig,
+                (config, value) -> config.containerButtonsConfig = value);
+
+        registrar.register(
                 ContainerSummaryConfig.class,
                 config -> config.containerSummaryConfig,
                 (config, value) -> config.containerSummaryConfig = value);
@@ -151,6 +156,11 @@ public final class Settings {
                 CoreConfig.class,
                 config -> config.coreConfig,
                 (config, value) -> config.coreConfig = value);
+
+        registrar.register(
+                CrystalAuraConfig.class,
+                config -> config.crystalAuraConfig,
+                (config, value) -> config.crystalAuraConfig = value);
 
         registrar.register(
                 DeathCoordinatesConfig.class,
@@ -223,6 +233,11 @@ public final class Settings {
                 (config, value) -> config.fullBrightConfig = value);
 
         registrar.register(
+                HandsViewConfig.class,
+                config -> config.handsViewConfig,
+                (config, value) -> config.handsViewConfig = value);
+
+        registrar.register(
                 HitboxSizeConfig.class,
                 config -> config.hitboxSizeConfig,
                 (config, value) -> config.hitboxSizeConfig = value);
@@ -251,6 +266,11 @@ public final class Settings {
                 McpServerConfig.class,
                 config -> config.mcpServerConfig,
                 (config, value) -> config.mcpServerConfig = value);
+
+        registrar.register(
+                MonacoEditorConfig.class,
+                config -> config.monacoEditor,
+                (config, value) -> config.monacoEditor = value);
 
         registrar.register(
                 MovementHackConfig.class,

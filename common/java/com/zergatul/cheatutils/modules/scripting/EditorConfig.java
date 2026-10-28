@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.modules.scripting;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.MonacoEditorConfig;
-import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.MonacoEditorConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 
@@ -10,15 +10,13 @@ public class EditorConfig implements Module {
 
     public static final EditorConfig INSTANCE = new EditorConfig();
 
-    private final SettingHandle<MonacoEditorConfig> settings = new SettingHandle<>(
-            () -> ConfigStore.instance.getConfig().monacoEditor,
-            config -> ConfigStore.instance.getConfig().monacoEditor = config);
+    private final SettingHandle2<MonacoEditorConfig> settings = Settings.get(MonacoEditorConfig.class);
 
     private EditorConfig() {
         WebApiRegistry.INSTANCE.register("monaco-editor-settings", settings, MonacoEditorConfig.class);
     }
 
-    public SettingHandle<MonacoEditorConfig> getSettings() {
+    public SettingHandle2<MonacoEditorConfig> getSettings() {
         return settings;
     }
 }

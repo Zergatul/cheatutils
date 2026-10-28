@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.configs.CrystalAuraConfig;
+import com.zergatul.cheatutils.configs.modules.CrystalAuraConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
@@ -27,8 +27,8 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
         this.level = level;
         this.difficulty = level.getDifficulty();
         this.damageSource = level.damageSources().explosion(null);
-        this.minTargetDamage = config.minTargetDamage;
-        this.maxSelfDamage = config.maxSelfDamage;
+        this.minTargetDamage = config.minTargetDamage();
+        this.maxSelfDamage = config.maxSelfDamage();
     }
 
     @Override
@@ -88,6 +88,6 @@ public abstract class AbstractCrystalAuraDamageCalculator implements CrystalAura
     protected abstract void popBlockStateOverride();
 
     protected static int getLevelSliceRadius(CrystalAuraConfig config) {
-        return (int) Math.ceil(Math.max(config.placeRange, config.breakRange) + DamageUtils.END_CRYSTAL_EXPLOSION_RADIUS) + 1;
+        return (int) Math.ceil(Math.max(config.placeRange(), config.breakRange()) + DamageUtils.END_CRYSTAL_EXPLOSION_RADIUS) + 1;
     }
 }

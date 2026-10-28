@@ -2,9 +2,9 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.CrystalAuraConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.CrystalAuraConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
 import com.zergatul.cheatutils.modules.Module;
@@ -43,16 +43,13 @@ public class CrystalAura implements Module {
 
     public static final CrystalAura INSTANCE = new CrystalAura();
 
-    private final ModuleConfigSettingHandle<CrystalAuraConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().crystalAuraConfig,
-            config -> ConfigStore.instance.getConfig().crystalAuraConfig = config,
-            this::onConfigChanged);
+    private final SettingHandle2<CrystalAuraConfig> settings = Settings.get(CrystalAuraConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<LivingEntity> targets = new ArrayList<>();
     private final List<EndCrystal> spawnedCrystals = new ArrayList<>();
     private final Int2IntMap recentlyAttackedCrystals = new Int2IntArrayMap();
     private final CrystalAuraDamageCalculator calculator = new FastCrystalAuraDamageCalculator();
-    private CrystalAuraConfig config; // we snapshot config, so it doesn't get updated mid-process
+    private CrystalAuraConfig config; // config captured for the current packet batch or tick
     private int placeCountdown;
     private int breakCountdown;
     private Runnable afterPositionSentAction;
@@ -60,6 +57,8 @@ public class CrystalAura implements Module {
     private boolean shouldResetState;
 
     private CrystalAura() {
+        settings.onChanged(this::onConfigChanged);
+
         Events.BeforeProcessQueuedPackets.add(this::onBeforeProcessQueuedPackets);
         Events.EntityAdded.add(this::onEntityAdded);
         Events.AfterProcessQueuedPackets.add(this::onAfterProcessQueuedPackets);
@@ -72,13 +71,13 @@ public class CrystalAura implements Module {
         WebApiRegistry.INSTANCE.register(new EntityTypesWebApi());
     }
 
-    public ModuleConfigSettingHandle<CrystalAuraConfig> getSettings() {
+    public SettingHandle2<CrystalAuraConfig> getSettings() {
         return settings;
     }
 
     private void onConfigChanged(CrystalAuraConfig prev, CrystalAuraConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
-            if (prev.enabled & curr.enabled) {
+            if (prev.enabled() & curr.enabled()) {
                 shouldResetState = true;
             }
         });
@@ -86,7 +85,7 @@ public class CrystalAura implements Module {
 
     private void onBeforeProcessQueuedPackets() {
         resetStateIfRequired();
-        config = snapshotConfig();
+        config = settings.get();
 
         if (mc.level == null || mc.player == null) {
             return;
@@ -162,8 +161,8 @@ public class CrystalAura implements Module {
 
     private void onTickStart() {
         resetStateIfRequired();
-        config = snapshotConfig();
-        if (!config.enabled) {
+        config = settings.get();
+        if (!config.enabled()) {
             return;
         }
 
@@ -183,7 +182,7 @@ public class CrystalAura implements Module {
     }
 
     private void onAfterPlayerAiStep() {
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return;
         }
 
@@ -199,9 +198,9 @@ public class CrystalAura implements Module {
         findTargets();
 
         if (tryBreakCrystal()) {
-            breakCountdown = config.breakDelay;
+            breakCountdown = config.breakDelay();
         } else if (tryPlaceCrystal()) {
-            placeCountdown = config.placeDelay;
+            placeCountdown = config.placeDelay();
         }
     }
 
@@ -213,7 +212,7 @@ public class CrystalAura implements Module {
     }
 
     private void onTickEnd() {
-        if (config.enabled) {
+        if (config.enabled()) {
             calculator.end();
         }
     }
@@ -228,7 +227,7 @@ public class CrystalAura implements Module {
             return;
         }
 
-        double maxRange = config.breakRange + DamageUtils.END_CRYSTAL_EXPLOSION_RADIUS;
+        double maxRange = config.breakRange() + DamageUtils.END_CRYSTAL_EXPLOSION_RADIUS;
         double maxRangeSqr = maxRange * maxRange;
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity == mc.player) {
@@ -251,7 +250,7 @@ public class CrystalAura implements Module {
                 continue;
             }
 
-            for (EntityType<?> type : config.targets) {
+            for (EntityType<?> type : config.targets()) {
                 if (entity.getType() == type) {
                     targets.add(living);
                     break;
@@ -274,7 +273,7 @@ public class CrystalAura implements Module {
     }
 
     private boolean tryPlaceCrystal() {
-        if (!config.autoPlace || targets.isEmpty() || placeCountdown > 0) {
+        if (!config.autoPlace() || targets.isEmpty() || placeCountdown > 0) {
             return false;
         }
 
@@ -312,7 +311,7 @@ public class CrystalAura implements Module {
                 calculator,
                 config);
         if (crystalPos == null) {
-            if (!config.autoPlaceSupport) {
+            if (!config.autoPlaceSupport()) {
                 return false;
             }
 
@@ -337,11 +336,11 @@ public class CrystalAura implements Module {
             // also for simplicity we forget about potential crystal placement, and hope next tryPlaceCrystal call
             // picks up this spot, or chooses better one
             supportPlacingProcess = sp.placePlan().apply(slot.get(), isHotbarSilentSwitch());
-            placeCountdown = config.placeSupportDelay;
+            placeCountdown = config.placeSupportDelay();
             return false;
         }
 
-        if (config.autoRotate) {
+        if (config.autoRotate()) {
             // look at support center for now
             FakeRotation.instance.setServerRotation(Vec3.atCenterOf(crystalPos.below()));
         }
@@ -387,7 +386,7 @@ public class CrystalAura implements Module {
     }
 
     private boolean tryBreakCrystal() {
-        if (!config.autoBreak || targets.isEmpty() || breakCountdown > 0) {
+        if (!config.autoBreak() || targets.isEmpty() || breakCountdown > 0) {
             return false;
         }
 
@@ -405,7 +404,7 @@ public class CrystalAura implements Module {
             if (!(entity instanceof EndCrystal crystal)) {
                 continue;
             }
-            if (crystal.tickCount < config.crystalAge) {
+            if (crystal.tickCount < config.crystalAge()) {
                 continue;
             }
             if (recentlyAttackedCrystals.containsKey(crystal.getId())) {
@@ -427,7 +426,7 @@ public class CrystalAura implements Module {
             return false;
         }
 
-        if (config.autoRotate) {
+        if (config.autoRotate()) {
             // look at bottom-center position for now
             FakeRotation.instance.setServerRotation(bestCrystal.position());
         }
@@ -442,11 +441,11 @@ public class CrystalAura implements Module {
     }
 
     private boolean isPaused(LocalPlayer player, MultiPlayerGameMode gameMode) {
-        if (config.pauseOnItemUse && player.isUsingItem()) {
+        if (config.pauseOnItemUse() && player.isUsingItem()) {
             return true;
         }
 
-        if (config.pauseOnMining) {
+        if (config.pauseOnMining()) {
             MultiPlayerGameModeAccessor mode = (MultiPlayerGameModeAccessor) gameMode;
             if (mode.getIsDestroying_CU()) {
                 return true;
@@ -457,16 +456,16 @@ public class CrystalAura implements Module {
     }
 
     private boolean inBreakRange(AABB crystalBB, Vec3 eyePos, CrystalAuraConfig config) {
-        return crystalBB.distanceToSqr(eyePos) <= config.breakRange * config.breakRange;
+        return crystalBB.distanceToSqr(eyePos) <= config.breakRange() * config.breakRange();
     }
 
     private boolean isFastBreakEnabled() {
         // TODO: for now Fast-Break is disabled when Auto-Rotate is ON
-        return config.enabled && config.autoBreak && config.fastBreak && !config.autoRotate;
+        return config.enabled() && config.autoBreak() && config.fastBreak() && !config.autoRotate();
     }
 
     private boolean isHotbarSilentSwitch() {
-        return CrystalAuraConfig.HOTBAR_SWITCH_SILENT.equals(config.hotbarSwitchMode);
+        return CrystalAuraConfig.HOTBAR_SWITCH_SILENT.equals(config.hotbarSwitchMode());
     }
 
     private void resetStateIfRequired() {
@@ -481,10 +480,6 @@ public class CrystalAura implements Module {
 
             shouldResetState = false;
         }
-    }
-
-    private CrystalAuraConfig snapshotConfig() {
-        return CrystalAuraConfig.copyOf(settings.get());
     }
 
     private static final class EntityTypesWebApi extends WebApiBase {
