@@ -31,7 +31,7 @@ public class Config implements Sanitizable {
     public FogConfig fogConfig = FogConfig.defaults();
     public KeyBindingScriptsConfig keyBindingScriptsConfig = new KeyBindingScriptsConfig();
     public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
-    public WorldMarkersConfig worldMarkersConfig = new WorldMarkersConfig();
+    public WorldMarkersConfig worldMarkersConfig = WorldMarkersConfig.defaults();
     public UserNameConfig userNameConfig = UserNameConfig.defaults();
     public NewChunksConfig newChunksConfig = NewChunksConfig.defaults();
     public AutoDropConfig autoDropConfig = AutoDropConfig.defaults();
@@ -89,6 +89,5 @@ public class Config implements Sanitizable {
         killAuraConfig.sanitize();
         schematicaConfig.sanitize();
         keyBindingsConfig.sanitize();
-        worldMarkersConfig.sanitize();
     }
 }

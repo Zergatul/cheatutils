@@ -3,9 +3,10 @@ package com.zergatul.cheatutils.modules.visuals;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
-import com.zergatul.cheatutils.configs.WorldMarkersConfig;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.WorldMarkerEntry;
+import com.zergatul.cheatutils.configs.modules.WorldMarkersConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.ui.*;
@@ -24,10 +25,7 @@ public class WorldMarkers implements FontBackendHolder {
 
     public static final WorldMarkers INSTANCE = new WorldMarkers();
 
-    private final ModuleConfigSettingHandle<WorldMarkersConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().worldMarkersConfig,
-            config -> ConfigStore.instance.getConfig().worldMarkersConfig = config,
-            this::onConfigChanged);
+    private final SettingHandle2<WorldMarkersConfig> settings = Settings.get(WorldMarkersConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private boolean fontChanged;
@@ -36,6 +34,7 @@ public class WorldMarkers implements FontBackendHolder {
 
     private WorldMarkers() {
         Events.AfterRenderWorld.add(this::onRenderWorldLast, 10);
+        settings.onChanged(this::onConfigChanged);
 
         WebApiRegistry.INSTANCE.register("world-markers", settings, WorldMarkersConfig.class);
         WebApiRegistry.INSTANCE.register(new DimensionWebApi());
@@ -47,7 +46,7 @@ public class WorldMarkers implements FontBackendHolder {
         fontChanged = true;
     }
 
-    public ModuleConfigSettingHandle<WorldMarkersConfig> getSettings() {
+    public SettingHandle2<WorldMarkersConfig> getSettings() {
         return settings;
     }
 
@@ -58,7 +57,7 @@ public class WorldMarkers implements FontBackendHolder {
 
     private void onConfigChanged(WorldMarkersConfig prev, WorldMarkersConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
-            if (!prev.font.equals(curr.font)) {
+            if (!prev.font().equals(curr.font())) {
                 fontChanged = true;
             }
         });
@@ -70,19 +69,19 @@ public class WorldMarkers implements FontBackendHolder {
         }
 
         WorldMarkersConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return;
         }
 
         if (fontChanged) {
-            fontBackendFuture = FontLibrary.instance.createBackend(config.font.asFontParameters());
+            fontBackendFuture = FontLibrary.instance.createBackend(config.font().asFontParameters());
             // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
             fontChanged = false;
         }
 
         if (fontBackendFuture != null) {
             if (fontBackendFuture.isDone()) {
-                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font.asFontRenderDetails());
+                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font().asFontRenderDetails());
                 fontBackendFuture = null;
             }
         }
@@ -108,18 +107,18 @@ public class WorldMarkers implements FontBackendHolder {
 
         try (RenderingContext context = new RenderingContext(matrix, scale)) {
             String dimension = mc.level.dimension().identifier().toString();
-            for (WorldMarkersConfig.Entry entry : config.entries) {
-                if (!entry.enabled) {
+            for (WorldMarkerEntry entry : config.entries()) {
+                if (!entry.enabled()) {
                     continue;
                 }
-                if (!dimension.equals(entry.dimension)) {
+                if (!dimension.equals(entry.dimension())) {
                     continue;
                 }
 
-                double x = entry.x - view.x;
-                double y = entry.y - view.y;
-                double z = entry.z - view.z;
-                if (x * x + y * y + z * z < entry.minDistance * entry.minDistance) {
+                double x = entry.x() - view.x;
+                double y = entry.y() - view.y;
+                double z = entry.z() - view.z;
+                if (x * x + y * y + z * z < entry.minDistance() * entry.minDistance()) {
                     continue;
                 }
 
@@ -133,22 +132,22 @@ public class WorldMarkers implements FontBackendHolder {
                 int xc = Math.round(v2.x * invW * halfScrWidth);
                 int yc = Math.round(-v2.y * invW * halfScrHeight);
 
-                int color = entry.color.getRGB();
+                int color = entry.color().getRGB();
                 int inverse = ColorUtils.inverse(color);
 
-                StylizedText text = StylizedText.of(entry.name, entry.color.getRGB());
+                StylizedText text = StylizedText.of(entry.name(), entry.color().getRGB());
                 FlexColumnElement flex = new FlexColumnElement();
                 flex.append(
                         new DivisionElement()
                                 .setBackgroundColor(inverse & 0x40FFFFFF)
-                                .setBorderWidth(config.borderWidth)
-                                .setBorderColor(entry.color.getRGB())
+                                .setBorderWidth(config.borderWidth())
+                                .setBorderColor(entry.color().getRGB())
                                 .setMargin(scale)
                                 .setContent(
                                         new TextElement(fontRenderer, text)
                                                 .setCompactHeight(true)));
                 flex.append(
-                        new RectangleElement(config.borderWidth, (int) fontRenderer.getLineHeight(), entry.color.getRGB()));
+                        new RectangleElement(config.borderWidth(), (int) fontRenderer.getLineHeight(), entry.color().getRGB()));
 
                 context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
             }

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 public class ImmutableList<E> implements Iterable<E> {
@@ -117,12 +118,30 @@ public class ImmutableList<E> implements Iterable<E> {
 
     public ImmutableList<E> removeIf(Predicate<E> predicate) {
         List<E> list = new ArrayList<>();
-        for (E e: this) {
+        for (E e : this) {
             if (!predicate.test(e)) {
                 list.add(e);
             }
         }
         return new ImmutableList<>(list.toArray());
+    }
+
+    @SuppressWarnings("unchecked")
+    public ImmutableList<E> replaceFirst(Predicate<E> predicate, UnaryOperator<E> map) {
+        List<E> list = new ArrayList<>(array.length);
+        for (int i = 0; i < array.length; i++) {
+            if (predicate.test((E) array[i])) {
+                list.add(map.apply((E) array[i]));
+                for (int j = i + 1; j < array.length; j++) {
+                    list.add((E) array[j]);
+                }
+                return new ImmutableList<>(list);
+            } else {
+                list.add((E) array[i]);
+            }
+        }
+
+        return this;
     }
 
     public ImmutableList<E> set(int index, E element) {

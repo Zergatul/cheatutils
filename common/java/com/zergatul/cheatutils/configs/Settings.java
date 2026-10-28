@@ -362,6 +362,11 @@ public final class Settings {
                 config -> config.villagerRollerConfig,
                 (config, value) -> config.villagerRollerConfig = value);
 
+        registrar.register(
+                WorldMarkersConfig.class,
+                config -> config.worldMarkersConfig,
+                (config, value) -> config.worldMarkersConfig = value);
+
         this.handles = Collections.unmodifiableMap(handles);
     }
 
