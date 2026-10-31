@@ -10,7 +10,7 @@ public class Config implements Sanitizable {
     public BlocksConfig blocks = new BlocksConfig();
     public EntitiesConfig entities = new EntitiesConfig();
     public LightLevelConfig lightLevelConfig = LightLevelConfig.defaults();
-    public KillAuraConfig killAuraConfig = new KillAuraConfig();
+    public KillAuraConfig killAuraConfig = KillAuraConfig.defaults();
     public BoatHackConfig boatHackConfig = BoatHackConfig.defaults();
     public ShulkerTooltipConfig shulkerTooltipConfig = ShulkerTooltipConfig.defaults();
     public ProjectilePathConfig projectilePathConfig = ProjectilePathConfig.defaults();
@@ -86,7 +86,6 @@ public class Config implements Sanitizable {
     public void sanitize() {
         blocks.sanitize();
         entities.sanitize();
-        killAuraConfig.sanitize();
         schematicaConfig.sanitize();
         keyBindingsConfig.sanitize();
     }

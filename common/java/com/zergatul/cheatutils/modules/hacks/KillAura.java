@@ -2,9 +2,12 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.KillAuraConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.KillAuraConfig;
+import com.zergatul.cheatutils.configs.modules.KillAuraPredefinedPriority;
+import com.zergatul.cheatutils.configs.modules.KillAuraPredefinedPriorityEntry;
+import com.zergatul.cheatutils.configs.modules.KillAuraPriorityEntry;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
@@ -32,15 +35,12 @@ public class KillAura implements Module {
 
     public static final KillAura INSTANCE = new KillAura();
 
-    private final ModuleConfigSettingHandle<KillAuraConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().killAuraConfig,
-            config -> ConfigStore.instance.getConfig().killAuraConfig = config,
-            this::onConfigChanged);
+    private final SettingHandle2<KillAuraConfig> settings = Settings.get(KillAuraConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
+    private final List<Entity> targets = new ArrayList<>();
     private long ticks;
     private long lastAttackTick;
     private Entity target;
-    private final List<Entity> targets = new ArrayList<>();
     private TargetPredicate targetPredicate;
 
     private KillAura() {
@@ -49,13 +49,14 @@ public class KillAura implements Module {
         Events.InGameTickStart.add(this::onClientTickStart);
         Events.ClientPlayerLoggingIn.add(this::onPlayerLoggingIn);
         Events.DimensionChange.add(this::onDimensionChange);
+        settings.onChanged(this::onConfigChanged);
 
         WebApiRegistry.INSTANCE.register("kill-aura", settings, KillAuraConfig.class);
-        WebApiRegistry.INSTANCE.register(new InfoWebApi());
+        WebApiRegistry.INSTANCE.register(new PredefinedPrioritiesWebApi());
         WebApiRegistry.INSTANCE.register(new ClassNameWebApi());
     }
 
-    public ModuleConfigSettingHandle<KillAuraConfig> getSettings() {
+    public SettingHandle2<KillAuraConfig> getSettings() {
         return settings;
     }
 
@@ -71,7 +72,7 @@ public class KillAura implements Module {
 
     private void onConfigChanged(KillAuraConfig prev, KillAuraConfig curr) {
         ClientTickEndExecutor.instance.execute(() -> {
-            if (!prev.enabled && curr.enabled) {
+            if (!prev.enabled() && curr.enabled()) {
                 lastAttackTick = 0;
             }
         });
@@ -87,7 +88,7 @@ public class KillAura implements Module {
         assert mc.level != null;
 
         KillAuraConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             target = null;
             targets.clear();
             return;
@@ -125,23 +126,23 @@ public class KillAura implements Module {
                 continue;
             }
 
-            if (config.maxHorizontalAngle != null || config.maxVerticalAngle != null) {
+            if (config.maxHorizontalAngle() != null || config.maxVerticalAngle() != null) {
                 Vec3 attackPoint = getAttackPoint(entity);
                 Vec3 diff = attackPoint.subtract(eyePos);
                 double diffXZ = Math.sqrt(diff.x * diff.x + diff.y * diff.y);
 
-                if (config.maxHorizontalAngle != null) {
+                if (config.maxHorizontalAngle() != null) {
                     double targetYRot = Math.toDegrees(Math.atan2(diff.z, diff.x)) - 90F;
                     double delta = MathUtils.deltaAngle180((float) targetYRot, player.getYRot());
-                    if (delta > config.maxHorizontalAngle) {
+                    if (delta > config.maxHorizontalAngle()) {
                         continue;
                     }
                 }
 
-                if (config.maxVerticalAngle != null) {
+                if (config.maxVerticalAngle() != null) {
                     double targetXRot = Math.toDegrees(-Math.atan2(diff.y, diffXZ));
                     double delta = MathUtils.deltaAngle180((float) targetXRot, player.getXRot());
-                    if (delta > config.maxVerticalAngle) {
+                    if (delta > config.maxVerticalAngle()) {
                         continue;
                     }
                 }
@@ -155,7 +156,7 @@ public class KillAura implements Module {
                 if (!matches) continue;
             }
 
-            if (config.attackAll) {
+            if (config.attackAll()) {
                 targets.add(entity);
             } else {
                 if (priority < targetPriority || (priority == targetPriority && distance2 < targetDistance2)) {
@@ -170,7 +171,7 @@ public class KillAura implements Module {
             targets.sort(Comparator.comparingDouble(e -> getEntityInteractionDistance2(mc.player, e)));
         }
 
-        if (config.autoRotate) {
+        if (config.autoRotate()) {
             if (target != null) {
                 FakeRotation.instance.setServerRotation(getAttackPoint(target));
             }
@@ -219,12 +220,11 @@ public class KillAura implements Module {
     }
 
     private int getPriority(KillAuraConfig config, Entity entity) {
-        int i = 0;
-        for (KillAuraConfig.PriorityEntry entry: config.priorities) {
-            if (entry.enabled && entry.predicate.test(entity)) {
+        for (int i = 0; i < config.priorities().size(); i++) {
+            KillAuraPriorityEntry entry = config.priorities().get(i);
+            if (entry.enabled() && entry.matches(entity)) {
                 return i;
             }
-            i++;
         }
         return -1;
     }
@@ -232,7 +232,7 @@ public class KillAura implements Module {
     private double getRangeSquared(KillAuraConfig config) {
         assert mc.player != null;
 
-        double range = config.overrideAttackRange ? config.maxRange : mc.player.entityInteractionRange();
+        double range = config.overrideAttackRange() ? config.maxRange() : mc.player.entityInteractionRange();
         return range * range;
     }
 
@@ -245,14 +245,14 @@ public class KillAura implements Module {
             return false;
         }
 
-        if (config.doNotAttackOnItemUse && mc.player.isUsingItem()) {
+        if (config.doNotAttackOnItemUse() && mc.player.isUsingItem()) {
             return false;
         }
 
-        if (KillAuraConfig.Cooldown.equals(config.delayMode)) {
-            return mc.player.getAttackStrengthScale((float) -config.extraTicks) == 1;
+        if (KillAuraConfig.Cooldown.equals(config.delayMode())) {
+            return mc.player.getAttackStrengthScale((float) -config.extraTicks()) == 1;
         } else {
-            return ticks - lastAttackTick >= config.attackTickInterval;
+            return ticks - lastAttackTick >= config.attackTickInterval();
         }
     }
 
@@ -266,20 +266,23 @@ public class KillAura implements Module {
         boolean test(int entityId);
     }
 
-    private static final class InfoWebApi extends WebApiBase {
+    private static final class PredefinedPrioritiesWebApi extends WebApiBase {
 
         @Override
         public String getRoute() {
-            return "kill-aura-info";
+            return "kill-aura-predefined-priorities";
         }
 
         @Override
         public String get() {
-            List<KillAuraConfig.PriorityEntry> entries = new ArrayList<>(KillAuraConfig.PredefinedPriorityEntry.entries.values());
-            for (KillAuraConfig.PriorityEntry entry : KillAura.INSTANCE.settings.get().customEntries) {
-                entries.add(entry);
+            record PriorityInfo(String priority, String name, String description) {}
+
+            List<PriorityInfo> priorities = new ArrayList<>();
+            for (KillAuraPredefinedPriority priority : KillAuraPredefinedPriority.values()) {
+                KillAuraPredefinedPriorityEntry entry = new KillAuraPredefinedPriorityEntry(priority, false);
+                priorities.add(new PriorityInfo(priority.name(), entry.name(), entry.description()));
             }
-            return gson.toJson(entries);
+            return gson.toJson(priorities);
         }
     }
 

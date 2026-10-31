@@ -248,6 +248,11 @@ public final class Settings {
                 (config, value) -> config.invMoveConfig = value);
 
         registrar.register(
+                KillAuraConfig.class,
+                config -> config.killAuraConfig,
+                (config, value) -> config.killAuraConfig = value);
+
+        registrar.register(
                 LightLevelConfig.class,
                 config -> config.lightLevelConfig,
                 (config, value) -> config.lightLevelConfig = value);

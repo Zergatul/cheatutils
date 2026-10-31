@@ -49,6 +49,16 @@ public class ImmutableList<E> implements Iterable<E> {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
+    public boolean contains(Predicate<E> predicate) {
+        for (int i = 0; i < array.length; i++) {
+            if (predicate.test((E) array[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ImmutableList<?> other) {

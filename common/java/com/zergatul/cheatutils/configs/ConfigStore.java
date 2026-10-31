@@ -12,8 +12,10 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
-import com.zergatul.cheatutils.web.WebServer;
+import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.projectile.ShulkerBullet;
+import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +24,8 @@ import org.jspecify.annotations.Nullable;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -36,7 +40,7 @@ public class ConfigStore {
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
             .registerTypeAdapterFactory(new ItemTypeAdapterFactory())
             .registerTypeAdapterFactory(new EntityTypeTypeAdapterFactory())
-            .registerTypeAdapterFactory(new KillAuraConfig$PriorityEntryTypeAdapterFactory())
+            .registerTypeAdapterFactory(new KillAuraPriorityEntryTypeAdapterFactory())
             .registerTypeAdapterFactory(new ClassTypeAdapterFactory())
             .registerTypeAdapterFactory(new ImmutableConfigAdapterFactory())
             .registerTypeAdapter(BlockState.class, new BlockStateTypeAdapter())
@@ -77,6 +81,7 @@ public class ConfigStore {
                 migration3(element);
                 migration4(element);
                 migration5(element);
+                migration6(element);
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
@@ -371,6 +376,101 @@ public class ConfigStore {
         JsonObject root = element.getAsJsonObject();
         migrateBlockEspConfigFields(root);
         migrateEntityEspConfigFields(root);
+    }
+
+    private void migration6(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonElement config = element.getAsJsonObject().get("killAuraConfig");
+        if (config == null || !config.isJsonObject()) {
+            return;
+        }
+
+        JsonObject killAura = config.getAsJsonObject();
+        JsonElement customEntries = killAura.get("customEntries");
+        if (customEntries == null || !customEntries.isJsonArray()) {
+            return;
+        }
+
+        JsonElement oldPriorities = killAura.get("priorities");
+        if (oldPriorities == null || !oldPriorities.isJsonArray()) {
+            return;
+        }
+
+        JsonArray priorities = new JsonArray();
+        Set<String> classes = new HashSet<>();
+        for (JsonElement item : oldPriorities.getAsJsonArray()) {
+            JsonObject entry = migrateKillAuraPriorityEntry(item);
+            if (entry == null) {
+                continue;
+            }
+
+            priorities.add(entry);
+            if (entry.has("class")) {
+                classes.add(entry.get("class").getAsString());
+            }
+        }
+
+        for (JsonElement item : customEntries.getAsJsonArray()) {
+            JsonObject entry = migrateKillAuraPriorityEntry(item);
+            if (entry != null && entry.has("class") && classes.add(entry.get("class").getAsString())) {
+                entry.addProperty("enabled", false);
+                priorities.add(entry);
+            }
+        }
+
+        killAura.add("priorities", priorities);
+        killAura.remove("customEntries");
+    }
+
+    private @Nullable JsonObject migrateKillAuraPriorityEntry(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return null;
+        }
+
+        JsonObject oldEntry = element.getAsJsonObject();
+        if (oldEntry.has("type")) {
+            return oldEntry;
+        }
+        if (!oldEntry.has("name") || oldEntry.get("name").isJsonNull()) {
+            return null;
+        }
+
+        String name = oldEntry.get("name").getAsString();
+        String className = oldEntry.has("className") && !oldEntry.get("className").isJsonNull() ?
+                oldEntry.get("className").getAsString() : null;
+        String priority = null;
+        if (className == null) {
+            switch (name) {
+                case "Enemies" -> priority = "ENEMIES";
+                case "Enemies w/o Piglins" -> priority = "ENEMIES_WO_PIGLINS";
+                case "Players" -> className = RemotePlayer.class.getCanonicalName();
+                case "Shulker Bullets" -> className = ShulkerBullet.class.getCanonicalName();
+                case "Fireballs" -> className = Fireball.class.getCanonicalName();
+                default -> {
+                    return null;
+                }
+            }
+        }
+
+        // The priority adapter requires the discriminator to be the first property.
+        JsonObject entry = new JsonObject();
+        if (className == null) {
+            entry.addProperty("type", "predefined");
+            entry.addProperty("priority", priority);
+        } else {
+            entry.addProperty("type", "class");
+            entry.addProperty("name", name);
+            JsonElement description = oldEntry.get("description");
+            if (description != null && !description.isJsonNull()) {
+                entry.add("description", description);
+            }
+            entry.addProperty("class", className);
+        }
+        entry.addProperty("enabled", oldEntry.has("enabled") && oldEntry.get("enabled").getAsBoolean());
+        return entry;
     }
 
     private void migrateBlockEspConfigFields(JsonObject root) {

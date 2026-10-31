@@ -1,9 +1,10 @@
-<div class="module-main kill-aura" v-if="config">
+<div class="module-main kill-aura" v-if="config || loadError">
+    <div v-if="loadError" class="priority-error" role="alert">{{ loadError }}</div>
     <div class="description">
         Automatically attacks entities in range with the current item in hand.
     </div>
 
-    <div class="module-sections">
+    <div class="module-sections" v-if="config">
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
         </div>
@@ -113,97 +114,37 @@
             </div>
         </fieldset>
 
-        <fieldset class="flex-column" v-if="priorityList">
+        <fieldset class="flex-column">
             <legend>Priorities</legend>
 
-            <template v-if="state == 'list'">
-                <div class="actions">
-                    <button class="w10" @click="openAddNew()">Add Priority Entry</button>
-                    <button class="w12" @click="openCreateNewCustomEntry()">Create Custom Priority Entry...</button>
-                </div>
-                <table class="bordered">
-                    <tr v-for="(entry, index) in config.priorities">
-                        <td>
-                            <switch-checkbox v-model="entry.enabled" @change="update()"></switch-checkbox>
-                        </td>
-                        <td>
-                            <div>{{ entry.name }}</div>
-                            <div class="smaller">{{ entry.description }}</div>
-                        </td>
-                        <td>
-                            <div class="flex-row">
-                                <button @click="moveUp(index)">🡅</button>
-                                <button @click="moveDown(index)">🡇</button>
-                                <button class="w5" @click="removePriorityEntry(index)">Remove</button>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </template>
-
-            <template v-if="state == 'add'">
-                <div class="actions">
-                    <button class="w10" @click="state = 'list'">Back to list</button>
-                </div>
-                <div class="flex-row">
-                    <span>Filter:</span>
-                    <input type="text" class="search"
-                        v-model="search"
-                        @input="filterPriorityList()">
-                </div>
-                <table class="bordered">
-                    <tr v-for="entry in priorityListFiltered">
-                        <td>
-                            <div>{{ entry.name }}</div>
-                            <div class="smaller">{{ entry.description }}</div>
-                        </td>
-                        <td>
-                            <button class="w5" @click="deleteCustomEntry(entry)" v-if="entry.className && !entryInPrioritiesList(entry)">Delete</button>
-                        </td>
-                        <td>
-                            <button class="w5" @click="addPriorityEntry(entry)" v-if="!entryInPrioritiesList(entry)">Add</button>
-                        </td>
-                    </tr>
-                </table>
-            </template>
-
-            <template v-if="state == 'create-custom'">
-                <div class="actions">
-                    <button class="w8" @click="state = 'list'">Back to list</button>
-                    <button class="w8" @click="createNewCustomEntry()">Create</button>
-                </div>
-                <table>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <span>Entry Name:</span>
-                            </td>
-                            <td>
-                                <input type="text" class="w30" v-model="newCustomEntry.name">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span>Description:</span>
-                            </td>
-                            <td>
-                                <input type="text" class="w30" v-model="newCustomEntry.description">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span>Class Name:</span>
-                            </td>
-                            <td>
-                                <input type="text" class="w30" v-model="newCustomEntry.className">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="section-description">
-                    You can copy class name from Entity ESP all entities list. Example: net.minecraft.world.entity.animal.Cow
-                </div>
-            </template>
+            <div class="actions">
+                <button type="button" class="w12" @click="openAddNewClassPriority()">Add Class Priority Entry</button>
+            </div>
+            <div class="section-description">
+                Entries higher in the list have higher priority. Predefined entries can be disabled or moved, but cannot be removed.
+            </div>
+            <table class="bordered">
+                <tr v-for="(entry, index) in config.priorities">
+                    <td>
+                        <switch-checkbox v-model="entry.enabled" @change="update()"></switch-checkbox>
+                    </td>
+                    <td>
+                        <div>
+                            <span class="predefined-mark" v-if="entry.type == 'predefined'" title="Predefined entry, cannot be removed">🔒</span>
+                            {{ priorityName(entry) }}
+                        </div>
+                        <div class="smaller" v-if="priorityDescription(entry)">{{ priorityDescription(entry) }}</div>
+                        <div class="smaller priority-class-name" v-if="entry.type == 'class'">{{ entry.class }}</div>
+                    </td>
+                    <td>
+                        <div class="flex-row">
+                            <button type="button" :disabled="index == 0" aria-label="Move priority up" @click="moveUp(index)">🡅</button>
+                            <button type="button" :disabled="index == config.priorities.length - 1" aria-label="Move priority down" @click="moveDown(index)">🡇</button>
+                            <button type="button" v-if="entry.type != 'predefined'" class="w5" @click="removePriorityEntry(index)">Remove</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </fieldset>
 
         <fieldset>
@@ -224,4 +165,29 @@
             </div>
         </fieldset>
     </div>
+
+    <dialog class="class-priority-dialog" ref="classPriorityDialog" aria-labelledby="class-priority-title"
+        @cancel.prevent="closeAddNewClassPriority()" @close="showClassPriorityForm = false">
+        <form v-if="showClassPriorityForm" @submit.prevent="addClassPriority()">
+            <h2 id="class-priority-title">Add Class Priority Entry</h2>
+            <fieldset :disabled="addingClassPriority">
+                <label for="class-priority-name">Name</label>
+                <input id="class-priority-name" type="text" v-model="newClassPriority.name" required autofocus>
+
+                <label for="class-priority-description">Description (optional)</label>
+                <input id="class-priority-description" type="text" v-model="newClassPriority.description">
+
+                <label for="class-priority-class">Class name</label>
+                <auto-complete id="class-priority-class" v-model:value="newClassPriority.className"
+                    :list="classNames || []" allow-custom-value required spellcheck="false"></auto-complete>
+                <div class="section-description" v-if="classNames == null && !classSuggestionsError">Loading class suggestions...</div>
+                <div class="section-description" v-if="classSuggestionsError">{{ classSuggestionsError }}</div>
+            </fieldset>
+            <div class="priority-error" role="alert" v-if="classPriorityError">{{ classPriorityError }}</div>
+            <div class="actions">
+                <button type="button" class="w6" :disabled="addingClassPriority" @click="closeAddNewClassPriority()">Cancel</button>
+                <button type="submit" class="w6" :disabled="addingClassPriority">{{ addingClassPriority ? 'Adding...' : 'Add' }}</button>
+            </div>
+        </form>
+    </dialog>
 </div>
