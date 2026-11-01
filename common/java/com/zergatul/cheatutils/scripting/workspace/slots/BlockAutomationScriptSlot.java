@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
@@ -18,7 +17,7 @@ public class BlockAutomationScriptSlot extends SingleScriptSlot {
 
     @Override
     protected void updateConfigCode(@Nullable String code) {
-        ConfigStore.instance.getConfig().blockAutomationConfig.code = code;
+        BlockAutomation.INSTANCE.getSettings().update(config -> config.withCode(code));
     }
 
     @Override
@@ -28,6 +27,6 @@ public class BlockAutomationScriptSlot extends SingleScriptSlot {
 
     @Override
     protected <T> void applyScript(@Nullable T program) {
-        BlockAutomation.instance.setScript((BlockPosConsumer) program);
+        BlockAutomation.INSTANCE.setScript((BlockPosConsumer) program);
     }
 }

@@ -64,6 +64,6 @@ public abstract class MixinRenderRegionCache {
             }
         }
 
-        ((RenderSectionRegionExtension) info.getReturnValue()).setSchematicaSections_CU(copies, Schematica.INSTANCE.getSettings().get().shadeBlocks);
+        ((RenderSectionRegionExtension) info.getReturnValue()).setSchematicaSections_CU(copies, Schematica.INSTANCE.getSettings().get().shadeBlocks());
     }
 }

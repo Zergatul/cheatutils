@@ -6,9 +6,9 @@ import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.BlockAutomationConfig;
-import com.zergatul.cheatutils.configs.ModuleConfigSettingHandle;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.BlockAutomationConfig;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
@@ -32,11 +32,9 @@ import java.util.function.Predicate;
 
 public class BlockAutomation {
 
-    public static final BlockAutomation instance = new BlockAutomation();
+    public static final BlockAutomation INSTANCE = new BlockAutomation();
 
-    private final ModuleConfigSettingHandle<BlockAutomationConfig> settings = new ModuleConfigSettingHandle<>(
-            () -> ConfigStore.instance.getConfig().blockAutomationConfig,
-            config -> config.copyTo(ConfigStore.instance.getConfig().blockAutomationConfig));
+    private final SettingHandle2<BlockAutomationConfig> settings = Settings.get(BlockAutomationConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
     private volatile ScriptActivation<BlockPosConsumer> script;
@@ -60,7 +58,7 @@ public class BlockAutomation {
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
-    public ModuleConfigSettingHandle<BlockAutomationConfig> getSettings() {
+    public SettingHandle2<BlockAutomationConfig> getSettings() {
         return settings;
     }
 
@@ -104,7 +102,7 @@ public class BlockAutomation {
 
     public boolean isBreakingBlock() {
         BlockAutomationConfig config = settings.get();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             return false;
         }
         ScriptActivation<BlockPosConsumer> script = this.script;
@@ -119,7 +117,7 @@ public class BlockAutomation {
         ScriptActivation<BlockPosConsumer> script = this.script;
         BlockAutomationConfig config = settings.get();
         // Block Automation code stops breaking lectern after first tick for Villager Roller
-        if (!config.enabled || VillagerRoller.INSTANCE.isActive()) {
+        if (!config.enabled() || VillagerRoller.INSTANCE.isActive()) {
             resetState();
             return;
         }
@@ -135,7 +133,7 @@ public class BlockAutomation {
         }
 
         Vec3 eyePos = mc.player.getEyePosition(1);
-        actionTickCounter += 1 / config.placementRate;
+        actionTickCounter += 1 / config.placementRate();
         if (applyFuture != null) {
             if (applyFuture.isDone()) {
                 breakPlan = null;
@@ -155,7 +153,7 @@ public class BlockAutomation {
             actionTickCounter -= 1;
 
             boolean actionPerformed = false;
-            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
+            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange())) {
                 useItemPredicate = null;
                 hand = null;
                 breakCurrentBlock = false;
@@ -190,7 +188,7 @@ public class BlockAutomation {
                 if (hand != null) {
                     placePlan = BlockPlacer.createPlan(Blocks.STONE.defaultBlockState(), pos, method, config);
                     if (placePlan != null) {
-                        if (config.debugMode && !debugStep) {
+                        if (config.debugMode() && !debugStep) {
                             //debugPlan = plan; // TODO: test after actions per tick change?
                         } else {
                             debugStep = false;
@@ -211,7 +209,7 @@ public class BlockAutomation {
 
                     placePlan = BlockPlacer.createPlan(Blocks.STONE.defaultBlockState(), pos, method, config);
                     if (placePlan != null) {
-                        if (config.debugMode && !debugStep) {
+                        if (config.debugMode() && !debugStep) {
                             //debugPlan = plan; // TODO: test after actions per tick change?
                             break;
                         } else {
@@ -226,7 +224,7 @@ public class BlockAutomation {
             }
 
             if (!actionPerformed) {
-                actionTickCounter = 1 - 1 / config.placementRate;
+                actionTickCounter = 1 - 1 / config.placementRate();
             }
         }
     }

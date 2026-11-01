@@ -104,7 +104,7 @@ public abstract class MixinLevelSlice implements SodiumLevelSliceExtension {
 
         this.schematicaSections_CU = sections;
         this.schematicaSectionArrayLength_CU = sectionArrayLength;
-        this.schematicaShadeBlocks_CU = schematica.getSettings().get().shadeBlocks;
+        this.schematicaShadeBlocks_CU = schematica.getSettings().get().shadeBlocks();
     }
 
     @Inject(method = "getBlockState(III)Lnet/minecraft/world/level/block/state/BlockState;", at = @At("RETURN"), cancellable = true)

@@ -1,10 +1,9 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.configs.BlockPlacerConfig;
+import com.zergatul.cheatutils.configs.utility.BlockPlacerConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
@@ -38,7 +37,7 @@ public class SlotSelector {
             }
         }
 
-        if (config.autoSelectSlots.length == 0) {
+        if (config.getAutoSelectSlots().isEmpty()) {
             return -1;
         }
 
@@ -48,8 +47,8 @@ public class SlotSelector {
             if (itemStack.getItem() instanceof BlockItem blockItem) {
                 if (blockItem.getBlock() == block) {
                     long minTime = Long.MAX_VALUE;
-                    int minSlot = config.autoSelectSlots[0];
-                    for (int slot : config.autoSelectSlots) {
+                    int minSlot = config.getAutoSelectSlots().get(0);
+                    for (int slot : config.getAutoSelectSlots()) {
                         if (lastSlotUsage[slot - 1] < minTime) {
                             minTime = lastSlotUsage[slot - 1];
                             minSlot = slot - 1;
@@ -88,7 +87,7 @@ public class SlotSelector {
             }
         }
 
-        if (config.autoSelectSlots.length == 0) {
+        if (config.getAutoSelectSlots().isEmpty()) {
             return -1;
         }
 
@@ -97,8 +96,8 @@ public class SlotSelector {
             ItemStack itemStack = inventory.getItem(i);
             if (predicate.test(itemStack)) {
                 long minTime = Long.MAX_VALUE;
-                int minSlot = config.autoSelectSlots[0];
-                for (int slot : config.autoSelectSlots) {
+                int minSlot = config.getAutoSelectSlots().get(0);
+                for (int slot : config.getAutoSelectSlots()) {
                     if (lastSlotUsage[slot - 1] < minTime) {
                         minTime = lastSlotUsage[slot - 1];
                         minSlot = slot - 1;

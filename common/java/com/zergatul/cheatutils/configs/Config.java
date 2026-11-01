@@ -47,10 +47,10 @@ public class Config implements Sanitizable {
     public AutoCraftConfig autoCraftConfig = AutoCraftConfig.defaults();
     public ReachConfig reachConfig = ReachConfig.defaults();
     public AutoBucketConfig autoBucketConfig = AutoBucketConfig.defaults();
-    public SchematicaConfig schematicaConfig = new SchematicaConfig();
+    public SchematicaConfig schematicaConfig = SchematicaConfig.defaults();
     public PerformanceConfig performanceConfig = PerformanceConfig.defaults();
     public EntityTitleConfig entityTitleConfig = EntityTitleConfig.defaults();
-    public BlockAutomationConfig blockAutomationConfig = new BlockAutomationConfig();
+    public BlockAutomationConfig blockAutomationConfig = BlockAutomationConfig.defaults();
     public BobHurtConfig bobHurtConfig = BobHurtConfig.defaults();
     public AutoAttackConfig autoAttackConfig = AutoAttackConfig.defaults();
     public BreachSwapConfig breachSwapConfig = BreachSwapConfig.defaults();
@@ -86,7 +86,6 @@ public class Config implements Sanitizable {
     public void sanitize() {
         blocks.sanitize();
         entities.sanitize();
-        schematicaConfig.sanitize();
         keyBindingsConfig.sanitize();
     }
 }

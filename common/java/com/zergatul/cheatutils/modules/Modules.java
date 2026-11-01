@@ -50,7 +50,7 @@ public class Modules {
         register(TeleportHack.instance);
         register(WorldMarkers.INSTANCE);
         register(TpsCounterController.instance);
-        register(BlockAutomation.instance);
+        register(BlockAutomation.INSTANCE);
         register(PlayerInfoController.instance);
 
         register(FlyHack.INSTANCE);

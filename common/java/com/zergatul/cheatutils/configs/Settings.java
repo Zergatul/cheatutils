@@ -113,6 +113,11 @@ public final class Settings {
                 (config, value) -> config.bedrockBreakerConfig = value);
 
         registrar.register(
+                BlockAutomationConfig.class,
+                config -> config.blockAutomationConfig,
+                (config, value) -> config.blockAutomationConfig = value);
+
+        registrar.register(
                 BlockEntityDistanceConfig.class,
                 config -> config.blockEntityDistance,
                 (config, value) -> config.blockEntityDistance = value);
@@ -326,6 +331,11 @@ public final class Settings {
                 ScaffoldConfig.class,
                 config -> config.scaffoldConfig,
                 (config, value) -> config.scaffoldConfig = value);
+
+        registrar.register(
+                SchematicaConfig.class,
+                config -> config.schematicaConfig,
+                (config, value) -> config.schematicaConfig = value);
 
         registrar.register(
                 ServerPluginsConfig.class,

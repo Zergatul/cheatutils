@@ -3,8 +3,8 @@ package com.zergatul.cheatutils.blocks;
 import com.zergatul.cheatutils.concurrent.AfterPlayerAiStepExecutor;
 import com.zergatul.cheatutils.concurrent.AfterSendPlayerPosExecutor;
 import com.zergatul.cheatutils.concurrent.InGameTickEndExecutor;
-import com.zergatul.cheatutils.configs.BlockPlacerConfig;
 import com.zergatul.cheatutils.configs.InteractionConfig;
+import com.zergatul.cheatutils.configs.utility.BlockPlacerConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
@@ -206,9 +206,9 @@ public class BlockPlacer {
 
                         return CompletableFuture.completedFuture(null)
                                 .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
-                                .thenCompose(unused -> InGameTickEndExecutor.instance.waitTicks(0))
+                                .thenCompose(_ -> InGameTickEndExecutor.instance.waitTicks(0))
                                 .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
-                                .thenCompose(unused -> InGameTickEndExecutor.instance.waitTicks(0))
+                                .thenCompose(_ -> InGameTickEndExecutor.instance.waitTicks(0))
                                 .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
                                 .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
                     }
@@ -283,7 +283,7 @@ public class BlockPlacer {
 
     private static boolean shouldUseShift(InteractionConfig config) {
         if (config instanceof BlockPlacerConfig blockPlacerConfig) {
-            return blockPlacerConfig.useShift;
+            return blockPlacerConfig.shouldUseShift();
         } else {
             return false;
         }
@@ -291,7 +291,7 @@ public class BlockPlacer {
 
     private static boolean shouldAttachToAir(InteractionConfig config) {
         if (config instanceof BlockPlacerConfig blockPlacerConfig) {
-            return blockPlacerConfig.attachToAir;
+            return blockPlacerConfig.shouldAttachToAir();
         } else {
             return false;
         }

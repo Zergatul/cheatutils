@@ -171,7 +171,7 @@ public abstract class MixinMinecraft {
             return false;
         }
 
-        if (BlockAutomation.instance.isBreakingBlock()) {
+        if (BlockAutomation.INSTANCE.isBreakingBlock()) {
             return false;
         }
 
