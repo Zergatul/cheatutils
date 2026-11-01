@@ -19,6 +19,7 @@ import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.SlotSelector;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
+import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -54,7 +55,7 @@ public class BlockAutomation {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
 
-        WebApiRegistry.INSTANCE.register("block-automation", settings, BlockAutomationConfig.class);
+        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
@@ -296,6 +297,28 @@ public class BlockAutomation {
         breakPlan = null;
         placePlan = null;
         applyFuture = null;
+    }
+
+    private class ConfigWebApi extends WebApiBase {
+
+        @Override
+        public String getRoute() {
+            return "block-automation";
+        }
+
+        @Override
+        public String get() {
+            return gson.toJson(settings.get());
+        }
+
+        @Override
+        public String post(String body) {
+            BlockAutomationConfig.UpdateOptions options = gson.fromJson(body, BlockAutomationConfig.UpdateOptions.class);
+            if (options != null) {
+                settings.update(config -> config.withOptions(options));
+            }
+            return get();
+        }
     }
 
     private static final class CodeWebApi extends CodeWebApiBase {
