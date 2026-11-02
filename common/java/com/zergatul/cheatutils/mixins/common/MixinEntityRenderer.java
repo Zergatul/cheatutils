@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;
@@ -27,8 +27,8 @@ public abstract class MixinEntityRenderer {
             CallbackInfo info
     ) {
         if (EspGlobal.enabled) {
-            for (EntityEspConfig entityConfig : ConfigStore.instance.getConfig().entities.configs) {
-                if (entityConfig.enabled && entityConfig.drawTitles && entityConfig.isValidEntity(entity)) {
+            for (EntityEspEntry entityConfig : EntityEsp.INSTANCE.getSettings().get().entries()) {
+                if (entityConfig.enabled() && entityConfig.drawTitles() && entityConfig.isValidEntity(entity)) {
                     info.cancel();
                     return;
                 }

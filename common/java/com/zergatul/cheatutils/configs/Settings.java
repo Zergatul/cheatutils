@@ -193,6 +193,11 @@ public final class Settings {
                 (config, value) -> config.endCityChunksConfig = value);
 
         registrar.register(
+                EntityEspConfig.class,
+                config -> config.entityEspConfig,
+                (config, value) -> config.entityEspConfig = value);
+
+        registrar.register(
                 EntityTitleConfig.class,
                 config -> config.entityTitleConfig,
                 (config, value) -> config.entityTitleConfig = value);

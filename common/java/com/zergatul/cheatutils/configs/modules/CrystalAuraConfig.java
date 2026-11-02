@@ -44,7 +44,7 @@ public record CrystalAuraConfig(
         if (targets == null) {
             targets = ImmutableList.empty();
         }
-        targets = targets.removeIf(Objects::isNull);
+        targets = targets.removeAll(Objects::isNull);
 
         placeDelay = MathUtils.clamp(placeDelay, 0, 20);
         placeRange = MathUtils.clamp(placeRange, 0, 10);

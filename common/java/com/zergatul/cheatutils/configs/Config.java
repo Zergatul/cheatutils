@@ -8,7 +8,7 @@ public class Config implements Sanitizable {
     public AutoFishConfig autoFishConfig = AutoFishConfig.defaults();
     public ArmorOverlayConfig armorOverlayConfig = ArmorOverlayConfig.defaults();
     public BlocksConfig blocks = new BlocksConfig();
-    public EntitiesConfig entities = new EntitiesConfig();
+    public EntityEspConfig entityEspConfig = EntityEspConfig.defaults();
     public LightLevelConfig lightLevelConfig = LightLevelConfig.defaults();
     public KillAuraConfig killAuraConfig = KillAuraConfig.defaults();
     public BoatHackConfig boatHackConfig = BoatHackConfig.defaults();
@@ -85,7 +85,6 @@ public class Config implements Sanitizable {
     @Override
     public void sanitize() {
         blocks.sanitize();
-        entities.sanitize();
         keyBindingsConfig.sanitize();
     }
 }

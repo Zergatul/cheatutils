@@ -43,7 +43,7 @@ public record KillAuraConfig(
             priorities = ImmutableList.empty();
         }
 
-        priorities = priorities.removeIf(Objects::isNull);
+        priorities = priorities.removeAll(Objects::isNull);
         priorities = addPredefinedIfMissing(priorities, KillAuraPredefinedPriority.ENEMIES);
         priorities = addPredefinedIfMissing(priorities, KillAuraPredefinedPriority.ENEMIES_WO_PIGLINS);
     }

@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.configs.modules.EntityTitleConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.font.*;
@@ -131,7 +132,7 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        if (!EntityEsp.instance.isEnabled() || !EspGlobal.enabled) {
+        if (!EntityEsp.INSTANCE.isEnabled() || !EspGlobal.enabled) {
             return;
         }
 
@@ -292,7 +293,7 @@ public class EntityTitle implements FontBackendHolder {
     private void prepareEntityList(Vec3 cameraPos, float partialTickTime) {
         assert mc.level != null;
 
-        ImmutableList<EntityEspConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspEntry> entityConfigs = EntityEsp.INSTANCE.getSettings().get().entries();
 
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity == mc.player && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
@@ -309,21 +310,21 @@ public class EntityTitle implements FontBackendHolder {
             boolean useRaw = false;
             boolean showOwner = false;
             StylizedText title = null;
-            for (EntityEspConfig entityConfig : entityConfigs) {
-                if (!entityConfig.enabled || !entityConfig.drawTitles) {
+            for (EntityEspEntry entityConfig : entityConfigs) {
+                if (!entityConfig.enabled() || !entityConfig.drawTitles()) {
                     continue;
                 }
                 if (!entityConfig.isValidEntity(entity)) {
                     continue;
                 }
 
-                if (distanceSqr < entityConfig.maxDistance * entityConfig.maxDistance) {
+                if (distanceSqr < entityConfig.maxDistance() * entityConfig.maxDistance()) {
                     drawTitles = true;
-                    showDefaultNames |= entityConfig.showDefaultNames;
-                    useRaw |= entityConfig.useRawNames;
-                    showHp |= entityConfig.showHp;
-                    showEquippedItems |= entityConfig.showEquippedItems;
-                    showOwner |= entityConfig.showOwner;
+                    showDefaultNames |= entityConfig.showDefaultNames();
+                    useRaw |= entityConfig.useRawNames();
+                    showHp |= entityConfig.showHp();
+                    showEquippedItems |= entityConfig.showEquippedItems();
+                    showOwner |= entityConfig.showOwner();
                     if (title == null) {
                         title = EntityEspScriptRuntime.INSTANCE.getTitleOverride(entityConfig, entity);
                     }
@@ -364,17 +365,17 @@ public class EntityTitle implements FontBackendHolder {
         boolean useRaw = false;
         boolean showOwner = false;
 
-        for (EntityEspConfig entityConfig : ConfigStore.instance.getConfig().entities.configs) {
-            if (!entityConfig.enabled || !entityConfig.drawTitles) {
+        for (EntityEspEntry entityConfig : EntityEsp.INSTANCE.getSettings().get().entries()) {
+            if (!entityConfig.enabled() || !entityConfig.drawTitles()) {
                 continue;
             }
-            if (entityConfig.clazz.isAssignableFrom(RemotePlayer.class)) {
+            if (entityConfig.type().isAssignableFrom(RemotePlayer.class)) {
                 drawTitles = true;
-                showDefaultNames |= entityConfig.showDefaultNames;
-                useRaw |= entityConfig.useRawNames;
-                showHp |= entityConfig.showHp;
-                showEquippedItems |= entityConfig.showEquippedItems;
-                showOwner |= entityConfig.showOwner;
+                showDefaultNames |= entityConfig.showDefaultNames();
+                useRaw |= entityConfig.useRawNames();
+                showHp |= entityConfig.showHp();
+                showEquippedItems |= entityConfig.showEquippedItems();
+                showOwner |= entityConfig.showOwner();
             }
         }
 
@@ -420,7 +421,7 @@ public class EntityTitle implements FontBackendHolder {
                 builder.delete(0, builder.length());
                 FormattedCharSequence sequence = component.getVisualOrderText();
                 ColorHolder last = new ColorHolder();
-                sequence.accept((unknown, style, character) -> {
+                sequence.accept((_, style, character) -> {
                     int color = style.getColor() != null ? (style.getColor().getValue() | 0xFF000000) : Color.WHITE.getRGB();
                     if (last.color != color) {
                         if (!builder.isEmpty()) {

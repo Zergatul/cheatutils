@@ -81,8 +81,8 @@ public class BlocksConfig implements ModuleStateProvider, Sanitizable {
     @Override
     public void sanitize() {
         for (BlockEspConfig config : configs) {
-            config.blocks = config.blocks.removeIf(b -> b == Blocks.AIR);
+            config.blocks = config.blocks.removeAll(b -> b == Blocks.AIR);
         }
-        configs = configs.removeIf(c -> c.blocks.isEmpty());
+        configs = configs.removeAll(c -> c.blocks.isEmpty());
     }
 }

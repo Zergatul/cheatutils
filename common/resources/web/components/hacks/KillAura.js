@@ -53,7 +53,7 @@ export function createComponent(template) {
                 if (this.classNames == null) {
                     try {
                         const entities = await http.get('/api/entity-info');
-                        this.classNames = [...new Set(entities.map(entity => entity.clazz))].sort();
+                        this.classNames = [...new Set(entities.map(entity => entity.type))].sort();
                     } catch (error) {
                         this.classSuggestionsError = 'Cannot load class suggestions. You can still enter a class name manually.';
                     }

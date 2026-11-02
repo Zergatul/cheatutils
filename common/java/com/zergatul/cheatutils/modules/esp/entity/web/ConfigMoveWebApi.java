@@ -1,21 +1,23 @@
 package com.zergatul.cheatutils.modules.esp.entity.web;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
+import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.web.WebApiBase;
 
 public class ConfigMoveWebApi extends WebApiBase {
 
     @Override
     public String getRoute() {
-        return "entities-move";
+        return "entity-esp-move";
     }
 
     @Override
     public String post(String body) {
         Request request = gson.fromJson(body, Request.class);
-        if (request.clazz == null) {
+        if (request.type == null) {
             return gson.toJson(new Response(false, "Class is null"));
         }
 
@@ -25,8 +27,9 @@ public class ConfigMoveWebApi extends WebApiBase {
             return gson.toJson(new Response(false, "Invalid direction"));
         }
 
-        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
-        int index = list.indexOf(c -> c.clazz == request.clazz);
+        SettingHandle2<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
+        ImmutableList<EntityEspEntry> entries = handle.get().entries();
+        int index = entries.indexOf(c -> c.type() == request.type);
         if (index < 0) {
             return gson.toJson(new Response(false, "Cannot find class in list"));
         }
@@ -35,21 +38,20 @@ public class ConfigMoveWebApi extends WebApiBase {
             return gson.toJson(new Response(true, "Cannot move up"));
         }
 
-        if (index == list.size() - 1 && down) {
+        if (index == entries.size() - 1 && down) {
             return gson.toJson(new Response(true, "Cannot move down"));
         }
 
         if (up) {
-            ConfigStore.instance.getConfig().entities.configs = list.swap(index, index - 1);
+            handle.update(config -> config.withEntries(config.entries().swap(index, index - 1)));
         } else {
-            ConfigStore.instance.getConfig().entities.configs = list.swap(index, index + 1);
+            handle.update(config -> config.withEntries(config.entries().swap(index, index + 1)));
         }
-        ConfigStore.instance.requestWrite();
 
         return gson.toJson(new Response(true, null));
     }
 
-    public record Request(String direction, Class<?> clazz) {}
+    public record Request(String direction, Class<?> type) {}
 
     public record Response(boolean ok, String message) {}
 }

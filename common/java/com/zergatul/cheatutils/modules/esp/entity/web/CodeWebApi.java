@@ -1,7 +1,8 @@
 package com.zergatul.cheatutils.modules.esp.entity.web;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
@@ -20,15 +21,12 @@ public class CodeWebApi extends WebApiBase {
     public String post(String json) throws ApiException {
         Request request = gson.fromJson(json, Request.class);
 
-        EntityEspConfig config = ConfigStore.instance.getConfig().entities.configs.stream()
-                .filter(c -> c.clazz == request.clazz)
-                .findFirst()
-                .orElse(null);
-        if (config == null) {
+        SettingHandle2<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
+        if (!handle.get().entries().contains(e -> e.type() == request.type)) {
             throw new ApiException("Cannot find entity config.", HttpResponseCodes.NOT_FOUND);
         }
 
-        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP).save(request.clazz.getName(), request.code);
+        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP).save(request.type.getName(), request.code);
         if (result.isSuccess()) {
             return "{ \"ok\": true }";
         } else {
@@ -36,5 +34,5 @@ public class CodeWebApi extends WebApiBase {
         }
     }
 
-    public record Request(Class<?> clazz, String code) {}
+    public record Request(Class<?> type, String code) {}
 }

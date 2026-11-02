@@ -25,7 +25,7 @@ public class MarkersApi {
         }
 
         WorldMarkers.INSTANCE.getSettings().update(config -> {
-            ImmutableList<WorldMarkerEntry> entries = config.entries().removeIf(e -> e.name().equals(name));
+            ImmutableList<WorldMarkerEntry> entries = config.entries().removeAll(e -> e.name().equals(name));
             WorldMarkerEntry entry = WorldMarkerEntry.Builder.from(WorldMarkerEntry.defaults())
                     .name(name)
                     .dimension(mc.level.dimension().identifier().toString())
@@ -43,7 +43,7 @@ public class MarkersApi {
 
     public void removeByName(String name) {
         WorldMarkers.INSTANCE.getSettings().update(config -> {
-            return config.withEntries(config.entries().removeIf(e -> e.name().equals(name)));
+            return config.withEntries(config.entries().removeAll(e -> e.name().equals(name)));
         });
     }
 

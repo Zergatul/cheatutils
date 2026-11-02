@@ -1,8 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
@@ -18,7 +17,7 @@ public class EntitiesApi {
             Checks if Entity ESP rendering is enabled
             """)
     public boolean isEnabled() {
-        return EntityEsp.instance.isEnabled();
+        return EntityEsp.INSTANCE.isEnabled();
     }
 
     @MethodDescription("""
@@ -26,15 +25,15 @@ public class EntitiesApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
-        EntityEsp.instance.toggle();
+        EntityEsp.INSTANCE.toggle();
     }
 
     @MethodDescription("""
             Returns all entity class names you have configured for Entity ESP. Does not skip disabled ones.
             """)
     public String[] getEntries() {
-        return ConfigStore.instance.getConfig().entities.configs.stream()
-                .map(c -> c.clazz.getName())
+        return EntityEsp.INSTANCE.getSettings().get().entries().stream()
+                .map(c -> c.type().getName())
                 .toArray(String[]::new);
     }
 
@@ -42,11 +41,15 @@ public class EntitiesApi {
             Checks if Entity ESP is enabled for specified entity class
             """)
     public boolean isEnabled(String className) {
-        EntityEspConfig config = getConfig(className);
-        if (config == null) {
+        ImmutableList<EntityEspEntry> entries = EntityEsp.INSTANCE.getSettings().get().entries();
+        EntityEspEntry entry = entries.stream()
+                .filter(e -> e.type().getName().equals(className))
+                .findFirst()
+                .orElse(null);
+        if (entry == null) {
             return false;
         }
-        return config.enabled;
+        return entry.enabled();
     }
 
     @MethodDescription("""
@@ -54,12 +57,13 @@ public class EntitiesApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle(String className) {
-        EntityEspConfig config = getConfig(className);
-        if (config == null) {
-            return;
-        }
-        config.enabled = !config.enabled;
-        ConfigStore.instance.requestWrite();
+        EntityEsp.INSTANCE.getSettings().update(config -> {
+            ImmutableList<EntityEspEntry> entries = config.entries();
+            entries = entries.replaceFirst(
+                    e -> e.type().getName().equals(className),
+                    e -> e.withEnabled(!e.enabled()));
+            return config.withEntries(entries);
+        });
     }
 
     @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
@@ -70,13 +74,13 @@ public class EntitiesApi {
             return;
         }
 
-        EntityEspConfig config = getConfig(className);
-        if (config == null) {
-            return;
-        }
-
-        config.tracerColor = colorValue;
-        ConfigStore.instance.requestWrite();
+        EntityEsp.INSTANCE.getSettings().update(config -> {
+            ImmutableList<EntityEspEntry> entries = config.entries();
+            entries = entries.replaceFirst(
+                    e -> e.type().getName().equals(className),
+                    e -> e.withTracerColor(colorValue));
+            return config.withEntries(entries);
+        });
     }
 
     @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
@@ -87,13 +91,13 @@ public class EntitiesApi {
             return;
         }
 
-        EntityEspConfig config = getConfig(className);
-        if (config == null) {
-            return;
-        }
-
-        config.outlineColor = colorValue;
-        ConfigStore.instance.requestWrite();
+        EntityEsp.INSTANCE.getSettings().update(config -> {
+            ImmutableList<EntityEspEntry> entries = config.entries();
+            entries = entries.replaceFirst(
+                    e -> e.type().getName().equals(className),
+                    e -> e.withOutlineColor(colorValue));
+            return config.withEntries(entries);
+        });
     }
 
     @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
@@ -104,13 +108,13 @@ public class EntitiesApi {
             return;
         }
 
-        EntityEspConfig config = getConfig(className);
-        if (config == null) {
-            return;
-        }
-
-        config.boundingBoxColor = colorValue;
-        ConfigStore.instance.requestWrite();
+        EntityEsp.INSTANCE.getSettings().update(config -> {
+            ImmutableList<EntityEspEntry> entries = config.entries();
+            entries = entries.replaceFirst(
+                    e -> e.type().getName().equals(className),
+                    e -> e.withBoundingBoxColor(colorValue));
+            return config.withEntries(entries);
+        });
     }
 
     @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
@@ -121,20 +125,12 @@ public class EntitiesApi {
             return;
         }
 
-        EntityEspConfig config = getConfig(className);
-        if (config == null) {
-            return;
-        }
-
-        config.overlayColor = colorValue;
-        ConfigStore.instance.requestWrite();
-    }
-
-    private EntityEspConfig getConfig(String className) {
-        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
-        return list.stream()
-                .filter(c -> c.clazz.getName().equals(className))
-                .findFirst()
-                .orElse(null);
+        EntityEsp.INSTANCE.getSettings().update(config -> {
+            ImmutableList<EntityEspEntry> entries = config.entries();
+            entries = entries.replaceFirst(
+                    e -> e.type().getName().equals(className),
+                    e -> e.withOverlayColor(colorValue));
+            return config.withEntries(entries);
+        });
     }
 }

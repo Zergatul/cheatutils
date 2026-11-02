@@ -19,7 +19,7 @@ public record WorldMarkersConfig(
         if (entries == null) {
             entries = ImmutableList.empty();
         }
-        entries = entries.removeIf(Objects::isNull);
+        entries = entries.removeAll(Objects::isNull);
 
         if (font == null) {
             font = FontConfig.defaults();

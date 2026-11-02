@@ -1,6 +1,8 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
@@ -25,8 +27,20 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
 
     @Override
     protected void updateConfigCode(String identifier, @Nullable String code) {
-        EntityEspConfig config = findConfig(identifier);
-        config.code = code;
+        EntityEsp.INSTANCE.getSettings().update(config -> {
+            Class<?> type;
+            try {
+                type = ClassUtils.forName(identifier);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException("Invalid class name: " + identifier, e);
+            }
+
+            ImmutableList<EntityEspEntry> entries = config.entries();
+            entries = entries.replaceFirst(
+                    e -> e.type() == type,
+                    e -> e.withCode(code));
+            return config.withEntries(entries);
+        });
     }
 
     @Override
@@ -36,22 +50,13 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
 
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
-        EntityEspConfig config = findConfig(identifier);
-        EntityEspScriptRuntime.INSTANCE.setScript(config, (EntityEspConsumer) program);
-    }
-
-    private EntityEspConfig findConfig(String className) {
-        Class<?> clazz;
+        Class<?> type;
         try {
-            clazz = ClassUtils.forName(className);
+            type = ClassUtils.forName(identifier);
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Invalid class name: " + className, e);
+            throw new IllegalStateException("Invalid class name: " + identifier, e);
         }
 
-        EntitiesConfig config = ConfigStore.instance.getConfig().entities;
-        return config.configs.stream()
-                .filter(c -> c.clazz == clazz)
-                .findFirst()
-                .orElseThrow();
+        EntityEspScriptRuntime.INSTANCE.setScript(type, (EntityEspConsumer) program);
     }
 }

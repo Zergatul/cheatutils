@@ -138,7 +138,7 @@ public class Modules {
     }
 
     public static void lateRegister() {
-        register(EntityEsp.instance);
+        register(EntityEsp.INSTANCE);
     }
 
     private static void register(Object instance) {}

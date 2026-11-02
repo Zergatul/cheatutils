@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.collections;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -57,6 +58,22 @@ public class ImmutableList<E> implements Iterable<E> {
             }
         }
         return false;
+    }
+
+    public <K> ImmutableList<E> distinctBy(Function<E, K> selector) {
+        if (isEmpty()) {
+            return this;
+        }
+
+        Set<K> seen = new HashSet<>(array.length);
+        List<E> result = new ArrayList<>(array.length);
+        for (E element : this) {
+            if (seen.add(selector.apply(element))) {
+                result.add(element);
+            }
+        }
+
+        return new ImmutableList<>(result);
     }
 
     @Override
@@ -126,7 +143,11 @@ public class ImmutableList<E> implements Iterable<E> {
         return new ImmutableList<>(newArray);
     }
 
-    public ImmutableList<E> removeIf(Predicate<E> predicate) {
+    public ImmutableList<E> removeAll(Predicate<E> predicate) {
+        if (isEmpty()) {
+            return this;
+        }
+
         List<E> list = new ArrayList<>();
         for (E e : this) {
             if (!predicate.test(e)) {

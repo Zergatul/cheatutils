@@ -44,9 +44,6 @@ public class ModulesStatusWebApi extends WebApiBase {
                     if (key.equals("Blocks")) {
                         key = "BlockESP";
                     }
-                    if (key.equals("Entities")) {
-                        key = "EntityESP";
-                    }
                 }
 
                 map.put(key, moduleConfig.isEnabled());

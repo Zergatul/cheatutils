@@ -159,7 +159,7 @@ module({
 module({
     group: 'esp',
     name: 'Entity ESP',
-    component: 'EntityESP',
+    component: 'EntityEsp',
     path: 'entity-esp',
     tags: ['entity', 'entities', 'esp']
 });

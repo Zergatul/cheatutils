@@ -259,7 +259,7 @@ public class GameApi {
 
             int count = 0;
             for (Entity entity : level.entitiesForRendering()) {
-                if (info.clazz.isAssignableFrom(entity.getClass())) {
+                if (info.type.isAssignableFrom(entity.getClass())) {
                     count++;
                 }
             }
@@ -341,7 +341,7 @@ public class GameApi {
                 if (entity == mc.player) {
                     continue;
                 }
-                if (info.clazz.isAssignableFrom(entity.getClass())) {
+                if (info.type.isAssignableFrom(entity.getClass())) {
                     double dist = mc.player.distanceToSqr(entity);
                     if (dist < min) {
                         min = dist;
@@ -460,7 +460,7 @@ public class GameApi {
                 return false;
             }
 
-            return info.clazz.isAssignableFrom(entity.getClass());
+            return info.type.isAssignableFrom(entity.getClass());
         }
 
         @MethodDescription("Horse movement speed in blocks per second, or NaN when unavailable.")
@@ -750,7 +750,7 @@ public class GameApi {
                 if (entity == mc.player) {
                     continue;
                 }
-                if (info.clazz.isAssignableFrom(entity.getClass())) {
+                if (info.type.isAssignableFrom(entity.getClass())) {
                     entities.add(entity);
                 }
             }

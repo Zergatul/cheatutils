@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
+import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
@@ -82,6 +83,7 @@ public class ConfigStore {
                 migration4(element);
                 migration5(element);
                 migration6(element);
+                migration7(element);
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
@@ -242,15 +244,11 @@ public class ConfigStore {
         }
 
         ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP)).clear();
-        if (config.entities != null && config.entities.configs != null) {
-            for (EntityEspConfig entityConfig : config.entities.configs) {
-                if (entityConfig.code != null && entityConfig.code.isBlank()) {
-                    entityConfig.code = null;
-                }
-
-                if (entityConfig.code != null) {
+        if (config.entityEspConfig != null && config.entityEspConfig.entries() != null) {
+            for (EntityEspEntry entry : config.entityEspConfig.entries()) {
+                if (entry.code() != null) {
                     try {
-                        initializeScript(ScriptType.ENTITY_ESP, entityConfig.clazz.getName(), entityConfig.code);
+                        initializeScript(ScriptType.ENTITY_ESP, entry.type().getName(), entry.code());
                     } catch (Throwable e) {
                         ScriptRuntimeFailureHandler.instance.reportInitializationFailure(new ScriptRef(ScriptType.ENTITY_ESP), e);
                     }
@@ -423,6 +421,49 @@ public class ConfigStore {
 
         killAura.add("priorities", priorities);
         killAura.remove("customEntries");
+    }
+
+    private void migration7(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        if (!element.getAsJsonObject().has("entities")) {
+            return;
+        }
+
+        JsonElement oldEntityEspConfig = element.getAsJsonObject().remove("entities");
+        if (!oldEntityEspConfig.isJsonObject()) {
+            return;
+        }
+
+        JsonObject newEntityEspConfig = new JsonObject();
+        element.getAsJsonObject().add("entityEspConfig", newEntityEspConfig);
+
+        if (!oldEntityEspConfig.getAsJsonObject().has("configs")) {
+            return;
+        }
+
+        JsonElement oldEntries = oldEntityEspConfig.getAsJsonObject().get("configs");
+        if (!oldEntries.isJsonArray()) {
+            return;
+        }
+
+        JsonArray newEntries = new JsonArray();
+        newEntityEspConfig.add("entries", newEntries);
+
+        for (JsonElement entry : oldEntries.getAsJsonArray()) {
+            if (!entry.isJsonObject()) {
+                continue;
+            }
+
+            if (entry.getAsJsonObject().has("clazz")) {
+                JsonElement value = entry.getAsJsonObject().remove("clazz");
+                entry.getAsJsonObject().add("type", value);
+            }
+
+            newEntries.add(entry);
+        }
     }
 
     private @Nullable JsonObject migrateKillAuraPriorityEntry(JsonElement element) {
