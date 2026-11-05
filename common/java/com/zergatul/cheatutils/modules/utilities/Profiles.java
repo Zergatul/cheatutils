@@ -22,14 +22,14 @@ public class Profiles implements Module {
     public static final Profiles instance = new Profiles();
 
     private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
-    private static final String OLD_CONFIG_FILE_NAME = "zergatulcheatutils.json";
-    private static final String PROFILE_CONFIG_FILE_NAME = "cheatutils-profile.json";
-    private static final String DEFAULT_CONFIG_FILE_NAME = "cheatutils.json";
-    private static final String CONFIG_FILE_NAME = "cheatutils.%s.json";
+    private static final String OLD_CONFIG_FILE_NAME = "ChatTools.json";
+    private static final String PROFILE_CONFIG_FILE_NAME = "ChatTools-profile.json";
+    private static final String DEFAULT_CONFIG_FILE_NAME = "ChatTools.json";
+    private static final String CONFIG_FILE_NAME = "ChatTools.%s.json";
 
     private final Logger logger = LogManager.getLogger(Profiles.class);
     private final char[] invalidChars = new char[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' };
-    private final Pattern pattern = Pattern.compile("^cheatutils\\.(.+)\\.json$");
+    private final Pattern pattern = Pattern.compile("^ChatTools\\.(.+)\\.json$");
     private String current;
     private volatile boolean isInResetState = false;
 
