@@ -80,6 +80,7 @@ public class Config implements Sanitizable {
     public PrivacyConfig privacyConfig = new PrivacyConfig();
     public CrystalAuraConfig crystalAuraConfig = new CrystalAuraConfig();
     public McpServerConfig mcpServerConfig = new McpServerConfig();
+    public TridentHackConfig tridentHackConfig = new TridentHackConfig();
 
     @Override
     public void sanitize() {
@@ -111,5 +112,6 @@ public class Config implements Sanitizable {
         elytraBounceConfig.sanitize();
         handsViewConfig.sanitize();
         crystalAuraConfig.sanitize();
+        tridentHackConfig.sanitize();
     }
 }

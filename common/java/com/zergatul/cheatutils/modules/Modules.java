@@ -88,6 +88,7 @@ public class Modules {
         register(AirPlace.instance);
         register(ContainerSummary.instance);
         register(CrystalAura.instance);
+        register(TridentHack.INSTANCE);
 
         register(ClientTickEndExecutor.instance);
         register(InGameTickEndExecutor.instance);

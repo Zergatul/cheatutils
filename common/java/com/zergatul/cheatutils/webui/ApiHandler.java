@@ -1035,6 +1035,18 @@ public class ApiHandler implements HttpHandler {
                 ConfigStore.instance.getConfig().mcpServerConfig = config;
             }
         });
+
+        apis.add(new SimpleConfigApi<>("trident-hack", TridentHackConfig.class) {
+            @Override
+            protected TridentHackConfig getConfig() {
+                return ConfigStore.instance.getConfig().tridentHackConfig;
+            }
+
+            @Override
+            protected void setConfig(TridentHackConfig config) {
+                ConfigStore.instance.getConfig().tridentHackConfig = config;
+            }
+        });
     }
 
     @Override

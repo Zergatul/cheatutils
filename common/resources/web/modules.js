@@ -390,6 +390,13 @@ module({
     path: 'crystal-aura',
     tags: ['kill', 'crystal', 'aura', 'auto', 'attack', 'blow', 'explode']
 });
+module({
+    group: 'hacks',
+    name: 'Trident Hack',
+    component: 'TridentHack',
+    path: 'trident-hack',
+    tags: ['trident', 'rip', 'tide', 'riptide']
+});
 
 // Visuals Modules ============================
 

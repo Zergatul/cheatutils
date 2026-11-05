@@ -93,6 +93,7 @@
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSoundBufferLibrary",
     "common.MixinSoundManager",
+    "common.MixinTridentItem",
     "common.MixinUser"
   ]
 }
