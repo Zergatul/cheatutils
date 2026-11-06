@@ -373,6 +373,11 @@ public final class Settings {
                 (config, value) -> config.stepUp = value);
 
         registrar.register(
+                TridentHackConfig.class,
+                config -> config.tridentHackConfig,
+                (config, value) -> config.tridentHackConfig = value);
+
+        registrar.register(
                 UserNameConfig.class,
                 config -> config.userNameConfig,
                 (config, value) -> config.userNameConfig = value);

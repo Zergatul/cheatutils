@@ -1,0 +1,33 @@
+<div class="module-main" v-if="config">
+    <div class="description">
+        
+    </div>
+
+    <div class="module-sections">
+        <div>
+            <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
+        </div>
+
+        <fieldset>
+            <legend>
+                <switch-checkbox v-model="config.allowOutOfWater" @change="update()">Allow out of the Water</switch-checkbox>
+            </legend>
+            <div class="section-description">
+                Allows to boost with riptide while not in the water or rain
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>
+                Boost
+            </legend>
+            <div class="flex-row">
+                <span class="field-description">Multiplier (default 1):</span>
+                <input type="text" class="w4" v-model="config.boost" @change="update()">
+            </div>
+            <div class="section-description">
+                Your speed will be multipled by this value on using riptide
+            </div>
+        </fieldset>
+    </div>
+</div>

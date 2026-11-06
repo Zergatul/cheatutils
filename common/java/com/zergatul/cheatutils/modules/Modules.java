@@ -113,6 +113,7 @@ public class Modules {
         register(ElytraTunnel.INSTANCE);
         register(Movement.INSTANCE);
         register(Debugging.INSTANCE);
+        register(TridentHack.INSTANCE);
 
         register(EventsScripting.INSTANCE);
 

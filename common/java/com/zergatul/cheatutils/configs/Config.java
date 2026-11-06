@@ -81,6 +81,7 @@ public class Config implements Sanitizable {
     public PrivacyConfig privacyConfig = PrivacyConfig.defaults();
     public CrystalAuraConfig crystalAuraConfig = CrystalAuraConfig.defaults();
     public McpServerConfig mcpServerConfig = McpServerConfig.defaults();
+    public TridentHackConfig tridentHackConfig = TridentHackConfig.defaults();
 
     @Override
     public void sanitize() {
