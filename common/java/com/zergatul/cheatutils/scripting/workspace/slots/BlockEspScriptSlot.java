@@ -1,16 +1,13 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.configs.BlockEspConfig;
-import com.zergatul.cheatutils.configs.BlocksConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
 import com.zergatul.cheatutils.modules.esp.block.BlockEsp;
+import com.zergatul.cheatutils.modules.esp.block.BlockGroupKey;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.events.BlockEspConsumer;
 import com.zergatul.scripting.compiler.CompilationResult;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -23,14 +20,20 @@ public class BlockEspScriptSlot extends MultiScriptSlot {
 
     @Override
     public void clear() {
-        BlockEsp.instance.clearScripts();
+        BlockEsp.INSTANCE.clearScripts();
         clearDocuments();
     }
 
     @Override
     protected void updateConfigCode(String identifier, @Nullable String code) {
-        BlockEspConfig config = findConfig(identifier);
-        config.code = code;
+        BlockEsp.INSTANCE.getSettings().update(config -> {
+            BlockGroupKey key = BlockGroupKey.parse(identifier);
+            BlockEspEntry entry = key.findIn(config.entries());
+            ImmutableList<BlockEspEntry> entries = config.entries().replaceFirst(
+                    e -> e == entry,
+                    e -> e.withCode(code));
+            return config.withEntries(entries);
+        });
     }
 
     @Override
@@ -40,26 +43,12 @@ public class BlockEspScriptSlot extends MultiScriptSlot {
 
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
-        BlockEspConfig config = findConfig(identifier);
-        BlockEsp.instance.setScript(config, (BlockEspConsumer) program);
-    }
-
-    private BlockEspConfig findConfig(String identifier) {
-        Identifier id = Identifier.tryParse(identifier);
-        if (id == null) {
-            throw new IllegalStateException("Cannot parse identifier: " + identifier);
+        BlockGroupKey key = BlockGroupKey.parse(identifier);
+        BlockEspEntry entry = key.findIn(BlockEsp.INSTANCE.getSettings().get().entries());
+        if (entry == null) {
+            throw new IllegalStateException();
         }
 
-        if (id.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
-            throw new IllegalStateException("Invalid block id: " + identifier);
-        }
-
-        Block block = BuiltInRegistries.BLOCK.getValue(id);
-
-        BlocksConfig config = ConfigStore.instance.getConfig().blocks;
-        return config.getBlockConfigs().stream()
-                .filter(c -> c.blocks.contains(block))
-                .findFirst()
-                .orElseThrow();
+        BlockEsp.INSTANCE.setScript(entry, (BlockEspConsumer) program);
     }
 }

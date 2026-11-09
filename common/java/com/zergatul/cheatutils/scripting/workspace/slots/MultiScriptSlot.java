@@ -66,6 +66,17 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         }
     }
 
+    public void move(String oldIdentifier, String newIdentifier) {
+        ScriptDocument oldInstance = instances.remove(oldIdentifier);
+        if (oldInstance == null) {
+            return;
+        }
+
+        ScriptDocument newInstance = oldInstance.withRef(new ScriptRef(scriptType, newIdentifier));
+        instances.put(newIdentifier, newInstance);
+        ScriptExecutionManager.instance.move(oldInstance.ref, newInstance.ref);
+    }
+
     @Override
     public ScriptSaveResult init(@Nullable String identifier, @Nullable String code) {
         if (identifier == null) {

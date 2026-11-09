@@ -1,11 +1,11 @@
 package com.zergatul.cheatutils.modules.esp.block.web;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.configs.BlockEspConfig;
-import com.zergatul.cheatutils.configs.BlocksConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.modules.esp.block.BlockFinder;
+import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
+import com.zergatul.cheatutils.modules.esp.block.BlockEsp;
+import com.zergatul.cheatutils.modules.esp.block.BlockGroupKey;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import com.zergatul.cheatutils.web.ApiException;
@@ -14,9 +14,6 @@ import com.zergatul.cheatutils.web.WebApiBase;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ConfigWebApi extends WebApiBase {
 
@@ -28,109 +25,127 @@ public class ConfigWebApi extends WebApiBase {
     @Override
     public synchronized String get() {
         Object[] result;
-        ImmutableList<BlockEspConfig> list = ConfigStore.instance.getConfig().blocks.getBlockConfigs();
-        result = list.stream().toArray();
+        ImmutableList<BlockEspEntry> entries = BlockEsp.INSTANCE.getSettings().get().entries();
+        result = entries.stream().toArray();
         return gson.toJson(result);
     }
 
     @Override
     public synchronized String post(String body) throws ApiException {
-        BlockEspConfig jsonConfig = gson.fromJson(body, BlockEspConfig.class);
-        jsonConfig.validate();
-
-        if (jsonConfig.blocks.isEmpty()) {
-            throw new ApiException("Received empty BlockEspConfig.", HttpResponseCodes.BAD_REQUEST);
+        String id = gson.fromJson(body, String.class);
+        Identifier loc = Identifier.parse(id);
+        if (loc.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
+            throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);
         }
 
-        BlocksConfig blocksConfig = ConfigStore.instance.getConfig().blocks;
-        BlockEspConfig config = blocksConfig.findExact(jsonConfig.blocks);
-        if (config != null) {
-            config.copyFrom(jsonConfig);
-        } else {
-            List<BlockEspConfig> configs = new ArrayList<>();
-            for (Block block: jsonConfig.blocks) {
-                config = blocksConfig.find(block);
-                if (config != null && !configs.contains(config)) {
-                    configs.add(config);
+        Block block = BuiltInRegistries.BLOCK.getValue(loc);
+        if (BuiltInRegistries.BLOCK.getKey(block).equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
+            throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);
+        }
+
+        String[] errorHolder = new String[1];
+        BlockEspEntry[] newEntryHolder = new BlockEspEntry[1];
+
+        BlockEsp.INSTANCE.getSettings().update(config -> {
+            if (config.entries().stream().anyMatch(e -> e.blocks().contains(block))) {
+                errorHolder[0] = "Selected block is already part of other BlockEspEntry.";
+                return config;
+            }
+
+            BlockEspEntry newEntry = BlockEspEntry.defaults().withBlocks(ImmutableList.from(block));
+            newEntryHolder[0] = newEntry;
+            return config.withEntries(config.entries().add(newEntry));
+        });
+
+        if (errorHolder[0] != null) {
+            throw new ApiException(errorHolder[0], HttpResponseCodes.BAD_REQUEST);
+        }
+
+        return gson.toJson(newEntryHolder[0]);
+    }
+
+    @Override
+    public synchronized String put(String id, String body) throws Throwable {
+        BlockGroupKey key = BlockGroupKey.parse(id);
+
+        // verify blocks inside BlockGroupKey are good by any normalization rules inside BlockEspEntry
+        if (!key.isValid()) {
+            throw new ApiException("Group key is not valid.", HttpResponseCodes.BAD_REQUEST);
+        }
+
+        BlockEspEntry.UpdateOptions request = gson.fromJson(body, BlockEspEntry.UpdateOptions.class);
+        if (request.blocks().isEmpty()) {
+            throw new ApiException("Blocks cannot be empty array.", HttpResponseCodes.BAD_REQUEST);
+        }
+
+        if (!new BlockGroupKey(request.blocks()).isValid()) {
+            throw new ApiException("New group key is not valid.", HttpResponseCodes.BAD_REQUEST);
+        }
+
+        String[] errorHolder = new String[1];
+        BlockEspEntry[] newEntryHolder = new BlockEspEntry[1];
+
+        BlockEsp.INSTANCE.getSettings().update(config -> {
+            BlockEspEntry oldEntry = key.findIn(config.entries());
+            if (oldEntry == null) {
+                errorHolder[0] = "Block group not found. Please refresh the page.";
+                return config;
+            }
+
+            for (BlockEspEntry entry : config.entries()) {
+                if (entry == oldEntry) {
+                    continue;
+                }
+                if (entry.blocks().intersects(request.blocks())) {
+                    errorHolder[0] = "New block group intersects with another group. Please refresh the page.";
+                    return config;
                 }
             }
 
-            if (configs.size() > 1) {
-                throw new ApiException("Received BlockEspConfig with blocks from multiple already created configs.", HttpResponseCodes.BAD_REQUEST);
+            BlockEspEntry newEntry = oldEntry.withOptions(request);
+            newEntryHolder[0] = newEntry;
+
+            BlockGroupKey newKey = new BlockGroupKey(newEntry.blocks());
+            if (!key.equals(newKey)) {
+                MultiScriptSlot slot = (MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP);
+                slot.move(key.toString(), newKey.toString());
+                BlockEsp.INSTANCE.moveScript(oldEntry.blocks(), newEntry.blocks(), new ScriptRef(ScriptType.BLOCK_ESP, newKey.toString()));
             }
 
-            if (configs.size() == 1) {
-                config = configs.getFirst();
-                config.blocks = jsonConfig.blocks;
-                config.copyFrom(jsonConfig);
-                blocksConfig.refreshMap();
-                // re-adding causes rescan
-                BlockFinder.instance.removeConfig(config);
-                BlockFinder.instance.addConfig(config);
-            } else {
-                config = BlockEspConfig.createDefault(jsonConfig.blocks);
-                blocksConfig.add(config);
-            }
+            return config.withEntries(config.entries().replaceFirst(e -> e == oldEntry, _ -> newEntry));
+        });
+
+        if (errorHolder[0] != null) {
+            throw new ApiException(errorHolder[0], HttpResponseCodes.BAD_REQUEST);
         }
 
-        ConfigStore.instance.requestWrite();
-
-        return gson.toJson(config);
+        return gson.toJson(newEntryHolder[0]);
     }
 
     @Override
     public synchronized String delete(String id) throws ApiException {
-        Identifier loc = Identifier.parse(id);
-        Block block = BuiltInRegistries.BLOCK.getValue(loc);
-        if (block == null) {
-            throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);
-        }
+        BlockGroupKey key = BlockGroupKey.parse(id);
 
-        BlocksConfig blocksConfig = ConfigStore.instance.getConfig().blocks;
-        BlockEspConfig config = blocksConfig.find(block);
-        if (config != null) {
+        String[] errorHolder = new String[1];
+
+        BlockEsp.INSTANCE.getSettings().update(config -> {
+            BlockEspEntry entry = key.findIn(config.entries());
+
+            if (entry == null) {
+                errorHolder[0] = "Block group not found. Please refresh the page.";
+                return config;
+            }
+
             MultiScriptSlot slot = (MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP);
-            config.blocks.stream()
-                    .map(b -> BuiltInRegistries.BLOCK.getKey(b).toString())
-                    .forEach(slot::remove);
-            blocksConfig.remove(config);
-        } else {
-            throw new ApiException("Config doesn't exist for this block.", HttpResponseCodes.BAD_REQUEST);
-        }
+            slot.remove(key.toString());
 
-        ConfigStore.instance.requestWrite();
+            return config.withEntries(config.entries().remove(entry));
+        });
+
+        if (errorHolder[0] != null) {
+            throw new ApiException(errorHolder[0], HttpResponseCodes.BAD_REQUEST);
+        }
 
         return "{ \"ok\": true }";
-    }
-
-    public static class Add extends WebApiBase {
-
-        @Override
-        public String getRoute() {
-            return "blocks-add";
-        }
-
-        @Override
-        public String post(String body) throws ApiException {
-            String id = gson.fromJson(body, String.class);
-            Identifier loc = Identifier.parse(id);
-            if (loc.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
-                throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);
-            }
-
-            Block block = BuiltInRegistries.BLOCK.getValue(loc);
-
-            BlocksConfig blocksConfig = ConfigStore.instance.getConfig().blocks;
-            if (blocksConfig.find(block) != null) {
-                throw new ApiException("Selected block is already part of other BlockEspConfig.", HttpResponseCodes.BAD_REQUEST);
-            }
-
-            BlockEspConfig config = BlockEspConfig.createDefault(ImmutableList.from(block));
-            blocksConfig.add(config);
-
-            ConfigStore.instance.requestWrite();
-
-            return gson.toJson(config);
-        }
     }
 }

@@ -4,7 +4,9 @@ import com.google.gson.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
+import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
 import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
+import com.zergatul.cheatutils.modules.esp.block.BlockGroupKey;
 import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
@@ -57,7 +59,6 @@ public class ConfigStore {
 
     private ConfigStore() {
         Config config = new Config();
-        config.blocks.refreshMap();
         settingsRegistry = new SettingsRegistry2<>(this, config, this::requestWrite);
         settings = new Settings(settingsRegistry);
     }
@@ -84,6 +85,7 @@ public class ConfigStore {
                 migration5(element);
                 migration6(element);
                 migration7(element);
+                migration8(element);
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
             } catch (Exception e) {
@@ -148,15 +150,11 @@ public class ConfigStore {
     // Prepare the profile before publishing it and notifying immutable settings listeners.
     private void setConfig(Config config) {
         config.sanitize();
-        config.blocks.refreshMap();
         settingsRegistry.replace(config);
     }
 
     private void onConfigLoaded() {
         Config config = getConfig();
-        config.blocks.apply();
-
-        SettingsRegistry.INSTANCE.reload();
 
         KeyBindings.instance.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
@@ -226,16 +224,12 @@ public class ConfigStore {
         initializeScript(ScriptType.EVENTS, null, config.eventsScriptingConfig.code());
 
         ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP)).clear();
-        if (config.blocks != null && config.blocks.getBlockConfigs() != null) {
-            for (BlockEspConfig blockConfig : config.blocks.getBlockConfigs()) {
-                if (blockConfig.code != null && blockConfig.code.isBlank()) {
-                    blockConfig.code = null;
-                }
-
-                if (blockConfig.code != null) {
+        if (config.blockEspConfig != null && config.blockEspConfig.entries() != null) {
+            for (BlockEspEntry entry : config.blockEspConfig.entries()) {
+                if (entry.code() != null) {
                     try {
-                        String identifier = BuiltInRegistries.BLOCK.getKey(blockConfig.blocks.stream().findFirst().orElseThrow()).toString();
-                        initializeScript(ScriptType.BLOCK_ESP, identifier, blockConfig.code);
+                        String identifier = new BlockGroupKey(entry.blocks()).toString();
+                        initializeScript(ScriptType.BLOCK_ESP, identifier, entry.code());
                     } catch (Throwable e) {
                         ScriptRuntimeFailureHandler.instance.reportInitializationFailure(new ScriptRef(ScriptType.BLOCK_ESP), e);
                     }
@@ -460,6 +454,44 @@ public class ConfigStore {
             if (entry.getAsJsonObject().has("clazz")) {
                 JsonElement value = entry.getAsJsonObject().remove("clazz");
                 entry.getAsJsonObject().add("type", value);
+            }
+
+            newEntries.add(entry);
+        }
+    }
+
+    private void migration8(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        if (!element.getAsJsonObject().has("blocks")) {
+            return;
+        }
+
+        JsonElement oldBlockEspConfig = element.getAsJsonObject().remove("blocks");
+        if (!oldBlockEspConfig.isJsonObject()) {
+            return;
+        }
+
+        JsonObject newBlockEspConfig = new JsonObject();
+        element.getAsJsonObject().add("blockEspConfig", newBlockEspConfig);
+
+        if (!oldBlockEspConfig.getAsJsonObject().has("configs")) {
+            return;
+        }
+
+        JsonElement oldEntries = oldBlockEspConfig.getAsJsonObject().get("configs");
+        if (!oldEntries.isJsonArray()) {
+            return;
+        }
+
+        JsonArray newEntries = new JsonArray();
+        newBlockEspConfig.add("entries", newEntries);
+
+        for (JsonElement entry : oldEntries.getAsJsonArray()) {
+            if (!entry.isJsonObject()) {
+                continue;
             }
 
             newEntries.add(entry);

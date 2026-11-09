@@ -91,6 +91,15 @@ public class ScriptExecutionManager {
         future.whenComplete((result, throwable) -> removeAnonymous(future));
     }
 
+    public void move(ScriptRef oldRef, ScriptRef newRef) {
+        synchronized (this) {
+            CompletableFuture<?> future = namedExecutions.remove(oldRef);
+            if (future != null) {
+                namedExecutions.put(newRef, future);
+            }
+        }
+    }
+
     public void cancel(ScriptRef ref) {
         Objects.requireNonNull(ref);
 

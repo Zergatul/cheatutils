@@ -27,10 +27,10 @@ public class Modules {
         //===========================
 
         register(FakeRotation.instance);
-        register(BlockEventsProcessor.instance);
+        register(BlockEventsProcessor.INSTANCE);
         register(NetworkPacketsController.instance);
         register(SpeedCounterController.instance);
-        register(BlockFinder.instance);
+        register(BlockFinder.INSTANCE);
         register(PreRenderGuiExecutor.instance);
 
         register(AutoTotem.INSTANCE);
@@ -41,7 +41,7 @@ public class Modules {
         register(ParkourAssist.INSTANCE);
 
         register(AutoCraft.INSTANCE);
-        register(BlockEsp.instance);
+        register(BlockEsp.INSTANCE);
         register(ProjectilePath.INSTANCE);
         register(EndCityChunks.INSTANCE);
         register(AutoBucket.INSTANCE);

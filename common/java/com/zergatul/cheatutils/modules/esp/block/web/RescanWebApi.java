@@ -12,7 +12,7 @@ public class RescanWebApi extends WebApiBase {
 
     @Override
     public String post(String body) {
-        BlockFinder.instance.rescan();
+        BlockFinder.INSTANCE.rescan();
         return "{}";
     }
 }

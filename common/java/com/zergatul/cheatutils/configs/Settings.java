@@ -123,6 +123,11 @@ public final class Settings {
                 (config, value) -> config.blockEntityDistance = value);
 
         registrar.register(
+                BlockEspConfig.class,
+                config -> config.blockEspConfig,
+                (config, value) -> config.blockEspConfig = value);
+
+        registrar.register(
                 BoatHackConfig.class,
                 config -> config.boatHackConfig,
                 (config, value) -> config.boatHackConfig = value);

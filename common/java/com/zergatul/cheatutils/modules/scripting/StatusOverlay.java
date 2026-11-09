@@ -128,7 +128,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
             return;
         }
 
-        StatusOverlayConfig config = ConfigStore.instance.getConfig().statusOverlayConfig;
+        StatusOverlayConfig config = settings.get();
         ScriptActivation<Runnable> script = this.script;
         if (!config.enabled() || script == null || !script.isActive()) {
             return;

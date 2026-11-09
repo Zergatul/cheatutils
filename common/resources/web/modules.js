@@ -152,7 +152,7 @@ module({
 module({
     group: 'esp',
     name: 'Block ESP',
-    component: 'BlockESP',
+    component: 'BlockEsp',
     path: 'block-esp',
     tags: ['blocks', 'esp', 'xray']
 });

@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.controllers.chunks;
 
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
-import com.zergatul.cheatutils.configs.BlockEspConfig;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -15,14 +15,14 @@ public class ChunkScanTaskGroup {
     public final ChunkPos pos;
 
     public boolean scanAllConfigs;
-    public @Nullable List<BlockEspConfig> queuedConfigs;
+    public @Nullable List<Block> queuedBlocksForScan;
     public @Nullable List<BlockUpdateEvent> queuedBlockUpdates;
     public boolean cancelled;
 
     public ChunkScanTaskGroup(ChunkPos pos) {
         this.pos = pos;
         this.scanAllConfigs = false;
-        this.queuedConfigs = null;
+        this.queuedBlocksForScan = null;
         this.queuedBlockUpdates = null;
     }
 
@@ -36,22 +36,25 @@ public class ChunkScanTaskGroup {
         // discard scanning separate configs, scan all will scan all blocks at once
         // discard block updates, since new scan will receive snapshot copy of the chunk with all updates already processed
         this.scanAllConfigs = true;
-        this.queuedConfigs = null;
+        this.queuedBlocksForScan = null;
         this.queuedBlockUpdates = null;
     }
 
-    public void markForScan(BlockEspConfig config) {
+    public void markForScan(List<Block> blocks) {
         if (this.scanAllConfigs) {
             // scanning all configs requested, no need to scan individual
             return;
         }
 
-        if (this.queuedConfigs == null) {
-            this.queuedConfigs = new ArrayList<>(2);
+        if (this.queuedBlocksForScan == null) {
+            this.queuedBlocksForScan = new ArrayList<>(4);
         }
-        // it should be very hard to queue the same config twice, but just in case we will not allow this
-        if (!this.queuedConfigs.contains(config)) {
-            this.queuedConfigs.add(config);
+
+        for (Block block : blocks) {
+            // it should be very hard to queue the same config twice, but just in case we will not allow this
+            if (!this.queuedBlocksForScan.contains(block)) {
+                this.queuedBlocksForScan.add(block);
+            }
         }
     }
 

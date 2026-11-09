@@ -91,7 +91,7 @@ public class LightLevel implements Module {
         ClientTickEndExecutor.instance.execute(() -> {
             if (prev.enabled() != curr.enabled()) {
                 if (curr.enabled()) {
-                    AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
+                    AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.INSTANCE.getRawChunks();
                     for (int i = 0; i < chunks.length(); i++) {
                         LevelChunk chunk = chunks.get(i);
                         if (chunk != null) {

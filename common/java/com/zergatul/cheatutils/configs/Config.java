@@ -1,13 +1,14 @@
 package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.configs.modules.*;
+import com.zergatul.cheatutils.configs.modules.BlockEspConfig;
 
 public class Config implements Sanitizable {
 
     public FullBrightConfig fullBrightConfig = FullBrightConfig.defaults();
     public AutoFishConfig autoFishConfig = AutoFishConfig.defaults();
     public ArmorOverlayConfig armorOverlayConfig = ArmorOverlayConfig.defaults();
-    public BlocksConfig blocks = new BlocksConfig();
+    public BlockEspConfig blockEspConfig = BlockEspConfig.defaults();
     public EntityEspConfig entityEspConfig = EntityEspConfig.defaults();
     public LightLevelConfig lightLevelConfig = LightLevelConfig.defaults();
     public KillAuraConfig killAuraConfig = KillAuraConfig.defaults();
@@ -85,7 +86,6 @@ public class Config implements Sanitizable {
 
     @Override
     public void sanitize() {
-        blocks.sanitize();
         keyBindingsConfig.sanitize();
     }
 }

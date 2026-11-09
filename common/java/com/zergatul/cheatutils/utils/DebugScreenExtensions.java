@@ -29,7 +29,7 @@ public class DebugScreenExtensions {
 
         @Override
         public void display(DebugScreenDisplayer displayer, @Nullable Level level, @Nullable LevelChunk chunk1, @Nullable LevelChunk chunk2) {
-            ProfilerSingleThreadExecutor executor = BlockEventsProcessor.instance.getExecutor();
+            ProfilerSingleThreadExecutor executor = BlockEventsProcessor.INSTANCE.getExecutor();
 
             List<String> list = new ArrayList<>();
             list.add(String.format("CheatUtils BlockEvents thread: queue size=%s; successful=%d; failed=%d; rejected=%d; busy=%s;",

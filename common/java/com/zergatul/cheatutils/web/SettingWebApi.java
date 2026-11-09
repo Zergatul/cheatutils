@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.web;
 
-import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.SettingHandle2;
 import com.zergatul.cheatutils.configs.ImmutableConfig;
 
@@ -13,10 +12,6 @@ public class SettingWebApi<T> extends WebApiBase {
     private final Supplier<T> getter;
     private final Consumer<T> setter;
     private final Class<T> type;
-
-    public SettingWebApi(String route, SettingHandle<T> handle, Class<T> type) {
-        this(route, handle::get, handle::set, type);
-    }
 
     public static <T extends ImmutableConfig> SettingWebApi<T> immutable(String route, SettingHandle2<T> handle, Class<T> type) {
         return new SettingWebApi<>(route, handle::get, handle::set, type);

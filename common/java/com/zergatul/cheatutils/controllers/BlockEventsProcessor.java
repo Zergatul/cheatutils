@@ -4,7 +4,6 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.concurrent.MainLoopEndExecutor;
 import com.zergatul.cheatutils.concurrent.ProfilerSingleThreadExecutor;
-import com.zergatul.cheatutils.configs.BlockEspConfig;
 import com.zergatul.cheatutils.controllers.chunks.ChunkScanTaskGroup;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientChunkCacheAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientChunkCacheStorageAccessor;
@@ -12,6 +11,7 @@ import com.zergatul.cheatutils.modules.esp.block.BlockFinder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.util.*;
@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 public class BlockEventsProcessor {
 
-    public static final BlockEventsProcessor instance = new BlockEventsProcessor();
+    public static final BlockEventsProcessor INSTANCE = new BlockEventsProcessor();
 
     private static final AtomicReferenceArray<LevelChunk> EMPTY = new AtomicReferenceArray<>(0);
     private static final long CHUNK_COPY_BUDGET_NANOS = TimeUnit.MILLISECONDS.toNanos(1);
@@ -80,13 +80,13 @@ public class BlockEventsProcessor {
     }
 
     // any thread
-    public void requestScan(BlockEspConfig config) {
+    public void requestScan(List<Block> blocks) {
         MainLoopEndExecutor.instance.execute(() -> {
             ChunkPos[] positions = getLoadedChunksPosition();
             executor.execute(() -> {
                 for (ChunkPos pos : positions) {
                     ChunkScanTaskGroup group = getOrCreateChunkTaskGroup(pos);
-                    group.markForScan(config);
+                    group.markForScan(blocks);
                 }
             });
         });
@@ -139,7 +139,7 @@ public class BlockEventsProcessor {
 
         // this will remove any stale blocks that may end up here due to race condition
         // when Snapshot chunk gets created and sent to executor right before level unload occurs
-        executor.execute(BlockFinder.instance::clearPositions);
+        executor.execute(BlockFinder.INSTANCE::clearPositions);
 
         for (ChunkPos pos : capturedChunks.keySet()) {
             executor.execute(() -> Events.ChunkUnloaded.trigger(pos));
@@ -236,10 +236,8 @@ public class BlockEventsProcessor {
         if (group.scanAllConfigs) {
             Events.ChunkLoaded.trigger(chunk);
         }
-        if (group.queuedConfigs != null) {
-            for (BlockEspConfig config : group.queuedConfigs) {
-                BlockFinder.instance.scanChunkForBlock(chunk, config);
-            }
+        if (group.queuedBlocksForScan != null) {
+            BlockFinder.INSTANCE.scanChunkForBlocks(chunk, group.queuedBlocksForScan);
         }
         if (group.queuedBlockUpdates != null) {
             group.queuedBlockUpdates.forEach(Events.BlockUpdated::trigger);

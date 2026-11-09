@@ -48,7 +48,7 @@ public class EndCityChunks {
 
         Vec3 cameraPos = event.getCameraPos();
 
-        AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
+        AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.INSTANCE.getRawChunks();
         for (int i = 0; i < chunks.length(); i++) {
             LevelChunk chunk = chunks.get(i);
             if (chunk == null) {

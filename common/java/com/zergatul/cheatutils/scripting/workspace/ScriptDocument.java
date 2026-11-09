@@ -19,4 +19,13 @@ public class ScriptDocument {
     public ScriptDocument(ScriptRef ref) {
         this.ref = ref;
     }
+
+    public ScriptDocument withRef(ScriptRef ref) {
+        ScriptDocument newDocument = new ScriptDocument(ref);
+        newDocument.code = code;
+        newDocument.lastAttemptCode = lastAttemptCode;
+        newDocument.lastAttemptDiagnostics = lastAttemptDiagnostics;
+        newDocument.lastAttemptAt = lastAttemptAt;
+        return newDocument;
+    }
 }

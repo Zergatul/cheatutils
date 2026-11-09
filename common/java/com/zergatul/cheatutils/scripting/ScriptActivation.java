@@ -24,8 +24,8 @@ public final class ScriptActivation<T> {
 
     public final T program;
     private final ScriptRef ref;
-    private final AtomicBoolean failed = new AtomicBoolean();
-    private final AtomicReference<CompletableFuture<?>> execution = new AtomicReference<>();
+    private final AtomicBoolean failed;
+    private final AtomicReference<CompletableFuture<?>> execution;
     private final Consumer<ScriptActivation<T>> onFailure;
     private final FailureReporter reporter;
 
@@ -38,10 +38,24 @@ public final class ScriptActivation<T> {
     }
 
     ScriptActivation(ScriptRef ref, T program, Consumer<ScriptActivation<T>> onFailure, FailureReporter reporter) {
+        this(ref, program, new AtomicBoolean(), new AtomicReference<>(), onFailure, reporter);
+    }
+
+    private ScriptActivation(
+            ScriptRef ref,
+            T program,
+            AtomicBoolean failed,
+            AtomicReference<CompletableFuture<?>> execution,
+            Consumer<ScriptActivation<T>> onFailure,
+            FailureReporter reporter
+    ) {
         this.ref = Objects.requireNonNull(ref);
         this.program = Objects.requireNonNull(program);
+        this.failed = Objects.requireNonNull(failed);
+        this.execution = Objects.requireNonNull(execution);
         this.onFailure = Objects.requireNonNull(onFailure);
         this.reporter = Objects.requireNonNull(reporter);
+
         ClassLoader loader = program.getClass().getClassLoader();
         if (loader instanceof DynamicCompilerClassLoader) {
             owners.put(loader, new WeakReference<>(this));
@@ -114,6 +128,10 @@ public final class ScriptActivation<T> {
             future.cancel(false);
         }
         return future;
+    }
+
+    public ScriptActivation<T> withRef(ScriptRef ref) {
+        return new ScriptActivation<>(ref, program, failed, execution, onFailure, reporter);
     }
 
     private void fail(String context, @Nullable Throwable throwable) {

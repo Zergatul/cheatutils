@@ -41,9 +41,6 @@ public class ModulesStatusWebApi extends WebApiBase {
                 String key = fieldType.getSimpleName();
                 if (key.endsWith("Config")) {
                     key = key.substring(0, key.length() - 6);
-                    if (key.equals("Blocks")) {
-                        key = "BlockESP";
-                    }
                 }
 
                 map.put(key, moduleConfig.isEnabled());
