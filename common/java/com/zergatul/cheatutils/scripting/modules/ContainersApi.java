@@ -143,11 +143,11 @@ public class ContainersApi {
             Waits for container menu screen, example open chest menu
             """)
     public CompletableFuture<Void> waitForOpen() {
-        return Containers.instance.waitForOpen();
+        return Containers.INSTANCE.waitForOpen();
     }
 
     public void close() {
-        Containers.instance.close();
+        Containers.INSTANCE.close();
     }
 
     @MethodDescription("""
@@ -155,7 +155,7 @@ public class ContainersApi {
             If there is no container menu, script will stop here
             """)
     public CompletableFuture<Void> waitForNewId() {
-        return Containers.instance.waitForNewId();
+        return Containers.INSTANCE.waitForNewId();
     }
 
     private Slot getSlot(int index) {

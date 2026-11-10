@@ -15,7 +15,7 @@ public abstract class MixinSodiumWorldRenderer {
             argsOnly = true,
             ordinal = 0)
     private boolean onOverrideUseOcclusionCulling(boolean useOcclusionCulling) {
-        if (FreeCam.instance.isActive()) {
+        if (FreeCam.INSTANCE.isActive()) {
             return false;
         } else {
             return useOcclusionCulling;

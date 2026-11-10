@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.esp.entity.web;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
 import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
@@ -27,7 +27,7 @@ public class ConfigMoveWebApi extends WebApiBase {
             return gson.toJson(new Response(false, "Invalid direction"));
         }
 
-        SettingHandle2<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
+        SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
         ImmutableList<EntityEspEntry> entries = handle.get().entries();
         int index = entries.indexOf(c -> c.type() == request.type);
         if (index < 0) {

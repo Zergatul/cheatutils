@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AdvancedTooltipsConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -22,7 +22,7 @@ public class AdvancedTooltips implements Module {
 
     public static final AdvancedTooltips INSTANCE = new AdvancedTooltips();
 
-    private final SettingHandle2<AdvancedTooltipsConfig> settings = Settings.get(AdvancedTooltipsConfig.class);
+    private final SettingHandle<AdvancedTooltipsConfig> settings = Settings.get(AdvancedTooltipsConfig.class);
 
     private AdvancedTooltips() {
         Events.GatherTooltipComponents.add(this::onGatherTooltipComponents);
@@ -30,7 +30,7 @@ public class AdvancedTooltips implements Module {
         WebApiRegistry.INSTANCE.register("advanced-tooltips", settings, AdvancedTooltipsConfig.class);
     }
 
-    public SettingHandle2<AdvancedTooltipsConfig> getSettings() {
+    public SettingHandle<AdvancedTooltipsConfig> getSettings() {
         return settings;
     }
 

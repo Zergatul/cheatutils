@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class FontLibrary {
 
-    public static final FontLibrary instance = new FontLibrary();
+    public static final FontLibrary INSTANCE = new FontLibrary();
 
     private final Logger logger = LogManager.getLogger(FontLibrary.class);
     private final Map<FontKey, FontEntry> fonts = new HashMap<>();
@@ -49,7 +49,7 @@ public class FontLibrary {
                 fonts.put(key, entry);
                 fontFutures.remove(key);
                 return entry;
-            }, ClientTickEndExecutor.instance);
+            }, ClientTickEndExecutor.INSTANCE);
             fontFutures.put(key, fontFuture);
         }
 
@@ -59,7 +59,7 @@ public class FontLibrary {
             logger.info("Created font backend asynchronously: {}", parameters);
             backends.put(parameters, new FontBackendEntry(renderer, entry));
             future.complete(renderer);
-        }, ClientTickEndExecutor.instance);
+        }, ClientTickEndExecutor.INSTANCE);
 
         return future;
     }

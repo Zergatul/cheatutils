@@ -33,6 +33,6 @@ public abstract class MixinClientHandshakePacketListenerImpl {
             TransferState state,
             CallbackInfo info
     ) {
-        NetworkPacketsController.instance.onConnect(connection);
+        NetworkPacketsController.INSTANCE.onConnect(connection);
     }
 }

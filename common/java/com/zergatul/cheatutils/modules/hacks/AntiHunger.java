@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AntiHungerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -14,15 +14,15 @@ public class AntiHunger implements Module {
 
     public static final AntiHunger INSTANCE = new AntiHunger();
 
-    private final SettingHandle2<AntiHungerConfig> settings = Settings.get(AntiHungerConfig.class);
+    private final SettingHandle<AntiHungerConfig> settings = Settings.get(AntiHungerConfig.class);
 
     private AntiHunger() {
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+        NetworkPacketsController.INSTANCE.addClientPacketHandler(this::onClientPacket);
 
         WebApiRegistry.INSTANCE.register("anti-hunger", settings, AntiHungerConfig.class);
     }
 
-    public SettingHandle2<AntiHungerConfig> getSettings() {
+    public SettingHandle<AntiHungerConfig> getSettings() {
         return settings;
     }
 

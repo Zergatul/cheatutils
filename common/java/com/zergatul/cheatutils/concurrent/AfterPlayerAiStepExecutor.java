@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class AfterPlayerAiStepExecutor extends EventExecutor {
 
-    public static final AfterPlayerAiStepExecutor instance = new AfterPlayerAiStepExecutor();
+    public static final AfterPlayerAiStepExecutor INSTANCE = new AfterPlayerAiStepExecutor();
 
     private boolean insideEvent;
 

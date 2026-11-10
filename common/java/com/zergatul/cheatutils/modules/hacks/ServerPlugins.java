@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ServerPluginsConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -23,7 +23,7 @@ public class ServerPlugins implements Module {
 
     public static final ServerPlugins INSTANCE = new ServerPlugins();
 
-    private final SettingHandle2<ServerPluginsConfig> settings = Settings.get(ServerPluginsConfig.class);
+    private final SettingHandle<ServerPluginsConfig> settings = Settings.get(ServerPluginsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     //private final String completion = "/:abcdefghijklmnopqrstuvwxyz0123456789-";
     private long logInNano;
@@ -41,14 +41,14 @@ public class ServerPlugins implements Module {
     private ServerPlugins() {
         Events.ClientPlayerLoggingIn.add(this::onLogIn);
         Events.ClientPlayerLoggingOut.add(this::onLogOut);
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        NetworkPacketsController.INSTANCE.addServerPacketHandler(this::onServerPacket);
 
         WebApiRegistry.INSTANCE.register("server-plugins", settings, ServerPluginsConfig.class);
 
         reset();
     }
 
-    public SettingHandle2<ServerPluginsConfig> getSettings() {
+    public SettingHandle<ServerPluginsConfig> getSettings() {
         return settings;
     }
 
@@ -98,7 +98,7 @@ public class ServerPlugins implements Module {
 
         state = State.SENT_PACKET;
         suggestionId = random.nextInt(1000000000);
-        NetworkPacketsController.instance.sendPacket(new ServerboundCommandSuggestionPacket(suggestionId, "/"));
+        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundCommandSuggestionPacket(suggestionId, "/"));
     }
 
     private void scanBukkitPlugins() {
@@ -121,7 +121,7 @@ public class ServerPlugins implements Module {
 
         bukkitState = State.SENT_PACKET;
         bukkitSuggestionId = random.nextInt(1000000000);
-        NetworkPacketsController.instance.sendPacket(new ServerboundCommandSuggestionPacket(bukkitSuggestionId, "bukkit:ver "));
+        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundCommandSuggestionPacket(bukkitSuggestionId, "bukkit:ver "));
     }
 
     private void onLogIn(Connection connection) {

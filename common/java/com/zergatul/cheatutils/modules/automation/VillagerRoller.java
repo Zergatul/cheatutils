@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.VillagerRollerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -45,7 +45,7 @@ public class VillagerRoller implements Module {
 
     public static final VillagerRoller INSTANCE = new VillagerRoller();
 
-    private final SettingHandle2<VillagerRollerConfig> settings = Settings.get(VillagerRollerConfig.class);
+    private final SettingHandle<VillagerRollerConfig> settings = Settings.get(VillagerRollerConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean active;
     private State state = State.STOPPED;
@@ -73,14 +73,14 @@ public class VillagerRoller implements Module {
         Events.RawBlockUpdated.add(this::onBlockChanged);
         Events.EntityInteract.add(this::onEntityInteract);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        NetworkPacketsController.INSTANCE.addServerPacketHandler(this::onServerPacket);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new StatusWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
-    public SettingHandle2<VillagerRollerConfig> getSettings() {
+    public SettingHandle<VillagerRollerConfig> getSettings() {
         return settings;
     }
 
@@ -410,7 +410,7 @@ public class VillagerRoller implements Module {
         if (args.packet instanceof ClientboundMerchantOffersPacket packet) {
             args.skip = true;
             offers = packet.getOffers();
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(packet.getContainerId()));
+            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClosePacket(packet.getContainerId()));
         }
     }
 

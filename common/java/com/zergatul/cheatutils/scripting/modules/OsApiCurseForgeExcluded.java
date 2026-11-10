@@ -18,7 +18,7 @@ class OsApiCurseForgeExcluded {
             return CompletableFuture.failedFuture(e);
         }
 
-        return process.onExit().thenApplyAsync(Process::exitValue, ClientTickEndExecutor.instance);
+        return process.onExit().thenApplyAsync(Process::exitValue, ClientTickEndExecutor.INSTANCE);
     }
 
     public static CompletableFuture<Integer> execute(String path, String[] arguments) {
@@ -33,6 +33,6 @@ class OsApiCurseForgeExcluded {
             return CompletableFuture.failedFuture(e);
         }
 
-        return process.onExit().thenApplyAsync(Process::exitValue, ClientTickEndExecutor.instance);
+        return process.onExit().thenApplyAsync(Process::exitValue, ClientTickEndExecutor.INSTANCE);
     }
 }

@@ -16,7 +16,6 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
 import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
 import net.minecraft.world.level.block.state.BlockState;
@@ -30,11 +29,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class ConfigStore {
 
-    public static final ConfigStore instance = new ConfigStore();
+    public static final ConfigStore INSTANCE = new ConfigStore();
 
     private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
 
@@ -53,13 +51,13 @@ public class ConfigStore {
             .create();
 
     private final Logger logger = LogManager.getLogger(ConfigStore.class);
-    private final SettingsRegistry2<Config> settingsRegistry;
+    private final SettingsRegistry<Config> settingsRegistry;
     private final Settings settings;
     private File currentFile;
 
     private ConfigStore() {
         Config config = new Config();
-        settingsRegistry = new SettingsRegistry2<>(this, config, this::requestWrite);
+        settingsRegistry = new SettingsRegistry<>(this, config, this::requestWrite);
         settings = new Settings(settingsRegistry);
     }
 
@@ -98,7 +96,7 @@ public class ConfigStore {
             }
         }
 
-        ScriptExecutionManager.instance.cancelAll();
+        ScriptExecutionManager.INSTANCE.cancelAll();
         currentFile = file;
         setConfig(newConfig);
         onConfigLoaded();
@@ -110,7 +108,7 @@ public class ConfigStore {
     }
 
     public synchronized void createNew(File file) {
-        ScriptExecutionManager.instance.cancelAll();
+        ScriptExecutionManager.INSTANCE.cancelAll();
         currentFile = file;
         setConfig(new Config());
         onConfigLoaded();
@@ -118,7 +116,7 @@ public class ConfigStore {
     }
 
     public void requestWrite() {
-        ConfigWriterQueue.instance.queue(this.currentFile, WRITE_FILE_DELAY, getWriteToFileTask());
+        ConfigWriterQueue.INSTANCE.queue(this.currentFile, WRITE_FILE_DELAY, getWriteToFileTask());
     }
 
     public Runnable getWriteToFileTask() {
@@ -136,17 +134,6 @@ public class ConfigStore {
         };
     }
 
-    public static <T> void updateFromApi(Function<Config, T> extract, Consumer<T> update) {
-        ConfigStore store = instance;
-        Config config = store.getConfig();
-        T moduleConfig = extract.apply(config);
-        update.accept(moduleConfig);
-        if (moduleConfig instanceof Sanitizable sanitizable) {
-            sanitizable.sanitize();
-        }
-        store.requestWrite();
-    }
-
     // Prepare the profile before publishing it and notifying immutable settings listeners.
     private void setConfig(Config config) {
         config.sanitize();
@@ -156,39 +143,39 @@ public class ConfigStore {
     private void onConfigLoaded() {
         Config config = getConfig();
 
-        KeyBindings.instance.clear();
+        KeyBindings.INSTANCE.clear();
         if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
             final String toggleEspName = "Toggle ESP";
             try {
-                KeyBindings.instance.add(toggleEspName, "esp.toggle();", false).accept(
+                KeyBindings.INSTANCE.add(toggleEspName, "esp.toggle();", false).accept(
                         _ -> {
                             throw new IllegalStateException();
                         },
                         diagnostics -> {
-                            ScriptRuntimeFailureHandler.instance.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, toggleEspName), diagnostics);
+                            ScriptRuntimeFailureHandler.INSTANCE.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, toggleEspName), diagnostics);
                         },
                         _ -> {});
                 //KeyBindings.instance.getKeyMappingByIndex(0).setKey(InputConstants.getKey("key.keyboard.backslash"));
-                KeyBindings.instance.assign(0, toggleEspName);
+                KeyBindings.INSTANCE.assign(0, toggleEspName);
             } catch (Throwable e) {
-                ScriptRuntimeFailureHandler.instance.reportInitializationFailure(
+                ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(
                         new ScriptRef(ScriptType.KEYBINDING, toggleEspName), e);
             }
 
             final String toggleFreeCamName = "Toggle FreeCam";
             try {
-                KeyBindings.instance.add(toggleFreeCamName, "freeCam.toggle();", false).accept(
+                KeyBindings.INSTANCE.add(toggleFreeCamName, "freeCam.toggle();", false).accept(
                         _ -> {
                             throw new IllegalStateException();
                         },
                         diagnostics -> {
-                            ScriptRuntimeFailureHandler.instance.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), diagnostics);
+                            ScriptRuntimeFailureHandler.INSTANCE.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), diagnostics);
                         },
                         _ -> {});
-                KeyBindings.instance.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
-                KeyBindings.instance.assign(1, toggleFreeCamName);
+                KeyBindings.INSTANCE.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
+                KeyBindings.INSTANCE.assign(1, toggleFreeCamName);
             } catch (Throwable e) {
-                ScriptRuntimeFailureHandler.instance.reportInitializationFailure(
+                ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(
                         new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), e);
             }
         } else {
@@ -196,16 +183,16 @@ public class ConfigStore {
             config.keyBindingScriptsConfig.scripts.clear();
             copy.forEach(s -> {
                 try {
-                    KeyBindings.instance.add(s.name, s.code, true).accept(
+                    KeyBindings.INSTANCE.add(s.name, s.code, true).accept(
                             _ -> {
                                 throw new IllegalStateException();
                             },
                             diagnostics -> {
-                                ScriptRuntimeFailureHandler.instance.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, s.name), diagnostics);
+                                ScriptRuntimeFailureHandler.INSTANCE.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, s.name), diagnostics);
                             },
                             _ -> {});
                 } catch (Throwable e) {
-                    ScriptRuntimeFailureHandler.instance.reportInitializationFailure(
+                    ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(
                             new ScriptRef(ScriptType.KEYBINDING, s.name), e);
                 }
             });
@@ -213,7 +200,7 @@ public class ConfigStore {
             String[] bindings = config.keyBindingsConfig.bindings;
             for (int i = 0; i < KeyBindingsConfig.KeysCount; i++) {
                 if (bindings[i] != null) {
-                    KeyBindings.instance.assign(i, bindings[i]);
+                    KeyBindings.INSTANCE.assign(i, bindings[i]);
                 }
             }
         }
@@ -231,7 +218,7 @@ public class ConfigStore {
                         String identifier = new BlockGroupKey(entry.blocks()).toString();
                         initializeScript(ScriptType.BLOCK_ESP, identifier, entry.code());
                     } catch (Throwable e) {
-                        ScriptRuntimeFailureHandler.instance.reportInitializationFailure(new ScriptRef(ScriptType.BLOCK_ESP), e);
+                        ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(new ScriptRef(ScriptType.BLOCK_ESP), e);
                     }
                 }
             }
@@ -244,7 +231,7 @@ public class ConfigStore {
                     try {
                         initializeScript(ScriptType.ENTITY_ESP, entry.type().getName(), entry.code());
                     } catch (Throwable e) {
-                        ScriptRuntimeFailureHandler.instance.reportInitializationFailure(new ScriptRef(ScriptType.ENTITY_ESP), e);
+                        ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(new ScriptRef(ScriptType.ENTITY_ESP), e);
                     }
                 }
             }
@@ -256,10 +243,10 @@ public class ConfigStore {
         try {
             ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(type).init(identifier, code);
             if (!result.isSuccess()) {
-                ScriptRuntimeFailureHandler.instance.reportCompilationFailure(ref, result.getDiagnostics());
+                ScriptRuntimeFailureHandler.INSTANCE.reportCompilationFailure(ref, result.getDiagnostics());
             }
         } catch (Throwable e) {
-            ScriptRuntimeFailureHandler.instance.reportInitializationFailure(ref, e);
+            ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(ref, e);
         }
     }
 

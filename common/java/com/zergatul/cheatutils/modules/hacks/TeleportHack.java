@@ -26,7 +26,7 @@ import java.util.Optional;
 
 public class TeleportHack {
 
-    public static final TeleportHack instance = new TeleportHack();
+    public static final TeleportHack INSTANCE = new TeleportHack();
 
     private final Minecraft mc = Minecraft.getInstance();
 
@@ -169,11 +169,11 @@ public class TeleportHack {
         assert mc.player != null;
 
         for (int i = 0; i < packets - 1; i++) {
-            NetworkPacketsController.instance.sendPacket(
+            NetworkPacketsController.INSTANCE.sendPacket(
                     new ServerboundMovePlayerPacket.StatusOnly(mc.player.onGround(), mc.player.horizontalCollision));
         }
 
-        NetworkPacketsController.instance.sendPacket(
+        NetworkPacketsController.INSTANCE.sendPacket(
                 new ServerboundMovePlayerPacket.Pos(
                         target.x, target.y, target.z,
                         willBeOnGround(target),
@@ -186,8 +186,8 @@ public class TeleportHack {
         assert mc.level != null;
         assert mc.player != null;
 
-        Vec3 origin = FreeCam.instance.isActive() ? FreeCam.instance.getPosition() : mc.player.getEyePosition();
-        Vec3 direction = FreeCam.instance.isActive() ? FreeCam.instance.getViewVector() : mc.player.getViewVector(1f);
+        Vec3 origin = FreeCam.INSTANCE.isActive() ? FreeCam.INSTANCE.getPosition() : mc.player.getEyePosition();
+        Vec3 direction = FreeCam.INSTANCE.isActive() ? FreeCam.INSTANCE.getViewVector() : mc.player.getViewVector(1f);
         Vec3 destination = origin.add(direction.x * distance, direction.y * distance, direction.z * distance);
         ClipContext context = new ClipContext(origin, destination, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, mc.player);
         return BlockGetter.traverseBlocks(origin, destination, context, (ctx, pos) -> {

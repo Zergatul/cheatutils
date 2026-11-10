@@ -15,8 +15,8 @@ public abstract class MixinChunkBorderRenderer {
             method = "emitGizmos",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/core/SectionPos;of(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/core/SectionPos;"))
     private SectionPos func(SectionPos original) {
-        if (FreeCam.instance.isActive()) {
-            return SectionPos.of(new Vec3(FreeCam.instance.getX(), FreeCam.instance.getY(), FreeCam.instance.getZ()));
+        if (FreeCam.INSTANCE.isActive()) {
+            return SectionPos.of(new Vec3(FreeCam.INSTANCE.getX(), FreeCam.INSTANCE.getY(), FreeCam.INSTANCE.getZ()));
         } else {
             return original;
         }

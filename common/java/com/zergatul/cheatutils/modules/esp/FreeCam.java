@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.modules.esp;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.common.events.SimpleCancellableEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -32,9 +32,9 @@ import java.util.concurrent.TimeUnit;
 
 public class FreeCam implements Module {
 
-    public static final FreeCam instance = new FreeCam();
+    public static final FreeCam INSTANCE = new FreeCam();
 
-    private final SettingHandle2<FreeCamConfig> settings = Settings.get(FreeCamConfig.class);
+    private final SettingHandle<FreeCamConfig> settings = Settings.get(FreeCamConfig.class);
     private final static int REMEMBER_STATE_DELAY_MS = 400;
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -78,7 +78,7 @@ public class FreeCam implements Module {
         WebApiRegistry.INSTANCE.register(new PathWebApi());
     }
 
-    public SettingHandle2<FreeCamConfig> getSettings() {
+    public SettingHandle<FreeCamConfig> getSettings() {
         return settings;
     }
 
@@ -541,7 +541,7 @@ public class FreeCam implements Module {
 
         @Override
         public String get() {
-            return gson.toJson(FreeCam.instance.path.get());
+            return gson.toJson(FreeCam.INSTANCE.path.get());
         }
 
         @Override

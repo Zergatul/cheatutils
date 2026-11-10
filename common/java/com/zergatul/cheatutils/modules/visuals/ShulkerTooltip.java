@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ScreenRenderEvent;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ShulkerTooltipConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -36,7 +36,7 @@ public class ShulkerTooltip implements Module {
     private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_back");
     private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_front");
 
-    private final SettingHandle2<ShulkerTooltipConfig> settings = Settings.get(ShulkerTooltipConfig.class);
+    private final SettingHandle<ShulkerTooltipConfig> settings = Settings.get(ShulkerTooltipConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean locked = false;
     private boolean allowTooltip = false;
@@ -56,7 +56,7 @@ public class ShulkerTooltip implements Module {
         WebApiRegistry.INSTANCE.register("shulker-tooltip", settings, ShulkerTooltipConfig.class);
     }
 
-    public SettingHandle2<ShulkerTooltipConfig> getSettings() {
+    public SettingHandle<ShulkerTooltipConfig> getSettings() {
         return settings;
     }
 

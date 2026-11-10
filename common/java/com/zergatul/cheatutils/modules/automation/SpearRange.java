@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.SpearRangeConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -19,7 +19,7 @@ public class SpearRange implements Module {
 
     public static final SpearRange INSTANCE = new SpearRange();
 
-    private final SettingHandle2<SpearRangeConfig> settings = Settings.get(SpearRangeConfig.class);
+    private final SettingHandle<SpearRangeConfig> settings = Settings.get(SpearRangeConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private int prevSelectedSlot = -1;
 
@@ -30,7 +30,7 @@ public class SpearRange implements Module {
         WebApiRegistry.INSTANCE.register("spear-range", settings, SpearRangeConfig.class);
     }
 
-    public SettingHandle2<SpearRangeConfig> getSettings() {
+    public SettingHandle<SpearRangeConfig> getSettings() {
         return settings;
     }
 

@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class AfterSendPlayerPosExecutor extends EventExecutor {
 
-    public static final AfterSendPlayerPosExecutor instance = new AfterSendPlayerPosExecutor();
+    public static final AfterSendPlayerPosExecutor INSTANCE = new AfterSendPlayerPosExecutor();
 
     private boolean insideEvent;
 

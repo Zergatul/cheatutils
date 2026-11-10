@@ -10,15 +10,15 @@ import java.util.List;
 
 public class FakeLag implements Module {
 
-    public static final FakeLag instance = new FakeLag();
+    public static final FakeLag INSTANCE = new FakeLag();
 
     private volatile boolean enabled;
     private final List<Packet<?>> clientPackets = Collections.synchronizedList(new ArrayList<>());
     private final List<Packet<?>> serverPackets = Collections.synchronizedList(new ArrayList<>());
 
     private FakeLag() {
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        NetworkPacketsController.INSTANCE.addClientPacketHandler(this::onClientPacket);
+        NetworkPacketsController.INSTANCE.addServerPacketHandler(this::onServerPacket);
     }
 
     public boolean isEnabled() {
@@ -28,8 +28,8 @@ public class FakeLag implements Module {
     public void toggle() {
         if (enabled) {
             enabled = false;
-            clientPackets.forEach(NetworkPacketsController.instance::sendPacket);
-            serverPackets.forEach(NetworkPacketsController.instance::receivePacket);
+            clientPackets.forEach(NetworkPacketsController.INSTANCE::sendPacket);
+            serverPackets.forEach(NetworkPacketsController.INSTANCE::receivePacket);
         } else {
             enabled = true;
         }

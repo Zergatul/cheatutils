@@ -8,7 +8,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class FakeRotation {
 
-    public static final FakeRotation instance = new FakeRotation();
+    public static final FakeRotation INSTANCE = new FakeRotation();
 
     private final Minecraft mc = Minecraft.getInstance();
     private boolean fake;

@@ -19,7 +19,7 @@ public class KeyBindingScriptSlot extends MultiScriptSlot {
 
     @Override
     protected void updateConfigCode(String identifier, @Nullable String code) {
-        KeyBindingScriptsConfig config = ConfigStore.instance.getConfig().keyBindingScriptsConfig;
+        KeyBindingScriptsConfig config = ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig;
         KeyBindingScriptsConfig.ScriptEntry entry = config.scripts.stream()
                 .filter(e -> e.name.equals(identifier))
                 .findFirst()
@@ -34,6 +34,6 @@ public class KeyBindingScriptSlot extends MultiScriptSlot {
 
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
-        KeyBindings.instance.setScript(identifier, (AsyncRunnable) program);
+        KeyBindings.INSTANCE.setScript(identifier, (AsyncRunnable) program);
     }
 }

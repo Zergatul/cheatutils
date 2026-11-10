@@ -5,7 +5,7 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.LightLevelConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
@@ -43,7 +43,7 @@ public class LightLevel implements Module {
 
     public static final LightLevel INSTANCE = new LightLevel();
 
-    private final SettingHandle2<LightLevelConfig> settings = Settings.get(LightLevelConfig.class);
+    private final SettingHandle<LightLevelConfig> settings = Settings.get(LightLevelConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final Identifier texture = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/light-level.png");
     private final TextureLocation[] numbers = new TextureLocation[16];
@@ -83,12 +83,12 @@ public class LightLevel implements Module {
         }
     }
 
-    public SettingHandle2<LightLevelConfig> getSettings() {
+    public SettingHandle<LightLevelConfig> getSettings() {
         return settings;
     }
 
     private void onConfigChanged(LightLevelConfig prev, LightLevelConfig curr) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (prev.enabled() != curr.enabled()) {
                 if (curr.enabled()) {
                     AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.INSTANCE.getRawChunks();

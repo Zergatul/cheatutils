@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.modules.hacks.FlyHack;
 import com.zergatul.scripting.MethodDescription;
 
 @SuppressWarnings("unused")
-public class FlyHackApi extends SettingHandle2Api<FlyHackConfig> {
+public class FlyHackApi extends SettingHandleApi<FlyHackConfig> {
 
     public FlyHackApi() {
         super(FlyHack.INSTANCE.getSettings());

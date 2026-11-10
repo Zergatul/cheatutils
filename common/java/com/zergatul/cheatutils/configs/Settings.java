@@ -11,10 +11,10 @@ import java.util.function.Function;
 /** Typed settings catalog. Only this class knows where module values live in the root config. */
 public final class Settings {
 
-    private final Map<Class<? extends ImmutableConfig>, SettingHandle2<?>> handles;
+    private final Map<Class<? extends ImmutableConfig>, SettingHandle<?>> handles;
 
-    Settings(SettingsRegistry2<Config> registry) {
-        Map<Class<? extends ImmutableConfig>, SettingHandle2<?>> handles = new HashMap<>();
+    public Settings(SettingsRegistry<Config> registry) {
+        Map<Class<? extends ImmutableConfig>, SettingHandle<?>> handles = new HashMap<>();
         Registrar registrar = new Registrar(registry, handles);
 
         registrar.register(
@@ -400,28 +400,28 @@ public final class Settings {
         this.handles = Collections.unmodifiableMap(handles);
     }
 
-    public static <T extends ImmutableConfig> SettingHandle2<T> get(Class<T> type) {
+    public static <T extends ImmutableConfig> SettingHandle<T> get(Class<T> type) {
         // TODO: why config store own settings, and not singleton?
-        return ConfigStore.instance.getSettings().find(type);
+        return ConfigStore.INSTANCE.getSettings().find(type);
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends ImmutableConfig> SettingHandle2<T> find(Class<T> type) {
-        SettingHandle2<?> handle = handles.get(type);
+    private <T extends ImmutableConfig> SettingHandle<T> find(Class<T> type) {
+        SettingHandle<?> handle = handles.get(type);
         if (handle == null) {
             throw new IllegalArgumentException("Settings are not registered for " + type.getName());
         }
-        return (SettingHandle2<T>) handle;
+        return (SettingHandle<T>) handle;
     }
 
     private static final class Registrar {
 
-        private final SettingsRegistry2<Config> registry;
-        private final Map<Class<? extends ImmutableConfig>, SettingHandle2<?>> handles;
+        private final SettingsRegistry<Config> registry;
+        private final Map<Class<? extends ImmutableConfig>, SettingHandle<?>> handles;
 
         public Registrar(
-                SettingsRegistry2<Config> registry,
-                Map<Class<? extends ImmutableConfig>, SettingHandle2<?>> handles
+                SettingsRegistry<Config> registry,
+                Map<Class<? extends ImmutableConfig>, SettingHandle<?>> handles
         ) {
             this.registry = registry;
             this.handles = handles;
@@ -436,7 +436,7 @@ public final class Settings {
                 throw new IllegalArgumentException("Map already contains key of " + type.getName() + ".");
             }
 
-            SettingHandle2<?> handle = registry.register(getter, setter);
+            SettingHandle<?> handle = registry.register(getter, setter);
             handles.put(type, handle);
         }
     }

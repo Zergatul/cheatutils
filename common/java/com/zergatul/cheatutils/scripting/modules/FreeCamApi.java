@@ -24,11 +24,11 @@ public class FreeCamApi {
             Checks if Free Cam is active
             """)
     public boolean isEnabled() {
-        return FreeCam.instance.isActive();
+        return FreeCam.INSTANCE.isActive();
     }
 
     public Position3d getPosition() {
-        FreeCam fc = FreeCam.instance;
+        FreeCam fc = FreeCam.INSTANCE;
         if (fc.isActive()) {
             return new Position3d(fc.getX(), fc.getY(), fc.getZ());
         } else {
@@ -40,7 +40,7 @@ public class FreeCamApi {
             Returns formatted X/Y/Z coordinates of Free Cam, or empty string if Free Cam is not active
             """)
     public String getCoordinates() {
-        FreeCam fc = FreeCam.instance;
+        FreeCam fc = FreeCam.INSTANCE;
         if (fc.isActive()) {
             return String.format(Locale.ROOT, "%.3f / %.5f / %.3f", fc.getX(), fc.getY(), fc.getZ());
         } else {
@@ -52,11 +52,11 @@ public class FreeCamApi {
             Returns Free Cam formatted target block coordinates, or empty string if Free Cam is not active
             """)
     public String getTargetBlockCoordinates() {
-        if (mc.level == null || !FreeCam.instance.isActive()) {
+        if (mc.level == null || !FreeCam.INSTANCE.isActive()) {
             return "";
         }
 
-        HitResult hitResult = FreeCam.instance.getHitResult();
+        HitResult hitResult = FreeCam.INSTANCE.getHitResult();
         if (hitResult == null) {
             return "";
         }
@@ -73,11 +73,11 @@ public class FreeCamApi {
             Returns Free Cam target block name, or empty string if Free Cam is not active
             """)
     public String getTargetBlockName() {
-        if (mc.level == null || !FreeCam.instance.isActive()) {
+        if (mc.level == null || !FreeCam.INSTANCE.isActive()) {
             return "";
         }
 
-        HitResult hitResult = FreeCam.instance.getHitResult();
+        HitResult hitResult = FreeCam.INSTANCE.getHitResult();
         if (hitResult == null) {
             return "";
         }
@@ -96,7 +96,7 @@ public class FreeCamApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
-        FreeCam.instance.toggle();
+        FreeCam.INSTANCE.toggle();
     }
 
     @MethodDescription("""
@@ -104,7 +104,7 @@ public class FreeCamApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggleCameraLock() {
-        FreeCam.instance.toggleCameraLock();
+        FreeCam.INSTANCE.toggleCameraLock();
     }
 
     @MethodDescription("""
@@ -112,7 +112,7 @@ public class FreeCamApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggleEyeLock() {
-        FreeCam.instance.toggleEyeLock();
+        FreeCam.INSTANCE.toggleEyeLock();
     }
 
     @MethodDescription("""
@@ -120,7 +120,7 @@ public class FreeCamApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggleFollowCam() {
-        FreeCam.instance.toggleFollowCamera();
+        FreeCam.INSTANCE.toggleFollowCamera();
     }
 
     @MethodDescription("""
@@ -128,10 +128,10 @@ public class FreeCamApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void startPath() {
-        FreeCam.instance.startPath();
+        FreeCam.INSTANCE.startPath();
     }
 
     private FreeCamConfig getConfig() {
-        return FreeCam.instance.getSettings().get();
+        return FreeCam.INSTANCE.getSettings().get();
     }
 }

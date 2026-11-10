@@ -13,6 +13,6 @@ public abstract class MixinHudFreeCam {
             method = "extractCrosshair",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
     private static boolean onRenderCrosshairIsFirstPerson(boolean isFirstPerson) {
-        return FreeCam.instance.onRenderCrosshairIsFirstPerson(isFirstPerson);
+        return FreeCam.INSTANCE.onRenderCrosshairIsFirstPerson(isFirstPerson);
     }
 }

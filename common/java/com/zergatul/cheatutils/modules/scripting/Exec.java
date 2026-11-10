@@ -25,7 +25,7 @@ public class Exec implements Module {
 
     public static final Exec INSTANCE = new Exec();
 
-    private final SettingHandle2<ExecConfig> settings = Settings.get(ExecConfig.class);
+    private final SettingHandle<ExecConfig> settings = Settings.get(ExecConfig.class);
 
     private Exec() {
         Events.SendChat.add(this::onSendChat);
@@ -33,7 +33,7 @@ public class Exec implements Module {
         WebApiRegistry.INSTANCE.register("exec", settings, ExecConfig.class);
     }
 
-    public SettingHandle2<ExecConfig> getSettings() {
+    public SettingHandle<ExecConfig> getSettings() {
         return settings;
     }
 
@@ -59,9 +59,9 @@ public class Exec implements Module {
 
         try {
             ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(new ScriptRef(ScriptType.EXEC_CODE), result.getProgram());
-            ScriptExecutionManager.instance.execute(() -> activation.execute(activation.program));
+            ScriptExecutionManager.INSTANCE.execute(() -> activation.execute(activation.program));
         } catch (Throwable e) {
-            ScriptRuntimeFailureHandler.instance.reportSynchronous("Exec script failed.", e);
+            ScriptRuntimeFailureHandler.INSTANCE.reportSynchronous("Exec script failed.", e);
             return;
         }
 

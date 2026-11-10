@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.HitboxSizeConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -15,13 +15,13 @@ public class HitboxSize implements Module {
 
     public static final HitboxSize INSTANCE = new HitboxSize();
 
-    private final SettingHandle2<HitboxSizeConfig> settings = Settings.get(HitboxSizeConfig.class);
+    private final SettingHandle<HitboxSizeConfig> settings = Settings.get(HitboxSizeConfig.class);
 
     private HitboxSize() {
         WebApiRegistry.INSTANCE.register("hitbox-size", settings, HitboxSizeConfig.class);
     }
 
-    public SettingHandle2<HitboxSizeConfig> getSettings() {
+    public SettingHandle<HitboxSizeConfig> getSettings() {
         return settings;
     }
 

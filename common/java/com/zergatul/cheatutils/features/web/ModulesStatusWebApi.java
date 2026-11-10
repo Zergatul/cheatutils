@@ -25,7 +25,7 @@ public class ModulesStatusWebApi extends WebApiBase {
 
     @Override
     public String get() {
-        Config config = ConfigStore.instance.getConfig();
+        Config config = ConfigStore.INSTANCE.getConfig();
 
         Map<String, Boolean> map = new HashMap<>();
         for (Field field : Config.class.getDeclaredFields()) {

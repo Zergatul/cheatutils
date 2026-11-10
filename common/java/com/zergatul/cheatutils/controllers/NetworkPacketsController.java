@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 public class NetworkPacketsController {
 
-    public static final NetworkPacketsController instance = new NetworkPacketsController();
+    public static final NetworkPacketsController INSTANCE = new NetworkPacketsController();
 
     // Script crash cleanup can detach handlers while the network thread is dispatching a packet.
     private final List<Consumer<ServerPacketArgs>> serverPacketHandlers = new CopyOnWriteArrayList<>();

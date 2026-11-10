@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.EventsScriptingConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -34,7 +34,7 @@ public class EventsScripting implements Module {
 
     public static final EventsScripting INSTANCE = new EventsScripting();
 
-    private final SettingHandle2<EventsScriptingConfig> settings = Settings.get(EventsScriptingConfig.class);
+    private final SettingHandle<EventsScriptingConfig> settings = Settings.get(EventsScriptingConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private volatile ScriptActivation<Runnable> script;
     private final ConcurrentLinkedQueue<ScriptActivation<Runnable>> pendingFailures = new ConcurrentLinkedQueue<>();
@@ -155,10 +155,10 @@ public class EventsScripting implements Module {
             }
         });
 
-        NetworkPacketsController.instance.addClientPacketHandler(args -> {
+        NetworkPacketsController.INSTANCE.addClientPacketHandler(args -> {
 
         });
-        NetworkPacketsController.instance.addServerPacketHandler(args -> {
+        NetworkPacketsController.INSTANCE.addServerPacketHandler(args -> {
 
         });
 
@@ -166,12 +166,12 @@ public class EventsScripting implements Module {
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
-    public SettingHandle2<EventsScriptingConfig> getSettings() {
+    public SettingHandle<EventsScriptingConfig> getSettings() {
         return settings;
     }
 
     public void setScript(Runnable runnable) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             clearNow();
             if (runnable == null) return;
 
@@ -207,7 +207,7 @@ public class EventsScripting implements Module {
     }
 
     public void clear() {
-        ClientTickEndExecutor.instance.execute(this::clearNow);
+        ClientTickEndExecutor.INSTANCE.execute(this::clearNow);
     }
 
     private void clearNow() {
@@ -235,8 +235,8 @@ public class EventsScripting implements Module {
         onC2SPacket.clear();
         onS2CPacket.clear();
 
-        NetworkPacketsController.instance.removeClientPacketHandler(onClientPacketHandler);
-        NetworkPacketsController.instance.removeServerPacketHandler(onServerPacketHandler);
+        NetworkPacketsController.INSTANCE.removeClientPacketHandler(onClientPacketHandler);
+        NetworkPacketsController.INSTANCE.removeServerPacketHandler(onServerPacketHandler);
     }
 
     private void onScriptFailed(ScriptActivation<Runnable> activation) {
@@ -321,12 +321,12 @@ public class EventsScripting implements Module {
 
     public void addOnClientToServerPacket(PacketEventConsumer consumer) {
         onC2SPacket.add(consumer);
-        NetworkPacketsController.instance.addClientPacketHandlerIfAbsent(onClientPacketHandler);
+        NetworkPacketsController.INSTANCE.addClientPacketHandlerIfAbsent(onClientPacketHandler);
     }
 
     public void addOnServerToClientPacket(PacketEventConsumer consumer) {
         onS2CPacket.add(consumer);
-        NetworkPacketsController.instance.addServerPacketHandlerIfAbsent(onServerPacketHandler);
+        NetworkPacketsController.INSTANCE.addServerPacketHandlerIfAbsent(onServerPacketHandler);
     }
 
     public void addAimAssistTargetPredicate(AimAssist.TargetPredicate predicate) {

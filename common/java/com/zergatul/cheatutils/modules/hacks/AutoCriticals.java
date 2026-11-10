@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoCriticalsConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -17,7 +17,7 @@ public class AutoCriticals implements Module {
 
     public static final AutoCriticals INSTANCE = new AutoCriticals();
 
-    private final SettingHandle2<AutoCriticalsConfig> settings = Settings.get(AutoCriticalsConfig.class);
+    private final SettingHandle<AutoCriticalsConfig> settings = Settings.get(AutoCriticalsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoCriticals() {
@@ -26,7 +26,7 @@ public class AutoCriticals implements Module {
         WebApiRegistry.INSTANCE.register("auto-criticals", settings, AutoCriticalsConfig.class);
     }
 
-    public SettingHandle2<AutoCriticalsConfig> getSettings() {
+    public SettingHandle<AutoCriticalsConfig> getSettings() {
         return settings;
     }
 
@@ -58,15 +58,15 @@ public class AutoCriticals implements Module {
 
             Vec3 PrevPos = mc.player.position();
 
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false));
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false));
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
+            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
         }
     }
 }

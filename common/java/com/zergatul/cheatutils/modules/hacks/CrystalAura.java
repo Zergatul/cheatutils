@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.CrystalAuraConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
@@ -43,7 +43,7 @@ public class CrystalAura implements Module {
 
     public static final CrystalAura INSTANCE = new CrystalAura();
 
-    private final SettingHandle2<CrystalAuraConfig> settings = Settings.get(CrystalAuraConfig.class);
+    private final SettingHandle<CrystalAuraConfig> settings = Settings.get(CrystalAuraConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<LivingEntity> targets = new ArrayList<>();
     private final List<EndCrystal> spawnedCrystals = new ArrayList<>();
@@ -71,12 +71,12 @@ public class CrystalAura implements Module {
         WebApiRegistry.INSTANCE.register(new EntityTypesWebApi());
     }
 
-    public SettingHandle2<CrystalAuraConfig> getSettings() {
+    public SettingHandle<CrystalAuraConfig> getSettings() {
         return settings;
     }
 
     private void onConfigChanged(CrystalAuraConfig prev, CrystalAuraConfig curr) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (prev.enabled() & curr.enabled()) {
                 shouldResetState = true;
             }
@@ -342,7 +342,7 @@ public class CrystalAura implements Module {
 
         if (config.autoRotate()) {
             // look at support center for now
-            FakeRotation.instance.setServerRotation(Vec3.atCenterOf(crystalPos.below()));
+            FakeRotation.INSTANCE.setServerRotation(Vec3.atCenterOf(crystalPos.below()));
         }
 
         // TODO: proper HitResult calculation
@@ -428,7 +428,7 @@ public class CrystalAura implements Module {
 
         if (config.autoRotate()) {
             // look at bottom-center position for now
-            FakeRotation.instance.setServerRotation(bestCrystal.position());
+            FakeRotation.INSTANCE.setServerRotation(bestCrystal.position());
         }
 
         EndCrystal crystal = bestCrystal;

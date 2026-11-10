@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ParkourAssistConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -16,7 +16,7 @@ public class ParkourAssist implements Module {
 
     public static final ParkourAssist INSTANCE = new ParkourAssist();
 
-    private final SettingHandle2<ParkourAssistConfig> settings = Settings.get(ParkourAssistConfig.class);
+    private final SettingHandle<ParkourAssistConfig> settings = Settings.get(ParkourAssistConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean enabled;
 
@@ -26,7 +26,7 @@ public class ParkourAssist implements Module {
         WebApiRegistry.INSTANCE.register("parkour-assist", settings, ParkourAssistConfig.class);
     }
 
-    public SettingHandle2<ParkourAssistConfig> getSettings() {
+    public SettingHandle<ParkourAssistConfig> getSettings() {
         return settings;
     }
 

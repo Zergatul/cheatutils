@@ -17,7 +17,7 @@ import java.util.List;
 
 public class ChunkOverlayController {
 
-    public static final ChunkOverlayController instance = new ChunkOverlayController();
+    public static final ChunkOverlayController INSTANCE = new ChunkOverlayController();
 
     // store texture of 16x16 chunks
     private static final int SegmentSize = 16;

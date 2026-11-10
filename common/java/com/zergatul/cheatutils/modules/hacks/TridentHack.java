@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.TridentHackConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -10,7 +10,7 @@ public class TridentHack implements Module {
 
     public static final TridentHack INSTANCE = new TridentHack();
 
-    private final SettingHandle2<TridentHackConfig> settings = Settings.get(TridentHackConfig.class);
+    private final SettingHandle<TridentHackConfig> settings = Settings.get(TridentHackConfig.class);
 
     private TridentHack() {
         WebApiRegistry.INSTANCE.register("trident-hack", settings, TridentHackConfig.class);

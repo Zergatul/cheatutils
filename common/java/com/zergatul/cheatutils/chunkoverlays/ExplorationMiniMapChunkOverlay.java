@@ -136,7 +136,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             }
         }
 
-        PreRenderGuiExecutor.instance.execute(segment::onChange);
+        PreRenderGuiExecutor.INSTANCE.execute(segment::onChange);
     }
 
     @Override

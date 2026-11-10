@@ -205,7 +205,7 @@ public class ScriptActivationTests {
         for (String name : List.of("onTickStart", "onTickEnd")) {
             var method = InGameTickEndExecutor.class.getDeclaredMethod(name);
             method.setAccessible(true);
-            method.invoke(InGameTickEndExecutor.instance);
+            method.invoke(InGameTickEndExecutor.INSTANCE);
         }
     }
 

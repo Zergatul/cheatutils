@@ -12,7 +12,7 @@ import java.util.function.UnaryOperator;
  * A stable handle to an immutable value in the active profile.
  * Callbacks run synchronously under the store lock and must schedule thread-owned work without waiting for it.
  */
-public final class SettingHandle2<T extends ImmutableConfig> {
+public final class SettingHandle<T extends ImmutableConfig> {
 
     private final Object lock;
     private final Supplier<T> getter;
@@ -20,7 +20,7 @@ public final class SettingHandle2<T extends ImmutableConfig> {
     private final Runnable requestWrite;
     private final List<BiConsumer<T, T>> listeners = new ArrayList<>();
 
-    SettingHandle2(Object lock, Supplier<T> getter, Consumer<T> setter, Runnable requestWrite) {
+    public SettingHandle(Object lock, Supplier<T> getter, Consumer<T> setter, Runnable requestWrite) {
         this.lock = lock;
         this.getter = getter;
         this.setter = setter;
@@ -64,7 +64,7 @@ public final class SettingHandle2<T extends ImmutableConfig> {
     }
 
     // Called under the shared store lock, before publishing a replacement profile.
-    Runnable prepareNotification(T previous, T current) {
+    public Runnable prepareNotification(T previous, T current) {
         Objects.requireNonNull(current);
         if (previous.equals(current)) {
             return () -> {};

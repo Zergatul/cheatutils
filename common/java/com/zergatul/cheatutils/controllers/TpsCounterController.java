@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 
 public class TpsCounterController {
 
-    public static final TpsCounterController instance = new TpsCounterController();
+    public static final TpsCounterController INSTANCE = new TpsCounterController();
 
     private static final int SIZE = 20;
 
@@ -18,7 +18,7 @@ public class TpsCounterController {
         Events.ClientPlayerLoggingIn.add(this::onLoggingIn);
         Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
         Events.DimensionChange.add(this::onDimensionChange);
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        NetworkPacketsController.INSTANCE.addServerPacketHandler(this::onServerPacket);
     }
 
     public double getTps() {

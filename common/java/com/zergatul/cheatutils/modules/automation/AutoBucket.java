@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoBucketConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -40,7 +40,7 @@ public class AutoBucket implements Module {
 
     public static final AutoBucket INSTANCE = new AutoBucket();
 
-    private final SettingHandle2<AutoBucketConfig> settings = Settings.get(AutoBucketConfig.class);
+    private final SettingHandle<AutoBucketConfig> settings = Settings.get(AutoBucketConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final NoFallMethod[] methods = new NoFallMethod[] {
             new WaterBucketMethod(),
@@ -62,7 +62,7 @@ public class AutoBucket implements Module {
         WebApiRegistry.INSTANCE.register("auto-bucket", settings, AutoBucketConfig.class);
     }
 
-    public SettingHandle2<AutoBucketConfig> getSettings() {
+    public SettingHandle<AutoBucketConfig> getSettings() {
         return settings;
     }
 

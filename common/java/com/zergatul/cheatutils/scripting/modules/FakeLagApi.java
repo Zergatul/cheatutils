@@ -43,7 +43,7 @@ public class FakeLagApi {
             Checks if Fake Lag is active
             """)
     public boolean isEnabled() {
-        return FakeLag.instance.isEnabled();
+        return FakeLag.INSTANCE.isEnabled();
     }
 
     @MethodDescription("""
@@ -51,6 +51,6 @@ public class FakeLagApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
-        FakeLag.instance.toggle();
+        FakeLag.INSTANCE.toggle();
     }
 }

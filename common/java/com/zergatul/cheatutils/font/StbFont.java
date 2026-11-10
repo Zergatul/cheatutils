@@ -49,7 +49,7 @@ public class StbFont {
         @Override
         public void run() {
             LOGGER.info("Releasing STB font: {}", fontName);
-            ClientTickEndExecutor.instance.execute(() -> {
+            ClientTickEndExecutor.INSTANCE.execute(() -> {
                 stbInfo.free();
                 buffer.clear();
             });

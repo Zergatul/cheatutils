@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
 import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
@@ -35,7 +35,7 @@ public class EntityEsp implements Module {
     public static final EntityEsp INSTANCE = new EntityEsp();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final SettingHandle2<EntityEspConfig> settings = Settings.get(EntityEspConfig.class);
+    private final SettingHandle<EntityEspConfig> settings = Settings.get(EntityEspConfig.class);
     private final List<MatchedEntity> bbList = new ArrayList<>();
     private final List<MatchedEntity> tracerList = new ArrayList<>();
     private final Map<EntityEspEntry, List<EntityRenderState>> overlayEntityStates = new IdentityHashMap<>();
@@ -67,7 +67,7 @@ public class EntityEsp implements Module {
         this.scriptRuntime = EntityEspScriptRuntime.INSTANCE;
     }
 
-    public SettingHandle2<EntityEspConfig> getSettings() {
+    public SettingHandle<EntityEspConfig> getSettings() {
         return settings;
     }
 

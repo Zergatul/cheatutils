@@ -7,22 +7,22 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /** Internal root ownership and bindings; modules only receive SettingHandle2 instances. */
-final class SettingsRegistry2<R> {
+public final class SettingsRegistry<R> {
 
     private final Object lock;
     private final Runnable requestWrite;
     private final List<Function<R, Runnable>> bindings = new ArrayList<>();
     private R config;
 
-    SettingsRegistry2(Object lock, R config, Runnable requestWrite) {
+    public SettingsRegistry(Object lock, R config, Runnable requestWrite) {
         this.lock = lock;
         this.config = Objects.requireNonNull(config);
         this.requestWrite = requestWrite;
     }
 
-    <T extends ImmutableConfig> SettingHandle2<T> register(Function<R, T> getter, BiConsumer<R, T> setter) {
+    public <T extends ImmutableConfig> SettingHandle<T> register(Function<R, T> getter, BiConsumer<R, T> setter) {
         synchronized (lock) {
-            SettingHandle2<T> handle = new SettingHandle2<>(
+            SettingHandle<T> handle = new SettingHandle<>(
                     lock,
                     () -> getter.apply(config),
                     value -> setter.accept(config, value),
@@ -33,14 +33,14 @@ final class SettingsRegistry2<R> {
     }
 
     // Compatibility access for ConfigStore until the mutable modules are migrated.
-    R getConfig() {
+    public R getConfig() {
         synchronized (lock) {
             return config;
         }
     }
 
     /** Publishes the entire profile before notifying any listener; never requests a save. */
-    void replace(R next) {
+    public void replace(R next) {
         synchronized (lock) {
             Objects.requireNonNull(next);
             List<Runnable> notifications = new ArrayList<>();

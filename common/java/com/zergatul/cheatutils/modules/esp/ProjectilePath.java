@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.collections.LinesIterable;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ProjectilePathConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.CrossbowItemAccessor;
@@ -31,7 +31,7 @@ public class ProjectilePath {
 
     public static final ProjectilePath INSTANCE = new ProjectilePath();
 
-    private final SettingHandle2<ProjectilePathConfig> settings = Settings.get(ProjectilePathConfig.class);
+    private final SettingHandle<ProjectilePathConfig> settings = Settings.get(ProjectilePathConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<ThrowableItemEntry> entries = Lists.newArrayList(
             new EnderPearlEntry(),
@@ -52,7 +52,7 @@ public class ProjectilePath {
         WebApiRegistry.INSTANCE.register("projectile-path", settings, ProjectilePathConfig.class);
     }
 
-    public SettingHandle2<ProjectilePathConfig> getSettings() {
+    public SettingHandle<ProjectilePathConfig> getSettings() {
         return settings;
     }
 

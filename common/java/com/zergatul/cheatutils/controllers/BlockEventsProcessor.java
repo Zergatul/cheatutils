@@ -68,7 +68,7 @@ public class BlockEventsProcessor {
 
     // any thread
     public void requestFullScan() {
-        MainLoopEndExecutor.instance.execute(() -> {
+        MainLoopEndExecutor.INSTANCE.execute(() -> {
             ChunkPos[] positions = getLoadedChunksPosition();
             executor.execute(() -> {
                 for (ChunkPos pos : positions) {
@@ -81,7 +81,7 @@ public class BlockEventsProcessor {
 
     // any thread
     public void requestScan(List<Block> blocks) {
-        MainLoopEndExecutor.instance.execute(() -> {
+        MainLoopEndExecutor.INSTANCE.execute(() -> {
             ChunkPos[] positions = getLoadedChunksPosition();
             executor.execute(() -> {
                 for (ChunkPos pos : positions) {

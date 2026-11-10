@@ -41,7 +41,7 @@ public abstract class MixinGameRenderer {
             method = "renderItemInHand",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z", ordinal = 0))
     private boolean onRenderItemInHandIsFirstPerson(CameraType cameraType) {
-        return FreeCam.instance.onRenderItemInHandIsFirstPerson(cameraType);
+        return FreeCam.INSTANCE.onRenderItemInHandIsFirstPerson(cameraType);
     }
 
     @Inject(method = "render", at = @At("HEAD"))
@@ -72,7 +72,7 @@ public abstract class MixinGameRenderer {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
     private boolean onModifyIsFirstPerson3dCrosshair(boolean isFirstPerson) {
         // maybe need priority=2000 like in another call site
-        return FreeCam.instance.onRenderCrosshairIsFirstPerson(isFirstPerson);
+        return FreeCam.INSTANCE.onRenderCrosshairIsFirstPerson(isFirstPerson);
     }
 
     @Inject(at = @At("HEAD"), method = "bobHurt", cancellable = true)

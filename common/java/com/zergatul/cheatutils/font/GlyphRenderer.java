@@ -45,7 +45,7 @@ public abstract class GlyphRenderer extends FontBackend {
         @Override
         public void run() {
             LOGGER.info("Releasing atlas texture: {}", rendererName);
-            ClientTickEndExecutor.instance.execute(texture::dispose);
+            ClientTickEndExecutor.INSTANCE.execute(texture::dispose);
         }
     }
 }

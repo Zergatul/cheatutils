@@ -11,7 +11,7 @@ import java.util.PriorityQueue;
 
 public class ConfigWriterQueue {
 
-    public static final ConfigWriterQueue instance = new ConfigWriterQueue();
+    public static final ConfigWriterQueue INSTANCE = new ConfigWriterQueue();
 
     private static final long WAIT_INDEFINITELY = 0;
     private static final long MIN_WAIT_TIMEOUT = 15;

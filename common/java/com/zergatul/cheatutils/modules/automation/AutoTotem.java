@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoTotemConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -18,7 +18,7 @@ public class AutoTotem implements Module {
 
     public static final AutoTotem INSTANCE = new AutoTotem();
 
-    private final SettingHandle2<AutoTotemConfig> settings = Settings.get(AutoTotemConfig.class);
+    private final SettingHandle<AutoTotemConfig> settings = Settings.get(AutoTotemConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoTotem() {
@@ -27,7 +27,7 @@ public class AutoTotem implements Module {
         WebApiRegistry.INSTANCE.register("auto-totem", settings, AutoTotemConfig.class);
     }
 
-    public SettingHandle2<AutoTotemConfig> getSettings() {
+    public SettingHandle<AutoTotemConfig> getSettings() {
         return settings;
     }
 

@@ -35,7 +35,7 @@ import java.util.*;
 @NullMarked
 public class KeyBindings implements Module {
 
-    public static final KeyBindings instance = new KeyBindings();
+    public static final KeyBindings INSTANCE = new KeyBindings();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final KeyMapping[] keys;
@@ -73,14 +73,14 @@ public class KeyBindings implements Module {
     }
 
     public List<Script> list() {
-        return ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts
+        return ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig.scripts
                 .stream()
                 .map(entry -> new Script(entry.name, entry.code, getAction(entry.name)))
                 .toList();
     }
 
     public @Nullable Script get(String name) {
-        return ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts
+        return ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig.scripts
                 .stream()
                 .filter(entry -> entry.name.equals(name))
                 .findFirst()
@@ -89,7 +89,7 @@ public class KeyBindings implements Module {
     }
 
     public boolean exists(String name) {
-        return ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts
+        return ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig.scripts
                 .stream()
                 .anyMatch(entry -> entry.name.equals(name));
     }
@@ -112,11 +112,11 @@ public class KeyBindings implements Module {
             }
         }
 
-        ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.add(new KeyBindingScriptsConfig.ScriptEntry(name, code));
+        ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig.scripts.add(new KeyBindingScriptsConfig.ScriptEntry(name, code));
         ScriptSaveResult result = slot().init(name, code);
         if (!result.isSuccess()) {
             if (!addIfCompilationFails) {
-                ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.removeIf(entry -> entry.name.equals(name));
+                ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig.scripts.removeIf(entry -> entry.name.equals(name));
                 slot().remove(name);
             }
             return OneOf3.from2(result.getDiagnostics());
@@ -153,7 +153,7 @@ public class KeyBindings implements Module {
             return compilationResult.getDiagnostics();
         }
 
-        KeyBindingScriptsConfig.ScriptEntry entry = ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts
+        KeyBindingScriptsConfig.ScriptEntry entry = ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig.scripts
                 .stream()
                 .filter(e -> e.name.equals(oldName))
                 .findFirst()
@@ -161,7 +161,7 @@ public class KeyBindings implements Module {
         entry.name = newName;
         entry.code = code;
 
-        @Nullable String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
+        @Nullable String[] bindings = ConfigStore.INSTANCE.getConfig().keyBindingsConfig.bindings;
         for (int i = 0; i < bindings.length; i++) {
             if (oldName.equals(bindings[i])) {
                 bindings[i] = newName;
@@ -180,11 +180,11 @@ public class KeyBindings implements Module {
     public void remove(String name) {
         assign(-1, name);
         slot().remove(name);
-        ConfigStore.instance.getConfig().keyBindingScriptsConfig.scripts.removeIf(entry -> entry.name.equals(name));
+        ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig.scripts.removeIf(entry -> entry.name.equals(name));
     }
 
     public void assign(int index, String name) {
-        @Nullable String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
+        @Nullable String[] bindings = ConfigStore.INSTANCE.getConfig().keyBindingsConfig.bindings;
         for (int i = 0; i < bindings.length; i++) {
             String binding = bindings[i];
             if (binding != null && binding.equals(name)) {
@@ -224,7 +224,7 @@ public class KeyBindings implements Module {
 
     private void refreshAssignments(String name) {
         AsyncRunnable script = getAction(name);
-        @Nullable String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
+        @Nullable String[] bindings = ConfigStore.INSTANCE.getConfig().keyBindingsConfig.bindings;
         for (int i = 0; i < bindings.length; i++) {
             String binding = bindings[i];
             if (binding != null && binding.equals(name)) {
@@ -243,9 +243,9 @@ public class KeyBindings implements Module {
             Optional<AsyncRunnable> action = actions[i];
             while (key.consumeClick()) {
                 if (action.isPresent()) {
-                    @Nullable String name = ConfigStore.instance.getConfig().keyBindingsConfig.bindings[i];
+                    @Nullable String name = ConfigStore.INSTANCE.getConfig().keyBindingsConfig.bindings[i];
                     ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, Objects.requireNonNull(name));
-                    ScriptExecutionManager.instance.execute(ref, action.get());
+                    ScriptExecutionManager.INSTANCE.execute(ref, action.get());
                 }
             }
         }
@@ -287,8 +287,8 @@ public class KeyBindings implements Module {
 
         @Override
         public String get() {
-            String[] bindings = ConfigStore.instance.getConfig().keyBindingsConfig.bindings;
-            return gson.toJson(KeyBindings.instance.list().stream().map(s -> {
+            String[] bindings = ConfigStore.INSTANCE.getConfig().keyBindingsConfig.bindings;
+            return gson.toJson(KeyBindings.INSTANCE.list().stream().map(s -> {
                 int index = ArrayUtils.indexOf(bindings, s.name);
                 return new Script(s.name, index);
             }).toArray());
@@ -296,7 +296,7 @@ public class KeyBindings implements Module {
 
         @Override
         public String get(String id) {
-            KeyBindings.Script script = KeyBindings.instance.get(id);
+            KeyBindings.Script script = KeyBindings.INSTANCE.get(id);
             if (script == null) {
                 return gson.toJson((Object) null);
             } else {
@@ -307,30 +307,30 @@ public class KeyBindings implements Module {
         @Override
         public String put(String id, String body) {
             Script script = gson.fromJson(body, Script.class);
-            List<DiagnosticMessage> messages = KeyBindings.instance.update(id, script.name, script.code);
+            List<DiagnosticMessage> messages = KeyBindings.INSTANCE.update(id, script.name, script.code);
             if (!messages.isEmpty()) {
                 return gson.toJson(messages);
             }
-            ConfigStore.instance.requestWrite();
+            ConfigStore.INSTANCE.requestWrite();
             return "{ \"ok\": true }";
         }
 
         @Override
         public String post(String body) {
             Script script = gson.fromJson(body, Script.class);
-            return KeyBindings.instance.add(script.name, script.code, false).match(
+            return KeyBindings.INSTANCE.add(script.name, script.code, false).match(
                     error -> gson.toJson(new ErrorResponse(error)),
                     diagnostics -> gson.toJson(diagnostics),
                     _ -> {
-                        ConfigStore.instance.requestWrite();
+                        ConfigStore.INSTANCE.requestWrite();
                         return "{ \"ok\": true }";
                     });
         }
 
         @Override
         public String delete(String id) {
-            KeyBindings.instance.remove(id);
-            ConfigStore.instance.requestWrite();
+            KeyBindings.INSTANCE.remove(id);
+            ConfigStore.INSTANCE.requestWrite();
             return "true";
         }
 
@@ -364,8 +364,8 @@ public class KeyBindings implements Module {
         @Override
         public String put(String id, String body) {
             int index = gson.fromJson(body, int.class);
-            KeyBindings.instance.assign(index, id);
-            ConfigStore.instance.requestWrite();
+            KeyBindings.INSTANCE.assign(index, id);
+            ConfigStore.INSTANCE.requestWrite();
             return "true";
         }
     }

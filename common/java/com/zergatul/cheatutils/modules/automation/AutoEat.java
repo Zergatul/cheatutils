@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoEatConfig;
 import com.zergatul.cheatutils.web.WebApiRegistry;
@@ -17,7 +17,7 @@ public class AutoEat {
 
     public static final AutoEat INSTANCE = new AutoEat();
 
-    private final SettingHandle2<AutoEatConfig> settings = Settings.get(AutoEatConfig.class);
+    private final SettingHandle<AutoEatConfig> settings = Settings.get(AutoEatConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private State state;
 
@@ -30,7 +30,7 @@ public class AutoEat {
         state = State.NONE;
     }
 
-    public SettingHandle2<AutoEatConfig> getSettings() {
+    public SettingHandle<AutoEatConfig> getSettings() {
         return settings;
     }
 

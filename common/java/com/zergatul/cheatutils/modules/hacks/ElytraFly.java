@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ElytraHackConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -12,9 +12,9 @@ import net.minecraft.world.phys.Vec3;
 
 public class ElytraFly implements Module {
 
-    public static final ElytraFly instance = new ElytraFly();
+    public static final ElytraFly INSTANCE = new ElytraFly();
 
-    private final SettingHandle2<ElytraHackConfig> settings = Settings.get(ElytraHackConfig.class);
+    private final SettingHandle<ElytraHackConfig> settings = Settings.get(ElytraHackConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean applySpeedLimit;
     private boolean applyFly;
@@ -28,7 +28,7 @@ public class ElytraFly implements Module {
         WebApiRegistry.INSTANCE.register("elytra-hack", settings, ElytraHackConfig.class);
     }
 
-    public SettingHandle2<ElytraHackConfig> getSettings() {
+    public SettingHandle<ElytraHackConfig> getSettings() {
         return settings;
     }
 

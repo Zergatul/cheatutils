@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.esp.entity.web;
 
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.scripting.ScriptType;
@@ -21,7 +21,7 @@ public class CodeWebApi extends WebApiBase {
     public String post(String json) throws ApiException {
         Request request = gson.fromJson(json, Request.class);
 
-        SettingHandle2<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
+        SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
         if (!handle.get().entries().contains(e -> e.type() == request.type)) {
             throw new ApiException("Cannot find entity config.", HttpResponseCodes.NOT_FOUND);
         }

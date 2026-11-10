@@ -22,7 +22,7 @@ public abstract class MixinKeyBindingListKeyEntry {
                 final String prefix = "key.zergatul.cheatutils.reserved";
                 if (translatable.getKey().startsWith(prefix)) {
                     int index = Integer.parseInt(translatable.getKey().substring(prefix.length()));
-                    String name = ConfigStore.instance.getConfig().keyBindingsConfig.bindings[index];
+                    String name = ConfigStore.INSTANCE.getConfig().keyBindingsConfig.bindings[index];
                     if (name != null) {
                         return MutableComponent.create(new PlainTextContents.LiteralContents(index + ": " + name));
                     }

@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 
 public class ScriptExecutionManager {
 
-    public static final ScriptExecutionManager instance = new ScriptExecutionManager(true);
+    public static final ScriptExecutionManager INSTANCE = new ScriptExecutionManager(true);
 
     private static final int LIFECYCLE_PRIORITY = -100;
 

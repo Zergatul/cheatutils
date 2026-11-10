@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerInfoUpdateEvent;
 import com.zergatul.cheatutils.common.events.PlayerInfoUpdateType;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.LogoutSpotsConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
@@ -26,7 +26,7 @@ public class LogoutSpots implements Module {
 
     public static final LogoutSpots INSTANCE = new LogoutSpots();
 
-    private final SettingHandle2<LogoutSpotsConfig> settings = Settings.get(LogoutSpotsConfig.class);
+    private final SettingHandle<LogoutSpotsConfig> settings = Settings.get(LogoutSpotsConfig.class);
     private static final int TICKS_WINDOW = 5;
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -44,7 +44,7 @@ public class LogoutSpots implements Module {
         WebApiRegistry.INSTANCE.register("logout-spots", settings, LogoutSpotsConfig.class);
     }
 
-    public SettingHandle2<LogoutSpotsConfig> getSettings() {
+    public SettingHandle<LogoutSpotsConfig> getSettings() {
         return settings;
     }
 

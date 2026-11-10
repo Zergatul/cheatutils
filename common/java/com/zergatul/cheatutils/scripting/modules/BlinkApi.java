@@ -12,7 +12,7 @@ public class BlinkApi {
             Checks if Blink is activated
             """)
     public boolean isEnabled() {
-        return Blink.instance.isEnabled();
+        return Blink.INSTANCE.isEnabled();
     }
 
     @MethodDescription("""
@@ -22,7 +22,7 @@ public class BlinkApi {
             """)
     @ApiVisibility(ApiType.ACTION)
     public void enable() {
-        Blink.instance.enable();
+        Blink.INSTANCE.enable();
     }
 
     @MethodDescription("""
@@ -30,7 +30,7 @@ public class BlinkApi {
             """)
     @ApiVisibility(ApiType.ACTION)
     public void disable() {
-        Blink.instance.disable();
+        Blink.INSTANCE.disable();
     }
 
     @MethodDescription("""
@@ -38,20 +38,20 @@ public class BlinkApi {
             """)
     @ApiVisibility(ApiType.ACTION)
     public void apply() {
-        Blink.instance.apply();
+        Blink.INSTANCE.apply();
     }
 
     @MethodDescription("""
             How far you are from position where you activated blink.
             """)
     public double getDistance() {
-        return Blink.instance.getDistance();
+        return Blink.INSTANCE.getDistance();
     }
 
     @MethodDescription("""
             How many packets are stored in buffer since you activated blink.
             """)
     public int getPackets() {
-        return Blink.instance.getPackets();
+        return Blink.INSTANCE.getPackets();
     }
 }

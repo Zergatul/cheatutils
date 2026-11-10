@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.BlockAutomationConfig;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
@@ -35,7 +35,7 @@ public class BlockAutomation {
 
     public static final BlockAutomation INSTANCE = new BlockAutomation();
 
-    private final SettingHandle2<BlockAutomationConfig> settings = Settings.get(BlockAutomationConfig.class);
+    private final SettingHandle<BlockAutomationConfig> settings = Settings.get(BlockAutomationConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
     private volatile ScriptActivation<BlockPosConsumer> script;
@@ -59,7 +59,7 @@ public class BlockAutomation {
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
-    public SettingHandle2<BlockAutomationConfig> getSettings() {
+    public SettingHandle<BlockAutomationConfig> getSettings() {
         return settings;
     }
 

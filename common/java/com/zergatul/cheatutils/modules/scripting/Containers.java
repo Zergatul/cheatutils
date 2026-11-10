@@ -15,7 +15,7 @@ import java.util.function.BooleanSupplier;
 
 public class Containers implements Module {
 
-    public static final Containers instance = new Containers();
+    public static final Containers INSTANCE = new Containers();
 
     private static final Minecraft mc = Minecraft.getInstance();
     private static final List<BooleanSupplier> handlers = new ArrayList<>();

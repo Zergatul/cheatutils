@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.KillAuraConfig;
 import com.zergatul.cheatutils.configs.modules.KillAuraPredefinedPriority;
@@ -35,7 +35,7 @@ public class KillAura implements Module {
 
     public static final KillAura INSTANCE = new KillAura();
 
-    private final SettingHandle2<KillAuraConfig> settings = Settings.get(KillAuraConfig.class);
+    private final SettingHandle<KillAuraConfig> settings = Settings.get(KillAuraConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entity> targets = new ArrayList<>();
     private long ticks;
@@ -56,7 +56,7 @@ public class KillAura implements Module {
         WebApiRegistry.INSTANCE.register(new ClassNameWebApi());
     }
 
-    public SettingHandle2<KillAuraConfig> getSettings() {
+    public SettingHandle<KillAuraConfig> getSettings() {
         return settings;
     }
 
@@ -71,7 +71,7 @@ public class KillAura implements Module {
     }
 
     private void onConfigChanged(KillAuraConfig prev, KillAuraConfig curr) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (!prev.enabled() && curr.enabled()) {
                 lastAttackTick = 0;
             }
@@ -173,7 +173,7 @@ public class KillAura implements Module {
 
         if (config.autoRotate()) {
             if (target != null) {
-                FakeRotation.instance.setServerRotation(getAttackPoint(target));
+                FakeRotation.INSTANCE.setServerRotation(getAttackPoint(target));
             }
         }
     }
@@ -196,7 +196,7 @@ public class KillAura implements Module {
             LocalPlayer player = mc.player;
             mc.gameMode.attack(player, targets.getFirst());
             for (int i = 1; i < targets.size(); i++) {
-                NetworkPacketsController.instance.sendPacket(new ServerboundAttackPacket(targets.get(i).getId()));
+                NetworkPacketsController.INSTANCE.sendPacket(new ServerboundAttackPacket(targets.get(i).getId()));
             }
             mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
             mc.player.connection.send(ServerboundPunchPacket.INSTANCE);

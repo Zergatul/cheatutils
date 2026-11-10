@@ -7,10 +7,10 @@ import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.scripting.MethodDescription;
 
 @SuppressWarnings("unused")
-public class ElytraHackApi extends SettingHandle2Api<ElytraHackConfig> {
+public class ElytraHackApi extends SettingHandleApi<ElytraHackConfig> {
 
     public ElytraHackApi() {
-        super(ElytraFly.instance.getSettings());
+        super(ElytraFly.INSTANCE.getSettings());
     }
 
     @MethodDescription("Blocks per second.")

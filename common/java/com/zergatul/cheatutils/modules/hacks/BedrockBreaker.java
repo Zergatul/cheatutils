@@ -4,7 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.BedrockBreakerConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
@@ -49,7 +49,7 @@ public class BedrockBreaker implements Module {
 
     public static final BedrockBreaker INSTANCE = new BedrockBreaker();
 
-    private final SettingHandle2<BedrockBreakerConfig> settings = Settings.get(BedrockBreakerConfig.class);
+    private final SettingHandle<BedrockBreakerConfig> settings = Settings.get(BedrockBreakerConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final Queue<BlockPos> queue = new ArrayDeque<>();
     private BlockPos bedrockPos;
@@ -68,7 +68,7 @@ public class BedrockBreaker implements Module {
         WebApiRegistry.INSTANCE.register("bedrock-breaker", settings, BedrockBreakerConfig.class);
     }
 
-    public SettingHandle2<BedrockBreakerConfig> getSettings() {
+    public SettingHandle<BedrockBreakerConfig> getSettings() {
         return settings;
     }
 

@@ -47,7 +47,7 @@ public class ItemStackElement implements Element {
 
     @Override
     public void render(RenderingContext context) {
-        CacheItemRenderer.AtlasSlot slot = CacheItemRenderer.instance.getTexture(owner, itemStack);
+        CacheItemRenderer.AtlasSlot slot = CacheItemRenderer.INSTANCE.getTexture(owner, itemStack);
         if (slot == null) {
             return;
         }
@@ -74,7 +74,7 @@ public class ItemStackElement implements Element {
         if (itemStack.getCount() != 1) {
             String amount = String.valueOf(itemStack.getCount());
             Font font = Minecraft.getInstance().font;
-            CustomizableVanillaFontRenderer.instance.render(
+            CustomizableVanillaFontRenderer.INSTANCE.render(
                     font,
                     context.getItemScale(),
                     context.getBuffers(),

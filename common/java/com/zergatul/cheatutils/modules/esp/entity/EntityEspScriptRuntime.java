@@ -26,7 +26,7 @@ public class EntityEspScriptRuntime {
     private EntityEspScriptRuntime() {}
 
     public void clearScripts() {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             scripts.values().forEach(ScriptActivation::deactivate);
             scripts.clear();
             scriptResults.clear();
@@ -36,7 +36,7 @@ public class EntityEspScriptRuntime {
     public void setScript(Class<?> type, @Nullable EntityEspConsumer script) {
         // Have to run from the main thread, since EntityEsp module doesn't snapshot scripts
         // and if update happens mid-frame it can cause NullReference exception.
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             ScriptActivation<EntityEspConsumer> previous = scripts.remove(type);
             if (previous != null) {
                 previous.deactivate();

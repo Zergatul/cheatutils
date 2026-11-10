@@ -15,7 +15,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 
 @SuppressWarnings("unused")
-public class BlockAutomationApi extends SettingHandle2Api<BlockAutomationConfig> {
+public class BlockAutomationApi extends SettingHandleApi<BlockAutomationConfig> {
 
     public BlockAutomationApi() {
         super(BlockAutomation.INSTANCE.getSettings());

@@ -13,6 +13,6 @@ public abstract class MixinHandRenderer {
             method = "canRender",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;isDetached()Z"))
     private boolean onModifyIsCameraDetached(boolean value) {
-        return FreeCam.instance.isCameraDetached(value);
+        return FreeCam.INSTANCE.isCameraDetached(value);
     }
 }

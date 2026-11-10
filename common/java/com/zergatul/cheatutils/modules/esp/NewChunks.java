@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.chunkoverlays.NewChunksOverlay;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.NewChunksConfig;
 import com.zergatul.cheatutils.controllers.ChunkOverlayController;
@@ -12,7 +12,7 @@ public class NewChunks implements Module {
 
     public static final NewChunks INSTANCE = new NewChunks();
 
-    private final SettingHandle2<NewChunksConfig> settings = Settings.get(NewChunksConfig.class);
+    private final SettingHandle<NewChunksConfig> settings = Settings.get(NewChunksConfig.class);
 
     private NewChunks() {
         settings.onChanged(this::onConfigChanged);
@@ -20,13 +20,13 @@ public class NewChunks implements Module {
         WebApiRegistry.INSTANCE.register("new-chunks", settings, NewChunksConfig.class);
     }
 
-    public SettingHandle2<NewChunksConfig> getSettings() {
+    public SettingHandle<NewChunksConfig> getSettings() {
         return settings;
     }
 
     private void onConfigChanged(NewChunksConfig prev, NewChunksConfig curr) {
         if (prev.enabled() != curr.enabled()) {
-            ChunkOverlayController.instance.ofType(NewChunksOverlay.class).onEnabledChanged();
+            ChunkOverlayController.INSTANCE.ofType(NewChunksOverlay.class).onEnabledChanged();
         }
     }
 }

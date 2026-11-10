@@ -98,7 +98,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @ModifyConstant(method = "aiStep()V", constant = @Constant(floatValue = 3.0f))
     private float onModifyFlyingHorizontalMultiplier(float value) {
-        return ElytraFly.instance.onModifyFlyingHorizontalMultiplier(value);
+        return ElytraFly.INSTANCE.onModifyFlyingHorizontalMultiplier(value);
     }
 
     @Override
@@ -136,7 +136,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         MoverType type = args.get(0);
         Vec3 delta = args.get(1);
         if (type == MoverType.SELF) {
-            args.set(1, ElytraFly.instance.onModifyDeltaMove(delta));
+            args.set(1, ElytraFly.INSTANCE.onModifyDeltaMove(delta));
         }
     }
 

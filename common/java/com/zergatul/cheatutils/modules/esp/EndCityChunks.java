@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.EndCityChunksConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
@@ -20,7 +20,7 @@ public class EndCityChunks {
 
     public static final EndCityChunks INSTANCE = new EndCityChunks();
 
-    private final SettingHandle2<EndCityChunksConfig> settings = Settings.get(EndCityChunksConfig.class);
+    private final SettingHandle<EndCityChunksConfig> settings = Settings.get(EndCityChunksConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private EndCityChunks() {
@@ -29,7 +29,7 @@ public class EndCityChunks {
         WebApiRegistry.INSTANCE.register("end-city-chunks", settings, EndCityChunksConfig.class);
     }
 
-    public SettingHandle2<EndCityChunksConfig> getSettings() {
+    public SettingHandle<EndCityChunksConfig> getSettings() {
         return settings;
     }
 

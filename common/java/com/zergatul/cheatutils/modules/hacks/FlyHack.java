@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.FlyHackConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -19,7 +19,7 @@ public class FlyHack implements Module {
 
     public static final FlyHack INSTANCE = new FlyHack();
 
-    private final SettingHandle2<FlyHackConfig> settings = Settings.get(FlyHackConfig.class);
+    private final SettingHandle<FlyHackConfig> settings = Settings.get(FlyHackConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean abilitiesOverridden;
     private boolean oldFlying;
@@ -28,7 +28,7 @@ public class FlyHack implements Module {
     private @Nullable ServerboundMovePlayerPacket antiKickPacket;
 
     private FlyHack() {
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+        NetworkPacketsController.INSTANCE.addClientPacketHandler(this::onClientPacket);
         Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.InGameTickEnd.add(this::onTickEnd);
@@ -36,7 +36,7 @@ public class FlyHack implements Module {
         WebApiRegistry.INSTANCE.register("fly-hack", settings, FlyHackConfig.class);
     }
 
-    public SettingHandle2<FlyHackConfig> getSettings() {
+    public SettingHandle<FlyHackConfig> getSettings() {
         return settings;
     }
 
@@ -113,7 +113,7 @@ public class FlyHack implements Module {
                     player.getZ(),
                     config.onGroundFlag(),
                     false);
-            NetworkPacketsController.instance.sendPacket(antiKickPacket);
+            NetworkPacketsController.INSTANCE.sendPacket(antiKickPacket);
         }
     }
 }

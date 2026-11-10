@@ -28,14 +28,14 @@ public abstract class MixinConnection {
     @Inject(at = @At("RETURN"), method = "disconnect(Lnet/minecraft/network/DisconnectionDetails;)V")
     private void onDisconnect(DisconnectionDetails details, CallbackInfo info) {
         if (this.receiving == PacketFlow.CLIENTBOUND) {
-            NetworkPacketsController.instance.onDisconnect((Connection) (Object) this);
+            NetworkPacketsController.INSTANCE.onDisconnect((Connection) (Object) this);
         }
     }
 
     @Inject(at = @At("HEAD"), method = "doSendPacket", cancellable = true)
     private void onPacketSend(Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo info) {
         if (this.receiving == PacketFlow.CLIENTBOUND) {
-            boolean skip = NetworkPacketsController.instance.triggerSend((Connection) (Object) this, packet);
+            boolean skip = NetworkPacketsController.INSTANCE.triggerSend((Connection) (Object) this, packet);
             if (skip) {
                 if (flush) {
                     this.channel.flush();
@@ -48,7 +48,7 @@ public abstract class MixinConnection {
     @Inject(at = @At("HEAD"), method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", cancellable = true)
     private void onPacketReceive(ChannelHandlerContext context, Packet<?> packet, CallbackInfo info) {
         if (this.receiving == PacketFlow.CLIENTBOUND) {
-            boolean skip = NetworkPacketsController.instance.triggerReceive((Connection) (Object) this, packet);
+            boolean skip = NetworkPacketsController.INSTANCE.triggerReceive((Connection) (Object) this, packet);
             if (skip) {
                 info.cancel();
             }

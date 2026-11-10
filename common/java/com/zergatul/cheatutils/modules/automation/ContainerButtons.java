@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ContainerButtonsConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -29,7 +29,7 @@ public class ContainerButtons implements Module {
 
     public static final ContainerButtons INSTANCE = new ContainerButtons();
 
-    private final SettingHandle2<ContainerButtonsConfig> settings = Settings.get(ContainerButtonsConfig.class);
+    private final SettingHandle<ContainerButtonsConfig> settings = Settings.get(ContainerButtonsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private ContainerButtons() {
@@ -38,7 +38,7 @@ public class ContainerButtons implements Module {
         WebApiRegistry.INSTANCE.register("container-buttons", settings, ContainerButtonsConfig.class);
     }
 
-    public SettingHandle2<ContainerButtonsConfig> getSettings() {
+    public SettingHandle<ContainerButtonsConfig> getSettings() {
         return settings;
     }
 

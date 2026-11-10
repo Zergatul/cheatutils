@@ -9,13 +9,13 @@ public class BobHurt implements Module {
 
     public static final BobHurt INSTANCE = new BobHurt();
 
-    private final SettingHandle2<BobHurtConfig> settings = Settings.get(BobHurtConfig.class);
+    private final SettingHandle<BobHurtConfig> settings = Settings.get(BobHurtConfig.class);
 
     private BobHurt() {
         WebApiRegistry.INSTANCE.register("bob-hurt", settings, BobHurtConfig.class);
     }
 
-    public SettingHandle2<BobHurtConfig> getSettings() {
+    public SettingHandle<BobHurtConfig> getSettings() {
         return settings;
     }
 }

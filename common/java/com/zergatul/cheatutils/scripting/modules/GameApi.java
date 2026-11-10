@@ -137,14 +137,14 @@ public class GameApi {
             public void run() {
                 boolean shouldWait = mc.gui.screen() instanceof ConnectScreen || mc.gui.screen() instanceof LevelLoadingScreen;
                 if (shouldWait) {
-                    ClientTickEndExecutor.instance.waitTicks(1).thenRun(this);
+                    ClientTickEndExecutor.INSTANCE.waitTicks(1).thenRun(this);
                 } else {
                     result.complete(!(mc.gui.screen() instanceof DisconnectedScreen));
                 }
             }
         }
 
-        ClientTickEndExecutor.instance.execute(new ScreenCheck());
+        ClientTickEndExecutor.INSTANCE.execute(new ScreenCheck());
 
         return result;
     }

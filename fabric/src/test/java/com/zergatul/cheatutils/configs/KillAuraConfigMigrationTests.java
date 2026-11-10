@@ -43,7 +43,7 @@ public class KillAuraConfigMigrationTests {
 
         JsonObject json = root.getAsJsonObject("killAuraConfig");
         assertFalse(json.has("customEntries"));
-        KillAuraConfig config = ConfigStore.instance.gson.fromJson(json, KillAuraConfig.class);
+        KillAuraConfig config = ConfigStore.INSTANCE.gson.fromJson(json, KillAuraConfig.class);
         assertTrue(config.enabled());
         assertEquals(9, config.maxRange());
         assertEquals(5, config.priorities().size());
@@ -71,7 +71,7 @@ public class KillAuraConfigMigrationTests {
 
         JsonArray entries = root.getAsJsonObject("killAuraConfig").getAsJsonArray("priorities");
         assertEquals(4, entries.size());
-        KillAuraConfig config = ConfigStore.instance.gson.fromJson(root.get("killAuraConfig"), KillAuraConfig.class);
+        KillAuraConfig config = ConfigStore.INSTANCE.gson.fromJson(root.get("killAuraConfig"), KillAuraConfig.class);
         assertEquals(new KillAuraClassPriorityEntry("Active", "Keep this", String.class, true), config.priorities().get(0));
         assertEquals(new KillAuraClassPriorityEntry("Inactive", null, Integer.class, false), config.priorities().get(1));
         assertEquals(new KillAuraClassPriorityEntry("Missing", "Saved entry", Double.class, false), config.priorities().get(2));
@@ -108,7 +108,7 @@ public class KillAuraConfigMigrationTests {
                 {"killAuraConfig":{"priorities":[null,"old entry",{}, {"name":"Unknown"}],"customEntries":[null,{}]}}
                 """);
         assertTrue(root.getAsJsonObject("killAuraConfig").getAsJsonArray("priorities").isEmpty());
-        assertEquals(2, ConfigStore.instance.gson.fromJson(root.get("killAuraConfig"), KillAuraConfig.class).priorities().size());
+        assertEquals(2, ConfigStore.INSTANCE.gson.fromJson(root.get("killAuraConfig"), KillAuraConfig.class).priorities().size());
         assertEquals(JsonParser.parseString("{}"), migrate("{}"));
         assertEquals(JsonParser.parseString("{\"killAuraConfig\":null}"), migrate("{\"killAuraConfig\":null}"));
     }
@@ -120,7 +120,7 @@ public class KillAuraConfigMigrationTests {
     private JsonObject migrate(JsonObject root) throws Exception {
         Method method = ConfigStore.class.getDeclaredMethod("migration6", JsonElement.class);
         method.setAccessible(true);
-        method.invoke(ConfigStore.instance, root);
+        method.invoke(ConfigStore.INSTANCE, root);
         return root;
     }
 }

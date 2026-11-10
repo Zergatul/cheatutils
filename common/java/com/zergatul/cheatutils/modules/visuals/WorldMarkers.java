@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.modules.visuals;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.WorldMarkerEntry;
 import com.zergatul.cheatutils.configs.modules.WorldMarkersConfig;
@@ -25,7 +25,7 @@ public class WorldMarkers implements FontBackendHolder {
 
     public static final WorldMarkers INSTANCE = new WorldMarkers();
 
-    private final SettingHandle2<WorldMarkersConfig> settings = Settings.get(WorldMarkersConfig.class);
+    private final SettingHandle<WorldMarkersConfig> settings = Settings.get(WorldMarkersConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private boolean fontChanged;
@@ -46,7 +46,7 @@ public class WorldMarkers implements FontBackendHolder {
         fontChanged = true;
     }
 
-    public SettingHandle2<WorldMarkersConfig> getSettings() {
+    public SettingHandle<WorldMarkersConfig> getSettings() {
         return settings;
     }
 
@@ -56,7 +56,7 @@ public class WorldMarkers implements FontBackendHolder {
     }
 
     private void onConfigChanged(WorldMarkersConfig prev, WorldMarkersConfig curr) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (!prev.font().equals(curr.font())) {
                 fontChanged = true;
             }
@@ -74,7 +74,7 @@ public class WorldMarkers implements FontBackendHolder {
         }
 
         if (fontChanged) {
-            fontBackendFuture = FontLibrary.instance.createBackend(config.font().asFontParameters());
+            fontBackendFuture = FontLibrary.INSTANCE.createBackend(config.font().asFontParameters());
             // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
             fontChanged = false;
         }
@@ -163,7 +163,7 @@ public class WorldMarkers implements FontBackendHolder {
 
         @Override
         public String get() throws ExecutionException, InterruptedException {
-            return gson.toJson(ClientTickEndExecutor.instance.submit(() -> {
+            return gson.toJson(ClientTickEndExecutor.INSTANCE.submit(() -> {
                 Minecraft mc = Minecraft.getInstance();
                 if (mc.level == null) {
                     return null;
@@ -182,7 +182,7 @@ public class WorldMarkers implements FontBackendHolder {
 
         @Override
         public String get() throws ExecutionException, InterruptedException {
-            return gson.toJson(ClientTickEndExecutor.instance.submit(() -> {
+            return gson.toJson(ClientTickEndExecutor.INSTANCE.submit(() -> {
                 Minecraft mc = Minecraft.getInstance();
                 if (mc.player == null) {
                     return null;

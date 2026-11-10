@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AreaMineConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -29,7 +29,7 @@ public class AreaMine implements Module {
 
     public static final AreaMine INSTANCE = new AreaMine();
 
-    private final SettingHandle2<AreaMineConfig> settings = Settings.get(AreaMineConfig.class);
+    private final SettingHandle<AreaMineConfig> settings = Settings.get(AreaMineConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AreaMine() {
@@ -39,7 +39,7 @@ public class AreaMine implements Module {
         WebApiRegistry.INSTANCE.register("area-mine", settings, AreaMineConfig.class);
     }
 
-    public SettingHandle2<AreaMineConfig> getSettings() {
+    public SettingHandle<AreaMineConfig> getSettings() {
         return settings;
     }
 
@@ -121,7 +121,7 @@ public class AreaMine implements Module {
                     Direction.UP,
                     handler.currentSequence());
 
-            NetworkPacketsController.instance.sendPacket(packet);
+            NetworkPacketsController.INSTANCE.sendPacket(packet);
         });
     }
 

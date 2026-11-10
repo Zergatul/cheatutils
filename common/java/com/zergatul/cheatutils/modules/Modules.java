@@ -18,20 +18,20 @@ import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 public class Modules {
 
     public static void register() {
-        register(ScriptExecutionManager.instance);
-        register(ScriptRuntimeFailureHandler.instance);
+        register(ScriptExecutionManager.INSTANCE);
+        register(ScriptRuntimeFailureHandler.INSTANCE);
 
         //Order dependent modules -> legacy method, use Event.event.add(function, priority) for new modules, use the priority value instead
         //==========================
 
         //===========================
 
-        register(FakeRotation.instance);
+        register(FakeRotation.INSTANCE);
         register(BlockEventsProcessor.INSTANCE);
-        register(NetworkPacketsController.instance);
-        register(SpeedCounterController.instance);
+        register(NetworkPacketsController.INSTANCE);
+        register(SpeedCounterController.INSTANCE);
         register(BlockFinder.INSTANCE);
-        register(PreRenderGuiExecutor.instance);
+        register(PreRenderGuiExecutor.INSTANCE);
 
         register(AutoTotem.INSTANCE);
         register(AutoEat.INSTANCE);
@@ -46,23 +46,23 @@ public class Modules {
         register(EndCityChunks.INSTANCE);
         register(AutoBucket.INSTANCE);
         register(WorldDownload.INSTANCE);
-        register(EntityTitle.instance);
-        register(TeleportHack.instance);
+        register(EntityTitle.INSTANCE);
+        register(TeleportHack.INSTANCE);
         register(WorldMarkers.INSTANCE);
-        register(TpsCounterController.instance);
+        register(TpsCounterController.INSTANCE);
         register(BlockAutomation.INSTANCE);
-        register(PlayerInfoController.instance);
+        register(PlayerInfoController.INSTANCE);
 
         register(FlyHack.INSTANCE);
-        register(FreeCam.instance);
+        register(FreeCam.INSTANCE);
         register(AutoFish.INSTANCE);
-        register(ChunkOverlayController.instance);
+        register(ChunkOverlayController.INSTANCE);
         register(StatusOverlay.INSTANCE);
         register(AutoCriticals.INSTANCE);
         register(LightLevel.INSTANCE);
-        register(ElytraFly.instance);
+        register(ElytraFly.INSTANCE);
         register(AdvancedTooltips.INSTANCE);
-        register(Zoom.instance);
+        register(Zoom.INSTANCE);
         register(ShulkerTooltip.INSTANCE);
         register(ArmorOverlay.INSTANCE);
         register(Fog.INSTANCE);
@@ -74,7 +74,7 @@ public class Modules {
         register(AreaMine.INSTANCE);
         register(ServerPlugins.INSTANCE);
         register(BedrockBreaker.INSTANCE);
-        register(Containers.instance);
+        register(Containers.INSTANCE);
         register(AntiHunger.INSTANCE);
         register(Schematica.INSTANCE);
         register(AimAssist.INSTANCE);
@@ -89,7 +89,7 @@ public class Modules {
         register(HitboxSize.INSTANCE);
         register(BetterStatusEffects.INSTANCE);
         register(BoatHack.INSTANCE);
-        register(Blink.instance);
+        register(Blink.INSTANCE);
         register(PigHack.INSTANCE);
         register(AutoDrop.INSTANCE);
         register(EditorConfig.INSTANCE);
@@ -119,13 +119,13 @@ public class Modules {
 
         register(Privacy.INSTANCE);
 
-        register(ClientTickEndExecutor.instance);
-        register(InGameTickEndExecutor.instance);
+        register(ClientTickEndExecutor.INSTANCE);
+        register(InGameTickEndExecutor.INSTANCE);
 
         // new order independent modules
         //==========================================
-        register(AfterPlayerAiStepExecutor.instance);
-        register(AfterSendPlayerPosExecutor.instance);
+        register(AfterPlayerAiStepExecutor.INSTANCE);
+        register(AfterSendPlayerPosExecutor.INSTANCE);
         register(KillAura.INSTANCE);
 
         register(SpearRange.INSTANCE);
@@ -135,7 +135,7 @@ public class Modules {
     }
 
     public static void registerKeyBindings() {
-        register(KeyBindings.instance);
+        register(KeyBindings.INSTANCE);
     }
 
     public static void lateRegister() {

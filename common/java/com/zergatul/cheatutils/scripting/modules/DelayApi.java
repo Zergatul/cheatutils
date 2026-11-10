@@ -18,7 +18,7 @@ public class DelayApi {
             return CompletableFuture.completedFuture(null);
         }
 
-        return InGameTickEndExecutor.instance.waitTicks(ticks);
+        return InGameTickEndExecutor.INSTANCE.waitTicks(ticks);
     }
 
     @MethodDescription("""
@@ -30,6 +30,6 @@ public class DelayApi {
             return CompletableFuture.completedFuture(null);
         }
 
-        return ClientTickEndExecutor.instance.waitTicks(ticks);
+        return ClientTickEndExecutor.INSTANCE.waitTicks(ticks);
     }
 }

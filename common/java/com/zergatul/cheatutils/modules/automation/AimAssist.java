@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerReleaseUsingItemEvent;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AimAssistConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -36,7 +36,7 @@ public class AimAssist implements Module {
 
     public static final AimAssist INSTANCE = new AimAssist();
 
-    private final SettingHandle2<AimAssistConfig> settings = Settings.get(AimAssistConfig.class);
+    private final SettingHandle<AimAssistConfig> settings = Settings.get(AimAssistConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private @Nullable TargetPredicate script;
@@ -53,7 +53,7 @@ public class AimAssist implements Module {
         WebApiRegistry.INSTANCE.register("aim-assist", settings, AimAssistConfig.class);
     }
 
-    public SettingHandle2<AimAssistConfig> getSettings() {
+    public SettingHandle<AimAssistConfig> getSettings() {
         return settings;
     }
 
@@ -135,7 +135,7 @@ public class AimAssist implements Module {
         Optional<Rotation> closest = rotations.stream().min(Comparator.comparingDouble(playerRot::distanceSqrTo));
         if (closest.isPresent()) {
             Rotation rotation = closest.get();
-            NetworkPacketsController.instance.sendPacket(new ServerboundMovePlayerPacket.Rot(
+            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundMovePlayerPacket.Rot(
                     rotation.yRot(), rotation.xRot(),
                     mc.player.onGround(), mc.player.horizontalCollision));
         }

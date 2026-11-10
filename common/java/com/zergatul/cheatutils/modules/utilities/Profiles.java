@@ -63,7 +63,7 @@ public class Profiles implements Module {
             profileFile = getProfileFile(current);
         }
 
-        ConfigStore.instance.read(profileFile);
+        ConfigStore.INSTANCE.read(profileFile);
     }
 
     public String getCurrent() {
@@ -124,7 +124,7 @@ public class Profiles implements Module {
         current = name;
         requestWrite();
 
-        executeInRenderThread(() -> ConfigStore.instance.createNew(getProfileFile(name)));
+        executeInRenderThread(() -> ConfigStore.INSTANCE.createNew(getProfileFile(name)));
     }
 
     public void createCopy(String name) {
@@ -135,7 +135,7 @@ public class Profiles implements Module {
         current = name;
         requestWrite();
 
-        executeInRenderThread(() -> ConfigStore.instance.switchFile(getProfileFile(name)));
+        executeInRenderThread(() -> ConfigStore.INSTANCE.switchFile(getProfileFile(name)));
     }
 
     public void change(String name) {
@@ -144,12 +144,12 @@ public class Profiles implements Module {
         }
 
         // if we have pending write, execute it right now
-        ConfigWriterQueue.instance.flush(getProfileFile(current));
+        ConfigWriterQueue.INSTANCE.flush(getProfileFile(current));
 
         current = name;
         requestWrite();
 
-        executeInRenderThread(() -> ConfigStore.instance.read(getProfileFile(name)));
+        executeInRenderThread(() -> ConfigStore.INSTANCE.read(getProfileFile(name)));
     }
 
     public void delete(String name) {
@@ -171,7 +171,7 @@ public class Profiles implements Module {
         current = "";
         requestWrite();
 
-        executeInRenderThread(() -> ConfigStore.instance.read(getProfileFile("")));
+        executeInRenderThread(() -> ConfigStore.INSTANCE.read(getProfileFile("")));
     }
 
     public boolean isInResetState() {
@@ -180,7 +180,7 @@ public class Profiles implements Module {
 
     public String[] reset() {
         isInResetState = true;
-        ConfigWriterQueue.instance.clear();
+        ConfigWriterQueue.INSTANCE.clear();
 
         // remove files
         String[] files = getConfigDirectory().list();
@@ -224,14 +224,14 @@ public class Profiles implements Module {
         if (RenderSystem.isOnRenderThread()) {
             runnable.run();
         } else {
-            ClientTickEndExecutor.instance.execute(runnable);
+            ClientTickEndExecutor.INSTANCE.execute(runnable);
         }
     }
 
     private void requestWrite() {
         String current = this.current;
         File file = getProfileConfigFile();
-        ConfigWriterQueue.instance.queue(file, WRITE_FILE_DELAY, () -> {
+        ConfigWriterQueue.INSTANCE.queue(file, WRITE_FILE_DELAY, () -> {
             logger.debug("Saving profile config file {}", file.getName());
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(file));

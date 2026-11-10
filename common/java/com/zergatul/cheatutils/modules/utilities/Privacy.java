@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.LoaderBridge;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.PrivacyConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -25,13 +25,13 @@ public class Privacy implements Module {
 
     public static final Privacy INSTANCE = new Privacy();
 
-    private final SettingHandle2<PrivacyConfig> settings = Settings.get(PrivacyConfig.class);
+    private final SettingHandle<PrivacyConfig> settings = Settings.get(PrivacyConfig.class);
 
     private Privacy() {
         WebApiRegistry.INSTANCE.register("privacy", settings, PrivacyConfig.class);
     }
 
-    public SettingHandle2<PrivacyConfig> getSettings() {
+    public SettingHandle<PrivacyConfig> getSettings() {
         return settings;
     }
 

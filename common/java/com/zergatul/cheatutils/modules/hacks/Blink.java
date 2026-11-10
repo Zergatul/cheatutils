@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Blink implements Module {
 
-    public static final Blink instance = new Blink();
+    public static final Blink INSTANCE = new Blink();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<ServerboundMovePlayerPacket> packets = new ArrayList<>();
@@ -23,7 +23,7 @@ public class Blink implements Module {
     private FakePlayer fake;
 
     private Blink() {
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+        NetworkPacketsController.INSTANCE.addClientPacketHandler(this::onClientPacket);
         Events.ClientPlayerLoggingOut.add(this::disable);
         Events.DimensionChange.add(this::disable);
     }
@@ -37,10 +37,10 @@ public class Blink implements Module {
             return;
         }
 
-        NetworkPacketsController.instance.stopHandlers();
-        packets.forEach(NetworkPacketsController.instance::sendPacket);
+        NetworkPacketsController.INSTANCE.stopHandlers();
+        packets.forEach(NetworkPacketsController.INSTANCE::sendPacket);
         packets.clear();
-        NetworkPacketsController.instance.resumeHandlers();
+        NetworkPacketsController.INSTANCE.resumeHandlers();
 
         isEnabled = false;
         fake.remove(Entity.RemovalReason.DISCARDED);

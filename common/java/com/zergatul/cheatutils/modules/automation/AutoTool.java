@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContinueDestroyBlockEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoToolConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.MultiPlayerGameModeAccessor;
@@ -24,7 +24,7 @@ public class AutoTool implements Module {
 
     public static final AutoTool INSTANCE = new AutoTool();
 
-    private final SettingHandle2<AutoToolConfig> settings = Settings.get(AutoToolConfig.class);
+    private final SettingHandle<AutoToolConfig> settings = Settings.get(AutoToolConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean skip;
 
@@ -35,7 +35,7 @@ public class AutoTool implements Module {
         WebApiRegistry.INSTANCE.register("auto-tool", settings, AutoToolConfig.class);
     }
 
-    public SettingHandle2<AutoToolConfig> getSettings() {
+    public SettingHandle<AutoToolConfig> getSettings() {
         return settings;
     }
 

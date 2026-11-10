@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.SchematicaConfig;
 import com.zergatul.cheatutils.configs.modules.SchematicaWorldSlice;
@@ -56,7 +56,7 @@ public class Schematica implements Module {
 
     private static final Strategy<BlockState> STRATEGY = Strategy.createForBlockStates(Block.BLOCK_STATE_REGISTRY);
 
-    private final SettingHandle2<SchematicaConfig> settings = Settings.get(SchematicaConfig.class);
+    private final SettingHandle<SchematicaConfig> settings = Settings.get(SchematicaConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();
     private final SlotSelector slotSelector = new SlotSelector();
@@ -79,7 +79,7 @@ public class Schematica implements Module {
         WebApiRegistry.INSTANCE.register(new BlockStateWebApi());
     }
 
-    public SettingHandle2<SchematicaConfig> getSettings() {
+    public SettingHandle<SchematicaConfig> getSettings() {
         return settings;
     }
 
@@ -94,7 +94,7 @@ public class Schematica implements Module {
 
     public List<EntrySummary> getSummary() {
         CompletableFuture<List<EntrySummary>> future = new CompletableFuture<>();
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             future.complete(entries.stream().map(Entry::asSummary).toList());
         });
         try {
@@ -152,7 +152,7 @@ public class Schematica implements Module {
     }
 
     public void place(SchemaFile file, String name, PlacingSettings placing) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             final Entry entry = new Entry(file, name, placing);
             entries.add(entry);
 
@@ -188,7 +188,7 @@ public class Schematica implements Module {
     }
 
     public void remove(int index) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -227,7 +227,7 @@ public class Schematica implements Module {
     }
 
     public void clear() {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
                     mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
@@ -240,7 +240,7 @@ public class Schematica implements Module {
     }
 
     public void rescan(int index) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -268,7 +268,7 @@ public class Schematica implements Module {
     }
 
     public void move(int index, int x, int y, int z) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -340,7 +340,7 @@ public class Schematica implements Module {
 
     public DownloadInfo download(String format, int x1, int y1, int z1, int x2, int y2, int z2) {
         CompletableFuture<DownloadInfo> future = new CompletableFuture<>();
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (mc.level == null) {
                 future.complete(DownloadInfo.of("You have to join Minecraft world"));
                 return;
@@ -411,7 +411,7 @@ public class Schematica implements Module {
     }
 
     private void onConfigChanged(SchematicaConfig prev, SchematicaConfig curr) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             boolean oldBlockRenderingState = prev.enabled() && prev.renderBlocks();
             boolean newBlockRenderingState = curr.enabled() && curr.renderBlocks();
             boolean oldShadeBlocksState = oldBlockRenderingState && prev.shadeBlocks();

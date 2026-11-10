@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoCraftConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.AbstractRecipeBookScreenAccessor;
@@ -27,7 +27,7 @@ public class AutoCraft {
 
     public static final AutoCraft INSTANCE = new AutoCraft();
 
-    private final SettingHandle2<AutoCraftConfig> settings = Settings.get(AutoCraftConfig.class);
+    private final SettingHandle<AutoCraftConfig> settings = Settings.get(AutoCraftConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final Logger logger = LogManager.getLogger(AutoCraft.class);
     private State state = State.NONE;
@@ -38,7 +38,7 @@ public class AutoCraft {
         WebApiRegistry.INSTANCE.register("auto-craft", settings, AutoCraftConfig.class);
     }
 
-    public SettingHandle2<AutoCraftConfig> getSettings() {
+    public SettingHandle<AutoCraftConfig> getSettings() {
         return settings;
     }
 

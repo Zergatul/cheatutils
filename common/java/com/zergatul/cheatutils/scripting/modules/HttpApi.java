@@ -35,7 +35,7 @@ public class HttpApi {
                 .uri(uri)
                 .build();
         CompletableFuture<HttpResponse<String>> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
-        return future.thenApplyAsync(HttpResponse::body, ClientTickEndExecutor.instance);
+        return future.thenApplyAsync(HttpResponse::body, ClientTickEndExecutor.INSTANCE);
     }
 
     @MethodDescription("""
@@ -48,6 +48,6 @@ public class HttpApi {
         }
 
         CompletableFuture<HttpResponse<String>> future = client.sendAsync(request.getRequest(), HttpResponse.BodyHandlers.ofString());
-        return future.thenApplyAsync(HttpResponseWrapper::new, ClientTickEndExecutor.instance);
+        return future.thenApplyAsync(HttpResponseWrapper::new, ClientTickEndExecutor.INSTANCE);
     }
 }

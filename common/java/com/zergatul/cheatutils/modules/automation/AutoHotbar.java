@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoHotbarConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -17,7 +17,7 @@ public class AutoHotbar implements Module {
 
     public static final AutoHotbar INSTANCE = new AutoHotbar();
 
-    private final SettingHandle2<AutoHotbarConfig> settings = Settings.get(AutoHotbarConfig.class);
+    private final SettingHandle<AutoHotbarConfig> settings = Settings.get(AutoHotbarConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final ItemStack[] lastTickHotbar = new ItemStack[9];
     private ItemStack lastTickOffhand;
@@ -30,7 +30,7 @@ public class AutoHotbar implements Module {
         clear();
     }
 
-    public SettingHandle2<AutoHotbarConfig> getSettings() {
+    public SettingHandle<AutoHotbarConfig> getSettings() {
         return settings;
     }
 

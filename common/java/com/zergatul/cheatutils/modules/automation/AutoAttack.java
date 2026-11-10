@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoAttackConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
@@ -14,7 +14,7 @@ public class AutoAttack implements Module {
 
     public static final AutoAttack INSTANCE = new AutoAttack();
 
-    private final SettingHandle2<AutoAttackConfig> settings = Settings.get(AutoAttackConfig.class);
+    private final SettingHandle<AutoAttackConfig> settings = Settings.get(AutoAttackConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private int nextExtraTicks = Integer.MIN_VALUE;
 
@@ -24,7 +24,7 @@ public class AutoAttack implements Module {
         WebApiRegistry.INSTANCE.register("auto-attack", settings, AutoAttackConfig.class);
     }
 
-    public SettingHandle2<AutoAttackConfig> getSettings() {
+    public SettingHandle<AutoAttackConfig> getSettings() {
         return settings;
     }
 

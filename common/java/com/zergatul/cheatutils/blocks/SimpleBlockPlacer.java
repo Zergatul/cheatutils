@@ -41,16 +41,16 @@ public final class SimpleBlockPlacer {
         public CompletableFuture<Boolean> apply(HotbarSlot slot, boolean silentSwitch) {
             if (autoRotate) {
                 return CompletableFuture.completedFuture(true)
-                        .thenApplyAsync(ignored -> rotate(), AfterPlayerAiStepExecutor.instance)
-                        .thenApplyAsync(rotated -> rotated && useItem(slot, silentSwitch), AfterSendPlayerPosExecutor.instance);
+                        .thenApplyAsync(ignored -> rotate(), AfterPlayerAiStepExecutor.INSTANCE)
+                        .thenApplyAsync(rotated -> rotated && useItem(slot, silentSwitch), AfterSendPlayerPosExecutor.INSTANCE);
             } else {
                 return CompletableFuture.completedFuture(true)
-                        .thenApplyAsync(ignored -> useItem(slot, silentSwitch), AfterSendPlayerPosExecutor.instance);
+                        .thenApplyAsync(ignored -> useItem(slot, silentSwitch), AfterSendPlayerPosExecutor.INSTANCE);
             }
         }
 
         private boolean rotate() {
-            FakeRotation.instance.setServerRotation(target);
+            FakeRotation.INSTANCE.setServerRotation(target);
             return true;
         }
 

@@ -31,7 +31,7 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "getEyePosition(F)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private void onGetEyePosition(float partialTickTime, CallbackInfoReturnable<Vec3> info) {
-        FreeCam freeCam = FreeCam.instance;
+        FreeCam freeCam = FreeCam.INSTANCE;
         if (freeCam.shouldOverrideCameraEntityPosition((Entity) (Object) this)) {
             info.setReturnValue(new Vec3(freeCam.getX(), freeCam.getY(), freeCam.getZ()));
         }
@@ -39,7 +39,7 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "getViewVector(F)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private void onGetViewVector(float partialTickTime, CallbackInfoReturnable<Vec3> info) {
-        FreeCam freeCam = FreeCam.instance;
+        FreeCam freeCam = FreeCam.INSTANCE;
         if (freeCam.shouldOverrideCameraEntityPosition((Entity) (Object) this)) {
             info.setReturnValue(Entity.calculateViewVector(freeCam.getXRot(), freeCam.getYRot()));
         }

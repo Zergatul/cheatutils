@@ -27,9 +27,9 @@ public class BlockBreaker {
                     future.complete(null);
                 } else {
                     if (config.shouldAutoRotate()) {
-                        FakeRotation.instance.setServerRotation(Vec3.atCenterOf(pos));
+                        FakeRotation.INSTANCE.setServerRotation(Vec3.atCenterOf(pos));
                     }
-                    AfterSendPlayerPosExecutor.instance.execute(() -> {
+                    AfterSendPlayerPosExecutor.INSTANCE.execute(() -> {
                         assert mc.player != null;
                         assert mc.gameMode != null;
 
@@ -60,18 +60,18 @@ public class BlockBreaker {
     }
 
     private static void queueCheckBreakingProgress(BlockPos pos, InteractionConfig config, CompletableFuture<Void> future) {
-        InGameTickEndExecutor.instance.waitTicks(0).whenComplete((unused, exception) -> {
+        InGameTickEndExecutor.INSTANCE.waitTicks(0).whenComplete((unused, exception) -> {
             if (exception != null) {
                 future.completeExceptionally(exception);
                 return;
             }
 
             if (config.shouldAutoRotate()) {
-                AfterPlayerAiStepExecutor.instance.execute(() -> {
-                    FakeRotation.instance.setServerRotation(Vec3.atCenterOf(pos));
+                AfterPlayerAiStepExecutor.INSTANCE.execute(() -> {
+                    FakeRotation.INSTANCE.setServerRotation(Vec3.atCenterOf(pos));
                 });
             }
-            AfterSendPlayerPosExecutor.instance.execute(() -> {
+            AfterSendPlayerPosExecutor.INSTANCE.execute(() -> {
                 checkBreakingProgress(pos, config, future);
             });
         });

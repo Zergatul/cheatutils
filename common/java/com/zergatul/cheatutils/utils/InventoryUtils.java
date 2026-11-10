@@ -43,7 +43,7 @@ public class InventoryUtils {
         }
 
         if (!(mc.gui.screen() instanceof InventoryScreen)) {
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(0));
+            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClosePacket(0));
         }
     }
 
@@ -57,7 +57,7 @@ public class InventoryUtils {
         Int2ObjectMap<HashedStack> int2objectmap = new Int2ObjectOpenHashMap<>();
         int2objectmap.put(fromSlot.toMenuIndex(), toHashed(toItemStack));
         int2objectmap.put(toSlot.toMenuIndex(), toHashed(fromItemStack));
-        NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
+        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClickPacket(
                 0, // containerId
                 mc.player.inventoryMenu.getStateId(),
                 fromSlot.toMenuIndex(),
@@ -85,7 +85,7 @@ public class InventoryUtils {
             sendPacket(slot, fromItemStack, slot, air);
             slot.set(air);
 
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
+            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClickPacket(
                     0, // containerId
                     mc.player.inventoryMenu.getStateId(),
                     (short) -999, // slotNum
@@ -96,7 +96,7 @@ public class InventoryUtils {
         }
 
         if (!(mc.gui.screen() instanceof InventoryScreen)) {
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(0));
+            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClosePacket(0));
         }
     }
 
@@ -179,7 +179,7 @@ public class InventoryUtils {
 
         Int2ObjectMap<HashedStack> changedSlots = new Int2ObjectOpenHashMap<>();
         changedSlots.put(changedSlot.toMenuIndex(), toHashed(changedStack));
-        NetworkPacketsController.instance.sendPacket(new ServerboundContainerClickPacket(
+        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClickPacket(
                 0, // containerId
                 mc.player.inventoryMenu.getStateId(),
                 slot.toMenuIndex(), // slotNum

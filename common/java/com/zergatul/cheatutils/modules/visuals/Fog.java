@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.FogConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.FogRendererAccessor;
@@ -14,7 +14,7 @@ public class Fog implements Module {
 
     public static final Fog INSTANCE = new Fog();
 
-    private final SettingHandle2<FogConfig> settings = Settings.get(FogConfig.class);
+    private final SettingHandle<FogConfig> settings = Settings.get(FogConfig.class);
 
     private Fog() {
         Events.InGameTickStart.add(this::onClientTickStart);
@@ -22,7 +22,7 @@ public class Fog implements Module {
         WebApiRegistry.INSTANCE.register("fog", settings, FogConfig.class);
     }
 
-    public SettingHandle2<FogConfig> getSettings() {
+    public SettingHandle<FogConfig> getSettings() {
         return settings;
     }
 

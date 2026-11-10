@@ -22,11 +22,11 @@ public abstract class MixinClientboundPlayerInfoRemovePacket {
 
     @Inject(at = @At("HEAD"), method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V")
     private void onBeforeHandle(ClientGamePacketListener listener, CallbackInfo info) {
-        PlayerInfoController.instance.onBeforeUpdate(this.profileIds.stream());
+        PlayerInfoController.INSTANCE.onBeforeUpdate(this.profileIds.stream());
     }
 
     @Inject(at = @At("TAIL"), method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V")
     private void onAfterHandle(ClientGamePacketListener listener, CallbackInfo info) {
-        PlayerInfoController.instance.onAfterUpdate();
+        PlayerInfoController.INSTANCE.onAfterUpdate();
     }
 }

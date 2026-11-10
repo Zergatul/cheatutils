@@ -49,9 +49,9 @@ import java.util.concurrent.CompletableFuture;
 @NullMarked
 public class EntityTitle implements FontBackendHolder {
 
-    public static final EntityTitle instance = new EntityTitle();
+    public static final EntityTitle INSTANCE = new EntityTitle();
 
-    private final SettingHandle2<EntityTitleConfig> settings = Settings.get(EntityTitleConfig.class);
+    private final SettingHandle<EntityTitleConfig> settings = Settings.get(EntityTitleConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final ArrayList<StylizedTextChunk> buffer = new ArrayList<>();
     private final StringBuilder builder = new StringBuilder();
@@ -99,7 +99,7 @@ public class EntityTitle implements FontBackendHolder {
         titleFontChanged = enchantmentFontChanged = true;
     }
 
-    public SettingHandle2<EntityTitleConfig> getSettings() {
+    public SettingHandle<EntityTitleConfig> getSettings() {
         return settings;
     }
 
@@ -115,7 +115,7 @@ public class EntityTitle implements FontBackendHolder {
     }
 
     private void onConfigChanged(EntityTitleConfig prev, EntityTitleConfig curr) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (!prev.titleFont().equals(curr.titleFont())) {
                 titleFontChanged = true;
             }
@@ -146,7 +146,7 @@ public class EntityTitle implements FontBackendHolder {
         EntityTitleConfig config = settings.get();
         itemScale = config.itemScale() == 0 ? mc.getWindow().getGuiScale() : config.itemScale();
 
-        CacheItemRenderer renderer = CacheItemRenderer.instance;
+        CacheItemRenderer renderer = CacheItemRenderer.INSTANCE;
         renderer.beginFrame(itemScale);
 
         List<ItemStack> items = new ArrayList<>();
@@ -158,7 +158,7 @@ public class EntityTitle implements FontBackendHolder {
             items.clear();
             entry.entityLike.collectEquipment(items);
             for (ItemStack item : items) {
-                CacheItemRenderer.instance.requestItem(entry.entityLike.getEquipmentOwner(), item);
+                CacheItemRenderer.INSTANCE.requestItem(entry.entityLike.getEquipmentOwner(), item);
             }
         }
 
@@ -176,13 +176,13 @@ public class EntityTitle implements FontBackendHolder {
         EntityTitleConfig config = settings.get();
 
         if (titleFontChanged) {
-            titleFontBackendFuture = FontLibrary.instance.createBackend(config.titleFont().asFontParameters());
+            titleFontBackendFuture = FontLibrary.INSTANCE.createBackend(config.titleFont().asFontParameters());
             // titleFontRenderer = null; // more smooth transition, but shows prev font for few frames?
             titleFontChanged = false;
         }
 
         if (enchantmentFontChanged) {
-            enchantmentFontBackendFuture = FontLibrary.instance.createBackend(config.enchantmentFont().asFontParameters());
+            enchantmentFontBackendFuture = FontLibrary.INSTANCE.createBackend(config.enchantmentFont().asFontParameters());
             // enchantmentFontRenderer = null; // more smooth transition, but shows prev font for few frames?
             enchantmentFontChanged = false;
         }

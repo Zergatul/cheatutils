@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoFishConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -27,20 +27,20 @@ public class AutoFish implements Module {
 
     private static final long PULL_IN_DELAY_MS = 500;
 
-    private final SettingHandle2<AutoFishConfig> settings = Settings.get(AutoFishConfig.class);
+    private final SettingHandle<AutoFishConfig> settings = Settings.get(AutoFishConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private volatile State state = State.NONE;
     private Optional<FishingHook> bobber = Optional.empty();
     private long lastPullInTime;
 
     private AutoFish() {
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        NetworkPacketsController.INSTANCE.addServerPacketHandler(this::onServerPacket);
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
         WebApiRegistry.INSTANCE.register("auto-fish", settings, AutoFishConfig.class);
     }
 
-    public SettingHandle2<AutoFishConfig> getSettings() {
+    public SettingHandle<AutoFishConfig> getSettings() {
         return settings;
     }
 

@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.visuals;
 
 import com.google.common.collect.Ordering;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.StatusEffectsConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.HudAccessor;
@@ -22,14 +22,14 @@ public class BetterStatusEffects implements Module {
 
     public static final BetterStatusEffects INSTANCE = new BetterStatusEffects();
 
-    private final SettingHandle2<StatusEffectsConfig> settings = Settings.get(StatusEffectsConfig.class);
+    private final SettingHandle<StatusEffectsConfig> settings = Settings.get(StatusEffectsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private BetterStatusEffects() {
         WebApiRegistry.INSTANCE.register("status-effects", settings, StatusEffectsConfig.class);
     }
 
-    public SettingHandle2<StatusEffectsConfig> getSettings() {
+    public SettingHandle<StatusEffectsConfig> getSettings() {
         return settings;
     }
 

@@ -34,7 +34,7 @@ public final class ScriptActivation<T> {
     }
 
     public ScriptActivation(ScriptRef ref, T program, Consumer<ScriptActivation<T>> onFailure) {
-        this(ref, program, onFailure, ScriptRuntimeFailureHandler.instance::report);
+        this(ref, program, onFailure, ScriptRuntimeFailureHandler.INSTANCE::report);
     }
 
     ScriptActivation(ScriptRef ref, T program, Consumer<ScriptActivation<T>> onFailure, FailureReporter reporter) {

@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.BlockEspConfig;
 import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
@@ -34,7 +34,7 @@ public class BlockEsp {
 
     public static final BlockEsp INSTANCE = new BlockEsp();
 
-    private final SettingHandle2<BlockEspConfig> settings = Settings.get(BlockEspConfig.class);
+    private final SettingHandle<BlockEspConfig> settings = Settings.get(BlockEspConfig.class);
     private final List<CustomBlockPosEntry> customEntries = new ArrayList<>();
     private final List<BlockPos> bbList = new ArrayList<>();
     private final List<BlockPos> tracerList = new ArrayList<>();
@@ -58,7 +58,7 @@ public class BlockEsp {
         BlockFinder.INSTANCE.trackBlocks(new HashSet<>(currentConfig.entries().stream().flatMap(e -> e.blocks().stream()).toList()));
     }
 
-    public SettingHandle2<BlockEspConfig> getSettings() {
+    public SettingHandle<BlockEspConfig> getSettings() {
         return settings;
     }
 
@@ -86,7 +86,7 @@ public class BlockEsp {
     public void setScript(BlockEspEntry entry, @Nullable BlockEspConsumer script) {
         // Have to run from the main thread, since BlockEsp module doesn't snapshot scripts
         // and if update happens mid-frame it can cause NullReference exception.
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             List<ScriptActivation<BlockEspConsumer>> previous = new ArrayList<>();
             for (Block block : entry.blocks()) {
                 ScriptActivation<BlockEspConsumer> activation = scripts.remove(block);
@@ -106,14 +106,14 @@ public class BlockEsp {
     }
 
     public void clearScripts() {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             scripts.values().forEach(ScriptActivation::deactivate);
             scripts.clear();
         });
     }
 
     public void moveScript(ImmutableList<Block> oldBlocks, ImmutableList<Block> newBlocks, ScriptRef newRef) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             // all blocks should point to the same ScriptActivation instance
             ScriptActivation<BlockEspConsumer> activation = scripts.get(oldBlocks.get(0));
             for (Block block : oldBlocks) {
@@ -138,7 +138,7 @@ public class BlockEsp {
 
         BlockFinder.INSTANCE.trackBlocks(blocks);
 
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             this.currentConfig = curr;
         });
     }

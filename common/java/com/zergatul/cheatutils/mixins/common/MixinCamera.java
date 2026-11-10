@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Camera.class)
 public abstract class MixinCamera {
@@ -29,7 +28,7 @@ public abstract class MixinCamera {
             method = "alignWithEntity",
             cancellable = true)
     private void onAlignWithEntity(float partialTicks, CallbackInfo info) {
-        FreeCam freeCam = FreeCam.instance;
+        FreeCam freeCam = FreeCam.INSTANCE;
         if (freeCam.isActive()) {
             this.detached = true;
             setRotation(freeCam.getYRot(), freeCam.getXRot());
@@ -51,7 +50,7 @@ public abstract class MixinCamera {
             method = "extractRenderState",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isSpectator()Z"))
     private boolean onExtractRenderStateModifyIsSpectator(boolean isSpectator) {
-        if (FreeCam.instance.isActive()) {
+        if (FreeCam.INSTANCE.isActive()) {
             return true;
         } else {
             return isSpectator;

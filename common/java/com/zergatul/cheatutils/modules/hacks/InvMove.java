@@ -17,7 +17,7 @@ public class InvMove implements Module {
 
     public static final InvMove INSTANCE = new InvMove();
 
-    private final SettingHandle2<InvMoveConfig> settings = Settings.get(InvMoveConfig.class);
+    private final SettingHandle<InvMoveConfig> settings = Settings.get(InvMoveConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private Input storedInputState = Input.EMPTY;
 
@@ -25,7 +25,7 @@ public class InvMove implements Module {
         WebApiRegistry.INSTANCE.register("inv-move", settings, InvMoveConfig.class);
     }
 
-    public SettingHandle2<InvMoveConfig> getSettings() {
+    public SettingHandle<InvMoveConfig> getSettings() {
         return settings;
     }
 

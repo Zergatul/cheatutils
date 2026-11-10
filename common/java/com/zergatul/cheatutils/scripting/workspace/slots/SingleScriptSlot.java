@@ -43,7 +43,7 @@ public abstract class SingleScriptSlot extends ScriptSlot {
 
         // initial code loaded from config may contain errors
         instance.code = code;
-        ScriptExecutionManager.instance.cancel(instance.ref);
+        ScriptExecutionManager.INSTANCE.cancel(instance.ref);
         applyScript(null);
 
         if (code == null || code.isEmpty()) {
@@ -74,7 +74,7 @@ public abstract class SingleScriptSlot extends ScriptSlot {
 
         if (code == null || code.isEmpty()) {
             instance.code = null;
-            ScriptExecutionManager.instance.cancel(instance.ref);
+            ScriptExecutionManager.INSTANCE.cancel(instance.ref);
 
             updateConfigCode(null);
             applyScript(null);
@@ -90,7 +90,7 @@ public abstract class SingleScriptSlot extends ScriptSlot {
 
         if (compilationResult.getProgram() != null) {
             instance.code = code;
-            ScriptExecutionManager.instance.cancel(instance.ref);
+            ScriptExecutionManager.INSTANCE.cancel(instance.ref);
 
             updateConfigCode(code);
             applyScript(compilationResult.getProgram());

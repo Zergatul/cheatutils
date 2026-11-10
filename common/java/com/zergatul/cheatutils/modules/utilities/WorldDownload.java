@@ -58,7 +58,7 @@ public class WorldDownload {
 
     private void start(String name) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             try {
                 stopInternal();
 
@@ -69,7 +69,7 @@ public class WorldDownload {
 
                 access = mc.getLevelSource().createAccess(name);
                 storages = new HashMap<>();
-                ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).onEnabledChanged();
+                ChunkOverlayController.INSTANCE.ofType(WorldDownloadChunkOverlay.class).onEnabledChanged();
             } catch (Throwable e) {
                 logger.error("Cannot start World Download", e);
                 stopInternal();
@@ -83,7 +83,7 @@ public class WorldDownload {
 
     private void stop() {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             try {
                 stopInternal();
             } finally {
@@ -116,7 +116,7 @@ public class WorldDownload {
 
             closeAccess();
 
-            ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).onEnabledChanged();
+            ChunkOverlayController.INSTANCE.ofType(WorldDownloadChunkOverlay.class).onEnabledChanged();
         } catch (Throwable e) {
             logger.error("Cannot stop World Download", e);
         }
@@ -142,7 +142,7 @@ public class WorldDownload {
             CompoundTag compoundtag = write(level, chunk);
             ((RegionalFileStorageAccessor) (Object) storage).write_CU(chunk.getPos(), compoundtag);
 
-            ChunkOverlayController.instance.ofType(WorldDownloadChunkOverlay.class).notifyChunkSaved(
+            ChunkOverlayController.INSTANCE.ofType(WorldDownloadChunkOverlay.class).notifyChunkSaved(
                     dimension, chunk.getPos().x(), chunk.getPos().z());
         } catch (Throwable e) {
             logger.error("Cannot save chunk", e);

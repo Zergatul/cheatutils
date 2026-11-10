@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 public class SpeedCounterController {
 
-    public static final SpeedCounterController instance = new SpeedCounterController();
+    public static final SpeedCounterController INSTANCE = new SpeedCounterController();
 
     private static long INTERVAL = 500 * 1000000; // 0.5s
 

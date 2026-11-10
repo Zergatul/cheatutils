@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.modules.visuals;
 
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.DeathCoordinatesConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -10,13 +10,13 @@ public class DeathCoordinates implements Module {
 
     public static final DeathCoordinates INSTANCE = new DeathCoordinates();
 
-    private final SettingHandle2<DeathCoordinatesConfig> settings = Settings.get(DeathCoordinatesConfig.class);
+    private final SettingHandle<DeathCoordinatesConfig> settings = Settings.get(DeathCoordinatesConfig.class);
 
     private DeathCoordinates() {
         WebApiRegistry.INSTANCE.register("death-coordinates", settings, DeathCoordinatesConfig.class);
     }
 
-    public SettingHandle2<DeathCoordinatesConfig> getSettings() {
+    public SettingHandle<DeathCoordinatesConfig> getSettings() {
         return settings;
     }
 }

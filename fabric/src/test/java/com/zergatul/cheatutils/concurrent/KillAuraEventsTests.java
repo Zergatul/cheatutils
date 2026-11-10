@@ -31,7 +31,7 @@ public class KillAuraEventsTests {
     @AfterEach
     public void clear() throws Exception {
         EventsScripting.INSTANCE.clear();
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         drainFailures();
     }
 
@@ -59,7 +59,7 @@ public class KillAuraEventsTests {
                 return id == 20;
             });
         });
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
 
         KillAura.TargetPredicate predicate = getPredicate();
         assertNotNull(predicate);
@@ -77,21 +77,21 @@ public class KillAuraEventsTests {
     public void replacingAndClearingEventsScriptDetachPreviousFilters() throws Exception {
         EventsApi events = new EventsApi();
         EventsScripting.INSTANCE.setScript(() -> events.modules.killAura.addTargetFilter(id -> false));
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         assertFalse(getPredicate().test(1));
 
         EventsScripting.INSTANCE.setScript(() -> events.modules.killAura.addTargetFilter(id -> true));
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         assertTrue(getPredicate().test(1));
 
         EventsScripting.INSTANCE.setScript(() -> {});
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         assertNull(getPredicate());
 
         EventsScripting.INSTANCE.setScript(() -> events.modules.killAura.addTargetFilter(id -> false));
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         EventsScripting.INSTANCE.setScript(null);
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         assertNull(getPredicate());
     }
 
@@ -110,7 +110,7 @@ public class KillAuraEventsTests {
             EventsScripting.INSTANCE.addKillAuraTargetPredicate(_ -> { calls.incrementAndGet(); throw new IllegalStateException("filter failed"); });
         };
         EventsScripting.INSTANCE.setScript(program);
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         ScriptActivation<?> failed = getActivation();
         KillAura.TargetPredicate old = getPredicate();
         assertFalse(old.test(1));
@@ -124,7 +124,7 @@ public class KillAuraEventsTests {
         assertTrue(getCallbacks().isEmpty());
 
         EventsScripting.INSTANCE.setScript(program);
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         assertTrue(getActivation().isActive());
         assertTrue(getAimPredicate().test(1));
         assertFalse(old.test(1));
@@ -139,7 +139,7 @@ public class KillAuraEventsTests {
             EventsScripting.INSTANCE.addKillAuraTargetPredicate(_ -> true);
             throw new IllegalStateException("initialization failed");
         });
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         assertFalse(getActivation().isActive());
         drainFailures();
         assertFalse(getPredicate().test(1));
@@ -149,11 +149,11 @@ public class KillAuraEventsTests {
     @Test
     public void pendingFailureCleanupCannotDisableSavedReplacement() throws Exception {
         EventsScripting.INSTANCE.setScript(() -> EventsScripting.INSTANCE.addKillAuraTargetPredicate(_ -> { throw new IllegalStateException(); }));
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         assertFalse(getPredicate().test(1));
 
         EventsScripting.INSTANCE.setScript(() -> EventsScripting.INSTANCE.addKillAuraTargetPredicate(_ -> true));
-        ClientTickEndExecutor.instance.processQueue();
+        ClientTickEndExecutor.INSTANCE.processQueue();
         drainFailures();
         assertTrue(getActivation().isActive());
         assertTrue(getPredicate().test(1));

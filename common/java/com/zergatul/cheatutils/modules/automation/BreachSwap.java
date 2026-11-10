@@ -2,7 +2,7 @@ package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.BreachSwapConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -17,7 +17,7 @@ public class BreachSwap implements Module {
 
     public static final BreachSwap INSTANCE = new BreachSwap();
 
-    private final SettingHandle2<BreachSwapConfig> settings = Settings.get(BreachSwapConfig.class);
+    private final SettingHandle<BreachSwapConfig> settings = Settings.get(BreachSwapConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private Inventory inventory;
 
@@ -29,7 +29,7 @@ public class BreachSwap implements Module {
         WebApiRegistry.INSTANCE.register("breach-swap", settings, BreachSwapConfig.class);
     }
 
-    public SettingHandle2<BreachSwapConfig> getSettings() {
+    public SettingHandle<BreachSwapConfig> getSettings() {
         return settings;
     }
 

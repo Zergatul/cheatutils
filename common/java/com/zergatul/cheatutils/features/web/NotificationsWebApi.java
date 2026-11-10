@@ -19,6 +19,6 @@ public class NotificationsWebApi extends WebApiBase {
 
     @Override
     public String get() {
-        return gson.toJson(ScriptRuntimeFailureHandler.instance.getNotificationHistory());
+        return gson.toJson(ScriptRuntimeFailureHandler.INSTANCE.getNotificationHistory());
     }
 }

@@ -21,6 +21,6 @@ public abstract class MixinClientboundDisconnectPacket {
 
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/network/chat/Component;)V")
     private void onInit(Component component, CallbackInfo info) {
-        this.reason = DisconnectController.instance.appendMessage(this.reason);
+        this.reason = DisconnectController.INSTANCE.appendMessage(this.reason);
     }
 }

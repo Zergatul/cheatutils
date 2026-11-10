@@ -40,7 +40,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
 
     private static final int DEFAULT_BACKGROUND = 0x90505050;
 
-    private final SettingHandle2<StatusOverlayConfig> settings = Settings.get(StatusOverlayConfig.class);
+    private final SettingHandle<StatusOverlayConfig> settings = Settings.get(StatusOverlayConfig.class);
     private static final Minecraft mc = Minecraft.getInstance();
     private final Map<Align, List<AlignedText>> texts = new HashMap<>();
     private final List<FreeText> freeTexts = new ArrayList<>();
@@ -70,7 +70,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
         fontChanged = true;
     }
 
-    public SettingHandle2<StatusOverlayConfig> getSettings() {
+    public SettingHandle<StatusOverlayConfig> getSettings() {
         return settings;
     }
 
@@ -116,7 +116,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
     }
 
     private void onConfigChanged(StatusOverlayConfig prev, StatusOverlayConfig curr) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (!prev.font().equals(curr.font())) {
                 fontChanged = true;
             }
@@ -135,7 +135,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
 
         if (fontChanged) {
-            fontBackendFuture = FontLibrary.instance.createBackend(config.font().asFontParameters());
+            fontBackendFuture = FontLibrary.INSTANCE.createBackend(config.font().asFontParameters());
             // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
             fontChanged = false;
         }

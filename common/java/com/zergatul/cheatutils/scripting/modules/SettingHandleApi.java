@@ -7,11 +7,11 @@ import com.zergatul.scripting.MethodDescription;
 
 import java.util.function.UnaryOperator;
 
-public abstract class SettingHandle2Api<T extends ToggleableConfig<T> & ImmutableConfig> {
+public abstract class SettingHandleApi<T extends ToggleableConfig<T> & ImmutableConfig> {
 
-    private final SettingHandle2<T> handle;
+    private final SettingHandle<T> handle;
 
-    protected SettingHandle2Api(SettingHandle2<T> handle) {
+    protected SettingHandleApi(SettingHandle<T> handle) {
         this.handle = handle;
     }
 

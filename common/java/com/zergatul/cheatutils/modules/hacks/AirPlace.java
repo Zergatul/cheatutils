@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.MouseScrollEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AirPlaceConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -27,7 +27,7 @@ public class AirPlace implements Module {
 
     public static final AirPlace INSTANCE = new AirPlace();
 
-    private final SettingHandle2<AirPlaceConfig> settings = Settings.get(AirPlaceConfig.class);
+    private final SettingHandle<AirPlaceConfig> settings = Settings.get(AirPlaceConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean active;
     private double range;

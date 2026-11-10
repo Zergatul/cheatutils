@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ScaffoldConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -32,7 +32,7 @@ public class Scaffold implements Module {
 
     public static final Scaffold INSTANCE = new Scaffold();
 
-    private final SettingHandle2<ScaffoldConfig> settings = Settings.get(ScaffoldConfig.class);
+    private final SettingHandle<ScaffoldConfig> settings = Settings.get(ScaffoldConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<BlockPos> list = new ArrayList<>();
 
@@ -42,7 +42,7 @@ public class Scaffold implements Module {
         WebApiRegistry.INSTANCE.register("scaffold", settings, ScaffoldConfig.class);
     }
 
-    public SettingHandle2<ScaffoldConfig> getSettings() {
+    public SettingHandle<ScaffoldConfig> getSettings() {
         return settings;
     }
 

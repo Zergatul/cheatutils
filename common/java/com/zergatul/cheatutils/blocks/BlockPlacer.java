@@ -175,8 +175,8 @@ public class BlockPlacer {
                 @Override
                 public CompletableFuture<Void> apply(InteractionHand hand) {
                     return CompletableFuture.completedFuture(null)
-                            .thenRunAsync(() -> FakeRotation.instance.setServerRotation(target), AfterPlayerAiStepExecutor.instance)
-                            .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+                            .thenRunAsync(() -> FakeRotation.INSTANCE.setServerRotation(target), AfterPlayerAiStepExecutor.INSTANCE)
+                            .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.INSTANCE);
                 }
             };
         } else {
@@ -184,7 +184,7 @@ public class BlockPlacer {
                 @Override
                 public CompletableFuture<Void> apply(InteractionHand hand) {
                     return CompletableFuture.completedFuture(null)
-                            .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+                            .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.INSTANCE);
                 }
             };
         }
@@ -205,12 +205,12 @@ public class BlockPlacer {
                         Rotation rotation = closest != null ? closest : playerRot;
 
                         return CompletableFuture.completedFuture(null)
-                                .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
-                                .thenCompose(_ -> InGameTickEndExecutor.instance.waitTicks(0))
-                                .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
-                                .thenCompose(_ -> InGameTickEndExecutor.instance.waitTicks(0))
-                                .thenRunAsync(() -> FakeRotation.instance.setServerRotation(rotation), AfterPlayerAiStepExecutor.instance)
-                                .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+                                .thenRunAsync(() -> FakeRotation.INSTANCE.setServerRotation(rotation), AfterPlayerAiStepExecutor.INSTANCE)
+                                .thenCompose(_ -> InGameTickEndExecutor.INSTANCE.waitTicks(0))
+                                .thenRunAsync(() -> FakeRotation.INSTANCE.setServerRotation(rotation), AfterPlayerAiStepExecutor.INSTANCE)
+                                .thenCompose(_ -> InGameTickEndExecutor.INSTANCE.waitTicks(0))
+                                .thenRunAsync(() -> FakeRotation.INSTANCE.setServerRotation(rotation), AfterPlayerAiStepExecutor.INSTANCE)
+                                .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.INSTANCE);
                     }
                 };
             } else {
@@ -223,10 +223,10 @@ public class BlockPlacer {
                         return CompletableFuture.completedFuture(null)
                                 .thenRunAsync(() -> {
                                     if (closest != null) {
-                                        FakeRotation.instance.setServerRotation(closest);
+                                        FakeRotation.INSTANCE.setServerRotation(closest);
                                     }
-                                }, AfterPlayerAiStepExecutor.instance)
-                                .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.instance);
+                                }, AfterPlayerAiStepExecutor.INSTANCE)
+                                .thenRunAsync(() -> useItem(hand, target, direction, neighbourPos, config), AfterSendPlayerPosExecutor.INSTANCE);
                     }
                 };
             }
@@ -242,7 +242,7 @@ public class BlockPlacer {
         boolean emulateShift = shouldUseShift(config) && !mc.player.isShiftKeyDown();
 
         if (emulateShift) {
-            NetworkPacketsController.instance.sendPacket(new ServerboundPlayerInputPacket(new Input(
+            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundPlayerInputPacket(new Input(
                     mc.player.input.keyPresses.forward(),
                     mc.player.input.keyPresses.backward(),
                     mc.player.input.keyPresses.left(),
@@ -260,7 +260,7 @@ public class BlockPlacer {
         }
 
         if (emulateShift) {
-            NetworkPacketsController.instance.sendPacket(new ServerboundPlayerInputPacket(new Input(
+            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundPlayerInputPacket(new Input(
                     mc.player.input.keyPresses.forward(),
                     mc.player.input.keyPresses.backward(),
                     mc.player.input.keyPresses.left(),

@@ -29,20 +29,20 @@ public class EntityInteraction {
                 CompletableFuture<EntityInteractionResult> future = CompletableFuture.completedFuture(EntityInteractionResult.success());
                 future = stepIfSuccess(
                         future,
-                        AfterPlayerAiStepExecutor.instance,
+                        AfterPlayerAiStepExecutor.INSTANCE,
                         result -> {
                             if (!mc.player.isWithinEntityInteractionRange(entity, 3.0)) {
                                 return EntityInteractionResult.failed("Out of range");
                             } else {
                                 if (config.shouldAutoRotate()) {
-                                    FakeRotation.instance.setServerRotation(entity.getBoundingBox().getCenter());
+                                    FakeRotation.INSTANCE.setServerRotation(entity.getBoundingBox().getCenter());
                                 }
                                 return result;
                             }
                         });
                 future = stepIfSuccess(
                         future,
-                        AfterSendPlayerPosExecutor.instance,
+                        AfterSendPlayerPosExecutor.INSTANCE,
                         result -> {
                             if (mc.gameMode.interact(mc.player, entity, new EntityHitResult(entity), InteractionHand.MAIN_HAND) instanceof InteractionResult.Success success) {
                                 if (success.swingSource() == InteractionResult.SwingSource.PREDICTED) {

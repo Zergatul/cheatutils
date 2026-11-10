@@ -11,11 +11,11 @@ public abstract class MixinMouseHandlerZoom {
 
     @ModifyArg(method = "turnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"), index = 1)
     private double onModifyTurnXRot(double xRot) {
-        return Zoom.instance.isActive() ? xRot * Zoom.instance.getFovFactor() : xRot;
+        return Zoom.INSTANCE.isActive() ? xRot * Zoom.INSTANCE.getFovFactor() : xRot;
     }
 
     @ModifyArg(method = "turnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"), index = 0)
     private double onModifyTurnYRot(double yRot) {
-        return Zoom.instance.isActive() ? yRot * Zoom.instance.getFovFactor() : yRot;
+        return Zoom.INSTANCE.isActive() ? yRot * Zoom.INSTANCE.getFovFactor() : yRot;
     }
 }

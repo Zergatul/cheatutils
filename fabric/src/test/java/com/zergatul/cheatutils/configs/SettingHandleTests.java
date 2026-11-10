@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SettingHandle2Tests {
+public class SettingHandleTests {
 
     @Test
     public void replacementIsPublishedBeforeNotificationAndSavedOnce() {
@@ -152,9 +152,9 @@ public class SettingHandle2Tests {
 
     private static class Fixture {
         private int writes;
-        private final SettingsRegistry2<Profile> registry = new SettingsRegistry2<>(new Object(), new Profile(), () -> writes++);
-        private final SettingHandle2<EntityTitleConfig> title = registry.register(profile -> profile.title, (profile, value) -> profile.title = value);
-        private final SettingHandle2<CounterConfig> other = registry.register(profile -> profile.other, (profile, value) -> profile.other = value);
+        private final SettingsRegistry<Profile> registry = new SettingsRegistry<>(new Object(), new Profile(), () -> writes++);
+        private final SettingHandle<EntityTitleConfig> title = registry.register(profile -> profile.title, (profile, value) -> profile.title = value);
+        private final SettingHandle<CounterConfig> other = registry.register(profile -> profile.other, (profile, value) -> profile.other = value);
     }
 
     private static class Profile {

@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.esp.entity.web;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
 import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
@@ -31,7 +31,7 @@ public class ConfigWebApi extends WebApiBase {
     public synchronized String post(String body) throws ApiException {
         Class<?> type = gson.fromJson(body, EntityEspEntry.UpdateOptions.class).type();
 
-        SettingHandle2<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
+        SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
         if (handle.get().entries().contains(e -> e.type() == type)) {
             throw new ApiException("Entity config already exists.", HttpResponseCodes.BAD_REQUEST);
         }
@@ -50,7 +50,7 @@ public class ConfigWebApi extends WebApiBase {
             throw new ApiException("Entity class name don't match.", HttpResponseCodes.BAD_REQUEST);
         }
 
-        SettingHandle2<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
+        SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
         if (!handle.get().entries().contains(e -> e.type() == jsonConfig.type())) {
             throw new ApiException("Cannot find entity config.", HttpResponseCodes.BAD_REQUEST);
         }
@@ -66,7 +66,7 @@ public class ConfigWebApi extends WebApiBase {
 
     @Override
     public synchronized String delete(String className) {
-        SettingHandle2<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
+        SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
         EntityEspEntry entry = handle.get().entries().stream()
                 .filter(c -> c.type().getName().equals(className))
                 .findFirst()

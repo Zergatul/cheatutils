@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ElytraBounceConfig;
 import com.zergatul.cheatutils.modules.Module;
@@ -12,7 +12,7 @@ public class ElytraBounce implements Module {
 
     public static final ElytraBounce INSTANCE = new ElytraBounce();
 
-    private final SettingHandle2<ElytraBounceConfig> settings = Settings.get(ElytraBounceConfig.class);
+    private final SettingHandle<ElytraBounceConfig> settings = Settings.get(ElytraBounceConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean enabled;
     private boolean wasFallFlying;
@@ -30,7 +30,7 @@ public class ElytraBounce implements Module {
         state = State.NONE;
     }
 
-    public SettingHandle2<ElytraBounceConfig> getSettings() {
+    public SettingHandle<ElytraBounceConfig> getSettings() {
         return settings;
     }
 

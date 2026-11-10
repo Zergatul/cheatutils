@@ -19,7 +19,7 @@ public class ChatUtilities implements Module {
 
     public static final ChatUtilities INSTANCE = new ChatUtilities();
 
-    private final SettingHandle2<ChatUtilitiesConfig> settings = Settings.get(ChatUtilitiesConfig.class);
+    private final SettingHandle<ChatUtilitiesConfig> settings = Settings.get(ChatUtilitiesConfig.class);
     private final Map<GuiMessage, LocalDateTime> messageTimeMap = new WeakHashMap<>();
     private DateTimeFormatter formatter;
 
@@ -31,7 +31,7 @@ public class ChatUtilities implements Module {
         initFormatter(settings.get());
     }
 
-    public SettingHandle2<ChatUtilitiesConfig> getSettings() {
+    public SettingHandle<ChatUtilitiesConfig> getSettings() {
         return settings;
     }
 
@@ -58,7 +58,7 @@ public class ChatUtilities implements Module {
     }
 
     private void onConfigChanged(ChatUtilitiesConfig prev, ChatUtilitiesConfig curr) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             initFormatter(curr);
             Minecraft.getInstance().gui.hud.getChat().rescaleChat();
         });

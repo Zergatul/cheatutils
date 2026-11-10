@@ -20,12 +20,12 @@ public class DelayedApi {
         }
 
         ScriptActivation<?> owner = ScriptActivation.findOwner(action);
-        InGameTickEndExecutor.instance.waitTicks(ticks).thenRun(() -> {
+        InGameTickEndExecutor.INSTANCE.waitTicks(ticks).thenRun(() -> {
             if (owner == null) {
                 action.run();
             } else {
                 owner.run("delayed callback", action);
             }
-        }).whenComplete((_, throwable) -> ScriptRuntimeFailureHandler.instance.report("Delayed script callback failed.", throwable));
+        }).whenComplete((_, throwable) -> ScriptRuntimeFailureHandler.INSTANCE.report("Delayed script callback failed.", throwable));
     }
 }

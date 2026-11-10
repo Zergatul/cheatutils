@@ -61,7 +61,7 @@ public abstract class MultiScriptSlot extends ScriptSlot {
     public void remove(String identifier) {
         ScriptDocument instance = instances.remove(identifier);
         if (instance != null) {
-            ScriptExecutionManager.instance.cancel(instance.ref);
+            ScriptExecutionManager.INSTANCE.cancel(instance.ref);
             applyScript(identifier, null);
         }
     }
@@ -74,7 +74,7 @@ public abstract class MultiScriptSlot extends ScriptSlot {
 
         ScriptDocument newInstance = oldInstance.withRef(new ScriptRef(scriptType, newIdentifier));
         instances.put(newIdentifier, newInstance);
-        ScriptExecutionManager.instance.move(oldInstance.ref, newInstance.ref);
+        ScriptExecutionManager.INSTANCE.move(oldInstance.ref, newInstance.ref);
     }
 
     @Override
@@ -95,7 +95,7 @@ public abstract class MultiScriptSlot extends ScriptSlot {
 
         CompilationResult compilationResult = compileScript(code);
         if (compilationResult.getProgram() != null) {
-            ScriptExecutionManager.instance.cancel(instance.ref);
+            ScriptExecutionManager.INSTANCE.cancel(instance.ref);
             applyScript(identifier, compilationResult.getProgram());
             return ScriptSaveResult.success();
         } else {
@@ -121,11 +121,11 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         if (code == null || code.isEmpty()) {
             if (instance != null) {
                 instance.code = null;
-                ScriptExecutionManager.instance.cancel(instance.ref);
+                ScriptExecutionManager.INSTANCE.cancel(instance.ref);
             }
 
             updateConfigCode(identifier, null);
-            ConfigStore.instance.requestWrite();
+            ConfigStore.INSTANCE.requestWrite();
 
             applyScript(identifier, null);
 
@@ -145,9 +145,9 @@ public abstract class MultiScriptSlot extends ScriptSlot {
 
         if (compilationResult.getProgram() != null) {
             instance.code = code;
-            ScriptExecutionManager.instance.cancel(instance.ref);
+            ScriptExecutionManager.INSTANCE.cancel(instance.ref);
             updateConfigCode(identifier, code);
-            ConfigStore.instance.requestWrite();
+            ConfigStore.INSTANCE.requestWrite();
 
             applyScript(identifier, compilationResult.getProgram());
 
