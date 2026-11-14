@@ -518,7 +518,7 @@ module({
 module({
     group: 'scripting',
     name: 'Key Bindings',
-    component: 'KeyBindingScripts',
+    component: 'KeyBindings',
     path: 'key-bindings',
     tags: ['key', 'bindings', 'scripting']
 });

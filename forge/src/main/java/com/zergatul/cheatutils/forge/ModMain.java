@@ -37,6 +37,8 @@ public final class ModMain {
         Modules.registerKeyBindings();
         Modules.register();
         Features.register();
+        // triggers initial SettingHandle<T>.observer handles registered by all modules constructors
+        ConfigStore.INSTANCE.initialNotify();
         DebugScreenExtensions.register();
     }
 
@@ -48,6 +50,8 @@ public final class ModMain {
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
         SystemFonts.initAsync();
+
+        // loads config
         Profiles.INSTANCE.init();
         WebServer.INSTANCE.start();
     }

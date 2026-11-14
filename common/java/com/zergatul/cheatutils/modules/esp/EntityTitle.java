@@ -89,14 +89,11 @@ public class EntityTitle implements FontBackendHolder {
     private EntityTitle() {
         Events.PreRenderGui.add(this::onPreRenderGui);
         Events.AfterRenderWorld.add(this::onRenderWorld, 20);
-        settings.onChanged(this::onConfigChanged);
+        settings.observe(this::onConfigChanged);
 
         WebApiRegistry.INSTANCE.register("entity-title", settings, EntityTitleConfig.class);
 
         FontBackendHolders.add(this);
-
-        // make fonts load on the first render event
-        titleFontChanged = enchantmentFontChanged = true;
     }
 
     public SettingHandle<EntityTitleConfig> getSettings() {
@@ -114,12 +111,12 @@ public class EntityTitle implements FontBackendHolder {
         return false;
     }
 
-    private void onConfigChanged(EntityTitleConfig prev, EntityTitleConfig curr) {
+    private void onConfigChanged(boolean isInitial, EntityTitleConfig prev, EntityTitleConfig curr) {
         ClientTickEndExecutor.INSTANCE.execute(() -> {
-            if (!prev.titleFont().equals(curr.titleFont())) {
+            if (isInitial || !prev.titleFont().equals(curr.titleFont())) {
                 titleFontChanged = true;
             }
-            if (!prev.enchantmentFont().equals(curr.enchantmentFont())) {
+            if (isInitial || !prev.enchantmentFont().equals(curr.enchantmentFont())) {
                 enchantmentFontChanged = true;
             }
         });

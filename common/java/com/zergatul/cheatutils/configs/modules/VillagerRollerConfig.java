@@ -2,11 +2,18 @@ package com.zergatul.cheatutils.configs.modules;
 
 import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.configs.ImmutableConfigWithUpdateOptions;
+import org.jspecify.annotations.Nullable;
 
 public record VillagerRollerConfig(
         boolean autoRotate,
-        String code
+        @Nullable String code
 ) implements ImmutableConfigWithUpdateOptions<VillagerRollerConfig.UpdateOptions>, InteractionConfig {
+
+    public VillagerRollerConfig {
+        if (code != null && code.isBlank()) {
+            code = null;
+        }
+    }
 
     public static VillagerRollerConfig defaults() {
         return new Builder()

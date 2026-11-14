@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.configs.modules;
 import com.zergatul.cheatutils.configs.ImmutableConfigWithUpdateOptions;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
 
@@ -31,7 +32,7 @@ public record EntityEspEntry(
         boolean showEquippedItems,
         boolean showOwner,
         boolean scriptEnabled,
-        String code
+        @Nullable String code
 ) implements ImmutableConfigWithUpdateOptions<EntityEspEntry.UpdateOptions> {
 
     public EntityEspEntry {

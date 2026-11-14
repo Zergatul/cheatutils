@@ -55,7 +55,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
 
     private StatusOverlay() {
         Events.PostRenderGui.add(this::onPostRenderGui);
-        settings.onChanged(this::onConfigChanged);
+        settings.observe(this::onConfigChanged);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
@@ -65,9 +65,6 @@ public class StatusOverlay implements Module, FontBackendHolder {
         for (Align align : Align.values()) {
             texts.put(align, new ArrayList<>());
         }
-
-        // make fonts load on the first render event
-        fontChanged = true;
     }
 
     public SettingHandle<StatusOverlayConfig> getSettings() {
@@ -115,9 +112,9 @@ public class StatusOverlay implements Module, FontBackendHolder {
         backgroundColor = color;
     }
 
-    private void onConfigChanged(StatusOverlayConfig prev, StatusOverlayConfig curr) {
+    private void onConfigChanged(boolean isInitial, StatusOverlayConfig prev, StatusOverlayConfig curr) {
         ClientTickEndExecutor.INSTANCE.execute(() -> {
-            if (!prev.font().equals(curr.font())) {
+            if (isInitial || !prev.font().equals(curr.font())) {
                 fontChanged = true;
             }
         });

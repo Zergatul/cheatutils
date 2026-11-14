@@ -1,13 +1,11 @@
 package com.zergatul.cheatutils.configs;
 
 import com.google.gson.*;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.configs.adapters.*;
 import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
 import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.esp.block.BlockGroupKey;
-import com.zergatul.cheatutils.modules.scripting.KeyBindings;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
@@ -25,7 +23,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -59,6 +56,10 @@ public class ConfigStore {
         Config config = new Config();
         settingsRegistry = new SettingsRegistry<>(this, config, this::requestWrite);
         settings = new Settings(settingsRegistry);
+    }
+
+    public void initialNotify() {
+        settingsRegistry.initialNotify();
     }
 
     public Config getConfig() {
@@ -136,74 +137,11 @@ public class ConfigStore {
 
     // Prepare the profile before publishing it and notifying immutable settings listeners.
     private void setConfig(Config config) {
-        config.sanitize();
         settingsRegistry.replace(config);
     }
 
     private void onConfigLoaded() {
         Config config = getConfig();
-
-        KeyBindings.INSTANCE.clear();
-        if (config.keyBindingScriptsConfig.scripts.isEmpty()) {
-            final String toggleEspName = "Toggle ESP";
-            try {
-                KeyBindings.INSTANCE.add(toggleEspName, "esp.toggle();", false).accept(
-                        _ -> {
-                            throw new IllegalStateException();
-                        },
-                        diagnostics -> {
-                            ScriptRuntimeFailureHandler.INSTANCE.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, toggleEspName), diagnostics);
-                        },
-                        _ -> {});
-                //KeyBindings.instance.getKeyMappingByIndex(0).setKey(InputConstants.getKey("key.keyboard.backslash"));
-                KeyBindings.INSTANCE.assign(0, toggleEspName);
-            } catch (Throwable e) {
-                ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(
-                        new ScriptRef(ScriptType.KEYBINDING, toggleEspName), e);
-            }
-
-            final String toggleFreeCamName = "Toggle FreeCam";
-            try {
-                KeyBindings.INSTANCE.add(toggleFreeCamName, "freeCam.toggle();", false).accept(
-                        _ -> {
-                            throw new IllegalStateException();
-                        },
-                        diagnostics -> {
-                            ScriptRuntimeFailureHandler.INSTANCE.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), diagnostics);
-                        },
-                        _ -> {});
-                KeyBindings.INSTANCE.getKeyMappingByIndex(1).setKey(InputConstants.getKey("key.keyboard.f6"));
-                KeyBindings.INSTANCE.assign(1, toggleFreeCamName);
-            } catch (Throwable e) {
-                ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(
-                        new ScriptRef(ScriptType.KEYBINDING, toggleFreeCamName), e);
-            }
-        } else {
-            ArrayList<KeyBindingScriptsConfig.ScriptEntry> copy = new ArrayList<>(config.keyBindingScriptsConfig.scripts);
-            config.keyBindingScriptsConfig.scripts.clear();
-            copy.forEach(s -> {
-                try {
-                    KeyBindings.INSTANCE.add(s.name, s.code, true).accept(
-                            _ -> {
-                                throw new IllegalStateException();
-                            },
-                            diagnostics -> {
-                                ScriptRuntimeFailureHandler.INSTANCE.reportCompilationFailure(new ScriptRef(ScriptType.KEYBINDING, s.name), diagnostics);
-                            },
-                            _ -> {});
-                } catch (Throwable e) {
-                    ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(
-                            new ScriptRef(ScriptType.KEYBINDING, s.name), e);
-                }
-            });
-
-            String[] bindings = config.keyBindingsConfig.bindings;
-            for (int i = 0; i < KeyBindingsConfig.KeysCount; i++) {
-                if (bindings[i] != null) {
-                    KeyBindings.INSTANCE.assign(i, bindings[i]);
-                }
-            }
-        }
 
         initializeScript(ScriptType.OVERLAY, null, config.statusOverlayConfig.code());
         initializeScript(ScriptType.BLOCK_AUTOMATION, null, config.blockAutomationConfig.code());

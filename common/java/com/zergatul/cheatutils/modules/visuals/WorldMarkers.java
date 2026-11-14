@@ -34,16 +34,13 @@ public class WorldMarkers implements FontBackendHolder {
 
     private WorldMarkers() {
         Events.AfterRenderWorld.add(this::onRenderWorldLast, 10);
-        settings.onChanged(this::onConfigChanged);
+        settings.observe(this::onConfigChanged);
 
         WebApiRegistry.INSTANCE.register("world-markers", settings, WorldMarkersConfig.class);
         WebApiRegistry.INSTANCE.register(new DimensionWebApi());
         WebApiRegistry.INSTANCE.register(new CoordinatesWebApi());
 
         FontBackendHolders.add(this);
-
-        // make fonts load on the first render event
-        fontChanged = true;
     }
 
     public SettingHandle<WorldMarkersConfig> getSettings() {
@@ -55,9 +52,9 @@ public class WorldMarkers implements FontBackendHolder {
         return fontRenderer != null && fontRenderer.uses(backend);
     }
 
-    private void onConfigChanged(WorldMarkersConfig prev, WorldMarkersConfig curr) {
+    private void onConfigChanged(boolean isInitial, WorldMarkersConfig prev, WorldMarkersConfig curr) {
         ClientTickEndExecutor.INSTANCE.execute(() -> {
-            if (!prev.font().equals(curr.font())) {
+            if (isInitial || !prev.font().equals(curr.font())) {
                 fontChanged = true;
             }
         });

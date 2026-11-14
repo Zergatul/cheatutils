@@ -16,7 +16,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /** Runtime-only state belonging to one installed program, never to its saved document. */
-public final class ScriptActivation<T> {
+public class ScriptActivation<T> {
 
     // Each compilation has its own loader, shared by its program and generated closures.
     // Unlike thread-local ownership, this also works after an async script resumes from await.
@@ -37,7 +37,7 @@ public final class ScriptActivation<T> {
         this(ref, program, onFailure, ScriptRuntimeFailureHandler.INSTANCE::report);
     }
 
-    ScriptActivation(ScriptRef ref, T program, Consumer<ScriptActivation<T>> onFailure, FailureReporter reporter) {
+    protected ScriptActivation(ScriptRef ref, T program, Consumer<ScriptActivation<T>> onFailure, FailureReporter reporter) {
         this(ref, program, new AtomicBoolean(), new AtomicReference<>(), onFailure, reporter);
     }
 
@@ -155,7 +155,7 @@ public final class ScriptActivation<T> {
     }
 
     @FunctionalInterface
-    interface FailureReporter {
+    protected interface FailureReporter {
         void report(ScriptRef ref, String context, Throwable failure);
     }
 }

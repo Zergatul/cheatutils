@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.modules.esp.block.BlockFinder;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
+import com.zergatul.cheatutils.modules.scripting.keybindings.KeyBindings;
 import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.modules.visuals.*;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;

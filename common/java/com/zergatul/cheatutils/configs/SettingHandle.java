@@ -19,6 +19,7 @@ public final class SettingHandle<T extends ImmutableConfig> {
     private final Consumer<T> setter;
     private final Runnable requestWrite;
     private final List<BiConsumer<T, T>> listeners = new ArrayList<>();
+    private final List<SettingObserver<T>> observers = new ArrayList<>();
 
     public SettingHandle(Object lock, Supplier<T> getter, Consumer<T> setter, Runnable requestWrite) {
         this.lock = lock;
@@ -63,6 +64,12 @@ public final class SettingHandle<T extends ImmutableConfig> {
         }
     }
 
+    public void observe(SettingObserver<T> observer) {
+        synchronized (lock) {
+            observers.add(Objects.requireNonNull(observer));
+        }
+    }
+
     // Called under the shared store lock, before publishing a replacement profile.
     public Runnable prepareNotification(T previous, T current) {
         Objects.requireNonNull(current);
@@ -70,11 +77,23 @@ public final class SettingHandle<T extends ImmutableConfig> {
             return () -> {};
         }
 
-        List<BiConsumer<T, T>> snapshot = List.copyOf(listeners);
+        List<BiConsumer<T, T>> listenersSnapshot = List.copyOf(listeners);
+        List<SettingObserver<T>> observersSnapshot = List.copyOf(observers);
         return () -> {
-            for (BiConsumer<T, T> listener : snapshot) {
+            for (BiConsumer<T, T> listener : listenersSnapshot) {
                 listener.accept(previous, current);
             }
+            for (SettingObserver<T> observer : observersSnapshot) {
+                observer.notify(false, previous, current);
+            }
         };
+    }
+
+    public void initialNotify(T current) {
+        synchronized (lock) {
+            for (SettingObserver<T> observer : observers) {
+                observer.notify(true, current, current);
+            }
+        }
     }
 }

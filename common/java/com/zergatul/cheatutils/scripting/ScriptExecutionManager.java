@@ -21,7 +21,7 @@ public class ScriptExecutionManager {
     private final Map<ScriptRef, CompletableFuture<?>> namedExecutions = new HashMap<>();
     private final Set<CompletableFuture<?>> anonymousExecutions = new HashSet<>();
 
-    ScriptExecutionManager() {
+    protected ScriptExecutionManager() {
         this(false);
     }
 
@@ -38,7 +38,8 @@ public class ScriptExecutionManager {
     public CompletableFuture<?> execute(
             ScriptRef ref,
             AsyncRunnable script,
-            @Nullable Consumer<Throwable> onComplete) {
+            @Nullable Consumer<Throwable> onComplete
+    ) {
         Objects.requireNonNull(ref);
         Objects.requireNonNull(script);
 

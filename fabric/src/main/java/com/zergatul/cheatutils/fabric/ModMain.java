@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.fabric;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.MixinPlugin;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.features.Features;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
@@ -20,11 +21,15 @@ public final class ModMain implements ClientModInitializer {
         setupFabricEvents();
 
         SystemFonts.initAsync();
+
+        // loads config
         Profiles.INSTANCE.init();
         WebServer.INSTANCE.start();
         Modules.registerKeyBindings();
         Modules.register();
         Features.register();
+        // triggers initial SettingHandle<T>.observer handles registered by all modules constructors
+        ConfigStore.INSTANCE.initialNotify();
         Events.RegisterKeyBindings.trigger(KeyMappingHelper::registerKeyMapping);
         DebugScreenExtensions.register();
 

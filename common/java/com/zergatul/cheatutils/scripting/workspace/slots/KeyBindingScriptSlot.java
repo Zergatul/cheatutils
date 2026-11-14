@@ -1,8 +1,7 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.KeyBindingScriptsConfig;
-import com.zergatul.cheatutils.modules.scripting.KeyBindings;
+import com.zergatul.cheatutils.configs.modules.KeyBindingEntry;
+import com.zergatul.cheatutils.modules.scripting.keybindings.KeyBindings;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
@@ -19,12 +18,16 @@ public class KeyBindingScriptSlot extends MultiScriptSlot {
 
     @Override
     protected void updateConfigCode(String identifier, @Nullable String code) {
-        KeyBindingScriptsConfig config = ConfigStore.INSTANCE.getConfig().keyBindingScriptsConfig;
-        KeyBindingScriptsConfig.ScriptEntry entry = config.scripts.stream()
-                .filter(e -> e.name.equals(identifier))
-                .findFirst()
-                .orElseThrow();
-        entry.code = code;
+        KeyBindings.INSTANCE.getSettings().update(config -> {
+            KeyBindingEntry entry = config.entries().stream()
+                    .filter(e -> e.name().equals(identifier))
+                    .findFirst()
+                    .orElseThrow();
+            return config.withEntries(
+                    config.entries().replaceFirst(
+                            e -> e == entry,
+                            e -> e.withCode(code)));
+        });
     }
 
     @Override

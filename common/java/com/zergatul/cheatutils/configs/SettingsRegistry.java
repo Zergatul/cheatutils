@@ -12,6 +12,7 @@ public final class SettingsRegistry<R> {
     private final Object lock;
     private final Runnable requestWrite;
     private final List<Function<R, Runnable>> bindings = new ArrayList<>();
+    private final List<Runnable> initializations = new ArrayList<>();
     private R config;
 
     public SettingsRegistry(Object lock, R config, Runnable requestWrite) {
@@ -28,6 +29,7 @@ public final class SettingsRegistry<R> {
                     value -> setter.accept(config, value),
                     requestWrite);
             bindings.add(next -> handle.prepareNotification(getter.apply(config), getter.apply(next)));
+            initializations.add(() -> handle.initialNotify(getter.apply(config)));
             return handle;
         }
     }
@@ -52,6 +54,15 @@ public final class SettingsRegistry<R> {
             for (Runnable notification : notifications) {
                 notification.run();
             }
+        }
+    }
+
+    public void initialNotify() {
+        synchronized (lock) {
+            for (Runnable initialization : initializations) {
+                initialization.run();
+            }
+            initializations.clear();
         }
     }
 }

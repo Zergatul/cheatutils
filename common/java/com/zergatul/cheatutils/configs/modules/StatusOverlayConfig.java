@@ -3,16 +3,21 @@ package com.zergatul.cheatutils.configs.modules;
 import com.zergatul.cheatutils.configs.ImmutableConfigWithUpdateOptions;
 import com.zergatul.cheatutils.configs.ToggleableConfig;
 import com.zergatul.cheatutils.configs.utility.FontConfig;
+import org.jspecify.annotations.Nullable;
 
 public record StatusOverlayConfig(
         boolean enabled,
         FontConfig font,
-        String code
+        @Nullable String code
 ) implements ImmutableConfigWithUpdateOptions<StatusOverlayConfig.UpdateOptions>, ToggleableConfig<StatusOverlayConfig> {
 
     public StatusOverlayConfig {
         if (font == null) {
             font = FontConfig.defaults();
+        }
+
+        if (code != null && code.isBlank()) {
+            code = null;
         }
     }
 

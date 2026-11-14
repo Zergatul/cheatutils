@@ -263,6 +263,11 @@ public final class Settings {
                 (config, value) -> config.invMoveConfig = value);
 
         registrar.register(
+                KeyBindingsConfig.class,
+                config -> config.keyBindingsConfig,
+                (config, value) -> config.keyBindingsConfig = value);
+
+        registrar.register(
                 KillAuraConfig.class,
                 config -> config.killAuraConfig,
                 (config, value) -> config.killAuraConfig = value);

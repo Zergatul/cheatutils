@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.configs.ImmutableConfigWithUpdateOptions;
 import com.zergatul.cheatutils.configs.ToggleableConfig;
 import com.zergatul.cheatutils.configs.utility.BlockPlacerConfig;
 import com.zergatul.cheatutils.utils.MathUtils;
+import org.jspecify.annotations.Nullable;
 
 public record BlockAutomationConfig(
         boolean enabled,
@@ -15,13 +16,17 @@ public record BlockAutomationConfig(
         double placementRate,
         boolean autoRotate,
         boolean debugMode,
-        String code
+        @Nullable String code
 ) implements ImmutableConfigWithUpdateOptions<BlockAutomationConfig.UpdateOptions>, ToggleableConfig<BlockAutomationConfig>, BlockPlacerConfig {
 
     public BlockAutomationConfig {
         maxRange = MathUtils.clamp(maxRange, 1, 10);
         autoSelectSlots = BlockPlacerConfig.sanitizeAutoSelectSlots(autoSelectSlots);
         placementRate = MathUtils.clamp(placementRate, 1, 100);
+
+        if (code != null && code.isBlank()) {
+            code = null;
+        }
     }
 
     public static BlockAutomationConfig defaults() {

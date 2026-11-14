@@ -39,12 +39,16 @@ public class ModMain {
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         Modules.register();
         Features.register();
+        // triggers initial SettingHandle<T>.observer handles registered by all modules constructors
+        ConfigStore.INSTANCE.initialNotify();
         NeoForge.EVENT_BUS.register(new NeoForgeEvents());
         DebugScreenExtensions.register();
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
         SystemFonts.initAsync();
+
+        // loads config
         Profiles.instance.init();
         WebServer.instance.start();
     }

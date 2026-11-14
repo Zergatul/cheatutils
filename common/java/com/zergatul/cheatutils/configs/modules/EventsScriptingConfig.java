@@ -2,11 +2,18 @@ package com.zergatul.cheatutils.configs.modules;
 
 import com.zergatul.cheatutils.configs.ImmutableConfigWithUpdateOptions;
 import com.zergatul.cheatutils.configs.ToggleableConfig;
+import org.jspecify.annotations.Nullable;
 
 public record EventsScriptingConfig(
         boolean enabled,
-        String code
+        @Nullable String code
 ) implements ImmutableConfigWithUpdateOptions<EventsScriptingConfig.UpdateOptions>, ToggleableConfig<EventsScriptingConfig> {
+
+    public EventsScriptingConfig {
+        if (code != null && code.isBlank()) {
+            code = null;
+        }
+    }
 
     public static EventsScriptingConfig defaults() {
         return new Builder()

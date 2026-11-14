@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.common.RegistryExtensions;
 import com.zergatul.cheatutils.configs.ImmutableConfigWithUpdateOptions;
 import com.zergatul.cheatutils.utils.MathUtils;
 import net.minecraft.world.level.block.Block;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
 import java.util.Objects;
@@ -24,7 +25,7 @@ public record BlockEspEntry(
         boolean drawOverlay,
         Color overlayColor,
         boolean scriptEnabled,
-        String code
+        @Nullable String code
 ) implements ImmutableConfigWithUpdateOptions<BlockEspEntry.UpdateOptions> {
 
     public BlockEspEntry {

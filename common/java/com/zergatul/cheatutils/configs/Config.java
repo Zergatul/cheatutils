@@ -3,8 +3,7 @@ package com.zergatul.cheatutils.configs;
 import com.zergatul.cheatutils.configs.modules.*;
 import com.zergatul.cheatutils.configs.modules.BlockEspConfig;
 
-public class Config implements Sanitizable {
-
+public class Config {
     public FullBrightConfig fullBrightConfig = FullBrightConfig.defaults();
     public AutoFishConfig autoFishConfig = AutoFishConfig.defaults();
     public ArmorOverlayConfig armorOverlayConfig = ArmorOverlayConfig.defaults();
@@ -30,8 +29,7 @@ public class Config implements Sanitizable {
     public ScaffoldConfig scaffoldConfig = ScaffoldConfig.defaults();
     public AdvancedTooltipsConfig advancedTooltipsConfig = AdvancedTooltipsConfig.defaults();
     public FogConfig fogConfig = FogConfig.defaults();
-    public KeyBindingScriptsConfig keyBindingScriptsConfig = new KeyBindingScriptsConfig();
-    public KeyBindingsConfig keyBindingsConfig = new KeyBindingsConfig();
+    public KeyBindingsConfig keyBindingsConfig = KeyBindingsConfig.defaults();
     public WorldMarkersConfig worldMarkersConfig = WorldMarkersConfig.defaults();
     public UserNameConfig userNameConfig = UserNameConfig.defaults();
     public NewChunksConfig newChunksConfig = NewChunksConfig.defaults();
@@ -83,9 +81,4 @@ public class Config implements Sanitizable {
     public CrystalAuraConfig crystalAuraConfig = CrystalAuraConfig.defaults();
     public McpServerConfig mcpServerConfig = McpServerConfig.defaults();
     public TridentHackConfig tridentHackConfig = TridentHackConfig.defaults();
-
-    @Override
-    public void sanitize() {
-        keyBindingsConfig.sanitize();
-    }
 }
