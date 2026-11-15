@@ -211,7 +211,7 @@ public class WorldDownload {
         }
 
         @Override
-        public String post(String body) throws ApiException {
+        public String post(String body) {
             body = gson.fromJson(body, String.class);
 
             if (body.startsWith("start:")) {

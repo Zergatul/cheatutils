@@ -294,7 +294,7 @@ public class KillAura implements Module {
         }
 
         @Override
-        public String get(String className) throws ApiException {
+        public String get(String className) {
             if (className == null) {
                 throw new ApiException("Class not found", HttpResponseCodes.NOT_FOUND);
             }

@@ -69,15 +69,13 @@ public class KeyBindings implements Module {
             return OneOf2.from2(new ErrorResult("Invalid key index"));
         }
 
-        OneOf2<SuccessfulResult, ErrorResult>[] resultHolder = new OneOf2[1];
-
-        settings.update(config -> {
+        return settings.updateWithResult(config -> {
             if (config.entries().stream().anyMatch(e -> e.name().equals(name))) {
-                resultHolder[0] = OneOf2.from2(new ErrorResult("Script with the same name already exists."));
-                return config;
+                return new SettingUpdateResult<>(
+                        config,
+                        OneOf2.from2(new ErrorResult("Script with the same name already exists.")));
             }
 
-            resultHolder[0] = OneOf2.from1(SuccessfulResult.INSTANCE);
             KeyBindingEntry entry = KeyBindingEntry.Builder.from(KeyBindingEntry.defaults())
                     .name(name)
                     .keyIndex(keyIndex)
@@ -89,10 +87,10 @@ public class KeyBindings implements Module {
             }
             entries = entries.add(entry);
 
-            return config.withEntries(entries);
+            return new SettingUpdateResult<>(
+                    config.withEntries(entries),
+                    OneOf2.from1(SuccessfulResult.INSTANCE));
         });
-
-        return resultHolder[0];
     }
 
     public OneOf2<SuccessfulResult, ErrorResult> update(
@@ -110,26 +108,24 @@ public class KeyBindings implements Module {
             return OneOf2.from2(new ErrorResult("Invalid key index"));
         }
 
-        OneOf2<SuccessfulResult, ErrorResult>[] resultHolder = new OneOf2[1];
-
-        settings.update(config -> {
+        return settings.updateWithResult(config -> {
             KeyBindingEntry entry = config.entries().stream()
                     .filter(e -> e.name().equals(oldName))
                     .findFirst()
                     .orElse(null);
             if (entry == null) {
-                resultHolder[0] = OneOf2.from2(new ErrorResult("Cannot find original script by name " + oldName + "."));
-                return config;
+                return new SettingUpdateResult<>(
+                        config,
+                        OneOf2.from2(new ErrorResult("Cannot find original script by name " + oldName + ".")));
             }
 
             if (!oldName.equals(newName)) {
                 if (config.entries().stream().anyMatch(e -> e.name().equals(newName))) {
-                    resultHolder[0] = OneOf2.from2(new ErrorResult("Script with the same name already exists."));
-                    return config;
+                    return new SettingUpdateResult<>(
+                            config,
+                            OneOf2.from2(new ErrorResult("Script with the same name already exists.")));
                 }
             }
-
-            resultHolder[0] = OneOf2.from1(SuccessfulResult.INSTANCE);
 
             ImmutableList<KeyBindingEntry> entries = config.entries().replaceAll(e -> {
                 if (e == entry) {
@@ -144,10 +140,10 @@ public class KeyBindings implements Module {
                 return e;
             });
 
-            return config.withEntries(entries);
+            return new SettingUpdateResult<>(
+                    config.withEntries(entries),
+                    OneOf2.from1(SuccessfulResult.INSTANCE));
         });
-
-        return resultHolder[0];
     }
 
     public OneOf2<SuccessfulResult, ErrorResult> delete(@Nullable String name) {
@@ -155,23 +151,21 @@ public class KeyBindings implements Module {
             return OneOf2.from2(new ErrorResult("Name is required"));
         }
 
-        OneOf2<SuccessfulResult, ErrorResult>[] resultHolder = new OneOf2[1];
-
-        settings.update(config -> {
+        return settings.updateWithResult(config -> {
             KeyBindingEntry entry = config.entries().stream()
                     .filter(e -> e.name().equals(name))
                     .findFirst()
                     .orElse(null);
             if (entry == null) {
-                resultHolder[0] = OneOf2.from2(new ErrorResult("Cannot find keybinding entry by name."));
-                return config;
+                return new SettingUpdateResult<>(
+                        config,
+                        OneOf2.from2(new ErrorResult("Cannot find keybinding entry by name.")));
             }
 
-            resultHolder[0] = OneOf2.from1(SuccessfulResult.INSTANCE);
-            return config.withEntries(config.entries().remove(entry));
+            return new SettingUpdateResult<>(
+                    config.withEntries(config.entries().remove(entry)),
+                    OneOf2.from1(SuccessfulResult.INSTANCE));
         });
-
-        return resultHolder[0];
     }
 
     public OneOf3<SuccessfulResult, List<DiagnosticMessage>, ErrorResult> saveCode(

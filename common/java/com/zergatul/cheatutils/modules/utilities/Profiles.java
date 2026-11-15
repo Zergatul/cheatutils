@@ -284,7 +284,7 @@ public class Profiles implements Module {
         }
 
         @Override
-        public String get(String command) throws ApiException {
+        public String get(String command) {
             return switch (command) {
                 case "current" -> gson.toJson(Profiles.this.getCurrent());
                 case "list" -> gson.toJson(Profiles.this.list());
@@ -293,7 +293,7 @@ public class Profiles implements Module {
         }
 
         @Override
-        public String post(String body) throws ApiException {
+        public String post(String body) {
             Request request = gson.fromJson(body, Request.class);
             switch (request.command) {
                 case "change": Profiles.this.change(request.name); break;

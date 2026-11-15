@@ -22,7 +22,7 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public String get(String id) throws ApiException {
+    public String get(String id) {
         if (!id.startsWith("~")) {
             throw new ApiException("Invalid identifier.", HttpResponseCodes.BAD_REQUEST);
         }

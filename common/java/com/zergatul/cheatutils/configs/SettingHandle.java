@@ -3,10 +3,7 @@ package com.zergatul.cheatutils.configs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
 
 /**
  * A stable handle to an immutable value in the active profile.
@@ -39,10 +36,10 @@ public final class SettingHandle<T extends ImmutableConfig> {
         update(_ -> config);
     }
 
-    public void update(UnaryOperator<T> update) {
+    public void update(UnaryOperator<T> operation) {
         synchronized (lock) {
             T previous = getter.get();
-            T current = Objects.requireNonNull(update.apply(previous));
+            T current = Objects.requireNonNull(operation.apply(previous));
             if (previous.equals(current)) {
                 return;
             }
@@ -54,6 +51,34 @@ public final class SettingHandle<T extends ImmutableConfig> {
             } finally {
                 requestWrite.run();
             }
+        }
+    }
+
+    public <R> R updateWithResult(Function<T, SettingUpdateResult<T, R>> operation) {
+        synchronized (lock) {
+            T previous = getter.get();
+            SettingUpdateResult<T, R> result = operation.apply(previous);
+            T current = result.config();
+            if (previous.equals(current)) {
+                return result.result();
+            }
+
+            Runnable notification = prepareNotification(SettingNotificationReason.UPDATE, previous, current);
+            setter.accept(current);
+            try {
+                notification.run();
+            } finally {
+                requestWrite.run();
+            }
+
+            return result.result();
+        }
+    }
+
+    /** Runs operation under shared store lock */
+    public <R> R withLockedConfig(Function<T, R> operation) {
+        synchronized (lock) {
+            return operation.apply(getter.get());
         }
     }
 

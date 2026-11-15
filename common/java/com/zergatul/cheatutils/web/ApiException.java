@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.web;
 
-public class ApiException extends Exception {
+public class ApiException extends RuntimeException {
 
     private final int code;
 

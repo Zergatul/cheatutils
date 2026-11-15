@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.esp.block.web;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.configs.SettingUpdateResult;
 import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
 import com.zergatul.cheatutils.modules.esp.block.BlockEsp;
 import com.zergatul.cheatutils.modules.esp.block.BlockGroupKey;
@@ -31,7 +32,7 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public synchronized String post(String body) throws ApiException {
+    public synchronized String post(String body) {
         String id = gson.fromJson(body, String.class);
         Identifier loc = Identifier.parse(id);
         if (loc.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
@@ -43,25 +44,16 @@ public class ConfigWebApi extends WebApiBase {
             throw new ApiException("Cannot find block by id.", HttpResponseCodes.BAD_REQUEST);
         }
 
-        String[] errorHolder = new String[1];
-        BlockEspEntry[] newEntryHolder = new BlockEspEntry[1];
-
-        BlockEsp.INSTANCE.getSettings().update(config -> {
+        return BlockEsp.INSTANCE.getSettings().updateWithResult(config -> {
             if (config.entries().stream().anyMatch(e -> e.blocks().contains(block))) {
-                errorHolder[0] = "Selected block is already part of other BlockEspEntry.";
-                return config;
+                throw new ApiException("Selected block is already part of other BlockEspEntry.", HttpResponseCodes.BAD_REQUEST);
             }
 
             BlockEspEntry newEntry = BlockEspEntry.defaults().withBlocks(ImmutableList.from(block));
-            newEntryHolder[0] = newEntry;
-            return config.withEntries(config.entries().add(newEntry));
+            return new SettingUpdateResult<>(
+                    config.withEntries(config.entries().add(newEntry)),
+                    gson.toJson(newEntry));
         });
-
-        if (errorHolder[0] != null) {
-            throw new ApiException(errorHolder[0], HttpResponseCodes.BAD_REQUEST);
-        }
-
-        return gson.toJson(newEntryHolder[0]);
     }
 
     @Override
@@ -82,14 +74,10 @@ public class ConfigWebApi extends WebApiBase {
             throw new ApiException("New group key is not valid.", HttpResponseCodes.BAD_REQUEST);
         }
 
-        String[] errorHolder = new String[1];
-        BlockEspEntry[] newEntryHolder = new BlockEspEntry[1];
-
-        BlockEsp.INSTANCE.getSettings().update(config -> {
+        return BlockEsp.INSTANCE.getSettings().updateWithResult(config -> {
             BlockEspEntry oldEntry = key.findIn(config.entries());
             if (oldEntry == null) {
-                errorHolder[0] = "Block group not found. Please refresh the page.";
-                return config;
+                throw new ApiException("Block group not found. Please refresh the page.", HttpResponseCodes.BAD_REQUEST);
             }
 
             for (BlockEspEntry entry : config.entries()) {
@@ -97,14 +85,11 @@ public class ConfigWebApi extends WebApiBase {
                     continue;
                 }
                 if (entry.blocks().intersects(request.blocks())) {
-                    errorHolder[0] = "New block group intersects with another group. Please refresh the page.";
-                    return config;
+                    throw new ApiException("New block group intersects with another group. Please refresh the page.", HttpResponseCodes.BAD_REQUEST);
                 }
             }
 
             BlockEspEntry newEntry = oldEntry.withOptions(request);
-            newEntryHolder[0] = newEntry;
-
             BlockGroupKey newKey = new BlockGroupKey(newEntry.blocks());
             if (!key.equals(newKey)) {
                 MultiScriptSlot slot = (MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP);
@@ -112,40 +97,29 @@ public class ConfigWebApi extends WebApiBase {
                 BlockEsp.INSTANCE.moveScript(oldEntry.blocks(), newEntry.blocks(), new ScriptRef(ScriptType.BLOCK_ESP, newKey.toString()));
             }
 
-            return config.withEntries(config.entries().replaceFirst(e -> e == oldEntry, _ -> newEntry));
+            return new SettingUpdateResult<>(
+                    config.withEntries(config.entries().replaceFirst(e -> e == oldEntry, _ -> newEntry)),
+                    gson.toJson(newEntry));
         });
-
-        if (errorHolder[0] != null) {
-            throw new ApiException(errorHolder[0], HttpResponseCodes.BAD_REQUEST);
-        }
-
-        return gson.toJson(newEntryHolder[0]);
     }
 
     @Override
-    public synchronized String delete(String id) throws ApiException {
+    public synchronized String delete(String id) {
         BlockGroupKey key = BlockGroupKey.parse(id);
 
-        String[] errorHolder = new String[1];
-
-        BlockEsp.INSTANCE.getSettings().update(config -> {
+        return BlockEsp.INSTANCE.getSettings().updateWithResult(config -> {
             BlockEspEntry entry = key.findIn(config.entries());
 
             if (entry == null) {
-                errorHolder[0] = "Block group not found. Please refresh the page.";
-                return config;
+                throw new ApiException("Block group not found. Please refresh the page.", HttpResponseCodes.BAD_REQUEST);
             }
 
             MultiScriptSlot slot = (MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP);
             slot.remove(key.toString());
 
-            return config.withEntries(config.entries().remove(entry));
+            return new SettingUpdateResult<>(
+                    config.withEntries(config.entries().remove(entry)),
+                    "{ \"ok\": true }");
         });
-
-        if (errorHolder[0] != null) {
-            throw new ApiException(errorHolder[0], HttpResponseCodes.BAD_REQUEST);
-        }
-
-        return "{ \"ok\": true }";
     }
 }

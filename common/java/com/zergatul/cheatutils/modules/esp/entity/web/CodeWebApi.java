@@ -18,7 +18,7 @@ public class CodeWebApi extends WebApiBase {
     }
 
     @Override
-    public String post(String json) throws ApiException {
+    public String post(String json) {
         Request request = gson.fromJson(json, Request.class);
 
         SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();

@@ -21,38 +21,26 @@ public class CodeWebApi extends WebApiBase {
     }
 
     @Override
-    public String post(String json) throws ApiException {
+    public String post(String json) {
         Request request = gson.fromJson(json, Request.class);
         if (request.blocks == null) {
             return "{ \"error\": \"blocks is null\" }";
         }
 
-        String[] errorHolder = new String[1];
-        String[] resultHolder = new String[1];
-
-        BlockEsp.INSTANCE.getSettings().update(config -> {
+        return BlockEsp.INSTANCE.getSettings().withLockedConfig(config -> {
             BlockGroupKey key = new BlockGroupKey(request.blocks);
             BlockEspEntry entry = key.findIn(config.entries());
             if (entry == null) {
-                errorHolder[0] = "Cannot find block ESP entry.";
-                return config;
+                throw new ApiException("Cannot find block ESP entry.", HttpResponseCodes.BAD_REQUEST);
             }
 
             ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP).save(key.toString(), request.code);
             if (result.isSuccess()) {
-                resultHolder[0] = "{ \"ok\": true }";
+                return "{ \"ok\": true }";
             } else {
-                resultHolder[0] = gson.toJson(result.getDiagnostics());
+                return gson.toJson(result.getDiagnostics());
             }
-
-            return config;
         });
-
-        if (errorHolder[0] != null) {
-            throw new ApiException(errorHolder[0], HttpResponseCodes.BAD_REQUEST);
-        }
-
-        return resultHolder[0];
     }
 
     public record Request(List<Block> blocks, String code) {}

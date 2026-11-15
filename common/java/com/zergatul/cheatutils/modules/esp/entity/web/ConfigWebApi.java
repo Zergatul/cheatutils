@@ -28,7 +28,7 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public synchronized String post(String body) throws ApiException {
+    public synchronized String post(String body) {
         Class<?> type = gson.fromJson(body, EntityEspEntry.UpdateOptions.class).type();
 
         SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
@@ -43,7 +43,7 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public synchronized String put(String className, String body) throws ApiException {
+    public synchronized String put(String className, String body) {
         EntityEspEntry.UpdateOptions jsonConfig = gson.fromJson(body, EntityEspEntry.UpdateOptions.class);
 
         if (!className.equals(jsonConfig.type().getName())) {
