@@ -33,13 +33,6 @@ public final class ModMain {
         FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::onCommonSetup);
         RegisterKeyMappingsEvent.BUS.addListener(this::onRegisterKeyMappings);
         FMLLoadCompleteEvent.getBus(modBusGroup).addListener(this::onLoadComplete);
-
-        Modules.registerKeyBindings();
-        Modules.register();
-        Features.register();
-        // triggers initial SettingHandle<T>.observer handles registered by all modules constructors
-        ConfigStore.INSTANCE.initialNotify();
-        DebugScreenExtensions.register();
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
@@ -54,9 +47,15 @@ public final class ModMain {
         // loads config
         Profiles.INSTANCE.init();
         WebServer.INSTANCE.start();
+        Modules.register();
+        Features.register();
+        // triggers initial SettingHandle<T>.observer handles registered by all modules constructors
+        ConfigStore.INSTANCE.initialNotify();
+        DebugScreenExtensions.register();
     }
 
     private void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {
+        Modules.registerKeyBindings();
         Events.RegisterKeyBindings.trigger(event::register);
     }
 

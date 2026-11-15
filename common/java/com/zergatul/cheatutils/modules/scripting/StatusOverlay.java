@@ -112,10 +112,17 @@ public class StatusOverlay implements Module, FontBackendHolder {
         backgroundColor = color;
     }
 
-    private void onConfigChanged(boolean isInitial, StatusOverlayConfig prev, StatusOverlayConfig curr) {
+    private void onConfigChanged(SettingNotificationReason reason, StatusOverlayConfig prev, StatusOverlayConfig curr) {
         ClientTickEndExecutor.INSTANCE.execute(() -> {
-            if (isInitial || !prev.font().equals(curr.font())) {
-                fontChanged = true;
+            switch (reason) {
+                case INITIAL -> {
+                    fontChanged = true;
+                }
+                case PROFILE_LOAD, UPDATE -> {
+                    if (!prev.font().equals(curr.font())) {
+                        fontChanged = true;
+                    }
+                }
             }
         });
     }

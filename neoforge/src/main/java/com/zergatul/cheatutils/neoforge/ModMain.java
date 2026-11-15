@@ -31,18 +31,8 @@ import static com.zergatul.cheatutils.common.Events.*;
 public class ModMain {
 
     public ModMain(IEventBus bus, ModContainer container) {
-        bus.addListener(this::onCommonSetup);
         bus.addListener(this::onLoadComplete);
         bus.addListener(this::onRegisterKeybindings);
-    }
-
-    private void onCommonSetup(final FMLCommonSetupEvent event) {
-        Modules.register();
-        Features.register();
-        // triggers initial SettingHandle<T>.observer handles registered by all modules constructors
-        ConfigStore.INSTANCE.initialNotify();
-        NeoForge.EVENT_BUS.register(new NeoForgeEvents());
-        DebugScreenExtensions.register();
     }
 
     private void onLoadComplete(final FMLLoadCompleteEvent event) {
@@ -51,6 +41,12 @@ public class ModMain {
         // loads config
         Profiles.instance.init();
         WebServer.instance.start();
+        Modules.register();
+        Features.register();
+        // triggers initial SettingHandle<T>.observer handles registered by all modules constructors
+        ConfigStore.INSTANCE.initialNotify();
+        NeoForge.EVENT_BUS.register(new NeoForgeEvents());
+        DebugScreenExtensions.register();
     }
 
     private void onRegisterKeybindings(final RegisterKeyMappingsEvent event) {

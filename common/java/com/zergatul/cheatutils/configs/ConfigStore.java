@@ -53,8 +53,7 @@ public class ConfigStore {
     private File currentFile;
 
     private ConfigStore() {
-        Config config = new Config();
-        settingsRegistry = new SettingsRegistry<>(this, config, this::requestWrite);
+        settingsRegistry = new SettingsRegistry<>(this, new Config(), this::requestWrite);
         settings = new Settings(settingsRegistry);
     }
 
@@ -70,8 +69,8 @@ public class ConfigStore {
         return settings;
     }
 
-    public synchronized void read(File file) {
-        Config newConfig = new Config();
+    public synchronized void read(boolean isInitial, File file) {
+        Config config = new Config();
         if (file.exists()) {
             Config readCfg = null;
             try {
@@ -87,19 +86,24 @@ public class ConfigStore {
                 migration8(element);
                 readCfg = gson.fromJson(element, Config.class);
                 reader.close();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.error("Cannot read config");
                 logger.error(e);
             }
 
             if (readCfg != null) {
-                newConfig = readCfg;
+                config = readCfg;
             }
         }
 
         ScriptExecutionManager.INSTANCE.cancelAll();
         currentFile = file;
-        setConfig(newConfig);
+        if (isInitial) {
+            // modules are not initialized at this stage, they will receive notification later from initialNotify() call
+            settingsRegistry.replaceNoNotify(config);
+        } else {
+            settingsRegistry.replace(SettingNotificationReason.PROFILE_LOAD, config);
+        }
         onConfigLoaded();
     }
 
@@ -111,7 +115,7 @@ public class ConfigStore {
     public synchronized void createNew(File file) {
         ScriptExecutionManager.INSTANCE.cancelAll();
         currentFile = file;
-        setConfig(new Config());
+        settingsRegistry.replace(SettingNotificationReason.PROFILE_LOAD, new Config());
         onConfigLoaded();
         requestWrite();
     }
@@ -133,11 +137,6 @@ public class ConfigStore {
                 logger.error("Cannot write config", e);
             }
         };
-    }
-
-    // Prepare the profile before publishing it and notifying immutable settings listeners.
-    private void setConfig(Config config) {
-        settingsRegistry.replace(config);
     }
 
     private void onConfigLoaded() {

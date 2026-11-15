@@ -16,4 +16,16 @@ function handleCodeSave(url, code) {
     });
 }
 
-export { formatCodeResponse, handleCodeSave }
+function handleCodeSavePut(url, code) {
+    http.put(url, code).then(response => {
+        if (response.ok) {
+            alert('Saved');
+        } else {
+            alert(formatCodeResponse(response));
+        }
+    }, error => {
+        alert(error.response);
+    });
+}
+
+export { formatCodeResponse, handleCodeSave, handleCodeSavePut }

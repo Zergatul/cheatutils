@@ -59,16 +59,15 @@
         </template>
 
         <template v-if="mode == 'edit'">
+            <div class="section-description">
+                Script Name: <b>{{ editingEntry.name }}</b>
+            </div>
             <div class="actions">
                 <button class="w8" @click="mode = 'list'">Back</button>
-                <button class="w8" @click="save()">Save</button>
+                <button class="w8" @click="saveScript()">Save</button>
                 <button class="w12" @click="showApiRef()">Show/Hide API Reference</button>
             </div>
-            <div class="flex-row">
-                <span>Name:</span>
-                <input type="text" v-model="script.name">
-            </div>
-            <script-editor v-model="script.code" :type="'KEYBINDING'" v-show="!showRefs"></script-editor>
+            <script-editor v-model="editingEntry.code" :type="'KEYBINDING'" v-show="!showRefs"></script-editor>
             <ul class="refs" v-show="showRefs">
                 <li v-for="item in refs" v-html="item"></li>
             </ul>

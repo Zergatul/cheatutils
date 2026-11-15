@@ -52,7 +52,7 @@ public class SettingHandleTests {
             changes.add(curr);
         });
 
-        fixture.registry.replace(next);
+        fixture.registry.replace(SettingNotificationReason.UPDATE, next);
 
         assertEquals(List.of(previous, next.title), changes);
         assertFalse(changes.get(0).titleFont().equals(changes.get(1).titleFont()));
@@ -72,7 +72,7 @@ public class SettingHandleTests {
         fixture.title.onChanged((_, _) -> fail("Equal values must not notify"));
         Profile next = new Profile();
 
-        fixture.registry.replace(next);
+        fixture.registry.replace(SettingNotificationReason.UPDATE, next);
         fixture.title.set(EntityTitleConfig.defaults());
         fixture.title.update(config -> config.withItemScale(0));
 
@@ -94,9 +94,9 @@ public class SettingHandleTests {
             values.add(curr.itemScale());
         });
 
-        fixture.registry.replace(second);
-        fixture.registry.replace(first);
-        fixture.registry.replace(new Profile());
+        fixture.registry.replace(SettingNotificationReason.UPDATE, second);
+        fixture.registry.replace(SettingNotificationReason.UPDATE, first);
+        fixture.registry.replace(SettingNotificationReason.UPDATE, new Profile());
 
         assertEquals(List.of(2, 3, 3, 2, 2, 0), values);
         assertEquals(1, fixture.writes);

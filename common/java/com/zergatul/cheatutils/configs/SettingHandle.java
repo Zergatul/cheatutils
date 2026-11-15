@@ -47,7 +47,7 @@ public final class SettingHandle<T extends ImmutableConfig> {
                 return;
             }
 
-            Runnable notification = prepareNotification(previous, current);
+            Runnable notification = prepareNotification(SettingNotificationReason.UPDATE, previous, current);
             setter.accept(current);
             try {
                 notification.run();
@@ -71,10 +71,19 @@ public final class SettingHandle<T extends ImmutableConfig> {
     }
 
     // Called under the shared store lock, before publishing a replacement profile.
-    public Runnable prepareNotification(T previous, T current) {
+    public Runnable prepareNotification(SettingNotificationReason reason, T previous, T current) {
         Objects.requireNonNull(current);
         if (previous.equals(current)) {
-            return () -> {};
+            if (observers.isEmpty() || reason == SettingNotificationReason.UPDATE) {
+                return () -> {};
+            }
+
+            List<SettingObserver<T>> observersSnapshot = List.copyOf(observers);
+            return () -> {
+                for (SettingObserver<T> observer : observersSnapshot) {
+                    observer.notify(reason, previous, current);
+                }
+            };
         }
 
         List<BiConsumer<T, T>> listenersSnapshot = List.copyOf(listeners);
@@ -84,7 +93,7 @@ public final class SettingHandle<T extends ImmutableConfig> {
                 listener.accept(previous, current);
             }
             for (SettingObserver<T> observer : observersSnapshot) {
-                observer.notify(false, previous, current);
+                observer.notify(reason, previous, current);
             }
         };
     }
@@ -92,7 +101,7 @@ public final class SettingHandle<T extends ImmutableConfig> {
     public void initialNotify(T current) {
         synchronized (lock) {
             for (SettingObserver<T> observer : observers) {
-                observer.notify(true, current, current);
+                observer.notify(SettingNotificationReason.INITIAL, current, current);
             }
         }
     }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /** Internal root ownership and bindings; modules only receive SettingHandle2 instances. */
@@ -11,7 +12,7 @@ public final class SettingsRegistry<R> {
 
     private final Object lock;
     private final Runnable requestWrite;
-    private final List<Function<R, Runnable>> bindings = new ArrayList<>();
+    private final List<BiFunction<SettingNotificationReason, R, Runnable>> bindings = new ArrayList<>();
     private final List<Runnable> initializations = new ArrayList<>();
     private R config;
 
@@ -28,7 +29,7 @@ public final class SettingsRegistry<R> {
                     () -> getter.apply(config),
                     value -> setter.accept(config, value),
                     requestWrite);
-            bindings.add(next -> handle.prepareNotification(getter.apply(config), getter.apply(next)));
+            bindings.add((reason, next) -> handle.prepareNotification(reason, getter.apply(config), getter.apply(next)));
             initializations.add(() -> handle.initialNotify(getter.apply(config)));
             return handle;
         }
@@ -42,18 +43,25 @@ public final class SettingsRegistry<R> {
     }
 
     /** Publishes the entire profile before notifying any listener; never requests a save. */
-    public void replace(R next) {
+    public void replace(SettingNotificationReason reason, R next) {
         synchronized (lock) {
             Objects.requireNonNull(next);
             List<Runnable> notifications = new ArrayList<>();
-            for (Function<R, Runnable> binding : bindings) {
-                notifications.add(binding.apply(next));
+            for (BiFunction<SettingNotificationReason, R, Runnable> binding : bindings) {
+                notifications.add(binding.apply(reason, next));
             }
 
             config = next;
             for (Runnable notification : notifications) {
                 notification.run();
             }
+        }
+    }
+
+    public void replaceNoNotify(R next) {
+        synchronized (lock) {
+            Objects.requireNonNull(next);
+            config = next;
         }
     }
 

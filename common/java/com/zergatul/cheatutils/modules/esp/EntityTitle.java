@@ -111,13 +111,21 @@ public class EntityTitle implements FontBackendHolder {
         return false;
     }
 
-    private void onConfigChanged(boolean isInitial, EntityTitleConfig prev, EntityTitleConfig curr) {
+    private void onConfigChanged(SettingNotificationReason reason, EntityTitleConfig prev, EntityTitleConfig curr) {
         ClientTickEndExecutor.INSTANCE.execute(() -> {
-            if (isInitial || !prev.titleFont().equals(curr.titleFont())) {
-                titleFontChanged = true;
-            }
-            if (isInitial || !prev.enchantmentFont().equals(curr.enchantmentFont())) {
-                enchantmentFontChanged = true;
+            switch (reason) {
+                case INITIAL -> {
+                    titleFontChanged = true;
+                    enchantmentFontChanged = true;
+                }
+                case PROFILE_LOAD, UPDATE -> {
+                    if (!prev.titleFont().equals(curr.titleFont())) {
+                        titleFontChanged = true;
+                    }
+                    if (!prev.enchantmentFont().equals(curr.enchantmentFont())) {
+                        enchantmentFontChanged = true;
+                    }
+                }
             }
         });
     }

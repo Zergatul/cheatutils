@@ -63,7 +63,7 @@ public class Profiles implements Module {
             profileFile = getProfileFile(current);
         }
 
-        ConfigStore.INSTANCE.read(profileFile);
+        ConfigStore.INSTANCE.read(true, profileFile);
     }
 
     public String getCurrent() {
@@ -149,7 +149,7 @@ public class Profiles implements Module {
         current = name;
         requestWrite();
 
-        executeInRenderThread(() -> ConfigStore.INSTANCE.read(getProfileFile(name)));
+        executeInRenderThread(() -> ConfigStore.INSTANCE.read(false, getProfileFile(name)));
     }
 
     public void delete(String name) {
@@ -171,7 +171,7 @@ public class Profiles implements Module {
         current = "";
         requestWrite();
 
-        executeInRenderThread(() -> ConfigStore.INSTANCE.read(getProfileFile("")));
+        executeInRenderThread(() -> ConfigStore.INSTANCE.read(false, getProfileFile("")));
     }
 
     public boolean isInResetState() {

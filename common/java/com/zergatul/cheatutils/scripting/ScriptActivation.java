@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.scripting.compiler.DynamicCompilerClassLoader;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
@@ -16,6 +17,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /** Runtime-only state belonging to one installed program, never to its saved document. */
+@NullMarked
 public class ScriptActivation<T> {
 
     // Each compilation has its own loader, shared by its program and generated closures.
@@ -25,7 +27,7 @@ public class ScriptActivation<T> {
     public final T program;
     private final ScriptRef ref;
     private final AtomicBoolean failed;
-    private final AtomicReference<CompletableFuture<?>> execution;
+    private final AtomicReference<@Nullable CompletableFuture<?>> execution;
     private final Consumer<ScriptActivation<T>> onFailure;
     private final FailureReporter reporter;
 
@@ -45,7 +47,7 @@ public class ScriptActivation<T> {
             ScriptRef ref,
             T program,
             AtomicBoolean failed,
-            AtomicReference<CompletableFuture<?>> execution,
+            AtomicReference<@Nullable CompletableFuture<?>> execution,
             Consumer<ScriptActivation<T>> onFailure,
             FailureReporter reporter
     ) {

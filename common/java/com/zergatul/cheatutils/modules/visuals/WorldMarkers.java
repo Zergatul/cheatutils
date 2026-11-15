@@ -4,6 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingNotificationReason;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.WorldMarkerEntry;
 import com.zergatul.cheatutils.configs.modules.WorldMarkersConfig;
@@ -52,10 +53,17 @@ public class WorldMarkers implements FontBackendHolder {
         return fontRenderer != null && fontRenderer.uses(backend);
     }
 
-    private void onConfigChanged(boolean isInitial, WorldMarkersConfig prev, WorldMarkersConfig curr) {
+    private void onConfigChanged(SettingNotificationReason reason, WorldMarkersConfig prev, WorldMarkersConfig curr) {
         ClientTickEndExecutor.INSTANCE.execute(() -> {
-            if (isInitial || !prev.font().equals(curr.font())) {
-                fontChanged = true;
+            switch (reason) {
+                case INITIAL -> {
+                    fontChanged = true;
+                }
+                case PROFILE_LOAD, UPDATE -> {
+                    if (!prev.font().equals(curr.font())) {
+                        fontChanged = true;
+                    }
+                }
             }
         });
     }

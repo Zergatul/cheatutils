@@ -1,6 +1,6 @@
 import { components } from '../../components.js'
+import { handleCodeSavePut } from '../MonacoEditor.js'
 import { withCss } from '/components/Loader.js'
-import { formatCodeResponse } from '/components/MonacoEditor.js'
 import * as http from '/http.js'
 
 export function createComponent(template) {
@@ -13,10 +13,9 @@ export function createComponent(template) {
             return {
                 mode: 'list',
                 entries: null,
-                name: null,
+                editingEntry: null,
                 refs: null,
-                script: null,
-                showRefs: false
+                showRefs: false,
             };
         },
         methods: {
@@ -78,8 +77,7 @@ export function createComponent(template) {
             editScript(name) {
                 http.get(`/api/keybindings/${encodeURIComponent(name)}`).then(response => {
                     this.mode = 'edit';
-                    this.name = name;
-                    this.script = response;
+                    this.editingEntry = response;
                 });
             },
             refresh() {
@@ -103,36 +101,8 @@ export function createComponent(template) {
                     }
                 });
             },
-            save() {
-                let handleError = error => {
-                    alert(error.response);
-                }
-                /*if (this.mode == 'add') {
-                    http.post('/api/keybinding-scripts', this.script).then(response => {
-                        if (response.ok) {
-                            this.refresh();
-                        } else {
-                            if (response.error) {
-                                alert(response.error);
-                            } else {
-                                alert(formatCodeResponse(response));
-                            }
-                        }
-                    }, handleError);
-                }*/
-                if (this.mode == 'edit') {
-                    http.put(`/api/keybinding-scripts/${encodeURIComponent(this.name)}`, this.script).then(response => {
-                        if (response.ok) {
-                            this.refresh();
-                        } else {
-                            if (response.error) {
-                                alert(response.error);
-                            } else {
-                                alert(formatCodeResponse(response));
-                            }
-                        }
-                    }, handleError);
-                }
+            saveScript() {
+                handleCodeSavePut(`/api/keybindings-code/${encodeURIComponent(this.editingEntry.name)}`, this.editingEntry.code);
             },
             showApiRef() {
                 if (this.showRefs) {
