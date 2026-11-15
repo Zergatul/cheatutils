@@ -64,6 +64,10 @@ public class ScriptActivation<T> {
         }
     }
 
+    public ScriptRef getRef() {
+        return ref;
+    }
+
     public static @Nullable ScriptActivation<?> findOwner(Object callback) {
         WeakReference<ScriptActivation<?>> owner = owners.get(callback.getClass().getClassLoader());
         return owner == null ? null : owner.get();

@@ -19,8 +19,6 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.scripting.workspace.slots.KeyBindingScriptSlot;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import com.zergatul.scripting.DiagnosticMessage;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
@@ -38,9 +36,7 @@ public class KeyBindings implements Module {
     private final Minecraft mc = Minecraft.getInstance();
     private final KeyMapping[] keys;
     private final Map<String, ScriptActivation<AsyncRunnable>> scripts;
-    private final Object2IntMap<String> revAssignmentsMap;
-    private final @Nullable String[] assignments;
-    private final @Nullable AsyncRunnable[] actions;
+    private final @Nullable ScriptActivation<AsyncRunnable>[] bindings;
 
     private KeyBindings() {
         Events.RegisterKeyBindings.add(this::onRegisterKeyBindings);
@@ -57,9 +53,7 @@ public class KeyBindings implements Module {
         }
 
         this.scripts = new HashMap<>();
-        this.revAssignmentsMap = new Object2IntOpenHashMap<>();
-        this.assignments = new String[KeyBindingEntry.KEYS_COUNT];
-        this.actions = new AsyncRunnable[KeyBindingEntry.KEYS_COUNT];
+        this.bindings = new ScriptActivation[KeyBindingEntry.KEYS_COUNT];
     }
 
     public SettingHandle<KeyBindingsConfig> getSettings() {
@@ -203,20 +197,10 @@ public class KeyBindings implements Module {
             }
             if (script != null) {
                 ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, name);
-                scripts.put(name, new ScriptActivation<>(ref, script));
-
-                int keyIndex = revAssignmentsMap.containsKey(name) ? revAssignmentsMap.getInt(name) : KeyBindingEntry.UNASSIGNED;
-                if (keyIndex >= 0) {
-                    actions[keyIndex] = script;
-                }
-            } else {
-                int keyIndex = revAssignmentsMap.containsKey(name) ? revAssignmentsMap.getInt(name) : KeyBindingEntry.UNASSIGNED;
-                if (keyIndex >= 0) {
-                    revAssignmentsMap.removeInt(name);
-                    assignments[keyIndex] = null;
-                    actions[keyIndex] = null;
-                }
+                ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(ref, script);
+                scripts.put(name, activation);
             }
+            rebuildAssignments(settings.get());
         });
     }
 
@@ -238,28 +222,17 @@ public class KeyBindings implements Module {
     private void updateRuntime(KeyBindingsConfig prev, KeyBindingsConfig curr) {
         // we don't allow all possible combinations of different operations
         // expecting the user does things one by one from UI
+        synchronizeScriptIdentities(prev, curr);
+        rebuildAssignments(curr);
+    }
 
+    private void synchronizeScriptIdentities(KeyBindingsConfig prev, KeyBindingsConfig curr) {
         if (prev.entries().size() > curr.entries().size()) {
             List<KeyBindingEntry> removed = prev.entries().stream()
                     .filter(e1 -> curr.entries().stream().noneMatch(e2 -> e1.name().equals(e2.name())))
                     .toList();
             for (KeyBindingEntry entry : removed) {
                 getScriptSlot().remove(entry.name());
-            }
-            return;
-        }
-
-        if (prev.entries().size() < curr.entries().size()) {
-            List<KeyBindingEntry> added = curr.entries().stream()
-                    .filter(e1 -> prev.entries().stream().noneMatch(e2 -> e1.name().equals(e2.name())))
-                    .toList();
-            for (KeyBindingEntry entry : added) {
-                ScriptActivation<AsyncRunnable> activation = scripts.get(entry.name());
-                if (activation != null && entry.keyIndex() != KeyBindingEntry.UNASSIGNED) {
-                    revAssignmentsMap.put(entry.name(), entry.keyIndex());
-                    assignments[entry.keyIndex()] = entry.name();
-                    actions[entry.keyIndex()] = activation.program;
-                }
             }
             return;
         }
@@ -275,32 +248,20 @@ public class KeyBindings implements Module {
                 if (activation != null) {
                     activation = activation.withRef(new ScriptRef(ScriptType.KEYBINDING, currEntry.name()));
                     scripts.put(currEntry.name(), activation);
-                    if (prevEntry.keyIndex() != KeyBindingEntry.UNASSIGNED) {
-                        revAssignmentsMap.removeInt(prevEntry.name());
-                        assignments[prevEntry.keyIndex()] = null;
-                        actions[prevEntry.keyIndex()] = null;
-                    }
-                    if (currEntry.keyIndex() != KeyBindingEntry.UNASSIGNED) {
-                        revAssignmentsMap.put(currEntry.name(), currEntry.keyIndex());
-                        assignments[currEntry.keyIndex()] = currEntry.name();
-                        actions[currEntry.keyIndex()] = activation.program;
-                    }
                 }
+            }
+        }
+    }
+
+    private void rebuildAssignments(KeyBindingsConfig config) {
+        Arrays.fill(bindings, null);
+
+        for (KeyBindingEntry entry : config.entries()) {
+            if (entry.keyIndex() == KeyBindingEntry.UNASSIGNED) {
+                continue;
             }
 
-            if (prevEntry.keyIndex() != currEntry.keyIndex()) {
-                AsyncRunnable action = prevEntry.keyIndex() != KeyBindingEntry.UNASSIGNED ? actions[prevEntry.keyIndex()] : null;
-                if (prevEntry.keyIndex() != KeyBindingEntry.UNASSIGNED) {
-                    revAssignmentsMap.removeInt(prevEntry.name());
-                    assignments[prevEntry.keyIndex()] = null;
-                    actions[prevEntry.keyIndex()] = null;
-                }
-                if (currEntry.keyIndex() != KeyBindingEntry.UNASSIGNED) {
-                    revAssignmentsMap.put(currEntry.name(), currEntry.keyIndex());
-                    assignments[currEntry.keyIndex()] = currEntry.name();
-                    actions[currEntry.keyIndex()] = action;
-                }
-            }
+            bindings[entry.keyIndex()] = scripts.get(entry.name());
         }
     }
 
@@ -317,16 +278,17 @@ public class KeyBindings implements Module {
 
         for (int i = 0; i < keys.length; i++) {
             KeyMapping key = keys[i];
-            AsyncRunnable action = actions[i];
+            ScriptActivation<AsyncRunnable> activation = bindings[i];
             while (key.consumeClick()) {
-                if (action != null) {
-                    String name = this.assignments[i];
-                    if (name == null) {
-                        throw new IllegalStateException();
+                if (activation != null) {
+                    try {
+                        ScriptExecutionManager.INSTANCE.execute(
+                                activation.getRef(),
+                                () -> activation.execute(activation.program));
+                    } catch (Throwable e) {
+                        ScriptRuntimeFailureHandler.INSTANCE.reportSynchronous("Keybinding script '" + activation.getRef().identifier() + "' failed.", e);
+                        break;
                     }
-
-                    ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, name);
-                    ScriptExecutionManager.INSTANCE.execute(ref, action);
                 }
             }
         }
@@ -335,9 +297,7 @@ public class KeyBindings implements Module {
     private void initializeEmptyState() {
         scripts.values().forEach(ScriptActivation::deactivate);
         scripts.clear();
-        revAssignmentsMap.clear();
-        Arrays.fill(assignments, null);
-        Arrays.fill(actions, null);
+        Arrays.fill(bindings, null);
         getScriptSlot().clear();
     }
 
@@ -355,16 +315,9 @@ public class KeyBindings implements Module {
                         new ScriptRef(ScriptType.KEYBINDING, entry.name()),
                         e);
             }
-
-            if (entry.keyIndex() != KeyBindingEntry.UNASSIGNED) {
-                revAssignmentsMap.put(entry.name(), entry.keyIndex());
-                assignments[entry.keyIndex()] = entry.name();
-                ScriptActivation<AsyncRunnable> activation = scripts.get(entry.name());
-                if (activation != null) {
-                    actions[entry.keyIndex()] = activation.program;
-                }
-            }
         }
+
+        rebuildAssignments(config);
     }
 
     private KeyBindingScriptSlot getScriptSlot() {
