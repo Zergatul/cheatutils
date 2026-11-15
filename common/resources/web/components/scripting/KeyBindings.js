@@ -3,6 +3,16 @@ import { handleCodeSavePut } from '../MonacoEditor.js'
 import { withCss } from '/components/Loader.js'
 import * as http from '/http.js'
 
+// we want to allow '.' and '..' as valid names
+
+function getConfigApiUri(entryName) {
+    return `/api/keybindings/~${encodeURIComponent(entryName)}`;
+}
+
+function getScriptApiUri(entryName) {
+    return `/api/keybindings-code/~${encodeURIComponent(entryName)}`;
+}
+
 function queueEntryRequest(entry, runRequest) {
     // we normally serve via localhost,
     // and we don't want to overcomplicate code to handle all possible race conditions
@@ -45,7 +55,7 @@ export function createComponent(template) {
                             // TODO: focus input?
                         }
                     } else if (entry.name != entry.originalName) {
-                        const response = await http.put(`/api/keybindings/${encodeURIComponent(entry.originalName)}`, {
+                        const response = await http.put(getConfigApiUri(entry.originalName), {
                             name: name,
                             keyIndex: keyIndex,
                         });
@@ -71,7 +81,7 @@ export function createComponent(template) {
                         return;
                     }
                     const { keyIndex } = entry;
-                    const response = await http.put(`/api/keybindings/${encodeURIComponent(entry.originalName)}`, {
+                    const response = await http.put(getConfigApiUri(entry.originalName), {
                         name: entry.originalName,
                         keyIndex: keyIndex,
                     });
@@ -92,7 +102,7 @@ export function createComponent(template) {
                     if (entry.isNew) {
                         alert('Enter/fix entry name before editing script');
                     } else {
-                        const response = await http.get(`/api/keybindings/${encodeURIComponent(entry.originalName)}`);
+                        const response = await http.get(getConfigApiUri(entry.originalName));
                         this.mode = 'edit';
                         this.editingEntry = response;
                     }
@@ -115,7 +125,7 @@ export function createComponent(template) {
                     if (entry.isNew) {
                         this.entries = this.entries.filter(e => e != entry);
                     } else {
-                        const response = await http.delete(`/api/keybindings/${encodeURIComponent(entry.originalName)}`)
+                        const response = await http.delete(getConfigApiUri(entry.originalName))
                         if (response.ok) {
                             this.entries = this.entries.filter(e => e != entry);
                         } else {
@@ -125,7 +135,7 @@ export function createComponent(template) {
                 });
             },
             saveScript() {
-                handleCodeSavePut(`/api/keybindings-code/${encodeURIComponent(this.editingEntry.name)}`, this.editingEntry.code);
+                handleCodeSavePut(getScriptApiUri(this.editingEntry.name), this.editingEntry.code);
             },
             showApiRef() {
                 if (this.showRefs) {

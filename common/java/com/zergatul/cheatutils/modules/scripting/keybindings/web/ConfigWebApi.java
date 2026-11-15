@@ -3,6 +3,8 @@ package com.zergatul.cheatutils.modules.scripting.keybindings.web;
 import com.zergatul.cheatutils.configs.modules.KeyBindingEntry;
 import com.zergatul.cheatutils.configs.modules.KeyBindingsConfig;
 import com.zergatul.cheatutils.modules.scripting.keybindings.KeyBindings;
+import com.zergatul.cheatutils.web.ApiException;
+import com.zergatul.cheatutils.web.HttpResponseCodes;
 import com.zergatul.cheatutils.web.WebApiBase;
 import org.jspecify.annotations.Nullable;
 
@@ -20,10 +22,15 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public String get(String id) {
+    public String get(String id) throws ApiException {
+        if (!id.startsWith("~")) {
+            throw new ApiException("Invalid identifier.", HttpResponseCodes.BAD_REQUEST);
+        }
+
+        String name = id.substring(1);
         KeyBindingsConfig config = KeyBindings.INSTANCE.getSettings().get();
         KeyBindingEntry entry = config.entries().stream()
-                .filter(e -> e.name().equals(id))
+                .filter(e -> e.name().equals(name))
                 .findFirst()
                 .orElse(null);
         if (entry != null) {
@@ -43,15 +50,25 @@ public class ConfigWebApi extends WebApiBase {
 
     @Override
     public String put(String id, String body) throws Exception {
+        if (!id.startsWith("~")) {
+            throw new ApiException("Invalid identifier.", HttpResponseCodes.BAD_REQUEST);
+        }
+
+        String name = id.substring(1);
         ScriptInfo entry = gson.fromJson(body, ScriptInfo.class);
-        return KeyBindings.INSTANCE.update(id, entry.name(), entry.keyIndex()).match(
+        return KeyBindings.INSTANCE.update(name, entry.name(), entry.keyIndex()).match(
                 _ -> "{ \"ok\": true }",
                 error -> gson.toJson(new ErrorResponse(error.error())));
     }
 
     @Override
     public String delete(String id) throws Exception {
-        return KeyBindings.INSTANCE.delete(id).match(
+        if (!id.startsWith("~")) {
+            throw new ApiException("Invalid identifier.", HttpResponseCodes.BAD_REQUEST);
+        }
+
+        String name = id.substring(1);
+        return KeyBindings.INSTANCE.delete(name).match(
                 _ -> "{ \"ok\": true }",
                 error -> gson.toJson(new ErrorResponse(error.error())));
     }
