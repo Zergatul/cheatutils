@@ -40,17 +40,17 @@ public record KeyBindingsConfig(
             if (!used.add(entry1.name())) {
                 ImmutableList<KeyBindingEntry> result = new ImmutableList<>();
                 for (int i2 = 0; i2 < i1; i2++) {
-                    result.add(entries.get(i2));
+                    result = result.add(entries.get(i2));
                 }
                 for (int i2 = i1; i2 < entries.size(); i2++) {
                     KeyBindingEntry entry2 = entries.get(i2);
                     if (used.add(entry2.name())) {
-                        result.add(entry2);
+                        result = result.add(entry2);
                     } else {
                         for (int i3 = 1; ; i3++) {
                             String newName = entry2.name() + " (" + i3 + ")";
-                            if (!used.contains(newName)) {
-                                result.add(entry2.withName(newName));
+                            if (used.add(newName)) {
+                                result = result.add(entry2.withName(newName));
                                 break;
                             }
                         }

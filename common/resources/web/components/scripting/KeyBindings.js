@@ -3,6 +3,16 @@ import { handleCodeSavePut } from '../MonacoEditor.js'
 import { withCss } from '/components/Loader.js'
 import * as http from '/http.js'
 
+function queueEntryRequest(entry, runRequest) {
+    // we normally serve via localhost,
+    // and we don't want to overcomplicate code to handle all possible race conditions
+    entry.pendingPromise = (entry.pendingPromise ?? Promise.resolve())
+        .then(runRequest)
+        .catch(error => {
+            alert(error?.response ?? String(error));
+        });
+}
+
 export function createComponent(template) {
     const args = {
         template: template,
@@ -20,32 +30,33 @@ export function createComponent(template) {
         },
         methods: {
             onEntryNameBlur(entry) {
-                if (entry.isNew) {
-                    http.post(`/api/keybindings`, {
-                        name: entry.name,
-                        keyIndex: entry.keyIndex,
-                    }).then(response => {
+                queueEntryRequest(entry, async () => {
+                    const { name, keyIndex } = entry;
+                    if (entry.isNew) {
+                        const response = await http.post(`/api/keybindings`, {
+                            name: name,
+                            keyIndex: keyIndex,
+                        });
                         if (response.ok) {
-                            entry.originalName = entry.name;
+                            entry.originalName = name;
                             entry.isNew = false;
                         } else {
                             alert(response.error);
                             // TODO: focus input?
                         }
-                    });
-                } else if (entry.name != entry.originalName) {
-                    http.put(`/api/keybindings/${encodeURIComponent(entry.originalName)}`, {
-                        name: entry.name,
-                        keyIndex: entry.keyIndex,
-                    }).then(response => {
+                    } else if (entry.name != entry.originalName) {
+                        const response = await http.put(`/api/keybindings/${encodeURIComponent(entry.originalName)}`, {
+                            name: name,
+                            keyIndex: keyIndex,
+                        });
                         if (response.ok) {
-                            entry.originalName = entry.name;
+                            entry.originalName = name;
                         } else {
                             alert(response.error);
                             // TODO: focus input?
                         }
-                    });
-                }
+                    }
+                });
             },
             addNew() {
                 this.entries.push({
@@ -55,16 +66,18 @@ export function createComponent(template) {
                 });
             },
             assignToKeyIndex(entry) {
-                if (entry.isNew) {
-                    return;
-                }
-                http.put(`/api/keybindings/${encodeURIComponent(entry.name)}`, {
-                    name: entry.name,
-                    keyIndex: entry.keyIndex,
-                }).then(response => {
+                queueEntryRequest(entry, async () => {
+                    if (entry.isNew) {
+                        return;
+                    }
+                    const { keyIndex } = entry;
+                    const response = await http.put(`/api/keybindings/${encodeURIComponent(entry.originalName)}`, {
+                        name: entry.originalName,
+                        keyIndex: keyIndex,
+                    });
                     if (response.ok) {
                         this.entries.forEach(e => {
-                            if (e != entry && e.keyIndex == entry.keyIndex) {
+                            if (e != entry && e.keyIndex == keyIndex) {
                                 e.keyIndex = -1;
                             }
                         })
@@ -74,10 +87,15 @@ export function createComponent(template) {
                     }
                 });
             },
-            editScript(name) {
-                http.get(`/api/keybindings/${encodeURIComponent(name)}`).then(response => {
-                    this.mode = 'edit';
-                    this.editingEntry = response;
+            editScript(entry) {
+                queueEntryRequest(entry, async () => {
+                    if (entry.isNew) {
+                        alert('Enter/fix entry name before editing script');
+                    } else {
+                        const response = await http.get(`/api/keybindings/${encodeURIComponent(entry.originalName)}`);
+                        this.mode = 'edit';
+                        this.editingEntry = response;
+                    }
                 });
             },
             refresh() {
@@ -93,11 +111,16 @@ export function createComponent(template) {
                 });
             },
             removeEntry(entry) {
-                http.delete(`/api/keybindings/${encodeURIComponent(entry.name)}`).then(response => {
-                    if (response.ok) {
-                        this.entries = this.entries.filter(e => e.name != entry.name);
+                queueEntryRequest(entry, async () => {
+                    if (entry.isNew) {
+                        this.entries = this.entries.filter(e => e != entry);
                     } else {
-                        alert(response.error);
+                        const response = await http.delete(`/api/keybindings/${encodeURIComponent(entry.originalName)}`)
+                        if (response.ok) {
+                            this.entries = this.entries.filter(e => e != entry);
+                        } else {
+                            alert(response.error);
+                        }
                     }
                 });
             },

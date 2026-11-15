@@ -237,6 +237,10 @@ public class KeyBindings implements Module {
             return;
         }
 
+        if (prev.entries().size() < curr.entries().size()) {
+            return;
+        }
+
         int size = curr.entries().size();
         for (int i = 0; i < size; i++) {
             KeyBindingEntry prevEntry = prev.entries().get(i);

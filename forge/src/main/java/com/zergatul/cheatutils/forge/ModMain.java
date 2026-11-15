@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
+import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.features.Features;
 import com.zergatul.cheatutils.font.SystemFonts;
 import com.zergatul.cheatutils.modules.Modules;
