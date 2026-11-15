@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.configs;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.zergatul.cheatutils.configs.modules.KeyBindingEntry;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
@@ -25,6 +26,7 @@ public class Migrations {
         migration6(element);
         migration7(element);
         migration8(element);
+        migration9(element);
     }
 
     private static void migration1(JsonElement element) {
@@ -260,6 +262,67 @@ public class Migrations {
 
             newEntries.add(entry);
         }
+    }
+
+    private static void migration9(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject root = element.getAsJsonObject();
+        JsonElement oldScriptsConfig = root.remove("keyBindingScriptsConfig");
+        if (oldScriptsConfig == null || !oldScriptsConfig.isJsonObject()) {
+            return;
+        }
+
+        JsonElement scripts = oldScriptsConfig.getAsJsonObject().get("scripts");
+        if (scripts == null || !scripts.isJsonArray()) {
+            return;
+        }
+
+        JsonArray bindings = new JsonArray();
+        JsonElement oldBindingsConfig = root.get("keyBindingsConfig");
+        if (oldBindingsConfig != null && oldBindingsConfig.isJsonObject()) {
+            JsonElement value = oldBindingsConfig.getAsJsonObject().get("bindings");
+            if (value != null && value.isJsonArray()) {
+                bindings = value.getAsJsonArray();
+            }
+        }
+
+        JsonArray entries = new JsonArray();
+        for (JsonElement script : scripts.getAsJsonArray()) {
+            if (!script.isJsonObject()) {
+                continue;
+            }
+
+            JsonElement name = script.getAsJsonObject().get("name");
+            if (name == null || !name.isJsonPrimitive() || !name.getAsJsonPrimitive().isString()) {
+                continue;
+            }
+
+            JsonElement code = script.getAsJsonObject().get("code");
+            if (code == null || !code.isJsonPrimitive() || !code.getAsJsonPrimitive().isString()) {
+                continue;
+            }
+
+            int keyIndex = KeyBindingEntry.UNASSIGNED;
+            for (int i = 0; i < Math.min(bindings.size(), KeyBindingEntry.KEYS_COUNT); i++) {
+                if (name.equals(bindings.get(i))) {
+                    keyIndex = i;
+                    break;
+                }
+            }
+
+            JsonObject entry = new JsonObject();
+            entry.add("name", name);
+            entry.add("code", code);
+            entry.addProperty("keyIndex", keyIndex);
+            entries.add(entry);
+        }
+
+        JsonObject config = new JsonObject();
+        config.add("entries", entries);
+        root.add("keyBindingsConfig", config);
     }
 
     private static @Nullable JsonObject migrateKillAuraPriorityEntry(JsonElement element) {
