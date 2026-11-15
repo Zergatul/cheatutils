@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.modules.scripting.keybindings;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.*;
 import com.zergatul.cheatutils.common.Events;
@@ -176,32 +177,20 @@ public class KeyBindings implements Module {
     public OneOf3<SuccessfulResult, List<DiagnosticMessage>, ErrorResult> saveCode(
             @Nullable String name,
             @Nullable String code
-    ) {
-        if (name == null || name.isBlank()) {
-            return OneOf3.from3(new ErrorResult("Name is required"));
-        }
-
-        ScriptSaveResult result = getScriptSlot().save(name, code);
-        if (result.isSuccess()) {
-            return OneOf3.from1(SuccessfulResult.INSTANCE);
+    ) throws Exception {
+        if (RenderSystem.isOnRenderThread()) {
+            return saveCodeInternal(name, code);
         } else {
-            return OneOf3.from2(result.getDiagnostics());
+            return ClientTickEndExecutor.INSTANCE.submit(() -> saveCodeInternal(name, code)).get();
         }
     }
 
     public void setScript(String name, @Nullable AsyncRunnable script) {
-        ClientTickEndExecutor.INSTANCE.execute(() -> {
-            ScriptActivation<AsyncRunnable> previous = scripts.remove(name);
-            if (previous != null) {
-                previous.deactivate();
-            }
-            if (script != null) {
-                ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, name);
-                ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(ref, script);
-                scripts.put(name, activation);
-            }
-            rebuildAssignments(settings.get());
-        });
+        if (RenderSystem.isOnRenderThread()) {
+            setScriptInternal(name, script);
+        } else {
+            ClientTickEndExecutor.INSTANCE.execute(() -> setScriptInternal(name, script));
+        }
     }
 
     private void onConfigUpdated(SettingNotificationReason reason, KeyBindingsConfig prev, KeyBindingsConfig curr) {
@@ -267,6 +256,35 @@ public class KeyBindings implements Module {
 
             bindings[entry.keyIndex()] = scripts.get(entry.name());
         }
+    }
+
+    private OneOf3<SuccessfulResult, List<DiagnosticMessage>, ErrorResult> saveCodeInternal(
+            @Nullable String name,
+            @Nullable String code
+    ) {
+        if (name == null || name.isBlank()) {
+            return OneOf3.from3(new ErrorResult("Name is required"));
+        }
+
+        ScriptSaveResult result = getScriptSlot().save(name, code);
+        if (result.isSuccess()) {
+            return OneOf3.from1(SuccessfulResult.INSTANCE);
+        } else {
+            return OneOf3.from2(result.getDiagnostics());
+        }
+    }
+
+    private void setScriptInternal(String name, @Nullable AsyncRunnable script) {
+        ScriptActivation<AsyncRunnable> previous = scripts.remove(name);
+        if (previous != null) {
+            previous.deactivate();
+        }
+        if (script != null) {
+            ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, name);
+            ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(ref, script);
+            scripts.put(name, activation);
+        }
+        rebuildAssignments(settings.get());
     }
 
     private void onRegisterKeyBindings(IKeyBindingRegistry registry) {
