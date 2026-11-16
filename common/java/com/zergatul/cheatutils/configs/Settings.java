@@ -410,6 +410,19 @@ public final class Settings {
         return ConfigStore.INSTANCE.getSettings().find(type);
     }
 
+    public static Map<Class<? extends ImmutableConfig>, Boolean> getModuleStates() {
+        Map<Class<? extends ImmutableConfig>, Boolean> states = new HashMap<>();
+        for (var entry : ConfigStore.INSTANCE.getSettings().handles.entrySet()) {
+            Class<? extends ImmutableConfig> type = entry.getKey();
+            if (ModuleStateProvider.class.isAssignableFrom(type)) {
+                SettingHandle<?> handle = entry.getValue();
+                ModuleStateProvider config = (ModuleStateProvider) handle.get();
+                states.put(type, config.isEnabled());
+            }
+        }
+        return states;
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends ImmutableConfig> SettingHandle<T> find(Class<T> type) {
         SettingHandle<?> handle = handles.get(type);

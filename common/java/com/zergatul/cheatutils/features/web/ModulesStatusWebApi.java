@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.features.web;
 
-import com.zergatul.cheatutils.configs.Config;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ModuleStateProvider;
+import com.zergatul.cheatutils.configs.ImmutableConfig;
+import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,26 +23,17 @@ public class ModulesStatusWebApi extends WebApiBase {
 
     @Override
     public String get() {
-        Config config = ConfigStore.INSTANCE.getConfig();
+        Map<Class<? extends ImmutableConfig>, Boolean> states = Settings.getModuleStates();
 
         Map<String, Boolean> map = new HashMap<>();
-        for (Field field : Config.class.getDeclaredFields()) {
-            Class<?> fieldType = field.getType();
-            if (ModuleStateProvider.class.isAssignableFrom(fieldType)) {
-                ModuleStateProvider moduleConfig;
-                try {
-                    moduleConfig = (ModuleStateProvider) field.get(config);
-                } catch (IllegalAccessException e) {
-                    continue;
-                }
-
-                String key = fieldType.getSimpleName();
-                if (key.endsWith("Config")) {
-                    key = key.substring(0, key.length() - 6);
-                }
-
-                map.put(key, moduleConfig.isEnabled());
+        for (var entry : states.entrySet()) {
+            Class<? extends ImmutableConfig> type = entry.getKey();
+            boolean enabled = entry.getValue();
+            String key = type.getSimpleName();
+            if (key.endsWith("Config")) {
+                key = key.substring(0, key.length() - 6);
             }
+            map.put(key, enabled);
         }
 
         return gson.toJson(map);

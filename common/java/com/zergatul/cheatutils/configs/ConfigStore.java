@@ -55,10 +55,6 @@ public class ConfigStore {
         settingsRegistry.initialNotify();
     }
 
-    public Config getConfig() {
-        return settingsRegistry.getConfig();
-    }
-
     Settings getSettings() {
         return settings;
     }
@@ -113,7 +109,7 @@ public class ConfigStore {
 
     public Runnable getWriteToFileTask() {
         File file = this.currentFile;
-        Config config = getConfig();
+        Config config = settingsRegistry.getConfig();
         return () -> {
             logger.debug("Saving config to file {}", file.getName());
             try {
@@ -127,7 +123,7 @@ public class ConfigStore {
     }
 
     private void onConfigLoaded() {
-        Config config = getConfig();
+        Config config = settingsRegistry.getConfig();
 
         initializeScript(ScriptType.OVERLAY, null, config.statusOverlayConfig.code());
         initializeScript(ScriptType.BLOCK_AUTOMATION, null, config.blockAutomationConfig.code());
