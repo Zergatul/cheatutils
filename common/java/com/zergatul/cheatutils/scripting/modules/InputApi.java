@@ -69,4 +69,25 @@ public class InputApi {
 
         return false;
     }
+
+    @MethodDescription("""
+            Low level method to check if key is down by its SDL key code.
+            Import com.mojang.blaze3d.platform.InputConstants, see KEY_* properties.
+            """)
+    public boolean isKeyboardKeyDown(int code) {
+        return InputConstants.isKeyDown(code);
+    }
+
+    @MethodDescription("""
+            Low level method to check if a mouse button is down by its SDL button code.
+            Import com.mojang.blaze3d.platform.InputConstants, see MOUSE_BUTTON_* properties.
+            """)
+    public boolean isMouseKeyDown(int code) {
+        if (code < 1 || code > 32) {
+            return false;
+        }
+
+        int mask = 1 << (code - 1);
+        return (SDLMouse.SDL_GetMouseState(null, null) & mask) != 0;
+    }
 }
