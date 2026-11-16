@@ -96,6 +96,20 @@ public class ScriptActivation<T> {
         }
     }
 
+    /** Runs cleanup even after deactivation; reports failures without changing activation state. */
+    public void runCleanup(String context, Runnable action) {
+        try {
+            action.run();
+        } catch (Throwable throwable) {
+            Throwable failure = ScriptRuntimeFailureHandler.unwrapFailure(throwable);
+            if (failure == null) {
+                return;
+            }
+            ScriptRuntimeFailureHandler.rethrowIfFatal(failure);
+            reporter.report(ref, context, failure);
+        }
+    }
+
     public boolean test(String context, BooleanSupplier predicate) {
         if (!isActive()) {
             return false;

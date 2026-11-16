@@ -25,6 +25,7 @@ import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.server.IntegratedServer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -51,6 +52,7 @@ public class EventsScripting implements Module {
     private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new ArrayList<>();
     private final List<PacketEventConsumer> onC2SPacket = new CopyOnWriteArrayList<>();
     private final List<PacketEventConsumer> onS2CPacket = new CopyOnWriteArrayList<>();
+    private final List<Runnable> onUnload = new ArrayList<>();
 
     private final List<AimAssist.TargetPredicate> aimAssistTargetPredicates = new ArrayList<>();
     private final List<KillAura.TargetPredicate> killAuraTargetPredicates = new ArrayList<>();
@@ -60,6 +62,7 @@ public class EventsScripting implements Module {
 
     private EventsScripting() {
         Events.ClientTickStart.add(this::processPendingFailures, -1000);
+
         Events.BeforeHandleKeyBindings.add(() -> {
             if (canTrigger()) {
                 for (Runnable handler : onHandleKeys) {
@@ -211,9 +214,12 @@ public class EventsScripting implements Module {
     }
 
     private void clearNow() {
-        if (script != null) script.deactivate();
-        script = null;
+        if (script != null) {
+            script.deactivate();
+        }
         clearCallbacks();
+        script = null;
+
         AimAssist.INSTANCE.clearTargetPredicate();
         aimAssistTargetPredicates.clear();
         KillAura.INSTANCE.clearTargetPredicate();
@@ -235,11 +241,20 @@ public class EventsScripting implements Module {
         onC2SPacket.clear();
         onS2CPacket.clear();
 
+        if (script != null && !onUnload.isEmpty()) {
+            // we have to copy onUnload list, since bad code may attach new handlers from existing handlers
+            for (Runnable action : List.copyOf(onUnload)) {
+                script.runCleanup("EventScripting unload", action);
+            }
+        }
+        onUnload.clear();
+
         NetworkPacketsController.INSTANCE.removeClientPacketHandler(onClientPacketHandler);
         NetworkPacketsController.INSTANCE.removeServerPacketHandler(onServerPacketHandler);
     }
 
     private void onScriptFailed(ScriptActivation<Runnable> activation) {
+        // mc can be null from headless tests
         if (mc != null && mc.isSameThread()) {
             blockFailedFilters(activation);
         }
@@ -327,6 +342,10 @@ public class EventsScripting implements Module {
     public void addOnServerToClientPacket(PacketEventConsumer consumer) {
         onS2CPacket.add(consumer);
         NetworkPacketsController.INSTANCE.addServerPacketHandlerIfAbsent(onServerPacketHandler);
+    }
+
+    public void addOnUnload(Runnable action) {
+        onUnload.add(action);
     }
 
     public void addAimAssistTargetPredicate(AimAssist.TargetPredicate predicate) {

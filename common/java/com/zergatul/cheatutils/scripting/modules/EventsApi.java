@@ -154,6 +154,18 @@ public class EventsApi {
         EventsScripting.INSTANCE.addOnServerToClientPacket(consumer);
     }
 
+    @MethodDescription("""
+            Runs once when this script is removed or replaced, or stopped because of an error.
+            Use it to remove event handlers registered through Java interop and release other resources.
+            Note: disabling Events Scripting pauses its own events, but will not pause any external registrations.
+            Disabling Events Scripting will not call onUnload handlers.
+            Also these handlers will not run on Minecraft exit.
+            """)
+    @ApiVisibility(ApiType.EVENTS)
+    public void onUnload(Runnable action) {
+        EventsScripting.INSTANCE.addOnUnload(action);
+    }
+
     public static class ModuleEventsApi {
         public final AimAssistEventsApi aimAssist = new AimAssistEventsApi();
         public final KillAuraEventsApi killAura = new KillAuraEventsApi();
