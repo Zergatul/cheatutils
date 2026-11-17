@@ -234,7 +234,7 @@ public class BlockAutomation {
         BlockAutomationConfig config = settings.get();
 //        if (config.enabled && config.debugMode && debugPlan != null) {
 //            // draw neighbour block
-//            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+//            InstancedLineRenderer renderer = RenderUtilities.instance.getLineRenderer();
 //
 //            renderer.begin(event, false);
 //            double x1 = debugPlan.neighbour().getX();

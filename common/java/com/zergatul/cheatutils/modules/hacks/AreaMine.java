@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
-import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.InstancedLineRenderer;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
@@ -74,7 +74,7 @@ public class AreaMine implements Module {
             return;
         }
 
-        LineRenderer renderer = LineRenderer.getInstance();
+        InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
         renderer.begin();
 
         int time = (int) (System.currentTimeMillis() % 2000);

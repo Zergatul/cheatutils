@@ -9,7 +9,7 @@ import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ProjectilePathConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.CrossbowItemAccessor;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.InstancedLineRenderer;
 import com.zergatul.cheatutils.utils.ServerBehavior;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -114,7 +114,7 @@ public class ProjectilePath {
             double cameraY = cameraPos.y;
             double cameraZ = cameraPos.z;
 
-            LineRenderer renderer = LineRenderer.getInstance();
+            InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
             renderer.begin();
 
             for (List<TraceRecord> list : traces.values()) {
@@ -202,7 +202,7 @@ public class ProjectilePath {
         double cameraY = cameraPos.y;
         double cameraZ = cameraPos.z;
 
-        LineRenderer renderer = LineRenderer.getInstance();
+        InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
         renderer.begin();
 
         List<Vec3> mainPath = calculatePath(entry, from, movement, shift);
@@ -230,7 +230,7 @@ public class ProjectilePath {
         return list;
     }
 
-    private void drawPath(List<Vec3> path, LineRenderer renderer, double cameraX, double cameraY, double cameraZ) {
+    private void drawPath(List<Vec3> path, InstancedLineRenderer renderer, double cameraX, double cameraY, double cameraZ) {
         for (int i = 0; i < path.size() - 1; i++) {
             Vec3 point1 = path.get(i);
             Vec3 point2 = path.get(i + 1);

@@ -167,9 +167,9 @@ public class BlockEsp {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        InstancedTracerRenderer tracerRenderer = InstancedTracerRenderer.getInstance();
         tracerRenderer.begin();
-        EspCubeLineRender cubeRenderer = EspCubeLineRender.getInstance();
+        InstancedCubeLineRenderer cubeRenderer = InstancedCubeLineRenderer.getInstance();
         cubeRenderer.begin();
 
         for (BlockEspEntry config : currentConfig.entries()) {
@@ -268,7 +268,7 @@ public class BlockEsp {
         cubeRenderer.end(event.getMvp());
     }
 
-    private void renderBoundingBoxes(EspCubeLineRender renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderBoundingBoxes(InstancedCubeLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
@@ -287,7 +287,7 @@ public class BlockEsp {
         }
     }
 
-    private void renderTracers(TracerRenderer renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderTracers(InstancedTracerRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;

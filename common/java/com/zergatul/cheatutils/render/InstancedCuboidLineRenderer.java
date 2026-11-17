@@ -14,40 +14,40 @@ import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import java.util.Objects;
 import java.util.Optional;
 
-public class TracerRenderer {
+public class InstancedCuboidLineRenderer {
 
     private final RenderPipeline pipeline;
     private final GpuBuffer ubo;
     private final BufferBuilder bufferBuilder;
     private final DynamicGpuBuffer dynamicVertexBuffer;
 
-    private TracerRenderer() {
+    private InstancedCuboidLineRenderer() {
         pipeline = RenderPipeline.builder()
-                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/tracers"))
+                .withLocation(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pipeline/instanced-cuboid-lines"))
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
-                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "tracers"))
-                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "tracers"))
+                .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "instanced-cuboid-lines"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "lines"))
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
-                .withVertexBinding(0, VertexFormats.TRACERS_INSTANCED)
+                .withVertexBinding(0, VertexFormats.CUBOID_LINES_INSTANCED)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false)
                 .build();
         ubo = RenderSystem.getDevice().createBuffer(
-                () -> Constants.MOD_ID + ": Tracer Renderer UBO",
+                () -> Constants.MOD_ID + ": Instanced Cuboid Lines Renderer UBO",
                 GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST,
                 72);
         bufferBuilder = new BufferBuilder();
         dynamicVertexBuffer = DynamicGpuBuffer.vertex();
     }
 
-    public static TracerRenderer getInstance() {
+    public static InstancedCuboidLineRenderer getInstance() {
         return Holder.INSTANCE;
     }
 
@@ -55,17 +55,12 @@ public class TracerRenderer {
         bufferBuilder.clear();
     }
 
-    public void tracer(Vec3 cameraPos, double x, double y, double z, int color, float width) {
-        tracer(
-                (float) (x - cameraPos.x),
-                (float) (y - cameraPos.y),
-                (float) (z - cameraPos.z),
-                color,
-                width);
-    }
-
-    public void tracer(float x, float y, float z, int color, float width) {
-        bufferBuilder.vertex(x, y, z, color, width);
+    public void cuboid(
+            float x1, float y1, float z1,
+            float x2, float y2, float z2,
+            int color, float width
+    ) {
+        bufferBuilder.vertex(x1, y1, z1, x2 - x1, y2 - y1, z2 - z1, color, width);
     }
 
     public void end(Matrix4f mvp) {
@@ -86,28 +81,27 @@ public class TracerRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(ubo.slice(), builder.get());
         }
 
-        assert mainRenderTarget.getColorTextureView() != null;
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> Constants.MOD_ID + ": Render Tracers",
-                mainRenderTarget.getColorTextureView(),
+                () -> Constants.MOD_ID + ": Render Instanced Cuboid Lines",
+                Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty())
         ) {
             renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
-            renderPass.draw(6, bufferBuilder.getTracerCount(), 0, 0);
+            renderPass.draw(12 * 6, bufferBuilder.getCuboidCount(), 0, 0);
         }
     }
 
     private static class BufferBuilder {
 
-        private static final int RECORD_SIZE = 4 * 5;
+        private static final int RECORD_SIZE = 4 * 8;
 
         private final ByteBufferBuilder vertexBuffer = new ByteBufferBuilder(0x1000);
-        private int tracers;
+        private int cuboids;
 
         public void clear() {
-            tracers = 0;
+            cuboids = 0;
             vertexBuffer.clear();
         }
 
@@ -115,26 +109,29 @@ public class TracerRenderer {
             return vertexBuffer.build();
         }
 
-        public int getTracerCount() {
-            return tracers;
+        public int getCuboidCount() {
+            return cuboids;
         }
 
         public boolean isEmpty() {
-            return tracers == 0;
+            return cuboids == 0;
         }
 
-        public void vertex(float x, float y, float z, int color, float width) {
+        public void vertex(float x, float y, float z, float sizeX, float sizeY, float sizeZ, int color, float width) {
             long pointer = vertexBuffer.reserve(RECORD_SIZE);
             MemoryUtil.memPutFloat(pointer + 0x00L, x);
             MemoryUtil.memPutFloat(pointer + 0x04L, y);
             MemoryUtil.memPutFloat(pointer + 0x08L, z);
-            MemoryUtil.memPutInt(pointer + 0x0CL, ColorUtils.toShader(color));
-            MemoryUtil.memPutFloat(pointer + 0x10L, width);
-            tracers++;
+            MemoryUtil.memPutFloat(pointer + 0x0CL, sizeX);
+            MemoryUtil.memPutFloat(pointer + 0x10L, sizeY);
+            MemoryUtil.memPutFloat(pointer + 0x14L, sizeZ);
+            MemoryUtil.memPutInt(pointer + 0x18L, ColorUtils.toShader(color));
+            MemoryUtil.memPutFloat(pointer + 0x1CL, width);
+            cuboids++;
         }
     }
 
     private static final class Holder {
-        public static final TracerRenderer INSTANCE = new TracerRenderer();
+        public static final InstancedCuboidLineRenderer INSTANCE = new InstancedCuboidLineRenderer();
     }
 }

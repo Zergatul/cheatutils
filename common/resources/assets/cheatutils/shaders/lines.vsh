@@ -54,7 +54,12 @@ bool clipSegmentToClipBox(inout vec4 a, inout vec4 b) {
     if (!clipPlane(-p0.x + p0.w, -p1.x + p1.w, t0, t1)) return false;
     if (!clipPlane(p0.y + p0.w, p1.y + p1.w, t0, t1)) return false;
     if (!clipPlane(-p0.y + p0.w, -p1.y + p1.w, t0, t1)) return false;
+    // Match the clip-space depth range used by the projection matrix.
+#ifdef RENDERPEARL_DEPTH_IS_ZERO_TO_ONE
+    if (!clipPlane(p0.z, p1.z, t0, t1)) return false;
+#else
     if (!clipPlane(p0.z + p0.w, p1.z + p1.w, t0, t1)) return false;
+#endif
     if (!clipPlane(-p0.z + p0.w, -p1.z + p1.w, t0, t1)) return false;
 
     a = mix(p0, p1, t0);

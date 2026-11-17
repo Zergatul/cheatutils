@@ -162,9 +162,9 @@ public class LightLevel implements Module {
 
         textureRenderer.end(event.getMvp(), textureView);
 
-        LineRenderer lineRenderer = LineRenderer.getInstance();
+        InstancedLineRenderer lineRenderer = InstancedLineRenderer.getInstance();
         lineRenderer.begin();
-        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        InstancedTracerRenderer tracerRenderer = InstancedTracerRenderer.getInstance();
         tracerRenderer.begin();
 
         for (BlockPos pos: listTracers) {

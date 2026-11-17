@@ -175,9 +175,9 @@ public class EntityEsp implements Module {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        LineRenderer lineRenderer = LineRenderer.getInstance();
-        lineRenderer.begin();
-        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        InstancedCuboidLineRenderer cuboidRenderer = InstancedCuboidLineRenderer.getInstance();
+        cuboidRenderer.begin();
+        InstancedTracerRenderer tracerRenderer = InstancedTracerRenderer.getInstance();
         tracerRenderer.begin();
 
         bbList.clear();
@@ -219,10 +219,10 @@ public class EntityEsp implements Module {
         }
 
         if (!bbList.isEmpty() || !tracerList.isEmpty()) {
-            renderLines(lineRenderer, tracerRenderer, event);
+            renderLines(cuboidRenderer, tracerRenderer, event);
         }
 
-        lineRenderer.end(event.getMvp());
+        cuboidRenderer.end(event.getMvp());
         tracerRenderer.end(event.getMvp());
 
         drawOverlays(list, event);
@@ -243,7 +243,7 @@ public class EntityEsp implements Module {
         renderBuffers.close();
     }
 
-    private void renderLines(LineRenderer lineRenderer, TracerRenderer tracerRenderer, RenderWorldLastEvent event) {
+    private void renderLines(InstancedCuboidLineRenderer cuboidRenderer, InstancedTracerRenderer tracerRenderer, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
@@ -254,7 +254,7 @@ public class EntityEsp implements Module {
         for (MatchedEntity entry : bbList) {
             Vec3 pos = entry.entity.getPosition(partialTicks);
             AABB box = entry.entity.getDimensions(entry.entity.getPose()).makeBoundingBox(pos);
-            lineRenderer.cuboid(
+            cuboidRenderer.cuboid(
                     (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
                     (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
                     entry.config.boundingBoxColor().getRGB(),

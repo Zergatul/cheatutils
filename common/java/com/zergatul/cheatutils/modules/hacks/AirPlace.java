@@ -7,7 +7,7 @@ import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AirPlaceConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.InstancedLineRenderer;
 import com.zergatul.cheatutils.utils.MathUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Camera;
@@ -116,7 +116,7 @@ public class AirPlace implements Module {
         BlockPos blockPos = new BlockPos((int) Math.floor(pos.x), (int) Math.floor(pos.y), (int) Math.floor(pos.z));
 
         double margin = 0.05;
-        LineRenderer renderer = LineRenderer.getInstance();
+        InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
         renderer.begin();
         renderer.cuboid(
                 event.getCameraPos(),

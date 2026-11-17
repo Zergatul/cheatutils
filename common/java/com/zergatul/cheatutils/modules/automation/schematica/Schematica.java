@@ -528,7 +528,7 @@ public class Schematica implements Module {
         }
 
         if (config.showMissingBlockTracers()) {
-            TracerRenderer renderer = TracerRenderer.getInstance();
+            InstancedTracerRenderer renderer = InstancedTracerRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
@@ -545,7 +545,7 @@ public class Schematica implements Module {
         }
 
         if (config.showMissingBlockCubes()) {
-            LineRenderer renderer = LineRenderer.getInstance();
+            InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
@@ -565,7 +565,7 @@ public class Schematica implements Module {
         }
 
         if (config.showWrongBlockTracers()) {
-            TracerRenderer renderer = TracerRenderer.getInstance();
+            InstancedTracerRenderer renderer = InstancedTracerRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
@@ -582,7 +582,7 @@ public class Schematica implements Module {
         }
 
         if (config.showWrongBlockCubes()) {
-            LineRenderer renderer = LineRenderer.getInstance();
+            InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
@@ -617,7 +617,7 @@ public class Schematica implements Module {
                 new Color(0.00f, 0.58f, 1.00f, 0.2f).getRGB());
         quadRenderer.end(event.getMvp());
 
-        LineRenderer lineRenderer = LineRenderer.getInstance();
+        InstancedLineRenderer lineRenderer = InstancedLineRenderer.getInstance();
         lineRenderer.begin();
         lineRenderer.cuboid(
                 event.getCameraPos(),

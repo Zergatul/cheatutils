@@ -30,6 +30,13 @@ public class VertexFormats {
             .addAttribute("inLineWidth", LINE_WIDTH_FORMAT)
             .build();
 
+    public static final VertexFormat CUBOID_LINES_INSTANCED = VertexFormat.builder(1)
+            .addAttribute("inOrigin", POSITION_3D_FORMAT)
+            .addAttribute("inSize", POSITION_3D_FORMAT)
+            .addAttribute("inColor", COLOR_FORMAT)
+            .addAttribute("inLineWidth", LINE_WIDTH_FORMAT)
+            .build();
+
     public static final VertexFormat BLOCK_OVERLAY_INSTANCED = VertexFormat.builder(1)
             .addAttribute("inOrigin", POSITION_3D_FORMAT)
             .build();

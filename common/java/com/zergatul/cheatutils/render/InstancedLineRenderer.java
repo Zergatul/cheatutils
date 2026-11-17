@@ -24,7 +24,7 @@ import org.lwjgl.system.MemoryUtil;
 import java.util.Optional;
 import java.util.OptionalDouble;
 
-public class LineRenderer {
+public class InstancedLineRenderer {
 
     private final RenderPipeline pipeline;
     private final RenderPipeline depthPipeline;
@@ -32,7 +32,7 @@ public class LineRenderer {
     private final BufferBuilder bufferBuilder;
     private final DynamicGpuBuffer dynamicVertexBuffer;
 
-    private LineRenderer() {
+    private InstancedLineRenderer() {
         pipeline = createPipeline("pipeline/lines", false);
         depthPipeline = createPipeline("pipeline/depth-lines", true);
         ubo = RenderSystem.getDevice().createBuffer(
@@ -61,7 +61,7 @@ public class LineRenderer {
         return builder.build();
     }
 
-    public static LineRenderer getInstance() {
+    public static InstancedLineRenderer getInstance() {
         return Holder.INSTANCE;
     }
 
@@ -209,6 +209,6 @@ public class LineRenderer {
     }
 
     private static final class Holder {
-        public static final LineRenderer INSTANCE = new LineRenderer();
+        public static final InstancedLineRenderer INSTANCE = new InstancedLineRenderer();
     }
 }
