@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.modules.esp.FreeCam;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -169,15 +170,17 @@ public class TeleportHack {
         assert mc.player != null;
 
         for (int i = 0; i < packets - 1; i++) {
-            NetworkPacketsController.instance.sendPacket(
+            NetworkPacketsController.instance.sendBufferedPacket(
                     new ServerboundMovePlayerPacket.StatusOnly(mc.player.onGround(), mc.player.horizontalCollision));
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
         }
 
-        NetworkPacketsController.instance.sendPacket(
+        NetworkPacketsController.instance.sendBufferedPacket(
                 new ServerboundMovePlayerPacket.Pos(
                         target.x, target.y, target.z,
                         willBeOnGround(target),
                         true));
+        NetworkPacketsController.instance.sendPacket(new ServerboundClientTickEndPacket());
 
         mc.player.snapTo(target);
     }

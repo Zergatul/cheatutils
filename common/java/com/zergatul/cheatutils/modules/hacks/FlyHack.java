@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
 public class FlyHack implements Module {
@@ -105,7 +106,9 @@ public class FlyHack implements Module {
                     player.getZ(),
                     config.onGroundFlag,
                     false);
-            NetworkPacketsController.instance.sendPacket(antiKickPacket);
+
+            NetworkPacketsController.instance.sendBufferedPacket(antiKickPacket);
+            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
         }
     }
 

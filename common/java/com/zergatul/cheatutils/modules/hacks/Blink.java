@@ -5,6 +5,8 @@ import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import com.zergatul.cheatutils.modules.Module;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.entity.Entity;
 
@@ -16,7 +18,7 @@ public class Blink implements Module {
     public static final Blink instance = new Blink();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final List<ServerboundMovePlayerPacket> packets = new ArrayList<>();
+    private final List<Packet<?>> packets = new ArrayList<>();
     private double startX, startY, startZ;
     private float startXRot, startYRot;
     private boolean isEnabled;
@@ -38,7 +40,7 @@ public class Blink implements Module {
         }
 
         NetworkPacketsController.instance.stopHandlers();
-        packets.forEach(NetworkPacketsController.instance::sendPacket);
+        packets.forEach(NetworkPacketsController.instance::sendBufferedPacket);
         packets.clear();
         NetworkPacketsController.instance.resumeHandlers();
 
@@ -112,21 +114,10 @@ public class Blink implements Module {
 
         if (args.packet instanceof ServerboundMovePlayerPacket packet) {
             args.skip = true;
-
-            if (packets.size() > 0) {
-                ServerboundMovePlayerPacket prev = packets.get(packets.size() - 1);
-                boolean same =
-                        prev.getX(0) == packet.getX(0) &&
-                        prev.getY(0) == packet.getY(0) &&
-                        prev.getZ(0) == packet.getZ(0) &&
-                        prev.getXRot(0) == packet.getXRot(0) &&
-                        prev.getYRot(0) == packet.getYRot(0) &&
-                        prev.isOnGround() == packet.isOnGround();
-                if (same) {
-                    return;
-                }
-            }
-
+            packets.add(packet);
+        }
+        if (args.packet instanceof ServerboundClientTickEndPacket packet) {
+            args.skip = true;
             packets.add(packet);
         }
     }
