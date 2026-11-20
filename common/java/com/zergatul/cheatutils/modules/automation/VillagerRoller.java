@@ -3,7 +3,9 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
+import com.zergatul.cheatutils.configs.ConfigLock;
 import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingNotificationReason;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.VillagerRollerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -11,6 +13,8 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
+import com.zergatul.cheatutils.scripting.workspace.slots.SingleScriptSlot;
 import com.zergatul.cheatutils.utils.EntityInteraction;
 import com.zergatul.cheatutils.utils.EntityInteractionPlan;
 import com.zergatul.cheatutils.utils.EntityInteractionResult;
@@ -23,6 +27,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
@@ -47,12 +52,14 @@ public class VillagerRoller implements Module {
 
     private final SettingHandle<VillagerRollerConfig> settings = Settings.get(VillagerRollerConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
+    private final SingleScriptSlot scriptSlot = (SingleScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.VILLAGER_ROLLER);
+    private volatile ScriptActivation<Runnable> script; // synchronized under ConfigLock
     private boolean active;
     private State state = State.STOPPED;
-    private volatile BlockPos pos;
-    private volatile boolean lecternPlaced;
-    private volatile boolean lecternDestroyed;
-    private volatile MerchantOffers offers;
+    private BlockPos pos;
+    private boolean lecternPlaced;
+    private boolean lecternDestroyed;
+    private MerchantOffers offers;
     private CompletableFuture<Void> applyFuture;
     private CompletableFuture<EntityInteractionResult> interactFuture;
     private int villagerId;
@@ -66,14 +73,14 @@ public class VillagerRoller implements Module {
     private int maxLevel;
     private int minPrice;
     private int maxPrice;
-    private volatile ScriptActivation<Runnable> script;
 
     private VillagerRoller() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.RawBlockUpdated.add(this::onBlockChanged);
         Events.EntityInteract.add(this::onEntityInteract);
+        Events.BeforeHandlePacket.add(this::onServerPacket);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
-        NetworkPacketsController.INSTANCE.addServerPacketHandler(this::onServerPacket);
+        settings.observe(this::onConfigUpdated);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new StatusWebApi());
@@ -89,6 +96,7 @@ public class VillagerRoller implements Module {
     }
 
     public void start() {
+        ScriptActivation<Runnable> script = this.script;
         if (script != null && !script.isActive()) {
             stopReason = "Script failed; save it to re-enable";
             return;
@@ -129,6 +137,7 @@ public class VillagerRoller implements Module {
         return state.toString();
     }
 
+    /** Locked by callers from SingleScriptSlot */
     public void setScript(Runnable script) {
         ScriptActivation<Runnable> previous = this.script;
         if (previous != null) {
@@ -171,6 +180,20 @@ public class VillagerRoller implements Module {
 
     public boolean isCurse() {
         return curse;
+    }
+
+    private void onConfigUpdated(SettingNotificationReason reason, VillagerRollerConfig prev, VillagerRollerConfig curr) {
+        if (reason == SettingNotificationReason.INITIAL || reason == SettingNotificationReason.PROFILE_LOAD) {
+            synchronized (ConfigLock.class) {
+                ScriptActivation<Runnable> previous = this.script;
+                if (previous != null) {
+                    previous.deactivate();
+                }
+                this.script = null;
+
+                scriptSlot.initAndReport(curr.code());
+            }
+        }
     }
 
     private void onClientTickEnd() {
@@ -396,22 +419,24 @@ public class VillagerRoller implements Module {
         }
     }
 
-    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+    private boolean onServerPacket(Packet<?> packet) {
         if (!active) {
-            return;
+            return true;
         }
 
-        if (args.packet instanceof ClientboundOpenScreenPacket packet) {
-            if (packet.getType() == MenuType.MERCHANT) {
-                args.skip = true;
+        if (packet instanceof ClientboundOpenScreenPacket openScreenPacket) {
+            if (openScreenPacket.getType() == MenuType.MERCHANT) {
+                return false;
             }
         }
 
-        if (args.packet instanceof ClientboundMerchantOffersPacket packet) {
-            args.skip = true;
-            offers = packet.getOffers();
-            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClosePacket(packet.getContainerId()));
+        if (packet instanceof ClientboundMerchantOffersPacket merchantOffersPacket) {
+            offers = merchantOffersPacket.getOffers();
+            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClosePacket(merchantOffersPacket.getContainerId()));
+            return true;
         }
+
+        return true;
     }
 
     private void onBlockChanged(BlockUpdateEvent event) {

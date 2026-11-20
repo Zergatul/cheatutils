@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.modules.esp.entity.web;
 
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
@@ -21,17 +22,18 @@ public class CodeWebApi extends WebApiBase {
     public String post(String json) {
         Request request = gson.fromJson(json, Request.class);
 
-        SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
-        if (!handle.get().entries().contains(e -> e.type() == request.type)) {
-            throw new ApiException("Cannot find entity config.", HttpResponseCodes.NOT_FOUND);
-        }
+        return EntityEsp.INSTANCE.getSettings().withLockedConfig(config -> {
+            if (!config.entries().contains(e -> e.type() == request.type)) {
+                throw new ApiException("Cannot find entity config.", HttpResponseCodes.NOT_FOUND);
+            }
 
-        ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP).save(request.type.getName(), request.code);
-        if (result.isSuccess()) {
-            return "{ \"ok\": true }";
-        } else {
-            return gson.toJson(result.getDiagnostics());
-        }
+            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP).save(request.type.getName(), request.code);
+            if (result.isSuccess()) {
+                return "{ \"ok\": true }";
+            } else {
+                return gson.toJson(result.getDiagnostics());
+            }
+        });
     }
 
     public record Request(Class<?> type, String code) {}

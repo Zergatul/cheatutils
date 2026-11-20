@@ -103,6 +103,14 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         }
     }
 
+    public void initAndReport(@Nullable String identifier, @Nullable String code) {
+        if (identifier == null) {
+            throw new IllegalStateException();
+        }
+
+        initAndReport(scriptType, identifier, code);
+    }
+
     @Override
     public ScriptCompileResult compile(String code) {
         CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(scriptType);

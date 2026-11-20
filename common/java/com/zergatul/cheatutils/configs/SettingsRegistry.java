@@ -44,17 +44,18 @@ public final class SettingsRegistry<R> {
 
     /** Publishes the entire profile before notifying any listener; never requests a save. */
     public void replace(SettingNotificationReason reason, R next) {
+        List<Runnable> notifications = new ArrayList<>();
         synchronized (lock) {
             Objects.requireNonNull(next);
-            List<Runnable> notifications = new ArrayList<>();
             for (BiFunction<SettingNotificationReason, R, Runnable> binding : bindings) {
                 notifications.add(binding.apply(reason, next));
             }
 
             config = next;
-            for (Runnable notification : notifications) {
-                notification.run();
-            }
+        }
+
+        for (Runnable notification : notifications) {
+            notification.run();
         }
     }
 

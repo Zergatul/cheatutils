@@ -33,9 +33,6 @@ public abstract class MixinMinecraft {
     public ClientLevel level;
 
     @Shadow
-    protected abstract void continueAttack(boolean down);
-
-    @Shadow
     public abstract boolean isGameLoadFinished();
 
     //Start Attack method, event triggers ==================================
@@ -80,7 +77,6 @@ public abstract class MixinMinecraft {
             info.setReturnValue(Minecraft.getInstance().getUser().getName() + " - " + info.getReturnValue());
         }
     }
-
 
     @Inject(at = @At("HEAD"), method = "tick()V")
     private void onBeforeTick(CallbackInfo info) {

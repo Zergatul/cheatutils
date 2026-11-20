@@ -35,6 +35,7 @@ public class KeyBindings implements Module {
 
     private final SettingHandle<KeyBindingsConfig> settings = Settings.get(KeyBindingsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
+    private final KeyBindingScriptSlot scriptSlot = (KeyBindingScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.KEYBINDING);
     private final KeyMapping[] keys;
     private final Map<String, ScriptActivation<AsyncRunnable>> scripts;
     private final @Nullable ScriptActivation<AsyncRunnable>[] bindings;
@@ -215,7 +216,7 @@ public class KeyBindings implements Module {
                     .filter(e1 -> curr.entries().stream().noneMatch(e2 -> e1.name().equals(e2.name())))
                     .toList();
             for (KeyBindingEntry entry : removed) {
-                getScriptSlot().remove(entry.name());
+                scriptSlot.remove(entry.name());
             }
             return;
         }
@@ -230,7 +231,7 @@ public class KeyBindings implements Module {
             KeyBindingEntry currEntry = curr.entries().get(i);
 
             if (!prevEntry.name().equals(currEntry.name())) {
-                getScriptSlot().move(prevEntry.name(), currEntry.name());
+                scriptSlot.move(prevEntry.name(), currEntry.name());
                 ScriptActivation<AsyncRunnable> activation = scripts.remove(prevEntry.name());
                 if (activation != null) {
                     activation = activation.withRef(new ScriptRef(ScriptType.KEYBINDING, currEntry.name()));
@@ -260,7 +261,7 @@ public class KeyBindings implements Module {
             return OneOf3.from3(new ErrorResult("Name is required"));
         }
 
-        ScriptSaveResult result = getScriptSlot().save(name, code);
+        ScriptSaveResult result = scriptSlot.save(name, code);
         if (result.isSuccess()) {
             return OneOf3.from1(SuccessfulResult.INSTANCE);
         } else {
@@ -314,29 +315,14 @@ public class KeyBindings implements Module {
         scripts.values().forEach(ScriptActivation::deactivate);
         scripts.clear();
         Arrays.fill(bindings, null);
-        getScriptSlot().clear();
+        scriptSlot.clear();
     }
 
     private void setupScripts(KeyBindingsConfig config) {
         for (KeyBindingEntry entry : config.entries()) {
-            try {
-                ScriptSaveResult result = getScriptSlot().init(entry.name(), entry.code());
-                if (!result.isSuccess()) {
-                    ScriptRuntimeFailureHandler.INSTANCE.reportCompilationFailure(
-                            new ScriptRef(ScriptType.KEYBINDING, entry.name()),
-                            result.getDiagnostics());
-                }
-            } catch (Throwable e) {
-                ScriptRuntimeFailureHandler.INSTANCE.reportInitializationFailure(
-                        new ScriptRef(ScriptType.KEYBINDING, entry.name()),
-                        e);
-            }
+            scriptSlot.initAndReport(entry.name(), entry.code());
         }
 
         rebuildAssignments(config);
-    }
-
-    private KeyBindingScriptSlot getScriptSlot() {
-        return (KeyBindingScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.KEYBINDING);
     }
 }

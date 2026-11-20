@@ -46,6 +46,7 @@ public final class SettingHandle<T extends ImmutableConfig> {
 
             Runnable notification = prepareNotification(SettingNotificationReason.UPDATE, previous, current);
             setter.accept(current);
+
             try {
                 notification.run();
             } finally {
@@ -65,6 +66,7 @@ public final class SettingHandle<T extends ImmutableConfig> {
 
             Runnable notification = prepareNotification(SettingNotificationReason.UPDATE, previous, current);
             setter.accept(current);
+
             try {
                 notification.run();
             } finally {

@@ -47,7 +47,7 @@ public class EntityEsp implements Module {
     private boolean enabled = true;
 
     private EntityEsp() {
-        Events.BeforeRenderWorld.add(this::onBeforeRenderWorld);
+        Events.RenderStateExtractStart.add(this::onBeforeRenderStateExtract);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld);
         Events.RenderBuffersCleanUp.add(this::onRenderBuffersCleanUp);
         Events.Close.add(this::onClose);
@@ -151,7 +151,7 @@ public class EntityEsp implements Module {
         return null;
     }
 
-    private void onBeforeRenderWorld() {
+    private void onBeforeRenderStateExtract() {
         scriptRuntime.clearScriptResults();
     }
 

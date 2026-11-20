@@ -1,7 +1,9 @@
 package com.zergatul.cheatutils.modules.esp.entity.web;
 
 import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
 import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingUpdateResult;
 import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
 import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
@@ -65,22 +67,23 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public synchronized String delete(String className) {
-        SettingHandle<EntityEspConfig> handle = EntityEsp.INSTANCE.getSettings();
-        EntityEspEntry entry = handle.get().entries().stream()
-                .filter(c -> c.type().getName().equals(className))
-                .findFirst()
-                .orElse(null);
+    public synchronized String delete(String className) throws Exception {
+        return ClientTickEndExecutor.INSTANCE.submit(() -> {
+            return EntityEsp.INSTANCE.getSettings().updateWithResult(config -> {
+                EntityEspEntry entry = config.entries().stream()
+                        .filter(c -> c.type().getName().equals(className))
+                        .findFirst()
+                        .orElse(null);
 
-        if (entry != null) {
-            ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP)).remove(entry.type().getName());
-            handle.update(config -> {
-                ImmutableList<EntityEspEntry> entries = config.entries();
-                entries = entries.removeAll(e -> e.type() == entry.type());
-                return config.withEntries(entries);
+                if (entry != null) {
+                    ((MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.ENTITY_ESP)).remove(entry.type().getName());
+                    ImmutableList<EntityEspEntry> entries = config.entries();
+                    entries = entries.removeAll(e -> e.type() == entry.type());
+                    config = config.withEntries(entries);
+                }
+
+                return new SettingUpdateResult<>(config, "{ \"ok\": true }");
             });
-        }
-
-        return "{ \"ok\": true }";
+        }).get();
     }
 }

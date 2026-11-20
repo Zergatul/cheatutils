@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -23,6 +24,7 @@ public class Events {
     // Minecraft.runTick() : begin
     public static final SimpleEventHandler BeforeProcessQueuedPackets = new SimpleEventHandler();
     // PacketProcessor.processQueuedPackets() : begin
+    public static final LitePacketEventHandler BeforeHandlePacket = new LitePacketEventHandler();
     public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
     // PacketProcessor.processQueuedPackets() : end
@@ -31,6 +33,7 @@ public class Events {
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler InGameTickStart = new SimpleEventHandler();
     // GameRenderer.pick(1)
+    public static final SimpleEventHandler RenderStateExtractStart = new SimpleEventHandler();
     public static final ParameterizedEventHandler<DeltaTracker> RenderTickStart = new ParameterizedEventHandler<>();
     // GameRenderer.pick(partial)
     public static final CancelableEventHandler<SimpleCancellableEvent> ModifyFieldOfViewAnimation = new CancelableEventHandler<>();

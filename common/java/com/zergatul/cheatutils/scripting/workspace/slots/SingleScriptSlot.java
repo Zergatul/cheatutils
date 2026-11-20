@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
+import com.zergatul.cheatutils.configs.ConfigLock;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
@@ -59,6 +60,10 @@ public abstract class SingleScriptSlot extends ScriptSlot {
         }
     }
 
+    public void initAndReport(@Nullable String code) {
+        initAndReport(scriptType, null, code);
+    }
+
     @Override
     public ScriptCompileResult compile(String code) {
         CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(scriptType);
@@ -72,32 +77,34 @@ public abstract class SingleScriptSlot extends ScriptSlot {
             throw new IllegalStateException();
         }
 
-        if (code == null || code.isEmpty()) {
-            instance.code = null;
-            ScriptExecutionManager.INSTANCE.cancel(instance.ref);
+        synchronized (ConfigLock.class) {
+            if (code == null || code.isEmpty()) {
+                instance.code = null;
+                ScriptExecutionManager.INSTANCE.cancel(instance.ref);
 
-            updateConfigCode(null);
-            applyScript(null);
+                updateConfigCode(null);
+                applyScript(null);
 
-            return ScriptSaveResult.success();
-        }
+                return ScriptSaveResult.success();
+            }
 
-        CompilationResult compilationResult = compileScript(code);
+            CompilationResult compilationResult = compileScript(code);
 
-        instance.lastAttemptAt = Instant.now();
-        instance.lastAttemptCode = code;
-        instance.lastAttemptDiagnostics = compilationResult.getDiagnostics();
+            instance.lastAttemptAt = Instant.now();
+            instance.lastAttemptCode = code;
+            instance.lastAttemptDiagnostics = compilationResult.getDiagnostics();
 
-        if (compilationResult.getProgram() != null) {
-            instance.code = code;
-            ScriptExecutionManager.INSTANCE.cancel(instance.ref);
+            if (compilationResult.getProgram() != null) {
+                instance.code = code;
+                ScriptExecutionManager.INSTANCE.cancel(instance.ref);
 
-            updateConfigCode(code);
-            applyScript(compilationResult.getProgram());
+                updateConfigCode(code);
+                applyScript(compilationResult.getProgram());
 
-            return ScriptSaveResult.success();
-        } else {
-            return ScriptSaveResult.fail(compilationResult.getDiagnostics());
+                return ScriptSaveResult.success();
+            } else {
+                return ScriptSaveResult.fail(compilationResult.getDiagnostics());
+            }
         }
     }
 

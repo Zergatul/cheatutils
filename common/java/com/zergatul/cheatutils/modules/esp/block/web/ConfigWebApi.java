@@ -24,7 +24,7 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public synchronized String get() {
+    public String get() {
         Object[] result;
         ImmutableList<BlockEspEntry> entries = BlockEsp.INSTANCE.getSettings().get().entries();
         result = entries.stream().toArray();
@@ -32,7 +32,7 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public synchronized String post(String body) {
+    public String post(String body) throws Exception {
         String id = gson.fromJson(body, String.class);
         Identifier loc = Identifier.parse(id);
         if (loc.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
@@ -57,7 +57,7 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public synchronized String put(String id, String body) throws Throwable {
+    public String put(String id, String body) throws Exception {
         BlockGroupKey key = BlockGroupKey.parse(id);
 
         // verify blocks inside BlockGroupKey are good by any normalization rules inside BlockEspEntry
@@ -104,7 +104,7 @@ public class ConfigWebApi extends WebApiBase {
     }
 
     @Override
-    public synchronized String delete(String id) {
+    public String delete(String id) throws Exception {
         BlockGroupKey key = BlockGroupKey.parse(id);
 
         return BlockEsp.INSTANCE.getSettings().updateWithResult(config -> {

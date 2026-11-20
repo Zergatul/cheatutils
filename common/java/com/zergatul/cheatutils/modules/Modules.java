@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.esp.block.BlockEsp;
 import com.zergatul.cheatutils.modules.esp.block.BlockFinder;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
+import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
 import com.zergatul.cheatutils.modules.scripting.keybindings.KeyBindings;
@@ -43,6 +44,7 @@ public class Modules {
 
         register(AutoCraft.INSTANCE);
         register(BlockEsp.INSTANCE);
+        register(EntityEspScriptRuntime.INSTANCE);
         register(ProjectilePath.INSTANCE);
         register(EndCityChunks.INSTANCE);
         register(AutoBucket.INSTANCE);

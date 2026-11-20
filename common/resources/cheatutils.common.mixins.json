@@ -84,6 +84,7 @@
     "common.MixinMultiPlayerGameMode",
     "common.MixinOptions",
     "common.MixinPackConfirmScreen",
+    "common.MixinPacketProcessorHandle",
     "common.MixinPig",
     "common.MixinProjectileUtil",
     "common.MixinScreen",
