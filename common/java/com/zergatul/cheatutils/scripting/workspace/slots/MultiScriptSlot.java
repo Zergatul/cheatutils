@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.*;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.scripting.compiler.InstanceCompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -105,8 +105,8 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         // code loaded from settings may contain errors, the document keeps it anyway
         putDocument(new ScriptDocument(ref).withCode(code));
 
-        CompilationResult compilationResult = compileScript(code);
-        if (compilationResult.getProgram() != null) {
+        InstanceCompilationResult compilationResult = compileScript(code);
+        if (compilationResult.isSuccess()) {
             applyScript(identifier, compilationResult.getProgram());
             return ScriptSaveResult.success();
         } else {
@@ -115,7 +115,7 @@ public abstract class MultiScriptSlot extends ScriptSlot {
     }
 
     @Override
-    public ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable CompilationResult compilation) {
+    public ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable InstanceCompilationResult compilation) {
         if (identifier == null) {
             throw new IllegalStateException();
         }
@@ -142,9 +142,9 @@ public abstract class MultiScriptSlot extends ScriptSlot {
         }
 
         Objects.requireNonNull(compilation);
-        document = document.withAttempt(code, compilation.getDiagnostics());
+        document = document.withAttempt(code, compilation.isSuccess() ? List.of() : compilation.getDiagnostics());
         putDocument(document);
-        if (compilation.getProgram() == null) {
+        if (!compilation.isSuccess()) {
             return ScriptSaveResult.fail(compilation.getDiagnostics());
         }
 

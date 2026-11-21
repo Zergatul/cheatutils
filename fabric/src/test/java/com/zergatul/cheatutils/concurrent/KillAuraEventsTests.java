@@ -37,7 +37,7 @@ public class KillAuraEventsTests {
 
     @Test
     public void documentedExampleCompilesAsEventsScript() {
-        var result = new Compiler(ScriptType.EVENTS.createParameters()).compile("""
+        var result = new Compiler(ScriptType.EVENTS.createParameters()).compileInstance("""
                 events.modules.killAura.addTargetFilter(id => {
                     return game.entities.getName(id) != "your_friend";
                 });

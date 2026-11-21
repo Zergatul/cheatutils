@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.scripting.analysis.AnalysisResult;
 import com.zergatul.scripting.analysis.Analyzer;
 import com.zergatul.scripting.compiler.CompilationParameters;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.scripting.compiler.InstanceCompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -44,7 +44,7 @@ public abstract class ScriptSlot {
     }
 
     /** Full compilation without side effects, any thread. */
-    public CompilationResult compileScript(String code) {
+    public InstanceCompilationResult compileScript(String code) {
         return ScriptCompilerRegistry.INSTANCE.compile(scriptType, code);
     }
 
@@ -58,7 +58,7 @@ public abstract class ScriptSlot {
      * Client thread. Applies a save compiled earlier: document, settings and runtime change together.
      * {@code compilation} is null for empty code. An invalid save keeps the last working program.
      */
-    public abstract ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable CompilationResult compilation);
+    public abstract ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable InstanceCompilationResult compilation);
 
     /** Client thread. Replaces documents and runtime with scripts from the current settings. Reports failures, never throws. */
     public abstract void reload();

@@ -11,7 +11,7 @@ import com.zergatul.cheatutils.mcp.utility.Serializer;
 import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.scripting.compiler.InstanceCompilationResult;
 import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
@@ -147,9 +147,8 @@ public class ExecCodeTool implements McpTool {
             return McpToolCallResult.error("Invalid arguments: expected string property 'code'.");
         }
 
-        CompilationResult compileResult = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.EXEC_CODE, codeElement.getAsString());
-        Runnable program = compileResult.getProgram();
-        if (program == null) {
+        InstanceCompilationResult compileResult = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.EXEC_CODE, codeElement.getAsString());
+        if (!compileResult.isSuccess()) {
             return McpToolCallResult.success(new JsonObjectBuilder()
                     .withProperty("ok", false)
                     .withProperty("diagnostics", Serializer.serialize(compileResult.getDiagnostics()))
@@ -158,7 +157,7 @@ public class ExecCodeTool implements McpTool {
 
         ExecutionResult result;
         try {
-            result = execute(program);
+            result = execute(compileResult.getProgram());
         } catch (IllegalStateException e) {
             return McpToolCallResult.error(e.getMessage());
         }

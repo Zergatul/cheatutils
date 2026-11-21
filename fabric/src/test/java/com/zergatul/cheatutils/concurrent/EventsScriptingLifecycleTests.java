@@ -4,8 +4,8 @@ import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.modules.EventsApi;
-import com.zergatul.scripting.compiler.CompilationResult;
 import com.zergatul.scripting.compiler.Compiler;
+import com.zergatul.scripting.compiler.InstanceCompilationResult;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.AfterEach;
@@ -187,8 +187,8 @@ public class EventsScriptingLifecycleTests {
     public void callbackOfReplacedScriptCannotRegisterIntoReplacement() throws Exception {
         // Scripts using the API need the game, but any object of a compiled class belongs to its script.
         // The programs themselves stand in for callbacks compiled as part of them.
-        Runnable old = (Runnable) compile("int x = 1;").getProgram();
-        Runnable replacement = (Runnable) compile("int x = 2;").getProgram();
+        Runnable old = compile("int x = 1;").getProgram();
+        Runnable replacement = compile("int x = 2;").getProgram();
 
         install(old);
         EventsScripting.INSTANCE.addOnTickEnd(old);
@@ -213,8 +213,8 @@ public class EventsScriptingLifecycleTests {
         assertTrue(EventsScriptingAccess.getCallbacks("onTickEnd").isEmpty());
     }
 
-    private static CompilationResult compile(String code) {
-        CompilationResult result = new Compiler(ScriptType.EVENTS.createParameters()).compile(code);
+    private static InstanceCompilationResult compile(String code) {
+        InstanceCompilationResult result = new Compiler(ScriptType.EVENTS.createParameters()).compileInstance(code);
         assertNotNull(result.getProgram(), () -> String.valueOf(result.getDiagnostics()));
         return result;
     }

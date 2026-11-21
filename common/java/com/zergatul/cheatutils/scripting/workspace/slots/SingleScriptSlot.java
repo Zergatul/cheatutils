@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.*;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.scripting.compiler.InstanceCompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -59,8 +59,8 @@ public abstract class SingleScriptSlot extends ScriptSlot {
             return ScriptSaveResult.success();
         }
 
-        CompilationResult compilationResult = compileScript(code);
-        if (compilationResult.getProgram() != null) {
+        InstanceCompilationResult compilationResult = compileScript(code);
+        if (compilationResult.isSuccess()) {
             applyScript(compilationResult.getProgram());
             return ScriptSaveResult.success();
         } else {
@@ -69,7 +69,7 @@ public abstract class SingleScriptSlot extends ScriptSlot {
     }
 
     @Override
-    public ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable CompilationResult compilation) {
+    public ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable InstanceCompilationResult compilation) {
         if (identifier != null) {
             throw new IllegalStateException();
         }
@@ -85,8 +85,8 @@ public abstract class SingleScriptSlot extends ScriptSlot {
         }
 
         Objects.requireNonNull(compilation);
-        document = document.withAttempt(code, compilation.getDiagnostics());
-        if (compilation.getProgram() == null) {
+        document = document.withAttempt(code, compilation.isSuccess() ? List.of() : compilation.getDiagnostics());
+        if (!compilation.isSuccess()) {
             return ScriptSaveResult.fail(compilation.getDiagnostics());
         }
 

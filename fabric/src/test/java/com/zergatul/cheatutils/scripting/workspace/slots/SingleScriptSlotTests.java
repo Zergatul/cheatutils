@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.scripting.compiler.CompilationResult;
 import com.zergatul.scripting.compiler.Compiler;
+import com.zergatul.scripting.compiler.InstanceCompilationResult;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -103,8 +103,8 @@ public class SingleScriptSlotTests {
         }
 
         @Override
-        public CompilationResult compileScript(String code) {
-            return new Compiler(ScriptType.OVERLAY.createParameters()).compile(code);
+        public InstanceCompilationResult compileScript(String code) {
+            return new Compiler(ScriptType.OVERLAY.createParameters()).compileInstance(code);
         }
 
         @Override

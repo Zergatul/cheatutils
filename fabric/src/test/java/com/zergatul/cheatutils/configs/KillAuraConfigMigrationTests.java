@@ -118,7 +118,7 @@ public class KillAuraConfigMigrationTests {
     }
 
     private JsonObject migrate(JsonObject root) throws Exception {
-        Method method = ConfigStore.class.getDeclaredMethod("migration6", JsonElement.class);
+        Method method = Migrations.class.getDeclaredMethod("migration6", JsonElement.class);
         method.setAccessible(true);
         method.invoke(ConfigStore.INSTANCE, root);
         return root;

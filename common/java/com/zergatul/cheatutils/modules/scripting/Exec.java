@@ -14,7 +14,7 @@ import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import com.zergatul.scripting.DiagnosticMessage;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.scripting.compiler.InstanceCompilationResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -49,8 +49,8 @@ public class Exec implements Module {
         event.cancel();
 
         String code = event.getMessage().substring(1);
-        CompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
-        if (result.getProgram() == null) {
+        InstanceCompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
+        if (!result.isSuccess()) {
             for (DiagnosticMessage message : Objects.requireNonNull(result.getDiagnostics())) {
                 systemMessage(message.message, 0xFFFF8080);
             }
