@@ -2,7 +2,10 @@ package com.zergatul.cheatutils.concurrent;
 
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
+import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.modules.EventsApi;
+import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.scripting.compiler.Compiler;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.AfterEach;
@@ -156,25 +159,79 @@ public class EventsScriptingLifecycleTests {
         assertEquals(List.of("old unload", "new unload"), calls);
     }
 
+    @Test
+    public void replacementDuringDispatchStopsTheOldCallbackLoop() throws Exception {
+        List<String> calls = new ArrayList<>();
+        install(() -> {
+            events.onTickEnd(() -> {
+                calls.add("first");
+                // a callback replacing its own script, the way a profile load on the client thread does
+                install(() -> events.onTickEnd(() -> calls.add("replacement")));
+            });
+            events.onTickEnd(() -> calls.add("second"));
+        });
+        ScriptActivation<?> old = getActivation();
+        List<?> oldCallbacks = EventsScriptingAccess.getCallbacks("onTickEnd");
+
+        // the same loop shape as the dispatchers: iterate one installation, stop when its activation is retired
+        for (Object callback : oldCallbacks) {
+            if (!old.run("game tick", (Runnable) callback)) break;
+        }
+
+        assertEquals(List.of("first"), calls);
+        assertNotSame(old, getActivation());
+        assertEquals(1, EventsScriptingAccess.getCallbacks("onTickEnd").size());
+    }
+
+    @Test
+    public void callbackOfReplacedScriptCannotRegisterIntoReplacement() throws Exception {
+        // Scripts using the API need the game, but any object of a compiled class belongs to its script.
+        // The programs themselves stand in for callbacks compiled as part of them.
+        Runnable old = (Runnable) compile("int x = 1;").getProgram();
+        Runnable replacement = (Runnable) compile("int x = 2;").getProgram();
+
+        install(old);
+        EventsScripting.INSTANCE.addOnTickEnd(old);
+        assertEquals(1, EventsScriptingAccess.getCallbacks("onTickEnd").size());
+
+        install(replacement);
+        // e.g. a callback of the old script that was already running on the Netty thread
+        EventsScripting.INSTANCE.addOnTickEnd(old);
+        assertTrue(EventsScriptingAccess.getCallbacks("onTickEnd").isEmpty());
+
+        EventsScripting.INSTANCE.addOnTickEnd(replacement);
+        assertEquals(1, EventsScriptingAccess.getCallbacks("onTickEnd").size());
+    }
+
+    @Test
+    public void callbackRegistrationsAfterFailureAreIgnored() throws Exception {
+        install(() -> {});
+        assertFalse(getActivation().run("tick", () -> { throw new IllegalStateException("callback failed"); }));
+
+        events.onTickEnd(() -> {});
+
+        assertTrue(EventsScriptingAccess.getCallbacks("onTickEnd").isEmpty());
+    }
+
+    private static CompilationResult compile(String code) {
+        CompilationResult result = new Compiler(ScriptType.EVENTS.createParameters()).compile(code);
+        assertNotNull(result.getProgram(), () -> String.valueOf(result.getDiagnostics()));
+        return result;
+    }
+
     private static void install(Runnable program) {
         EventsScripting.INSTANCE.setScript(program);
-        ClientTickEndExecutor.INSTANCE.processQueue();
     }
 
     private static void clearScript() {
         EventsScripting.INSTANCE.clear();
-        ClientTickEndExecutor.INSTANCE.processQueue();
     }
 
     private static ScriptActivation<?> getActivation() throws Exception {
-        var field = EventsScripting.class.getDeclaredField("script");
-        field.setAccessible(true);
-        return (ScriptActivation<?>) field.get(EventsScripting.INSTANCE);
+        return EventsScriptingAccess.getActivation();
     }
 
     private static void drainFailures() throws Exception {
-        var method = EventsScripting.class.getDeclaredMethod("processPendingFailures");
-        method.setAccessible(true);
-        method.invoke(EventsScripting.INSTANCE);
+        EventsScriptingAccess.drainFailures();
     }
 }

@@ -1,39 +1,45 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.configs.ConfigLock;
-import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.*;
-import com.zergatul.scripting.analysis.AnalysisResult;
-import com.zergatul.scripting.analysis.Analyzer;
-import com.zergatul.scripting.compiler.CompilationParameters;
 import com.zergatul.scripting.compiler.CompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @NullMarked
 public abstract class SingleScriptSlot extends ScriptSlot {
 
-    private final ScriptType scriptType;
-    private final ScriptDocument instance;
+    // written on the client thread, read from any thread
+    private volatile ScriptDocument document;
 
     protected SingleScriptSlot(ScriptType scriptType) {
-        this.scriptType = scriptType;
-        this.instance = new ScriptDocument(new ScriptRef(scriptType));
+        super(scriptType);
+        this.document = new ScriptDocument(new ScriptRef(scriptType));
     }
 
     @Override
     public List<ScriptDocument> getInstances() {
-        return List.of(instance);
+        return List.of(document);
     }
 
     @Override
     public ScriptDocument getInstance(@Nullable String identifier) {
-        return instance;
+        return document;
+    }
+
+    @Override
+    public void reload() {
+        ClientThread.assertCurrent();
+        initAndReport(null, readConfigCode());
+    }
+
+    public ScriptSaveResult init(@Nullable String code) {
+        return init(null, code);
     }
 
     @Override
@@ -42,9 +48,11 @@ public abstract class SingleScriptSlot extends ScriptSlot {
             throw new IllegalStateException();
         }
 
-        // initial code loaded from config may contain errors
-        instance.code = code;
-        ScriptExecutionManager.INSTANCE.cancel(instance.ref);
+        ClientThread.assertCurrent();
+
+        // code loaded from settings may contain errors, the document keeps it anyway
+        document = document.withCode(code);
+        ScriptExecutionManager.INSTANCE.cancel(document.ref());
         applyScript(null);
 
         if (code == null || code.isEmpty()) {
@@ -60,55 +68,36 @@ public abstract class SingleScriptSlot extends ScriptSlot {
         }
     }
 
-    public void initAndReport(@Nullable String code) {
-        initAndReport(scriptType, null, code);
-    }
-
     @Override
-    public ScriptCompileResult compile(String code) {
-        CompilationParameters compilationParameters = ScriptCompilerRegistry.INSTANCE.getParameters(scriptType);
-        AnalysisResult result = new Analyzer().analyze(code, compilationParameters);
-        return new ScriptCompileResult(result.binderOutput().diagnostics());
-    }
-
-    @Override
-    public ScriptSaveResult save(@Nullable String identifier, @Nullable String code) {
+    public ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable CompilationResult compilation) {
         if (identifier != null) {
             throw new IllegalStateException();
         }
 
-        synchronized (ConfigLock.class) {
-            if (code == null || code.isEmpty()) {
-                instance.code = null;
-                ScriptExecutionManager.INSTANCE.cancel(instance.ref);
+        ClientThread.assertCurrent();
 
-                updateConfigCode(null);
-                applyScript(null);
-
-                return ScriptSaveResult.success();
-            }
-
-            CompilationResult compilationResult = compileScript(code);
-
-            instance.lastAttemptAt = Instant.now();
-            instance.lastAttemptCode = code;
-            instance.lastAttemptDiagnostics = compilationResult.getDiagnostics();
-
-            if (compilationResult.getProgram() != null) {
-                instance.code = code;
-                ScriptExecutionManager.INSTANCE.cancel(instance.ref);
-
-                updateConfigCode(code);
-                applyScript(compilationResult.getProgram());
-
-                return ScriptSaveResult.success();
-            } else {
-                return ScriptSaveResult.fail(compilationResult.getDiagnostics());
-            }
+        if (code == null || code.isEmpty()) {
+            document = document.withCode(null);
+            ScriptExecutionManager.INSTANCE.cancel(document.ref());
+            updateConfigCode(null);
+            applyScript(null);
+            return ScriptSaveResult.success();
         }
+
+        Objects.requireNonNull(compilation);
+        document = document.withAttempt(code, compilation.getDiagnostics());
+        if (compilation.getProgram() == null) {
+            return ScriptSaveResult.fail(compilation.getDiagnostics());
+        }
+
+        document = document.withCode(code);
+        ScriptExecutionManager.INSTANCE.cancel(document.ref());
+        updateConfigCode(code);
+        applyScript(compilation.getProgram());
+        return ScriptSaveResult.success();
     }
 
+    protected abstract @Nullable String readConfigCode();
     protected abstract void updateConfigCode(@Nullable String code);
-    protected abstract CompilationResult compileScript(String code);
     protected abstract <T> void applyScript(@Nullable T program);
 }

@@ -24,10 +24,13 @@ public abstract class MixinPacketProcessorHandle {
 
     @Inject(
             method = "handle",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/Packet;handle(Lnet/minecraft/network/PacketListener;)V"))
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/Packet;handle(Lnet/minecraft/network/PacketListener;)V"),
+            cancellable = true)
     private void onBeforeHandlePacket(CallbackInfo info) {
         if (this.listener.flow() == PacketFlow.CLIENTBOUND) {
-            Events.BeforeHandlePacket.trigger(this.packet);
+            if (!Events.BeforeHandlePacket.trigger(this.packet)) {
+                info.cancel();
+            }
         }
     }
 }

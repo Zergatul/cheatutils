@@ -6,10 +6,8 @@ import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigLock;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.SettingHandle;
-import com.zergatul.cheatutils.configs.SettingNotificationReason;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.BlockAutomationConfig;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
@@ -19,8 +17,6 @@ import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
-import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
-import com.zergatul.cheatutils.scripting.workspace.slots.SingleScriptSlot;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.SlotSelector;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
@@ -42,9 +38,8 @@ public class BlockAutomation {
 
     private final SettingHandle<BlockAutomationConfig> settings = Settings.get(BlockAutomationConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
-    private final SingleScriptSlot scriptSlot = (SingleScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_AUTOMATION);
     private final SlotSelector slotSelector = new SlotSelector();
-    private volatile ScriptActivation<BlockPosConsumer> script; // synchronized under ConfigLock
+    private ScriptActivation<BlockPosConsumer> script; // client thread
     private Predicate<ItemStack> useItemPredicate;
     private InteractionHand hand;
     private BlockPlacingMethod method;
@@ -60,7 +55,6 @@ public class BlockAutomation {
     private BlockAutomation() {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
-        settings.observe(this::onConfigUpdated);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
@@ -70,8 +64,8 @@ public class BlockAutomation {
         return settings;
     }
 
-    /** Locked by callers from SingleScriptSlot */
     public void setScript(BlockPosConsumer script) {
+        ClientThread.assertCurrent();
         ScriptActivation<BlockPosConsumer> previous = this.script;
         if (previous != null) {
             previous.deactivate();
@@ -120,20 +114,6 @@ public class BlockAutomation {
         }
 
         return breakPlan != null;
-    }
-
-    private void onConfigUpdated(SettingNotificationReason reason, BlockAutomationConfig prev, BlockAutomationConfig curr) {
-        if (reason == SettingNotificationReason.INITIAL || reason == SettingNotificationReason.PROFILE_LOAD) {
-            synchronized (ConfigLock.class) {
-                ScriptActivation<BlockPosConsumer> previous = this.script;
-                if (previous != null) {
-                    previous.deactivate();
-                }
-                this.script = null;
-
-                scriptSlot.initAndReport(curr.code());
-            }
-        }
     }
 
     private void onAfterPlayerAiStep() {

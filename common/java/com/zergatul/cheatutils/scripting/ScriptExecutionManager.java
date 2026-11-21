@@ -20,6 +20,7 @@ public class ScriptExecutionManager {
 
     private final Map<ScriptRef, CompletableFuture<?>> namedExecutions = new HashMap<>();
     private final Set<CompletableFuture<?>> anonymousExecutions = new HashSet<>();
+    private long cancelAllCount; // guarded by this
 
     protected ScriptExecutionManager() {
         this(false);
@@ -28,6 +29,8 @@ public class ScriptExecutionManager {
     private ScriptExecutionManager(boolean registerLifecycleHandler) {
         if (registerLifecycleHandler) {
             Events.Close.add(this::cancelAll, LIFECYCLE_PRIORITY);
+            // before scripts of the new profile are installed
+            Events.ProfileLoaded.add(this::cancelAll, LIFECYCLE_PRIORITY);
         }
     }
 
@@ -43,18 +46,36 @@ public class ScriptExecutionManager {
         Objects.requireNonNull(ref);
         Objects.requireNonNull(script);
 
-        CompletableFuture<?> future;
+        long cancelAllCountBefore;
         synchronized (this) {
             CompletableFuture<?> current = namedExecutions.get(ref);
             if (current != null && !current.isDone()) {
                 return current;
             }
-
-            future = Objects.requireNonNull(script.run(), "Async script returned a null future.");
-            namedExecutions.put(ref, future);
+            cancelAllCountBefore = cancelAllCount;
         }
 
-        future.whenComplete((result, throwable) -> removeIfCurrent(ref, future));
+        // user code runs synchronously until its first await, so never under the manager monitor
+        CompletableFuture<?> future = Objects.requireNonNull(script.run(), "Async script returned a null future.");
+
+        CompletableFuture<?> previous = null;
+        boolean cancelled;
+        synchronized (this) {
+            cancelled = cancelAllCount != cancelAllCountBefore;
+            if (!cancelled) {
+                previous = namedExecutions.put(ref, future);
+            }
+        }
+
+        if (cancelled) {
+            // cancelAll() ran while the script was starting
+            future.cancel(false);
+        } else {
+            if (previous != null && previous != future) {
+                previous.cancel(false);
+            }
+            future.whenComplete((result, throwable) -> removeIfCurrent(ref, future));
+        }
         if (onComplete != null) {
             future.whenComplete((result, throwable) -> onComplete.accept(throwable));
         }
@@ -116,6 +137,7 @@ public class ScriptExecutionManager {
     public void cancelAll() {
         Set<CompletableFuture<?>> futures;
         synchronized (this) {
+            cancelAllCount++;
             futures = new HashSet<>(namedExecutions.values());
             futures.addAll(anonymousExecutions);
             namedExecutions.clear();

@@ -2,9 +2,7 @@ package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
-import com.zergatul.scripting.compiler.CompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -16,13 +14,13 @@ public class BlockAutomationScriptSlot extends SingleScriptSlot {
     }
 
     @Override
-    protected void updateConfigCode(@Nullable String code) {
-        BlockAutomation.INSTANCE.getSettings().update(config -> config.withCode(code));
+    protected @Nullable String readConfigCode() {
+        return BlockAutomation.INSTANCE.getSettings().get().code();
     }
 
     @Override
-    protected CompilationResult compileScript(String code) {
-        return ScriptCompilerRegistry.INSTANCE.compile(ScriptType.BLOCK_AUTOMATION, code);
+    protected void updateConfigCode(@Nullable String code) {
+        BlockAutomation.INSTANCE.getSettings().update(config -> config.withCode(code));
     }
 
     @Override

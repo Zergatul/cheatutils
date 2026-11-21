@@ -21,7 +21,7 @@ public class SingleScriptSlotTests {
 
         assertTrue(slot.init(null).isSuccess());
         assertNull(slot.current());
-        assertNull(slot.getInstance(null).code);
+        assertNull(slot.getInstance(null).code());
     }
 
     @Test
@@ -34,12 +34,55 @@ public class SingleScriptSlotTests {
         assertFalse(result.isSuccess());
         assertEquals(1, slot.applied.size());
         assertNull(slot.current());
-        assertEquals("unknownName();", slot.getInstance(null).code);
+        assertEquals("unknownName();", slot.getInstance(null).code());
+    }
+
+    @Test
+    public void reloadInstallsCodeFromCurrentSettings() {
+        TestSlot slot = new TestSlot();
+        slot.configCode = "int x = 1;";
+        slot.reload();
+        assertNotNull(slot.current());
+        assertEquals("int x = 1;", slot.getInstance(null).code());
+
+        slot.configCode = null;
+        slot.reload();
+        assertNull(slot.current());
+        assertNull(slot.getInstance(null).code());
+    }
+
+    @Test
+    public void invalidSaveKeepsLastWorkingProgramAndSettings() {
+        TestSlot slot = new TestSlot();
+        assertTrue(slot.commit(null, "int x = 1;", slot.compileScript("int x = 1;")).isSuccess());
+        Object working = slot.current();
+        assertNotNull(working);
+        assertEquals("int x = 1;", slot.configCode);
+
+        var result = slot.commit(null, "unknownName();", slot.compileScript("unknownName();"));
+        assertFalse(result.isSuccess());
+        assertSame(working, slot.current());
+        assertEquals("int x = 1;", slot.configCode);
+        assertEquals("int x = 1;", slot.getInstance(null).code());
+        assertEquals("unknownName();", slot.getInstance(null).lastAttemptCode());
+        assertNotNull(slot.getInstance(null).lastAttemptAt());
+    }
+
+    @Test
+    public void emptySaveRemovesProgramAndSettingsCode() {
+        TestSlot slot = new TestSlot();
+        assertTrue(slot.commit(null, "int x = 1;", slot.compileScript("int x = 1;")).isSuccess());
+
+        assertTrue(slot.commit(null, "", null).isSuccess());
+        assertNull(slot.current());
+        assertNull(slot.configCode);
+        assertNull(slot.getInstance(null).code());
     }
 
     private static class TestSlot extends SingleScriptSlot {
 
         private final List<@Nullable Object> applied = new ArrayList<>();
+        private @Nullable String configCode;
 
         private TestSlot() {
             super(ScriptType.OVERLAY);
@@ -50,10 +93,17 @@ public class SingleScriptSlotTests {
         }
 
         @Override
-        protected void updateConfigCode(@Nullable String code) {}
+        protected @Nullable String readConfigCode() {
+            return configCode;
+        }
 
         @Override
-        protected CompilationResult compileScript(String code) {
+        protected void updateConfigCode(@Nullable String code) {
+            configCode = code;
+        }
+
+        @Override
+        public CompilationResult compileScript(String code) {
             return new Compiler(ScriptType.OVERLAY.createParameters()).compile(code);
         }
 

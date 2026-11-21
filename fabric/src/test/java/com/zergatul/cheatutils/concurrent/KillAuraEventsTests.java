@@ -160,9 +160,7 @@ public class KillAuraEventsTests {
     }
 
     private static ScriptActivation<?> getActivation() throws Exception {
-        Field field = EventsScripting.class.getDeclaredField("script");
-        field.setAccessible(true);
-        return (ScriptActivation<?>) field.get(EventsScripting.INSTANCE);
+        return EventsScriptingAccess.getActivation();
     }
 
     private static AimAssist.TargetPredicate getAimPredicate() throws Exception {
@@ -172,14 +170,10 @@ public class KillAuraEventsTests {
     }
 
     private static List<?> getCallbacks() throws Exception {
-        Field field = EventsScripting.class.getDeclaredField("onTickEnd");
-        field.setAccessible(true);
-        return (List<?>) field.get(EventsScripting.INSTANCE);
+        return EventsScriptingAccess.getCallbacks("onTickEnd");
     }
 
     private static void drainFailures() throws Exception {
-        var method = EventsScripting.class.getDeclaredMethod("processPendingFailures");
-        method.setAccessible(true);
-        method.invoke(EventsScripting.INSTANCE);
+        EventsScriptingAccess.drainFailures();
     }
 }

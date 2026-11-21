@@ -150,9 +150,25 @@ public class SettingHandleTests {
         assertEquals(0, fixture.writes);
     }
 
+    @Test
+    public void profileListenersRunUnderTheStoreLockInOrderWithUpdates() {
+        Fixture fixture = new Fixture();
+        List<Boolean> lockHeld = new ArrayList<>();
+        fixture.title.onChanged((_, _) -> lockHeld.add(Thread.holdsLock(fixture.lock)));
+        fixture.title.observe((_, _, _) -> lockHeld.add(Thread.holdsLock(fixture.lock)));
+
+        Profile next = new Profile();
+        next.title = fixture.title.get().withItemScale(4);
+        fixture.registry.replace(SettingNotificationReason.PROFILE_LOAD, next);
+        fixture.title.update(config -> config.withItemScale(5));
+
+        assertEquals(List.of(true, true, true, true), lockHeld);
+    }
+
     private static class Fixture {
         private int writes;
-        private final SettingsRegistry<Profile> registry = new SettingsRegistry<>(new Object(), new Profile(), () -> writes++);
+        private final Object lock = new Object();
+        private final SettingsRegistry<Profile> registry = new SettingsRegistry<>(lock, new Profile(), () -> writes++);
         private final SettingHandle<EntityTitleConfig> title = registry.register(profile -> profile.title, (profile, value) -> profile.title = value);
         private final SettingHandle<CounterConfig> other = registry.register(profile -> profile.other, (profile, value) -> profile.other = value);
     }

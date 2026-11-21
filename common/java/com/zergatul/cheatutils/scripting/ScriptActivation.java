@@ -73,6 +73,17 @@ public class ScriptActivation<T> {
         return owner == null ? null : owner.get();
     }
 
+    /**
+     * False when the callback was compiled as part of another script, including a replaced script whose activation
+     * is already gone. Callbacks not compiled by the script engine are accepted.
+     */
+    public boolean owns(Object callback) {
+        if (!(callback.getClass().getClassLoader() instanceof DynamicCompilerClassLoader)) {
+            return true;
+        }
+        return findOwner(callback) == this;
+    }
+
     public boolean isActive() {
         return !failed.get();
     }

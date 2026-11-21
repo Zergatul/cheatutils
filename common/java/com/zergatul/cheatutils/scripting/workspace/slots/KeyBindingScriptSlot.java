@@ -1,13 +1,12 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.configs.modules.KeyBindingEntry;
 import com.zergatul.cheatutils.modules.scripting.keybindings.KeyBindings;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
-import com.zergatul.scripting.compiler.CompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 @NullMarked
 public class KeyBindingScriptSlot extends MultiScriptSlot {
@@ -17,26 +16,37 @@ public class KeyBindingScriptSlot extends MultiScriptSlot {
     }
 
     @Override
-    protected void updateConfigCode(String identifier, @Nullable String code) {
-        KeyBindings.INSTANCE.getSettings().update(config -> {
-            KeyBindingEntry entry = config.entries().stream()
-                    .filter(e -> e.name().equals(identifier))
-                    .findFirst()
-                    .orElseThrow();
-            return config.withEntries(
-                    config.entries().replaceFirst(
-                            e -> e == entry,
-                            e -> e.withCode(code)));
-        });
+    protected List<ConfigScript> readConfigScripts() {
+        return KeyBindings.INSTANCE.getSettings().get().entries().stream()
+                .map(e -> new ConfigScript(e.name(), e.code()))
+                .toList();
     }
 
     @Override
-    protected CompilationResult compileScript(String code) {
-        return ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
+    protected boolean hasConfigEntry(String identifier) {
+        return KeyBindings.INSTANCE.getSettings().get().entries().contains(e -> e.name().equals(identifier));
+    }
+
+    @Override
+    protected void updateConfigCode(String identifier, @Nullable String code) {
+        KeyBindings.INSTANCE.getSettings().update(config -> config.withEntries(
+                config.entries().replaceFirst(
+                        e -> e.name().equals(identifier),
+                        e -> e.withCode(code))));
     }
 
     @Override
     protected <T> void applyScript(String identifier, @Nullable T program) {
         KeyBindings.INSTANCE.setScript(identifier, (AsyncRunnable) program);
+    }
+
+    @Override
+    protected void clearRuntime() {
+        KeyBindings.INSTANCE.clearScripts();
+    }
+
+    @Override
+    protected void moveRuntime(String oldIdentifier, String newIdentifier) {
+        KeyBindings.INSTANCE.renameScript(oldIdentifier, newIdentifier);
     }
 }

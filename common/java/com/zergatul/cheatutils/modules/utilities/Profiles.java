@@ -1,8 +1,7 @@
 package com.zergatul.cheatutils.modules.utilities;
 
 import com.google.gson.*;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ConfigWriterQueue;
 import com.zergatul.cheatutils.modules.Module;
@@ -15,6 +14,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +31,7 @@ public class Profiles implements Module {
     private final Logger logger = LogManager.getLogger(Profiles.class);
     private final char[] invalidChars = new char[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' };
     private final Pattern pattern = Pattern.compile("^cheatutils\\.(.+)\\.json$");
-    private String current;
+    private volatile String current; // changed on the client thread
     private volatile boolean isInResetState = false;
 
     private Profiles() {
@@ -63,7 +63,7 @@ public class Profiles implements Module {
             profileFile = getProfileFile(current);
         }
 
-        ConfigStore.INSTANCE.read(true, profileFile);
+        ConfigStore.INSTANCE.loadInitial(profileFile);
     }
 
     public String getCurrent() {
@@ -116,43 +116,46 @@ public class Profiles implements Module {
         return valid;
     }
 
-    public void createNew(String name) {
+    public CompletableFuture<Void> createNew(String name) {
         if (!isValidProfileName(name)) {
             throw new IllegalStateException("Profile name is not valid.");
         }
 
-        current = name;
-        requestWrite();
-
-        executeInRenderThread(() -> ConfigStore.INSTANCE.createNew(getProfileFile(name)));
+        return runProfileOperation(() -> {
+            current = name;
+            requestWrite();
+            ConfigStore.INSTANCE.createNew(getProfileFile(name));
+        });
     }
 
-    public void createCopy(String name) {
+    public CompletableFuture<Void> createCopy(String name) {
         if (!isValidProfileName(name)) {
             throw new IllegalStateException("Profile name is not valid.");
         }
 
-        current = name;
-        requestWrite();
-
-        executeInRenderThread(() -> ConfigStore.INSTANCE.switchFile(getProfileFile(name)));
+        return runProfileOperation(() -> {
+            current = name;
+            requestWrite();
+            ConfigStore.INSTANCE.switchFile(getProfileFile(name));
+        });
     }
 
-    public void change(String name) {
+    public CompletableFuture<Void> change(String name) {
         if (!isValidProfileName(name)) {
             throw new IllegalStateException("Profile name is not valid.");
         }
 
-        // if we have pending write, execute it right now
-        ConfigWriterQueue.INSTANCE.flush(getProfileFile(current));
+        return runProfileOperation(() -> {
+            // if we have pending write, execute it right now
+            ConfigWriterQueue.INSTANCE.flush(getProfileFile(current));
 
-        current = name;
-        requestWrite();
-
-        executeInRenderThread(() -> ConfigStore.INSTANCE.read(false, getProfileFile(name)));
+            current = name;
+            requestWrite();
+            ConfigStore.INSTANCE.load(getProfileFile(name));
+        });
     }
 
-    public void delete(String name) {
+    public CompletableFuture<Void> delete(String name) {
         if (!isValidProfileName(name)) {
             throw new IllegalStateException("Profile name is not valid.");
         }
@@ -161,17 +164,18 @@ public class Profiles implements Module {
             throw new IllegalStateException("Cannot delete default profile.");
         }
 
-        File file = getProfileFile(name);
-        if (file.exists()) {
-            if (!file.delete()) {
-                logger.error("Cannot delete profile file.");
+        return runProfileOperation(() -> {
+            File file = getProfileFile(name);
+            if (file.exists()) {
+                if (!file.delete()) {
+                    logger.error("Cannot delete profile file.");
+                }
             }
-        }
 
-        current = "";
-        requestWrite();
-
-        executeInRenderThread(() -> ConfigStore.INSTANCE.read(false, getProfileFile("")));
+            current = "";
+            requestWrite();
+            ConfigStore.INSTANCE.load(getProfileFile(""));
+        });
     }
 
     public boolean isInResetState() {
@@ -220,12 +224,13 @@ public class Profiles implements Module {
         return errors.toArray(String[]::new);
     }
 
-    private void executeInRenderThread(Runnable runnable) {
-        if (RenderSystem.isOnRenderThread()) {
-            runnable.run();
-        } else {
-            ClientTickEndExecutor.INSTANCE.execute(runnable);
-        }
+    /**
+     * A profile operation replaces every script runtime, so it runs as one step on the client thread at the end of
+     * the tick: never inline from inside a script callback. Callers never wait here, because scripts can call this
+     * from the Netty thread, which the client thread may be waiting for. Web requests wait on the returned future.
+     */
+    private CompletableFuture<Void> runProfileOperation(Runnable operation) {
+        return ClientThread.post(operation);
     }
 
     private void requestWrite() {
@@ -295,19 +300,21 @@ public class Profiles implements Module {
         @Override
         public String post(String body) {
             Request request = gson.fromJson(body, Request.class);
-            switch (request.command) {
-                case "change": Profiles.this.change(request.name); break;
-                case "copy": Profiles.this.createCopy(request.name); break;
-                case "new": Profiles.this.createNew(request.name); break;
-                default: throw new ApiException("Unsupported command.", HttpResponseCodes.BAD_REQUEST);
-            }
+            CompletableFuture<Void> operation = switch (request.command) {
+                case "change" -> Profiles.this.change(request.name);
+                case "copy" -> Profiles.this.createCopy(request.name);
+                case "new" -> Profiles.this.createNew(request.name);
+                default -> throw new ApiException("Unsupported command.", HttpResponseCodes.BAD_REQUEST);
+            };
 
+            // reply when the new profile is active, so the page reloads its settings
+            ClientThread.await(operation);
             return "{}";
         }
 
         @Override
         public String delete(String name) {
-            Profiles.this.delete(name);
+            ClientThread.await(Profiles.this.delete(name));
             return "{}";
         }
 

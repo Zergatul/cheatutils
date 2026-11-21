@@ -8,7 +8,6 @@ import com.zergatul.cheatutils.modules.esp.*;
 import com.zergatul.cheatutils.modules.esp.block.BlockEsp;
 import com.zergatul.cheatutils.modules.esp.block.BlockFinder;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
-import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.modules.hacks.*;
 import com.zergatul.cheatutils.modules.scripting.*;
 import com.zergatul.cheatutils.modules.scripting.keybindings.KeyBindings;
@@ -16,12 +15,15 @@ import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.modules.visuals.*;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 
 public class Modules {
 
     public static void register() {
         register(ScriptExecutionManager.INSTANCE);
         register(ScriptRuntimeFailureHandler.INSTANCE);
+        // reloads scripts on Events.ProfileLoaded
+        register(ScriptWorkspace.INSTANCE);
 
         //Order dependent modules -> legacy method, use Event.event.add(function, priority) for new modules, use the priority value instead
         //==========================
@@ -44,7 +46,6 @@ public class Modules {
 
         register(AutoCraft.INSTANCE);
         register(BlockEsp.INSTANCE);
-        register(EntityEspScriptRuntime.INSTANCE);
         register(ProjectilePath.INSTANCE);
         register(EndCityChunks.INSTANCE);
         register(AutoBucket.INSTANCE);

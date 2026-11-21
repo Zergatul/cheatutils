@@ -49,6 +49,18 @@ public class BlockGroupKey {
         return new BlockGroupKey(blocks);
     }
 
+    public List<Block> getBlocks() {
+        List<Block> result = new ArrayList<>(blocks.length);
+        for (String id : blocks) {
+            Block block = RegistryExtensions.safeParse(BuiltInRegistries.BLOCK, id);
+            if (block == null) {
+                throw new IllegalStateException("Invalid block ID: " + id);
+            }
+            result.add(block);
+        }
+        return result;
+    }
+
     public @Nullable BlockEspEntry findIn(ImmutableList<BlockEspEntry> entries) {
         for (BlockEspEntry entry : entries) {
             if (new BlockGroupKey(entry.blocks()).equals(this)) {

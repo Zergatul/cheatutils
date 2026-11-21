@@ -3,9 +3,8 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
-import com.zergatul.cheatutils.configs.ConfigLock;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.SettingHandle;
-import com.zergatul.cheatutils.configs.SettingNotificationReason;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.VillagerRollerConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -13,8 +12,6 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
-import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
-import com.zergatul.cheatutils.scripting.workspace.slots.SingleScriptSlot;
 import com.zergatul.cheatutils.utils.EntityInteraction;
 import com.zergatul.cheatutils.utils.EntityInteractionPlan;
 import com.zergatul.cheatutils.utils.EntityInteractionResult;
@@ -52,8 +49,8 @@ public class VillagerRoller implements Module {
 
     private final SettingHandle<VillagerRollerConfig> settings = Settings.get(VillagerRollerConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
-    private final SingleScriptSlot scriptSlot = (SingleScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.VILLAGER_ROLLER);
-    private volatile ScriptActivation<Runnable> script; // synchronized under ConfigLock
+    // all state below belongs to the client thread
+    private ScriptActivation<Runnable> script;
     private boolean active;
     private State state = State.STOPPED;
     private BlockPos pos;
@@ -80,7 +77,6 @@ public class VillagerRoller implements Module {
         Events.EntityInteract.add(this::onEntityInteract);
         Events.BeforeHandlePacket.add(this::onServerPacket);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
-        settings.observe(this::onConfigUpdated);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new StatusWebApi());
@@ -137,8 +133,8 @@ public class VillagerRoller implements Module {
         return state.toString();
     }
 
-    /** Locked by callers from SingleScriptSlot */
     public void setScript(Runnable script) {
+        ClientThread.assertCurrent();
         ScriptActivation<Runnable> previous = this.script;
         if (previous != null) {
             previous.deactivate();
@@ -180,20 +176,6 @@ public class VillagerRoller implements Module {
 
     public boolean isCurse() {
         return curse;
-    }
-
-    private void onConfigUpdated(SettingNotificationReason reason, VillagerRollerConfig prev, VillagerRollerConfig curr) {
-        if (reason == SettingNotificationReason.INITIAL || reason == SettingNotificationReason.PROFILE_LOAD) {
-            synchronized (ConfigLock.class) {
-                ScriptActivation<Runnable> previous = this.script;
-                if (previous != null) {
-                    previous.deactivate();
-                }
-                this.script = null;
-
-                scriptSlot.initAndReport(curr.code());
-            }
-        }
     }
 
     private void onClientTickEnd() {
@@ -530,12 +512,14 @@ public class VillagerRoller implements Module {
         @Override
         public String post(String body) {
             Request request = gson.fromJson(body, Request.class);
-            if (request.start) {
-                VillagerRoller.this.start();
-            }
-            if (request.stop) {
-                VillagerRoller.this.stop();
-            }
+            ClientThread.run(() -> {
+                if (request.start) {
+                    VillagerRoller.this.start();
+                }
+                if (request.stop) {
+                    VillagerRoller.this.stop();
+                }
+            });
             return "{}";
         }
 

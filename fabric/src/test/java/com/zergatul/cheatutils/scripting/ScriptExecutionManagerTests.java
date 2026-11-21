@@ -126,6 +126,34 @@ public class ScriptExecutionManagerTests {
     }
 
     @Test
+    public void namedScriptStartsOutsideManagerLock() {
+        // user code may wait for other threads, which may need the manager
+        boolean[] lockHeld = new boolean[] { true };
+        manager.execute(new ScriptRef(ScriptType.KEYBINDING, "test"), () -> {
+            lockHeld[0] = Thread.holdsLock(manager);
+            return new CompletableFuture<>();
+        });
+
+        Assertions.assertFalse(lockHeld[0]);
+    }
+
+    @Test
+    public void cancelAllWhileNamedScriptStartsCancelsIt() {
+        ScriptRef ref = new ScriptRef(ScriptType.KEYBINDING, "test");
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        CompletableFuture<?> result = manager.execute(ref, () -> {
+            manager.cancelAll();
+            return future;
+        });
+
+        Assertions.assertSame(future, result);
+        Assertions.assertTrue(future.isCancelled());
+        Assertions.assertFalse(manager.isRunning(ref));
+        Assertions.assertEquals(0, manager.getActiveCount());
+    }
+
+    @Test
     public void nullFutureIsRejectedWithoutBeingTracked() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,

@@ -1,10 +1,8 @@
 package com.zergatul.cheatutils.modules.esp.block;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.SettingNotificationReason;
 import com.zergatul.cheatutils.configs.Settings;
@@ -20,8 +18,6 @@ import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
-import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
-import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
@@ -39,14 +35,12 @@ public class BlockEsp {
     public static final BlockEsp INSTANCE = new BlockEsp();
 
     private final SettingHandle<BlockEspConfig> settings = Settings.get(BlockEspConfig.class);
-    private final MultiScriptSlot scriptSlot = (MultiScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP);
     private final List<CustomBlockPosEntry> customEntries = new ArrayList<>();
     private final List<BlockPos> bbList = new ArrayList<>();
     private final List<BlockPos> tracerList = new ArrayList<>();
     private final List<BlockPos> overlayList = new ArrayList<>();
-    private final Map<Block, ScriptActivation<BlockEspConsumer>> scripts = new IdentityHashMap<>();
+    private final Map<Block, ScriptActivation<BlockEspConsumer>> scripts = new IdentityHashMap<>(); // client thread
 
-    private BlockEspConfig currentConfig;
     private boolean enabled = true;
 
     private BlockEsp() {
@@ -58,8 +52,6 @@ public class BlockEsp {
         WebApiRegistry.INSTANCE.register(new BlockInfoWebApi());
         WebApiRegistry.INSTANCE.register(new BlockModelWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
-
-        currentConfig = BlockEspConfig.defaults();
     }
 
     public SettingHandle<BlockEspConfig> getSettings() {
@@ -87,11 +79,12 @@ public class BlockEsp {
         customEntries.removeIf(e -> e.pos.equals(pos));
     }
 
-    public void setScript(BlockEspEntry entry, @Nullable BlockEspConsumer script) {
-        RenderSystem.assertOnRenderThread();
+    public void setScript(BlockGroupKey key, @Nullable BlockEspConsumer script) {
+        ClientThread.assertCurrent();
 
+        List<Block> blocks = key.getBlocks();
         List<ScriptActivation<BlockEspConsumer>> previous = new ArrayList<>();
-        for (Block block : entry.blocks()) {
+        for (Block block : blocks) {
             ScriptActivation<BlockEspConsumer> activation = scripts.remove(block);
             if (activation != null && !previous.contains(activation)) {
                 previous.add(activation);
@@ -99,67 +92,47 @@ public class BlockEsp {
             }
         }
         if (script != null) {
-            String identifier = new BlockGroupKey(entry.blocks()).toString();
-            ScriptActivation<BlockEspConsumer> activation = new ScriptActivation<>(new ScriptRef(ScriptType.BLOCK_ESP, identifier), script);
-            for (Block block : entry.blocks()) {
+            ScriptActivation<BlockEspConsumer> activation = new ScriptActivation<>(new ScriptRef(ScriptType.BLOCK_ESP, key.toString()), script);
+            for (Block block : blocks) {
                 scripts.put(block, activation);
             }
         }
     }
 
     public void clearScripts() {
-        RenderSystem.assertOnRenderThread();
+        ClientThread.assertCurrent();
 
         scripts.values().forEach(ScriptActivation::deactivate);
         scripts.clear();
     }
 
-    public void moveScript(ImmutableList<Block> oldBlocks, ImmutableList<Block> newBlocks, ScriptRef newRef) {
-        RenderSystem.assertOnRenderThread();
+    public void moveScript(BlockGroupKey oldKey, BlockGroupKey newKey) {
+        ClientThread.assertCurrent();
 
         // all blocks should point to the same ScriptActivation instance
-        ScriptActivation<BlockEspConsumer> activation = scripts.get(oldBlocks.get(0));
+        List<Block> oldBlocks = oldKey.getBlocks();
+        ScriptActivation<BlockEspConsumer> activation = scripts.get(oldBlocks.getFirst());
         for (Block block : oldBlocks) {
             scripts.remove(block);
         }
         if (activation != null) {
-            activation = activation.withRef(newRef);
-            for (Block block : newBlocks) {
+            activation = activation.withRef(new ScriptRef(ScriptType.BLOCK_ESP, newKey.toString()));
+            for (Block block : newKey.getBlocks()) {
                 scripts.put(block, activation);
             }
         }
     }
 
     private void onConfigChanged(SettingNotificationReason reason, BlockEspConfig prev, BlockEspConfig curr) {
-        ClientTickEndExecutor.INSTANCE.execute(() -> {
-            if (reason == SettingNotificationReason.INITIAL || reason == SettingNotificationReason.PROFILE_LOAD) {
-                resetRuntime(curr);
-            }
-
-            Set<Block> blocks = new HashSet<>();
-            for (BlockEspEntry config : curr.entries()) {
-                for (Block block : config.blocks()) {
-                    blocks.add(block);
-                }
-            }
-
-            BlockFinder.INSTANCE.trackBlocks(blocks);
-
-            this.currentConfig = curr;
-        });
-    }
-
-    private void resetRuntime(BlockEspConfig config) {
-        RenderSystem.assertOnRenderThread();
-
-        scriptSlot.clear();
-
-        for (BlockEspEntry entry : config.entries()) {
-            if (entry.code() != null) {
-                String identifier = new BlockGroupKey(entry.blocks()).toString();
-                scriptSlot.initAndReport(identifier, entry.code());
+        // Runs under the store lock, so calls are ordered. trackBlocks() only queues work for the block scanner.
+        Set<Block> blocks = new HashSet<>();
+        for (BlockEspEntry config : curr.entries()) {
+            for (Block block : config.blocks()) {
+                blocks.add(block);
             }
         }
+
+        BlockFinder.INSTANCE.trackBlocks(blocks);
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -177,6 +150,7 @@ public class BlockEsp {
     }
 
     private void renderConfiguredEntries(RenderWorldLastEvent event) {
+        BlockEspConfig currentConfig = settings.get();
         if (currentConfig.entries().isEmpty()) {
             return;
         }

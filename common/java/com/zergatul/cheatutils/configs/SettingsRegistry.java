@@ -7,7 +7,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-/** Internal root ownership and bindings; modules only receive SettingHandle2 instances. */
+/** Internal root ownership and bindings; modules only receive SettingHandle instances. */
 public final class SettingsRegistry<R> {
 
     private final Object lock;
@@ -42,20 +42,23 @@ public final class SettingsRegistry<R> {
         }
     }
 
-    /** Publishes the entire profile before notifying any listener; never requests a save. */
+    /**
+     * Publishes the entire profile before notifying any listener; never requests a save.
+     * Listeners run under the store lock, so they are ordered with concurrent updates of the same setting.
+     */
     public void replace(SettingNotificationReason reason, R next) {
-        List<Runnable> notifications = new ArrayList<>();
+        Objects.requireNonNull(next);
         synchronized (lock) {
-            Objects.requireNonNull(next);
+            List<Runnable> notifications = new ArrayList<>(bindings.size());
             for (BiFunction<SettingNotificationReason, R, Runnable> binding : bindings) {
                 notifications.add(binding.apply(reason, next));
             }
 
             config = next;
-        }
 
-        for (Runnable notification : notifications) {
-            notification.run();
+            for (Runnable notification : notifications) {
+                notification.run();
+            }
         }
     }
 

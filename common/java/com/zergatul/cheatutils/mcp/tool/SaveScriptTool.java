@@ -133,8 +133,12 @@ public class SaveScriptTool implements McpTool {
     public McpToolCallResult invoke(JsonElement arguments) throws IOException {
         ScriptRef ref = new Gson().fromJson(arguments.getAsJsonObject().getAsJsonObject("ref"), ScriptRef.class);
         String code = arguments.getAsJsonObject().getAsJsonPrimitive("code").getAsString();
-        ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
-        ScriptSaveResult saveResult = descriptor.save(ref.identifier(), code);
+        ScriptSaveResult saveResult;
+        try {
+            saveResult = ScriptWorkspace.INSTANCE.save(ref, code);
+        } catch (ScriptSaveRejectedException e) {
+            return McpToolCallResult.error(e.getMessage());
+        }
 
         JsonObject result = new JsonObject();
         result.addProperty("ok", saveResult.isSuccess());

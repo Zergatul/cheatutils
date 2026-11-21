@@ -7,18 +7,18 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.*;
 import com.zergatul.cheatutils.configs.modules.StatusOverlayConfig;
+import com.zergatul.cheatutils.configs.utility.FontConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.RenderTargets;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
-import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
-import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
-import com.zergatul.cheatutils.scripting.workspace.slots.SingleScriptSlot;
 import com.zergatul.cheatutils.ui.*;
+import com.zergatul.cheatutils.web.CodeWebApiBase;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -42,21 +42,19 @@ public class StatusOverlay implements Module, FontBackendHolder {
 
     private final SettingHandle<StatusOverlayConfig> settings = Settings.get(StatusOverlayConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
-    private final SingleScriptSlot scriptSlot = (SingleScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.OVERLAY);
     private final Map<Align, List<AlignedText>> texts = new HashMap<>();
     private final List<FreeText> freeTexts = new ArrayList<>();
-    private volatile ScriptActivation<Runnable> script; // synchronized under ConfigLock
+    private ScriptActivation<Runnable> script; // client thread
     private HorizontalAlign hAlign;
     private VerticalAlign vAlign;
     private int backgroundColor;
 
-    private boolean fontChanged; // synchronized under ConfigLock
+    private FontConfig appliedFont;
     private CompletableFuture<FontBackend> fontBackendFuture;
     private FontRenderer fontRenderer;
 
     private StatusOverlay() {
         Events.PostRenderGui.add(this::onPostRenderGui);
-        settings.observe(this::onConfigChanged);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
@@ -77,8 +75,8 @@ public class StatusOverlay implements Module, FontBackendHolder {
         return fontRenderer != null && fontRenderer.uses(backend);
     }
 
-    /** Locked by callers from SingleScriptSlot */
     public void setScript(Runnable script) {
+        ClientThread.assertCurrent();
         ScriptActivation<Runnable> previous = this.script;
         if (previous != null) {
             previous.deactivate();
@@ -114,59 +112,19 @@ public class StatusOverlay implements Module, FontBackendHolder {
         backgroundColor = color;
     }
 
-    private void onConfigChanged(SettingNotificationReason reason, StatusOverlayConfig prev, StatusOverlayConfig curr) {
-        synchronized (ConfigLock.class) {
-            switch (reason) {
-                case INITIAL -> {
-                    fontChanged = true;
-                    resetRuntime(curr);
-                }
-                case PROFILE_LOAD -> {
-                    fontChanged |= !prev.font().equals(curr.font());
-                    resetRuntime(curr);
-                }
-                case UPDATE -> {
-                    fontChanged |= !prev.font().equals(curr.font());
-                }
-            }
-        }
-    }
-
-    private void resetRuntime(StatusOverlayConfig config) {
-        ScriptActivation<Runnable> previous = this.script;
-        if (previous != null) {
-            previous.deactivate();
-        }
-        this.script = null;
-
-        scriptSlot.initAndReport(config.code());
-    }
-
     private void onPostRenderGui(RenderGuiEvent event) {
         if (mc.player == null) {
             return;
         }
 
-        StatusOverlayConfig config;
-        ScriptActivation<Runnable> script;
-        boolean shouldCreateFontBackend;
-        synchronized (ConfigLock.class) {
-            config = settings.get();
-
-            script = this.script;
-            if (!config.enabled() || script == null || !script.isActive()) {
-                return;
-            }
-
-            if (fontChanged) {
-                shouldCreateFontBackend = true;
-                fontChanged = false;
-            } else {
-                shouldCreateFontBackend = false;
-            }
+        StatusOverlayConfig config = settings.get();
+        ScriptActivation<Runnable> script = this.script;
+        if (!config.enabled() || script == null || !script.isActive()) {
+            return;
         }
 
-        if (shouldCreateFontBackend) {
+        if (!config.font().equals(appliedFont)) {
+            appliedFont = config.font();
             fontBackendFuture = FontLibrary.INSTANCE.createBackend(config.font().asFontParameters());
             // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
         }
@@ -360,7 +318,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
     }
 
-    private final class CodeWebApi extends WebApiBase {
+    private static final class CodeWebApi extends CodeWebApiBase {
 
         @Override
         public String getRoute() {
@@ -368,14 +326,8 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
 
         @Override
-        public String post(String body) {
-            String code = gson.fromJson(body, String.class);
-            ScriptSaveResult result = StatusOverlay.this.scriptSlot.save(code);
-            if (result.isSuccess()) {
-                return "{ \"ok\": true }";
-            } else {
-                return gson.toJson(result.getDiagnostics());
-            }
+        protected ScriptType getScriptType() {
+            return ScriptType.OVERLAY;
         }
     }
 }

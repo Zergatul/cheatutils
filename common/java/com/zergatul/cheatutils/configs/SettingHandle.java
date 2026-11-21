@@ -6,8 +6,9 @@ import java.util.Objects;
 import java.util.function.*;
 
 /**
- * A stable handle to an immutable value in the active profile.
- * Callbacks run synchronously under the store lock and must schedule thread-owned work without waiting for it.
+ * A stable handle to an immutable value in the active profile. Any thread can read and update it.
+ * Update operations and callbacks run synchronously under the store lock: keep them short,
+ * never run user script code or wait for another thread inside them.
  */
 public final class SettingHandle<T extends ImmutableConfig> {
 
@@ -74,13 +75,6 @@ public final class SettingHandle<T extends ImmutableConfig> {
             }
 
             return result.result();
-        }
-    }
-
-    /** Runs operation under shared store lock */
-    public <R> R withLockedConfig(Function<T, R> operation) {
-        synchronized (lock) {
-            return operation.apply(getter.get());
         }
     }
 

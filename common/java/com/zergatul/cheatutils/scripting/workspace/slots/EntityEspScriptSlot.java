@@ -1,16 +1,14 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
-import com.zergatul.cheatutils.collections.ImmutableList;
-import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.events.EntityEspConsumer;
 import com.zergatul.cheatutils.utils.ClassUtils;
-import com.zergatul.scripting.compiler.CompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 @NullMarked
 public class EntityEspScriptSlot extends MultiScriptSlot {
@@ -20,32 +18,23 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
     }
 
     @Override
-    public void clear() {
-        EntityEspScriptRuntime.INSTANCE.clearScripts();
-        clearDocuments();
+    protected List<ConfigScript> readConfigScripts() {
+        return EntityEsp.INSTANCE.getSettings().get().entries().stream()
+                .map(e -> new ConfigScript(e.type().getName(), e.code()))
+                .toList();
+    }
+
+    @Override
+    protected boolean hasConfigEntry(String identifier) {
+        return EntityEsp.INSTANCE.getSettings().get().entries().contains(e -> e.type().getName().equals(identifier));
     }
 
     @Override
     protected void updateConfigCode(String identifier, @Nullable String code) {
-        EntityEsp.INSTANCE.getSettings().update(config -> {
-            Class<?> type;
-            try {
-                type = ClassUtils.forName(identifier);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException("Invalid class name: " + identifier, e);
-            }
-
-            ImmutableList<EntityEspEntry> entries = config.entries();
-            entries = entries.replaceFirst(
-                    e -> e.type() == type,
-                    e -> e.withCode(code));
-            return config.withEntries(entries);
-        });
-    }
-
-    @Override
-    protected CompilationResult compileScript(String code) {
-        return ScriptCompilerRegistry.INSTANCE.compile(ScriptType.ENTITY_ESP, code);
+        EntityEsp.INSTANCE.getSettings().update(config -> config.withEntries(
+                config.entries().replaceFirst(
+                        e -> e.type().getName().equals(identifier),
+                        e -> e.withCode(code))));
     }
 
     @Override
@@ -58,5 +47,10 @@ public class EntityEspScriptSlot extends MultiScriptSlot {
         }
 
         EntityEspScriptRuntime.INSTANCE.setScript(type, (EntityEspConsumer) program);
+    }
+
+    @Override
+    protected void clearRuntime() {
+        EntityEspScriptRuntime.INSTANCE.clearScripts();
     }
 }

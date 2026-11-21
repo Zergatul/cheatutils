@@ -2,8 +2,6 @@ package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
-import com.zergatul.scripting.compiler.CompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -15,13 +13,13 @@ public class EventsScriptingScriptSlot extends SingleScriptSlot {
     }
 
     @Override
-    protected void updateConfigCode(@Nullable String code) {
-        EventsScripting.INSTANCE.getSettings().update(config -> config.withCode(code));
+    protected @Nullable String readConfigCode() {
+        return EventsScripting.INSTANCE.getSettings().get().code();
     }
 
     @Override
-    protected CompilationResult compileScript(String code) {
-        return ScriptCompilerRegistry.INSTANCE.compile(ScriptType.EVENTS, code);
+    protected void updateConfigCode(@Nullable String code) {
+        EventsScripting.INSTANCE.getSettings().update(config -> config.withCode(code));
     }
 
     @Override

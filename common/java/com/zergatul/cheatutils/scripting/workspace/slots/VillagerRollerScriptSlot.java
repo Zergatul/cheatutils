@@ -2,8 +2,6 @@ package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
-import com.zergatul.scripting.compiler.CompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -15,13 +13,13 @@ public class VillagerRollerScriptSlot extends SingleScriptSlot {
     }
 
     @Override
-    protected void updateConfigCode(@Nullable String code) {
-        VillagerRoller.INSTANCE.getSettings().update(config -> config.withCode(code));
+    protected @Nullable String readConfigCode() {
+        return VillagerRoller.INSTANCE.getSettings().get().code();
     }
 
     @Override
-    protected CompilationResult compileScript(String code) {
-        return ScriptCompilerRegistry.INSTANCE.compile(ScriptType.VILLAGER_ROLLER, code);
+    protected void updateConfigCode(@Nullable String code) {
+        VillagerRoller.INSTANCE.getSettings().update(config -> config.withCode(code));
     }
 
     @Override

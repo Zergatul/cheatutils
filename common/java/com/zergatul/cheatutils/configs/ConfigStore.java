@@ -2,8 +2,9 @@ package com.zergatul.cheatutils.configs;
 
 import com.google.gson.*;
 import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.adapters.*;
-import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +12,11 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.io.*;
 
+/**
+ * Loads, publishes and persists profiles. The store lock guards the settings and the current file only:
+ * it is held briefly, and nobody runs user code or waits for another thread while holding it.
+ * Profile changes run on the client thread; {@link Events#ProfileLoaded} follows each of them outside the lock.
+ */
 public class ConfigStore {
 
     public static final ConfigStore INSTANCE = new ConfigStore();
@@ -32,77 +38,107 @@ public class ConfigStore {
             .create();
 
     private final Logger logger = LogManager.getLogger(ConfigStore.class);
+    private final Object lock = new Object();
     private final SettingsRegistry<Config> settingsRegistry;
     private final Settings settings;
-    private File currentFile;
+    private File currentFile; // guarded by lock
+    private volatile long profileGeneration; // changed under lock, on the client thread
 
     private ConfigStore() {
-        settingsRegistry = new SettingsRegistry<>(ConfigLock.class, new Config(), this::requestWrite);
+        settingsRegistry = new SettingsRegistry<>(lock, new Config(), this::requestWrite);
         settings = new Settings(settingsRegistry);
-    }
-
-    public void initialNotify() {
-        synchronized (ConfigLock.class) {
-            settingsRegistry.initialNotify();
-        }
     }
 
     Settings getSettings() {
         return settings;
     }
 
-    public void read(boolean isInitial, File file) {
-        synchronized (ConfigLock.class) {
-            Config config = new Config();
-            if (file.exists()) {
-                Config readCfg = null;
-                try {
-                    BufferedReader reader = new BufferedReader(new FileReader(file));
-                    JsonElement element = JsonParser.parseReader(reader);
-                    Migrations.run(element);
-                    readCfg = gson.fromJson(element, Config.class);
-                    reader.close();
-                } catch (Throwable e) {
-                    logger.error("Cannot read config");
-                    logger.error(e);
-                }
-
-                if (readCfg != null) {
-                    config = readCfg;
-                }
-            }
-
-            ScriptExecutionManager.INSTANCE.cancelAll();
+    /** Startup only, before modules exist. Modules receive the INITIAL notification from {@link #initialNotify()}. */
+    public void loadInitial(File file) {
+        Config config = readFile(file);
+        synchronized (lock) {
             currentFile = file;
-            if (isInitial) {
-                // modules are not initialized at this stage, they will receive notification later from initialNotify() call
-                settingsRegistry.replaceNoNotify(config);
-            } else {
-                settingsRegistry.replace(SettingNotificationReason.PROFILE_LOAD, config);
-            }
+            settingsRegistry.replaceNoNotify(config);
         }
     }
 
-    public void switchFile(File file) {
-        synchronized (ConfigLock.class) {
-            currentFile = file;
-            requestWrite();
+    /**
+     * Called once after all modules are constructed. Scripts are loaded at the end of the first client tick,
+     * so user code doesn't run during mod initialization.
+     */
+    public void initialNotify() {
+        synchronized (lock) {
+            settingsRegistry.initialNotify();
         }
+        ClientThread.post(Events.ProfileLoaded::trigger);
+    }
+
+    public void load(File file) {
+        ClientThread.assertCurrent();
+        publish(file, readFile(file), false);
     }
 
     public void createNew(File file) {
-        synchronized (ConfigLock.class) {
-            ScriptExecutionManager.INSTANCE.cancelAll();
+        ClientThread.assertCurrent();
+        publish(file, new Config(), true);
+    }
+
+    public void switchFile(File file) {
+        ClientThread.assertCurrent();
+        synchronized (lock) {
+            profileGeneration++;
             currentFile = file;
-            settingsRegistry.replace(SettingNotificationReason.PROFILE_LOAD, new Config());
             requestWrite();
         }
     }
 
+    /** Changes on every profile switch. Lets long operations detect that the profile they started with is gone. */
+    public long getProfileGeneration() {
+        return profileGeneration;
+    }
+
+    public boolean isLockHeldByCurrentThread() {
+        return Thread.holdsLock(lock);
+    }
+
     public void requestWrite() {
-        synchronized (ConfigLock.class) {
-            ConfigWriterQueue.INSTANCE.queue(this.currentFile, WRITE_FILE_DELAY, createWriteToFileTask());
+        synchronized (lock) {
+            ConfigWriterQueue.INSTANCE.queue(currentFile, WRITE_FILE_DELAY, createWriteToFileTask());
         }
+    }
+
+    private void publish(File file, Config config, boolean write) {
+        synchronized (lock) {
+            profileGeneration++;
+            currentFile = file;
+            settingsRegistry.replace(SettingNotificationReason.PROFILE_LOAD, config);
+            if (write) {
+                requestWrite();
+            }
+        }
+
+        // Outside the lock: listeners reload scripts, which runs user code.
+        Events.ProfileLoaded.trigger();
+    }
+
+    private Config readFile(File file) {
+        if (!file.exists()) {
+            return new Config();
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            JsonElement element = JsonParser.parseReader(reader);
+            Migrations.run(element);
+            Config config = gson.fromJson(element, Config.class);
+            if (config != null) {
+                return config;
+            }
+        } catch (Throwable e) {
+            logger.error("Cannot read config");
+            logger.error(e);
+        }
+
+        return new Config();
     }
 
     private Runnable createWriteToFileTask() {

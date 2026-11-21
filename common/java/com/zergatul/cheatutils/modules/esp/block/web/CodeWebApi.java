@@ -1,13 +1,9 @@
 package com.zergatul.cheatutils.modules.esp.block.web;
 
-import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
-import com.zergatul.cheatutils.modules.esp.block.BlockEsp;
 import com.zergatul.cheatutils.modules.esp.block.BlockGroupKey;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
-import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
-import com.zergatul.cheatutils.web.ApiException;
-import com.zergatul.cheatutils.web.HttpResponseCodes;
+import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
+import com.zergatul.cheatutils.web.CodeWebApiBase;
 import com.zergatul.cheatutils.web.WebApiBase;
 import net.minecraft.world.level.block.Block;
 
@@ -27,20 +23,8 @@ public class CodeWebApi extends WebApiBase {
             return "{ \"error\": \"blocks is null\" }";
         }
 
-        return BlockEsp.INSTANCE.getSettings().withLockedConfig(config -> {
-            BlockGroupKey key = new BlockGroupKey(request.blocks);
-            BlockEspEntry entry = key.findIn(config.entries());
-            if (entry == null) {
-                throw new ApiException("Cannot find block ESP entry.", HttpResponseCodes.BAD_REQUEST);
-            }
-
-            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.BLOCK_ESP).save(key.toString(), request.code);
-            if (result.isSuccess()) {
-                return "{ \"ok\": true }";
-            } else {
-                return gson.toJson(result.getDiagnostics());
-            }
-        });
+        BlockGroupKey key = new BlockGroupKey(request.blocks);
+        return CodeWebApiBase.saveScript(gson, new ScriptRef(ScriptType.BLOCK_ESP, key.toString()), request.code);
     }
 
     public record Request(List<Block> blocks, String code) {}

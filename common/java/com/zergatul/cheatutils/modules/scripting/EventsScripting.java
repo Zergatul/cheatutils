@@ -1,9 +1,8 @@
 package com.zergatul.cheatutils.modules.scripting;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigLock;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.SettingHandle;
-import com.zergatul.cheatutils.configs.SettingNotificationReason;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.EventsScriptingConfig;
 import com.zergatul.cheatutils.controllers.NetworkPacketsController;
@@ -18,20 +17,19 @@ import com.zergatul.cheatutils.scripting.modules.PacketEvent;
 import com.zergatul.cheatutils.scripting.modules.PlayerMessageSendingEvent;
 import com.zergatul.cheatutils.scripting.types.ComponentWrapper;
 import com.zergatul.cheatutils.scripting.types.PlayerInfoWrapper;
-import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
-import com.zergatul.cheatutils.scripting.workspace.slots.SingleScriptSlot;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.server.IntegratedServer;
+import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class EventsScripting implements Module {
 
@@ -39,161 +37,121 @@ public class EventsScripting implements Module {
 
     private final SettingHandle<EventsScriptingConfig> settings = Settings.get(EventsScriptingConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
-    private final SingleScriptSlot scriptSlot = (SingleScriptSlot) ScriptWorkspace.INSTANCE.get(ScriptType.EVENTS);
     private final ConcurrentLinkedQueue<ScriptActivation<Runnable>> pendingFailures = new ConcurrentLinkedQueue<>();
-
-    // all attached event handlers Lists should be synchronized under ConfigLock
-    private final List<Runnable> onHandleKeys = new ArrayList<>();
-    private final List<Runnable> onTickEnd = new ArrayList<>();
-    private final List<Runnable> onMenuTickEnd = new ArrayList<>();
-    private final List<EntityIdConsumer> onPlayerAdded = new ArrayList<>();
-    private final List<EntityIdConsumer> onPlayerRemoved = new ArrayList<>();
-    private final List<ComponentWrapperConsumer> onChatMessageRaw = new ArrayList<>();
-    private final List<ChatMessageConsumer> onChatMessage = new ArrayList<>();
-    private final List<PlayerMessageSendingConsumer> onPlayerMessageSending = new ArrayList<>();
-    private final List<ServerInformationConsumer> onJoinServer = new ArrayList<>();
-    private final List<ContainerClickConsumer> onContainerMenuClick = new ArrayList<>();
-    private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new ArrayList<>();
-    private final List<PacketEventConsumer> onC2SPacket = new CopyOnWriteArrayList<>();
-    private final List<PacketEventConsumer> onS2CPacket = new CopyOnWriteArrayList<>();
-    private final List<Runnable> onUnload = new ArrayList<>();
-
-    private final List<AimAssist.TargetPredicate> aimAssistTargetPredicates = new ArrayList<>();
-    private final List<KillAura.TargetPredicate> killAuraTargetPredicates = new ArrayList<>();
 
     private final Consumer<NetworkPacketsController.ClientPacketArgs> onClientPacketHandler = this::onClientPacket;
     private final Consumer<NetworkPacketsController.ServerPacketArgs> onServerPacketHandler = this::onServerPacket;
 
-    private volatile ScriptActivation<Runnable> script; // synchronized under ConfigLock
+    // Replaced only on the client thread. Dispatchers read it once, packet callbacks also from the Netty thread.
+    private volatile @Nullable Installation installation;
 
     private EventsScripting() {
         Events.ClientTickStart.add(this::processPendingFailures, -1000);
 
         Events.BeforeHandleKeyBindings.add(() -> {
-            if (canTrigger()) {
-                synchronized (ConfigLock.class) {
-                    for (Runnable handler : onHandleKeys) {
-                        if (!runCallback("key handling", handler)) return;
-                    }
+            Installation current = installation;
+            if (canTrigger(current)) {
+                for (Runnable handler : current.onHandleKeys) {
+                    if (!current.run("key handling", handler)) return;
                 }
             }
         });
 
         Events.ClientTickEnd.add(() -> {
-            if (isScriptActive() && settings.get().enabled()) {
+            Installation current = installation;
+            if (isActive(current) && settings.get().enabled()) {
                 if (mc.level == null && mc.player == null) {
-                    synchronized (ConfigLock.class) {
-                        for (Runnable handler : onMenuTickEnd) {
-                            if (!runCallback("menu tick", handler)) return;
-                        }
+                    for (Runnable handler : current.onMenuTickEnd) {
+                        if (!current.run("menu tick", handler)) return;
                     }
                 }
             }
         });
 
         Events.InGameTickEnd.add(() -> {
-            if (canTrigger()) {
-                synchronized (ConfigLock.class) {
-                    for (Runnable handler : onTickEnd) {
-                        if (!runCallback("game tick", handler)) return;
-                    }
+            Installation current = installation;
+            if (canTrigger(current)) {
+                for (Runnable handler : current.onTickEnd) {
+                    if (!current.run("game tick", handler)) return;
                 }
             }
         }, 1000); // we want to run this after all modules finish their job
 
         Events.EntityAdded.add(entity -> {
-            if (canTrigger() && entity instanceof RemotePlayer) {
-                synchronized (ConfigLock.class) {
-                    for (EntityIdConsumer consumer : onPlayerAdded) {
-                        if (!runCallback("player added", () -> consumer.accept(entity.getId()))) return;
-                    }
+            Installation current = installation;
+            if (canTrigger(current) && entity instanceof RemotePlayer) {
+                for (EntityIdConsumer consumer : current.onPlayerAdded) {
+                    if (!current.run("player added", () -> consumer.accept(entity.getId()))) return;
                 }
             }
         });
 
         Events.EntityRemoved.add(entity -> {
-            if (canTrigger() && entity instanceof RemotePlayer) {
-                synchronized (ConfigLock.class) {
-                    for (EntityIdConsumer consumer : onPlayerRemoved) {
-                        if (!runCallback("player removed", () -> consumer.accept(entity.getId()))) return;
-                    }
+            Installation current = installation;
+            if (canTrigger(current) && entity instanceof RemotePlayer) {
+                for (EntityIdConsumer consumer : current.onPlayerRemoved) {
+                    if (!current.run("player removed", () -> consumer.accept(entity.getId()))) return;
                 }
             }
         });
 
         Events.ChatMessageAdded.add(component -> {
-            if (canTrigger()) {
-                synchronized (ConfigLock.class) {
-                    ComponentWrapper wrapper = new ComponentWrapper(component);
-                    for (ComponentWrapperConsumer consumer : onChatMessageRaw) {
-                        if (!runCallback("raw chat message", () -> consumer.accept(wrapper))) return;
-                    }
-                    String text = component.getString();
-                    for (ChatMessageConsumer consumer : onChatMessage) {
-                        if (!runCallback("chat message", () -> consumer.accept(text))) return;
-                    }
+            Installation current = installation;
+            if (canTrigger(current)) {
+                ComponentWrapper wrapper = new ComponentWrapper(component);
+                for (ComponentWrapperConsumer consumer : current.onChatMessageRaw) {
+                    if (!current.run("raw chat message", () -> consumer.accept(wrapper))) return;
+                }
+                String text = component.getString();
+                for (ChatMessageConsumer consumer : current.onChatMessage) {
+                    if (!current.run("chat message", () -> consumer.accept(text))) return;
                 }
             }
         });
 
         Events.SendChat.add(event -> {
-            if (canTrigger()) {
-                synchronized (ConfigLock.class) {
-                    for (PlayerMessageSendingConsumer consumer : onPlayerMessageSending) {
-                        PlayerMessageSendingEvent sendingEvent = new PlayerMessageSendingEvent(event.getMessage());
-                        if (!runCallback("sending chat message", () -> consumer.consume(sendingEvent))) return;
-                        if (sendingEvent.cancel) {
-                            event.cancel();
-                            break;
-                        }
+            Installation current = installation;
+            if (canTrigger(current)) {
+                for (PlayerMessageSendingConsumer consumer : current.onPlayerMessageSending) {
+                    PlayerMessageSendingEvent sendingEvent = new PlayerMessageSendingEvent(event.getMessage());
+                    if (!current.run("sending chat message", () -> consumer.consume(sendingEvent))) return;
+                    if (sendingEvent.cancel) {
+                        event.cancel();
+                        break;
                     }
                 }
             }
         });
 
         Events.ClientPlayerLoggingIn.add(connection -> {
-            if (isScriptActive() && settings.get().enabled() && !onJoinServer.isEmpty()) {
+            Installation current = installation;
+            if (isActive(current) && settings.get().enabled() && !current.onJoinServer.isEmpty()) {
                 String address = connection == null ? "" : connection.getRemoteAddress().toString();
                 IntegratedServer integratedServer = mc.getSingleplayerServer();
                 ServerInformation info = new ServerInformation(address, integratedServer);
-                synchronized (ConfigLock.class) {
-                    for (ServerInformationConsumer consumer : onJoinServer) {
-                        if (!runCallback("joining server", () -> consumer.accept(info))) return;
-                    }
+                for (ServerInformationConsumer consumer : current.onJoinServer) {
+                    if (!current.run("joining server", () -> consumer.accept(info))) return;
                 }
             }
         });
 
         Events.ContainerMenuClick.add(event -> {
-            if (canTrigger()) {
-                synchronized (ConfigLock.class) {
-                    for (ContainerClickConsumer consumer : onContainerMenuClick) {
-                        if (!runCallback("container click", () -> consumer.accept(event.slot(), event.button(), event.type().toString())))
-                            return;
-                    }
+            Installation current = installation;
+            if (canTrigger(current)) {
+                for (ContainerClickConsumer consumer : current.onContainerMenuClick) {
+                    if (!current.run("container click", () -> consumer.accept(event.slot(), event.button(), event.type().toString()))) return;
                 }
             }
         });
 
         Events.PlayerInfoUpdated.add(event -> {
-            if (canTrigger()) {
-                synchronized (ConfigLock.class) {
-                    for (PlayerInfoUpdateConsumer consumer : onPlayerInfoUpdate) {
-                        if (!runCallback("player info update", () -> consumer.accept(new PlayerInfoWrapper(event.info()), event.type().toString())))
-                            return;
-                    }
+            Installation current = installation;
+            if (canTrigger(current)) {
+                for (PlayerInfoUpdateConsumer consumer : current.onPlayerInfoUpdate) {
+                    if (!current.run("player info update", () -> consumer.accept(new PlayerInfoWrapper(event.info()), event.type().toString()))) return;
                 }
             }
         });
-
-        NetworkPacketsController.INSTANCE.addClientPacketHandler(args -> {
-
-        });
-        NetworkPacketsController.INSTANCE.addServerPacketHandler(args -> {
-
-        });
-
-        settings.observe(this::onConfigUpdated);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
@@ -203,33 +161,38 @@ public class EventsScripting implements Module {
         return settings;
     }
 
-    /** Locked by callers from SingleScriptSlot */
-    public void setScript(Runnable runnable) {
-        clearNow();
-        if (runnable == null) return;
+    /** Client thread. Unloads the previous script, then initializes the new one. */
+    public void setScript(@Nullable Runnable program) {
+        ClientThread.assertCurrent();
 
-        ScriptActivation<Runnable> activation = new ScriptActivation<>(
-                new ScriptRef(ScriptType.EVENTS), runnable, this::onScriptFailed);
-        script = activation;
-        boolean initialized = activation.run("initialization", runnable);
-        if (!initialized) {
-            // Even an expected early stop must not leave partially registered callbacks.
-            if (activation.isActive()) clearNow();
+        clear();
+        if (program == null) {
             return;
         }
 
-        if (!aimAssistTargetPredicates.isEmpty()) {
-            List<AimAssist.TargetPredicate> predicates = List.copyOf(aimAssistTargetPredicates);
-            AimAssist.INSTANCE.setTargetPredicate(entityId -> activation.test("Aim Assist target filter", () -> {
+        Installation current = new Installation(new ScriptActivation<>(new ScriptRef(ScriptType.EVENTS), program, this::onScriptFailed));
+        installation = current;
+        if (!current.run("initialization", program)) {
+            // Even an expected early stop must not leave partially registered callbacks.
+            // A failure is cleaned up by processPendingFailures(), the same way as a failed callback.
+            if (current.activation.isActive()) {
+                clear();
+            }
+            return;
+        }
+
+        if (!current.aimAssistTargetPredicates.isEmpty()) {
+            List<AimAssist.TargetPredicate> predicates = List.copyOf(current.aimAssistTargetPredicates);
+            AimAssist.INSTANCE.setTargetPredicate(entityId -> current.activation.test("Aim Assist target filter", () -> {
                 for (AimAssist.TargetPredicate predicate : predicates) {
                     if (!predicate.test(entityId)) return false;
                 }
                 return true;
             }));
         }
-        if (!killAuraTargetPredicates.isEmpty()) {
-            List<KillAura.TargetPredicate> predicates = List.copyOf(killAuraTargetPredicates);
-            KillAura.INSTANCE.setTargetPredicate(entityId -> activation.test("Kill Aura target filter", () -> {
+        if (!current.killAuraTargetPredicates.isEmpty()) {
+            List<KillAura.TargetPredicate> predicates = List.copyOf(current.killAuraTargetPredicates);
+            KillAura.INSTANCE.setTargetPredicate(entityId -> current.activation.test("Kill Aura target filter", () -> {
                 for (KillAura.TargetPredicate predicate : predicates) {
                     if (!predicate.test(entityId)) return false;
                 }
@@ -238,189 +201,220 @@ public class EventsScripting implements Module {
         }
     }
 
+    /** Client thread. */
     public void clear() {
-        synchronized (ConfigLock.class) {
-            clearNow();
-        }
-    }
+        ClientThread.assertCurrent();
 
-    private void onConfigUpdated(SettingNotificationReason reason, EventsScriptingConfig prev, EventsScriptingConfig curr) {
-        if (reason == SettingNotificationReason.INITIAL || reason == SettingNotificationReason.PROFILE_LOAD) {
-            synchronized (ConfigLock.class) {
-                clearNow();
-
-                scriptSlot.initAndReport(curr.code());
-            }
+        Installation previous = installation;
+        if (previous == null) {
+            return;
         }
-    }
 
-    private void clearNow() {
-        if (script != null) {
-            script.deactivate();
-        }
-        clearCallbacks();
-        script = null;
+        installation = null;
+        previous.activation.deactivate();
+        unload(previous);
 
         AimAssist.INSTANCE.clearTargetPredicate();
-        aimAssistTargetPredicates.clear();
         KillAura.INSTANCE.clearTargetPredicate();
-        killAuraTargetPredicates.clear();
     }
 
-    private void clearCallbacks() {
-        onHandleKeys.clear();
-        onTickEnd.clear();
-        onMenuTickEnd.clear();
-        onPlayerAdded.clear();
-        onPlayerRemoved.clear();
-        onChatMessageRaw.clear();
-        onChatMessage.clear();
-        onPlayerMessageSending.clear();
-        onJoinServer.clear();
-        onContainerMenuClick.clear();
-        onPlayerInfoUpdate.clear();
-        onC2SPacket.clear();
-        onS2CPacket.clear();
+    private void onScriptFailed(ScriptActivation<Runnable> activation) {
+        // Can run on any thread, inside the failing callback. Callbacks and filters of a failed activation
+        // already do nothing, so cleanup can wait for the client thread.
+        // An unbounded handoff is intentional: a script may have filled the normal executor queue.
+        pendingFailures.add(activation);
+    }
 
-        if (script != null && !onUnload.isEmpty()) {
-            // we have to copy onUnload list, since bad code may attach new handlers from existing handlers
-            for (Runnable action : List.copyOf(onUnload)) {
-                script.runCleanup("EventScripting unload", action);
+    private void processPendingFailures() {
+        ScriptActivation<Runnable> activation;
+        while ((activation = pendingFailures.poll()) != null) {
+            Installation current = installation;
+            if (current == null || current.activation != activation) {
+                // already replaced, and the replacement unloaded the failed script
+                continue;
             }
+
+            // Keep the failed installation, so filters keep rejecting all targets until the script is saved again.
+            if (!current.aimAssistTargetPredicates.isEmpty()) AimAssist.INSTANCE.setTargetPredicate(_ -> false);
+            if (!current.killAuraTargetPredicates.isEmpty()) KillAura.INSTANCE.setTargetPredicate(_ -> false);
+            unload(current);
         }
-        onUnload.clear();
+    }
+
+    /** Runs unload handlers once and detaches all callbacks of an installation. */
+    private void unload(Installation target) {
+        target.clearCallbacks();
+
+        // copy, since bad code may attach new handlers from existing handlers
+        List<Runnable> handlers = List.copyOf(target.onUnload);
+        target.onUnload.clear();
+        for (Runnable action : handlers) {
+            target.activation.runCleanup("EventScripting unload", action);
+        }
 
         NetworkPacketsController.INSTANCE.removeClientPacketHandler(onClientPacketHandler);
         NetworkPacketsController.INSTANCE.removeServerPacketHandler(onServerPacketHandler);
     }
 
-    private void onScriptFailed(ScriptActivation<Runnable> activation) {
-        // mc can be null from headless tests
-        if (mc != null && mc.isSameThread()) {
-            blockFailedFilters(activation);
+    private static boolean isActive(@Nullable Installation installation) {
+        return installation != null && installation.activation.isActive();
+    }
+
+    private boolean canTrigger(@Nullable Installation installation) {
+        return isActive(installation) && mc.player != null && settings.get().enabled();
+    }
+
+    /**
+     * Adds a callback to the current installation, unless the callback belongs to a replaced or failed script
+     * (for example its packet callback still running on the Netty thread).
+     */
+    private <T> boolean register(T callback, Function<Installation, List<T>> list) {
+        Installation current = installation;
+        if (!isActive(current) || !current.activation.owns(callback)) {
+            return false;
         }
-        // An unbounded handoff is intentional: a script may have filled the normal executor queue.
-        // Never remove callbacks from inside their dispatcher or from a network thread.
-        pendingFailures.add(activation);
-    }
 
-    private void processPendingFailures() {
-        synchronized (ConfigLock.class) {
-            ScriptActivation<Runnable> activation;
-            while ((activation = pendingFailures.poll()) != null) {
-                if (script != activation) continue;
-                blockFailedFilters(activation);
-                clearCallbacks();
-                aimAssistTargetPredicates.clear();
-                killAuraTargetPredicates.clear();
-            }
-        }
-    }
-
-    private void blockFailedFilters(ScriptActivation<Runnable> activation) {
-        if (script != activation) return;
-        if (!aimAssistTargetPredicates.isEmpty()) AimAssist.INSTANCE.setTargetPredicate(_ -> false);
-        if (!killAuraTargetPredicates.isEmpty()) KillAura.INSTANCE.setTargetPredicate(_ -> false);
-    }
-
-    private boolean runCallback(String context, Runnable callback) {
-        ScriptActivation<Runnable> activation = script;
-        return activation != null && activation.run(context, callback);
-    }
-
-    private boolean isScriptActive() {
-        ScriptActivation<Runnable> activation = script;
-        return activation != null && activation.isActive();
+        list.apply(current).add(callback);
+        return true;
     }
 
     public void addOnHandleKeys(Runnable action) {
-        onHandleKeys.add(action);
+        register(action, i -> i.onHandleKeys);
     }
 
     public void addOnTickEnd(Runnable action) {
-        onTickEnd.add(action);
+        register(action, i -> i.onTickEnd);
     }
 
     public void addOnMenuTickEnd(Runnable action) {
-        onMenuTickEnd.add(action);
+        register(action, i -> i.onMenuTickEnd);
     }
 
     public void addOnPlayerAdded(EntityIdConsumer consumer) {
-        onPlayerAdded.add(consumer);
+        register(consumer, i -> i.onPlayerAdded);
     }
 
     public void addOnPlayerRemoved(EntityIdConsumer consumer) {
-        onPlayerRemoved.add(consumer);
+        register(consumer, i -> i.onPlayerRemoved);
     }
 
     public void addOnChatMessageRaw(ComponentWrapperConsumer consumer) {
-        onChatMessageRaw.add(consumer);
+        register(consumer, i -> i.onChatMessageRaw);
     }
 
     public void addOnChatMessage(ChatMessageConsumer consumer) {
-        onChatMessage.add(consumer);
+        register(consumer, i -> i.onChatMessage);
     }
 
     public void addOnPlayerMessageSending(PlayerMessageSendingConsumer consumer) {
-        onPlayerMessageSending.add(consumer);
+        register(consumer, i -> i.onPlayerMessageSending);
     }
 
     public void addOnJoinServer(ServerInformationConsumer consumer) {
-        onJoinServer.add(consumer);
+        register(consumer, i -> i.onJoinServer);
     }
 
     public void addOnContainerMenuClick(ContainerClickConsumer consumer) {
-        onContainerMenuClick.add(consumer);
+        register(consumer, i -> i.onContainerMenuClick);
     }
 
     public void addOnPlayerInfoUpdate(PlayerInfoUpdateConsumer consumer) {
-        onPlayerInfoUpdate.add(consumer);
+        register(consumer, i -> i.onPlayerInfoUpdate);
     }
 
     public void addOnClientToServerPacket(PacketEventConsumer consumer) {
-        onC2SPacket.add(consumer);
-        NetworkPacketsController.INSTANCE.addClientPacketHandlerIfAbsent(onClientPacketHandler);
+        if (register(consumer, i -> i.onC2SPacket)) {
+            NetworkPacketsController.INSTANCE.addClientPacketHandlerIfAbsent(onClientPacketHandler);
+        }
     }
 
     public void addOnServerToClientPacket(PacketEventConsumer consumer) {
-        onS2CPacket.add(consumer);
-        NetworkPacketsController.INSTANCE.addServerPacketHandlerIfAbsent(onServerPacketHandler);
+        if (register(consumer, i -> i.onS2CPacket)) {
+            NetworkPacketsController.INSTANCE.addServerPacketHandlerIfAbsent(onServerPacketHandler);
+        }
     }
 
     public void addOnUnload(Runnable action) {
-        onUnload.add(action);
+        register(action, i -> i.onUnload);
     }
 
     public void addAimAssistTargetPredicate(AimAssist.TargetPredicate predicate) {
-        aimAssistTargetPredicates.add(predicate);
+        register(predicate, i -> i.aimAssistTargetPredicates);
     }
 
     public void addKillAuraTargetPredicate(KillAura.TargetPredicate predicate) {
-        killAuraTargetPredicates.add(predicate);
+        register(predicate, i -> i.killAuraTargetPredicates);
     }
 
     private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        ScriptActivation<Runnable> activation = script;
-        if (activation != null && canTrigger()) {
+        Installation current = installation;
+        if (canTrigger(current) && !current.onC2SPacket.isEmpty()) {
             PacketEvent event = new PacketEvent(args.packet);
-            for (PacketEventConsumer consumer : onC2SPacket) {
-                if (!activation.run("client-to-server packet", () -> consumer.accept(event))) return;
+            for (PacketEventConsumer consumer : current.onC2SPacket) {
+                if (!current.run("client-to-server packet", () -> consumer.accept(event))) return;
             }
         }
     }
 
     private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        ScriptActivation<Runnable> activation = script;
-        if (activation != null && canTrigger()) {
+        Installation current = installation;
+        if (canTrigger(current) && !current.onS2CPacket.isEmpty()) {
             PacketEvent event = new PacketEvent(args.packet);
-            for (PacketEventConsumer consumer : onS2CPacket) {
-                if (!activation.run("server-to-client packet", () -> consumer.accept(event))) return;
+            for (PacketEventConsumer consumer : current.onS2CPacket) {
+                if (!current.run("server-to-client packet", () -> consumer.accept(event))) return;
             }
         }
     }
 
-    private boolean canTrigger() {
-        return isScriptActive() && mc.player != null && settings.get().enabled();
+    /**
+     * Everything one installed script registered. Lists are copy-on-write: callbacks can register more callbacks
+     * while a list is being iterated, and packet callbacks iterate them on the Netty thread.
+     */
+    private static final class Installation {
+
+        private final ScriptActivation<Runnable> activation;
+        private final List<Runnable> onHandleKeys = new CopyOnWriteArrayList<>();
+        private final List<Runnable> onTickEnd = new CopyOnWriteArrayList<>();
+        private final List<Runnable> onMenuTickEnd = new CopyOnWriteArrayList<>();
+        private final List<EntityIdConsumer> onPlayerAdded = new CopyOnWriteArrayList<>();
+        private final List<EntityIdConsumer> onPlayerRemoved = new CopyOnWriteArrayList<>();
+        private final List<ComponentWrapperConsumer> onChatMessageRaw = new CopyOnWriteArrayList<>();
+        private final List<ChatMessageConsumer> onChatMessage = new CopyOnWriteArrayList<>();
+        private final List<PlayerMessageSendingConsumer> onPlayerMessageSending = new CopyOnWriteArrayList<>();
+        private final List<ServerInformationConsumer> onJoinServer = new CopyOnWriteArrayList<>();
+        private final List<ContainerClickConsumer> onContainerMenuClick = new CopyOnWriteArrayList<>();
+        private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new CopyOnWriteArrayList<>();
+        private final List<PacketEventConsumer> onC2SPacket = new CopyOnWriteArrayList<>();
+        private final List<PacketEventConsumer> onS2CPacket = new CopyOnWriteArrayList<>();
+        private final List<Runnable> onUnload = new CopyOnWriteArrayList<>();
+        private final List<AimAssist.TargetPredicate> aimAssistTargetPredicates = new CopyOnWriteArrayList<>();
+        private final List<KillAura.TargetPredicate> killAuraTargetPredicates = new CopyOnWriteArrayList<>();
+
+        private Installation(ScriptActivation<Runnable> activation) {
+            this.activation = activation;
+        }
+
+        private boolean run(String context, Runnable callback) {
+            return activation.run(context, callback);
+        }
+
+        private void clearCallbacks() {
+            onHandleKeys.clear();
+            onTickEnd.clear();
+            onMenuTickEnd.clear();
+            onPlayerAdded.clear();
+            onPlayerRemoved.clear();
+            onChatMessageRaw.clear();
+            onChatMessage.clear();
+            onPlayerMessageSending.clear();
+            onJoinServer.clear();
+            onContainerMenuClick.clear();
+            onPlayerInfoUpdate.clear();
+            onC2SPacket.clear();
+            onS2CPacket.clear();
+            aimAssistTargetPredicates.clear();
+            killAuraTargetPredicates.clear();
+        }
     }
 
     private final class ConfigWebApi extends WebApiBase {
