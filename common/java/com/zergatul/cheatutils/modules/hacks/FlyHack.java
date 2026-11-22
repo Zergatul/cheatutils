@@ -11,6 +11,7 @@ import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -114,7 +115,7 @@ public class FlyHack implements Module {
                     player.getZ(),
                     config.onGroundFlag(),
                     false);
-            PacketUtils.send(player, antiKickPacket);
+            PacketUtils.send(player, antiKickPacket, new ServerboundClientTickEndPacket());
         }
     }
 }

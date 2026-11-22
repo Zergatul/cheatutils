@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -172,8 +173,10 @@ public class TeleportHack {
         List<Packet<?>> packets = new ArrayList<>();
         for (int i = 0; i < packetsCount - 1; i++) {
             packets.add(new ServerboundMovePlayerPacket.StatusOnly(mc.player.onGround(), mc.player.horizontalCollision));
+            packets.add(new ServerboundClientTickEndPacket());
         }
         packets.add(new ServerboundMovePlayerPacket.Pos(target, willBeOnGround(target), true));
+        packets.add(new ServerboundClientTickEndPacket());
         PacketUtils.send(mc.player, packets);
 
         mc.player.snapTo(target);

@@ -6,6 +6,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.PacketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.entity.Entity;
 
@@ -113,8 +114,8 @@ public class Blink implements Module {
             return true;
         }
 
-        if (packet instanceof ServerboundMovePlayerPacket movePlayerPacket) {
-            packets.add(movePlayerPacket);
+        if (packet instanceof ServerboundMovePlayerPacket || packet instanceof ServerboundClientTickEndPacket) {
+            packets.add(packet);
             return false;
         }
 
