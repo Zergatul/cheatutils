@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.utils;
 
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.extensions.ConnectionExtension;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
@@ -13,8 +13,6 @@ import java.util.List;
 
 @NullMarked
 public class PacketUtils {
-
-    private final static PacketProcessor packetProcessor = Minecraft.getInstance().packetProcessor();
 
     public static void send(LocalPlayer player, Packet<?> packet) {
         player.connection.getConnection().send(packet, null, true);
@@ -53,14 +51,14 @@ public class PacketUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static void receive(LocalPlayer player, Packet<?> packet) {
-        packetProcessor.scheduleIfPossible(player.connection, (Packet<? super ClientPacketListener>) packet);
-    }
-
-    @SuppressWarnings("unchecked")
     public static void receive(LocalPlayer player, List<Packet<?>> packets) {
-        for (Packet<?> packet : packets) {
-            packetProcessor.scheduleIfPossible(player.connection, (Packet<? super ClientPacketListener>) packet);
+        ClientThread.assertCurrent();
+
+        try (PacketProcessor replay = new PacketProcessor(Thread.currentThread())) {
+            for (Packet<?> packet : packets) {
+                replay.scheduleIfPossible(player.connection, (Packet<? super ClientPacketListener>) packet);
+            }
+            replay.processQueuedPackets();
         }
     }
 }
