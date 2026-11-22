@@ -6,7 +6,6 @@ import com.zergatul.cheatutils.utils.MathUtils;
 
 public record PigHackConfig(
         boolean enabled,
-        boolean allowRideWithoutCarrot,
         boolean overrideSteeringSpeed,
         float steeringSpeed
 ) implements ImmutableConfig, ToggleableConfig<PigHackConfig> {
@@ -18,7 +17,6 @@ public record PigHackConfig(
     public static PigHackConfig defaults() {
         return new Builder()
                 .enabled(false)
-                .allowRideWithoutCarrot(true)
                 .overrideSteeringSpeed(true)
                 .steeringSpeed(0.1f)
                 .build();
@@ -28,10 +26,6 @@ public record PigHackConfig(
 
     public PigHackConfig withEnabled(boolean enabled) {
         return Builder.from(this).enabled(enabled).build();
-    }
-
-    public PigHackConfig withAllowRideWithoutCarrot(boolean allowRideWithoutCarrot) {
-        return Builder.from(this).allowRideWithoutCarrot(allowRideWithoutCarrot).build();
     }
 
     public PigHackConfig withOverrideSteeringSpeed(boolean overrideSteeringSpeed) {
@@ -45,7 +39,6 @@ public record PigHackConfig(
     public static class Builder {
 
         private boolean enabled;
-        private boolean allowRideWithoutCarrot;
         private boolean overrideSteeringSpeed;
         private float steeringSpeed;
 
@@ -54,18 +47,12 @@ public record PigHackConfig(
         public static Builder from(PigHackConfig config) {
             return new Builder()
                     .enabled(config.enabled)
-                    .allowRideWithoutCarrot(config.allowRideWithoutCarrot)
                     .overrideSteeringSpeed(config.overrideSteeringSpeed)
                     .steeringSpeed(config.steeringSpeed);
         }
 
         public Builder enabled(boolean enabled) {
             this.enabled = enabled;
-            return this;
-        }
-
-        public Builder allowRideWithoutCarrot(boolean allowRideWithoutCarrot) {
-            this.allowRideWithoutCarrot = allowRideWithoutCarrot;
             return this;
         }
 
@@ -80,7 +67,7 @@ public record PigHackConfig(
         }
 
         public PigHackConfig build() {
-            return new PigHackConfig(enabled, allowRideWithoutCarrot, overrideSteeringSpeed, steeringSpeed);
+            return new PigHackConfig(enabled, overrideSteeringSpeed, steeringSpeed);
         }
     }
 

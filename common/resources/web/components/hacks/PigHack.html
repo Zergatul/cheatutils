@@ -1,14 +1,11 @@
 <div class="module-main" v-if="config">
     <div class="description">
-        Most servers have protection against big speed increase. However small speed increase may work well.
+        Allows you to override steering speed when controlling pig with carrot on a stick.
     </div>
 
     <div class="module-sections">
         <div>
             <switch-checkbox v-model="config.enabled" @change="update()">Enabled</switch-checkbox>
-        </div>
-        <div>
-            <switch-checkbox v-model="config.allowRideWithoutCarrot" @change="update()">Allow ride without carrot on the stick</switch-checkbox>
         </div>
         <div>
             <switch-checkbox v-model="config.overrideSteeringSpeed" @change="update()">Override steering speed</switch-checkbox>
