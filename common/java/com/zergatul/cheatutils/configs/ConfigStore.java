@@ -75,6 +75,18 @@ public class ConfigStore {
         ClientThread.post(Events.ProfileLoaded::trigger);
     }
 
+    /**
+     * Known limitation, accepted: settings edits from other threads are not blocked during a profile switch.
+     * <ul>
+     *     <li>An edit that lands before the switch is published goes to the previous profile and is saved there.
+     *     A web page that still shows the previous profile can also post its values after the switch.
+     *     Either way, the edit doesn't appear in the profile the user just switched to.</li>
+     *     <li>When the active profile is reloaded, an edit between the flush and the read is saved to disk,
+     *     but the reloaded values don't include it. The next save of this profile overwrites it.</li>
+     * </ul>
+     * Both need an edit and a profile switch at the same moment, which takes a deliberate effort, so there is no
+     * gate that rejects edits during a switch.
+     */
     public void load(File file) {
         ClientThread.assertCurrent();
         // a pending write of this file holds newer values than the disk

@@ -65,6 +65,12 @@ public class ScriptWorkspace {
      * Compiles on the calling thread, then applies document, settings and runtime together on the client thread.
      * Throws {@link ScriptSaveRejectedException} without changing anything when the profile was switched
      * in the meantime, or when the script target no longer exists.
+     * <p>
+     * Known limitation, accepted: overlapping saves of the same script are applied in the order their compilation
+     * finishes, not the order they were requested. If save A starts, save B starts and compiles first, A is applied
+     * last and wins. Document, settings and runtime still agree on A, so the state is consistent, only the older
+     * code is kept. This takes two clients saving the same script at the same moment, which is not a real use
+     * case, so there is no per-script request ordering.
      */
     public ScriptSaveResult save(ScriptRef ref, @Nullable String code) {
         ScriptSlot slot = get(ref.type());

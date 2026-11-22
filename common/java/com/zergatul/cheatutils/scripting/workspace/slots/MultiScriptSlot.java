@@ -123,6 +123,9 @@ public abstract class MultiScriptSlot extends ScriptSlot {
 
         ClientThread.assertCurrent();
 
+        // Known limitation, accepted: this checks the identifier, not the entry instance. If the entry is deleted
+        // and a new one with the same identifier is created while this save compiles, the save applies to the new
+        // entry. The result is consistent, and it needs a deliberate race between clients, so it is left as is.
         if (!hasConfigEntry(identifier)) {
             throw new ScriptSaveRejectedException(
                     "Cannot find " + scriptType.getModuleName() + " entry '" + identifier + "'. The script was not saved.");
