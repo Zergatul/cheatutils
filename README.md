@@ -75,16 +75,14 @@ Make sure you place it in the right position, modules are initialized in the ord
 
 #### Step 3: Add your configuration class
 
-Module configuration is currently being refactored to make all configs immutable. Both styles coexist:
+Module configurations are immutable records:
 
-- Legacy mutable configs live directly in [`configs`](./common/java/com/zergatul/cheatutils/configs). They use public fields, may extend `ModuleConfig`, and may implement `Sanitizable`.
-- New immutable module configs live in [`configs/modules`](./common/java/com/zergatul/cheatutils/configs/modules). They are records implementing `ImmutableConfig`, with defaults and validation defined in the record itself.
-- [`Config.java`](./common/java/com/zergatul/cheatutils/configs/Config.java) still contains the root fields for both styles and defines their saved JSON layout.
-- [`Settings.java`](./common/java/com/zergatul/cheatutils/configs/Settings.java) binds immutable config types to those root fields. Modules access them through `Settings.get(...)` and `SettingHandle2<T>`.
+- Module configs live in [`configs/modules`](./common/java/com/zergatul/cheatutils/configs/modules). They are records implementing `ImmutableConfig`, with defaults and validation defined in the record itself.
+- [`Settings.java`](./common/java/com/zergatul/cheatutils/configs/Settings.java) lists every module config of a profile. Each one is saved in the profile JSON under its type name in camelCase: `AutoPearlConfig` is stored as `autoPearlConfig`. Modules access their values through `Settings.get(...)` and `SettingHandle<T>`.
 
-##### New style: immutable configs
+##### Immutable configs
 
-For a new module, follow the immutable style. Create `AutoPearlConfig.java` in `configs/modules`:
+For a new module, create `AutoPearlConfig.java` in `configs/modules`:
 
 ```java
 package com.zergatul.cheatutils.configs.modules;
@@ -129,34 +127,25 @@ public static AutoPearlConfig defaults() {
 
 The public static `defaults()` method supplies the initial configuration. [`ImmutableConfigAdapterFactory`](./common/java/com/zergatul/cheatutils/configs/adapters/ImmutableConfigAdapterFactory.java) also uses it when loading JSON: missing or null properties retain their defaults, and the record constructor validates the resulting values.
 
-Add a root field in [`Config.java`](./common/java/com/zergatul/cheatutils/configs/Config.java), importing the new config type:
+Register it in the `Settings` constructor:
 
 ```java
-public AutoPearlConfig autoPearlConfig = AutoPearlConfig.defaults();
+registry.register(AutoPearlConfig::defaults);
 ```
 
-Register its binding in the `Settings` constructor:
+Prefer alphabetical order by config class name for registrations in [`Settings.java`](./common/java/com/zergatul/cheatutils/configs/Settings.java). The profile JSON is written in this order. Renaming a config class changes its saved key, so add a migration in [`Migrations.java`](./common/java/com/zergatul/cheatutils/configs/Migrations.java) that renames the old key.
+
+In your module, obtain a handle:
 
 ```java
-registrar.register(
-        AutoPearlConfig.class,
-        config -> config.autoPearlConfig,
-        (config, value) -> config.autoPearlConfig = value);
-```
-
-Prefer alphabetical order by config class name for registrations in [`Settings.java`](./common/java/com/zergatul/cheatutils/configs/Settings.java). This is a readability convention, not a functional requirement.
-
-In your module, obtain a handle instead of accessing the root config directly:
-
-```java
-import com.zergatul.cheatutils.configs.SettingHandle2;
+import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoPearlConfig;
 
 // Members of AutoPearl:
-private final SettingHandle2<AutoPearlConfig> settings = Settings.get(AutoPearlConfig.class);
+private final SettingHandle<AutoPearlConfig> settings = Settings.get(AutoPearlConfig.class);
 
-public SettingHandle2<AutoPearlConfig> getSettings() {
+public SettingHandle<AutoPearlConfig> getSettings() {
     return settings;
 }
 ```
@@ -177,14 +166,6 @@ settings.update(current -> current.withEnabled(!current.enabled()));
 The handle follows the active profile, requests persistence for changes, and notifies `onChanged((previous, current) -> ...)` listeners for value changes, including profile switches. Keep the handle as a module field; read its current value when needed. Registering a listener does not invoke it, so initial runtime setup belongs to the module. Listeners run synchronously under the store lock and must schedule work on the owning thread without waiting for it.
 
 See [`AirPlaceConfig`](./common/java/com/zergatul/cheatutils/configs/modules/AirPlaceConfig.java) for constructor validation and generated methods, and [`EntityTitle`](./common/java/com/zergatul/cheatutils/modules/esp/EntityTitle.java) for change listeners.
-
-##### Old style: mutable configs
-
-Modules that have not been migrated still use classes in `configs`, such as [`LightLevelConfig`](./common/java/com/zergatul/cheatutils/configs/LightLevelConfig.java). Public field initializers or constructors supply defaults. `ModuleConfig` supplies the mutable `enabled` field and `isEnabled()`; `Sanitizable.sanitize()` validates fields in place.
-
-Their root fields in `Config.java` use `new SomeConfig()`. Configs implementing `Sanitizable` also need a call in `Config.sanitize()`. Existing code may access these values with `ConfigStore.instance.getConfig()` or through the older `SettingHandle<T>` / `ModuleConfigSettingHandle<T>` classes. Those handles support in-place mutation and are separate from the immutable `SettingHandle2<T>` path.
-
-When migrating a config, move it to `configs/modules`, update imports, replace root initialization with `defaults()`, add its `Settings` binding, and update module, web, and scripting access to use the immutable handle. Move validation into the record constructor and remove the old call from `Config.sanitize()`.
 
 #### Step 4: Register the module's web API
 

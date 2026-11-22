@@ -7,29 +7,29 @@ import java.util.function.*;
 
 /**
  * A stable handle to an immutable value in the active profile. Any thread can read and update it.
- * Update operations and callbacks run synchronously under the store lock: keep them short,
+ * Reads take no lock. Update operations and callbacks run synchronously under the store lock: keep them short,
  * never run user script code or wait for another thread inside them.
  */
 public final class SettingHandle<T extends ImmutableConfig> {
 
+    private final SettingsRegistry registry;
+    private final SettingsRegistry.Entry<T> entry;
     private final Object lock;
-    private final Supplier<T> getter;
-    private final Consumer<T> setter;
-    private final Runnable requestWrite;
     private final List<BiConsumer<T, T>> listeners = new ArrayList<>();
     private final List<SettingObserver<T>> observers = new ArrayList<>();
 
-    public SettingHandle(Object lock, Supplier<T> getter, Consumer<T> setter, Runnable requestWrite) {
-        this.lock = lock;
-        this.getter = getter;
-        this.setter = setter;
-        this.requestWrite = requestWrite;
+    SettingHandle(SettingsRegistry registry, SettingsRegistry.Entry<T> entry) {
+        this.registry = registry;
+        this.entry = entry;
+        this.lock = registry.lock;
+    }
+
+    public Class<T> getType() {
+        return entry.type();
     }
 
     public T get() {
-        synchronized (lock) {
-            return getter.get();
-        }
+        return registry.getSnapshot().get(entry);
     }
 
     public void set(T config) {
@@ -39,39 +39,39 @@ public final class SettingHandle<T extends ImmutableConfig> {
 
     public void update(UnaryOperator<T> operation) {
         synchronized (lock) {
-            T previous = getter.get();
+            T previous = get();
             T current = Objects.requireNonNull(operation.apply(previous));
             if (previous.equals(current)) {
                 return;
             }
 
             Runnable notification = prepareNotification(SettingNotificationReason.UPDATE, previous, current);
-            setter.accept(current);
+            registry.publish(entry, current);
 
             try {
                 notification.run();
             } finally {
-                requestWrite.run();
+                registry.requestWrite.run();
             }
         }
     }
 
     public <R> R updateWithResult(Function<T, SettingUpdateResult<T, R>> operation) {
         synchronized (lock) {
-            T previous = getter.get();
+            T previous = get();
             SettingUpdateResult<T, R> result = operation.apply(previous);
-            T current = result.config();
+            T current = Objects.requireNonNull(result.config());
             if (previous.equals(current)) {
                 return result.result();
             }
 
             Runnable notification = prepareNotification(SettingNotificationReason.UPDATE, previous, current);
-            setter.accept(current);
+            registry.publish(entry, current);
 
             try {
                 notification.run();
             } finally {
-                requestWrite.run();
+                registry.requestWrite.run();
             }
 
             return result.result();
@@ -91,8 +91,20 @@ public final class SettingHandle<T extends ImmutableConfig> {
         }
     }
 
-    // Called under the shared store lock, before publishing a replacement profile.
-    public Runnable prepareNotification(SettingNotificationReason reason, T previous, T current) {
+    // under the lock, before the registry publishes a replacement profile
+    Runnable prepareNotification(SettingNotificationReason reason, SettingsSnapshot previous, SettingsSnapshot next) {
+        return prepareNotification(reason, previous.get(entry), next.get(entry));
+    }
+
+    // under the lock
+    void initialNotify(SettingsSnapshot snapshot) {
+        T current = snapshot.get(entry);
+        for (SettingObserver<T> observer : observers) {
+            observer.notify(SettingNotificationReason.INITIAL, current, current);
+        }
+    }
+
+    private Runnable prepareNotification(SettingNotificationReason reason, T previous, T current) {
         Objects.requireNonNull(current);
         if (previous.equals(current)) {
             if (observers.isEmpty() || reason == SettingNotificationReason.UPDATE) {
@@ -117,13 +129,5 @@ public final class SettingHandle<T extends ImmutableConfig> {
                 observer.notify(reason, previous, current);
             }
         };
-    }
-
-    public void initialNotify(T current) {
-        synchronized (lock) {
-            for (SettingObserver<T> observer : observers) {
-                observer.notify(SettingNotificationReason.INITIAL, current, current);
-            }
-        }
     }
 }

@@ -2,460 +2,111 @@ package com.zergatul.cheatutils.configs;
 
 import com.zergatul.cheatutils.configs.modules.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
-/** Typed settings catalog. Only this class knows where module values live in the root config. */
+/**
+ * Typed settings catalog: every setting of a profile, in the order they are saved.
+ * Each setting is saved under its type name in camelCase, for example {@code fogConfig}.
+ */
 public final class Settings {
 
-    private final Map<Class<? extends ImmutableConfig>, SettingHandle<?>> handles;
-
-    public Settings(SettingsRegistry<Config> registry) {
-        Map<Class<? extends ImmutableConfig>, SettingHandle<?>> handles = new HashMap<>();
-        Registrar registrar = new Registrar(registry, handles);
-
-        registrar.register(
-                AdvancedTooltipsConfig.class,
-                config -> config.advancedTooltipsConfig,
-                (config, value) -> config.advancedTooltipsConfig = value);
-
-        registrar.register(
-                AimAssistConfig.class,
-                config -> config.aimAssist,
-                (config, value) -> config.aimAssist = value);
-
-        registrar.register(
-                AirPlaceConfig.class,
-                config -> config.airPlaceConfig,
-                (config, value) -> config.airPlaceConfig = value);
-
-        registrar.register(
-                AntiHungerConfig.class,
-                config -> config.antiHungerConfig,
-                (config, value) -> config.antiHungerConfig = value);
-
-        registrar.register(
-                AntiRespawnResetConfig.class,
-                config -> config.antiRespawnResetConfig,
-                (config, value) -> config.antiRespawnResetConfig = value);
-
-        registrar.register(
-                AreaMineConfig.class,
-                config -> config.areaMineConfig,
-                (config, value) -> config.areaMineConfig = value);
-
-        registrar.register(
-                ArmorOverlayConfig.class,
-                config -> config.armorOverlayConfig,
-                (config, value) -> config.armorOverlayConfig = value);
-
-        registrar.register(
-                AutoAttackConfig.class,
-                config -> config.autoAttackConfig,
-                (config, value) -> config.autoAttackConfig = value);
-
-        registrar.register(
-                AutoBucketConfig.class,
-                config -> config.autoBucketConfig,
-                (config, value) -> config.autoBucketConfig = value);
-
-        registrar.register(
-                AutoCraftConfig.class,
-                config -> config.autoCraftConfig,
-                (config, value) -> config.autoCraftConfig = value);
-
-        registrar.register(
-                AutoCriticalsConfig.class,
-                config -> config.autoCriticalsConfig,
-                (config, value) -> config.autoCriticalsConfig = value);
-
-        registrar.register(
-                AutoDropConfig.class,
-                config -> config.autoDropConfig,
-                (config, value) -> config.autoDropConfig = value);
-
-        registrar.register(
-                AutoEatConfig.class,
-                config -> config.autoEatConfig,
-                (config, value) -> config.autoEatConfig = value);
-
-        registrar.register(
-                AutoFishConfig.class,
-                config -> config.autoFishConfig,
-                (config, value) -> config.autoFishConfig = value);
-
-        registrar.register(
-                AutoHotbarConfig.class,
-                config -> config.autoHotbarConfig,
-                (config, value) -> config.autoHotbarConfig = value);
-
-        registrar.register(
-                AutoStunnerConfig.class,
-                config -> config.autoStunnerConfig,
-                (config, value) -> config.autoStunnerConfig = value);
-
-        registrar.register(
-                AutoToolConfig.class,
-                config -> config.autoTool,
-                (config, value) -> config.autoTool = value);
-
-        registrar.register(
-                AutoTotemConfig.class,
-                config -> config.autoTotemConfig,
-                (config, value) -> config.autoTotemConfig = value);
-
-        registrar.register(
-                BedrockBreakerConfig.class,
-                config -> config.bedrockBreakerConfig,
-                (config, value) -> config.bedrockBreakerConfig = value);
-
-        registrar.register(
-                BlockAutomationConfig.class,
-                config -> config.blockAutomationConfig,
-                (config, value) -> config.blockAutomationConfig = value);
-
-        registrar.register(
-                BlockEntityDistanceConfig.class,
-                config -> config.blockEntityDistance,
-                (config, value) -> config.blockEntityDistance = value);
-
-        registrar.register(
-                BlockEspConfig.class,
-                config -> config.blockEspConfig,
-                (config, value) -> config.blockEspConfig = value);
-
-        registrar.register(
-                BoatHackConfig.class,
-                config -> config.boatHackConfig,
-                (config, value) -> config.boatHackConfig = value);
-
-        registrar.register(
-                BobHurtConfig.class,
-                config -> config.bobHurtConfig,
-                (config, value) -> config.bobHurtConfig = value);
-
-        registrar.register(
-                BreachSwapConfig.class,
-                config -> config.breachSwapConfig,
-                (config, value) -> config.breachSwapConfig = value);
-
-        registrar.register(
-                ChatUtilitiesConfig.class,
-                config -> config.chatUtilitiesConfig,
-                (config, value) -> config.chatUtilitiesConfig = value);
-
-        registrar.register(
-                ChunksConfig.class,
-                config -> config.chunksConfig,
-                (config, value) -> config.chunksConfig = value);
-
-        registrar.register(
-                ContainerButtonsConfig.class,
-                config -> config.containerButtonsConfig,
-                (config, value) -> config.containerButtonsConfig = value);
-
-        registrar.register(
-                ContainerSummaryConfig.class,
-                config -> config.containerSummaryConfig,
-                (config, value) -> config.containerSummaryConfig = value);
-
-        registrar.register(
-                CoreConfig.class,
-                config -> config.coreConfig,
-                (config, value) -> config.coreConfig = value);
-
-        registrar.register(
-                CrystalAuraConfig.class,
-                config -> config.crystalAuraConfig,
-                (config, value) -> config.crystalAuraConfig = value);
-
-        registrar.register(
-                DeathCoordinatesConfig.class,
-                config -> config.deathCoordinatesConfig,
-                (config, value) -> config.deathCoordinatesConfig = value);
-
-        registrar.register(
-                ElytraBounceConfig.class,
-                config -> config.elytraBounceConfig,
-                (config, value) -> config.elytraBounceConfig = value);
-
-        registrar.register(
-                ElytraHackConfig.class,
-                config -> config.elytraHackConfig,
-                (config, value) -> config.elytraHackConfig = value);
-
-        registrar.register(
-                ElytraTunnelConfig.class,
-                config -> config.elytraTunnelConfig,
-                (config, value) -> config.elytraTunnelConfig = value);
-
-        registrar.register(
-                EndCityChunksConfig.class,
-                config -> config.endCityChunksConfig,
-                (config, value) -> config.endCityChunksConfig = value);
-
-        registrar.register(
-                EntityEspConfig.class,
-                config -> config.entityEspConfig,
-                (config, value) -> config.entityEspConfig = value);
-
-        registrar.register(
-                EntityTitleConfig.class,
-                config -> config.entityTitleConfig,
-                (config, value) -> config.entityTitleConfig = value);
-
-        registrar.register(
-                EventsScriptingConfig.class,
-                config -> config.eventsScriptingConfig,
-                (config, value) -> config.eventsScriptingConfig = value);
-
-        registrar.register(
-                ExecConfig.class,
-                config -> config.execConfig,
-                (config, value) -> config.execConfig = value);
-
-        registrar.register(
-                ExplorationMiniMapConfig.class,
-                config -> config.explorationMiniMapConfig,
-                (config, value) -> config.explorationMiniMapConfig = value);
-
-        registrar.register(
-                FastBreakConfig.class,
-                config -> config.fastBreakConfig,
-                (config, value) -> config.fastBreakConfig = value);
-
-        registrar.register(
-                FlyHackConfig.class,
-                config -> config.flyHackConfig,
-                (config, value) -> config.flyHackConfig = value);
-
-        registrar.register(
-                FogConfig.class,
-                config -> config.fogConfig,
-                (config, value) -> config.fogConfig = value);
-
-        registrar.register(
-                FreeCamConfig.class,
-                config -> config.freeCamConfig,
-                (config, value) -> config.freeCamConfig = value);
-
-        registrar.register(
-                FullBrightConfig.class,
-                config -> config.fullBrightConfig,
-                (config, value) -> config.fullBrightConfig = value);
-
-        registrar.register(
-                HandsViewConfig.class,
-                config -> config.handsViewConfig,
-                (config, value) -> config.handsViewConfig = value);
-
-        registrar.register(
-                HitboxSizeConfig.class,
-                config -> config.hitboxSizeConfig,
-                (config, value) -> config.hitboxSizeConfig = value);
-
-        registrar.register(
-                InvMoveConfig.class,
-                config -> config.invMoveConfig,
-                (config, value) -> config.invMoveConfig = value);
-
-        registrar.register(
-                KeyBindingsConfig.class,
-                config -> config.keyBindingsConfig,
-                (config, value) -> config.keyBindingsConfig = value);
-
-        registrar.register(
-                KillAuraConfig.class,
-                config -> config.killAuraConfig,
-                (config, value) -> config.killAuraConfig = value);
-
-        registrar.register(
-                LightLevelConfig.class,
-                config -> config.lightLevelConfig,
-                (config, value) -> config.lightLevelConfig = value);
-
-        registrar.register(
-                LockInputsConfig.class,
-                config -> config.lockInputsConfig,
-                (config, value) -> config.lockInputsConfig = value);
-
-        registrar.register(
-                LogoutSpotsConfig.class,
-                config -> config.logoutSpots,
-                (config, value) -> config.logoutSpots = value);
-
-        registrar.register(
-                McpServerConfig.class,
-                config -> config.mcpServerConfig,
-                (config, value) -> config.mcpServerConfig = value);
-
-        registrar.register(
-                MonacoEditorConfig.class,
-                config -> config.monacoEditor,
-                (config, value) -> config.monacoEditor = value);
-
-        registrar.register(
-                MovementHackConfig.class,
-                config -> config.movementHackConfig,
-                (config, value) -> config.movementHackConfig = value);
-
-        registrar.register(
-                NewChunksConfig.class,
-                config -> config.newChunksConfig,
-                (config, value) -> config.newChunksConfig = value);
-
-        registrar.register(
-                NoFallConfig.class,
-                config -> config.noFallConfig,
-                (config, value) -> config.noFallConfig = value);
-
-        registrar.register(
-                ParkourAssistConfig.class,
-                config -> config.parkourAssistConfig,
-                (config, value) -> config.parkourAssistConfig = value);
-
-        registrar.register(
-                PerformanceConfig.class,
-                config -> config.performanceConfig,
-                (config, value) -> config.performanceConfig = value);
-
-        registrar.register(
-                PigHackConfig.class,
-                config -> config.pigHackConfig,
-                (config, value) -> config.pigHackConfig = value);
-
-        registrar.register(
-                PrivacyConfig.class,
-                config -> config.privacyConfig,
-                (config, value) -> config.privacyConfig = value);
-
-        registrar.register(
-                ProjectilePathConfig.class,
-                config -> config.projectilePathConfig,
-                (config, value) -> config.projectilePathConfig = value);
-
-        registrar.register(
-                ReachConfig.class,
-                config -> config.reachConfig,
-                (config, value) -> config.reachConfig = value);
-
-        registrar.register(
-                ScaffoldConfig.class,
-                config -> config.scaffoldConfig,
-                (config, value) -> config.scaffoldConfig = value);
-
-        registrar.register(
-                SchematicaConfig.class,
-                config -> config.schematicaConfig,
-                (config, value) -> config.schematicaConfig = value);
-
-        registrar.register(
-                ServerPluginsConfig.class,
-                config -> config.serverPluginsConfig,
-                (config, value) -> config.serverPluginsConfig = value);
-
-        registrar.register(
-                ShulkerTooltipConfig.class,
-                config -> config.shulkerTooltipConfig,
-                (config, value) -> config.shulkerTooltipConfig = value);
-
-        registrar.register(
-                SpearRangeConfig.class,
-                config -> config.spearRangeConfig,
-                (config, value) -> config.spearRangeConfig = value);
-
-        registrar.register(
-                StatusEffectsConfig.class,
-                config -> config.statusEffectsConfig,
-                (config, value) -> config.statusEffectsConfig = value);
-
-        registrar.register(
-                StatusOverlayConfig.class,
-                config -> config.statusOverlayConfig,
-                (config, value) -> config.statusOverlayConfig = value);
-
-        registrar.register(
-                StepUpConfig.class,
-                config -> config.stepUp,
-                (config, value) -> config.stepUp = value);
-
-        registrar.register(
-                TridentHackConfig.class,
-                config -> config.tridentHackConfig,
-                (config, value) -> config.tridentHackConfig = value);
-
-        registrar.register(
-                UserNameConfig.class,
-                config -> config.userNameConfig,
-                (config, value) -> config.userNameConfig = value);
-
-        registrar.register(
-                VillagerRollerConfig.class,
-                config -> config.villagerRollerConfig,
-                (config, value) -> config.villagerRollerConfig = value);
-
-        registrar.register(
-                WorldMarkersConfig.class,
-                config -> config.worldMarkersConfig,
-                (config, value) -> config.worldMarkersConfig = value);
-
-        this.handles = Collections.unmodifiableMap(handles);
+    private final SettingsRegistry registry;
+
+    public Settings(SettingsRegistry registry) {
+        this.registry = registry;
+
+        registry.register(AdvancedTooltipsConfig::defaults);
+        registry.register(AimAssistConfig::defaults);
+        registry.register(AirPlaceConfig::defaults);
+        registry.register(AntiHungerConfig::defaults);
+        registry.register(AntiRespawnResetConfig::defaults);
+        registry.register(AreaMineConfig::defaults);
+        registry.register(ArmorOverlayConfig::defaults);
+        registry.register(AutoAttackConfig::defaults);
+        registry.register(AutoBucketConfig::defaults);
+        registry.register(AutoCraftConfig::defaults);
+        registry.register(AutoCriticalsConfig::defaults);
+        registry.register(AutoDropConfig::defaults);
+        registry.register(AutoEatConfig::defaults);
+        registry.register(AutoFishConfig::defaults);
+        registry.register(AutoHotbarConfig::defaults);
+        registry.register(AutoStunnerConfig::defaults);
+        registry.register(AutoToolConfig::defaults);
+        registry.register(AutoTotemConfig::defaults);
+        registry.register(BedrockBreakerConfig::defaults);
+        registry.register(BlockAutomationConfig::defaults);
+        registry.register(BlockEntityDistanceConfig::defaults);
+        registry.register(BlockEspConfig::defaults);
+        registry.register(BoatHackConfig::defaults);
+        registry.register(BobHurtConfig::defaults);
+        registry.register(BreachSwapConfig::defaults);
+        registry.register(ChatUtilitiesConfig::defaults);
+        registry.register(ChunksConfig::defaults);
+        registry.register(ContainerButtonsConfig::defaults);
+        registry.register(ContainerSummaryConfig::defaults);
+        registry.register(CoreConfig::defaults);
+        registry.register(CrystalAuraConfig::defaults);
+        registry.register(DeathCoordinatesConfig::defaults);
+        registry.register(ElytraBounceConfig::defaults);
+        registry.register(ElytraHackConfig::defaults);
+        registry.register(ElytraTunnelConfig::defaults);
+        registry.register(EndCityChunksConfig::defaults);
+        registry.register(EntityEspConfig::defaults);
+        registry.register(EntityTitleConfig::defaults);
+        registry.register(EventsScriptingConfig::defaults);
+        registry.register(ExecConfig::defaults);
+        registry.register(ExplorationMiniMapConfig::defaults);
+        registry.register(FastBreakConfig::defaults);
+        registry.register(FlyHackConfig::defaults);
+        registry.register(FogConfig::defaults);
+        registry.register(FreeCamConfig::defaults);
+        registry.register(FullBrightConfig::defaults);
+        registry.register(HandsViewConfig::defaults);
+        registry.register(HitboxSizeConfig::defaults);
+        registry.register(InvMoveConfig::defaults);
+        registry.register(KeyBindingsConfig::defaults);
+        registry.register(KillAuraConfig::defaults);
+        registry.register(LightLevelConfig::defaults);
+        registry.register(LockInputsConfig::defaults);
+        registry.register(LogoutSpotsConfig::defaults);
+        registry.register(McpServerConfig::defaults);
+        registry.register(MonacoEditorConfig::defaults);
+        registry.register(MovementHackConfig::defaults);
+        registry.register(NewChunksConfig::defaults);
+        registry.register(NoFallConfig::defaults);
+        registry.register(ParkourAssistConfig::defaults);
+        registry.register(PerformanceConfig::defaults);
+        registry.register(PigHackConfig::defaults);
+        registry.register(PrivacyConfig::defaults);
+        registry.register(ProjectilePathConfig::defaults);
+        registry.register(ReachConfig::defaults);
+        registry.register(ScaffoldConfig::defaults);
+        registry.register(SchematicaConfig::defaults);
+        registry.register(ServerPluginsConfig::defaults);
+        registry.register(ShulkerTooltipConfig::defaults);
+        registry.register(SpearRangeConfig::defaults);
+        registry.register(StatusEffectsConfig::defaults);
+        registry.register(StatusOverlayConfig::defaults);
+        registry.register(StepUpConfig::defaults);
+        registry.register(TridentHackConfig::defaults);
+        registry.register(UserNameConfig::defaults);
+        registry.register(VillagerRollerConfig::defaults);
+        registry.register(WorldMarkersConfig::defaults);
     }
 
     public static <T extends ImmutableConfig> SettingHandle<T> get(Class<T> type) {
         // TODO: why config store own settings, and not singleton?
-        return ConfigStore.INSTANCE.getSettings().find(type);
+        return ConfigStore.INSTANCE.getSettings().registry.find(type);
     }
 
     public static Map<Class<? extends ImmutableConfig>, Boolean> getModuleStates() {
         Map<Class<? extends ImmutableConfig>, Boolean> states = new HashMap<>();
-        for (var entry : ConfigStore.INSTANCE.getSettings().handles.entrySet()) {
-            Class<? extends ImmutableConfig> type = entry.getKey();
-            if (ModuleStateProvider.class.isAssignableFrom(type)) {
-                SettingHandle<?> handle = entry.getValue();
-                ModuleStateProvider config = (ModuleStateProvider) handle.get();
-                states.put(type, config.isEnabled());
+        for (SettingHandle<?> handle : ConfigStore.INSTANCE.getSettings().registry.getHandles()) {
+            if (handle.get() instanceof ModuleStateProvider config) {
+                states.put(handle.getType(), config.isEnabled());
             }
         }
         return states;
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends ImmutableConfig> SettingHandle<T> find(Class<T> type) {
-        SettingHandle<?> handle = handles.get(type);
-        if (handle == null) {
-            throw new IllegalArgumentException("Settings are not registered for " + type.getName());
-        }
-        return (SettingHandle<T>) handle;
-    }
-
-    private static final class Registrar {
-
-        private final SettingsRegistry<Config> registry;
-        private final Map<Class<? extends ImmutableConfig>, SettingHandle<?>> handles;
-
-        public Registrar(
-                SettingsRegistry<Config> registry,
-                Map<Class<? extends ImmutableConfig>, SettingHandle<?>> handles
-        ) {
-            this.registry = registry;
-            this.handles = handles;
-        }
-
-        public <T extends ImmutableConfig> void register(
-                Class<T> type,
-                Function<Config, T> getter,
-                BiConsumer<Config, T> setter
-        ) {
-            if (handles.containsKey(type)) {
-                throw new IllegalArgumentException("Map already contains key of " + type.getName() + ".");
-            }
-
-            SettingHandle<?> handle = registry.register(getter, setter);
-            handles.put(type, handle);
-        }
     }
 }

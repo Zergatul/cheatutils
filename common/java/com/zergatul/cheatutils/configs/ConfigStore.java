@@ -39,14 +39,16 @@ public class ConfigStore {
 
     private final Logger logger = LogManager.getLogger(ConfigStore.class);
     private final Object lock = new Object();
-    private final SettingsRegistry<Config> settingsRegistry;
+    private final SettingsRegistry settingsRegistry;
     private final Settings settings;
+    private final SettingsSerializer serializer;
     private File currentFile; // guarded by lock
     private volatile long profileGeneration; // changed under lock, on the client thread
 
     private ConfigStore() {
-        settingsRegistry = new SettingsRegistry<>(lock, new Config(), this::requestWrite);
+        settingsRegistry = new SettingsRegistry(lock, this::requestWrite);
         settings = new Settings(settingsRegistry);
+        serializer = new SettingsSerializer(gson, settingsRegistry);
     }
 
     Settings getSettings() {
@@ -55,7 +57,7 @@ public class ConfigStore {
 
     /** Startup only, before modules exist. Modules receive the INITIAL notification from {@link #initialNotify()}. */
     public void loadInitial(File file) {
-        Config config = readFile(file);
+        SettingsSnapshot config = readFile(file);
         synchronized (lock) {
             currentFile = file;
             settingsRegistry.replaceNoNotify(config);
@@ -80,7 +82,7 @@ public class ConfigStore {
 
     public void createNew(File file) {
         ClientThread.assertCurrent();
-        publish(file, new Config(), true);
+        publish(file, settingsRegistry.createDefaults(), true);
     }
 
     public void switchFile(File file) {
@@ -107,7 +109,7 @@ public class ConfigStore {
         }
     }
 
-    private void publish(File file, Config config, boolean write) {
+    private void publish(File file, SettingsSnapshot config, boolean write) {
         synchronized (lock) {
             profileGeneration++;
             currentFile = file;
@@ -121,35 +123,35 @@ public class ConfigStore {
         Events.ProfileLoaded.trigger();
     }
 
-    private Config readFile(File file) {
+    private SettingsSnapshot readFile(File file) {
         if (!file.exists()) {
-            return new Config();
+            return settingsRegistry.createDefaults();
         }
 
+        JsonObject root;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             JsonElement element = JsonParser.parseReader(reader);
             Migrations.run(element);
-            Config config = gson.fromJson(element, Config.class);
-            if (config != null) {
-                return config;
+            if (!element.isJsonObject()) {
+                throw new JsonParseException("Config root is not an object");
             }
-        } catch (Throwable e) {
-            logger.error("Cannot read config");
-            logger.error(e);
+            root = element.getAsJsonObject();
+        } catch (IOException | RuntimeException e) {
+            logger.error("Cannot read config {}", file.getName(), e);
+            return settingsRegistry.createDefaults();
         }
 
-        return new Config();
+        return serializer.fromJson(root);
     }
 
     private Runnable createWriteToFileTask() {
         File file = this.currentFile;
-        Config config = settingsRegistry.getConfig();
+        // immutable: the writer thread saves exactly the profile that was active when the write was requested
+        SettingsSnapshot snapshot = settingsRegistry.getSnapshot();
         return () -> {
             logger.debug("Saving config to file {}", file.getName());
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-                gson.toJson(config, writer);
-                writer.close();
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                gson.toJson(serializer.toJson(snapshot), writer);
             } catch (Throwable e) {
                 logger.error("Cannot write config", e);
             }

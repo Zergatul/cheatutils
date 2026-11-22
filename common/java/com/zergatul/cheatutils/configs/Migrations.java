@@ -27,6 +27,7 @@ public class Migrations {
         migration7(element);
         migration8(element);
         migration9(element);
+        migration10(element);
     }
 
     private static void migration1(JsonElement element) {
@@ -323,6 +324,21 @@ public class Migrations {
         JsonObject config = new JsonObject();
         config.add("entries", entries);
         root.add("keyBindingsConfig", config);
+    }
+
+    // every root key is now the setting type name in camelCase, these six were named differently
+    private static void migration10(JsonElement element) {
+        if (!element.isJsonObject()) {
+            return;
+        }
+
+        JsonObject root = element.getAsJsonObject();
+        renameField(root, "aimAssist", "aimAssistConfig");
+        renameField(root, "autoTool", "autoToolConfig");
+        renameField(root, "blockEntityDistance", "blockEntityDistanceConfig");
+        renameField(root, "logoutSpots", "logoutSpotsConfig");
+        renameField(root, "monacoEditor", "monacoEditorConfig");
+        renameField(root, "stepUp", "stepUpConfig");
     }
 
     private static @Nullable JsonObject migrateKillAuraPriorityEntry(JsonElement element) {

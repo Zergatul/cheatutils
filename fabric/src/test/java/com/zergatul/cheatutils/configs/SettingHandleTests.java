@@ -39,29 +39,31 @@ public class SettingHandleTests {
     @Test
     public void profileSwitchPublishesAllSettingsAndPreservesOldFontValuesWithoutSaving() {
         Fixture fixture = new Fixture();
-        Profile previousProfile = fixture.registry.getConfig();
+        SettingsSnapshot previousProfile = fixture.registry.getSnapshot();
         EntityTitleConfig previous = fixture.title.get();
-        Profile next = new Profile();
-        next.title = previous.withTitleFont(previous.titleFont().withScale(3));
-        next.other = new CounterConfig(42);
+        EntityTitleConfig nextTitle = previous.withTitleFont(previous.titleFont().withScale(3));
+        CounterConfig nextOther = new CounterConfig(42);
+        SettingsSnapshot next = fixture.profile(nextTitle, nextOther);
         List<EntityTitleConfig> changes = new ArrayList<>();
         fixture.title.onChanged((prev, curr) -> {
-            assertSame(next, fixture.registry.getConfig());
-            assertSame(next.other, fixture.other.get());
+            assertSame(curr, fixture.title.get());
+            assertSame(nextOther, fixture.other.get());
             changes.add(prev);
             changes.add(curr);
         });
 
         fixture.registry.replace(SettingNotificationReason.UPDATE, next);
 
-        assertEquals(List.of(previous, next.title), changes);
+        assertEquals(List.of(previous, nextTitle), changes);
         assertFalse(changes.get(0).titleFont().equals(changes.get(1).titleFont()));
         assertEquals(0, fixture.writes);
 
         fixture.title.update(config -> config.withItemScale(5));
 
-        assertEquals(5, next.title.itemScale());
-        assertSame(previous, previousProfile.title);
+        assertEquals(5, fixture.title.get().itemScale());
+        // published snapshots never change
+        assertSame(nextTitle, fixture.titleOf(next));
+        assertSame(previous, fixture.titleOf(previousProfile));
         assertEquals(0, changes.get(1).itemScale());
         assertEquals(1, fixture.writes);
     }
@@ -70,24 +72,23 @@ public class SettingHandleTests {
     public void equalProfileStillBecomesActiveAndEqualEditsDoNotNotifyOrSave() {
         Fixture fixture = new Fixture();
         fixture.title.onChanged((_, _) -> fail("Equal values must not notify"));
-        Profile next = new Profile();
+        SettingsSnapshot next = fixture.registry.createDefaults();
 
         fixture.registry.replace(SettingNotificationReason.UPDATE, next);
         fixture.title.set(EntityTitleConfig.defaults());
         fixture.title.update(config -> config.withItemScale(0));
 
-        assertSame(next, fixture.registry.getConfig());
-        assertSame(next.title, fixture.title.get());
+        assertSame(next, fixture.registry.getSnapshot());
+        assertSame(fixture.titleOf(next), fixture.title.get());
         assertEquals(0, fixture.writes);
     }
 
     @Test
     public void switchingBackAndCreatingDefaultProfileUseTheSameHandle() {
         Fixture fixture = new Fixture();
-        Profile first = fixture.registry.getConfig();
         fixture.title.update(config -> config.withItemScale(2));
-        Profile second = new Profile();
-        second.title = second.title.withItemScale(3);
+        SettingsSnapshot first = fixture.registry.getSnapshot();
+        SettingsSnapshot second = fixture.profile(EntityTitleConfig.defaults().withItemScale(3), new CounterConfig(0));
         List<Integer> values = new ArrayList<>();
         fixture.title.onChanged((prev, curr) -> {
             values.add(prev.itemScale());
@@ -96,10 +97,34 @@ public class SettingHandleTests {
 
         fixture.registry.replace(SettingNotificationReason.UPDATE, second);
         fixture.registry.replace(SettingNotificationReason.UPDATE, first);
-        fixture.registry.replace(SettingNotificationReason.UPDATE, new Profile());
+        fixture.registry.replace(SettingNotificationReason.UPDATE, fixture.registry.createDefaults());
 
         assertEquals(List.of(2, 3, 3, 2, 2, 0), values);
         assertEquals(1, fixture.writes);
+    }
+
+    @Test
+    public void capturedSnapshotDoesNotChangeWithLaterUpdates() {
+        Fixture fixture = new Fixture();
+        SettingsSnapshot captured = fixture.registry.getSnapshot();
+
+        fixture.title.update(config -> config.withItemScale(7));
+        fixture.other.set(new CounterConfig(1));
+
+        assertEquals(0, fixture.titleOf(captured).itemScale());
+        assertEquals(7, fixture.titleOf(fixture.registry.getSnapshot()).itemScale());
+        assertNotSame(captured, fixture.registry.getSnapshot());
+    }
+
+    @Test
+    public void settingsAreKeyedByTypeNameAndRegisteredOnce() {
+        Fixture fixture = new Fixture();
+
+        assertEquals(List.of("entityTitleConfig", "counterConfig"),
+                fixture.registry.getEntries().stream().map(SettingsRegistry.Entry::key).toList());
+        assertSame(fixture.title, fixture.registry.find(EntityTitleConfig.class));
+        assertThrows(IllegalArgumentException.class, () -> fixture.registry.register(EntityTitleConfig::defaults));
+        assertThrows(IllegalArgumentException.class, () -> fixture.registry.find(UnregisteredConfig.class));
     }
 
     @Test
@@ -157,8 +182,7 @@ public class SettingHandleTests {
         fixture.title.onChanged((_, _) -> lockHeld.add(Thread.holdsLock(fixture.lock)));
         fixture.title.observe((_, _, _) -> lockHeld.add(Thread.holdsLock(fixture.lock)));
 
-        Profile next = new Profile();
-        next.title = fixture.title.get().withItemScale(4);
+        SettingsSnapshot next = fixture.profile(fixture.title.get().withItemScale(4), new CounterConfig(0));
         fixture.registry.replace(SettingNotificationReason.PROFILE_LOAD, next);
         fixture.title.update(config -> config.withItemScale(5));
 
@@ -168,15 +192,25 @@ public class SettingHandleTests {
     private static class Fixture {
         private int writes;
         private final Object lock = new Object();
-        private final SettingsRegistry<Profile> registry = new SettingsRegistry<>(lock, new Profile(), () -> writes++);
-        private final SettingHandle<EntityTitleConfig> title = registry.register(profile -> profile.title, (profile, value) -> profile.title = value);
-        private final SettingHandle<CounterConfig> other = registry.register(profile -> profile.other, (profile, value) -> profile.other = value);
+        private final SettingsRegistry registry = new SettingsRegistry(lock, () -> writes++);
+        private final SettingHandle<EntityTitleConfig> title = registry.register(EntityTitleConfig::defaults);
+        private final SettingHandle<CounterConfig> other = registry.register(CounterConfig::defaults);
+
+        private SettingsSnapshot profile(EntityTitleConfig title, CounterConfig other) {
+            return registry.createSnapshot(entry -> entry.type() == EntityTitleConfig.class ? title : other);
+        }
+
+        @SuppressWarnings("unchecked")
+        private EntityTitleConfig titleOf(SettingsSnapshot snapshot) {
+            return snapshot.get((SettingsRegistry.Entry<EntityTitleConfig>) registry.getEntries().getFirst());
+        }
     }
 
-    private static class Profile {
-        private EntityTitleConfig title = EntityTitleConfig.defaults();
-        private CounterConfig other = new CounterConfig(0);
+    private record CounterConfig(int value) implements ImmutableConfig {
+        public static CounterConfig defaults() {
+            return new CounterConfig(0);
+        }
     }
 
-    private record CounterConfig(int value) implements ImmutableConfig {}
+    private record UnregisteredConfig(int value) implements ImmutableConfig {}
 }
