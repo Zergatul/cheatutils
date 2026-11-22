@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.font.FontParameters;
 import com.zergatul.cheatutils.font.FontRenderDetails;
 import com.zergatul.cheatutils.font.FontRendererType;
 import com.zergatul.cheatutils.utils.MathUtils;
+import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("unused")
 public record FontConfig(
@@ -41,7 +42,10 @@ public record FontConfig(
                 .build();
     }
 
-    public boolean equals(FontConfig other) {
+    public boolean equals(@Nullable FontConfig other) {
+        if (other == null) {
+            return false;
+        }
         if (other.renderer != renderer) {
             return false;
         }

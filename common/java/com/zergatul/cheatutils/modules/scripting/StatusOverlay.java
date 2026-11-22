@@ -49,7 +49,7 @@ public class StatusOverlay implements Module, FontBackendHolder {
     private VerticalAlign vAlign;
     private int backgroundColor;
 
-    private FontConfig appliedFont;
+    private @Nullable FontConfig appliedFont;
     private CompletableFuture<FontBackend> fontBackendFuture;
     private FontRenderer fontRenderer;
 
