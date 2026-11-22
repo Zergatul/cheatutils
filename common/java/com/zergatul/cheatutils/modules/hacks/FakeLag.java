@@ -23,8 +23,12 @@ public class FakeLag implements Module {
         // we want to capture packets before any other handler processes them
         // these handlers will have a chance to process these packets later
         // when we re-send/re-receive them
-        Events.BeforeSendPacket.add(this::onClientPacket, -1000);
-        Events.BeforeHandlePacket.add(this::onServerPacket, -1000);
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket, -1000);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket, -1000);
+
+        // TODO: discover idea to have config switch:
+        // - skip all packets by using BeforeSendPacketNettyThread
+        // - skip only essential packets that goes through BeforeSendPacketClientThread (current)
     }
 
     public boolean isEnabled() {

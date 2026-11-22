@@ -36,7 +36,7 @@ public class AutoFish implements Module {
     private long lastPullInTime;
 
     private AutoFish() {
-        Events.BeforeHandlePacket.add(this::onServerPacket);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket);
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
         WebApiRegistry.INSTANCE.register("auto-fish", settings, AutoFishConfig.class);

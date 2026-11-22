@@ -26,7 +26,7 @@ public class Blink implements Module {
     private FakePlayer fake;
 
     private Blink() {
-        Events.BeforeSendPacket.add(this::onClientPacket);
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket);
         Events.ClientPlayerLoggingOut.add(this::disable);
         Events.DimensionChange.add(this::disable);
     }

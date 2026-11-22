@@ -36,7 +36,7 @@ public class ServerPlugins implements Module {
 
     private ServerPlugins() {
         Events.ClientPlayerLoggingIn.add(this::onLogIn);
-        Events.BeforeHandlePacket.add(this::onServerPacket);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket);
         Events.ClientPlayerLoggingOut.add(this::onLogOut);
 
         WebApiRegistry.INSTANCE.register("server-plugins", settings, ServerPluginsConfig.class);

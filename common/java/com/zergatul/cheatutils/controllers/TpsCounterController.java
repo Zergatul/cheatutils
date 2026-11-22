@@ -18,7 +18,7 @@ public class TpsCounterController {
     private TpsCounterController() {
         Events.ClientPlayerLoggingIn.add(this::onLoggingIn);
         // we want to run handler even before FakeLag, to display actual TPS
-        Events.BeforeHandlePacket.add(this::onServerPacket, -2000);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket, -2000);
         Events.DimensionChange.add(this::onDimensionChange);
         Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
     }

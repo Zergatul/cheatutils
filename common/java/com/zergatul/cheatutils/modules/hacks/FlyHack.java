@@ -30,7 +30,7 @@ public class FlyHack implements Module {
     private @Nullable ServerboundMovePlayerPacket antiKickPacket;
 
     private FlyHack() {
-        Events.BeforeSendPacket.add(this::onClientPacket);
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket);
         Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.InGameTickEnd.add(this::onTickEnd);

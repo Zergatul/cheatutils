@@ -150,7 +150,7 @@ public class EventsScripting implements Module {
 
         // we want packet handlers to run after all modules
         // so user handlers don't see canceled packets
-        Events.BeforeHandlePacket.add(packet -> {
+        Events.BeforeHandlePacketClientThread.add(packet -> {
             Installation current = installation;
             if (canTrigger(current) && !current.onS2CPacket.isEmpty()) {
                 PacketEvent event = new PacketEvent(packet);
@@ -164,7 +164,7 @@ public class EventsScripting implements Module {
             return true;
         }, 1000);
 
-        Events.BeforeSendPacket.add(packet -> {
+        Events.BeforeSendPacketClientThread.add(packet -> {
             Installation current = installation;
             if (canTrigger(current) && !current.onC2SPacket.isEmpty()) {
                 PacketEvent event = new PacketEvent(packet);

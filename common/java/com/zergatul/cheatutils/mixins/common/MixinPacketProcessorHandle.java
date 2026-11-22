@@ -28,7 +28,7 @@ public abstract class MixinPacketProcessorHandle {
             cancellable = true)
     private void onBeforeHandlePacket(CallbackInfo info) {
         if (this.listener.flow() == PacketFlow.CLIENTBOUND) {
-            if (!Events.BeforeHandlePacket.trigger(this.packet)) {
+            if (!Events.BeforeHandlePacketClientThread.trigger(this.packet)) {
                 info.cancel();
             }
         }

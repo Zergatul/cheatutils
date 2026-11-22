@@ -76,7 +76,7 @@ public class VillagerRoller implements Module {
         Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.RawBlockUpdated.add(this::onBlockChanged);
         Events.EntityInteract.add(this::onEntityInteract);
-        Events.BeforeHandlePacket.add(this::onServerPacket);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());

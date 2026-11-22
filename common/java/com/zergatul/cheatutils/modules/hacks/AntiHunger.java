@@ -20,7 +20,7 @@ public class AntiHunger implements Module {
     private final Minecraft mc = Minecraft.getInstance();
 
     private AntiHunger() {
-        Events.BeforeSendPacket.add(this::onClientPacket);
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket);
 
         WebApiRegistry.INSTANCE.register("anti-hunger", settings, AntiHungerConfig.class);
     }

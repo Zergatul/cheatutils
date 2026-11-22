@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -27,7 +26,15 @@ public class Events {
     // Minecraft.runTick() : begin
     public static final SimpleEventHandler BeforeProcessQueuedPackets = new SimpleEventHandler();
     // PacketProcessor.processQueuedPackets() : begin
-    public static final LitePacketEventHandler BeforeHandlePacket = new LitePacketEventHandler();
+
+    // not all packets are handled from client thread
+    // some non-essential system packets are handled from Netty thread
+    // examples:
+    // - login handshake packets
+    // - ClientboundKeepAlivePacket
+    // - ClientboundChunkBatchFinishedPacket
+    public static final LitePacketEventHandler BeforeHandlePacketClientThread = new LitePacketEventHandler();
+
     public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
     // PacketProcessor.processQueuedPackets() : end
@@ -69,8 +76,19 @@ public class Events {
 
     public static final SimpleEventHandler RenderBuffersCleanUp = new SimpleEventHandler();
 
-    // can be trigger from almost any place
-    public static final LitePacketEventHandler BeforeSendPacket = new LitePacketEventHandler();
+    // can be triggered from almost any place
+    // this event runs only from main thread
+    // although some events are getting sent from Netty thread, they are mostly system-level events
+    // and are not particularly interesting by most modules
+    // examples:
+    // - login handshake packets
+    // - ServerboundKeepAlivePacket
+    // - ServerboundChunkBatchReceivedPacket
+    public static final LitePacketEventHandler BeforeSendPacketClientThread = new LitePacketEventHandler();
+
+    // processes all packets in Netty thread
+    // runs after BeforeSendPacketClientThread
+    //public static final LitePacketEventHandler BeforeSendPacketNettyThread = new LitePacketEventHandler();
 
     // runs after each frame rendered, close to the main game loop
     public static final SimpleEventHandler MainLoopFrameEnd = new SimpleEventHandler();

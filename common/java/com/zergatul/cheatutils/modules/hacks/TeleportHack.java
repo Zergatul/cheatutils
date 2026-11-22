@@ -171,6 +171,7 @@ public class TeleportHack {
         assert mc.player != null;
 
         List<Packet<?>> packets = new ArrayList<>();
+        packets.add(new ServerboundClientTickEndPacket());
         for (int i = 0; i < packetsCount - 1; i++) {
             packets.add(new ServerboundMovePlayerPacket.StatusOnly(mc.player.onGround(), mc.player.horizontalCollision));
             packets.add(new ServerboundClientTickEndPacket());

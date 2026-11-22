@@ -19,7 +19,7 @@ public class NoFall implements Module {
     private final Minecraft mc = Minecraft.getInstance();
 
     private NoFall() {
-        Events.BeforeSendPacket.add(this::onClientPacket);
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket);
 
         WebApiRegistry.INSTANCE.register("no-fall", settings, NoFallConfig.class);
     }

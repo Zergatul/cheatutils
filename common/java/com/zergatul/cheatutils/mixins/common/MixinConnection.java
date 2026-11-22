@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.extensions.ConnectionExtension;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.network.Connection;
@@ -34,13 +35,28 @@ public abstract class MixinConnection implements ConnectionExtension {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;sendPacket(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V"),
             cancellable = true)
     private void onBeforeSendPacket(Packet<?> packet, @Nullable ChannelFutureListener listener, boolean flush, CallbackInfo info) {
-        if (this.receiving == PacketFlow.CLIENTBOUND) {
-            if (this.bypassSendPacketEvent_CU) {
-                return;
-            }
-            if (!Events.BeforeSendPacket.trigger(packet)) {
-                info.cancel();
-            }
+        if (this.receiving != PacketFlow.CLIENTBOUND) {
+            return;
+        }
+        if (this.bypassSendPacketEvent_CU) {
+            return;
+        }
+        if (!ClientThread.isCurrent()) {
+            return;
+        }
+        if (!Events.BeforeSendPacketClientThread.trigger(packet)) {
+            info.cancel();
         }
     }
+
+    // currently not used by anything
+//    @Inject(method = "doSendPacket", at = @At("HEAD"), cancellable = true)
+//    private void onBeforeWritePacketNetty(Packet<?> packet, @Nullable ChannelFutureListener listener, boolean flush, CallbackInfo info) {
+//        if (this.receiving != PacketFlow.CLIENTBOUND) {
+//            return;
+//        }
+//        if (!Events.BeforeSendPacketNettyThread.trigger(packet)) {
+//            info.cancel();
+//        }
+//    }
 }
