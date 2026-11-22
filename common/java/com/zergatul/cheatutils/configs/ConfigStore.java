@@ -21,8 +21,6 @@ public class ConfigStore {
 
     public static final ConfigStore INSTANCE = new ConfigStore();
 
-    private static final long WRITE_FILE_DELAY = 30_000_000_000L;
-
     public final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
             .registerTypeAdapterFactory(new BlockTypeAdapterFactory())
@@ -119,7 +117,7 @@ public class ConfigStore {
 
     public void requestWrite() {
         synchronized (lock) {
-            ConfigWriterQueue.INSTANCE.queue(currentFile, WRITE_FILE_DELAY, createWriteToFileTask());
+            ConfigWriterQueue.INSTANCE.queue(currentFile, createWriteToFileTask());
         }
     }
 

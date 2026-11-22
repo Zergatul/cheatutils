@@ -22,8 +22,10 @@ import java.util.concurrent.*;
  * and run in request order. {@link #flush}, {@link #delete}, {@link #disable} and {@link #close} wait until the
  * writer has finished everything that was requested before them.
  * <p>
- * At most one write is pending per file: a newer request replaces the pending write and keeps its deadline,
- * so a file is saved at most once per delay, no later than the delay after its first unsaved change.
+ * At most one write is pending per file, a newer request replaces it. The file is saved once it had no new
+ * requests for {@link #QUIET_DELAY}, but no later than {@link #MAX_DELAY} after its first unsaved request.
+ * Edits from the UI are saved shortly after the user stops; a script that changes settings all the time causes
+ * one write per {@link #MAX_DELAY}, not one per change.
  * <p>
  * Write actions do only I/O: they never take the store lock or wait for another thread, so any thread may wait
  * for the writer. Waiting while holding the store lock would block every settings update for the duration of
@@ -31,18 +33,25 @@ import java.util.concurrent.*;
  */
 public class ConfigWriterQueue {
 
-    public static final ConfigWriterQueue INSTANCE = new ConfigWriterQueue(true);
+    static final long QUIET_DELAY = TimeUnit.SECONDS.toNanos(15);
+    static final long MAX_DELAY = TimeUnit.MINUTES.toNanos(5);
+
+    public static final ConfigWriterQueue INSTANCE = new ConfigWriterQueue(QUIET_DELAY, MAX_DELAY, true);
 
     private final Logger logger = LogManager.getLogger(ConfigWriterQueue.class);
+    private final long quietDelay;
+    private final long maxDelay;
     private final ScheduledThreadPoolExecutor writer;
-    private final Map<File, Runnable> pending = new LinkedHashMap<>(); // guarded by itself
+    private final Map<File, Pending> pending = new LinkedHashMap<>(); // guarded by itself
     private boolean disabled; // guarded by pending
 
-    ConfigWriterQueue() {
-        this(false);
+    ConfigWriterQueue(long quietDelay, long maxDelay) {
+        this(quietDelay, maxDelay, false);
     }
 
-    private ConfigWriterQueue(boolean registerLifecycleHandler) {
+    private ConfigWriterQueue(long quietDelay, long maxDelay, boolean registerLifecycleHandler) {
+        this.quietDelay = quietDelay;
+        this.maxDelay = maxDelay;
         writer = new ScheduledThreadPoolExecutor(1, action -> {
             Thread thread = new Thread(action, Constants.MOD_ID + " config writer");
             // never keeps the game alive; a normal exit saves everything in close()
@@ -57,21 +66,30 @@ public class ConfigWriterQueue {
         }
     }
 
-    /** Writes file after the delay, unless a newer request for the same file replaces this one first. */
-    public void queue(File file, long delayNanos, Runnable write) {
+    /** Requests a write of file. Replaces the pending write of the same file and postpones it, up to the limit. */
+    public void queue(File file, Runnable write) {
         synchronized (pending) {
             if (disabled) {
                 return;
             }
-            if (pending.put(file, write) == null) {
-                writer.schedule(() -> runPending(file), delayNanos, TimeUnit.NANOSECONDS);
+
+            long now = System.nanoTime();
+            Pending entry = pending.get(file);
+            if (entry == null) {
+                entry = new Pending(write, now);
+                pending.put(file, entry);
+                schedule(file, entry, Math.min(quietDelay, maxDelay));
+            } else {
+                // no new timer: the entry's timer sees the later deadline when it fires
+                entry.write = write;
+                entry.lastRequest = now;
             }
         }
     }
 
     /** Writes the pending write of file now. Returns when file on disk is up to date with every earlier request. */
     public void flush(File file) {
-        runAndWait(() -> runPending(file));
+        runAndWait(() -> flushOnWriter(file));
     }
 
     /** Deletes file and drops its pending write, so an earlier request can't recreate it. Returns false on failure. */
@@ -109,7 +127,7 @@ public class ConfigWriterQueue {
             synchronized (pending) {
                 files = new ArrayList<>(pending.keySet());
             }
-            files.forEach(this::runPending);
+            files.forEach(this::flushOnWriter);
             return null;
         });
         writer.shutdown();
@@ -130,19 +148,49 @@ public class ConfigWriterQueue {
         }
     }
 
+    // under pending
+    private void schedule(File file, Pending entry, long delay) {
+        writer.schedule(() -> onTimer(file, entry), delay, TimeUnit.NANOSECONDS);
+    }
+
     // writer thread
-    private void runPending(File file) {
+    private void onTimer(File file, Pending entry) {
         Runnable write;
         synchronized (pending) {
-            write = pending.remove(file);
-        }
-        // a flushed write leaves its timer behind: it finds nothing, or saves a newer request early
-        if (write != null) {
-            try {
-                write.run();
-            } catch (RuntimeException e) {
-                logger.error("Cannot write {}", file.getName(), e);
+            if (pending.get(file) != entry) {
+                return; // flushed, deleted or dropped; a newer entry has its own timer
             }
+
+            long deadline = Math.min(entry.lastRequest + quietDelay, entry.firstRequest + maxDelay);
+            long remaining = deadline - System.nanoTime();
+            if (remaining > 0) {
+                schedule(file, entry, remaining);
+                return;
+            }
+
+            pending.remove(file);
+            write = entry.write;
+        }
+        run(file, write);
+    }
+
+    // writer thread
+    private void flushOnWriter(File file) {
+        Pending entry;
+        synchronized (pending) {
+            entry = pending.remove(file);
+        }
+        if (entry != null) {
+            run(file, entry.write);
+        }
+    }
+
+    // writer thread
+    private void run(File file, Runnable write) {
+        try {
+            write.run();
+        } catch (RuntimeException e) {
+            logger.error("Cannot write {}", file.getName(), e);
         }
     }
 
@@ -177,6 +225,20 @@ public class ConfigWriterQueue {
             if (interrupted) {
                 Thread.currentThread().interrupt();
             }
+        }
+    }
+
+    // guarded by pending
+    private static final class Pending {
+
+        private final long firstRequest;
+        private Runnable write;
+        private long lastRequest;
+
+        private Pending(Runnable write, long now) {
+            this.write = write;
+            this.firstRequest = now;
+            this.lastRequest = now;
         }
     }
 }

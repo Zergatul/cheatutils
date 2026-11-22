@@ -22,7 +22,6 @@ public class Profiles implements Module {
 
     public static final Profiles INSTANCE = new Profiles();
 
-    private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
     private static final String OLD_CONFIG_FILE_NAME = "zergatulcheatutils.json";
     private static final String PROFILE_CONFIG_FILE_NAME = "cheatutils-profile.json";
     private static final String DEFAULT_CONFIG_FILE_NAME = "cheatutils.json";
@@ -228,7 +227,7 @@ public class Profiles implements Module {
     private void requestWrite() {
         String current = this.current;
         File file = getProfileConfigFile();
-        ConfigWriterQueue.INSTANCE.queue(file, WRITE_FILE_DELAY, () -> {
+        ConfigWriterQueue.INSTANCE.queue(file, () -> {
             logger.debug("Saving profile config file {}", file.getName());
             try {
                 ConfigWriterQueue.writeAtomically(file, new GsonBuilder().create().toJson(new ProfileConfig(current)));
