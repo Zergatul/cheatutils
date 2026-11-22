@@ -44,8 +44,7 @@ public class Profiles implements Module {
         File profileConfigFile = getProfileConfigFile();
         if (profileConfigFile.exists()) {
             Gson gson = new GsonBuilder().create();
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(profileConfigFile));
+            try (FileReader reader = new FileReader(profileConfigFile)) {
                 ProfileConfig config = gson.fromJson(reader, ProfileConfig.class);
                 if (isValidProfileName(config.name)) {
                     current = config.name;
@@ -123,6 +122,7 @@ public class Profiles implements Module {
             current = name;
             requestWrite();
             ConfigStore.INSTANCE.createNew(getProfileFile(name));
+            saveCreatedProfile(name);
         });
     }
 
@@ -135,6 +135,7 @@ public class Profiles implements Module {
             current = name;
             requestWrite();
             ConfigStore.INSTANCE.switchFile(getProfileFile(name));
+            saveCreatedProfile(name);
         });
     }
 
@@ -224,6 +225,15 @@ public class Profiles implements Module {
         return ClientThread.post(operation);
     }
 
+    /**
+     * A profile exists only as its file: {@link #list()} and {@link #change} look on disk. So a new profile is
+     * written right away instead of after the usual delay, or it would be missing from the list once the user
+     * switches away before the delayed write. Later edits are saved with the usual delay.
+     */
+    private void saveCreatedProfile(String name) {
+        ConfigWriterQueue.INSTANCE.flush(getProfileFile(name));
+    }
+
     private void requestWrite() {
         String current = this.current;
         File file = getProfileConfigFile();
@@ -268,7 +278,7 @@ public class Profiles implements Module {
         }
     }
 
-    public record ProfileConfig(String name) {}
+    private record ProfileConfig(String name) {}
 
     private final class WebApi extends WebApiBase {
 
