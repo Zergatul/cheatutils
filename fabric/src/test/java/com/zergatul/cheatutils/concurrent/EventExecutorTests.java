@@ -95,6 +95,58 @@ public class EventExecutorTests {
         Assertions.assertThrows(RejectedExecutionException.class, () -> executor.waitTicks(1));
     }
 
+    @Test
+    public void postedTaskDroppedByShutdownIsCancelled() {
+        TestEventExecutor executor = new TestEventExecutor(10);
+        int[] executions = new int[1];
+        CompletableFuture<Void> posted = ClientThread.post(executor, () -> executions[0]++);
+
+        executor.shutdownNow();
+        executor.process();
+
+        Assertions.assertTrue(posted.isCancelled());
+        Assertions.assertEquals(0, executions[0]);
+    }
+
+    @Test
+    public void postedTaskRejectedByExecutorFails() {
+        TestEventExecutor executor = new TestEventExecutor(10);
+        executor.shutdown();
+
+        CompletableFuture<Void> posted = ClientThread.post(executor, () -> {});
+
+        CompletionException exception = Assertions.assertThrows(CompletionException.class, posted::join);
+        Assertions.assertInstanceOf(RejectedExecutionException.class, exception.getCause());
+    }
+
+    @Test
+    public void postedTaskCompletesWithItsResult() {
+        TestEventExecutor executor = new TestEventExecutor(10);
+        CompletableFuture<Void> done = ClientThread.post(executor, () -> {});
+        CompletableFuture<Void> failed = ClientThread.post(executor, () -> {
+            throw new IllegalStateException("broken");
+        });
+
+        Assertions.assertFalse(done.isDone());
+        executor.process();
+
+        Assertions.assertNull(done.join());
+        CompletionException exception = Assertions.assertThrows(CompletionException.class, failed::join);
+        Assertions.assertInstanceOf(IllegalStateException.class, exception.getCause());
+    }
+
+    @Test
+    public void postedTaskCancelledBeforeItRunsIsSkipped() {
+        TestEventExecutor executor = new TestEventExecutor(10);
+        int[] executions = new int[1];
+        CompletableFuture<Void> posted = ClientThread.post(executor, () -> executions[0]++);
+
+        posted.cancel(false);
+        executor.process();
+
+        Assertions.assertEquals(0, executions[0]);
+    }
+
     private static class TestEventExecutor extends EventExecutor {
 
         private TestEventExecutor(int capacity) {

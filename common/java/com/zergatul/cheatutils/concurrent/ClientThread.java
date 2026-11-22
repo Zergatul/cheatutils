@@ -7,7 +7,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Supplier;
 
 /**
@@ -62,19 +64,23 @@ public final class ClientThread {
     /**
      * Schedules action at the end of the current or next client tick, never runs it inline. Failures are logged,
      * so callers that don't care about the result can ignore the returned future.
+     * <p>
+     * The returned future always completes: with the result, with the failure, exceptionally when the task can't
+     * be scheduled, or cancelled when shutdown drops it from the queue. Cancelling it before it runs skips action.
      */
     public static CompletableFuture<Void> post(Runnable action) {
-        CompletableFuture<Void> result = new CompletableFuture<>();
-        ClientTickEndExecutor.INSTANCE.execute(() -> {
-            try {
-                action.run();
-                result.complete(null);
-            } catch (RuntimeException e) {
-                LOGGER.error("Client thread task failed", e);
-                result.completeExceptionally(e);
-            }
-        });
-        return result;
+        return post(ClientTickEndExecutor.INSTANCE, action);
+    }
+
+    static CompletableFuture<Void> post(Executor executor, Runnable action) {
+        PostedTask task = new PostedTask(action);
+        try {
+            executor.execute(task);
+        } catch (RejectedExecutionException e) {
+            LOGGER.error("Cannot schedule client thread task", e);
+            task.completeExceptionally(e);
+        }
+        return task;
     }
 
     /** Waits for work scheduled on the client thread. The same rules as for {@link #call} apply. */
@@ -101,6 +107,37 @@ public final class ClientThread {
                 throw error;
             }
             throw new IllegalStateException(cause);
+        }
+    }
+
+    /**
+     * Queued as the returned future itself: the executor cancels the queued futures it drops on shutdown,
+     * so nobody is left waiting for a task that will never run.
+     */
+    private static final class PostedTask extends CompletableFuture<Void> implements Runnable {
+
+        private final Runnable action;
+
+        private PostedTask(Runnable action) {
+            this.action = action;
+        }
+
+        @Override
+        public void run() {
+            if (isDone()) {
+                return; // cancelled before it ran
+            }
+
+            try {
+                action.run();
+                complete(null);
+            } catch (Throwable e) {
+                LOGGER.error("Client thread task failed", e);
+                completeExceptionally(e);
+                if (e instanceof Error error) {
+                    throw error;
+                }
+            }
         }
     }
 }
