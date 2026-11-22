@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.slots.MultiScriptSlot;
 import com.zergatul.cheatutils.scripting.workspace.slots.SingleScriptSlot;
 import com.zergatul.scripting.compiler.Compiler;
-import com.zergatul.scripting.compiler.InstanceCompilationResult;
+import com.zergatul.scripting.compiler.ClassCompilationResult;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -99,8 +99,8 @@ public class ScriptWorkspaceTests {
         assertNotNull(slot.current());
     }
 
-    private static InstanceCompilationResult compileOverlay(String code) {
-        return new Compiler(ScriptType.OVERLAY.createParameters()).compileInstance(code);
+    private static ClassCompilationResult compileOverlay(String code) {
+        return new Compiler(ScriptType.OVERLAY.createParameters()).compileClass(code);
     }
 
     private static class TestSingleSlot extends SingleScriptSlot {
@@ -118,7 +118,7 @@ public class ScriptWorkspaceTests {
         }
 
         @Override
-        public InstanceCompilationResult compileScript(String code) {
+        public ClassCompilationResult compileScript(String code) {
             onCompile.run();
             return compileOverlay(code);
         }
@@ -150,7 +150,7 @@ public class ScriptWorkspaceTests {
         }
 
         @Override
-        public InstanceCompilationResult compileScript(String code) {
+        public ClassCompilationResult compileScript(String code) {
             onCompile.run();
             return compileOverlay(code);
         }

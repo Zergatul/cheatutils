@@ -1,10 +1,11 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
 import com.zergatul.cheatutils.concurrent.ClientThread;
+import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.*;
-import com.zergatul.scripting.compiler.InstanceCompilationResult;
+import com.zergatul.scripting.compiler.ClassCompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -59,9 +60,9 @@ public abstract class SingleScriptSlot extends ScriptSlot {
             return ScriptSaveResult.success();
         }
 
-        InstanceCompilationResult compilationResult = compileScript(code);
+        ClassCompilationResult compilationResult = compileScript(code);
         if (compilationResult.isSuccess()) {
-            applyScript(compilationResult.getProgram());
+            applyScript(ScriptCompilerRegistry.instantiate(compilationResult));
             return ScriptSaveResult.success();
         } else {
             return ScriptSaveResult.fail(compilationResult.getDiagnostics());
@@ -69,7 +70,7 @@ public abstract class SingleScriptSlot extends ScriptSlot {
     }
 
     @Override
-    public ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable InstanceCompilationResult compilation) {
+    public ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable ClassCompilationResult compilation) {
         if (identifier != null) {
             throw new IllegalStateException();
         }
@@ -85,15 +86,16 @@ public abstract class SingleScriptSlot extends ScriptSlot {
         }
 
         Objects.requireNonNull(compilation);
-        document = document.withAttempt(code, compilation.isSuccess() ? List.of() : compilation.getDiagnostics());
         if (!compilation.isSuccess()) {
+            document = document.withAttempt(code, compilation.getDiagnostics());
             return ScriptSaveResult.fail(compilation.getDiagnostics());
         }
 
-        document = document.withCode(code);
+        Object program = instantiateForSave(compilation);
+        document = document.withAttempt(code, List.of()).withCode(code);
         ScriptExecutionManager.INSTANCE.cancel(document.ref());
         updateConfigCode(code);
-        applyScript(compilation.getProgram());
+        applyScript(program);
         return ScriptSaveResult.success();
     }
 

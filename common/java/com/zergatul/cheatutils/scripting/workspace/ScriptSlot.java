@@ -1,12 +1,13 @@
 package com.zergatul.cheatutils.scripting.workspace;
 
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
+import com.zergatul.cheatutils.scripting.ScriptInitializationException;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.scripting.analysis.AnalysisResult;
 import com.zergatul.scripting.analysis.Analyzer;
 import com.zergatul.scripting.compiler.CompilationParameters;
-import com.zergatul.scripting.compiler.InstanceCompilationResult;
+import com.zergatul.scripting.compiler.ClassCompilationResult;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -43,9 +44,22 @@ public abstract class ScriptSlot {
         return new ScriptCompileResult(result.binderOutput().diagnostics());
     }
 
-    /** Full compilation without side effects, any thread. */
-    public InstanceCompilationResult compileScript(String code) {
+    /** Full compilation without running any script code, any thread. The program is created later on the client thread. */
+    public ClassCompilationResult compileScript(String code) {
         return ScriptCompilerRegistry.INSTANCE.compile(scriptType, code);
+    }
+
+    /**
+     * Client thread. Creates the program of a save before anything is changed, so a failing static initializer
+     * rejects the save and the last working program stays installed.
+     */
+    protected <T> T instantiateForSave(ClassCompilationResult compilation) {
+        try {
+            return ScriptCompilerRegistry.instantiate(compilation);
+        } catch (ScriptInitializationException e) {
+            throw new ScriptSaveRejectedException(
+                    "Script initialization failed: " + e.getCause() + ". The script was not saved.", e.getCause());
+        }
     }
 
     /**
@@ -56,9 +70,10 @@ public abstract class ScriptSlot {
 
     /**
      * Client thread. Applies a save compiled earlier: document, settings and runtime change together.
-     * {@code compilation} is null for empty code. An invalid save keeps the last working program.
+     * {@code compilation} is null for empty code. An invalid save keeps the last working program; a failing static
+     * initializer throws {@link ScriptSaveRejectedException} and changes nothing.
      */
-    public abstract ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable InstanceCompilationResult compilation);
+    public abstract ScriptSaveResult commit(@Nullable String identifier, @Nullable String code, @Nullable ClassCompilationResult compilation);
 
     /** Client thread. Replaces documents and runtime with scripts from the current settings. Reports failures, never throws. */
     public abstract void reload();

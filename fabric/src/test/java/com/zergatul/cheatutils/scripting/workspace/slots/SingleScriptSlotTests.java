@@ -1,8 +1,10 @@
 package com.zergatul.cheatutils.scripting.workspace.slots;
 
+import com.zergatul.cheatutils.scripting.ScriptInitializationException;
 import com.zergatul.cheatutils.scripting.ScriptType;
+import com.zergatul.cheatutils.scripting.workspace.ScriptSaveRejectedException;
 import com.zergatul.scripting.compiler.Compiler;
-import com.zergatul.scripting.compiler.InstanceCompilationResult;
+import com.zergatul.scripting.compiler.ClassCompilationResult;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +14,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SingleScriptSlotTests {
+
+    private static final String FAILING_INITIALIZER = "static int zero = 0; static int x = 1 / zero;";
 
     @Test
     public void startupInitializationAlwaysRetiresThePreviousProgram() {
@@ -69,6 +73,40 @@ public class SingleScriptSlotTests {
     }
 
     @Test
+    public void compilationDoesNotRunStaticInitializers() {
+        TestSlot slot = new TestSlot();
+        assertTrue(slot.compileScript(FAILING_INITIALIZER).isSuccess());
+    }
+
+    @Test
+    public void saveWithFailingStaticInitializerIsRejectedAndKeepsWorkingProgram() {
+        TestSlot slot = new TestSlot();
+        assertTrue(slot.commit(null, "int x = 1;", slot.compileScript("int x = 1;")).isSuccess());
+        Object working = slot.current();
+        slot.applied.clear();
+
+        assertThrows(ScriptSaveRejectedException.class,
+                () -> slot.commit(null, FAILING_INITIALIZER, slot.compileScript(FAILING_INITIALIZER)));
+
+        assertTrue(slot.applied.isEmpty());
+        assertNotNull(working);
+        assertEquals("int x = 1;", slot.configCode);
+        assertEquals("int x = 1;", slot.getInstance(null).code());
+        assertEquals("int x = 1;", slot.getInstance(null).lastAttemptCode());
+    }
+
+    @Test
+    public void startupWithFailingStaticInitializerRetiresPreviousProgram() {
+        TestSlot slot = new TestSlot();
+        assertTrue(slot.init("int x = 1;").isSuccess());
+
+        assertThrows(ScriptInitializationException.class, () -> slot.init(FAILING_INITIALIZER));
+
+        assertNull(slot.current());
+        assertEquals(FAILING_INITIALIZER, slot.getInstance(null).code());
+    }
+
+    @Test
     public void emptySaveRemovesProgramAndSettingsCode() {
         TestSlot slot = new TestSlot();
         assertTrue(slot.commit(null, "int x = 1;", slot.compileScript("int x = 1;")).isSuccess());
@@ -103,8 +141,8 @@ public class SingleScriptSlotTests {
         }
 
         @Override
-        public InstanceCompilationResult compileScript(String code) {
-            return new Compiler(ScriptType.OVERLAY.createParameters()).compileInstance(code);
+        public ClassCompilationResult compileScript(String code) {
+            return new Compiler(ScriptType.OVERLAY.createParameters()).compileClass(code);
         }
 
         @Override

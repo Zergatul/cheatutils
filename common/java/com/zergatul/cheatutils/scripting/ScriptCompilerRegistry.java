@@ -21,12 +21,31 @@ public class ScriptCompilerRegistry {
         return parameters[scriptType.ordinal()];
     }
 
-    public InstanceCompilationResult compile(ScriptType scriptType, String code) {
-        return compilers[scriptType.ordinal()].compileInstance(code);
+    /**
+     * Generates the program class without running any script code, so it is safe on any thread.
+     * Create the program with {@link #instantiate} on the thread that will run it.
+     */
+    public ClassCompilationResult compile(ScriptType scriptType, String code) {
+        return compilers[scriptType.ordinal()].compileClass(code);
     }
 
     public ExpressionCompilationResult compileAsExpression(ScriptType scriptType, String code) {
         return compilers[scriptType.ordinal()].compileAsExpression(code);
+    }
+
+    /**
+     * Creates the program, which runs the script's static initializers. Call it on the client thread.
+     * Throws {@link ScriptInitializationException} when an initializer fails.
+     */
+    public static <T> T instantiate(ClassCompilationResult compilation) {
+        Class<T> program = compilation.getProgram();
+        try {
+            return program.getConstructor().newInstance();
+        } catch (ExceptionInInitializerError e) {
+            throw new ScriptInitializationException(e.getCause() != null ? e.getCause() : e);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Cannot instantiate compiled script.", e);
+        }
     }
 
     private void init() {

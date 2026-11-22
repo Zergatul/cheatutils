@@ -14,7 +14,7 @@ import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import com.zergatul.scripting.DiagnosticMessage;
-import com.zergatul.scripting.compiler.InstanceCompilationResult;
+import com.zergatul.scripting.compiler.ClassCompilationResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -49,7 +49,7 @@ public class Exec implements Module {
         event.cancel();
 
         String code = event.getMessage().substring(1);
-        InstanceCompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
+        ClassCompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
         if (!result.isSuccess()) {
             for (DiagnosticMessage message : Objects.requireNonNull(result.getDiagnostics())) {
                 systemMessage(message.message, 0xFFFF8080);
@@ -58,7 +58,7 @@ public class Exec implements Module {
         }
 
         try {
-            ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(new ScriptRef(ScriptType.EXEC_CODE), result.getProgram());
+            ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(new ScriptRef(ScriptType.EXEC_CODE), ScriptCompilerRegistry.instantiate(result));
             ScriptExecutionManager.INSTANCE.execute(() -> activation.execute(activation.program));
         } catch (Throwable e) {
             ScriptRuntimeFailureHandler.INSTANCE.reportSynchronous("Exec script failed.", e);

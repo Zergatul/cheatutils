@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.slots.*;
-import com.zergatul.scripting.compiler.InstanceCompilationResult;
+import com.zergatul.scripting.compiler.ClassCompilationResult;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -69,7 +69,7 @@ public class ScriptWorkspace {
     public ScriptSaveResult save(ScriptRef ref, @Nullable String code) {
         ScriptSlot slot = get(ref.type());
         long generation = profileGeneration.getAsLong();
-        InstanceCompilationResult compilation = code == null || code.isEmpty() ? null : slot.compileScript(code);
+        ClassCompilationResult compilation = code == null || code.isEmpty() ? null : slot.compileScript(code);
         return ClientThread.call(() -> {
             if (profileGeneration.getAsLong() != generation) {
                 throw new ScriptSaveRejectedException("Profile was changed while saving the script. The script was not saved.");
