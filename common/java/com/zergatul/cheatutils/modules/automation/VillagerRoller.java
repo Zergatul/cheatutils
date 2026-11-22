@@ -24,6 +24,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
@@ -402,7 +403,7 @@ public class VillagerRoller implements Module {
         }
     }
 
-    private boolean onServerPacket(Packet<?> packet) {
+    private boolean onServerPacket(PacketListener listener, Packet<?> packet) {
         if (!active) {
             return true;
         }

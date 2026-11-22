@@ -5,6 +5,7 @@ import com.zergatul.cheatutils.entities.FakePlayer;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.PacketUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -26,7 +27,8 @@ public class Blink implements Module {
     private FakePlayer fake;
 
     private Blink() {
-        Events.BeforeSendPacketClientThread.add(this::onClientPacket);
+        // we want to capture movement/tick packets after every other handler, including user handlers
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket, 3000);
         Events.ClientPlayerLoggingOut.add(this::disable);
         Events.DimensionChange.add(this::disable);
     }
@@ -109,7 +111,7 @@ public class Blink implements Module {
         }
     }
 
-    private boolean onClientPacket(Packet<?> packet) {
+    private boolean onClientPacket(Connection connection, Packet<?> packet) {
         if (!isEnabled) {
             return true;
         }

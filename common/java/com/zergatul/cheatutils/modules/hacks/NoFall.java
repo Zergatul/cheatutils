@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.configs.modules.NoFallConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
@@ -50,7 +51,7 @@ public class NoFall implements Module {
         return mc.player.getDeltaMovement().y < -0.5;
     }
 
-    private boolean onClientPacket(Packet<?> packet) {
+    private boolean onClientPacket(Connection connection, Packet<?> packet) {
         if (packet instanceof ServerboundMovePlayerPacket) {
             if (isActive()) {
                 ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(true);

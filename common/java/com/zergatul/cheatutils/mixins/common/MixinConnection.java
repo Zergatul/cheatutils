@@ -3,6 +3,7 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.extensions.ConnectionExtension;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
@@ -22,6 +23,9 @@ public abstract class MixinConnection implements ConnectionExtension {
     @Final
     @Shadow
     private PacketFlow receiving;
+
+    @Shadow
+    private Channel channel;
 
     @Unique
     private boolean bypassSendPacketEvent_CU;
@@ -44,8 +48,11 @@ public abstract class MixinConnection implements ConnectionExtension {
         if (!ClientThread.isCurrent()) {
             return;
         }
-        if (!Events.BeforeSendPacketClientThread.trigger(packet)) {
+        if (!Events.BeforeSendPacketClientThread.trigger((Connection) (Object) this, packet)) {
             info.cancel();
+            if (flush) {
+                channel.flush();
+            }
         }
     }
 

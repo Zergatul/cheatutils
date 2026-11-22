@@ -10,6 +10,7 @@ import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -42,7 +43,7 @@ public class FlyHack implements Module {
         return settings;
     }
 
-    private boolean onClientPacket(Packet<?> packet) {
+    private boolean onClientPacket(Connection connection, Packet<?> packet) {
         if (packet instanceof ServerboundMovePlayerPacket movePlayerPacket) {
             if (antiKickPacket != null) {
                 if (movePlayerPacket != antiKickPacket) {

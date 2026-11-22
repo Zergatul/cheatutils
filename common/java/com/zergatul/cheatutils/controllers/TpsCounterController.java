@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.common.Events;
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 
@@ -17,8 +18,7 @@ public class TpsCounterController {
 
     private TpsCounterController() {
         Events.ClientPlayerLoggingIn.add(this::onLoggingIn);
-        // we want to run handler even before FakeLag, to display actual TPS
-        Events.BeforeHandlePacketClientThread.add(this::onServerPacket, -2000);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket);
         Events.DimensionChange.add(this::onDimensionChange);
         Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
     }
@@ -47,7 +47,7 @@ public class TpsCounterController {
         counter = 0;
     }
 
-    private boolean onServerPacket(Packet<?> packet) {
+    private boolean onServerPacket(PacketListener listener, Packet<?> packet) {
         if (packet instanceof ClientboundSetTimePacket setTimePacket) {
             localTime[counter % SIZE] = System.nanoTime();
             gameTime[counter % SIZE] = setTimePacket.gameTime();

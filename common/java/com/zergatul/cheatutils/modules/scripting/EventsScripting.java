@@ -22,6 +22,7 @@ import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.server.IntegratedServer;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
+@NullMarked
 public class EventsScripting implements Module {
 
     public static final EventsScripting INSTANCE = new EventsScripting();
@@ -36,9 +38,7 @@ public class EventsScripting implements Module {
     private final SettingHandle<EventsScriptingConfig> settings = Settings.get(EventsScriptingConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final ConcurrentLinkedQueue<ScriptActivation<Runnable>> pendingFailures = new ConcurrentLinkedQueue<>();
-
-    // Replaced only on the client thread. Dispatchers read it once, packet callbacks also from the Netty thread.
-    private volatile @Nullable Installation installation;
+    private @Nullable Installation installation;
 
     private EventsScripting() {
         Events.ClientTickStart.add(this::processPendingFailures, -1000);
@@ -148,9 +148,9 @@ public class EventsScripting implements Module {
             }
         });
 
-        // we want packet handlers to run after all modules
-        // so user handlers don't see canceled packets
-        Events.BeforeHandlePacketClientThread.add(packet -> {
+        // we want packet handlers to run after all modules, except Blink
+        // so user handlers don't see canceled packets, but can see replayed packets
+        Events.BeforeHandlePacketClientThread.add((_, packet) -> {
             Installation current = installation;
             if (canTrigger(current) && !current.onS2CPacket.isEmpty()) {
                 PacketEvent event = new PacketEvent(packet);
@@ -162,9 +162,9 @@ public class EventsScripting implements Module {
                 return !event.getCancel();
             }
             return true;
-        }, 1000);
+        }, 2000);
 
-        Events.BeforeSendPacketClientThread.add(packet -> {
+        Events.BeforeSendPacketClientThread.add((_, packet) -> {
             Installation current = installation;
             if (canTrigger(current) && !current.onC2SPacket.isEmpty()) {
                 PacketEvent event = new PacketEvent(packet);
@@ -176,7 +176,7 @@ public class EventsScripting implements Module {
                 return !event.getCancel();
             }
             return true;
-        }, 1000);
+        }, 2000);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
@@ -288,7 +288,6 @@ public class EventsScripting implements Module {
 
     /**
      * Adds a callback to the current installation, unless the callback belongs to a replaced or failed script
-     * (for example its packet callback still running on the Netty thread).
      */
     private <T> boolean register(T callback, Function<Installation, List<T>> list) {
         Installation current = installation;
@@ -364,10 +363,7 @@ public class EventsScripting implements Module {
         register(predicate, i -> i.killAuraTargetPredicates);
     }
 
-    /**
-     * Everything one installed script registered. Lists are copy-on-write: callbacks can register more callbacks
-     * while a list is being iterated, and packet callbacks iterate them on the Netty thread.
-     */
+    /** Everything one installed script registered. Lists are copy-on-write: callbacks can register more callbacks */
     private static final class Installation {
 
         private final ScriptActivation<Runnable> activation;

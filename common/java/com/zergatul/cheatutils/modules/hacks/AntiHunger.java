@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
@@ -29,7 +30,7 @@ public class AntiHunger implements Module {
         return settings;
     }
 
-    private boolean onClientPacket(Packet<?> packet) {
+    private boolean onClientPacket(Connection connection, Packet<?> packet) {
         if (packet instanceof ServerboundMovePlayerPacket) {
             AntiHungerConfig config = settings.get();
             if (!config.enabled()) {

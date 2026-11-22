@@ -226,8 +226,8 @@ public class Profiles implements Module {
 
     /**
      * A profile operation replaces every script runtime, so it runs as one step on the client thread at the end of
-     * the tick: never inline from inside a script callback. Callers never wait here, because scripts can call this
-     * from the Netty thread, which the client thread may be waiting for. Web requests wait on the returned future.
+     * the tick: never inline from inside a script callback. Callers never wait here.
+     * Web requests wait on the returned future.
      */
     private CompletableFuture<Void> runProfileOperation(Runnable operation) {
         return ClientThread.post(operation);

@@ -8,6 +8,7 @@ import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.sounds.SoundEvents;
@@ -112,7 +113,7 @@ public class AutoFish implements Module {
         }
     }
 
-    private boolean onServerPacket(Packet<?> packet) {
+    private boolean onServerPacket(PacketListener listener, Packet<?> packet) {
         if (packet instanceof ClientboundSoundPacket soundPacket && soundPacket.getSound().value() == SoundEvents.FISHING_BOBBER_SPLASH) {
             if (state == State.WAITING_FOR_SOUND && bobber != null) {
                 if (bobber.distanceToSqr(soundPacket.getX(), soundPacket.getY(), soundPacket.getZ()) < 1) {

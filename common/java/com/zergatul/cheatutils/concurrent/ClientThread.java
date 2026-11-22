@@ -19,8 +19,7 @@ import java.util.function.Supplier;
  * <ul>
  *     <li>never run user script code while holding a lock;</li>
  *     <li>never wait for the client thread while holding a lock;</li>
- *     <li>only threads the client thread never waits for (web and MCP request threads) may wait for it.
- *     Code that can run on the Netty thread, like script callbacks, uses {@link #post} without waiting.</li>
+ *     <li>only threads the client thread never waits for (web and MCP request threads) may wait for it.</li>
  * </ul>
  */
 public final class ClientThread {

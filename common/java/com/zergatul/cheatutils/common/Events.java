@@ -14,6 +14,9 @@ import org.joml.Vector2ic;
 
 import java.util.function.Consumer;
 
+/**
+ * Adding event handler accepts priority. Handlers run in ascending priority order.
+ */
 public class Events {
     // to better understand sequence of events they are ordered in trigger order
 
@@ -33,7 +36,7 @@ public class Events {
     // - login handshake packets
     // - ClientboundKeepAlivePacket
     // - ClientboundChunkBatchFinishedPacket
-    public static final LitePacketEventHandler BeforeHandlePacketClientThread = new LitePacketEventHandler();
+    public static final S2CPacketEventHandler BeforeHandlePacketClientThread = new S2CPacketEventHandler();
 
     public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
@@ -84,7 +87,7 @@ public class Events {
     // - login handshake packets
     // - ServerboundKeepAlivePacket
     // - ServerboundChunkBatchReceivedPacket
-    public static final LitePacketEventHandler BeforeSendPacketClientThread = new LitePacketEventHandler();
+    public static final C2SPacketEventHandler BeforeSendPacketClientThread = new C2SPacketEventHandler();
 
     // processes all packets in Netty thread
     // runs after BeforeSendPacketClientThread

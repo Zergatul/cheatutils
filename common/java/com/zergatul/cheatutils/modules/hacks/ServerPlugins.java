@@ -9,6 +9,7 @@ import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.protocol.Packet;
@@ -128,7 +129,7 @@ public class ServerPlugins implements Module {
         reset();
     }
 
-    private boolean onServerPacket(Packet<?> packet) {
+    private boolean onServerPacket(PacketListener listener, Packet<?> packet) {
         if (packet instanceof ClientboundCommandSuggestionsPacket suggestionsPacket) {
             if (state == State.SENT_PACKET && suggestionId == suggestionsPacket.id()) {
                 state = State.RECEIVED_PACKET;

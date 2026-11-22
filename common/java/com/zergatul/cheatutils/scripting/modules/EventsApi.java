@@ -142,12 +142,20 @@ public class EventsApi {
         EventsScripting.INSTANCE.addOnPlayerInfoUpdate(consumer);
     }
 
+    @MethodDescription("""
+            Some system packets may not be visible from this handler.
+            Most gameplay related packets are visible by handlers and can be canceled.
+            """)
     @AdvancedApi
     @ApiVisibility(ApiType.EVENTS)
     public void onClientToServerPacket(PacketEventConsumer consumer) {
         EventsScripting.INSTANCE.addOnClientToServerPacket(consumer);
     }
 
+    @MethodDescription("""
+            Some system packets may not be visible from this handler.
+            Most gameplay related packets are visible by handlers and can be canceled.
+            """)
     @AdvancedApi
     @ApiVisibility(ApiType.EVENTS)
     public void onServerToClientPacket(PacketEventConsumer consumer) {
