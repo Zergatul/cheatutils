@@ -1,6 +1,7 @@
 package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import org.jspecify.annotations.Nullable;
 
@@ -12,6 +13,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+/**
+ * Tracks running async scripts, so they can be cancelled when their script is replaced, on a profile switch
+ * and on close. Executions start, move and are cancelled on the client thread only, which owns script runtime
+ * state. Completions can arrive on any thread, so the bookkeeping is still guarded by this monitor.
+ */
 public class ScriptExecutionManager {
 
     public static final ScriptExecutionManager INSTANCE = new ScriptExecutionManager(true);
@@ -43,6 +49,7 @@ public class ScriptExecutionManager {
             AsyncRunnable script,
             @Nullable Consumer<Throwable> onComplete
     ) {
+        ClientThread.assertCurrent();
         Objects.requireNonNull(ref);
         Objects.requireNonNull(script);
 
@@ -68,7 +75,7 @@ public class ScriptExecutionManager {
         }
 
         if (cancelled) {
-            // cancelAll() ran while the script was starting
+            // cancelAll() ran inside the script's synchronous start
             future.cancel(false);
         } else {
             if (previous != null && previous != future) {
@@ -83,6 +90,7 @@ public class ScriptExecutionManager {
     }
 
     public CompletableFuture<?> execute(AsyncRunnable script) {
+        ClientThread.assertCurrent();
         Objects.requireNonNull(script);
 
         CompletableFuture<?> future = Objects.requireNonNull(script.run(), "Async script returned a null future.");
@@ -91,6 +99,7 @@ public class ScriptExecutionManager {
     }
 
     public void track(ScriptRef ref, CompletableFuture<?> future) {
+        ClientThread.assertCurrent();
         Objects.requireNonNull(ref);
         Objects.requireNonNull(future);
 
@@ -114,6 +123,7 @@ public class ScriptExecutionManager {
     }
 
     public void move(ScriptRef oldRef, ScriptRef newRef) {
+        ClientThread.assertCurrent();
         synchronized (this) {
             CompletableFuture<?> future = namedExecutions.remove(oldRef);
             if (future != null) {
@@ -123,6 +133,7 @@ public class ScriptExecutionManager {
     }
 
     public void cancel(ScriptRef ref) {
+        ClientThread.assertCurrent();
         Objects.requireNonNull(ref);
 
         CompletableFuture<?> future;
@@ -135,6 +146,7 @@ public class ScriptExecutionManager {
     }
 
     public void cancelAll() {
+        ClientThread.assertCurrent();
         Set<CompletableFuture<?>> futures;
         synchronized (this) {
             cancelAllCount++;
