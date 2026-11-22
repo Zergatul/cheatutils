@@ -21,7 +21,7 @@ public class ConfigStore {
 
     public static final ConfigStore INSTANCE = new ConfigStore();
 
-    private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
+    private static final long WRITE_FILE_DELAY = 30_000_000_000L;
 
     public final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new GsonSkipExcludeStrategy())
@@ -77,6 +77,8 @@ public class ConfigStore {
 
     public void load(File file) {
         ClientThread.assertCurrent();
+        // a pending write of this file holds newer values than the disk
+        ConfigWriterQueue.INSTANCE.flush(file);
         publish(file, readFile(file), false);
     }
 
@@ -150,10 +152,11 @@ public class ConfigStore {
         SettingsSnapshot snapshot = settingsRegistry.getSnapshot();
         return () -> {
             logger.debug("Saving config to file {}", file.getName());
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                gson.toJson(serializer.toJson(snapshot), writer);
-            } catch (Throwable e) {
-                logger.error("Cannot write config", e);
+            try {
+                // fully serialized before the file is touched: a failure leaves the previous file
+                ConfigWriterQueue.writeAtomically(file, gson.toJson(serializer.toJson(snapshot)));
+            } catch (IOException | RuntimeException e) {
+                logger.error("Cannot write config {}", file.getName(), e);
             }
         };
     }

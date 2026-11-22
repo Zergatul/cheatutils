@@ -32,7 +32,6 @@ public class Profiles implements Module {
     private final char[] invalidChars = new char[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' };
     private final Pattern pattern = Pattern.compile("^cheatutils\\.(.+)\\.json$");
     private volatile String current; // changed on the client thread
-    private volatile boolean isInResetState = false;
 
     private Profiles() {
         WebApiRegistry.INSTANCE.register(new WebApi());
@@ -146,9 +145,7 @@ public class Profiles implements Module {
         }
 
         return runProfileOperation(() -> {
-            // if we have pending write, execute it right now
-            ConfigWriterQueue.INSTANCE.flush(getProfileFile(current));
-
+            // the pending write of the previous profile keeps its own file and deadline
             current = name;
             requestWrite();
             ConfigStore.INSTANCE.load(getProfileFile(name));
@@ -165,26 +162,21 @@ public class Profiles implements Module {
         }
 
         return runProfileOperation(() -> {
-            File file = getProfileFile(name);
-            if (file.exists()) {
-                if (!file.delete()) {
-                    logger.error("Cannot delete profile file.");
-                }
-            }
-
             current = "";
             requestWrite();
             ConfigStore.INSTANCE.load(getProfileFile(""));
+
+            // after the switch: no new write can target the deleted file, and its pending write is dropped
+            File file = getProfileFile(name);
+            if (!ConfigWriterQueue.INSTANCE.delete(file)) {
+                logger.error("Cannot delete profile file {}", file.getName());
+            }
         });
     }
 
-    public boolean isInResetState() {
-        return isInResetState;
-    }
-
     public String[] reset() {
-        isInResetState = true;
-        ConfigWriterQueue.INSTANCE.clear();
+        // nothing is saved after this, so deleted files stay deleted
+        ConfigWriterQueue.INSTANCE.disable();
 
         // remove files
         String[] files = getConfigDirectory().list();
@@ -239,10 +231,8 @@ public class Profiles implements Module {
         ConfigWriterQueue.INSTANCE.queue(file, WRITE_FILE_DELAY, () -> {
             logger.debug("Saving profile config file {}", file.getName());
             try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-                new GsonBuilder().create().toJson(new ProfileConfig(current), writer);
-                writer.close();
-            } catch (Throwable e) {
+                ConfigWriterQueue.writeAtomically(file, new GsonBuilder().create().toJson(new ProfileConfig(current)));
+            } catch (IOException | RuntimeException e) {
                 logger.error("Cannot write profile config", e);
             }
         });
