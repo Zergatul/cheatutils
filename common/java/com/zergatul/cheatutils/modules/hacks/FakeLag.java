@@ -1,24 +1,30 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.Packet;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FakeLag implements Module {
 
     public static final FakeLag INSTANCE = new FakeLag();
 
-    private volatile boolean enabled;
-    private final List<Packet<?>> clientPackets = Collections.synchronizedList(new ArrayList<>());
-    private final List<Packet<?>> serverPackets = Collections.synchronizedList(new ArrayList<>());
+    private final Minecraft mc = Minecraft.getInstance();
+    private final List<Packet<?>> clientPackets = new ArrayList<>();
+    private final List<Packet<?>> serverPackets = new ArrayList<>();
+    private boolean enabled;
 
     private FakeLag() {
-        NetworkPacketsController.INSTANCE.addClientPacketHandler(this::onClientPacket);
-        NetworkPacketsController.INSTANCE.addServerPacketHandler(this::onServerPacket);
+        // we want to capture packets before any other handler processes them
+        // these handlers will have a chance to process these packets later
+        // when we re-send/re-receive them
+        Events.BeforeSendPacket.add(this::onClientPacket, -1000);
+        Events.BeforeHandlePacket.add(this::onServerPacket, -1000);
     }
 
     public boolean isEnabled() {
@@ -28,8 +34,12 @@ public class FakeLag implements Module {
     public void toggle() {
         if (enabled) {
             enabled = false;
-            clientPackets.forEach(NetworkPacketsController.INSTANCE::sendPacket);
-            serverPackets.forEach(NetworkPacketsController.INSTANCE::receivePacket);
+
+            LocalPlayer player = mc.player;
+            if (player != null) {
+                PacketUtils.send(player, clientPackets);
+                PacketUtils.receive(player, serverPackets);
+            }
         } else {
             enabled = true;
         }
@@ -37,17 +47,21 @@ public class FakeLag implements Module {
         serverPackets.clear();
     }
 
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
+    private boolean onClientPacket(Packet<?> packet) {
         if (enabled) {
-            clientPackets.add(args.packet);
-            args.skip = true;
+            clientPackets.add(packet);
+            return false;
+        } else {
+            return true;
         }
     }
 
-    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+    private boolean onServerPacket(Packet<?> packet) {
         if (enabled) {
-            serverPackets.add(args.packet);
-            args.skip = true;
+            serverPackets.add(packet);
+            return false;
+        } else {
+            return true;
         }
     }
 }

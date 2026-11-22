@@ -5,7 +5,6 @@ import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.EventsScriptingConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.AimAssist;
 import com.zergatul.cheatutils.modules.hacks.KillAura;
@@ -28,7 +27,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class EventsScripting implements Module {
@@ -38,9 +36,6 @@ public class EventsScripting implements Module {
     private final SettingHandle<EventsScriptingConfig> settings = Settings.get(EventsScriptingConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final ConcurrentLinkedQueue<ScriptActivation<Runnable>> pendingFailures = new ConcurrentLinkedQueue<>();
-
-    private final Consumer<NetworkPacketsController.ClientPacketArgs> onClientPacketHandler = this::onClientPacket;
-    private final Consumer<NetworkPacketsController.ServerPacketArgs> onServerPacketHandler = this::onServerPacket;
 
     // Replaced only on the client thread. Dispatchers read it once, packet callbacks also from the Netty thread.
     private volatile @Nullable Installation installation;
@@ -153,6 +148,36 @@ public class EventsScripting implements Module {
             }
         });
 
+        // we want packet handlers to run after all modules
+        // so user handlers don't see canceled packets
+        Events.BeforeHandlePacket.add(packet -> {
+            Installation current = installation;
+            if (canTrigger(current) && !current.onS2CPacket.isEmpty()) {
+                PacketEvent event = new PacketEvent(packet);
+                for (PacketEventConsumer consumer : current.onS2CPacket) {
+                    if (!current.run("S2C packet", () -> consumer.accept(event))) {
+                        break;
+                    }
+                }
+                return !event.getCancel();
+            }
+            return true;
+        }, 1000);
+
+        Events.BeforeSendPacket.add(packet -> {
+            Installation current = installation;
+            if (canTrigger(current) && !current.onC2SPacket.isEmpty()) {
+                PacketEvent event = new PacketEvent(packet);
+                for (PacketEventConsumer consumer : current.onC2SPacket) {
+                    if (!current.run("C2S packet", () -> consumer.accept(event))) {
+                        break;
+                    }
+                }
+                return !event.getCancel();
+            }
+            return true;
+        }, 1000);
+
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
@@ -251,9 +276,6 @@ public class EventsScripting implements Module {
         for (Runnable action : handlers) {
             target.activation.runCleanup("EventScripting unload", action);
         }
-
-        NetworkPacketsController.INSTANCE.removeClientPacketHandler(onClientPacketHandler);
-        NetworkPacketsController.INSTANCE.removeServerPacketHandler(onServerPacketHandler);
     }
 
     private static boolean isActive(@Nullable Installation installation) {
@@ -323,15 +345,11 @@ public class EventsScripting implements Module {
     }
 
     public void addOnClientToServerPacket(PacketEventConsumer consumer) {
-        if (register(consumer, i -> i.onC2SPacket)) {
-            NetworkPacketsController.INSTANCE.addClientPacketHandlerIfAbsent(onClientPacketHandler);
-        }
+        register(consumer, i -> i.onC2SPacket);
     }
 
     public void addOnServerToClientPacket(PacketEventConsumer consumer) {
-        if (register(consumer, i -> i.onS2CPacket)) {
-            NetworkPacketsController.INSTANCE.addServerPacketHandlerIfAbsent(onServerPacketHandler);
-        }
+        register(consumer, i -> i.onS2CPacket);
     }
 
     public void addOnUnload(Runnable action) {
@@ -344,26 +362,6 @@ public class EventsScripting implements Module {
 
     public void addKillAuraTargetPredicate(KillAura.TargetPredicate predicate) {
         register(predicate, i -> i.killAuraTargetPredicates);
-    }
-
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        Installation current = installation;
-        if (canTrigger(current) && !current.onC2SPacket.isEmpty()) {
-            PacketEvent event = new PacketEvent(args.packet);
-            for (PacketEventConsumer consumer : current.onC2SPacket) {
-                if (!current.run("client-to-server packet", () -> consumer.accept(event))) return;
-            }
-        }
-    }
-
-    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        Installation current = installation;
-        if (canTrigger(current) && !current.onS2CPacket.isEmpty()) {
-            PacketEvent event = new PacketEvent(args.packet);
-            for (PacketEventConsumer consumer : current.onS2CPacket) {
-                if (!current.run("server-to-client packet", () -> consumer.accept(event))) return;
-            }
-        }
     }
 
     /**

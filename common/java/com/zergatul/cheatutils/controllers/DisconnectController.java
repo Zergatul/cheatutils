@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.utils.PacketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -55,6 +56,6 @@ public class DisconnectController {
         }
 
         addText = message;
-        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundAttackPacket(mc.player.getId()));
+        PacketUtils.send(mc.player, new ServerboundAttackPacket(mc.player.getId()));
     }
 }

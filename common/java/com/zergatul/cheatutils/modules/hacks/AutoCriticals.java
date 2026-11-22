@@ -5,8 +5,8 @@ import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AutoCriticalsConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
@@ -58,15 +58,16 @@ public class AutoCriticals implements Module {
 
             Vec3 PrevPos = mc.player.position();
 
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false));
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false));
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
-            NetworkPacketsController.INSTANCE.sendBufferedPacket(new ServerboundClientTickEndPacket());
+            PacketUtils.send(mc.player,
+                new ServerboundClientTickEndPacket(),
+                new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false),
+                new ServerboundClientTickEndPacket(),
+                new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false),
+                new ServerboundClientTickEndPacket(),
+                new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false),
+                new ServerboundClientTickEndPacket(),
+                new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false),
+                new ServerboundClientTickEndPacket());
         }
     }
 }

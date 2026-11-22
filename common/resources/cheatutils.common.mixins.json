@@ -51,7 +51,6 @@
     "common.MixinClientboundDisconnectPacket",
     "common.MixinClientboundPlayerInfoRemovePacket",
     "common.MixinClientboundPlayerInfoUpdatePacket",
-    "common.MixinClientHandshakePacketListenerImpl",
     "common.MixinClientLevel",
     "common.MixinClientPacketListener",
     "common.MixinClientCommonPacketListenerImpl",

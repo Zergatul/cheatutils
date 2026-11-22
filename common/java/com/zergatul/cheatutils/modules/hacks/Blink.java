@@ -1,29 +1,31 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Blink implements Module {
 
     public static final Blink INSTANCE = new Blink();
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final List<ServerboundMovePlayerPacket> packets = new ArrayList<>();
+    private final List<Packet<?>> packets = new ArrayList<>();
     private double startX, startY, startZ;
     private float startXRot, startYRot;
     private boolean isEnabled;
     private FakePlayer fake;
 
     private Blink() {
-        NetworkPacketsController.INSTANCE.addClientPacketHandler(this::onClientPacket);
+        Events.BeforeSendPacket.add(this::onClientPacket);
         Events.ClientPlayerLoggingOut.add(this::disable);
         Events.DimensionChange.add(this::disable);
     }
@@ -37,12 +39,13 @@ public class Blink implements Module {
             return;
         }
 
-        NetworkPacketsController.INSTANCE.stopHandlers();
-        packets.forEach(NetworkPacketsController.INSTANCE::sendPacket);
-        packets.clear();
-        NetworkPacketsController.INSTANCE.resumeHandlers();
-
         isEnabled = false;
+
+        // packets were already processed by all handlers
+        // no need to process them again
+        PacketUtils.sendWithBypass(Objects.requireNonNull(mc.player), packets);
+        packets.clear();
+
         fake.remove(Entity.RemovalReason.DISCARDED);
     }
 
@@ -105,29 +108,16 @@ public class Blink implements Module {
         }
     }
 
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
+    private boolean onClientPacket(Packet<?> packet) {
         if (!isEnabled) {
-            return;
+            return true;
         }
 
-        if (args.packet instanceof ServerboundMovePlayerPacket packet) {
-            args.skip = true;
-
-            if (packets.size() > 0) {
-                ServerboundMovePlayerPacket prev = packets.get(packets.size() - 1);
-                boolean same =
-                        prev.getX(0) == packet.getX(0) &&
-                        prev.getY(0) == packet.getY(0) &&
-                        prev.getZ(0) == packet.getZ(0) &&
-                        prev.getXRot(0) == packet.getXRot(0) &&
-                        prev.getYRot(0) == packet.getYRot(0) &&
-                        prev.isOnGround() == packet.isOnGround();
-                if (same) {
-                    return;
-                }
-            }
-
-            packets.add(packet);
+        if (packet instanceof ServerboundMovePlayerPacket movePlayerPacket) {
+            packets.add(movePlayerPacket);
+            return false;
         }
+
+        return true;
     }
 }

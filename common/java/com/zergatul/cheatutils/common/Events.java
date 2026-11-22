@@ -69,6 +69,9 @@ public class Events {
 
     public static final SimpleEventHandler RenderBuffersCleanUp = new SimpleEventHandler();
 
+    // can be trigger from almost any place
+    public static final LitePacketEventHandler BeforeSendPacket = new LitePacketEventHandler();
+
     // runs after each frame rendered, close to the main game loop
     public static final SimpleEventHandler MainLoopFrameEnd = new SimpleEventHandler();
 

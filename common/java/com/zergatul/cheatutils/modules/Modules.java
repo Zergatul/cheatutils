@@ -32,7 +32,6 @@ public class Modules {
 
         register(FakeRotation.INSTANCE);
         register(BlockEventsProcessor.INSTANCE);
-        register(NetworkPacketsController.INSTANCE);
         register(SpeedCounterController.INSTANCE);
         register(BlockFinder.INSTANCE);
         register(PreRenderGuiExecutor.INSTANCE);

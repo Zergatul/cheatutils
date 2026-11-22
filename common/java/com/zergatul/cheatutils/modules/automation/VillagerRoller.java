@@ -7,7 +7,6 @@ import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.VillagerRollerConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
@@ -15,6 +14,7 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.utils.EntityInteraction;
 import com.zergatul.cheatutils.utils.EntityInteractionPlan;
 import com.zergatul.cheatutils.utils.EntityInteractionResult;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
@@ -41,6 +41,7 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class VillagerRoller implements Module {
@@ -414,7 +415,9 @@ public class VillagerRoller implements Module {
 
         if (packet instanceof ClientboundMerchantOffersPacket merchantOffersPacket) {
             offers = merchantOffersPacket.getOffers();
-            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClosePacket(merchantOffersPacket.getContainerId()));
+            PacketUtils.send(
+                    Objects.requireNonNull(mc.player),
+                    new ServerboundContainerClosePacket(merchantOffersPacket.getContainerId()));
             return true;
         }
 

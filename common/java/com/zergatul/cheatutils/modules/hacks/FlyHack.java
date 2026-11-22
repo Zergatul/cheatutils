@@ -4,12 +4,13 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.FlyHackConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -28,7 +29,7 @@ public class FlyHack implements Module {
     private @Nullable ServerboundMovePlayerPacket antiKickPacket;
 
     private FlyHack() {
-        NetworkPacketsController.INSTANCE.addClientPacketHandler(this::onClientPacket);
+        Events.BeforeSendPacket.add(this::onClientPacket);
         Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.InGameTickEnd.add(this::onTickEnd);
@@ -40,13 +41,12 @@ public class FlyHack implements Module {
         return settings;
     }
 
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (args.packet instanceof ServerboundMovePlayerPacket packet) {
+    private boolean onClientPacket(Packet<?> packet) {
+        if (packet instanceof ServerboundMovePlayerPacket movePlayerPacket) {
             if (antiKickPacket != null) {
-                if (args.packet != antiKickPacket) {
+                if (movePlayerPacket != antiKickPacket) {
                     // don't send other movement packets for 1 tick
-                    args.skip = true;
-                    return;
+                    return false;
                 }
             }
 
@@ -55,6 +55,7 @@ public class FlyHack implements Module {
                 ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(config.onGroundFlag());
             }
         }
+        return true;
     }
 
     private void onBeforePlayerAiStep() {
@@ -113,7 +114,7 @@ public class FlyHack implements Module {
                     player.getZ(),
                     config.onGroundFlag(),
                     false);
-            NetworkPacketsController.INSTANCE.sendPacket(antiKickPacket);
+            PacketUtils.send(player, antiKickPacket);
         }
     }
 }

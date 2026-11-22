@@ -9,11 +9,11 @@ import com.zergatul.cheatutils.configs.modules.KillAuraPredefinedPriority;
 import com.zergatul.cheatutils.configs.modules.KillAuraPredefinedPriorityEntry;
 import com.zergatul.cheatutils.configs.modules.KillAuraPriorityEntry;
 import com.zergatul.cheatutils.controllers.FakeRotation;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.scripting.EventsScripting;
 import com.zergatul.cheatutils.utils.ClassUtils;
 import com.zergatul.cheatutils.utils.MathUtils;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -196,7 +196,7 @@ public class KillAura implements Module {
             LocalPlayer player = mc.player;
             mc.gameMode.attack(player, targets.getFirst());
             for (int i = 1; i < targets.size(); i++) {
-                NetworkPacketsController.INSTANCE.sendPacket(new ServerboundAttackPacket(targets.get(i).getId()));
+                PacketUtils.send(mc.player, new ServerboundAttackPacket(targets.get(i).getId()));
             }
             mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
             mc.player.connection.send(ServerboundPunchPacket.INSTANCE);

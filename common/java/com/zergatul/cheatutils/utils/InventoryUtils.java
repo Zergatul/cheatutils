@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.utils;
 
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
@@ -43,7 +42,7 @@ public class InventoryUtils {
         }
 
         if (!(mc.gui.screen() instanceof InventoryScreen)) {
-            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClosePacket(0));
+            PacketUtils.send(mc.player, new ServerboundContainerClosePacket(0));
         }
     }
 
@@ -57,7 +56,7 @@ public class InventoryUtils {
         Int2ObjectMap<HashedStack> int2objectmap = new Int2ObjectOpenHashMap<>();
         int2objectmap.put(fromSlot.toMenuIndex(), toHashed(toItemStack));
         int2objectmap.put(toSlot.toMenuIndex(), toHashed(fromItemStack));
-        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClickPacket(
+        PacketUtils.send(mc.player, new ServerboundContainerClickPacket(
                 0, // containerId
                 mc.player.inventoryMenu.getStateId(),
                 fromSlot.toMenuIndex(),
@@ -85,7 +84,7 @@ public class InventoryUtils {
             sendPacket(slot, fromItemStack, slot, air);
             slot.set(air);
 
-            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClickPacket(
+            PacketUtils.send(mc.player, new ServerboundContainerClickPacket(
                     0, // containerId
                     mc.player.inventoryMenu.getStateId(),
                     (short) -999, // slotNum
@@ -96,7 +95,7 @@ public class InventoryUtils {
         }
 
         if (!(mc.gui.screen() instanceof InventoryScreen)) {
-            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClosePacket(0));
+            PacketUtils.send(mc.player, new ServerboundContainerClosePacket(0));
         }
     }
 
@@ -179,7 +178,7 @@ public class InventoryUtils {
 
         Int2ObjectMap<HashedStack> changedSlots = new Int2ObjectOpenHashMap<>();
         changedSlots.put(changedSlot.toMenuIndex(), toHashed(changedStack));
-        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundContainerClickPacket(
+        PacketUtils.send(mc.player, new ServerboundContainerClickPacket(
                 0, // containerId
                 mc.player.inventoryMenu.getStateId(),
                 slot.toMenuIndex(), // slotNum

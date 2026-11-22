@@ -6,8 +6,8 @@ import com.zergatul.cheatutils.concurrent.InGameTickEndExecutor;
 import com.zergatul.cheatutils.configs.InteractionConfig;
 import com.zergatul.cheatutils.configs.utility.BlockPlacerConfig;
 import com.zergatul.cheatutils.controllers.FakeRotation;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.utils.Rotation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -242,7 +242,7 @@ public class BlockPlacer {
         boolean emulateShift = shouldUseShift(config) && !mc.player.isShiftKeyDown();
 
         if (emulateShift) {
-            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundPlayerInputPacket(new Input(
+            PacketUtils.send(mc.player, new ServerboundPlayerInputPacket(new Input(
                     mc.player.input.keyPresses.forward(),
                     mc.player.input.keyPresses.backward(),
                     mc.player.input.keyPresses.left(),
@@ -260,7 +260,7 @@ public class BlockPlacer {
         }
 
         if (emulateShift) {
-            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundPlayerInputPacket(new Input(
+            PacketUtils.send(mc.player, new ServerboundPlayerInputPacket(new Input(
                     mc.player.input.keyPresses.forward(),
                     mc.player.input.keyPresses.backward(),
                     mc.player.input.keyPresses.left(),

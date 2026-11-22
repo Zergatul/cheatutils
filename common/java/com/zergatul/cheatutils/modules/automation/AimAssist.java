@@ -6,8 +6,8 @@ import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AimAssistConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.utils.Rotation;
 import com.zergatul.cheatutils.utils.RotationUtils;
 import com.zergatul.cheatutils.utils.ServerBehavior;
@@ -135,7 +135,7 @@ public class AimAssist implements Module {
         Optional<Rotation> closest = rotations.stream().min(Comparator.comparingDouble(playerRot::distanceSqrTo));
         if (closest.isPresent()) {
             Rotation rotation = closest.get();
-            NetworkPacketsController.INSTANCE.sendPacket(new ServerboundMovePlayerPacket.Rot(
+            PacketUtils.send(mc.player, new ServerboundMovePlayerPacket.Rot(
                     rotation.yRot(), rotation.xRot(),
                     mc.player.onGround(), mc.player.horizontalCollision));
         }

@@ -1,13 +1,14 @@
 package com.zergatul.cheatutils.modules.hacks;
 
+import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.configs.modules.NoFallConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
 public class NoFall implements Module {
@@ -18,7 +19,7 @@ public class NoFall implements Module {
     private final Minecraft mc = Minecraft.getInstance();
 
     private NoFall() {
-        NetworkPacketsController.INSTANCE.addClientPacketHandler(this::onClientPacket);
+        Events.BeforeSendPacket.add(this::onClientPacket);
 
         WebApiRegistry.INSTANCE.register("no-fall", settings, NoFallConfig.class);
     }
@@ -49,11 +50,12 @@ public class NoFall implements Module {
         return mc.player.getDeltaMovement().y < -0.5;
     }
 
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (args.packet instanceof ServerboundMovePlayerPacket packet) {
+    private boolean onClientPacket(Packet<?> packet) {
+        if (packet instanceof ServerboundMovePlayerPacket) {
             if (isActive()) {
                 ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(true);
             }
         }
+        return true;
     }
 }

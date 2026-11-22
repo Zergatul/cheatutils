@@ -5,16 +5,17 @@ import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.AreaMineConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.render.InstancedLineRenderer;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,6 +24,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class AreaMine implements Module {
@@ -105,6 +108,7 @@ public class AreaMine implements Module {
             return;
         }
 
+        List<Packet<?>> packets = new ArrayList<>();
         forEachInstaminable(mc.player.getPosition(1f), origin, config, pos -> {
             if (pos.equals(origin)) {
                 return;
@@ -115,14 +119,16 @@ public class AreaMine implements Module {
             // we call startPredicting inside another startPredicting which is not ok
             // but original close() method should be called and fix it
 
-            ServerboundPlayerActionPacket packet = new ServerboundPlayerActionPacket(
+            packets.add(new ServerboundPlayerActionPacket(
                     ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
                     pos,
                     Direction.UP,
-                    handler.currentSequence());
-
-            NetworkPacketsController.INSTANCE.sendPacket(packet);
+                    handler.currentSequence()));
         });
+
+        if (!packets.isEmpty()) {
+            PacketUtils.send(mc.player, packets);
+        }
     }
 
     private void forEachInstaminable(Vec3 playerPos, BlockPos origin, AreaMineConfig config, Consumer<BlockPos> consumer) {

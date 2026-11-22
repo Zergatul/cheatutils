@@ -4,17 +4,16 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.configs.SettingHandle;
 import com.zergatul.cheatutils.configs.Settings;
 import com.zergatul.cheatutils.configs.modules.ServerPluginsConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundCommandSuggestionsPacket;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Random;
@@ -25,6 +24,7 @@ public class ServerPlugins implements Module {
 
     private final SettingHandle<ServerPluginsConfig> settings = Settings.get(ServerPluginsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
+    private final Random random = new Random();
     //private final String completion = "/:abcdefghijklmnopqrstuvwxyz0123456789-";
     private long logInNano;
     private State state;
@@ -33,15 +33,11 @@ public class ServerPlugins implements Module {
     private State bukkitState;
     private int bukkitSuggestionId;
     private String[] bukkitPlugins;
-    private Random random = new Random();
-    private Logger logger = LogManager.getLogger(ServerPlugins.class);
-    private int delay = 20;
-    private int waitResponseDelay = 4;
 
     private ServerPlugins() {
         Events.ClientPlayerLoggingIn.add(this::onLogIn);
+        Events.BeforeHandlePacket.add(this::onServerPacket);
         Events.ClientPlayerLoggingOut.add(this::onLogOut);
-        NetworkPacketsController.INSTANCE.addServerPacketHandler(this::onServerPacket);
 
         WebApiRegistry.INSTANCE.register("server-plugins", settings, ServerPluginsConfig.class);
 
@@ -79,7 +75,7 @@ public class ServerPlugins implements Module {
     }
 
     private void scanPlugins() {
-        if (mc.level == null) {
+        if (mc.player == null) {
             return;
         }
 
@@ -98,11 +94,11 @@ public class ServerPlugins implements Module {
 
         state = State.SENT_PACKET;
         suggestionId = random.nextInt(1000000000);
-        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundCommandSuggestionPacket(suggestionId, "/"));
+        PacketUtils.send(mc.player, new ServerboundCommandSuggestionPacket(suggestionId, "/"));
     }
 
     private void scanBukkitPlugins() {
-        if (mc.level == null) {
+        if (mc.player == null) {
             return;
         }
 
@@ -121,7 +117,7 @@ public class ServerPlugins implements Module {
 
         bukkitState = State.SENT_PACKET;
         bukkitSuggestionId = random.nextInt(1000000000);
-        NetworkPacketsController.INSTANCE.sendPacket(new ServerboundCommandSuggestionPacket(bukkitSuggestionId, "bukkit:ver "));
+        PacketUtils.send(mc.player, new ServerboundCommandSuggestionPacket(bukkitSuggestionId, "bukkit:ver "));
     }
 
     private void onLogIn(Connection connection) {
@@ -132,11 +128,11 @@ public class ServerPlugins implements Module {
         reset();
     }
 
-    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        if (args.packet instanceof ClientboundCommandSuggestionsPacket packet) {
-            if (state == State.SENT_PACKET && suggestionId == packet.id()) {
+    private boolean onServerPacket(Packet<?> packet) {
+        if (packet instanceof ClientboundCommandSuggestionsPacket suggestionsPacket) {
+            if (state == State.SENT_PACKET && suggestionId == suggestionsPacket.id()) {
                 state = State.RECEIVED_PACKET;
-                List<ClientboundCommandSuggestionsPacket.Entry> suggestions = packet.suggestions();
+                List<ClientboundCommandSuggestionsPacket.Entry> suggestions = suggestionsPacket.suggestions();
                 plugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
                 if (settings.get().autoPrint()) {
                     for (String plugin: plugins) {
@@ -145,9 +141,9 @@ public class ServerPlugins implements Module {
                 }
             }
 
-            if (bukkitState == State.SENT_PACKET && bukkitSuggestionId == packet.id()) {
+            if (bukkitState == State.SENT_PACKET && bukkitSuggestionId == suggestionsPacket.id()) {
                 bukkitState = State.RECEIVED_PACKET;
-                List<ClientboundCommandSuggestionsPacket.Entry> suggestions = packet.suggestions();
+                List<ClientboundCommandSuggestionsPacket.Entry> suggestions = suggestionsPacket.suggestions();
                 bukkitPlugins = suggestions.stream().map(ClientboundCommandSuggestionsPacket.Entry::text).toArray(String[]::new);
                 if (settings.get().autoPrint()) {
                     for (String plugin: bukkitPlugins) {
@@ -156,6 +152,7 @@ public class ServerPlugins implements Module {
                 }
             }
         }
+        return true;
     }
 
     private enum State {

@@ -1,10 +1,11 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -165,19 +166,15 @@ public class TeleportHack {
         return enforceVanillaPacketBudget && packets > 5;
     }
 
-    private void sendTeleport(Vec3 target, int packets) {
+    private void sendTeleport(Vec3 target, int packetsCount) {
         assert mc.player != null;
 
-        for (int i = 0; i < packets - 1; i++) {
-            NetworkPacketsController.INSTANCE.sendPacket(
-                    new ServerboundMovePlayerPacket.StatusOnly(mc.player.onGround(), mc.player.horizontalCollision));
+        List<Packet<?>> packets = new ArrayList<>();
+        for (int i = 0; i < packetsCount - 1; i++) {
+            packets.add(new ServerboundMovePlayerPacket.StatusOnly(mc.player.onGround(), mc.player.horizontalCollision));
         }
-
-        NetworkPacketsController.INSTANCE.sendPacket(
-                new ServerboundMovePlayerPacket.Pos(
-                        target.x, target.y, target.z,
-                        willBeOnGround(target),
-                        true));
+        packets.add(new ServerboundMovePlayerPacket.Pos(target, willBeOnGround(target), true));
+        PacketUtils.send(mc.player, packets);
 
         mc.player.snapTo(target);
     }
