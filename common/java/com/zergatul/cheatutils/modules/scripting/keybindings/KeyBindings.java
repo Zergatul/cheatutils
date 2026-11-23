@@ -44,7 +44,6 @@ public class KeyBindings implements Module {
     private final @Nullable ScriptActivation<AsyncRunnable>[] bindings;
 
     private KeyBindings() {
-        Events.RegisterKeyBindings.add(this::onRegisterKeyBindings);
         Events.AfterHandleKeyBindings.add(this::onHandleKeyBindings);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
@@ -62,6 +61,13 @@ public class KeyBindings implements Module {
 
     public SettingHandle<KeyBindingsConfig> getSettings() {
         return settings;
+    }
+
+    /** Startup only, see {@link com.zergatul.cheatutils.common.ModLifecycle#registerKeyMappings}. */
+    public void registerKeyMappings(IKeyBindingRegistry registry) {
+        for (KeyMapping key : keys) {
+            registry.register(key);
+        }
     }
 
     public OneOf2<SuccessfulResult, ErrorResult> add(@Nullable String name, int keyIndex) {
@@ -271,12 +277,6 @@ public class KeyBindings implements Module {
 
     private static boolean isSuccess(OneOf2<SuccessfulResult, ErrorResult> result) {
         return result.match(_ -> true, _ -> false);
-    }
-
-    private void onRegisterKeyBindings(IKeyBindingRegistry registry) {
-        for (KeyMapping key : keys) {
-            registry.register(key);
-        }
     }
 
     private void onHandleKeyBindings() {

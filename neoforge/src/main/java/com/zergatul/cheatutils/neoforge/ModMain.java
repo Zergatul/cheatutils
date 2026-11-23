@@ -2,22 +2,15 @@ package com.zergatul.cheatutils.neoforge;
 
 import com.mojang.datafixers.util.Either;
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.common.Events;
+import com.zergatul.cheatutils.common.ModLifecycle;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.features.Features;
-import com.zergatul.cheatutils.font.SystemFonts;
-import com.zergatul.cheatutils.modules.Modules;
-import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.utils.DebugScreenExtensions;
-import com.zergatul.cheatutils.web.WebServer;
 import net.minecraft.network.chat.Component;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.RegisterDebugEntriesEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.ChunkEvent;
@@ -27,31 +20,22 @@ import java.util.List;
 
 import static com.zergatul.cheatutils.common.Events.*;
 
+/** Constructed before Minecraft exists: only adds listeners. */
 @Mod(Constants.MOD_ID)
-public class ModMain {
+public final class ModMain {
 
-    public ModMain(IEventBus bus, ModContainer container) {
-        bus.addListener(this::onLoadComplete);
-        bus.addListener(this::onRegisterKeybindings);
-    }
-
-    private void onLoadComplete(final FMLLoadCompleteEvent event) {
-        SystemFonts.initAsync();
-
-        // loads config
-        Profiles.INSTANCE.init();
-        WebServer.INSTANCE.start();
-        Modules.register();
-        Features.register();
-        // triggers initial SettingHandle<T>.observer handles registered by all modules constructors
-        ConfigStore.INSTANCE.initialNotify();
+    public ModMain(IEventBus modBus) {
+        modBus.addListener(ModMain::onRegisterKeyMappings);
+        modBus.addListener(ModMain::onRegisterDebugEntries);
         NeoForge.EVENT_BUS.register(new NeoForgeEvents());
-        DebugScreenExtensions.register();
     }
 
-    private void onRegisterKeybindings(final RegisterKeyMappingsEvent event) {
-        Modules.registerKeyBindings();
-        Events.RegisterKeyBindings.trigger(event::register);
+    private static void onRegisterKeyMappings(final RegisterKeyMappingsEvent event) {
+        ModLifecycle.registerKeyMappings(event::register);
+    }
+
+    private static void onRegisterDebugEntries(final RegisterDebugEntriesEvent event) {
+        DebugScreenExtensions.register(event::register);
     }
 
     private static class NeoForgeEvents {

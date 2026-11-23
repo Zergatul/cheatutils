@@ -20,9 +20,6 @@ import java.util.function.Consumer;
 public class Events {
     // to better understand sequence of events they are ordered in trigger order
 
-    // called once during loading
-    public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
-
     // client thread, outside the config store lock: after a profile was published (including the initial one at the first client tick)
     public static final SimpleEventHandler ProfileLoaded = new SimpleEventHandler();
 

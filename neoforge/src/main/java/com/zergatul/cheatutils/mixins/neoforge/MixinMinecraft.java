@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.neoforge;
 
-import com.zergatul.cheatutils.modules.Modules;
+import com.zergatul.cheatutils.common.ModLifecycle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinMinecraft {
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketProcessor;<init>(Ljava/lang/Thread;)V"))
-    private void onLoading(GameConfig gameConfig, CallbackInfo info) {
-        Modules.lateRegister();
+    private void onClientCreated(GameConfig gameConfig, CallbackInfo info) {
+        ModLifecycle.onClientCreated();
     }
 }
