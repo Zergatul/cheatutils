@@ -70,12 +70,13 @@ public class ScriptRuntimeFailureHandler {
 
     public void reportCompilationFailure(ScriptRef ref, List<DiagnosticMessage> diagnostics) {
         String name = getDisplayName(ref);
-        LOGGER.error("Script '{}' failed to compile during startup.", name);
+        String message = "Script '" + name + "' failed to compile during profile load.";
+        LOGGER.error(message);
         diagnostics.forEach(diagnostic -> LOGGER.error("{}", diagnostic.message));
         String summary = diagnostics.isEmpty() ? "Compilation failed." : truncate(singleLine(diagnostics.getFirst().message), 120);
         addToHistory(
                 "Script compilation failed",
-                "Script '" + name + "' failed to compile during startup.",
+                message,
                 diagnostics.isEmpty() ? "Compilation failed." : String.join("\n", diagnostics.stream().map(ScriptRuntimeFailureHandler::formatDiagnostic).toList()));
         notifications.add(new FailureNotification(
                 "Script compilation failed",
@@ -89,7 +90,7 @@ public class ScriptRuntimeFailureHandler {
         }
         rethrowIfFatal(normalized);
         String name = getDisplayName(ref);
-        String message = "Script '" + name + "' failed to initialize during startup.";
+        String message = "Script '" + name + "' failed to initialize during profile load.";
         LOGGER.error(message, normalized);
         addToHistory("Script initialization failed", message, getStackTrace(normalized));
         notifications.add(new FailureNotification(
