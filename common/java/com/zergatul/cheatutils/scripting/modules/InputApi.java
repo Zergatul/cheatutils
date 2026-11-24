@@ -26,7 +26,7 @@ public class InputApi {
                 keyMap.put(workarounds.getKeyText(key), key);
             } else {
                 StringBuilder sb = new StringBuilder();
-                key.getDisplayName().visit(cc -> {
+                key.getDisplayName().visitWithoutResult(cc -> {
                     sb.append(cc);
                     return Optional.empty();
                 });

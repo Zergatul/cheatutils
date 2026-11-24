@@ -77,7 +77,7 @@ public class PacketUtils {
 
         try (PacketProcessor replay = new PacketProcessor(Thread.currentThread())) {
             for (Packet<?> packet : packets) {
-                replay.scheduleIfPossible(listener, (Packet<PacketListener>) packet);
+                replay.scheduleIfPossible((PacketListener & PacketProcessor.Handler) listener, (Packet<PacketListener>) packet);
             }
             replay.processQueuedPackets();
         }
@@ -89,7 +89,7 @@ public class PacketUtils {
 
         try (PacketProcessor replay = new PacketProcessor(Thread.currentThread())) {
             for (CapturedServerPacket entry : packets) {
-                replay.scheduleIfPossible(entry.listener, (Packet<PacketListener>) entry.packet);
+                replay.scheduleIfPossible((PacketListener & PacketProcessor.Handler) entry.listener, (Packet<PacketListener>) entry.packet);
             }
             replay.processQueuedPackets();
         }

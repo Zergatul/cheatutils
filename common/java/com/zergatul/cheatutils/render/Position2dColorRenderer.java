@@ -1,17 +1,17 @@
 package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.utils.ColorUtils;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
@@ -32,7 +32,7 @@ public class Position2dColorRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-2d-color"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-2d-color"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.POSITION_2D_COLOR)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false)
@@ -66,10 +66,11 @@ public class Position2dColorRenderer {
 
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> Constants.MOD_ID + ": Pos2d Color",
+                RenderPassLayouts.COLOR_ONLY,
                 Objects.requireNonNull(renderTarget.getColorTextureView()),
                 Optional.empty()
         )) {
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline, renderPass.activeSubpass()));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.draw(buffer.getVertexCount(), 1, 0, 0);

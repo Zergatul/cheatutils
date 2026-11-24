@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinGui {
 
     @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V"))
-    private void onSetScreenBeforeReleasingAllKeys(Screen screen, CallbackInfo info) {
-        InvMove.INSTANCE.onOpenScreenStoreKeys(screen);
+    private void onSetScreenBeforeReleasingAllKeys(Screen newScreen, CallbackInfo info) {
+        InvMove.INSTANCE.onOpenScreenStoreKeys(newScreen);
     }
 
     @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;releaseAll()V", shift = At.Shift.AFTER))
-    private void onSetScreenAfterReleasingAllKeys(Screen screen, CallbackInfo info) {
-        InvMove.INSTANCE.onOpenScreenRestoreKeys(screen);
+    private void onSetScreenAfterReleasingAllKeys(Screen newScreen, CallbackInfo info) {
+        InvMove.INSTANCE.onOpenScreenRestoreKeys(newScreen);
     }
 }

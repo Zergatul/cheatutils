@@ -11,8 +11,8 @@ import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -167,14 +167,14 @@ public class ContainerSummary implements Module {
         int width = columns.stream().map(ItemsColumn::getWidth).reduce(0, Integer::sum);
 
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED, background,
+                GuiPipeline.TEXTURED, background,
                 baseX, baseY,
                 5, 15,
                 BORDER_WIDTH, columns.getFirst().getHeight() + 2 * BORDER_WIDTH,
                 2, 2,
                 256, 256);
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED, background,
+                GuiPipeline.TEXTURED, background,
                 baseX + width + BORDER_WIDTH, baseY,
                 5, 15,
                 BORDER_WIDTH, columns.getFirst().getHeight() + 2 * BORDER_WIDTH,
@@ -182,14 +182,14 @@ public class ContainerSummary implements Module {
                 256, 256);
 
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED, background,
+                GuiPipeline.TEXTURED, background,
                 baseX, baseY,
                 5, 15,
                 width + 2 * BORDER_WIDTH, BORDER_WIDTH,
                 2, 2,
                 256, 256);
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED, background,
+                GuiPipeline.TEXTURED, background,
                 baseX, baseY + columns.getFirst().getHeight() + BORDER_WIDTH,
                 5, 15,
                 width + 2 * BORDER_WIDTH, BORDER_WIDTH,
@@ -242,21 +242,21 @@ public class ContainerSummary implements Module {
 
         public void draw(GuiGraphicsExtractor graphics, Identifier background, Font font, int x, int y, int width) {
             graphics.blit(
-                    RenderPipelines.GUI_TEXTURED, background,
+                    GuiPipeline.TEXTURED, background,
                     x, y,
                     7, 17,
                     4, 18,
                     4, 18,
                     256, 256);
             graphics.blit(
-                    RenderPipelines.GUI_TEXTURED, background,
+                    GuiPipeline.TEXTURED, background,
                     x + 4, y,
                     11, 17,
                     width - 8, 18,
                     10, 18,
                     256, 256);
             graphics.blit(
-                    RenderPipelines.GUI_TEXTURED, background,
+                    GuiPipeline.TEXTURED, background,
                     x + width - 4, y,
                     21, 17,
                     4, 18,

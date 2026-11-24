@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,9 +38,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final GraphicsResourceAllocator resourceAllocator,
             final boolean renderOutline,
             final CameraRenderState cameraState,
-            final GpuBufferSlice terrainFog,
-            final Vector4f fogColor,
-            final boolean shouldRenderSky,
+            final GpuBufferSlice fogBuffer,
             final boolean consistentDepthRequired,
             final CallbackInfo info
     ) {
@@ -55,9 +52,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final GraphicsResourceAllocator resourceAllocator,
             final boolean renderOutline,
             final CameraRenderState cameraState,
-            final GpuBufferSlice terrainFog,
-            final Vector4f fogColor,
-            final boolean shouldRenderSky,
+            final GpuBufferSlice fogBuffer,
             final boolean consistentDepthRequired,
             final CallbackInfo info
     ) {
@@ -72,9 +67,7 @@ public abstract class MixinLevelRenderer implements LevelRendererExtension {
             final GraphicsResourceAllocator resourceAllocator,
             final boolean renderOutline,
             final CameraRenderState cameraState,
-            final GpuBufferSlice terrainFog,
-            final Vector4f fogColor,
-            final boolean shouldRenderSky,
+            final GpuBufferSlice fogBuffer,
             final boolean consistentDepthRequired,
             final CallbackInfo info
     ) {

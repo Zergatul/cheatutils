@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.mixins.fabric;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.zergatul.cheatutils.collections.TaggedArrayList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PreRenderTooltipEvent;
-import com.zergatul.mixin.ModifyMethodReturnValue;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -24,7 +24,7 @@ public abstract class MixinGuiGraphicsExtractor {
 
     @Inject(
             at = @At("HEAD"),
-            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V",
+            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;I)V",
             cancellable = true)
     private void onBeforeRenderTooltip(
             Font font,
@@ -32,23 +32,22 @@ public abstract class MixinGuiGraphicsExtractor {
             int xo, int yo,
             ClientTooltipPositioner positioner,
             @Nullable Identifier style,
-            boolean extraSpaceAfterFirstLine,
+            int linesBeforeExtraSpace,
             CallbackInfo info
     ) {
         if (lines.isEmpty()) {
             return;
         }
 
-        if (lines instanceof TaggedArrayList<?,?>) {
-            ItemStack itemStack = ((TaggedArrayList<ClientTooltipComponent, ItemStack>) lines).getTag();
+        if (lines instanceof TaggedArrayList<?, ?> tagged && tagged.getTag() instanceof ItemStack itemStack) {
             if (Events.PreRenderTooltip.trigger(new PreRenderTooltipEvent((GuiGraphicsExtractor) (Object) this, itemStack, xo, yo))) {
                 info.cancel();
             }
         }
     }
 
-    @ModifyMethodReturnValue(
-            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V",
+    @ModifyExpressionValue(
+            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;I)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;positionTooltip(IIIIII)Lorg/joml/Vector2ic;"))
     private static Vector2ic onTooltipPositioned(Vector2ic position) {
         Events.TooltipPositioned.trigger(position);
@@ -57,21 +56,21 @@ public abstract class MixinGuiGraphicsExtractor {
 
     @Inject(
             at = @At("TAIL"),
-            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;Z)V")
+            method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;Lnet/minecraft/resources/Identifier;I)V")
     private void onAfterRenderTooltipInternal(
             Font font,
             List<ClientTooltipComponent> lines,
             int xo, int yo,
             ClientTooltipPositioner positioner,
             @Nullable Identifier style,
-            boolean extraSpaceAfterFirstLine,
+            int linesBeforeExtraSpace,
             CallbackInfo info
     ) {
         if (lines.isEmpty()) {
             return;
         }
 
-        if (lines instanceof TaggedArrayList<?,?>) {
+        if (lines instanceof TaggedArrayList<?, ?> tagged && tagged.getTag() instanceof ItemStack) {
             Events.PostRenderTooltip.trigger();
         }
     }

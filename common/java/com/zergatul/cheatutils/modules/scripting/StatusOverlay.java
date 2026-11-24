@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.modules.scripting;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -23,9 +22,9 @@ import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NullMarked;
@@ -274,8 +273,8 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
 
         @Override
-        public RenderPipeline pipeline() {
-            return RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA;
+        public GuiPipeline pipeline() {
+            return GuiPipeline.TEXTURED_PREMULTIPLIED_ALPHA;
         }
 
         @Override

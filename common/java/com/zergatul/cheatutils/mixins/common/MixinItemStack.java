@@ -13,7 +13,7 @@ public abstract class MixinItemStack {
 
     @ModifyExpressionValue(
             method = "getTooltipLines",
-            at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList()Ljava/util/ArrayList;"))
+            at = @At(value = "NEW", target = "()Ljava/util/ArrayList;"))
     private ArrayList<?> onStoreItemStackInTooltipLines(ArrayList<?> original) {
         return new TaggedArrayList<>(original, (ItemStack) (Object) this);
     }

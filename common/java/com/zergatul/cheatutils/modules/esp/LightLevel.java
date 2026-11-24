@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.modules.esp;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.common.Events;
@@ -62,8 +61,6 @@ public class LightLevel implements Module {
             Map.entry(Direction.WEST, new RotationIndexes(
                     new int[] { 1, 0, 0, 1 },
                     new int[] { 0, 0, 1, 1 })));
-
-    private GpuTextureView textureView;
 
     private LightLevel() {
         Events.AfterRenderWorld.add(this::render);
@@ -156,9 +153,7 @@ public class LightLevel implements Module {
             }
         }
 
-        if (textureView == null) {
-            textureView = RenderSystem.getDevice().createTextureView(mc.getTextureManager().getTexture(texture).getTexture());
-        }
+        GpuTextureView textureView = mc.getTextureManager().getTexture(texture).textureView();
 
         textureRenderer.end(event.getMvp(), textureView);
 

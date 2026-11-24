@@ -271,7 +271,7 @@ public class FreeCam implements Module {
             if (!eyeLock && !moveAlongPath) {
                 this.xRot += (float) event.getXRot() * 0.15F;
                 this.yRot += (float) event.getYRot() * 0.15F;
-                this.xRot = Mth.clamp(this.xRot, -90, 90);
+                this.xRot = Math.clamp(this.xRot, -90, 90);
                 calculateVectors();
             }
             event.cancel();
@@ -481,7 +481,7 @@ public class FreeCam implements Module {
         double dz = z - pos.z;
         this.xRot = (float) (Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)) / Math.PI * 180);
         this.yRot = (float) (Math.atan2(dz, dx) / Math.PI * 180 + 90);
-        this.xRot = Mth.clamp(this.xRot, -90, 90);
+        this.xRot = Math.clamp(this.xRot, -90, 90);
         calculateVectors();
     }
 

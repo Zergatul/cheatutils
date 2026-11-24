@@ -83,7 +83,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
             }
             Position2dTextureColorRenderer.getInstance().draw(
                     mc.gameRenderer.mainRenderTarget(),
-                    mc.getTextureManager().getTexture(MarkerTexture).getTextureView(),
+                    mc.getTextureManager().getTexture(MarkerTexture).textureView(),
                     matrix,
                     buffer);
 
@@ -97,7 +97,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                         Color.WHITE.getRGB());
                 Position2dTextureColorRenderer.getInstance().draw(
                         mc.gameRenderer.mainRenderTarget(),
-                        mc.getTextureManager().getTexture(CenterPosTexture).getTextureView(),
+                        mc.getTextureManager().getTexture(CenterPosTexture).textureView(),
                         matrix,
                         buffer);
             }
@@ -110,7 +110,7 @@ public class ExplorationMiniMapChunkOverlay extends AbstractChunkOverlay {
                     Color.WHITE.getRGB());
             Position2dTextureColorRenderer.getInstance().draw(
                     mc.gameRenderer.mainRenderTarget(),
-                    mc.getTextureManager().getTexture(PlayerPosTexture).getTextureView(),
+                    mc.getTextureManager().getTexture(PlayerPosTexture).textureView(),
                     matrix,
                     buffer);
         }

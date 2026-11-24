@@ -1,27 +1,29 @@
 package com.zergatul.cheatutils.chunkoverlays;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.texture.TextureResources;
 
 public class Segment {
     public final SegmentPos pos;
     public final NativeImage image;
-    public final DynamicTexture texture;
+    public final TextureResources texture;
     public boolean updated;
     public long updateTime;
 
     public Segment(SegmentPos pos, int segmentSize) {
         this.pos = pos;
         this.image = new NativeImage(segmentSize * 16, segmentSize * 16, true);
-        this.texture = new DynamicTexture(null, image);
+        this.texture = TextureResources.from2dImage(() -> "Chunk overlay segment", image);
     }
 
     public void onChange() {
-        texture.upload();
+        image.writeToGpuTexture(RenderSystem.getDevice().createCommandEncoder(), texture.texture());
     }
 
     public void close() {
         texture.close();
+        image.close();
     }
 
     @Override

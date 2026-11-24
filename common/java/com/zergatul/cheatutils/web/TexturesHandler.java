@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.zergatul.cheatutils.render.TextureUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 
@@ -22,8 +22,8 @@ public class TexturesHandler implements HttpHandler {
             Minecraft mc = Minecraft.getInstance();
             byte[] png = mc.submit(() -> {
                 TextureManager textureManager = mc.getTextureManager();
-                AbstractTexture texture = textureManager.getTexture(location);
-                return TextureUtils.toPng(texture.getTexture());
+                TextureHandle texture = textureManager.getTexture(location);
+                return TextureUtils.toPng(texture.textureView().texture());
             }).get().get();
 
             if (png == null) {

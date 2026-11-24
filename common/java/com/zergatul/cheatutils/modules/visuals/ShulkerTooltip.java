@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.modules.visuals;
 
+import com.zergatul.cheatutils.collections.TaggedArrayList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ScreenRenderEvent;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
@@ -12,10 +13,10 @@ import com.zergatul.cheatutils.utils.ItemUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -116,8 +117,8 @@ public class ShulkerTooltip implements Module {
 
                 int x = lockedX;
                 int y = lockedY;
-                int mx = event.getMouseX();
-                int my = event.getMouseY();
+                int mx = event.getGraphics().mouseX();
+                int my = event.getGraphics().mouseY();
                 int hovered = getHoveredSlot(x, y, mx, my);
 
                 renderShulkerInventory(event.getGraphics(), lockedStack, x, y, hovered);
@@ -171,26 +172,26 @@ public class ShulkerTooltip implements Module {
         graphics.nextStratum();
 
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED, CONTAINER_TEXTURE,
+                GuiPipeline.TEXTURED, CONTAINER_TEXTURE,
                 x, y,
                 0, 0,
                 ImageWidth, 6,
                 256, 256);
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED, CONTAINER_TEXTURE,
+                GuiPipeline.TEXTURED, CONTAINER_TEXTURE,
                 x, y + 6,
                 0, 14,
                 ImageWidth, 60,
                 256, 256);
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED, CONTAINER_TEXTURE,
+                GuiPipeline.TEXTURED, CONTAINER_TEXTURE,
                 x, y + 66,
                 0, 160,
                 ImageWidth, 6,
                 256, 256);
 
         if (hovered >= 0) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK_SPRITE, x + 4 + 18 * (hovered % 9), y + 6 + 18 * (hovered / 9), 24, 24);
+            graphics.blitSprite(GuiPipeline.TEXTURED, SLOT_HIGHLIGHT_BACK_SPRITE, x + 4 + 18 * (hovered % 9), y + 6 + 18 * (hovered / 9), 24, 24);
         }
 
         NonNullList<ItemStack> content = ItemUtils.getShulkerContent(itemStack);
@@ -204,7 +205,7 @@ public class ShulkerTooltip implements Module {
         }
 
         if (hovered >= 0) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_SPRITE, x + 4 + 18 * (hovered % 9), y + 6 + 18 * (hovered / 9), 24, 24);
+            graphics.blitSprite(GuiPipeline.TEXTURED, SLOT_HIGHLIGHT_FRONT_SPRITE, x + 4 + 18 * (hovered % 9), y + 6 + 18 * (hovered / 9), 24, 24);
         }
     }
 
@@ -223,14 +224,14 @@ public class ShulkerTooltip implements Module {
         allowTooltip = true;
         graphics.tooltip(
                 mc.font,
-                Screen.getTooltipFromItem(mc, slot).stream()
+                new TaggedArrayList<>(Screen.getTooltipFromItem(mc, slot).stream()
                         .map(Component::getVisualOrderText)
                         .map(ClientTooltipComponent::create)
-                        .collect(Util.toMutableList()),
+                        .collect(Util.toMutableList()), slot),
                 mouseX, mouseY,
                 DefaultTooltipPositioner.INSTANCE,
                 slot.get(DataComponents.TOOLTIP_STYLE),
-                true);
+                1);
     }
 
     private void renderSlot(GuiGraphicsExtractor graphics, ItemStack itemStack, int x, int y) {

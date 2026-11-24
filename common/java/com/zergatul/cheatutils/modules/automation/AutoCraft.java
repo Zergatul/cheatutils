@@ -8,6 +8,8 @@ import com.zergatul.cheatutils.configs.modules.AutoCraftConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.AbstractRecipeBookScreenAccessor;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.inventory.SlotGroup;
+import net.minecraft.client.gui.components.inventory.SlotWidget;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.StackedItemContents;
@@ -81,7 +83,14 @@ public class AutoCraft {
                 case RECIPE_CLICKED:
                     Slot slot = craftingScreen.getMenu().slots.get(CraftingMenu.RESULT_SLOT);
                     if (slot.hasItem()) {
-                        ((AbstractRecipeBookScreenAccessor) craftingScreen).slotClicked_CU(slot, 0, 0, ContainerInput.QUICK_MOVE);
+                        SlotWidget slotWidget = craftingScreen.children().stream()
+                                .filter(SlotGroup.class::isInstance)
+                                .map(SlotGroup.class::cast)
+                                .flatMap(group -> group.children().stream())
+                                .filter(widget -> widget.slot().index == CraftingMenu.RESULT_SLOT)
+                                .findFirst()
+                                .orElseThrow();
+                        ((AbstractRecipeBookScreenAccessor) craftingScreen).slotClicked_CU(slotWidget, CraftingMenu.RESULT_SLOT, 0, ContainerInput.QUICK_MOVE);
                         state = State.RESULT_CLICKED;
                     }
                     break;

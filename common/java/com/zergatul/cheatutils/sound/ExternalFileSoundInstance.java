@@ -8,7 +8,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.valueproviders.ConstantFloat;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 
@@ -33,7 +32,7 @@ public class ExternalFileSoundInstance implements SoundInstance {
                 false,
                 false,
                 16);
-        this.weighted = new WeighedSoundEvents(location, null);
+        this.weighted = new WeighedSoundEvents(null);
     }
 
     public static ExternalFileSoundInstance fromFile(String filename) {
@@ -55,8 +54,8 @@ public class ExternalFileSoundInstance implements SoundInstance {
     }
 
     @Override
-    public @Nullable WeighedSoundEvents getOrResolve(SoundManager soundManager) {
-        return weighted;
+    public boolean resolveAndSelectSound(SoundManager soundManager) {
+        return true;
     }
 
     @Override
@@ -65,8 +64,8 @@ public class ExternalFileSoundInstance implements SoundInstance {
     }
 
     @Override
-    public @Nullable WeighedSoundEvents getSoundEvent() {
-        return null;
+    public WeighedSoundEvents getSoundEvent() {
+        return weighted;
     }
 
     @Override

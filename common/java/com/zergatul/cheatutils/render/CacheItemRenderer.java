@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -187,9 +188,7 @@ public class CacheItemRenderer {
         int bottom = top + slotSize;
 
         GpuDevice device = RenderSystem.getDevice();
-        device.createCommandEncoder().clearColorAndDepthTextures(
-                texture, GuiRenderer.CLEAR_COLOR, depthTexture, 0.0,
-                left, textureSize - bottom, slotSize, slotSize, 0);
+        RenderPass.RenderArea renderArea = new RenderPass.RenderArea(left, textureSize - bottom, slotSize, slotSize);
 
         PoseStack poseStack = new PoseStack();
         poseStack.pushPose();
@@ -197,7 +196,6 @@ public class CacheItemRenderer {
         poseStack.scale(slotSize, -slotSize, slotSize);
         projection.setupOrtho(-1000.0F, 1000.0F, textureSize, textureSize, true);
         RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(projection), ProjectionType.ORTHOGRAPHIC);
-        RenderSystem.enableScissorForRenderTypeDraws(left, textureSize - bottom, slotSize, slotSize);
         Lighting.Entry lighting = renderState.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT;
         mc.gameRenderer.lighting().setupFor(lighting);
         renderState.submit(poseStack, submitNodeStorage, 15728880, OverlayTexture.NO_OVERLAY, 0);
@@ -205,14 +203,15 @@ public class CacheItemRenderer {
         try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage);
              RenderPass renderPass = device.createCommandEncoder().createRenderPass(
                      () -> Constants.MOD_ID + ": Items atlas",
+                     RenderPassLayouts.COLOR_DEPTH,
                      textureView,
-                     Optional.empty(),
+                     Optional.of(GuiRenderer.CLEAR_COLOR),
                      depthTextureView,
-                     OptionalDouble.empty())) {
+                     OptionalDouble.of(0.0),
+                     renderArea)) {
             RenderSystem.bindDefaultUniforms(renderPass);
             FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
         }
-        RenderSystem.disableScissorForRenderTypeDraws();
         poseStack.popPose();
     }
 

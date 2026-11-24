@@ -3,7 +3,6 @@ package com.zergatul.cheatutils.utils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
@@ -54,7 +53,7 @@ public class DamageUtils {
     // logic from CombatRules.getDamageAfterAbsorb
     public static float getDamageAfterAbsorb(float damage, float totalArmor, float armorToughness) {
         float toughness = CombatRules.BASE_ARMOR_TOUGHNESS + armorToughness / NUM_ARMOR_ITEMS;
-        float realArmor = Mth.clamp(totalArmor - damage / toughness, totalArmor * CombatRules.MIN_ARMOR_RATIO, CombatRules.MAX_ARMOR);
+        float realArmor = Math.clamp(totalArmor - damage / toughness, totalArmor * CombatRules.MIN_ARMOR_RATIO, CombatRules.MAX_ARMOR);
         float armorFraction = realArmor / CombatRules.ARMOR_PROTECTION_DIVIDER;
         float damageMultiplier = 1.0F - armorFraction;
         return damage * damageMultiplier;

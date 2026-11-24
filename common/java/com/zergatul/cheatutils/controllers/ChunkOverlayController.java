@@ -105,7 +105,7 @@ public class ChunkOverlayController {
                     buffer.rect(x, y, scale, scale, Color.WHITE.getRGB());
                     Position2dTextureColorRenderer.getInstance().draw(
                             mc.gameRenderer.mainRenderTarget(),
-                            segment.texture.getTextureView(),
+                            segment.texture.textureView(),
                             matrix,
                             buffer);
                 }

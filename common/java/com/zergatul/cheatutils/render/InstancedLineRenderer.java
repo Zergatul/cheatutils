@@ -1,20 +1,20 @@
 package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -49,7 +49,7 @@ public class InstancedLineRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "lines"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "lines"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.LINES_INSTANCED)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withCull(false);
@@ -145,7 +145,7 @@ public class InstancedLineRenderer {
         }
 
         try (RenderPass renderPass = createRenderPass(mainRenderTarget, depth)) {
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(depth ? depthPipeline : pipeline));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(depth ? depthPipeline : pipeline, renderPass.activeSubpass()));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.draw(6, bufferBuilder.getLineCount(), 0, 0);
@@ -158,6 +158,7 @@ public class InstancedLineRenderer {
         if (depth) {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                     () -> Constants.MOD_ID + ": Render Depth Lines",
+                    RenderPassLayouts.COLOR_DEPTH,
                     mainRenderTarget.getColorTextureView(),
                     Optional.empty(),
                     mainRenderTarget.getDepthTextureView(),
@@ -165,6 +166,7 @@ public class InstancedLineRenderer {
         } else {
             return RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                     () -> Constants.MOD_ID + ": Render Lines",
+                    RenderPassLayouts.COLOR_ONLY,
                     mainRenderTarget.getColorTextureView(),
                     Optional.empty());
         }

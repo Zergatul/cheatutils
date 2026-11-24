@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.extensions;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.SectionBufferBuilder;
 import com.zergatul.cheatutils.modules.automation.schematica.render.SchematicaSectionCopy;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.FluidRenderer;
@@ -14,8 +14,8 @@ public interface RenderSectionRegionExtension {
     boolean hasSchematicaBlocks_CU();
     boolean shadeSchematicaBlocks_CU();
     BlockAndTintGetter asWrapped_CU();
-    void storeLocalVariables_CU(Map<ChunkSectionLayer, BufferBuilder> startedLayers, ModelBlockRenderer blockRenderer, FluidRenderer fluidRenderer);
-    Map<ChunkSectionLayer, BufferBuilder> getStartedLayers_CU();
+    void storeLocalVariables_CU(Map<ChunkSectionLayer, SectionBufferBuilder> startedLayers, ModelBlockRenderer blockRenderer, FluidRenderer fluidRenderer);
+    Map<ChunkSectionLayer, SectionBufferBuilder> getStartedLayers_CU();
     ModelBlockRenderer getBlockRenderer_CU();
     FluidRenderer getFluidRenderer_CU();
 }

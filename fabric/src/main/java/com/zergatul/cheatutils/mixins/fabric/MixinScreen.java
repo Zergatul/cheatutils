@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.mixins.fabric;
 
+import com.zergatul.cheatutils.collections.TaggedArrayList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
 import net.minecraft.client.Minecraft;
@@ -26,7 +27,7 @@ public abstract class MixinScreen {
             List<Component> result = new ArrayList<>(original.size() + list.size());
             result.addAll(original);
             result.addAll(list);
-            info.setReturnValue(result);
+            info.setReturnValue(new TaggedArrayList<>(result, itemStack));
         }
     }
 }

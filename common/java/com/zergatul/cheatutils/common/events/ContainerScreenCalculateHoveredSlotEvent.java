@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils.common.events;
 
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.client.gui.components.inventory.SlotWidget;
 
 public class ContainerScreenCalculateHoveredSlotEvent implements CancelableEvent {
 
     private boolean canceled;
-    private Slot slot;
+    private SlotWidget slot;
 
-    public Slot getSlot() {
+    public SlotWidget getSlot() {
         return slot;
     }
 
@@ -21,7 +21,7 @@ public class ContainerScreenCalculateHoveredSlotEvent implements CancelableEvent
         return canceled;
     }
 
-    public void setSlot(Slot slot) {
+    public void setSlot(SlotWidget slot) {
         this.slot = slot;
         cancel();
     }

@@ -23,7 +23,7 @@ public abstract class MixinDeathScreen extends Screen {
     }
 
     @Inject(at = @At("TAIL"), method = "extractRenderState")
-    private void onExtractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo info) {
+    private void onExtractRenderState(GuiGraphicsExtractor graphics, CallbackInfo info) {
         DeathCoordinatesConfig config = DeathCoordinates.INSTANCE.getSettings().get();
         if (config.enabled()) {
             LocalPlayer player = this.minecraft.player;

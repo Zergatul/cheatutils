@@ -7,7 +7,6 @@ import com.zergatul.cheatutils.configs.modules.PrivacyConfig;
 import com.zergatul.cheatutils.configs.modules.ReachConfig;
 import com.zergatul.cheatutils.configs.modules.StepUpConfig;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
-import com.zergatul.cheatutils.modules.hacks.Movement;
 import com.zergatul.cheatutils.modules.hacks.Reach;
 import com.zergatul.cheatutils.modules.hacks.StepUp;
 import com.zergatul.cheatutils.modules.scripting.Debugging;
@@ -80,7 +79,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Inject(at = @At("HEAD"), method = "itemUseSpeedMultiplier", cancellable = true)
     private void onBeforeGetItemUseSpeedMultiplier(CallbackInfoReturnable<Float> info) {
-        if (Movement.INSTANCE.getSettings().get().disableSlowdownOnUseItem()) {
+        if (com.zergatul.cheatutils.modules.hacks.Movement.INSTANCE.getSettings().get().disableSlowdownOnUseItem()) {
             info.setReturnValue(1f);
         }
     }
@@ -89,7 +88,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
             method = "modifyInput",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isMovingSlowly()Z"))
     private static boolean onAiStepCrouchCheck(boolean isMovingSlowly) {
-        if (Movement.INSTANCE.getSettings().get().disableCrouchingSlowdown()) {
+        if (com.zergatul.cheatutils.modules.hacks.Movement.INSTANCE.getSettings().get().disableCrouchingSlowdown()) {
             return false;
         } else {
             return isMovingSlowly;
@@ -103,7 +102,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public void lerpMotion(@NonNull Vec3 movement) {
-        MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+        MovementHackConfig config = com.zergatul.cheatutils.modules.hacks.Movement.INSTANCE.getSettings().get();
         if (config.antiKnockback()) {
             return;
         }
@@ -112,7 +111,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public void push(double dx, double dy, double dz) {
-        MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+        MovementHackConfig config = com.zergatul.cheatutils.modules.hacks.Movement.INSTANCE.getSettings().get();
         if (config.antiPush()) {
             return;
         }
@@ -121,7 +120,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     protected float getJumpPower() {
-        MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+        MovementHackConfig config = com.zergatul.cheatutils.modules.hacks.Movement.INSTANCE.getSettings().get();
         if (config.scaleJumpHeight()) {
             return (float) (Math.sqrt(config.jumpHeightFactor()) * super.getJumpPower());
         } else {
@@ -167,7 +166,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public boolean isPushedByFluid() {
-        MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+        MovementHackConfig config = com.zergatul.cheatutils.modules.hacks.Movement.INSTANCE.getSettings().get();
         if (config.disableWaterPush()) {
             return false;
         } else {

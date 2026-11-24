@@ -37,7 +37,7 @@ public class ComponentWrapper {
 
     private FormattedTextComponent[] getComponentsInternal() {
         List<FormattedTextComponent> components = new ArrayList<>();
-        inner.visit((style, text) -> {
+        inner.visitWithoutResult((style, text) -> {
             components.add(new FormattedTextComponent(text, style));
             return Optional.empty();
         }, Style.EMPTY);

@@ -142,7 +142,7 @@ public class EntityTitle implements FontBackendHolder {
         }
 
         CameraRenderState cameraState = mc.gameRenderer.gameRenderState().levelRenderState.cameraRenderState;
-        prepareEntityList(cameraState.pos, event.deltaTracker().getGameTimeDeltaPartialTick(true));
+        prepareEntityList(cameraState.pos, event.graphics().deltaTracker().getGameTimeDeltaPartialTick(true));
 
         if (entities.isEmpty()) {
             return;

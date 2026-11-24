@@ -1,13 +1,18 @@
 package com.zergatul.cheatutils.render;
 
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTexture;
-import com.mojang.renderpearl.backend.opengl.GlStateManager;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
+import net.minecraft.client.renderer.RenderPassLayouts;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
@@ -15,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class TextureUtils {
@@ -27,16 +33,36 @@ public class TextureUtils {
     }
 
     // logic copied from Screenshot.takeScreenshot
-    // current bug in Mojang code cause OpenGL error being logged in snapshot 6, verify if this is fixed later
     public static CompletableFuture<byte[]> toPng(GpuTexture texture) {
+        if ((texture.usage() & GpuTexture.USAGE_COPY_SRC) == 0) {
+            TextureTarget target = new TextureTarget("Texture dump target", texture.getWidth(0), texture.getHeight(0), GpuFormat.RGBA8_UNORM, null);
+            try {
+                try (GpuTextureView sourceView = RenderSystem.getDevice().createTextureView(texture);
+                     RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                             () -> "Copy texture for readback",
+                             RenderPassLayouts.COLOR_ONLY,
+                             Objects.requireNonNull(target.getColorTextureView()))) {
+                    renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.TRACY_BLIT, renderPass.activeSubpass()));
+                    RenderSystem.bindDefaultUniforms(renderPass);
+                    renderPass.setUniform("InSampler", sourceView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+                    renderPass.draw(3, 1, 0, 0);
+                }
+                return toPng(Objects.requireNonNull(target.getColorTexture())).whenComplete((png, error) -> target.destroyBuffers());
+            } catch (RuntimeException | Error e) {
+                target.destroyBuffers();
+                throw e;
+            }
+        }
+
         CompletableFuture<byte[]> future = new CompletableFuture<>();
 
         int width = texture.getWidth(0);
         int height = texture.getHeight(0);
         int size = width * height * texture.getFormat().blockSize();
         GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Texture dump buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, size);
-        RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(texture, buffer, 0L, () -> {
-            try (GpuBufferSlice.MappedView read = buffer.map(true, false);) {
+        RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(texture, buffer, 0L, 0);
+        RenderSystem.queueFencedTask(() -> {
+            try (buffer; GpuBufferSlice.MappedView read = buffer.map(true, false)) {
                 try (NativeImage image = new NativeImage(width, height, true)) {
                     for (int y = 0; y < height; y++) {
                         for (int x = 0; x < width; x++) {
@@ -46,16 +72,17 @@ public class TextureUtils {
 
                     future.complete(ImageUtils.toPng(image));
                 }
+            } catch (Exception e) {
+                future.completeExceptionally(e);
             }
-
-            buffer.close();
-        }, 0);
+        });
 
         return future;
     }
 
     public static byte[] glTextureToPng(int id) throws IOException {
-        GlStateManager._bindTexture(id);
+        int prevTexture = GL30.glGetInteger(GL30.GL_TEXTURE_BINDING_2D);
+        GL30.glBindTexture(GL30.GL_TEXTURE_2D, id);
 
         pushState();
         try {
@@ -89,6 +116,7 @@ public class TextureUtils {
             return result;
         } finally {
             popState();
+            GL30.glBindTexture(GL30.GL_TEXTURE_2D, prevTexture);
         }
     }
 

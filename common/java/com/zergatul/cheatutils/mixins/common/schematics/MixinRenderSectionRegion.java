@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.common.schematics;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.SectionBufferBuilder;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
 import com.zergatul.cheatutils.modules.automation.schematica.render.SchematicaSectionCopy;
 import com.zergatul.cheatutils.modules.automation.schematica.render.WrapperRenderSectionRegion;
@@ -38,7 +38,7 @@ public abstract class MixinRenderSectionRegion implements RenderSectionRegionExt
     private boolean schematicaShadeBlocks_CU;
 
     @Unique
-    private Map<ChunkSectionLayer, BufferBuilder> startedLayers_CU;
+    private Map<ChunkSectionLayer, SectionBufferBuilder> startedLayers_CU;
 
     @Unique
     private ModelBlockRenderer blockRenderer_CU;
@@ -68,14 +68,14 @@ public abstract class MixinRenderSectionRegion implements RenderSectionRegionExt
     }
 
     @Override
-    public void storeLocalVariables_CU(Map<ChunkSectionLayer, BufferBuilder> startedLayers, ModelBlockRenderer blockRenderer, FluidRenderer fluidRenderer) {
+    public void storeLocalVariables_CU(Map<ChunkSectionLayer, SectionBufferBuilder> startedLayers, ModelBlockRenderer blockRenderer, FluidRenderer fluidRenderer) {
         this.startedLayers_CU = startedLayers;
         this.blockRenderer_CU = blockRenderer;
         this.fluidRenderer_CU = fluidRenderer;
     }
 
     @Override
-    public Map<ChunkSectionLayer, BufferBuilder> getStartedLayers_CU() {
+    public Map<ChunkSectionLayer, SectionBufferBuilder> getStartedLayers_CU() {
         return this.startedLayers_CU;
     }
 

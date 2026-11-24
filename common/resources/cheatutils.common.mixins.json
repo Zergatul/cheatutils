@@ -85,11 +85,13 @@
     "common.MixinPackConfirmScreen",
     "common.MixinPacketProcessorHandle",
     "common.MixinPig",
+    "common.MixinPlayerTabOverlay",
     "common.MixinProjectileUtil",
     "common.MixinScreen",
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSoundBufferLibrary",
     "common.MixinSoundManager",
+    "common.MixinTooltip",
     "common.MixinTridentItem",
     "common.MixinUser"
   ]

@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.mixins.common;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.common.events.PreRenderGuiOverlayEvent;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 import com.zergatul.cheatutils.configs.modules.StatusEffectsConfig;
 import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 import com.zergatul.cheatutils.modules.visuals.BetterStatusEffects;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
@@ -40,7 +38,7 @@ public abstract class MixinHud {
     protected abstract int getVehicleMaxHearts(LivingEntity vehicle);
 
     @Inject(at = @At("HEAD"), method = "extractEffects", cancellable = true)
-    private void onExtractEffects(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo info) {
+    private void onExtractEffects(GuiGraphicsExtractor graphics, CallbackInfo info) {
         StatusEffectsConfig config = BetterStatusEffects.INSTANCE.getSettings().get();
         if (config.enabled()) {
             info.cancel();
@@ -48,14 +46,14 @@ public abstract class MixinHud {
     }
 
     @Inject(at = @At("HEAD"), method = "extractRenderState")
-    private void onBeforeExtractRenderState(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo info) {
-        Events.PreRenderGui.trigger(new RenderGuiEvent(graphics, deltaTracker));
+    private void onBeforeExtractRenderState(GuiGraphicsExtractor graphics, CallbackInfo info) {
+        Events.PreRenderGui.trigger(new RenderGuiEvent(graphics));
     }
 
     // inject at RETURN required for Forge
     @Inject(at = @At("RETURN"), method = "extractRenderState")
-    private void onAfterExtractRenderState(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo info) {
-        Events.PostRenderGui.trigger(new RenderGuiEvent(graphics, deltaTracker));
+    private void onAfterExtractRenderState(GuiGraphicsExtractor graphics, CallbackInfo info) {
+        Events.PostRenderGui.trigger(new RenderGuiEvent(graphics));
     }
 
     @Inject(at = @At("TAIL"), method = "extractPlayerHealth")
@@ -89,13 +87,6 @@ public abstract class MixinHud {
 
         if (BetterStatusEffects.INSTANCE.getSettings().get().enabled()) {
             BetterStatusEffects.INSTANCE.render(graphics, player, graphics.guiHeight() - 50 - 2 * this.minecraft.font.lineHeight - 25);
-        }
-    }
-
-    @Inject(at = @At("HEAD"), method = "extractTabList", cancellable = true)
-    private void onExtractTabList(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo info) {
-        if (Events.PreRenderGuiOverlay.trigger(new PreRenderGuiOverlayEvent(PreRenderGuiOverlayEvent.GuiOverlayType.PLAYER_LIST))) {
-            info.cancel();
         }
     }
 }

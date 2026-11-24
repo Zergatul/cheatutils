@@ -1,5 +1,6 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.zergatul.cheatutils.mixins.common.accessors.KeyboardHandlerAccessor;
 import com.zergatul.cheatutils.mixins.common.accessors.MouseHandlerAccessor;
@@ -81,7 +82,7 @@ public class WindowApi {
             """)
     public void emulateKeyPressEvent(int key, int scancode, int modifiers, int action) {
         KeyboardHandlerAccessor handler = (KeyboardHandlerAccessor) mc.keyboardHandler;
-        handler.keyPress_CU(window.handle(), action, new KeyEvent(key, scancode, modifiers));
+        handler.keyPress_CU(window.handle(), action, new KeyEvent(key, scancode, modifiers, action == InputConstants.REPEAT));
     }
 
     @MethodDescription("""

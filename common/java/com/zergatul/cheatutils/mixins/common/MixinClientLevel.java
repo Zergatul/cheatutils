@@ -22,16 +22,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinClientLevel extends Level {
 
     private MixinClientLevel(
-            WritableLevelData levelData,
-            ResourceKey<Level> dimension,
-            RegistryAccess registryAccess,
-            Holder<DimensionType> dimensionTypeRegistration,
-            boolean isClientSide,
-            boolean isDebug,
-            long biomeZoomSeed,
-            int maxChainedNeighborUpdates
+            final WritableLevelData levelData,
+            final ResourceKey<Level> dimension,
+            final RegistryAccess registryAccess,
+            final Holder<DimensionType> dimensionTypeRegistration,
+            final boolean isClientSide,
+            final int maxChainedNeighborUpdates
     ) {
-        super(levelData, dimension, registryAccess, dimensionTypeRegistration, isClientSide, isDebug, biomeZoomSeed, maxChainedNeighborUpdates);
+        super(levelData, dimension, registryAccess, dimensionTypeRegistration, isClientSide, maxChainedNeighborUpdates);
     }
 
     @Inject(at = @At("TAIL"), method = "addEntity(Lnet/minecraft/world/entity/Entity;)V")
@@ -47,8 +45,8 @@ public abstract class MixinClientLevel extends Level {
     }
 
     @Inject(at = @At("HEAD"), method = "setServerVerifiedBlockState")
-    private void onSetServerVerifiedBlockState(BlockPos pos, BlockState state, int updateFlag, CallbackInfo info) {
+    private void onSetServerVerifiedBlockState(BlockPos pos, BlockState blockState, int updateFlag, CallbackInfo info) {
         LevelChunk chunk = this.getChunkAt(pos);
-        Events.RawBlockUpdated.trigger(new BlockUpdateEvent(chunk, pos.immutable(), state));
+        Events.RawBlockUpdated.trigger(new BlockUpdateEvent(chunk, pos.immutable(), blockState));
     }
 }

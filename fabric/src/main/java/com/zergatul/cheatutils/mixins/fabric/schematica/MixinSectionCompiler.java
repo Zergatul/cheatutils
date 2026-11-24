@@ -1,18 +1,19 @@
 package com.zergatul.cheatutils.mixins.fabric.schematica;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.QuadInstance;
+import com.mojang.blaze3d.vertex.SectionBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.zergatul.cheatutils.extensions.RenderSectionRegionExtension;
-import com.zergatul.cheatutils.modules.automation.schematica.render.ShadedVertexConsumerWrapper;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
 import net.minecraft.client.renderer.block.*;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.RenderSectionRegion;
 import net.minecraft.client.renderer.chunk.SectionCompiler;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -38,7 +39,7 @@ public abstract class MixinSectionCompiler {
     private BlockStateModelSet blockModelSet;
 
     @Shadow
-    protected abstract BufferBuilder getOrBeginLayer(Map<ChunkSectionLayer, BufferBuilder> startedLayers, SectionBufferBuilderPack buffers, ChunkSectionLayer layer);
+    protected abstract SectionBufferBuilder getOrBeginLayer(Map<ChunkSectionLayer, SectionBufferBuilder> startedLayers, SectionBufferBuilderPack buffers, ChunkSectionLayer layer);
 
     @Inject(
             method = "compile",
@@ -49,7 +50,7 @@ public abstract class MixinSectionCompiler {
             VertexSorting vertexSorting,
             SectionBufferBuilderPack builders,
             CallbackInfoReturnable<SectionCompiler.Results> info,
-            @Local(name = "startedLayers") Map<ChunkSectionLayer, BufferBuilder> startedLayers,
+            @Local(name = "startedLayers") Map<ChunkSectionLayer, SectionBufferBuilder> startedLayers,
             @Local(name = "blockRenderer") ModelBlockRenderer blockRenderer,
             @Local(name = "fluidRenderer") FluidRenderer fluidRenderer
     ) {
@@ -76,7 +77,7 @@ public abstract class MixinSectionCompiler {
             return;
         }
 
-        Map<ChunkSectionLayer, BufferBuilder> startedLayers = extension.getStartedLayers_CU();
+        Map<ChunkSectionLayer, SectionBufferBuilder> startedLayers = extension.getStartedLayers_CU();
         ModelBlockRenderer blockRenderer = extension.getBlockRenderer_CU();
         FluidRenderer fluidRenderer = extension.getFluidRenderer_CU();
 
@@ -84,14 +85,17 @@ public abstract class MixinSectionCompiler {
         BlockAndTintGetter wrapped = extension.asWrapped_CU();
 
         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
-            VertexConsumer consumer = this.getOrBeginLayer_CU(startedLayers, builders, quad.materialInfo().layer(), shaded);
-            consumer.putBlockBakedQuad(x, y, z, quad, instance);
+            SectionBufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, quad.materialInfo().layer());
+            addQuad_CU(builder, x, y, z, quad, instance, shaded);
         };
         BlockQuadOutput opaqueQuadOutput = (x, y, z, quad, instance) -> {
-            VertexConsumer consumer = this.getOrBeginLayer_CU(startedLayers, builders, ChunkSectionLayer.SOLID, shaded);
-            consumer.putBlockBakedQuad(x, y, z, quad, instance);
+            SectionBufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, ChunkSectionLayer.SOLID);
+            addQuad_CU(builder, x, y, z, quad, instance, shaded);
         };
-        FluidRenderer.Output fluidOutput = layer -> this.getOrBeginLayer_CU(startedLayers, builders, layer, shaded);
+        FluidRenderer.Output fluidOutput = (layer, x, y, z, quad, color, brightness, lightCoords) -> {
+            SectionBufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, layer);
+            builder.addFluidQuad(x, y, z, quad, shaded ? shadeColor_CU(color) : color, brightness, lightCoords);
+        };
 
         BlockPos corner1 = sectionPos.origin();
         BlockPos corner2 = corner1.offset(15, 15, 15);
@@ -126,12 +130,27 @@ public abstract class MixinSectionCompiler {
     }
 
     @Unique
-    private VertexConsumer getOrBeginLayer_CU(Map<ChunkSectionLayer, BufferBuilder> map, SectionBufferBuilderPack pack, ChunkSectionLayer layer, boolean shaded) {
-        VertexConsumer consumer = this.getOrBeginLayer(map, pack, layer);
-        if (shaded) {
-            return new ShadedVertexConsumerWrapper(consumer);
-        } else {
-            return consumer;
+    private static void addQuad_CU(SectionBufferBuilder builder, float x, float y, float z, BakedQuad quad, QuadInstance instance, boolean shaded) {
+        if (!shaded) {
+            builder.addQuad(x, y, z, quad, instance);
+            return;
         }
+
+        int color = instance.getColor();
+        instance.setColor(shadeColor_CU(color));
+        try {
+            builder.addQuad(x, y, z, quad, instance);
+        } finally {
+            instance.setColor(color);
+        }
+    }
+
+    @Unique
+    private static int shadeColor_CU(int color) {
+        return ARGB.color(
+                Math.round(0.6f * ARGB.alpha(color)),
+                Math.round(0.5f * ARGB.red(color)),
+                Math.round(0.8f * ARGB.green(color)),
+                ARGB.blue(color));
     }
 }

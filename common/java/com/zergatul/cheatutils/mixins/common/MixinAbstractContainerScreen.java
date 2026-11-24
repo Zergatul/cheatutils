@@ -7,6 +7,7 @@ import com.zergatul.cheatutils.configs.modules.ContainerButtonsConfig;
 import com.zergatul.cheatutils.modules.automation.ContainerButtons;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.inventory.SlotWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractContainerScreen.class)
-public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMenu> extends Screen {
+public abstract class MixinAbstractContainerScreen extends Screen {
 
     @Shadow
     protected int topPos;
@@ -32,10 +33,6 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     @Final
     @Shadow
     protected int imageWidth;
-
-    @Final
-    @Shadow
-    protected T menu;
 
     protected MixinAbstractContainerScreen(Component component) {
         super(component);
@@ -56,7 +53,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             int btnHeight = 20;
             cursor -= btnWidth;
             addRenderableWidget(
-                    new Button.Builder(Component.translatable("button.take.all"), this::onTakeAllPress_CU)
+                    Button.builder(Component.translatable("button.take.all"), this::onTakeAllPress_CU)
                             .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
                             .build());
             cursor -= space;
@@ -66,7 +63,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             int btnHeight = 20;
             cursor -= btnWidth;
             addRenderableWidget(
-                    new Button.Builder(Component.translatable("button.smart.put"), this::onSmartPutPress_CU)
+                    Button.builder(Component.translatable("button.smart.put"), this::onSmartPutPress_CU)
                             .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
                             .build());
             cursor -= space;
@@ -76,14 +73,14 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
             int btnHeight = 20;
             cursor -= btnWidth;
             addRenderableWidget(
-                    new Button.Builder(Component.translatable("button.drop.all"), this::onDropAllPress_CU)
+                    Button.builder(Component.translatable("button.drop.all"), this::onDropAllPress_CU)
                             .bounds(cursor, this.topPos - btnHeight, btnWidth, btnHeight)
                             .build());
         }
     }
 
     @Inject(at = @At("TAIL"), method = "extractContents")
-    private void onAfterRenderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
+    private void onAfterRenderContents(GuiGraphicsExtractor graphics, CallbackInfo ci) {
         Events.ContainerScreenAfterRenderContents.trigger(
                 new ContainerScreenRenderEvent(
                         (AbstractContainerScreen<?>) (Object) this,
@@ -109,7 +106,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     }
 
     @Inject(at = @At("HEAD"), method = "getHoveredSlot", cancellable = true)
-    private void onGetHoveredSlot(double x, double y, CallbackInfoReturnable<Slot> info) {
+    private void onGetHoveredSlot(CallbackInfoReturnable<SlotWidget> info) {
         ContainerScreenCalculateHoveredSlotEvent event = new ContainerScreenCalculateHoveredSlotEvent();
         if (Events.ContainerCalculateHoveredSlot.trigger(event)) {
             info.setReturnValue(event.getSlot());

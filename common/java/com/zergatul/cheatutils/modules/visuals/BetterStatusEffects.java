@@ -9,8 +9,8 @@ import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.Hud;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.entity.player.Player;
@@ -50,12 +50,12 @@ public class BetterStatusEffects implements Module {
             MobEffectInstance effectInstance = sorted.get(i);
 
             if (effectInstance.isAmbient()) {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HudAccessor.getEffectBackgroundAmbientSprite_CU(), left, y, 24, 24);
+                graphics.blitSprite(GuiPipeline.TEXTURED, HudAccessor.getEffectBackgroundAmbientSprite_CU(), left, y, 24, 24);
             } else {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HudAccessor.getEffectBackgroundSprite_CU(), left, y, 24, 24);
+                graphics.blitSprite(GuiPipeline.TEXTURED, HudAccessor.getEffectBackgroundSprite_CU(), left, y, 24, 24);
             }
 
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Hud.getMobEffectSprite(effectInstance.getEffect()), left + 3, y + 3, 18, 18);
+            graphics.blitSprite(GuiPipeline.TEXTURED, Hud.getMobEffectSprite(effectInstance.getEffect()), left + 3, y + 3, 18, 18);
 
             String duration = MobEffectUtil.formatDuration(effectInstance, 1, mc.level.tickRateManager().tickrate()).getString();
             if (duration.startsWith("00")) {

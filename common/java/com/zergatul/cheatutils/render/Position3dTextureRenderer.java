@@ -1,20 +1,20 @@
 package com.zergatul.cheatutils.render;
 
 import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.zergatul.cheatutils.Constants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
@@ -38,7 +38,7 @@ public class Position3dTextureRenderer {
                 .withBindGroupLayout(BindGroupLayouts.INPUTS)
                 .withVertexShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-3d-texture"))
                 .withFragmentShader(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "position-3d-texture"))
-                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_ALL))
+                .withColorTargetState(new ColorTargetState(Optional.of(BlendFunctions.DEFAULT), ColorTargetState.WRITE_ALL))
                 .withVertexBinding(0, VertexFormats.POSITION_3D_TEXTURE)
                 .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                 .withDepthStencilState(DepthStencilState.DEFAULT)
@@ -93,12 +93,13 @@ public class Position3dTextureRenderer {
         RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "Render 3d Texture",
+                RenderPassLayouts.COLOR_DEPTH,
                 Objects.requireNonNull(mainRenderTarget.getColorTextureView()),
                 Optional.empty(),
                 mainRenderTarget.getDepthTextureView(),
                 OptionalDouble.empty())
         ) {
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline, renderPass.activeSubpass()));
             renderPass.setUniform(BindGroupLayouts.TEXTURE0_NAME, texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
             renderPass.setUniform(BindGroupLayouts.UNIFORM_BLOCK_NAME, ubo);
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
